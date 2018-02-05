@@ -97,7 +97,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     /**
      * Indication if the parameter is an input to the service, an output or both.
      */
-    @XmlElement
+    @XmlElement(required = true)
     ParameterDirection direction;
 
     /**

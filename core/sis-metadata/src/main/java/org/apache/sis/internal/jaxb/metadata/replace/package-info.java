@@ -43,7 +43,6 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(RS_Identifier.class),
     @XmlJavaTypeAdapter(SV_ParameterDirection.class),
 
     // Java types, primitive types and basic OGC types handling
@@ -51,7 +50,8 @@
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
     @XmlJavaTypeAdapter(GO_MemberName.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
 package org.apache.sis.internal.jaxb.metadata.replace;
 
@@ -63,7 +63,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.jaxb.code.SV_ParameterDirection;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.xml.Namespaces;

@@ -95,12 +95,13 @@
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
 
     // Java types, primitive types and basic OGC types handling
+    @XmlJavaTypeAdapter(URIAdapter.class),
     @XmlJavaTypeAdapter(UnitAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_LocalName.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,    value=GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Real.class),    @XmlJavaTypeAdapter(type=double.class, value=GO_Real.class)
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Real.class)
 })
 package org.apache.sis.metadata.iso.distribution;
 

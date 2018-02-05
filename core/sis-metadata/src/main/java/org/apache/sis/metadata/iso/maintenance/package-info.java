@@ -80,7 +80,6 @@
     @XmlJavaTypeAdapter(CI_Date.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
-    @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
     @XmlJavaTypeAdapter(MD_Scope.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_ScopeDescription.class),

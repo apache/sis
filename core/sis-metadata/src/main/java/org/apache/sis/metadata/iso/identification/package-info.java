@@ -116,8 +116,6 @@
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(DCPList.class),
-    @XmlJavaTypeAdapter(DS_AssociationTypeCode.class),
-    @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(MD_AggregateInformation.class),
     @XmlJavaTypeAdapter(MD_AssociatedResource.class),
@@ -143,7 +141,6 @@
     @XmlJavaTypeAdapter(SV_OperationMetadata.class),
     @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
     @XmlJavaTypeAdapter(SV_Parameter.class),
-    @XmlJavaTypeAdapter(SV_ParameterDirection.class),
     @XmlJavaTypeAdapter(TM_Duration.class),
 
     // Java types, primitive types and basic OGC types handling
@@ -152,8 +149,7 @@
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_ScopedName.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(GO_ScopedName.class)
 })
 package org.apache.sis.metadata.iso.identification;
 

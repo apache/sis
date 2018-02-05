@@ -16,25 +16,32 @@
  */
 package org.apache.sis.test.xml;
 
-import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
-import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.ParameterizedType;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.util.Classes;
 import org.opengis.annotation.UML;
+import org.apache.sis.util.Classes;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -81,13 +88,43 @@ final strictfp class PackageVerifier {
     /**
      * The default namespace to use if a class does not define explicitely a namespace.
      */
-    private final String defaultNS;
+    private final String packageNS;
+
+    /**
+     * The namespace of the class under examination.
+     * This field must be updated for every class found in a package.
+     */
+    private String classNS;
+
+    /**
+     * The class under examination, used in error messages.
+     * This field must be updated for every class found in a package.
+     */
+    private Class<?> currentClass;
+
+    /**
+     * Whether the class under examination is defined in a legacy namespace.
+     * In such case, some checks may be skipped because we didn't loaded schemas for legacy properties.
+     */
+    private boolean isDeprecatedClass;
+
+    /**
+     * The schema definition for the class under examination.
+     *
+     * @see SchemaCompliance#typeDefinition(String)
+     */
+    private Map<String, SchemaCompliance.Info> properties;
 
     /**
      * Whether a namespace is actually used of not.
      * We use this map for identifying unnecessary prefix declarations.
      */
     private final Map<String,Boolean> namespaceIsUsed;
+
+    /**
+     * Whether adapters declared in {@code package-info.java} are used or not.
+     */
+    private final Map<Class<?>,Boolean> adapterIsUsed;
 
     /**
      * Creates a new verifier for the given package.
@@ -97,6 +134,7 @@ final strictfp class PackageVerifier {
     {
         this.schemas = schemas;
         namespaceIsUsed = new HashMap<>();
+        adapterIsUsed = new HashMap<>();
         String name = "?", namespace = "";
         if (pkg != null) {
             name = pkg.getName();
@@ -122,9 +160,45 @@ final strictfp class PackageVerifier {
                     }
                 }
             }
+            /*
+             * Lists the type of all values for which an adapter is declared in package-info.
+             * If the type is not explicitely declared, then it is inferred from class signature.
+             */
+            final XmlJavaTypeAdapters adapters = pkg.getAnnotation(XmlJavaTypeAdapters.class);
+            if (adapters != null) {
+                for (final XmlJavaTypeAdapter adapter : adapters.value()) {
+                    Class<?> propertyType = adapter.type();
+                    if (propertyType == XmlJavaTypeAdapter.DEFAULT.class) {
+                        for (Class<?> c = adapter.value(); ; c = c.getSuperclass()) {
+                            final Type type = c.getGenericSuperclass();
+                            if (type == null) {
+                                throw new SchemaException(String.format(
+                                        "Can not infer type for %s adapter.", adapter.value().getName()));
+                            }
+                            if (type instanceof ParameterizedType) {
+                                final Type[] p = ((ParameterizedType) type).getActualTypeArguments();
+                                if (p.length == 2) {
+                                    Type pt = p[1];
+                                    if (pt instanceof ParameterizedType) {
+                                        pt = ((ParameterizedType) pt).getRawType();
+                                    }
+                                    if (pt instanceof Class<?>) {
+                                        propertyType = (Class<?>) pt;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (adapterIsUsed.put((Class<?>) propertyType, Boolean.FALSE) != null) {
+                        throw new SchemaException(String.format(
+                                "More than one adapter for %s in package %s", propertyType, name));
+                    }
+                }
+            }
         }
         packageName = name;
-        defaultNS = namespace;
+        packageNS = namespace;
     }
 
     /**
@@ -137,6 +211,14 @@ final strictfp class PackageVerifier {
     final void verify(final Class<?> type)
             throws IOException, ParserConfigurationException, SAXException, SchemaException
     {
+        /*
+         * Reinitialize fields to be updated for each class.
+         */
+        classNS           = null;
+        currentClass      = type;
+        isDeprecatedClass = false;
+        properties        = Collections.emptyMap();
+
         final XmlType        xmlType = type.getDeclaredAnnotation(XmlType.class);
         final XmlRootElement xmlRoot = type.getDeclaredAnnotation(XmlRootElement.class);
         XmlElement codeList = null;
@@ -147,21 +229,21 @@ final strictfp class PackageVerifier {
          * assume that it is the same than the class name (this is what Apache SIS 0.8 does
          * in its org.apache.sis.internal.jaxb.code package for CodeList adapters).
          */
-        String namespace;
-        final String className;     // ISO class name (not the same than Java class name).
+        final String isoName;       // ISO class name (not the same than Java class name).
         if (xmlRoot != null) {
-            namespace = xmlRoot.namespace();
-            className = xmlRoot.name();
+            classNS = xmlRoot.namespace();
+            isoName = xmlRoot.name();
             if (xmlType != null) {
-                if (!namespace.equals(xmlType.namespace())) {
-                    throw new SchemaException("Mismatched namespace in @XmlType and @XmlRootElement of " + type);
+                if (!classNS.equals(xmlType.namespace())) {
+                    throw new SchemaException(errorInClassMember(null)
+                            .append("Mismatched namespace in @XmlType and @XmlRootElement."));
                 }
-                SchemaCompliance.verifyNamingConvention(type.getName(), className, xmlType.name(), SchemaCompliance.TYPE_SUFFIX);
+                SchemaCompliance.verifyNamingConvention(type.getName(), isoName, xmlType.name(), SchemaCompliance.TYPE_SUFFIX);
             }
         } else if (xmlType != null) {
-            namespace = xmlType.namespace();
+            classNS = xmlType.namespace();
             final String name = xmlType.name();
-            className = SchemaCompliance.trim(name, SchemaCompliance.TYPE_SUFFIX);
+            isoName = SchemaCompliance.trim(name, SchemaCompliance.TYPE_SUFFIX);
         } else {
             /*
              * If there is neither @XmlRootElement or @XmlType annotation, it may be a code list as implemented
@@ -176,104 +258,171 @@ final strictfp class PackageVerifier {
                 }
             }
             if (codeList == null) return;
-            namespace = codeList.namespace();
-            className = codeList.name();
+            classNS = codeList.namespace();
+            isoName = codeList.name();
         }
         /*
          * Verify that the namespace declared on the class is not redundant with the namespace
          * declared in the package. Actually redundant namespaces are not wrong, but we try to
          * reduce code size.
          */
-        if (namespace.equals(AnnotationConsistencyCheck.DEFAULT)) {
-            namespace = defaultNS;
-        } else if (namespace.equals(defaultNS)) {
-            throw new SchemaException("Redundant namespace declaration in " + type);
+        if (classNS.equals(AnnotationConsistencyCheck.DEFAULT)) {
+            classNS = packageNS;
+        } else if (classNS.equals(packageNS)) {
+            throw new SchemaException(errorInClassMember(null)
+                    .append("Redundant namespace declaration: ").append(classNS));
         }
         /*
          * Verify that the namespace has a prefix associated to it in the package-info file.
          */
-        if (namespaceIsUsed.put(namespace, Boolean.TRUE) == null) {
-            throw new SchemaException("Namespace of " + type + " has no prefix in package-info.");
+        if (namespaceIsUsed.put(classNS, Boolean.TRUE) == null) {
+            throw new SchemaException(errorInClassMember(null)
+                    .append("No prefix in package-info for ").append(classNS));
         }
         /*
          * Properties in the legacy GMD or GMI namespaces may be deprecated, depending if a replacement
          * is already available or not. However properties in other namespaces should not be deprecated.
-         * Validation of deprecated properties is skipped because we didn't loaded their schema.
+         * Some validations of deprecated properties are skipped because we didn't loaded their schema.
          */
-        if (LEGACY_NAMESPACES.contains(namespace)) {
-            return;
-        }
-        if (type.isAnnotationPresent(Deprecated.class)) {
-            throw new SchemaException("Unexpected deprecation status of " + type);
-        }
-        /*
-         * Verify that class name exists, then verify its namespace (associated to the null key by convention).
-         */
-        final Map<String, SchemaCompliance.Info> properties = schemas.typeDefinition(className);
-        if (properties == null) {
-            throw new SchemaException("Unknown name declared in @XmlRootElement of " + type);
-        }
-        final String expectedNS = properties.get(null).namespace;
-        if (!namespace.equals(expectedNS)) {
-            throw new SchemaException(String.format("%s shall be associated to namespace %s", className, expectedNS));
-        }
-        if (codeList != null) return;                   // If the class was a code list, we are done.
-        for (final Method method : type.getDeclaredMethods()) {
-            final XmlElement element = method.getDeclaredAnnotation(XmlElement.class);
-            if (element == null) {
-                continue;                               // No @XmlElement annotation - skip this property.
-            }
-            final String name = element.name();
-            String ns = element.namespace();
-            if (ns.equals(AnnotationConsistencyCheck.DEFAULT)) {
-                ns = namespace;
-            }
-            if (namespaceIsUsed.put(ns, Boolean.TRUE) == null) {
-                throw new SchemaException(String.format("Missing @XmlNs in %s package for namespace:%n%s", packageName, ns));
+        isDeprecatedClass = LEGACY_NAMESPACES.contains(classNS);
+        if (!isDeprecatedClass) {
+            if (type.isAnnotationPresent(Deprecated.class)) {
+                throw new SchemaException(errorInClassMember(null)
+                        .append("Unexpected @Deprecated annotation."));
             }
             /*
-             * We do not verify fully the properties in legacy namespaces because we didn't loaded their schemas.
-             * However we verify at least that those properties are not declared as required.
+             * Verify that class name exists, then verify its namespace (associated to the null key by convention).
              */
-            if (LEGACY_NAMESPACES.contains(ns)) {
-                if (element.required()) {
-                    throw new SchemaException(String.format("Legacy property %s.%s should not be required.", className, name));
-                }
-                continue;                               // Property in a legacy namespace - skip it.
+            properties = schemas.typeDefinition(isoName);
+            if (properties == null) {
+                throw new SchemaException(errorInClassMember(null)
+                        .append("Unknown name declared in @XmlRootElement: ").append(isoName));
             }
+            final String expectedNS = properties.get(null).namespace;
+            if (!classNS.equals(expectedNS)) {
+                throw new SchemaException(errorInClassMember(null)
+                        .append(isoName).append(" shall be associated to namespace ").append(expectedNS));
+            }
+            if (codeList != null) return;                   // If the class was a code list, we are done.
+        }
+        /*
+         * At this point the classNS, className, isDeprecatedClass and properties field have been set.
+         * We can now loop over the XML elements, which may be on fields or on methods (public or private).
+         */
+        for (final Field field : type.getDeclaredFields()) {
+            Class<?> valueType = field.getType();
+            final boolean isCollection = Collection.class.isAssignableFrom(valueType);
+            if (isCollection) {
+                valueType = Classes.boundOfParameterizedProperty(field);
+            }
+            verify(field, field.getName(), valueType, isCollection);
+        }
+        for (final Method method : type.getDeclaredMethods()) {
+            Class<?> valueType = method.getReturnType();
+            final boolean isCollection = Collection.class.isAssignableFrom(valueType);
+            if (isCollection) {
+                valueType = Classes.boundOfParameterizedProperty(method);
+            }
+            verify(method, method.getName(), valueType, isCollection);
+        }
+    }
+
+    /**
+     * Validate a field or a method against the expected schema.
+     *
+     * @param  property      the field or method to validate.
+     * @param  javaName      the field name or method name in Java code.
+     * @param  valueType     the field type or the method return type, or element type in case of collection.
+     * @param  isCollection  whether the given value type is the element type of a collection.
+     */
+    private void verify(final AnnotatedElement property, final String javaName,
+            final Class<?> valueType, final boolean isCollection) throws SchemaException
+    {
+        final XmlElement element = property.getDeclaredAnnotation(XmlElement.class);
+        if (element == null) {
+            return;                               // No @XmlElement annotation - skip this property.
+        }
+        String name = element.name();
+        if (name.equals(AnnotationConsistencyCheck.DEFAULT)) {
+            name = javaName;
+        }
+        String ns = element.namespace();
+        if (ns.equals(AnnotationConsistencyCheck.DEFAULT)) {
+            ns = classNS;
+        }
+        if (namespaceIsUsed.put(ns, Boolean.TRUE) == null) {
+            throw new SchemaException(errorInClassMember(javaName)
+                    .append("Missing @XmlNs for namespace ").append(ns));
+        }
+        /*
+         * Remember that we need an adapter for this property, unless the method or field defines its own adapter.
+         * In theory we do not need to report missing adapter since JAXB performs its own check, but we do anyway
+         * because JAXB has default adapters for String, Double, Boolean, Date, etc. which do not match the way
+         * OGC/ISO marshal those elements.
+         */
+        if (!property.isAnnotationPresent(XmlJavaTypeAdapter.class) && (valueType != null)
+                && !valueType.getName().startsWith(Modules.CLASSNAME_PREFIX))
+        {
+            Class<?> c = valueType;
+            while (adapterIsUsed.replace(c, Boolean.TRUE) == null) {
+                final Class<?> parent = c.getSuperclass();
+                if (parent != null) {
+                    c = parent;
+                } else {
+                    final Class<?>[] p = c.getInterfaces();
+                    if (p.length == 0) {
+                        throw new SchemaException(errorInClassMember(javaName)
+                                .append("Missing @XmlJavaTypeAdapter for ").append(valueType));
+                    }
+                    c = p[0];   // Take only the first interface, which should be the "main" parent.
+                }
+            }
+        }
+        /*
+         * We do not verify fully the properties in legacy namespaces because we didn't loaded their schemas.
+         * However we verify at least that those properties are not declared as required.
+         */
+        if (LEGACY_NAMESPACES.contains(ns)) {
+            if (!isDeprecatedClass && element.required()) {
+                throw new SchemaException(errorInClassMember(javaName)
+                        .append("Legacy property should not be required."));
+            }
+        } else {
             /*
              * Property in non-legacy namespaces should not be deprecated. Verify also their namespace
              * and whether the property is required or optional, and whether it should be a collection.
              */
-            if (method.isAnnotationPresent(Deprecated.class)) {
-                throw new SchemaException(String.format("Unexpected deprecation status of %s.%s", className, name));
+            if (property.isAnnotationPresent(Deprecated.class)) {
+                throw new SchemaException(errorInClassMember(javaName)
+                        .append("Unexpected deprecation status."));
             }
             final SchemaCompliance.Info info = properties.get(name);
             if (info == null) {
-                throw new SchemaException(String.format("Unexpected XML element %s.%s", className, name));
+                throw new SchemaException(errorInClassMember(javaName)
+                        .append("Unexpected XML element: ").append(name));
             }
             if (info.namespace != null && !ns.equals(info.namespace)) {
-                throw new SchemaException(String.format("%s.%s is associated to namespace %s while %s was expected.",
-                                                        className, name, ns, info.namespace));
+                throw new SchemaException(errorInClassMember(javaName)
+                        .append("Declared namespace: ").append(ns).append(System.lineSeparator())
+                        .append("Expected namespace: ").append(info.namespace));
             }
             if (element.required() != info.isRequired) {
-                throw new SchemaException(String.format("Wrong requirement flag for %s.%s", className, name));
+                throw new SchemaException(errorInClassMember(javaName)
+                        .append("Expected @XmlElement(required = ").append(info.isRequired).append(')'));
             }
             /*
              * Following is a continuation of our check for cardinality, but also the beginning of the check
              * for return value type. The return type should be an interface with a UML annotation; we check
              * that this annotation contains the name of the expected type.
              */
-            Class<?> valueType = method.getReturnType();
-            if (Collection.class.isAssignableFrom(valueType)) {
-                valueType = Classes.boundOfParameterizedProperty(method);
+            if (isCollection) {
                 if (!info.isCollection) {
                     if (false)  // Temporarily disabled because require GeoAPI modifications.
-                    throw new SchemaException(String.format("%s.%s should be a singleton.", className, name));
+                    throw new SchemaException(errorInClassMember(javaName).append("Value should be a singleton."));
                 }
             } else if (info.isCollection) {
                 if (false)  // Temporarily disabled because require GeoAPI modifications.
-                throw new SchemaException(String.format("%s.%s should be a collection.", className, name));
+                throw new SchemaException(errorInClassMember(javaName).append("Value should be a collection."));
             }
             if (valueType != null) {
                 final UML valueUML = valueType.getAnnotation(UML.class);
@@ -284,8 +433,9 @@ final strictfp class PackageVerifier {
                     actual   = TYPE_EQUIVALENCES.getOrDefault(actual,   actual);
                     if (!expected.equals(actual)) {
                         if (false)  // Temporarily disabled because require GeoAPI modifications.
-                        throw new SchemaException(String.format("Type of %s.%s should be %s, but found %s.",
-                                                                className, name, expected, actual));
+                        throw new SchemaException(errorInClassMember(javaName)
+                                .append("Declared value type: ").append(actual).append(System.lineSeparator())
+                                .append("Expected value type: ").append(expected));
                     }
                 }
             }
@@ -297,19 +447,43 @@ final strictfp class PackageVerifier {
             if (valueInfo != null) {
                 final String valueNS = valueInfo.get(null).namespace;
                 if (namespaceIsUsed.put(valueNS, Boolean.TRUE) == null) {
-                    throw new SchemaException(String.format("Missing @XmlNs in %s package for namespace:%n%s", packageName, valueNS));
+                    throw new SchemaException(errorInClassMember(javaName)
+                            .append("Missing @XmlNs for property value namespace: ").append(valueNS));
                 }
             }
         }
     }
 
     /**
-     * Verifies if there is any unused namespace or adapters in package-info file.
+     * Returns a message beginning with "Error in …", to be completed by the caller.
+     * This is an helper method for exception messages.
+     *
+     * @param  name  the property name, or {@code null} if none.
+     */
+    private StringBuilder errorInClassMember(final String name) {
+        final StringBuilder builder = new StringBuilder(80).append("Error in ");
+        if (isDeprecatedClass) {
+            builder.append("legacy ");
+        }
+        builder.append(currentClass.getCanonicalName());
+        if (name != null) {
+            builder.append('.').append(name);
+        }
+        return builder.append(':').append(System.lineSeparator());
+    }
+
+    /**
+     * Verifies if there is any unused namespace or adapter in package-info file.
      */
     final void reportUnused() throws SchemaException {
         for (final Map.Entry<String,Boolean> entry : namespaceIsUsed.entrySet()) {
             if (!entry.getValue()) {
                 throw new SchemaException(String.format("Unused namespace in package %s:%n%s", packageName, entry.getKey()));
+            }
+        }
+        for (final Map.Entry<Class<?>,Boolean> entry : adapterIsUsed.entrySet()) {
+            if (!entry.getValue()) {
+                throw new SchemaException(String.format("Unused adapter in package %s for %s.", packageName, entry.getKey()));
             }
         }
     }
