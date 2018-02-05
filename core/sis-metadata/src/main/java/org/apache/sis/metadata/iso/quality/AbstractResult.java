@@ -40,7 +40,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
