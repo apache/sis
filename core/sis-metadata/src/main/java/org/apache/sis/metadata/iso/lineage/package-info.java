@@ -93,6 +93,7 @@
     @XmlJavaTypeAdapter(MD_RepresentativeFraction.class),
 
     // Java types, primitive types and basic OGC types handling
+    @XmlJavaTypeAdapter(GO_Real.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })

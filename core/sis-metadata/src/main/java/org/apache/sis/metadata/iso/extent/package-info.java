@@ -148,7 +148,6 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(EX_GeographicBoundingBox.class),
     @XmlJavaTypeAdapter(EX_GeographicExtent.class),
     @XmlJavaTypeAdapter(EX_TemporalExtent.class),
     @XmlJavaTypeAdapter(EX_VerticalExtent.class),
@@ -159,8 +158,8 @@
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Decimal.class), @XmlJavaTypeAdapter(type=double.class,  value=GO_Decimal.class)
+    @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(value=GO_Decimal.class, type=double.class)
 })
 package org.apache.sis.metadata.iso.extent;
 

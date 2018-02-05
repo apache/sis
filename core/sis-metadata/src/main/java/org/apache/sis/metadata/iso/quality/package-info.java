@@ -130,26 +130,22 @@
     @XmlJavaTypeAdapter(DQ_Element.class),
     @XmlJavaTypeAdapter(DQ_EvaluationMethodTypeCode.class),
     @XmlJavaTypeAdapter(DQ_Result.class),
-    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_Scope.class),
-    @XmlJavaTypeAdapter(MD_ScopeCode.class),
-    @XmlJavaTypeAdapter(MD_ScopeDescription.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentationTypeCode.class),
     @XmlJavaTypeAdapter(MX_DataFile.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(UnitAdapter.class),
-    @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_Record.class),
     @XmlJavaTypeAdapter(GO_RecordType.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(GO_Boolean.class)
 })
 package org.apache.sis.metadata.iso.quality;
 

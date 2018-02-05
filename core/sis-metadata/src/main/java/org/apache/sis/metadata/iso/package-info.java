@@ -107,7 +107,6 @@
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
-    @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
     @XmlJavaTypeAdapter(LegacyCharacterSet.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
@@ -115,7 +114,6 @@
     @XmlJavaTypeAdapter(MD_Distribution.class),
     @XmlJavaTypeAdapter(MD_ExtendedElementInformation.class),
     @XmlJavaTypeAdapter(MD_Identification.class),
-    @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
     @XmlJavaTypeAdapter(MD_MetadataExtensionInformation.class),
     @XmlJavaTypeAdapter(MD_MetadataScope.class),
@@ -131,8 +129,7 @@
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class)
+    @XmlJavaTypeAdapter(GO_Integer.class)
 })
 package org.apache.sis.metadata.iso;
 
