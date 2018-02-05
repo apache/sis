@@ -33,7 +33,7 @@ public final class SchemaException extends Exception {
      *
      * @param message  the detail message.
      */
-    SchemaException(final String message) {
+    public SchemaException(final String message) {
         super(message);
     }
 }

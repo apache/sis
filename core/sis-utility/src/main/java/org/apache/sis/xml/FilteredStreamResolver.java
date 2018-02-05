@@ -68,7 +68,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      * A key in {@link #NAMESPACES} sub-map meaning that the value (a namespace URI) is for the type instead
      * than for an attribute. Shall be the same string than the one used in {@value #FILENAME} resource file.
      */
-    private static final String TYPE_KEY = "<type>";
+    static final String TYPE_KEY = "<type>";
 
     /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
