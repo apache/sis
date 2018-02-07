@@ -23,7 +23,7 @@ import javax.xml.namespace.NamespaceContext;
 
 /**
  * Substitutes at (un)marshalling time the XML namespaces used by SIS by the namespaces used in the XML document.
- * This class is used internally by {@link FilteredStreamReader} and {@link FilteredStreamWriter} only.
+ * This class is used internally by {@link FilteredStreamReader} and {@link FilteredWriter} only.
  * Current {@code FilteredNamespaces} implementation takes care of XML prefixes only;
  * the stream reader and writer do the rest of the work.
  *
@@ -63,7 +63,7 @@ import javax.xml.namespace.NamespaceContext;
  */
 final class FilteredNamespaces implements NamespaceContext {
     /**
-     * The context to wrap, given by {@link FilteredStreamReader} or {@link FilteredStreamWriter}.
+     * The context to wrap, given by {@link FilteredStreamReader} or {@link FilteredWriter}.
      *
      * @see javax.xml.stream.XMLStreamReader#getNamespaceContext()
      * @see javax.xml.stream.XMLStreamWriter#getNamespaceContext()
@@ -131,7 +131,7 @@ final class FilteredNamespaces implements NamespaceContext {
      * Returns all prefixes for the given namespace.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")          // TODO: remove on JDK9
     public Iterator<String> getPrefixes(final String namespaceURI) {
         return context.getPrefixes(toImpl.getOrDefault(namespaceURI, namespaceURI));
     }

@@ -87,7 +87,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     private static final Map<String, Map<String,String>> NAMESPACES;
     static {
         final Map<String, Map<String,String>> m = new HashMap<>(250);
-        try (final LineNumberReader in = new LineNumberReader(new InputStreamReader(
+        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
                 FilteredStreamResolver.class.getResourceAsStream(FILENAME), "UTF-8")))
         {
             Map<String,String> attributes = null;   // All attributes for a given type.
