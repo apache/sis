@@ -151,6 +151,9 @@ public interface FeatureSet extends DataSet {
      * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
      * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
      *
+     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
+     * indicate this method should be implemented</p>
+     *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
      * @param  features features to insert in this {@code FeatureSet}.
@@ -163,6 +166,9 @@ public interface FeatureSet extends DataSet {
 
     /**
      * Removes all features from this {@code FeatureSet} which matches the given predicate.
+     *
+     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
+     * indicate this method should be implemented</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
@@ -186,6 +192,9 @@ public interface FeatureSet extends DataSet {
      *       in replacement of the previous feature (not necessarily at the same location).</li>
      *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
      * </ul>
+     *
+     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
+     * indicate this method should be implemented</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
