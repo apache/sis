@@ -33,7 +33,7 @@ import static org.opengis.util.CodeList.valueOf;
  * @since   1.0
  * @module
  */
-public class Capability extends CodeList<Capability> {
+public final class Capability extends CodeList<Capability> {
     /**
      * Serial number for compatibility with different versions.
      */
