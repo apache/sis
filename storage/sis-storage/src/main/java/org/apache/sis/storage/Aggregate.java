@@ -109,6 +109,9 @@ public interface Aggregate extends Resource {
      * then this {@code Aggregate} may throw an exception.
      * </div>
      *
+     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
+     * indicate this method should be implemented</p>
+     *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
@@ -123,6 +126,9 @@ public interface Aggregate extends Resource {
     /**
      * Removes a {@code Resource} from this {@code Aggregate}.
      * This operation is destructive: the {@link Resource} and it's related data will be removed.
+     *
+     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
+     * indicate this method should be implemented</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
