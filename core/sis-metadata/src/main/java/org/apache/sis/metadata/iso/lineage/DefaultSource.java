@@ -45,7 +45,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -487,7 +486,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @return processing level of the source data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "processedLevel", namespace = Namespaces.GMI)
+    @XmlElement(name = "processedLevel")
     public Identifier getProcessedLevel() {
         return processedLevel;
     }
@@ -508,7 +507,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @return distance between consistent parts of two adjacent pixels, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resolution", namespace = Namespaces.GMI)
+    @XmlElement(name = "resolution")
     public NominalResolution getResolution() {
         return resolution;
     }

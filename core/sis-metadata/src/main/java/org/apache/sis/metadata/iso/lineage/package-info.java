@@ -75,8 +75,7 @@
            xmlns = {
                 @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),      // Metadata for Resource Lineage
                 @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
-                @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

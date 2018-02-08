@@ -26,8 +26,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
@@ -63,13 +61,11 @@ import org.apache.sis.xml.Namespaces;
 @TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
-    "distributedComputingPlatform",     // Name used in ISO 19115:2014.
-    "DCP",                              // Former name of "distributedComputingPlatform" used in ISO 19115:2003.
+    "distributedComputingPlatforms",    // Singular form used in ISO 19115:2014, was "DCP" in ISO 19115:2003.
     "operationDescription",
     "invocationName",
-    "parameterList",                    // Actually "parameters" — was the spelling in ISO 19115:2003.
     "connectPoints",                    // Was after "parameters" in ISO 19115:2003.
-    "parameter",                        // New spelling in ISO 19115-3:2016.
+    "parameters",                       // Actually "parameter" in ISO 19115:2014, was "parameters" in ISO 19115:2003.
     "dependsOn"
 })
 @XmlRootElement(name = "SV_OperationMetadata", namespace = Namespaces.SRV)
@@ -211,7 +207,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return distributed computing platforms on which the operation has been implemented.
      */
     @Override
-    // @XmlElement at the end of this class.
+    @XmlElement(name = "distributedComputingPlatform", required = true)
     public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {
         return distributedComputingPlatforms = nonNullCollection(distributedComputingPlatforms, DistributedComputingPlatform.class);
     }
@@ -294,8 +290,8 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return the parameters that are required for this interface, or an empty collection if none.
      */
     @Override
+    @XmlElement(name = "parameter")
     @SuppressWarnings({"unchecked", "rawtypes"})
-    // @XmlElement at the end of this class.
     public Collection<ParameterDescriptor<?>> getParameters() {
         return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
@@ -328,57 +324,5 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      */
     public void setDependsOn(final List<? extends OperationMetadata> newValues) {
         dependsOn = writeList(newValues, dependsOn, OperationMetadata.class);
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Invoked by JAXB at both marshalling and unmarshalling time.
-     * This attribute has been added by ISO 19115:2014 standard.
-     * If (and only if) marshalling an older standard version, we omit this attribute.
-     */
-    @XmlElement(name = "distributedComputingPlatform", required = true)
-    private Collection<DistributedComputingPlatform> getDistributedComputingPlatform() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? getDistributedComputingPlatforms() : null;
-    }
-
-    /**
-     * Invoked by JAXB at both marshalling and unmarshalling time.
-     * This attribute was defined by ISO 19115:2003 standard.
-     * If (and only if) marshalling a more recent standard version, we omit this attribute.
-     */
-    @XmlElement(name = "DCP", namespace = LegacyNamespaces.SRV)
-    private Collection<DistributedComputingPlatform> getDCP() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? getDistributedComputingPlatforms() : null;
-    }
-
-    /**
-     * Invoked by JAXB for (un)marshalling using ISO 19115-3:2016 spelling.
-     * Note that 19115-1:2014 still use the "parameters" spelling
-     * (we seem to have an 19115-1 / ISO 19115-3 discrepancy here).
-     */
-    @XmlElement(name = "parameter")
-    private Collection<ParameterDescriptor<?>> getParameter() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? getParameters() : null;
-    }
-
-    /**
-     * Invoked by JAXB for (un)marshalling using legacy ISO 19115:2003 spelling.
-     */
-    @XmlElement(name = "parameters", namespace = LegacyNamespaces.SRV)
-    private Collection<ParameterDescriptor<?>> getParameterList() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? getParameters() : null;
     }
 }

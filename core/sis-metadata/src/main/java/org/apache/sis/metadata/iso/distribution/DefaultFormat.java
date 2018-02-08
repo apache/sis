@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
+import java.util.function.BiConsumer;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -34,9 +35,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Medium;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-
-// Branch-dependent imports
-import java.util.function.BiConsumer;
 
 
 /**

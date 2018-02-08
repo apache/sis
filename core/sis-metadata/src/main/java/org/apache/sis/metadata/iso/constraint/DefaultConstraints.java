@@ -63,10 +63,10 @@ import org.apache.sis.util.iso.Types;
 @XmlType(name = "MD_Constraints_Type", propOrder = {
     "useLimitations",
     "constraintApplicationScope",
-    "graphic",
-    "reference",
-    "releasability",
-    "responsibleParty"
+    "graphic",                      // New in ISO 19115:2014
+    "reference",                    // Ibid.
+    "releasability",                // Ibid.
+    "responsibleParty"              // Ibid.
 })
 @XmlRootElement(name = "MD_Constraints")
 @XmlSeeAlso({

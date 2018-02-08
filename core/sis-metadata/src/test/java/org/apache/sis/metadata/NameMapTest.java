@@ -35,7 +35,7 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -65,8 +65,8 @@ public final strictfp class NameMapTest extends TestCase {
 //          new SimpleEntry<>("collectiveTitle",       "collectiveTitle"),  -- deprecated as of ISO 19115:2014
             new SimpleEntry<>("ISBN",                  "ISBN"),
             new SimpleEntry<>("ISSN",                  "ISSN"),
-            new SimpleEntry<>("graphic",               "graphics"),
-            new SimpleEntry<>("onlineResource",        "onlineResources")
+            new SimpleEntry<>("onlineResource",        "onlineResources"),
+            new SimpleEntry<>("graphic",               "graphics")
         }, map.entrySet().toArray());
 
         assertEquals("alternateTitles", map.get("alternateTitle"));
