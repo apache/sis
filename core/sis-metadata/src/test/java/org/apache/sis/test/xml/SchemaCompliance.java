@@ -84,6 +84,7 @@ public final strictfp class SchemaCompliance {
         m.put("MI_CoverageDescription_Type",  "MD_CoverageDescription_Type");
         m.put("MI_Georectified_Type",         "MD_Georectified_Type");
         m.put("MI_Georeferenceable_Type",     "MD_Georeferenceable_Type");
+        m.put("LE_Source_Type",               "LI_Source_Type");
         m.put("LE_ProcessStep_Type",          "LI_ProcessStep_Type");
         m.put("AbstractMX_File_Type",         "MX_DataFile_Type");
         m.put("Abstract_DataQuality_Type",    "DQ_DataQuality_Type");

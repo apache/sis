@@ -91,8 +91,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "collectiveTitle",
     "ISBN",
     "ISSN",
-    "onlineResource",
-    "graphic"
+    "onlineResource",           // New in ISO 19115:2014
+    "graphic"                   // Ibid.
 })
 @XmlRootElement(name = "CI_Citation")
 public class DefaultCitation extends ISOMetadata implements Citation {

@@ -62,8 +62,8 @@ import org.apache.sis.xml.Namespaces;
     "fileName",
     "fileDescription",
     "fileType",
-    "linkage",
-    "imageConstraint"
+    "linkage",                  // New in ISO 19115:2014
+    "imageConstraint"           // Ibid.
 })
 @XmlRootElement(name = "MD_BrowseGraphic", namespace = Namespaces.MCC)
 public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {

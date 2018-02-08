@@ -38,7 +38,7 @@ import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.CoverageDescription;
-import org.opengis.metadata.identification.*; // Really using almost everything.
+import org.opengis.metadata.identification.*;                       // Really using almost everything.
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;

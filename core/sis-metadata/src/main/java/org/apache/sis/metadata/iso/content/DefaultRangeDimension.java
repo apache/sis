@@ -62,7 +62,7 @@ import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
     "sequenceIdentifier",
     "description",          // New in ISO 19115:2014
     "descriptor",           // Legacy ISO 19115:2003
-    "name"
+    "name"                  // New in ISO 19115:2014
 })
 @XmlRootElement(name = "MD_RangeDimension")
 @XmlSeeAlso(DefaultBand.class)

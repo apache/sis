@@ -72,8 +72,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "userDeterminedLimitations",
     "userContactInfo",
     "response",                     // New in ISO 19115:2014
-    "additionalDocumentations",     // New in ISO 19115:2014
-    "issues"                        // New in ISO 19115:2014. Actually "identifiedIssues"
+    "additionalDocumentations",     // Ibid.
+    "issues"                        // Ibid. Actually "identifiedIssues"
 })
 @XmlRootElement(name = "MD_Usage")
 public class DefaultUsage extends ISOMetadata implements Usage {
