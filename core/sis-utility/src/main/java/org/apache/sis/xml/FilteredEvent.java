@@ -79,10 +79,10 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
     @Override public Characters   asCharacters()            {throw new ClassCastException();}
     @Override public Location     getLocation()             {return event.getLocation();}
     @Override public QName        getSchemaType()           {return event.getSchemaType();}
-    final     public QName        getName()                 {return name;}
+    public    final  QName        getName()                 {return name;}
 
     /**
-     * Append the name to the given output.
+     * Appends the name to the given output.
      * This is a convenience method for {@link #write(Appendable)} implementations.
      */
     final Appendable name(final Appendable out) throws IOException {
