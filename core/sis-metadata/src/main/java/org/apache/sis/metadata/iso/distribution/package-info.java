@@ -80,7 +80,8 @@
                 @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
                 @XmlNs(prefix = "mdt", namespaceURI = Namespaces.MDT),      // Metadata for Data Transfer
                 @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+                @XmlNs(prefix = "gmx", namespaceURI = LegacyNamespaces.GMX)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

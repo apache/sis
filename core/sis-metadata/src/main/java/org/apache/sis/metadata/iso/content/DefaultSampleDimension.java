@@ -403,6 +403,12 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns type of transfer function to be used when scaling a physical value for a given element.
      *
+     * <div class="note"><b>Note on XML marshalling:</b>
+     * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
+     * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
+     * not only the measurements in the electromagnetic spectrum. However this property will not appear in XML
+     * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
+     *
      * @return type of transfer function, or {@code null}.
      */
     @Override
@@ -451,6 +457,12 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
+     *
+     * <div class="note"><b>Note on XML marshalling:</b>
+     * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
+     * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
+     * not only the measurements in the electromagnetic spectrum. However this property will not appear in XML
+     * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
      *
      * @return smallest distance between which separate points can be distinguished, or {@code null}.
      */

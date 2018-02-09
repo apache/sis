@@ -268,7 +268,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "fileFormat", namespace = LegacyNamespaces.GMD)
+    @XmlElement(name = "fileFormat", namespace = LegacyNamespaces.GMX)
     public Format getFileFormat() {
         return FilterByVersion.LEGACY_METADATA.accept() ? fileFormat : null;
     }

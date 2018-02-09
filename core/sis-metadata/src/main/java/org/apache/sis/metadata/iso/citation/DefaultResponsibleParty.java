@@ -344,12 +344,12 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
     @XmlElement(name = "contactInfo")
     public Contact getContactInfo() {
         final Collection<Party> parties = getParties();
-        if (parties != null) { // May be null on marshalling.
+        if (parties != null) {                                          // May be null on marshalling.
             for (final Party party : parties) {
                 final Collection<? extends Contact> contacts = party.getContactInfo();
-                if (contacts != null) { // May be null on marshalling.
+                if (contacts != null) {                                 // May be null on marshalling.
                     for (final Contact contact : contacts) {
-                        if (contact != null) { // Paranoiac check.
+                        if (contact != null) {                          // Paranoiac check.
                             return contact;
                         }
                     }

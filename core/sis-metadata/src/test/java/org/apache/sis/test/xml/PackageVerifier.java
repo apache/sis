@@ -58,7 +58,7 @@ final strictfp class PackageVerifier {
      * Classes or properties having a JAXB annotation in this namespace should be deprecated.
      */
     private static final Set<String> LEGACY_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.SRV)));
+            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.GMX, LegacyNamespaces.SRV)));
 
     /**
      * Types declared in JAXB annotations to be considered as equivalent to types in XML schemas.

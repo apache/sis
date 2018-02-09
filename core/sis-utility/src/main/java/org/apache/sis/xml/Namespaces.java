@@ -532,6 +532,7 @@ public final class Namespaces extends Static {
      */
     private static final String[] GENERIC_URLS = {
         "http://standards.iso.org/iso/19115/-3/",
+        "http://standards.iso.org/iso/19115/-2/",
         "http://standards.iso.org/iso/19157/-2/",
         "http://standards.iso.org/iso/19111/",
         "http://standards.iso.org/iso/19110/",
@@ -565,6 +566,8 @@ public final class Namespaces extends Static {
         p.put("http://www.opengis.net/citygml/building/1.0",            "build");
         p.put("http://www.opengis.net/citygml/cityfurniture/1.0",   "furniture");
         p.put("http://www.opengis.net/citygml/transportation/1.0",         "tr");
+        p.put("http://www.isotc211.org/2005/gco",                        "gco1");
+        p.put("http://www.isotc211.org/2005/srv",                        "srv1");
         p.put("http://www.purl.org/dc/elements/1.1/",                     "dc2");
         p.put("http://www.purl.org/dc/terms/",                           "dct2");
         p.put("http://purl.org/dc/terms/",                                "dct");

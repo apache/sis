@@ -1575,7 +1575,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the default locale for this record (used in ISO 19115-3 format).
      */
-    @SuppressWarnings("unused")
     private void setDefaultLocale(final Locale newValue) {
         setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
     }
@@ -1591,7 +1590,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the other locales for this record (used in ISO 19115-3 format).
      */
-    @SuppressWarnings("unused")
     private void setOtherLocales(final Collection<? extends Locale> newValues) {
         setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues));
     }
