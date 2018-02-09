@@ -18,8 +18,11 @@ package org.apache.sis.test.xml;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import javax.xml.XMLConstants;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchema;
@@ -27,20 +30,22 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.annotation.UML;
+import org.opengis.annotation.Classifier;
+import org.opengis.annotation.Stereotype;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
+import org.opengis.util.CodeList;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.junit.After;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import junit.framework.AssertionFailedError;
 
 
 /**
@@ -50,11 +55,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * <ul>
  *   <li>All implementation classes have {@link XmlRootElement} and {@link XmlType} annotations.</li>
  *   <li>The name declared in the {@code XmlType} annotations matches the
- *       {@link #getExpectedXmlTypeForElement expected value}.</li>
+ *       {@link #getExpectedXmlTypeName expected value}.</li>
  *   <li>The name declared in the {@code XmlRootElement} (classes) or {@link XmlElement} (methods)
  *       annotations matches the identifier declared in the {@link UML} annotation of the GeoAPI interfaces.
- *       The UML - XML name mapping can be changed by overriding {@link #getExpectedXmlElementName(Class, UML)} and
- *       {@link #getExpectedXmlElementName(Class, UML)}.</li>
+ *       The UML - XML name mapping can be changed by overriding {@link #getExpectedXmlElementName(Class, UML)}.</li>
  *   <li>The {@code XmlElement.required()} boolean is consistent with the UML {@linkplain Obligation obligation}.</li>
  *   <li>The namespace declared in the {@code XmlRootElement} or {@code XmlElement} annotations
  *       is not redundant with the {@link XmlSchema} annotation in the package.</li>
@@ -80,30 +84,37 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
+     * This array is specified at construction time. Each test iterates over
+     * all types in this array.
      */
     protected final Class<?>[] types;
 
     /**
      * The type being tested, or {@code null} if none. In case of test failure, this information
-     * will be used by {@link #printFailureLocation()} for formatting a message giving the name
-     * of class and method where the failure occurred.
+     * will be used by the {@code assert(…)} methods for formatting a message giving the name of
+     * class and method where the failure occurred.
+     *
+     * @see #fail(String)
      */
     protected String testingClass;
 
     /**
      * The method being tested, or {@code null} if none. In case of test failure, this information
-     * will be used by {@link #printFailureLocation()} for formatting a message giving the name of
+     * will be used by the {@code assert(…)} methods for formatting a message giving the name of
      * class and method where the failure occurred.
+     *
+     * @see #fail(String)
      */
     protected String testingMethod;
 
     /**
      * Creates a new test suite for the given types.
+     * The given sequence of types is assigned to the {@link #types} field.
      *
-     * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
+     * @param  types  the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected AnnotationConsistencyCheck(final Class<?>... types) {
-        this.types = types;
+        this.types = types;     // No need to clone — test classes are normally used only by SIS.
     }
 
     /**
@@ -175,8 +186,8 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * of the given class if {@code getWrapperFor(Class)} threw {@code ClassNotFoundException}.
      *
      * @param  type  the GeoAPI interface, {@link CodeList} or {@link Enum} type.
-     * @return the wrapper for the given type. {@link WrapperClass#type} is {@code null} if
-     *         no wrapper has been found.
+     * @return the wrapper for the given type.
+     *         {@link WrapperClass#type} is {@code null} if no wrapper has been found.
      * @throws ClassNotFoundException if a wrapper was expected but not found in the
      *         given type neither in any of the parent classes.
      */
@@ -198,66 +209,228 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Returns the XML type for an element of the given type. For example in ISO 19115-3,
-     * the XML type of {@code CI_Citation} is {@code CI_Citation_Type}.
-     *
-     * @param  type  the GeoAPI interface.
-     * @param  impl  the implementation class.
-     * @return the name of the XML type for the given element, or {@code null} if none.
-     *
-     * @see #testImplementationAnnotations()
-     */
-    protected abstract String getExpectedXmlTypeForElement(Class<?> type, Class<?> impl);
-
-    /**
-     * Returns the expected namespace for an element defined by the given specification.
-     * For example the namespace of any type defined by {@link Specification#ISO_19115}
-     * is {@code "http://www.isotc211.org/2005/gmd"}.
+     * Returns the beginning of expected namespace for an element defined by the given UML.
+     * For example the namespace of most types defined by {@link Specification#ISO_19115}
+     * starts with is {@code "http://standards.iso.org/iso/19115/-3/"}.
      *
      * <p>The default implementation recognizes the
-     * {@linkplain Specification#ISO_19115 ISO 19115},
+     * {@linkplain Specification#ISO_19115   ISO 19115},
      * {@linkplain Specification#ISO_19115_2 ISO 19115-2},
-     * {@linkplain Specification#ISO_19139 ISO 19139} and
-     * {@linkplain Specification#ISO_19108 ISO 19108} specifications.
+     * {@linkplain Specification#ISO_19139   ISO 19139} and
+     * {@linkplain Specification#ISO_19108   ISO 19108} specifications.
      * Subclasses shall override this method if they need to support more namespaces.</p>
+     *
+     * <p>Note that a more complete verification is done by {@link SchemaCompliance}.
+     * But the test done in this {@link AnnotationConsistencyCheck} class can be run without network access.</p>
      *
      * <p>The prefix for the given namespace will be fetched by
      * {@link Namespaces#getPreferredPrefix(String, String)}.</p>
      *
-     * @param  impl           the implementation class, {@link CodeList} or {@link Enum} type.
-     * @param  specification  the specification that define the type, or {@code null} if unspecified.
+     * @param  impl  the implementation class, {@link CodeList} or {@link Enum} type.
+     * @param  uml   the UML associated to the class or the method.
      * @return the expected namespace.
-     * @throws IllegalArgumentException if the given specification is unknown to this method.
+     * @throws IllegalArgumentException if the given UML is unknown to this method.
      */
-    protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
-        switch (specification) {
-            case ISO_19115:   return Namespaces.GMD;
-            case ISO_19115_2: return Namespaces.GMI;
-            case ISO_19139:   return Namespaces.GMX;
-            case ISO_19108:   return Namespaces.GMD;
-            default: throw new IllegalArgumentException(specification.toString());
+    @SuppressWarnings("deprecation")
+    protected String getExpectedNamespaceStart(final Class<?> impl, final UML uml) {
+        final String identifier = uml.identifier();
+        switch (identifier) {
+            case "SV_CoupledResource":
+            case "SV_OperationMetadata":
+            case "SV_OperationChainMetadata":
+            case "SV_ServiceIdentification": {              // Historical reasons (other standard integrated into ISO 19115)
+                assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
+                assertEquals("Specification version should be latest ISO 19115.", (short) 0, uml.version());
+                return Namespaces.SRV;
+            }
+            case "DQ_TemporalAccuracy":                     // Renamed DQ_TemporalQuality
+            case "DQ_NonQuantitativeAttributeAccuracy": {   // Renamed DQ_NonQuantitativeAttributeCorrectness
+                assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
+                assertEquals("Specification version should be legacy ISO 19115.", (short) 2003, uml.version());
+                return LegacyNamespaces.GMD;
+            }
+            case "role": {
+                if (org.opengis.metadata.citation.ResponsibleParty.class.isAssignableFrom(impl)) {
+                    return LegacyNamespaces.GMD;            // Override a method defined in Responsibility
+                }
+                break;
+            }
+            case "lineage": {
+                if (org.opengis.metadata.quality.DataQuality.class.isAssignableFrom(impl)) {
+                    return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
+                }
+                break;
+            }
+            case "nameOfMeasure":
+            case "measureIdentification":
+            case "measureDescription":
+            case "evaluationMethodType":
+            case "evaluationMethodDescription":
+            case "evaluationProcedure": {
+                if (org.opengis.metadata.quality.Element.class.isAssignableFrom(impl)) {
+                    return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
+                }
+                break;
+            }
+            case "dateTime": {
+                if (org.opengis.metadata.quality.Element.class.isAssignableFrom(impl)) {
+                    return Namespaces.DQC;
+                }
+                break;
+            }
+            case "fileFormat": {
+                if (org.opengis.metadata.distribution.DataFile.class.isAssignableFrom(impl)) {
+                    return LegacyNamespaces.GMX;            // Deprecated method (removed from ISO 19115-3:2016)
+                }
+                break;
+            }
+        }
+        /*
+         * GeoAPI has not yet been upgraded to ISO 19157. Interfaces in the "org.opengis.metadata.quality"
+         * package are still defined according the old specification. Those types have the "DQ_" or "QE_"
+         * prefix. This issue applies also to properties (starting with a lower case).
+         */
+        if (identifier.startsWith("DQ_")) {
+            assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
+            assertEquals("Specification version should be legacy ISO 19115.", (short) 2003, uml.version());
+            return Namespaces.MDQ;
+        }
+        if (identifier.startsWith("QE_")) {
+            assertEquals("Unexpected @Specification value.", Specification.ISO_19115_2, uml.specification());
+            switch (uml.version()) {
+                case 0:    return Namespaces.MDQ;
+                case 2009: return LegacyNamespaces.GMI;
+                default: fail("Unexpected version number in " + uml);
+            }
+        }
+        if (org.opengis.metadata.quality.DataQuality.class.isAssignableFrom(impl) ||    // For properties in those types.
+            org.opengis.metadata.quality.Element.class.isAssignableFrom(impl) ||
+            org.opengis.metadata.quality.Result.class.isAssignableFrom(impl))
+        {
+            return Namespaces.MDQ;
+        }
+        /*
+         * General cases (after we processed all the special cases)
+         * based on which standard defines the type or property.
+         */
+        if (uml.version() != 0) {
+            switch (uml.specification()) {
+                case ISO_19115:   return LegacyNamespaces.GMD;
+                case ISO_19115_2: return LegacyNamespaces.GMI;
+            }
+        }
+        switch (uml.specification()) {
+            case ISO_19115:
+            case ISO_19115_2:
+            case ISO_19115_3: return Schemas.METADATA_ROOT;
+            case ISO_19139:   return LegacyNamespaces.GMX;
+            case ISO_19108:   return LegacyNamespaces.GMD;
+            default: throw new IllegalArgumentException(uml.toString());
         }
     }
 
     /**
-     * Returns the name of the XML element for the given UML element.
-     * This method is invoked in two situations:
+     * Returns the name of the XML type for an interface described by the given UML.
+     * For example in ISO 19115-3, the XML type of {@code CI_Citation} is {@code CI_Citation_Type}.
+     * The default implementation returns {@link UML#identifier()}, possibly with {@code "Abstract"} prepended,
+     * and unconditionally with {@code "_Type"} appended.
+     * Subclasses shall override this method when mismatches are known to exist between the UML and XML type names.
      *
-     * <ul>
-     *   <li>For the root XML element name of an interface, in which case {@code enclosing} is {@code null}.</li>
-     *   <li>For the XML element name of a property (field or method) defined by an interface,
-     *       in which case {@code enclosing} is the interface containing the property.</li>
-     * </ul>
+     * @param  stereotype  the stereotype of the interface, or {@code null} if none.
+     * @param  uml         the UML of the interface for which to get the corresponding XML type name.
+     * @return the name of the XML type for the given element, or {@code null} if none.
      *
-     * The default implementation returns {@link UML#identifier()}. Subclasses shall override this method
-     * when mismatches are known to exist between the UML and XML element names.
+     * @see #testImplementationAnnotations()
+     */
+    protected String getExpectedXmlTypeName(final Stereotype stereotype, final UML uml) {
+        final String rootName = uml.identifier();
+        final StringBuilder buffer = new StringBuilder(rootName.length() + 13);
+        if (Stereotype.ABSTRACT.equals(stereotype)) {
+            buffer.append("Abstract");
+        }
+        return buffer.append(rootName).append("_Type").toString();
+    }
+
+    /**
+     * Returns the name of the XML root element for an interface described by the given UML.
+     * The default implementation returns {@link UML#identifier()}, possibly with {@code "Abstract"} prepended.
+     * Subclasses shall override this method when mismatches are known to exist between the UML and XML element names.
+     *
+     * @param  stereotype  the stereotype of the interface, or {@code null} if none.
+     * @param  uml         the UML of the interface for which to get the corresponding XML root element name.
+     * @return the name of the XML root element for the given UML.
+     *
+     * @see #testImplementationAnnotations()
+     */
+    protected String getExpectedXmlRootElementName(final Stereotype stereotype, final UML uml) {
+        String name = uml.identifier();
+        if (Stereotype.ABSTRACT.equals(stereotype)) {
+            name = "Abstract".concat(name);
+        }
+        return name;
+    }
+
+    /**
+     * Returns the name of the XML element for a method described by the given UML.
+     * This method is invoked for a property (field or method) defined by an interface.
+     * The {@code enclosing} argument is the interface containing the property.
+     *
+     * <p>The default implementation returns {@link UML#identifier()}. Subclasses shall override this method
+     * when mismatches are known to exist between the UML and XML element names.</p>
      *
      * @param  enclosing  the GeoAPI interface which contains the property, or {@code null} if none.
      * @param  uml        the UML element for which to get the corresponding XML element name.
      * @return the XML element name for the given UML element.
+     *
+     * @see #testMethodAnnotations()
      */
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
-        return uml.identifier();
+        String name = uml.identifier();
+        switch (name) {
+            case "stepDateTime": {
+                if (org.opengis.metadata.lineage.ProcessStep.class.isAssignableFrom(enclosing)) {
+                    name = "dateTime";
+                }
+                break;
+            }
+            case "satisfiedPlan": {
+                if (org.opengis.metadata.acquisition.Requirement.class.isAssignableFrom(enclosing)) {
+                    name = "satisifiedPlan";                // Mispelling in ISO 19115-3:2016
+                }
+                break;
+            }
+            case "meteorologicalConditions": {
+                if (org.opengis.metadata.acquisition.EnvironmentalRecord.class.isAssignableFrom(enclosing)) {
+                    name = "meterologicalConditions";       // Mispelling in ISO 19115-3:2016
+                }
+                break;
+            }
+            case "detectedPolarization": {
+                if (org.opengis.metadata.content.Band.class.isAssignableFrom(enclosing)) {
+                    name = "detectedPolarisation";          // Spelling change in XSD files
+                }
+                break;
+            }
+            case "transmittedPolarization": {
+                if (org.opengis.metadata.content.Band.class.isAssignableFrom(enclosing)) {
+                    name = "transmittedPolarisation";       // Spelling change in XSD files
+                }
+                break;
+            }
+            case "featureType": {
+                if (org.opengis.metadata.distribution.DataFile.class.isAssignableFrom(enclosing)) {
+                    name = "featureTypes";                  // Spelling change in XSD files
+                }
+                break;
+            }
+            case "valueType": {
+                if (org.opengis.metadata.quality.Result.class.isAssignableFrom(enclosing)) {
+                    return "valueRecordType";
+                }
+                break;
+            }
+        }
+        return name;
     }
 
     /**
@@ -267,11 +440,11 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * <ul>
      *   <li>The namespace is not redundant with the package-level {@link XmlSchema} namespace.</li>
      *   <li>The namespace is declared in a package-level {@link XmlNs} annotation.</li>
-     *   <li>The namespace is equals to the {@linkplain #getExpectedNamespace expected namespace}.</li>
+     *   <li>The namespace starts with the {@linkplain #getExpectedNamespaceStart expected namespace}.</li>
      * </ul>
      *
      * @param  namespace  the namespace given by the {@code @XmlRootElement} or {@code @XmlElement} annotation.
-     * @param  impl       the implementation or wrapper class for which to get the package namespace.
+     * @param  impl       the implementation or wrapper class from which to get the package namespace.
      * @param  uml        the {@code @UML} annotation, or {@code null} if none.
      * @return the actual namespace (same as {@code namespace} if it was not {@value #DEFAULT}).
      */
@@ -283,32 +456,45 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
          * given namespace is not redundant with that package-level namespace.
          */
         final XmlSchema schema = impl.getPackage().getAnnotation(XmlSchema.class);
-        assertNotNull("Missing @XmlSchema package annotation.", schema);
-        final String schemaNamespace = schema.namespace();
-        assertFalse("Missing namespace in @XmlSchema package annotation.", schemaNamespace.trim().isEmpty());
-        assertFalse("Namespace declaration is redundant with @XmlSchema.", namespace.equals(schemaNamespace));
+        assertNotNull("Missing @XmlSchema annotation in package-info.", schema);
+        final String schemaNamespace = schema.namespace();      // May be XMLConstants.NULL_NS_URI
+        assertFalse("Namespace declaration is redundant with package-info @XmlSchema.", namespace.equals(schemaNamespace));
+        /*
+         * Resolve the namespace given in argument: using the class-level namespace if needed,
+         * or the package-level namespace if the class-level one is not defined.
+         */
+        if (DEFAULT.equals(namespace)) {
+            final XmlType type = impl.getAnnotation(XmlType.class);
+            if (type == null || DEFAULT.equals(namespace = type.namespace())) {
+                namespace = schemaNamespace;
+            }
+            assertFalse("No namespace defined.", XMLConstants.NULL_NS_URI.equals(namespace));
+        }
         /*
          * Check that the namespace is declared in the package-level @XmlNs annotation.
          * We do not verify the validity of those @XmlNs annotations, since this is the
          * purpose of the 'testPackageAnnotations()' method.
          */
-        if (!DEFAULT.equals(namespace)) {
-            boolean found = false;
-            for (final XmlNs ns : schema.xmlns()) {
-                if (namespace.equals(ns.namespaceURI())) {
-                    found = true;
-                    break;
-                }
+        boolean found = false;
+        for (final XmlNs ns : schema.xmlns()) {
+            if (namespace.equals(ns.namespaceURI())) {
+                found = true;
+                break;
             }
-            if (!found) {
-                fail("Namespace for " + impl + " is not declared in the package @XmlSchema.xmlns().");
-            }
-        } else {
-            namespace = schemaNamespace;
         }
+        if (!found) {
+            fail("Namespace for " + impl + " is not declared in the package @XmlSchema.xmlns().");
+        }
+        /*
+         * Check that the namespace is one of the namespaces controlled by the specification.
+         * We check only the namespace start, since some specifications define many namespaces
+         * under a common root (e.g. "http://standards.iso.org/iso/19115/-3/").
+         */
         if (uml != null) {
-            assertEquals("Wrong namespace for the ISO specification.",
-                    getExpectedNamespace(impl, uml.specification()), namespace);
+            final String expected = getExpectedNamespaceStart(impl, uml);
+            if (!namespace.startsWith(expected)) {
+                fail("Expected " + expected + "… namespace for that ISO specification but got " + namespace);
+            }
         }
         return namespace;
     }
@@ -355,50 +541,40 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Gets the {@link XmlElement} annotation for the no-argument method of the given name
-     * in the given implementation class. If the method is not annotated, then fallback on
-     * a field having the same name than the UML identifier. If no such field is found or
-     * is annotated, returns {@code null}.
-     *
-     * @param  impl    the implementation class.
-     * @param  method  the name of the getter method to search for.
-     * @param  uml     the UML annotation on the GeoAPI interface, or {@code null} if none.
-     * @return the {@code XmlElement}, or {@code null} if none.
-     */
-    private static XmlElement getXmlElement(final Class<?> impl, final String method, final UML uml) {
-        XmlElement element = null;
-        try {
-            element = impl.getMethod(method, (Class<?>[]) null).getAnnotation(XmlElement.class);
-            if (element == null && uml != null) {
-                element = impl.getDeclaredField(uml.identifier()).getAnnotation(XmlElement.class);
-            }
-        } catch (NoSuchMethodException ex) {
-            fail("Missing implementation: " + ex);
-        } catch (NoSuchFieldException ex) {
-            // Ignore - we will consider that there is no annotation.
-        }
-        return element;
-    }
-
-    /**
-     * Returns {@code true} if the given method should be ignored.
-     * This method returns {@code true} for some standard methods from the JDK.
-     */
-    private static boolean isIgnored(final Method method) {
-        final String name = method.getName();
-        return name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue");
-    }
-
-    /**
-     * Returns {@code true} if the given method is a non-standard extension.
-     * If {@code true}, then {@code method} does not need to have UML annotation.
+     * Returns {@code true} if the given method should be ignored,
+     * either because it is a standard method from the JDK or because it is a non-standard extension.
+     * If {@code true}, then {@code method} does not need to have {@link UML} or {@link XmlElement} annotation.
      *
      * @param  method  the method to verify.
-     * @return {@code true} if the given method is an extension, or {@code false} otherwise.
+     * @return {@code true} if the given method should be ignored, or {@code false} otherwise.
      *
      * @since 0.5
      */
-    protected boolean isExtension(final Method method) {
+    protected boolean isIgnored(final Method method) {
+        switch (method.getName()) {
+            /*
+             * GeoAPI extension for inter-operability with JDK API, not defined in ISO specification.
+             */
+            case "getCurrency": {
+                return org.opengis.metadata.distribution.StandardOrderProcess.class.isAssignableFrom(method.getDeclaringClass());
+            }
+            /*
+             * ISO 19115-2 properties moved from MI_Band to MD_SampleDimension by GeoAPI.
+             * Must be taken in account only when checking the Band subtype.
+             */
+            case "getNominalSpatialResolution":
+            case "getTransferFunctionType": {
+                final Class<?> dc = method.getDeclaringClass();
+                return org.opengis.metadata.content.SampleDimension.class.isAssignableFrom(dc)
+                        && !org.opengis.metadata.content.Band.class.isAssignableFrom(dc);
+            }
+            /*
+             * Standard Java methods overridden in some GeoAPI interfaces for Javadoc purposes.
+             */
+            case "equals":
+            case "hashCode":
+            case "doubleValue": return true;
+        }
         return false;
     }
 
@@ -409,7 +585,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * <ul>
      *   <li>All elements in {@link #types} except code lists are interfaces.</li>
      *   <li>All elements in {@code types} have a {@link UML} annotation.</li>
-     *   <li>All methods expect deprecated methods and methods overriding JDK methods
+     *   <li>All methods except deprecated methods and methods overriding JDK methods
      *       have a {@link UML} annotation.</li>
      * </ul>
      */
@@ -423,7 +599,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 for (final Method method : type.getDeclaredMethods()) {
                     testingMethod = method.getName();
-                    if (!isIgnored(method) && !isExtension(method)) {
+                    if (!isIgnored(method)) {
                         uml = method.getAnnotation(UML.class);
                         if (!method.isAnnotationPresent(Deprecated.class)) {
                             assertNotNull("Missing @UML annotation.", uml);
@@ -432,11 +608,10 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 }
             }
         }
-        done();
     }
 
     /**
-     * Tests the annotations in the {@code package-info} files of SIS implementations of the
+     * Tests the annotations in the {@code package-info} files of Apache SIS implementations of the
      * interfaces enumerated in the {@code #types} array. More specifically this method tests that:
      *
      * <ul>
@@ -466,7 +641,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 assertEquals("Unexpected namespace prefix.", Namespaces.getPreferredPrefix(namespace, null), ns.prefix());
             }
         }
-        done();
     }
 
     /**
@@ -476,9 +650,10 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * <ul>
      *   <li>All implementation classes have {@link XmlRootElement} and {@link XmlType} annotations.</li>
      *   <li>The name declared in the {@code XmlType} annotations matches the
-     *       {@link #getExpectedXmlTypeForElement expected value}.</li>
+     *       {@link #getExpectedXmlTypeName expected value}.</li>
      *   <li>The name declared in the {@code XmlRootElement} annotations matches the identifier declared
-     *       in the {@link UML} annotation of the GeoAPI interfaces.</li>
+     *       in the {@link UML} annotation of the GeoAPI interfaces, with {@code "Abstract"} prefix added
+     *       if needed.</li>
      *   <li>The namespace declared in the {@code XmlRootElement} annotations is not redundant with
      *       the {@link XmlSchema} annotation in the package.</li>
      * </ul>
@@ -512,8 +687,13 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             final XmlRootElement root = impl.getAnnotation(XmlRootElement.class);
             assertNotNull("Missing @XmlRootElement annotation.", root);
             final UML uml = type.getAnnotation(UML.class);
+            Stereotype stereotype = null;
             if (uml != null) {
-                assertEquals("Wrong @XmlRootElement.name().", getExpectedXmlElementName(null, uml), root.name());
+                final Classifier c = type.getAnnotation(Classifier.class);
+                if (c != null) {
+                    stereotype = c.value();
+                }
+                assertEquals("Wrong @XmlRootElement.name().", getExpectedXmlRootElementName(stereotype, uml), root.name());
             }
             /*
              * Check that the namespace is the expected one (according subclass)
@@ -525,13 +705,12 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
              */
             final XmlType xmlType = impl.getAnnotation(XmlType.class);
             assertNotNull("Missing @XmlType annotation.", xmlType);
-            String expected = getExpectedXmlTypeForElement(type, impl);
+            String expected = getExpectedXmlTypeName(stereotype, uml);
             if (expected == null) {
                 expected = DEFAULT;
             }
             assertEquals("Wrong @XmlType.name().", expected, xmlType.name());
         }
-        done();
     }
 
     /**
@@ -569,16 +748,50 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 }
                 testingMethod = method.getName();
                 final UML uml = method.getAnnotation(UML.class);
-                final XmlElement element = getXmlElement(impl, testingMethod, uml);
-                /*
-                 * Just display the missing @XmlElement annotation for the method, since we know
-                 * that some elements are not yet implemented (and consequently can not yet be
-                 * annotated).
-                 */
-                if (element == null) {
-                    // Note: lines with the "[WARNING]" string are highlighted by Jenkins.
-                    warning("[WARNING] Missing @XmlElement annotation for ");
+                XmlElement element;
+                try {
+                    element = impl.getMethod(testingMethod).getAnnotation(XmlElement.class);
+                } catch (NoSuchMethodException e) {
+                    fail(e.toString());
                     continue;
+                }
+                if (element == null) {
+                    if (uml == null) {
+                        continue;
+                    }
+                    /*
+                     * If the method does not have a @XmlElement annotation, search for a private method having the
+                     * @XmlElement annotation with expected name. This situation happens when metadata object needs
+                     * to perform some extra step at XML marshalling time only (not when using directly the API),
+                     * for example verifying whether we are marshalling ISO 19139:2007 or ISO 19115-3:2016.
+                     */
+                    boolean wasPublic = false;
+                    final String identifier = uml.identifier();
+                    for (final Method pm : impl.getDeclaredMethods()) {
+                        final XmlElement e = pm.getAnnotation(XmlElement.class);
+                        if (e != null && identifier.equals(e.name())) {
+                            final boolean isPublic = Modifier.isPublic(pm.getModifiers());
+                            if (element != null) {
+                                if (isPublic & !wasPublic) continue;            // Give precedence to private methods.
+                                if (isPublic == wasPublic) {
+                                    fail("Duplicated @XmlElement for \"" + identifier + "\".");
+                                }
+                            }
+                            wasPublic = isPublic;
+                            element = e;
+                        }
+                    }
+                    /*
+                     * If a few case the annotation is not on a getter method, but directly on the field.
+                     * The main case is the "pass" field in DefaultConformanceResult.
+                     */
+                    if (element == null) try {
+                        element = impl.getDeclaredField(identifier).getAnnotation(XmlElement.class);
+                        assertNotNull("Missing @XmlElement annotation.", element);
+                    } catch (NoSuchFieldException e) {
+                        fail("Missing @XmlElement annotation.");
+                        continue;   // As a metter of principle (should never reach this point).
+                    }
                 }
                 /*
                  * The UML annotation is mandatory in the default implementation of the
@@ -588,7 +801,9 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                  */
                 if (uml != null) {
                     assertEquals("Wrong @XmlElement.name().", getExpectedXmlElementName(type, uml), element.name());
-                    assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
+                    if (!method.isAnnotationPresent(Deprecated.class) && uml.version() == 0) {
+                        assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
+                    }
                 }
                 /*
                  * Check that the namespace is the expected one (according subclass)
@@ -597,7 +812,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 assertExpectedNamespace(element.namespace(), impl, uml);
             }
         }
-        done();
     }
 
     /**
@@ -661,69 +875,136 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                              "getter method - not in a parent class, to avoid issues with JAXB.",
                              getter.getDeclaringClass(), setter.getDeclaringClass());
                 assertEquals("The setter parameter type shall be the same than the getter return type.",
-                             getter.getReturnType(), getSingleton(setter.getParameterTypes()));
+                             getter.getReturnType(), TestUtilities.getSingleton(setter.getParameterTypes()));
                 element = getter.getAnnotation(XmlElement.class);
                 assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
                              getter.isAnnotationPresent(XmlElementRef.class) ||
                              getter.isAnnotationPresent(XmlElementRefs.class));
             }
             /*
-             * If the annotation is @XmlElement, ensure that XmlElement.name() is equals to
-             * the UML identifier. Then verify that the
+             * If the annotation is @XmlElement, ensure that XmlElement.name() is equals
+             * to the UML identifier. Then verify that the namespace is the expected one.
              */
             if (element != null) {
                 assertFalse("Expected @XmlElementRef.", wrapper.isInherited);
                 final UML uml = type.getAnnotation(UML.class);
-                if (uml != null) { // 'assertNotNull' is 'testInterfaceAnnotations()' job.
+                if (uml != null) {                  // 'assertNotNull' is 'testInterfaceAnnotations()' job.
                     assertEquals("Wrong @XmlElement.", uml.identifier(), element.name());
                 }
                 final String namespace = assertExpectedNamespace(element.namespace(), wrapper.type, uml);
                 if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                     final String expected = getNamespace(getImplementation(type));
-                    if (expected != null) { // 'assertNotNull' is 'testImplementationAnnotations()' job.
+                    if (expected != null) {         // 'assertNotNull' is 'testImplementationAnnotations()' job.
                         assertEquals("Inconsistent @XmlRootElement namespace.", expected, namespace);
                     }
                 }
             }
         }
-        done();
     }
 
     /**
-     * Shall be invoked after every successful test in order
-     * to disable the report of failed class or method.
+     * Prepends the {@link #testingClass} and {@link #testingMethod} before the given message.
+     * This is used by {@code assertFoo(…)} methods in case of failure.
      */
-    protected final void done() {
-        testingClass  = null;
-        testingMethod = null;
-    }
-
-    /**
-     * Prints the given message followed by the name of the class being tested.
-     */
-    private void warning(String message) {
+    private String location(String message) {
         if (testingClass != null) {
-            final StringBuilder buffer = new StringBuilder(message);
-            buffer.append(testingClass);
+            final StringBuilder buffer = new StringBuilder(100).append("Error with ").append(testingClass);
             if (testingMethod != null) {
                 buffer.append('.').append(testingMethod).append("()");
             }
-            message = buffer.toString();
+            message = buffer.append(": ").append(message).toString();
         }
-        out.println(message);
+        return message;
     }
 
     /**
-     * If a test failed, reports the class and method names were the failure occurred.
-     * The message will be written in the {@link #out} printer.
+     * Unconditionally fails the test. This method is equivalent to JUnit {@link org.junit.Assert#fail(String)}
+     * except that the error message contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message  the failure message.
      *
      * @see #testingClass
      * @see #testingMethod
      */
-    @After
-    public final void printFailureLocation() {
-        if (testingClass != null) {
-            warning("TEST FAILURE: ");
+    protected final void fail(final String message) {
+        throw new AssertionFailedError(location(message));
+    }
+
+    /**
+     * Fails the test if the given condition is false. This method is equivalent to JUnit
+     * {@link org.junit.Assert#assertTrue(String, boolean)} except that the error message
+     * contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message    the message in case of failure.
+     * @param  condition  the condition that must be {@code true}.
+     */
+    protected final void assertTrue(final String message, final boolean condition) {
+        if (!condition) throw new AssertionFailedError(location(message));
+    }
+
+    /**
+     * Fails the test if the given condition is true. This method is equivalent to JUnit
+     * {@link org.junit.Assert#assertFalse(String, boolean)} except that the error message
+     * contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message    the message in case of failure.
+     * @param  condition  the condition that must be {@code false}.
+     */
+    protected final void assertFalse(final String message, final boolean condition) {
+        if (condition) throw new AssertionFailedError(location(message));
+    }
+
+    /**
+     * Fails the test if the given object is null. This method is equivalent to JUnit
+     * {@link org.junit.Assert#assertNotNull(String, Object)} except that the error
+     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message  the message in case of failure.
+     * @param  obj      the object that must be non-null.
+     */
+    protected final void assertNotNull(final String message, final Object obj) {
+        if (obj == null) throw new AssertionFailedError(location(message));
+    }
+
+    /**
+     * Fails the test if the given objects are the same. This method is equivalent to JUnit
+     * {@link org.junit.Assert#assertNotSame(String, Object, Object)} except that the error
+     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message  the message in case of failure.
+     * @param  o1       the first object (may be null).
+     * @param  o2       the second object (may be null).
+     */
+    protected final void assertNotSame(final String message, final Object o1, final Object o2) {
+        if (o1 == o2) throw new AssertionFailedError(location(message));
+    }
+
+    /**
+     * Fails the test if the given objects are not the same. This method is equivalent to JUnit
+     * {@link org.junit.Assert#assertSame(String, Object, Object)} except that the error message
+     * contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message   the message in case of failure.
+     * @param  expected  the first object (may be null).
+     * @param  actual    the second object (may be null).
+     */
+    protected final void assertSame(final String message, final Object expected, final Object actual) {
+        if (expected != actual) throw new AssertionFailedError(location(message));
+    }
+
+    /**
+     * Fails the test if the given objects are not equal. This method is equivalent to JUnit
+     * {@link org.junit.Assert#assertEquals(String, Object, Object)} except that the error
+     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     *
+     * @param  message   the message in case of failure.
+     * @param  expected  the first object (may be null).
+     * @param  actual    the second object (may be null).
+     */
+    protected final void assertEquals(final String message, final Object expected, final Object actual) {
+        if (!Objects.equals(expected, actual)) {
+            throw new AssertionFailedError(location(message) + System.lineSeparator()
+                        + "Expected " + expected + " but got " + actual);
         }
     }
 }

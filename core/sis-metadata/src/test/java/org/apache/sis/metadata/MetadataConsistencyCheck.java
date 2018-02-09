@@ -34,8 +34,6 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
-
 
 /**
  * Base class for tests done on metadata objects using reflection. This base class tests JAXB annotations
@@ -185,7 +183,9 @@ public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsis
 
     /**
      * For every properties in every non-{@code Codelist} types listed in the {@link #types} array,
-     * tests the property values. This method performs the tests documented in class javadoc.
+     * tests the property values. This method verifies that all {@link AbstractMetadata} instances
+     * are initially {@linkplain AbstractMetadata#isEmpty() empty}, all getter methods return a null
+     * singleton or an empty collection, and tests setting a random value.
      */
     @Test
     public void testPropertyValues() {
@@ -194,12 +194,11 @@ public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsis
             if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
-                    assertTrue(type.isAssignableFrom(impl));
+                    assertTrue("Not an implementation of expected interface.", type.isAssignableFrom(impl));
                     testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl, impl));
                 }
             }
         }
-        done();
     }
 
     /**
@@ -254,7 +253,7 @@ public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsis
             if (value == null) {
                 assertFalse("Null values are not allowed to be collections.", isCollection);
             } else {
-                assertInstanceOf("Wrong property type.", propertyType, value);
+                assertTrue("Wrong property type.", propertyType.isInstance(value));
                 if (value instanceof CheckedContainer<?>) {
                     assertTrue("Wrong element type in collection.",
                             elementType.isAssignableFrom(((CheckedContainer<?>) value).getElementType()));
@@ -272,6 +271,10 @@ public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsis
                 fail("Non writable property: " + accessor + '.' + property);
             }
             if (isWritable) {
+                if (Date.class.isAssignableFrom(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE))) {
+                    // Dates requires sis-temporal module, which is not available for sis-metadata.
+                    continue;
+                }
                 final Object newValue = sampleValueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);

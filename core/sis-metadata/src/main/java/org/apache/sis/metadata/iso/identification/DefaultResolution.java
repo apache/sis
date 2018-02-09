@@ -327,6 +327,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
+    @XmlElement(name = "angularDistance")
     @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getAngularDistance() {
         return (property == ANGULAR) ? (Double) value : null;

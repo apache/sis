@@ -346,7 +346,10 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the smallest distance between which separate points can be distinguished,
+     * as specified in instrument design.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     @ValueRange(minimum = 0, isMinIncluded = false)
@@ -364,7 +367,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns type of transfer function to be used when scaling a physical value for a given element.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     @XmlElement(name = "transferFunctionType")
