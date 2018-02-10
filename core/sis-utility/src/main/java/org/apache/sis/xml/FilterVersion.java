@@ -43,32 +43,32 @@ enum FilterVersion {
     ISO19139(new String[] {
             Namespaces.CAT,
             Namespaces.CIT,
+            Namespaces.DQC,
+            Namespaces.FCC,
+            Namespaces.GEX,
+            Namespaces.GMW,
             Namespaces.LAN,
             Namespaces.MAC,
             Namespaces.MAS,
             Namespaces.MCC,
             Namespaces.MCO,
+            Namespaces.MD1,
+            Namespaces.MD2,
+            Namespaces.MDA,
+            Namespaces.MDB,
+            Namespaces.MDQ,
+            Namespaces.MDS,
+            Namespaces.MDT,
             Namespaces.MEX,
             Namespaces.MMI,
             Namespaces.MPC,
             Namespaces.MRC,
             Namespaces.MRD,
-            Namespaces.MDQ,
             Namespaces.MRI,
             Namespaces.MRL,
             Namespaces.MRS,
             Namespaces.MSR,
-            Namespaces.MDS,
-            Namespaces.MD1,
-            Namespaces.MDA,
-            Namespaces.MDT,
-            Namespaces.MD2,
-            Namespaces.RCE,
-            Namespaces.FCC,
-            Namespaces.GMW,
-            Namespaces.DQC,
-            Namespaces.MDB,
-            Namespaces.GEX,
+            Namespaces.RCE
         }, LegacyNamespaces.GMD,
         new String[] {
             Namespaces.GCX, LegacyNamespaces.GMX,
@@ -97,26 +97,26 @@ enum FilterVersion {
     ALL(ISO19139, GML31);
 
     /**
-     * The URI replacements to apply when going from the "real" data producer (JAXB marshaller)
-     * to the filtered reader/writer. Keys are the actual URIs as declared in SIS implementation,
-     * and values are the URIs read or to write instead of the actual ones.
+     * The URI replacements to apply when going from the model implemented by Apache SIS
+     * to the filtered reader/writer. Keys are the URIs as declared in JAXB annotations,
+     * and values are the URIs to write instead of the actual ones.
      *
      * @see FilteredNamespaces#exports
      */
     final Map<String,String> exports;
 
     /**
-     * The URI replacements to apply when going from the filtered reader/writer to the "real"
-     * data consumer (JAXB unmarshaller). This map is the converse of {@link #exports}.
+     * The URI replacements to apply when going from the filtered reader/writer to the
+     * model implemented by Apache SIS. This map is the converse of {@link #exports}.
      *
      * @see FilteredNamespaces#imports
      */
     final Map<String,String> imports;
 
     /**
-     * {@code true} if application of {@link #exports} result in many namespaces collapsed into
-     * a single namespace. In those case, {@link #imports} is not sufficient for performing the
-     * reverse operation; we need {@link FilteredStreamResolver}.
+     * {@code true} if applying {@link #exports} replacements results in many namespaces collapsed into
+     * a single namespace. In those case, {@link #imports} is not sufficient for performing the reverse
+     * operation; we need {@link FilteredStreamResolver}.
      */
     final boolean manyToOne;
 
