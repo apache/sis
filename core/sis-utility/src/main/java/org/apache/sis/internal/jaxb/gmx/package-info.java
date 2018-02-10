@@ -16,8 +16,8 @@
  */
 
 /**
- * Miscellaneous objects and adapters defined in the {@code "gmx"} namespace.
- * In ISO 19115-3, this namespace was changed to {@code "gcx"}.
+ * Miscellaneous objects and adapters defined in the {@code "gcx"} namespace.
+ * In legacy ISO 19139:2007, this namespace was to {@code "gmx"}.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

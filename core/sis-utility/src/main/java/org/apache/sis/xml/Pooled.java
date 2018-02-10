@@ -251,7 +251,7 @@ abstract class Pooled {
      */
     final FilterVersion getFilterVersion() {
         /*
-         * If no version is specified, the the default behavior will be:
+         * If no version is specified, then the default behavior will be:
          *   - enable namespace replacement on unmarshalling (in order to accept all versions)
          *   - disable namespace replacement on marshalling (in order to use latest version).
          */

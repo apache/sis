@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 
 
@@ -27,11 +28,11 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
+public class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
     /**
      * Empty constructor for JAXB.
      */
@@ -76,5 +77,24 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
             }
         }
         return null;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends URIAdapter {
+        /** Empty constructor used only by JAXB. */
+        private Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_CharacterString marshal(final URI value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+        }
     }
 }

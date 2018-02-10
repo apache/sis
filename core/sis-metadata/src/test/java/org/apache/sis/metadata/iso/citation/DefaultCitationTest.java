@@ -235,7 +235,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
         /*
          * Check that XML file built by the marshaller is the same as the example file.
          */
-        assertMarshalEqualsFile(file, c, version, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(file, c, version, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**

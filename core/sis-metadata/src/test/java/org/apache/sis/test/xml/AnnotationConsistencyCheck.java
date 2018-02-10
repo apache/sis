@@ -216,8 +216,10 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * <p>The default implementation recognizes the
      * {@linkplain Specification#ISO_19115   ISO 19115},
      * {@linkplain Specification#ISO_19115_2 ISO 19115-2},
+     * {@linkplain Specification#ISO_19115_3 ISO 19115-3},
      * {@linkplain Specification#ISO_19139   ISO 19139} and
-     * {@linkplain Specification#ISO_19108   ISO 19108} specifications.
+     * {@linkplain Specification#ISO_19108   ISO 19108} specifications,
+     * with a hard-coded list of exceptions to the general rule.
      * Subclasses shall override this method if they need to support more namespaces.</p>
      *
      * <p>Note that a more complete verification is done by {@link SchemaCompliance}.
@@ -226,7 +228,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * <p>The prefix for the given namespace will be fetched by
      * {@link Namespaces#getPreferredPrefix(String, String)}.</p>
      *
-     * @param  impl  the implementation class, {@link CodeList} or {@link Enum} type.
+     * @param  impl  the implementation class ({@link CodeList} or {@link Enum} type).
      * @param  uml   the UML associated to the class or the method.
      * @return the expected namespace.
      * @throws IllegalArgumentException if the given UML is unknown to this method.
@@ -257,6 +259,12 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             }
             case "lineage": {
                 if (org.opengis.metadata.quality.DataQuality.class.isAssignableFrom(impl)) {
+                    return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
+                }
+                break;
+            }
+            case "errorStatistic": {
+                if (org.opengis.metadata.quality.QuantitativeResult.class.isAssignableFrom(impl)) {
                     return LegacyNamespaces.GMD;            // Deprecated property in a type not yet upgraded.
                 }
                 break;
@@ -552,6 +560,12 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      */
     protected boolean isIgnored(final Method method) {
         switch (method.getName()) {
+            /*
+             * Types for which JAXB binding has not yet implemented.
+             */
+            case "getGeographicCoordinates": {
+                return org.opengis.metadata.spatial.GCP.class.isAssignableFrom(method.getDeclaringClass());
+            }
             /*
              * GeoAPI extension for inter-operability with JDK API, not defined in ISO specification.
              */

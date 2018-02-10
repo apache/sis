@@ -761,7 +761,7 @@ public strictfp class XMLComparator {
          */
         final String ns = node.getNamespaceURI();
         if (ns != null) {
-            buffer.append(ns).append(':');
+            buffer.append('{').append(ns).append('}');
         }
         buffer.append(node.getNodeName());
         boolean hasText = appendTextContent(buffer, node);

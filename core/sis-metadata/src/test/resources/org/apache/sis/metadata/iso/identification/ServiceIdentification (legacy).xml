@@ -62,7 +62,7 @@
       <srv:DCP>
         <srv:DCPList codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="WebServices">Web services</srv:DCPList>
       </srv:DCP>
-      <srv:parameters>
+      <srv:parameters>          <!-- This has been renamed <srv:parameter> in ISO 19115:2014. -->
         <srv:SV_Parameter>
           <srv:name>
             <gco:aName>
