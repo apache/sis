@@ -92,7 +92,7 @@ final class FilteredWriter implements XMLEventWriter {
      * Returns the URI to write in the XML document.
      * If there is no namespace change, then this method returns the given instance as-is.
      */
-    private String export(final String uri) {
+    private String exportNS(final String uri) {
         return version.exports.getOrDefault(uri, uri);
     }
 
@@ -258,7 +258,7 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public String getPrefix(final String uri) throws XMLStreamException {
-        return out.getPrefix(export(uri));
+        return out.getPrefix(exportNS(uri));
     }
 
     /**
@@ -267,7 +267,7 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public void setPrefix(final String prefix, final String uri) throws XMLStreamException {
-        out.setPrefix(prefix, export(uri));
+        out.setPrefix(prefix, exportNS(uri));
     }
 
     /**
@@ -276,7 +276,7 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public void setDefaultNamespace(final String uri) throws XMLStreamException {
-        out.setDefaultNamespace(export(uri));
+        out.setDefaultNamespace(exportNS(uri));
     }
 
     /**

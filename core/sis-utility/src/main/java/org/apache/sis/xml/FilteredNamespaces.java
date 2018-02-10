@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import javax.xml.namespace.NamespaceContext;
 
 
@@ -111,7 +112,10 @@ final class FilteredNamespaces implements NamespaceContext {
     }
 
     /**
-     * Returns the namespace for the given prefix.
+     * Returns the namespace for the given prefix. The same URI may be returned for many prefixes.
+     * For example when exporting from ISO 19115-3:2016 to legacy ISO 19139:2007, the {@code "mdb"},
+     * {@code "cit"} and many other prefixes are all mapped to {@code "http://www.isotc211.org/2005/gmd"}.
+     * This is legal according {@link NamespaceContext} javadoc.
      */
     @Override
     public String getNamespaceURI(final String prefix) {
@@ -120,19 +124,104 @@ final class FilteredNamespaces implements NamespaceContext {
     }
 
     /**
-     * Returns the prefix for the given namespace.
+     * Returns an arbitrary prefix for the given namespace. More than one prefix may be bounded to a namespace,
+     * in which case this method returns an arbitrary prefix (which may differ between different JVM executions).
      */
     @Override
     public String getPrefix(final String namespaceURI) {
-        return context.getPrefix(imports.getOrDefault(namespaceURI, namespaceURI));
+        final String ns = imports.get(namespaceURI);
+        if (ns != null) {
+            final String p = context.getPrefix(ns);
+            if (p != null) return p;
+        }
+        /*
+         * We can not use the 'imports' map when the same namespace (e.g. "http://www.isotc211.org/2005/gmd" from
+         * legacy ISO 19139:2007) is mapped to multiple namespaces in the new ISO 19115-3:2016 or other standard.
+         * In such case, we have to iterate over map 'exports' entries until we find an inverse mapping.
+         */
+        for (final Map.Entry<String,String> e : exports.entrySet()) {
+            if (namespaceURI.equals(e.getValue())) {
+                final String p = context.getPrefix(e.getKey());
+                if (p != null) return p;
+            }
+        }
+        return context.getPrefix(namespaceURI);
     }
 
     /**
-     * Returns all prefixes for the given namespace.
+     * Returns all prefixes for the given namespace. For example given the {@code "http://www.isotc211.org/2005/gmd"}
+     * namespace from legacy ISO 19139:2007, this method returns {@code "mdb"}, {@code "cit"} and all other prefixes
+     * from the new ISO 19115-3:2016 specification which are used in replacement of the legacy {@code "gmd"} prefix.
      */
     @Override
-    @SuppressWarnings("unchecked")          // TODO: remove on JDK9
     public Iterator<String> getPrefixes(final String namespaceURI) {
-        return context.getPrefixes(imports.getOrDefault(namespaceURI, namespaceURI));
+        return new Prefixes(context, exports, namespaceURI);
+    }
+
+    /**
+     * Iterator for the prefixes to be returned by {@link FilteredNamespaces#getPrefixes(String)}.
+     * Each prefix is fetched only when first needed.
+     */
+    private static final class Prefixes implements Iterator<String> {
+        /** The namespace for which prefixes are desired. */
+        private final String namespaceURI;
+
+        /** The {@link FilteredNamespaces#context} reference. */
+        private final NamespaceContext context;
+
+        /** Iterator over the {@link FilteredNamespaces#exports} entries. */
+        private final Iterator<Map.Entry<String,String>> exports;
+
+        /** Iterator over some (not all) prefixes, or {@code null} if a new iterator needs to be fetched. */
+        private Iterator<String> prefixes;
+
+        /** The next value to be returned by {@link #next()}, or {@code null} if not yet fetched. */
+        private String next;
+
+        /** Creates a new iterator for the prefixes associated to the given namespace URI. */
+        Prefixes(final NamespaceContext context, final Map<String,String> exports, final String namespaceURI) {
+            this.context      = context;
+            this.exports      = exports.entrySet().iterator();
+            this.namespaceURI = namespaceURI;
+        }
+
+        /**
+         * Returns {@code true} if there is at least one more prefix to return.
+         * Invoking this method fetched at most one prefix from the wrapped context.
+         */
+        @Override
+        @SuppressWarnings("unchecked")          // TODO: remove on JDK9
+        public boolean hasNext() {
+            while (next == null) {
+                while (prefixes == null) {
+                    if (!exports.hasNext()) {
+                        return false;
+                    }
+                    final Map.Entry<String,String> e = exports.next();
+                    if (namespaceURI.equals(e.getValue())) {
+                        prefixes = context.getPrefixes(e.getKey());
+                    }
+                }
+                if (prefixes.hasNext()) {
+                    next = prefixes.next();
+                } else {
+                    prefixes = null;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Returns the next prefix.
+         */
+        @Override
+        public String next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            final String n = next;
+            next = null;
+            return n;
+        }
     }
 }
