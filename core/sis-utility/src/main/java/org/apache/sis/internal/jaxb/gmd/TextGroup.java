@@ -24,7 +24,7 @@ import org.apache.sis.xml.Namespaces;
 
 /**
  * A set of strings localized in different languages. This adapter represents the
- * {@code <gmd:textGroup>} element defined in ISO 19139:2007.
+ * {@code <lan:textGroup>} element defined in ISO 19139:2007.
  * See {@link PT_FreeText} class javadoc for an example.
  *
  * <p>If a localized string has a {@code null} locale, then this string will not be
@@ -41,30 +41,30 @@ import org.apache.sis.xml.Namespaces;
  *
  * {@preformat xml
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
- *   <gmd:PT_FreeText>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</gmd:LocalisedCharacterString>
- *       <gmd:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</gmd:LocalisedCharacterString>
- *       <gmd:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *   </gmd:PT_FreeText>
+ *   <lan:PT_FreeText>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</lan:LocalisedCharacterString>
+ *       <lan:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</lan:LocalisedCharacterString>
+ *       <lan:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *   </lan:PT_FreeText>
  * }
  *
  * But the actual official format is:
  *
  * {@preformat xml
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
- *   <gmd:PT_FreeText>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *   </gmd:PT_FreeText>
+ *   <lan:PT_FreeText>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *   </lan:PT_FreeText>
  * }
  *
  * @author  Cédric Briançon (Geomatys)

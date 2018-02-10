@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Set;
 import java.util.Locale;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
@@ -36,18 +37,18 @@ import org.apache.sis.util.ArraysExt;
  * using the {@link DefaultInternationalString} implementation class. Example:
  *
  * {@preformat xml
- *   <gmd:title xsi:type="gmd:PT_FreeText_PropertyType">
+ *   <cit:title xsi:type="lan:PT_FreeText_PropertyType">
  *     <gco:CharacterString>Some title in english is present in this node</gco:CharacterString>
- *     <gmd:PT_FreeText>
- *       <gmd:textGroup>
- *         <gmd:LocalisedCharacterString locale="#locale-fra">Un titre en français</gmd:LocalisedCharacterString>
- *       </gmd:textGroup>
- *     </gmd:PT_FreeText>
- *   </gmd:title>
+ *     <lan:PT_FreeText>
+ *       <lan:textGroup>
+ *         <lan:LocalisedCharacterString locale="#locale-fra">Un titre en français</lan:LocalisedCharacterString>
+ *       </lan:textGroup>
+ *     </lan:PT_FreeText>
+ *   </cit:title>
  * }
  *
- * If there is more than one locale, the whole {@code <gmd:textGroup>} block is repeated for each
- * locale, instead than repeating {@code <gmd:LocalisedCharacterString>} inside the same group as
+ * If there is more than one locale, the whole {@code <lan:textGroup>} block is repeated for each
+ * locale, instead than repeating {@code <lan:LocalisedCharacterString>} inside the same group as
  * we could expect. However at unmarshalling time, both forms are accepted. See GEOTK-152 for more
  * information.
  *
@@ -64,9 +65,10 @@ import org.apache.sis.util.ArraysExt;
  * @since 0.3
  * @module
  */
+@XmlType(name = "PT_FreeText_PropertyType", namespace = Namespaces.LAN)
 public final class PT_FreeText extends GO_CharacterString {
     /**
-     * A set of {@link LocalisedCharacterString}, representing the {@code <gmd:textGroup>} element.
+     * A set of {@link LocalisedCharacterString}, representing the {@code <lan:textGroup>} element.
      * The array shall contain one element for each locale.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
@@ -175,7 +177,7 @@ public final class PT_FreeText extends GO_CharacterString {
         if (defaultValue != null && contains(defaultValue)) {
             /*
              * If the <gco:CharacterString> value is repeated in one of the
-             * <gmd:LocalisedCharacterString> elements, keep only the localized
+             * <lan:LocalisedCharacterString> elements, keep only the localized
              * version  (because it specifies the locale, while the unlocalized
              * string saids nothing on that matter).
              */
