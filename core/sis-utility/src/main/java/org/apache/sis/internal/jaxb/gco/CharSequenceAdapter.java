@@ -92,12 +92,12 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
             return wrap(Context.current(), value, (String) value);  // Slightly more efficient variant of this method.
         }
         /*
-         * <gmd:someElement xsi:type="gmd:PT_FreeText_PropertyType">
+         * <mdb:someElement xsi:type="lan:PT_FreeText_PropertyType">
          *   <gco:CharacterString>...</gco:CharacterString>
-         *   <gmd:PT_FreeText>
+         *   <lan:PT_FreeText>
          *     ... see PT_FreeText ...
-         *   </gmd:PT_FreeText>
-         * </gmd:someElement>
+         *   </lan:PT_FreeText>
+         * </mdb:someElement>
          */
         if (value instanceof InternationalString) {
             final PT_FreeText ft = PT_FreeText.create((InternationalString) value);
@@ -136,9 +136,9 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
          * have been replaced by an Anchor. The output will be one of the following:
          *
          * ┌──────────────────────────────────────────────────┬────────────────────────────────┐
-         * │ <gmd:someElement>                                │ <gmd:someElement>              │
+         * │ <mdb:someElement>                                │ <mdb:someElement>              │
          * │   <gco:CharacterString>...</gco:CharacterString> │   <gmx:Anchor>...</gmx:Anchor> │
-         * │ </gmd:someElement>                               │ </gmd:someElement>             │
+         * │ </mdb:someElement>                               │ </mdb:someElement>             │
          * └──────────────────────────────────────────────────┴────────────────────────────────┘
          */
         return new GO_CharacterString(value);
