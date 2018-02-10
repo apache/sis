@@ -65,15 +65,15 @@ class FilteredStreamReader extends StreamReaderDelegate {
     /**
      * Converts a JAXB URI to the URI seen by the consumer of this wrapper.
      */
-    private String toView(final String uri) {
-        return version.toView.getOrDefault(uri, uri);
+    private String exportNS(final String uri) {
+        return version.exports.getOrDefault(uri, uri);
     }
 
     /**
      * Converts a URI read from the XML document to the URI to give to JAXB.
      */
-    final String toImpl(final String uri) {
-        return version.toImpl.getOrDefault(uri, uri);
+    final String importNS(final String uri) {
+        return version.imports.getOrDefault(uri, uri);
     }
 
     /**
@@ -82,9 +82,9 @@ class FilteredStreamReader extends StreamReaderDelegate {
      * The {@link FilteredStreamResolver} subclass implements a more complex mapping where the
      * namespace depends on the element (class or attribute) name.
      */
-    QName toImpl(QName name) {
+    QName importNS(QName name) {
         final String namespaceURI = name.getNamespaceURI();
-        final String replacement = toImpl(namespaceURI);
+        final String replacement = importNS(namespaceURI);
         if (replacement != namespaceURI) {                          // Identity checks are okay here.
             name = new QName(namespaceURI, name.getLocalPart(), name.getPrefix());
         }
@@ -94,7 +94,7 @@ class FilteredStreamReader extends StreamReaderDelegate {
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
     public void require(final int type, final String namespaceURI, final String localName) throws XMLStreamException {
-        super.require(type, toView(namespaceURI), localName);
+        super.require(type, exportNS(namespaceURI), localName);
     }
 
     /** Returns the context of the underlying reader wrapped in a filter that converts the namespaces on the fly. */
@@ -106,19 +106,19 @@ class FilteredStreamReader extends StreamReaderDelegate {
     /** Forwards the call, then replaces the namespace URI if needed. */
     @Override
     public QName getName() {
-        return toImpl(super.getName());
+        return importNS(super.getName());
     }
 
     /** Forwards the call, then replaces the namespace URI if needed. */
     @Override
     public QName getAttributeName(final int index) {
-        return toImpl(super.getAttributeName(index));
+        return importNS(super.getAttributeName(index));
     }
 
     /** Forwards the call, then replaces the returned URI if needed. */
     @Override
     public String getNamespaceURI() {
-        return toImpl(super.getNamespaceURI());
+        return importNS(super.getNamespaceURI());
     }
 
     /**
@@ -129,24 +129,24 @@ class FilteredStreamReader extends StreamReaderDelegate {
      */
     @Override
     public String getNamespaceURI(int index) {
-        return toImpl(super.getNamespaceURI(index));
+        return importNS(super.getNamespaceURI(index));
     }
 
     /** Forwards the call, then replaces the returned URI if needed. */
     @Override
     public String getNamespaceURI(final String prefix) {
-        return toImpl(super.getNamespaceURI(prefix));
+        return importNS(super.getNamespaceURI(prefix));
     }
 
     /** Forwards the call, then replaces the returned URI if needed. */
     @Override
     public String getAttributeNamespace(final int index) {
-        return toImpl(super.getAttributeNamespace(index));
+        return importNS(super.getAttributeNamespace(index));
     }
 
     /** Replaces the given URI if needed, then forwards the call. */
     @Override
     public String getAttributeValue(final String namespaceUri, final String localName) {
-        return super.getAttributeValue(toView(namespaceUri), localName);
+        return super.getAttributeValue(exportNS(namespaceUri), localName);
     }
 }
