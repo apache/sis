@@ -103,14 +103,14 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
     @Test
     public void testUnmarshallEmptyCodeListValue() throws JAXBException {
         final DefaultLegalConstraints c = unmarshal(
-                "<gmd:MD_LegalConstraints xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:accessConstraints>\n" +
-                "    <gmd:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode\"/>\n" +
-                "  </gmd:accessConstraints>\n" +
-                "  <gmd:useConstraints>\n" + // Below is an intentionally empty code list value (SIS-157)
-                "    <gmd:MD_RestrictionCode codeListValue=\"\" codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode\"/>\n" +
-                "  </gmd:useConstraints>\n" +
-                "</gmd:MD_LegalConstraints>");
+                "<mco:MD_LegalConstraints xmlns:mco=\"" + Namespaces.MCO + "\">\n" +
+                "  <mco:accessConstraints>\n" +
+                "    <mco:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
+                "  </mco:accessConstraints>\n" +
+                "  <mco:useConstraints>\n" +            // Below is an intentionally empty code list value (SIS-157)
+                "    <mco:MD_RestrictionCode codeListValue=\"\" codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
+                "  </mco:useConstraints>\n" +
+                "</mco:MD_LegalConstraints>");
         /*
          * Verify metadata property.
          */
