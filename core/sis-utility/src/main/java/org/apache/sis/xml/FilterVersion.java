@@ -77,7 +77,7 @@ enum FilterVersion {
         Collections.singletonMap(LegacyNamespaces.GCO, Namespaces.GCO)),
         /*
          * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on
-         * FilteredStreamResolver (do NOT declare entries in 'toImpl', because some namespaces
+         * FilteredStreamResolver (do NOT declare entries in 'imports', because some namespaces
          * must be left unchanged). An exception to this rule is the "gco" namespace because
          * FilteredStreamResolver renames only element namespaces while we need to rename also
          * attributes in "gco" namespace (e.g. "gco:nilReason").
@@ -101,21 +101,21 @@ enum FilterVersion {
      * to the filtered reader/writer. Keys are the actual URIs as declared in SIS implementation,
      * and values are the URIs read or to write instead of the actual ones.
      *
-     * @see FilteredNamespaces#toView
+     * @see FilteredNamespaces#exports
      */
-    final Map<String,String> toView;
+    final Map<String,String> exports;
 
     /**
      * The URI replacements to apply when going from the filtered reader/writer to the "real"
-     * data consumer (JAXB unmarshaller). This map is the converse of {@link #toView}.
+     * data consumer (JAXB unmarshaller). This map is the converse of {@link #exports}.
      *
-     * @see FilteredNamespaces#toImpl
+     * @see FilteredNamespaces#imports
      */
-    final Map<String,String> toImpl;
+    final Map<String,String> imports;
 
     /**
-     * {@code true} if application of {@link #toView} result in many namespaces collapsed into
-     * a single namespace. In those case, {@link #toImpl} is not sufficient for performing the
+     * {@code true} if application of {@link #exports} result in many namespaces collapsed into
+     * a single namespace. In those case, {@link #imports} is not sufficient for performing the
      * reverse operation; we need {@link FilteredStreamResolver}.
      */
     final boolean manyToOne;
@@ -127,8 +127,8 @@ enum FilterVersion {
      * @param  view  the namespace used in the XML file to (un)marshall (older schema).
      */
     private FilterVersion(final String impl, final String view) {
-        this.toView = singletonMap(impl, view);
-        this.toImpl = singletonMap(view, impl);
+        this.exports = singletonMap(impl, view);
+        this.imports = singletonMap(view, impl);
         manyToOne = false;
     }
 
@@ -143,15 +143,15 @@ enum FilterVersion {
      *                     having different {@code view} values.
      */
     private FilterVersion(final String[] impl, final String view, final String[] additional,
-            final Map<String,String> toImpl)
+            final Map<String,String> imports)
     {
-        toView = new HashMap<>(Containers.hashMapCapacity(impl.length));
-        this.toImpl = toImpl;
+        exports = new HashMap<>(Containers.hashMapCapacity(impl.length));
+        this.imports = imports;
         for (final String e : impl) {
-            toView.put(e, view);
+            exports.put(e, view);
         }
         for (int i=0; i<additional.length;) {
-            toView.put(additional[i++],
+            exports.put(additional[i++],
                        additional[i++]);
         }
         manyToOne = true;
@@ -161,10 +161,10 @@ enum FilterVersion {
      * Creates the {@link #ALL} enumeration.
      */
     private FilterVersion(final FilterVersion first, final FilterVersion more) {
-        toView = new HashMap<>(first.toView);
-        toImpl = new HashMap<>(first.toImpl);
-        toView.putAll(more.toView);
-        toImpl.putAll(more.toImpl);
+        exports = new HashMap<>(first.exports);
+        imports = new HashMap<>(first.imports);
+        exports.putAll(more.exports);
+        imports.putAll(more.imports);
         manyToOne = first.manyToOne | more.manyToOne;
     }
 }

@@ -234,17 +234,17 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      * Return the namespace used by implementation (the SIS classes with JAXB annotations)
      * in the context of the current part of the XML document being read.
      *
-     * @param   name   the local name of the element or attribute currently being read.
+     * @param   localPart   the local name of the element or attribute currently being read.
      * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace),
      *          or {@code null} if the given name is unknown.
      */
-    private String toImplNamespace(final String name) {
-        final Set<String> declaringTypes = DECLARING_TYPES.get(name);
+    private String namespaceOf(final String localPart) {
+        final Set<String> declaringTypes = DECLARING_TYPES.get(localPart);
         if (declaringTypes == null) {
             /*
              * If the element is a root element, return the associated namespace.
              */
-            final Map<String,String> attributes = NAMESPACES.get(name);
+            final Map<String,String> attributes = NAMESPACES.get(localPart);
             if (attributes != null) {
                 return attributes.get(TYPE_KEY);
             }
@@ -260,7 +260,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
                      * A NullPointerException below would be a bug in our algorithm because
                      * we constructed DECLARING_TYPES from NAMESPACES keys only.
                      */
-                    return NAMESPACES.get(parent).get(name);
+                    return NAMESPACES.get(parent).get(localPart);
                 }
             }
         }
@@ -272,12 +272,12 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      * The new namespace depends on both the old namespace and the element name.
      */
     @Override
-    final QName toImpl(QName name) {
+    final QName importNS(QName name) {
         final String namespaceURI = name.getNamespaceURI();
         final String localPart = name.getLocalPart();
-        String replacement = toImplNamespace(localPart);
+        String replacement = namespaceOf(localPart);
         if (replacement == null) {
-            replacement = toImpl(namespaceURI);
+            replacement = importNS(namespaceURI);
         }
         if (!replacement.equals(namespaceURI)) {
             name = new QName(replacement, localPart, name.getPrefix());
@@ -291,7 +291,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      */
     @Override
     public String getNamespaceURI() {
-        String namespace = toImplNamespace(getLocalName());
+        String namespace = namespaceOf(getLocalName());
         if (namespace == null) {
             namespace = super.getNamespaceURI();
         }

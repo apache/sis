@@ -73,17 +73,17 @@ final class FilteredNamespaces implements NamespaceContext {
     /**
      * The URI replacements to apply when going from the wrapped context to the filtered context.
      *
-     * @see FilterVersion#toView
+     * @see FilterVersion#exports
      */
-    private final Map<String,String> toView;
+    private final Map<String,String> exports;
 
     /**
      * The URI replacements to apply when going from the filtered context to the wrapped context.
-     * This map is the converse of {@link #toView}.
+     * This map is the converse of {@link #exports}.
      *
-     * @see FilterVersion#toImpl
+     * @see FilterVersion#imports
      */
-    private final Map<String,String> toImpl;
+    private final Map<String,String> imports;
 
     /**
      * Creates a new namespaces filter for the given target version.
@@ -91,11 +91,11 @@ final class FilteredNamespaces implements NamespaceContext {
     FilteredNamespaces(final NamespaceContext context, final FilterVersion version, final boolean inverse) {
         this.context = context;
         if (!inverse) {
-            toView = version.toView;
-            toImpl = version.toImpl;
+            exports = version.exports;
+            imports = version.imports;
         } else {
-            toView = version.toImpl;
-            toImpl = version.toView;
+            exports = version.imports;
+            imports = version.exports;
         }
     }
 
@@ -104,7 +104,7 @@ final class FilteredNamespaces implements NamespaceContext {
      * specified by the given version.
      */
     NamespaceContext inverse(final FilterVersion version) {
-        if (toView == version.toView && toImpl == version.toImpl) {
+        if (exports == version.exports && imports == version.imports) {
             return this;
         }
         return new FilteredNamespaces(this, version, true);
@@ -116,7 +116,7 @@ final class FilteredNamespaces implements NamespaceContext {
     @Override
     public String getNamespaceURI(final String prefix) {
         final String uri = context.getNamespaceURI(prefix);
-        return toView.getOrDefault(uri, uri);
+        return exports.getOrDefault(uri, uri);
     }
 
     /**
@@ -124,7 +124,7 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public String getPrefix(final String namespaceURI) {
-        return context.getPrefix(toImpl.getOrDefault(namespaceURI, namespaceURI));
+        return context.getPrefix(imports.getOrDefault(namespaceURI, namespaceURI));
     }
 
     /**
@@ -133,6 +133,6 @@ final class FilteredNamespaces implements NamespaceContext {
     @Override
     @SuppressWarnings("unchecked")          // TODO: remove on JDK9
     public Iterator<String> getPrefixes(final String namespaceURI) {
-        return context.getPrefixes(toImpl.getOrDefault(namespaceURI, namespaceURI));
+        return context.getPrefixes(imports.getOrDefault(namespaceURI, namespaceURI));
     }
 }

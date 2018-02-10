@@ -256,7 +256,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
             final NamespaceContext context = event.getNamespaceContext();
             if (context != null) {
                 final String uri = context.getNamespaceURI(prefix);
-                return version.toView.getOrDefault(uri, uri);
+                return version.exports.getOrDefault(uri, uri);
             }
             return null;
         }

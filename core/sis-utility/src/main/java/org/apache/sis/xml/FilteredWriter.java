@@ -93,7 +93,7 @@ final class FilteredWriter implements XMLEventWriter {
      * If there is no namespace change, then this method returns the given instance as-is.
      */
     private String export(final String uri) {
-        return version.toView.getOrDefault(uri, uri);
+        return version.exports.getOrDefault(uri, uri);
     }
 
     /**
@@ -103,7 +103,7 @@ final class FilteredWriter implements XMLEventWriter {
     private QName export(QName name) {
         String uri = name.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {                                // Optimization for a common case.
-            uri = version.toView.get(uri);
+            uri = version.exports.get(uri);
             if (uri != null) {
                 name = new QName(uri, name.getLocalPart(), Namespaces.getPreferredPrefix(uri, name.getPrefix()));
             }
@@ -139,7 +139,7 @@ final class FilteredWriter implements XMLEventWriter {
             if (uri.charAt(end) == '/') {
                 uri = uri.substring(0, end);                            // Trim trailing '/' in URI.
             }
-            final String exported = version.toView.get(uri);
+            final String exported = version.exports.get(uri);
             if (exported != null) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
                     return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
