@@ -81,7 +81,7 @@ public class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, I
      */
     public static final class Since2014 extends InternationalStringAdapter {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

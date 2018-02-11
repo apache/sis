@@ -117,7 +117,7 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      */
     public static final class Since2014 extends StringAdapter {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

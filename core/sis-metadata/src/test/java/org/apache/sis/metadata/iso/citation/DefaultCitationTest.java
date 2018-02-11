@@ -31,6 +31,7 @@ import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.OnLineFunction;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.xml.IdentifierMap;
@@ -282,7 +283,13 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
 
         final Iterator<Responsibility> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
-        assertEquals("Contact instruction", "Send carrier pigeon.", contact.getContactInstructions().toString());
+        assertEquals("Contact instruction", "Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
+
+        final OnlineResource resource = TestUtilities.getSingleton(contact.getOnlineResources());
+        assertEquals("Resource name", "IP over Avian Carriers", String.valueOf(resource.getName()));
+        assertEquals("Resource description", "High delay, low throughput, and low altitude service.", String.valueOf(resource.getDescription()));
+        assertEquals("Resource linkage", "https://tools.ietf.org/html/rfc1149", String.valueOf(resource.getLinkage()));
+        assertEquals("Resource function", OnLineFunction.OFFLINE_ACCESS, resource.getFunction());
 
         // Thanks to xlink:href, the Contact shall be the same instance as above.
         assertSame("contact", contact, assertResponsibilityEquals(Role.FUNDER, "Robin Hood", it.next()));
@@ -295,7 +302,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     private static Contact assertResponsibilityEquals(final Role role, final String name, final Responsibility actual) {
         assertEquals("role", role, actual.getRole());
         final Party p = getSingleton(actual.getParties());
-        assertEquals("name", name, p.getName().toString());
+        assertEquals("name", name, String.valueOf(p.getName()));
         return getSingleton(p.getContactInfo());
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -25,8 +24,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.gco.URIAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -60,7 +57,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
     "linkage",
-    "linkageURL",               // Legacy ISO 19139:2007 way to format the linkage.
     "protocol",
     "applicationProfile",
     "name",
@@ -268,7 +264,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "linkage", required = true)
-    @XmlJavaTypeAdapter(URIAdapter.Since2014.class)
+    @XmlJavaTypeAdapter(URIAdapter.AsURL.class)
     public URI getLinkage() {
         return linkage;
     }
@@ -344,38 +340,5 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     public void setProtocolRequest(final String newValue) {
         checkWritePermission();
         protocolRequest = newValue;
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                                  ////////
-    ////////                               XML support with JAXB                              ////////
-    ////////                                                                                  ////////
-    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
-    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
-    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
-    ////////        (GML) support is not needed.                                              ////////
-    ////////                                                                                  ////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Invoked at marshalling time for writing URL as defined by ISO 19139:2007.
-     * That legacy standard wraps the URL in a {@code <gmd:URL>} element.
-     */
-    @XmlElement(name = "linkage", namespace = LegacyNamespaces.GMD)
-    private LegacyURL getLinkageURL() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? LegacyURL.wrap(getLinkage()) : null;
-    }
-
-    /**
-     * Invoked at ISO 19139:2007 unmarshalling time for storing the value of {@code <gmd:URL>} element.
-     */
-    @SuppressWarnings("unused")
-    private void setLinkageURL(final LegacyURL newValue) throws URISyntaxException {
-        if (LegacyURL.isNonNull(newValue)) {
-            setLinkage(newValue.unwrap());
-        }
     }
 }

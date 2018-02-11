@@ -86,7 +86,7 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
      */
     public static final class Since2014 extends UnitAdapter {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

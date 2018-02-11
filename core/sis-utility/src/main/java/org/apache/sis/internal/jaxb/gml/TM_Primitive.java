@@ -175,7 +175,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     public static final class Since2014 extends TM_Primitive {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

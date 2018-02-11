@@ -104,7 +104,7 @@ public class GO_Real extends PropertyType<GO_Real, Double> {
      */
     public static final class Since2014 extends GO_Real {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**
