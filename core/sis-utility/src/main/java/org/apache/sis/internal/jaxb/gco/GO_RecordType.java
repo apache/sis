@@ -95,7 +95,7 @@ public class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
      */
     public static final class Since2014 extends GO_RecordType {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

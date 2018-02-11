@@ -102,7 +102,7 @@ public class GO_Integer extends PropertyType<GO_Integer, Integer> {
      */
     public static final class Since2014 extends GO_Integer {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

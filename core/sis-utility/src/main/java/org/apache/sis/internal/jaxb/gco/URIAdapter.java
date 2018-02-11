@@ -48,7 +48,7 @@ public class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
      * @throws URISyntaxException if the string is not a valid URI.
      */
     @Override
-    public URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
+    public final URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
         final String text = StringAdapter.toString(value);
         if (text != null) {
             final Context context = Context.current();
@@ -80,21 +80,24 @@ public class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
     }
 
     /**
-     * Wraps the value only if marshalling ISO 19115-3 element.
-     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     * Replace {@code <gcx:FileName>} by {@code <gmd:URL>} if marshalling legacy ISO 19139:2007 document.
      */
-    public static final class Since2014 extends URIAdapter {
+    public static final class AsURL extends URIAdapter {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public AsURL() {
         }
 
         /**
-         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         * Replaces {@code <gcx:FileName>} by {@code <gmd:URL>} if marshalling legacy ISO 19139:2007 document.
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
         @Override public GO_CharacterString marshal(final URI value) {
-            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+            final GO_CharacterString wrapper = super.marshal(value);
+            if (wrapper != null && wrapper.type == GO_CharacterString.FILENAME && !FilterByVersion.CURRENT_METADATA.accept()) {
+                wrapper.type = GO_CharacterString.URL;
+            }
+            return wrapper;
         }
     }
 }

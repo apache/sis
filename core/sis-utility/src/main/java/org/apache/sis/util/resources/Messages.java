@@ -204,6 +204,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short PropertyHiddenBy_2 = 28;
 
         /**
+         * “{0}” is not the name of a known list of codes.
+         */
+        public static final short UnknownCodeList_1 = 33;
+
+        /**
          * The text contains unknown elements:
          */
         public static final short UnknownElementsInText = 29;

@@ -190,7 +190,7 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
      */
     public static final class Since2014 extends CharSequenceAdapter {
         /** Empty constructor used only by JAXB. */
-        private Since2014() {
+        public Since2014() {
         }
 
         /**

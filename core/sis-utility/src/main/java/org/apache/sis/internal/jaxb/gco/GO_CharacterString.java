@@ -34,16 +34,18 @@ import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmx.FileName;
 import org.apache.sis.internal.jaxb.gmx.MimeFileType;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
- * JAXB wrapper for string value in a {@code <gco:CharacterString>}, {@code <gmx:Anchor>},
- * {@code <gmx:FileName>} or {@code <gmx:MimeFileType>} element, for ISO 19139:2007 compliance.
+ * JAXB wrapper for string value in a {@code <gco:CharacterString>}, {@code <gcx:Anchor>},
+ * {@code <gcx:FileName>} or {@code <gcx:MimeFileType>} element, for ISO 19115-3 compliance.
  *
  * <p>{@code FileName} and {@code MimeFileType} are possible substitutions for {@code CharacterString}.
  * They make sense only in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic} or
@@ -78,27 +80,33 @@ public class GO_CharacterString {
      */
     /**
      * Value assigned to {@link #type} if the character string
-     * shall be marshalled as a {@code <gmx:MimeFileType>} element.
+     * shall be marshalled as a {@code <gcx:MimeFileType>} element.
      */
     public static final byte MIME_TYPE = 1;
 
     /**
      * Value assigned to {@link #type} if the character string
-     * shall be marshalled as a {@code <gmx:FileName>} element.
+     * shall be marshalled as a {@code <gcx:FileName>} element.
      */
-    public static final byte FILENAME = 2;
+    public static final byte FILENAME = 3;      // Precedence over legacy <gmd:UML>
+
+    /**
+     * Value assigned to {@link #type} if the character string
+     * shall be marshalled as a legacy {@code <gmd:URL>} element.
+     */
+    public static final byte URL = 2;
 
     /**
      * Value assigned to {@link #type} if the current {@link #text}
-     * has been found in a {@code <gmx:Anchor>} element.
+     * has been found in a {@code <gcx:Anchor>} element.
      */
-    private static final byte ANCHOR = 3;
+    private static final byte ANCHOR = 4;
 
     /**
      * Value assigned to {@link #type} if the current {@link #text}
      * has been found in an enumeration or code list element.
      */
-    private static final byte ENUM = 4;
+    private static final byte ENUM = 5;
 
     /**
      * The XML element names for each possible {@link #type} values.
@@ -111,6 +119,7 @@ public class GO_CharacterString {
             case FILENAME:  return "FileName";
             case ANCHOR:    return "Anchor";
             case ENUM:      return "ControlledVocabulary";
+            case URL:       return "URL";                       // In legacy XML only.
             default:        throw new AssertionError(type);
         }
     }
@@ -160,7 +169,7 @@ public class GO_CharacterString {
      * If the given value overwrites a previous one, a warning is emitted.
      *
      * @param  value     the value to set.
-     * @param  property  0 or one of the {@link #MIME_TYPE}, {@link #FILENAME} or {@link #ANCHOR} constants.
+     * @param  property  0 or one of the {@link #MIME_TYPE}, {@link #FILENAME}, {@link #URL} or {@link #ANCHOR} constants.
      */
     private void setText(CharSequence value, byte property) {
         value = CharSequences.trimWhitespaces(value);
@@ -189,7 +198,7 @@ public class GO_CharacterString {
     }
 
     /**
-     * Returns the text in a {@code <gco:CharacterString>}, {@code <gmx:FileName>} or {@code <gmx:MimeFileType>}
+     * Returns the text in a {@code <gco:CharacterString>}, {@code <gcx:FileName>} or {@code <gcx:MimeFileType>}
      * element, or {@code null} if none. This method does not return anything for {@code Enum} or {@code CodeList}
      * instances, as the later are handled by {@link #getCodeList()}.
      *
@@ -199,11 +208,13 @@ public class GO_CharacterString {
         @XmlElement(type = String.class,       name = "CharacterString"),
         @XmlElement(type = Anchor.class,       name = "Anchor",       namespace = Namespaces.GCX),
         @XmlElement(type = FileName.class,     name = "FileName",     namespace = Namespaces.GCX),
-        @XmlElement(type = MimeFileType.class, name = "MimeFileType", namespace = Namespaces.GCX)
+        @XmlElement(type = MimeFileType.class, name = "MimeFileType", namespace = Namespaces.GCX),
+        @XmlElement(type = GO_URL.class,       name = "URL",          namespace = LegacyNamespaces.GMD)
     })
     private Object getValue() {
         switch (type) {
             case 0:         return StringAdapter.toString(text);
+            case URL:       return new GO_URL(text.toString());
             case FILENAME:  return new FileName(text.toString());
             case MIME_TYPE: return new MimeFileType(text.toString());
             case ANCHOR:    return text;                                // Shall be an instance of Anchor.
@@ -212,7 +223,7 @@ public class GO_CharacterString {
     }
 
     /**
-     * Sets the {@code <gco:CharacterString>}, {@code <gmx:FileName>} or {@code <gmx:MimeFileType>} value.
+     * Sets the {@code <gco:CharacterString>}, {@code <gcx:FileName>} or {@code <gcx:MimeFileType>} value.
      *
      * <p>This method is invoked by JAXB at unmarshalling time and should not need to be invoked directly.</p>
      */
@@ -224,6 +235,8 @@ public class GO_CharacterString {
             setText(value.toString(), FILENAME);
         } else if (value instanceof MimeFileType) {
             setText(value.toString(), MIME_TYPE);
+        } else if (value instanceof GO_URL) {           // Legacy ISO 19139:2007
+            setText(value.toString(), URL);
         } else {
             setText((CharSequence) value, (byte) 0);
         }
@@ -264,8 +277,8 @@ public class GO_CharacterString {
     }
 
     /**
-     * Invoked by JAXB for any XML element which is not a {@code <gco:CharacterString>}, {@code <gmx:FileName>}
-     * or {@code <gmx:MimeFileType>}. This method presumes that the element name is the CodeList standard name.
+     * Invoked by JAXB for any XML element which is not a {@code <gco:CharacterString>}, {@code <gcx:FileName>}
+     * or {@code <gcx:MimeFileType>}. This method presumes that the element name is the CodeList standard name.
      * If not, the element will be ignored.
      */
     @SuppressWarnings({"unchecked", "unused"})
@@ -273,16 +286,28 @@ public class GO_CharacterString {
         final Element e = (Element) value;
         if (e.getNodeType() == Element.ELEMENT_NODE) {
             final Class<?> ct = Types.forStandardName(e.getLocalName());
+            final Class<? extends IndexedResourceBundle> resources;
+            final short errorKey;
+            final Object[] args;
             if (ct != null && CodeList.class.isAssignableFrom(ct)) {
-                final String attribute = e.getAttribute("codeListValue");
+                final String attribute = e.getAttribute("codeListValue").trim();
                 if (!attribute.isEmpty()) {
                     text = Types.getCodeTitle(Types.forCodeName((Class) ct, attribute, true));
                     type = ENUM;
                     return;
+                } else {
+                    resources = Errors.class;
+                    errorKey  = Errors.Keys.MissingOrEmptyAttribute_2;
+                    args      = new Object[2];
+                    args[1]   = "codeListValue";
                 }
+            } else {
+                resources = Messages.class;
+                errorKey  = Messages.Keys.UnknownCodeList_1;
+                args      = new Object[1];
             }
-            Context.warningOccured(Context.current(), GO_CharacterString.class, "setCodeList",
-                    Errors.class, Errors.Keys.UnknownType_1, e.getNodeName());
+            args[0] = e.getNodeName();
+            Context.warningOccured(Context.current(), GO_CharacterString.class, "setCodeList", resources, errorKey, args);
         }
     }
 
