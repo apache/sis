@@ -33,6 +33,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.Namespace;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import org.apache.sis.util.resources.Errors;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -253,17 +254,25 @@ final class FilteredWriter implements XMLEventWriter {
     }
 
     /**
-     * Gets the prefix the URI is bound to.
-     * This method replaces the given URI if needed, then forwards the call.
+     * Gets the prefix the URI is bound to. Since our (imported URI) ⟶ (exported URI) transformation
+     * is not bijective, implementing this method could potentially result in the same prefix for different URIs,
+     * which is illegal for a XML document and potentially dangerous. Thankfully JAXB seems to never invoke this
+     * method in our tests.
      */
     @Override
     public String getPrefix(final String uri) throws XMLStreamException {
-        return out.getPrefix(exportNS(uri));
+        throw new XMLStreamException(Errors.format(Errors.Keys.UnsupportedOperation_1, "getPrefix"));
     }
 
     /**
-     * Sets the prefix the URI is bound to.
-     * This method replaces the given URI if needed, then forwards the call.
+     * Sets the prefix the URI is bound to. This method replaces the given URI if needed, then forwards the call.
+     * Note that it may result in the same URI to be bound to many prefixes. For example ISO 19115-3:2016 has many
+     * URIs, each with a different prefix ({@code "mdb"}, {@code "cit"}, <i>etc.</i>). But all those URIs may be
+     * replaced by the unique URI used in legacy ISO 19139:2007. Since this method does not replace the prefix
+     * (it was {@code "gmd"} in ISO 19139:2007), the various ISO 19115-3:2016 prefixes are all bound to the same
+     * legacy ISO 19139:2007 URI. This is confusing, but not ambiguous for XML parsers.
+     *
+     * <p>Implemented as a matter of principle, but JAXB did not invoked this method in our tests.</p>
      */
     @Override
     public void setPrefix(final String prefix, final String uri) throws XMLStreamException {
@@ -271,8 +280,11 @@ final class FilteredWriter implements XMLEventWriter {
     }
 
     /**
-     * Binds a URI to the default namespace.
-     * Replaces the given URI if needed, then forwards the call.
+     * Binds a URI to the default namespace. Current implementation replaces the given URI
+     * (e.g. an ISO 19115-3:2016 one) by the exported URI (e.g. legacy ISO 19139:2007 one),
+     * then forwards the call.
+     *
+     * <p>Implemented as a matter of principle, but JAXB did not invoked this method in our tests.</p>
      */
     @Override
     public void setDefaultNamespace(final String uri) throws XMLStreamException {
@@ -281,7 +293,9 @@ final class FilteredWriter implements XMLEventWriter {
 
     /**
      * Sets the current namespace context for prefix and URI bindings.
-     * Unwraps the original context and forwards the call.
+     * This method unwraps the original context and forwards the call.
+     *
+     * <p>Implemented as a matter of principle, but JAXB did not invoked this method in our tests.</p>
      */
     @Override
     public void setNamespaceContext(NamespaceContext context) throws XMLStreamException {
