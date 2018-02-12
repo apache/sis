@@ -20,12 +20,13 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.XMLConstants;
 
 
 /**
- * Substitutes at (un)marshalling time the XML namespaces used by SIS by the namespaces used in the XML document.
- * This class is used internally by {@link FilteredStreamReader} and {@link FilteredWriter} only.
- * Current {@code FilteredNamespaces} implementation takes care of XML prefixes only;
+ * In the associations between prefixes and namespaces, substitutes the namespaces used in JAXB annotations by the
+ * namespaces used in the XML document at marshalling time. This class is used internally by {@link FilteredReader}
+ * and {@link FilteredWriter} only. Current {@code FilteredNamespaces} implementation takes care of XML prefixes only;
  * the stream reader and writer do the rest of the work.
  *
  * <div class="section">The problem</div>
@@ -41,9 +42,8 @@ import javax.xml.namespace.NamespaceContext;
  * <ul>
  *   <li>Massive code duplication (hundreds of classes, many of them strictly identical except for the namespace).</li>
  *   <li>Handling of above-cited classes duplication requires either a bunch of {@code if (x instanceof Y)} in every
- *       SIS corners (unconceivable), or to modify the {@code xjc} output in order to give to generated classes a
- *       common parent class or interface. In the later case, the auto-generated classes require significant work
- *       anyways.</li>
+ *       SIS corners, or to modify the {@code xjc} output in order to give to generated classes a common parent class
+ *       or interface. In the later case, the auto-generated classes require significant work anyways.</li>
  *   <li>The namespaces of all versions appear in the {@code xmlns} attributes of the root element (we can not always
  *       create separated JAXB contexts), which is confusing and prevent usage of usual prefixes for all versions
  *       except one.</li>
@@ -55,60 +55,98 @@ import javax.xml.namespace.NamespaceContext;
  * as "micro-transformers".
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-152">SIS-152</a>
  *
  * @since 0.4
  * @module
  */
-final class FilteredNamespaces implements NamespaceContext {
+class FilteredNamespaces implements NamespaceContext {
     /**
-     * The context to wrap, given by {@link FilteredStreamReader} or {@link FilteredWriter}.
+     * The context to wrap, given by {@link FilteredReader} or {@link FilteredWriter}.
      *
      * @see javax.xml.stream.XMLStreamReader#getNamespaceContext()
      * @see javax.xml.stream.XMLStreamWriter#getNamespaceContext()
      */
-    private final NamespaceContext context;
+    final NamespaceContext context;
 
     /**
-     * The URI replacements to apply when going from the wrapped context to the filtered context.
-     *
-     * @see FilterVersion#exports
+     * The URI replacements to apply when exporting from the JAXB annotations to the XML documents.
      */
-    private final Map<String,String> exports;
-
-    /**
-     * The URI replacements to apply when going from the filtered context to the wrapped context.
-     * This map is the converse of {@link #exports}.
-     *
-     * @see FilterVersion#imports
-     */
-    private final Map<String,String> imports;
+    final FilterVersion version;
 
     /**
      * Creates a new namespaces filter for the given target version.
      */
-    FilteredNamespaces(final NamespaceContext context, final FilterVersion version, final boolean inverse) {
+    FilteredNamespaces(final NamespaceContext context, final FilterVersion version) {
         this.context = context;
-        if (!inverse) {
-            exports = version.exports;
-            imports = version.imports;
-        } else {
-            exports = version.imports;
-            imports = version.exports;
-        }
+        this.version = version;
     }
 
     /**
-     * Wraps this {@code FilteredNamespaces} in a new instance performing the inverse of the replacements
-     * specified by the given version.
+     * Returns the inverse of {@code FilteredNamespaces}.
      */
-    NamespaceContext inverse(final FilterVersion version) {
-        if (exports == version.exports && imports == version.imports) {
-            return this;
+    NamespaceContext inverse(final FilterVersion target) {
+        return (version == target) ? context : new Import(context, target);
+    }
+
+    /**
+     * Substitutes the XML namespaces used in XML documents by namespaces used in JAXB annotations.
+     * This is used at unmarshalling time for importing legacy documents.
+     */
+    static final class Import extends FilteredNamespaces {
+        /**
+         * Creates a new namespaces filter for the given source version.
+         */
+        Import(final NamespaceContext context, final FilterVersion version) {
+            super(context, version);
         }
-        return new FilteredNamespaces(this, version, true);
+
+        /**
+         * Returns the inverse of this namespace.
+         */
+        @Override NamespaceContext inverse(final FilterVersion target) {
+            return (version == target) ? context : new FilteredNamespaces(context, target);
+        }
+
+        /**
+         * Returns the namespace used in JAXB annotations for the given prefix in XML document.
+         * If no unique namespace can be mapped (for example if asking the namespace of legacy
+         * {@code "gmd"} prefix), returns {@link XMLConstants#NULL_NS_URI}.
+         *
+         * <p>Except for {@code NULL_NS_URI}, this is usually an <cite>injective</cite> function:
+         * each namespace can be created from at most one prefix.</p>
+         */
+        @Override public String getNamespaceURI(final String prefix) {
+            return version.importNS(context.getNamespaceURI(prefix));
+        }
+
+        /**
+         * Returns an arbitrary prefix for the given namespace. For example given the
+         * {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"} namespace from ISO 19115-3,
+         * this method returns {@code "gmd"} which was the prefix used in legacy ISO 19139:2007.
+         *
+         * <p>This is a <cite>surjective</cite> function:
+         * many prefixes can be created from the same namespace.</p>
+         */
+        @Override
+        public String getPrefix(final String namespaceURI) {
+            return context.getPrefix(version.exportNS(namespaceURI));
+        }
+
+        /**
+         * Returns all prefixes for the given namespace. There is usually only one, contrarily
+         * to {@link FilteredNamespaces#getPrefixes(String)} which have many.
+         *
+         * <p>This is a <cite>surjective</cite> function:
+         * many prefixes can be created from the same namespace.</p>
+         */
+        @Override
+        @SuppressWarnings("unchecked")      // TODO: remove with JDK9
+        public Iterator<String> getPrefixes(final String namespaceURI) {
+            return context.getPrefixes(version.exportNS(namespaceURI));
+        }
     }
 
     /**
@@ -119,8 +157,7 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public String getNamespaceURI(final String prefix) {
-        final String uri = context.getNamespaceURI(prefix);
-        return exports.getOrDefault(uri, uri);
+        return version.exportNS(context.getNamespaceURI(prefix));
     }
 
     /**
@@ -129,19 +166,16 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public String getPrefix(final String namespaceURI) {
-        final String ns = imports.get(namespaceURI);
-        if (ns != null) {
-            final String p = context.getPrefix(ns);
-            if (p != null) return p;
-        }
+        String p = context.getPrefix(version.importNS(namespaceURI));
+        if (p != null) return p;
         /*
          * We can not use the 'imports' map when the same namespace (e.g. "http://www.isotc211.org/2005/gmd" from
          * legacy ISO 19139:2007) is mapped to multiple namespaces in the new ISO 19115-3:2016 or other standard.
-         * In such case, we have to iterate over map 'exports' entries until we find an inverse mapping.
+         * In such case, we have to iterate over 'exports' entries until we find an inverse mapping.
          */
-        for (final Map.Entry<String,String> e : exports.entrySet()) {
-            if (namespaceURI.equals(e.getValue())) {
-                final String p = context.getPrefix(e.getKey());
+        for (final Map.Entry<String, FilterVersion.Replacement> e : version.exports().entrySet()) {
+            if (namespaceURI.equals(e.getValue().namespace)) {
+                p = context.getPrefix(e.getKey());
                 if (p != null) return p;
             }
         }
@@ -155,7 +189,7 @@ final class FilteredNamespaces implements NamespaceContext {
      */
     @Override
     public Iterator<String> getPrefixes(final String namespaceURI) {
-        return new Prefixes(context, exports, namespaceURI);
+        return new Prefixes(context, version.exports(), namespaceURI);
     }
 
     /**
@@ -169,8 +203,8 @@ final class FilteredNamespaces implements NamespaceContext {
         /** The {@link FilteredNamespaces#context} reference. */
         private final NamespaceContext context;
 
-        /** Iterator over the {@link FilteredNamespaces#exports} entries. */
-        private final Iterator<Map.Entry<String,String>> exports;
+        /** Iterator over the namespace replacements. */
+        private final Iterator<Map.Entry<String, FilterVersion.Replacement>> exports;
 
         /** Iterator over some (not all) prefixes, or {@code null} if a new iterator needs to be fetched. */
         private Iterator<String> prefixes;
@@ -179,7 +213,7 @@ final class FilteredNamespaces implements NamespaceContext {
         private String next;
 
         /** Creates a new iterator for the prefixes associated to the given namespace URI. */
-        Prefixes(final NamespaceContext context, final Map<String,String> exports, final String namespaceURI) {
+        Prefixes(final NamespaceContext context, final Map<String, FilterVersion.Replacement> exports, final String namespaceURI) {
             this.context      = context;
             this.exports      = exports.entrySet().iterator();
             this.namespaceURI = namespaceURI;
@@ -197,8 +231,8 @@ final class FilteredNamespaces implements NamespaceContext {
                     if (!exports.hasNext()) {
                         return false;
                     }
-                    final Map.Entry<String,String> e = exports.next();
-                    if (namespaceURI.equals(e.getValue())) {
+                    final Map.Entry<String, FilterVersion.Replacement> e = exports.next();
+                    if (namespaceURI.equals(e.getValue().namespace)) {
                         prefixes = context.getPrefixes(e.getKey());
                     }
                 }

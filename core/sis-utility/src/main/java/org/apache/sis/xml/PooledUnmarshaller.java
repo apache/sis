@@ -50,7 +50,7 @@ import org.apache.sis.internal.jaxb.Context;
  *       when the unmarshaller is recycled.</li>
  *   <li>Constructs a SIS {@link Context} object on unmarshalling, in order to give
  *       additional information to the SIS object being unmarshalled.</li>
- *   <li>Wraps the input stream in a {@link FilteredStreamReader} if the document GML version
+ *   <li>Wraps the input stream in a {@link FilteredReader} if the document GML version
  *       in not the SIS native GML version.</li>
  * </ul>
  *
@@ -120,7 +120,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     private Object unmarshal(XMLStreamReader input, final FilterVersion version)
             throws XMLStreamException, JAXBException
     {
-        input = FilteredStreamReader.create(input, version);
+        input = new FilteredReader(input, version);
         final Context context = begin();
         final Object object;
         try {
@@ -139,7 +139,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     private <T> JAXBElement<T> unmarshal(XMLStreamReader input, final FilterVersion version, final Class<T> declaredType)
             throws XMLStreamException, JAXBException
     {
-        input = FilteredStreamReader.create(input, version);
+        input = new FilteredReader(input, version);
         final Context context = begin();
         final JAXBElement<T> object;
         try {
@@ -342,7 +342,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(XMLStreamReader input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) {
-            input = FilteredStreamReader.create(input, version);
+            input = new FilteredReader(input, version);
         }
         final Context context = begin();
         try {
@@ -359,7 +359,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public <T> JAXBElement<T> unmarshal(XMLStreamReader input, final Class<T> declaredType) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) {
-            input = FilteredStreamReader.create(input, version);
+            input = new FilteredReader(input, version);
         }
         final Context context = begin();
         try {

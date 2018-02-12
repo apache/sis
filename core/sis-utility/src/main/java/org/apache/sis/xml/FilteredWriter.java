@@ -90,35 +90,12 @@ final class FilteredWriter implements XMLEventWriter {
     }
 
     /**
-     * Returns the URI to write in the XML document.
-     * If there is no namespace change, then this method returns the given instance as-is.
-     */
-    private String exportNS(final String uri) {
-        return version.exports.getOrDefault(uri, uri);
-    }
-
-    /**
-     * Returns the name (prefix, namespace and local part) to write in the XML document.
-     * If there is no name change, then this method returns the given instance as-is.
-     */
-    private QName export(QName name) {
-        String uri = name.getNamespaceURI();
-        if (uri != null && !uri.isEmpty()) {                                // Optimization for a common case.
-            uri = version.exports.get(uri);
-            if (uri != null) {
-                name = new QName(uri, name.getLocalPart(), Namespaces.getPreferredPrefix(uri, name.getPrefix()));
-            }
-        }
-        return name;
-    }
-
-    /**
      * Returns the attribute to write in the XML document.
      * If there is no name change, then this method returns the given instance as-is.
      */
     private Attribute export(Attribute attribute) {
         final QName originalName = attribute.getName();
-        final QName name = export(originalName);
+        final QName name = version.export(originalName);
         if (name != originalName) {
             attribute = new FilteredEvent.Attr(attribute, name);
         }
@@ -140,8 +117,8 @@ final class FilteredWriter implements XMLEventWriter {
             if (uri.charAt(end) == '/') {
                 uri = uri.substring(0, end);                            // Trim trailing '/' in URI.
             }
-            final String exported = version.exports.get(uri);
-            if (exported != null) {
+            final String exported = version.exportNS(uri);
+            if (exported != uri) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
                     return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
                 });
@@ -205,7 +182,7 @@ final class FilteredWriter implements XMLEventWriter {
                 uniqueNamespaces.clear();                       // Discard entries created by NAMESPACE events.
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                final QName name = export(originalName);
+                final QName name = version.export(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
                     final Attribute a = it.next();
@@ -232,7 +209,7 @@ final class FilteredWriter implements XMLEventWriter {
             case END_ELEMENT: {
                 final EndElement e = event.asEndElement();
                 final QName originalName = e.getName();
-                final QName name = export(originalName);
+                final QName name = version.export(originalName);
                 final List<Namespace> namespaces = export(e.getNamespaces(), name != originalName);
                 if (namespaces != null) {
                     event = new FilteredEvent.End(e, name, namespaces);
@@ -276,7 +253,7 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public void setPrefix(final String prefix, final String uri) throws XMLStreamException {
-        out.setPrefix(prefix, exportNS(uri));
+        out.setPrefix(prefix, version.exportNS(uri));
     }
 
     /**
@@ -288,7 +265,7 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public void setDefaultNamespace(final String uri) throws XMLStreamException {
-        out.setDefaultNamespace(exportNS(uri));
+        out.setDefaultNamespace(version.exportNS(uri));
     }
 
     /**
@@ -302,7 +279,7 @@ final class FilteredWriter implements XMLEventWriter {
         if (context instanceof FilteredNamespaces) {
             context = ((FilteredNamespaces) context).inverse(version);
         } else {
-            context = new FilteredNamespaces(context, version, true);
+            context = new FilteredNamespaces.Import(context, version);
         }
         out.setNamespaceContext(context);
     }
@@ -312,7 +289,7 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public NamespaceContext getNamespaceContext() {
-        return new FilteredNamespaces(out.getNamespaceContext(), version, false);
+        return new FilteredNamespaces(out.getNamespaceContext(), version);
     }
 
     /**
