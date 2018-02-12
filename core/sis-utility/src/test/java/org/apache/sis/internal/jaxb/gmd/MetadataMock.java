@@ -42,8 +42,7 @@ import org.apache.sis.xml.Namespaces;
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
 final strictfp class MetadataMock extends SimpleMetadata {
     /**
-     * The language used for documenting metadata. The namespace should be {@code "gmd"},
-     * but we use the newer namespace because of the way {@code FilteredStreamResolver} work.
+     * The language used for documenting metadata.
      */
     @XmlElement(namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(LocaleAdapter.class)

@@ -248,7 +248,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
         /** Gets a read-only namespace context. */
         @Override public NamespaceContext getNamespaceContext() {
             final NamespaceContext context = event.getNamespaceContext();
-            return (context != null) ? new FilteredNamespaces(context, version, false) : null;
+            return (context != null) ? new FilteredNamespaces(context, version) : null;
         }
 
         /** Gets the value that the prefix is bound to in the context of this element. */
@@ -256,7 +256,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
             final NamespaceContext context = event.getNamespaceContext();
             if (context != null) {
                 final String uri = context.getNamespaceURI(prefix);
-                return version.exports.getOrDefault(uri, uri);
+                return version.exportNS(uri);
             }
             return null;
         }

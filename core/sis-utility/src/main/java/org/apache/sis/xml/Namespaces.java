@@ -632,8 +632,8 @@ public final class Namespaces extends Static {
      */
     public static String guessForType(final String type) {
         /*
-         * Implementation note: we could invoke FilteredStreamResolver.namespace(type) unconditionally,
-         * but that method may be removed in a future SIS version if we replace FilteredStreamResolver
+         * Implementation note: we could invoke FilteredReader.namespace(type) unconditionally,
+         * but that method may be removed in a future SIS version if we replace FilteredReader
          * by XSD (https://issues.apache.org/jira/projects/SIS/issues/SIS-381). By using a switch now,
          * we reduce the behavioral change is SIS-381 is applied. It can also reduce classes loading.
          */
@@ -647,7 +647,7 @@ public final class Namespaces extends Static {
                     case ('L' << Character.SIZE) | 'I': return MRL;
                     case ('D' << Character.SIZE) | 'S': // Usually MDA except for DS_InitiativeTypeCode
                     case ('M' << Character.SIZE) | 'D':
-                    case ('M' << Character.SIZE) | 'I': return FilteredStreamResolver.namespace(type);
+                    case ('M' << Character.SIZE) | 'I': return FilteredReader.namespace(type);
                     case ('M' << Character.SIZE) | 'X': return MDT;
                     case ('P' << Character.SIZE) | 'T': return LAN;
                     case ('S' << Character.SIZE) | 'V': return SRV;
@@ -657,7 +657,7 @@ public final class Namespaces extends Static {
                 }
             } else {
                 // Needs to handle at least DCPList
-                return FilteredStreamResolver.namespace(type);
+                return FilteredReader.namespace(type);
             }
         }
         return null;

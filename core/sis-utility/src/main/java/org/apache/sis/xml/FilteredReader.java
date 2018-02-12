@@ -27,18 +27,22 @@ import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.util.InvalidPropertiesFormatException;
 import javax.xml.namespace.QName;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.util.StreamReaderDelegate;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
- * A {@code StreamReader} which uses a more complex algorithm backed by a dictionary for identifying the XML namespaces
- * expected by JAXB implementation. This is used when a single namespace in a legacy schema has been splitted into many
- * namespaces in a newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3. In such cases,
- * we need to check which attribute is being mapped in order to determine the new namespace.
+ * A filter replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
+ * This class forwards every method calls to the wrapped {@link XMLStreamReader}, but with some {@code namespaceURI}
+ * modified before being transfered. This class uses a dictionary for identifying the XML namespaces expected by JAXB
+ * implementation. This is needed when a single namespace in a legacy schema has been splitted into many namespaces
+ * in the newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3.
+ * In such cases, we need to check which attribute is being mapped in order to determine the new namespace.
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
@@ -46,7 +50,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @since   1.0
  * @module
  */
-final class FilteredStreamResolver extends FilteredStreamReader {
+final class FilteredReader extends StreamReaderDelegate {
     /**
      * Location of the file listing types and attributes contained in namespaces.
      * The file location is relative to this {@code NamespaceContent} class.
@@ -71,13 +75,34 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     static final String TYPE_KEY = "<type>";
 
     /**
+     * Character used for separating a old name for the new name. For example in {@code SV_OperationMetadata},
+     * {@code "DCP"} in ISO 19139:2007 has been renamed {@code "distributedComputingPlatform"} in ISO 19115-3.
+     * This is encoded in {@value #FILENAME} file as {@code "DCP/distributedComputingPlatform"}.
+     */
+    private static final char RENAME_SEPARATOR = '/';
+
+    /**
+     * Returns {@code true} if the given string is a namespace URI, or {@code false} if it is a property name.
+     * This method implements a very fast check based on the presence of {@code ':'} in {@code "http://foo.bar"}.
+     * It assumes that all namespaces declared in the {@value #FILENAME} file use the {@code "http"} protocol and
+     * no property name use the {@code ':'} character.
+     */
+    private static boolean isNamespace(final String candidate) {
+        return (candidate.length() > 4) && (candidate.charAt(4) == ':');
+    }
+
+    /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
      *
      * <ul>
      *   <li>Keys are XML names of types (e.g. {@code "CI_Citation"})</li>
      *   <li>Values are maps where:<ul>
      *     <li>Keys are XML names of attributes (e.g. {@code "title"}) or {@value #TYPE_KEY}</li>
-     *     <li>Values are namespace URI</li>
+     *     <li>Values are either:<ul>
+     *       <li>Namespace URI if {@link #isNamespace(String)} returns {@code true} for that value.</li>
+     *       <li>New name of the element otherwise. In such case, the map must be queried again with
+     *           that new name for obtaining the namespace.</li>
+     *     </ul></li>
      *   </ul></li>
      * </ul>
      *
@@ -88,35 +113,42 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     static {
         final Map<String, Map<String,String>> m = new HashMap<>(250);
         try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
-                FilteredStreamResolver.class.getResourceAsStream(FILENAME), "UTF-8")))
+                FilteredReader.class.getResourceAsStream(FILENAME), "UTF-8")))
         {
-            Map<String,String> attributes = null;   // All attributes for a given type.
-            String namespace = null;                // Value to store in 'attributes' map.
+            Map<String,String> attributes = null;               // All attributes for a given type.
+            String namespace = null;                            // Value to store in 'attributes' map.
             String line;
             while ((line = in.readLine()) != null) {
                 final int length = line.length();
                 final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
                 if (start < length && line.charAt(start) != '#') {
-                    final String element = line.substring(start).trim().intern();
+                    String element = line.substring(start).trim();
                     switch (start) {
-                        case 0: {                       // New namespace URI.
-                            namespace  = element;
+                        case 0: {                                                   // New namespace URI.
+                            if (!isNamespace(element)) break;                       // Report illegal format.
+                            namespace  = element.intern();
                             attributes = null;
                             continue;
                         }
-                        case 2: {                       // New type in above namespace URI.
-                            attributes = m.computeIfAbsent(element, (k) -> new HashMap<>());
+                        case 2: {                                                   // New type in above namespace URI.
+                            attributes = m.computeIfAbsent(element.intern(), (k) -> new HashMap<>());
                             continue;
                         }
-                        case 4: {                       // New attribute in above type.
-                            if (attributes != null && namespace != null) {
-                                attributes.put(element, namespace);
-                                continue;
+                        case 4: {                                                   // New attribute in above type.
+                            if (attributes == null || namespace == null) break;     // Report illegal format.
+                            final int s = element.indexOf(RENAME_SEPARATOR);
+                            if (s >= 0) {
+                                final String old = element.substring(0, s).trim().intern();
+                                element = element.substring(s+1).trim().intern();
+                                attributes.put(old, element);
+                            } else {
+                                element = element.intern();
                             }
-                            // Fall through for reporting illegal format.
+                            attributes.put(element, namespace);
+                            continue;
                         }
                     }
-                    throw new InvalidPropertiesFormatException(Errors.format(      // See FILE javadoc.
+                    throw new InvalidPropertiesFormatException(Errors.format(       // See FILE javadoc.
                             Errors.Keys.ErrorInFileAtLine_2, FILENAME, in.getLineNumber()));
                 }
             }
@@ -134,13 +166,16 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     /**
      * The mapping from attribute names to types where such attribute is declared.
      * An attribute of the same name may be declared in many types.
+     *
+     * <p>This method does not look at namespaces. Consequently the renaming encoding
+     * (e.g. {@code "DCP/distributedComputingPlatform"}) is not of concern here.</p>
      */
     private static final Map<String, Set<String>> DECLARING_TYPES;
     static {
         final Map<String, Set<String>> m = new HashMap<>(500);
-        for (final Map.Entry<String, Map<String,String>> e : NAMESPACES.entrySet()) {
-            final String type = e.getKey();
-            for (final String attribute : e.getValue().keySet()) {
+        for (final Map.Entry<String, Map<String,String>> forTypes : NAMESPACES.entrySet()) {
+            final String type = forTypes.getKey();
+            for (final String attribute : forTypes.getValue().keySet()) {
                 m.computeIfAbsent(attribute, (k) -> new HashSet<>()).add(type);
             }
         }
@@ -159,6 +194,11 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     }
 
     /**
+     * The external XML format version to unmarshal from.
+     */
+    private final FilterVersion version;
+
+    /**
      * List of encountered XML tags, in order. Used for backtracking.
      * Elements are removed from this list when they are closed.
      */
@@ -167,8 +207,9 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     /**
      * Creates a new filter for the given version of the standards.
      */
-    FilteredStreamResolver(final XMLStreamReader in, final FilterVersion version) {
-        super(in, version);
+    FilteredReader(final XMLStreamReader in, final FilterVersion version) {
+        super(in);
+        this.version = version;
         outerElements = new ArrayList<>();
     }
 
@@ -221,6 +262,7 @@ final class FilteredStreamResolver extends FilteredStreamReader {
 
     /**
      * Returns the namespace of the given ISO type, or {@code null} if unknown.
+     * This is the namespace used in JAXB annotations.
      *
      * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
      * @return a namespace for the given type, or {@code null} if unknown.
@@ -271,18 +313,41 @@ final class FilteredStreamResolver extends FilteredStreamReader {
      * Converts a name read from the XML document to the name to give to JAXB.
      * The new namespace depends on both the old namespace and the element name.
      */
-    @Override
-    final QName importNS(QName name) {
+    private QName importNS(QName name) {
         final String namespaceURI = name.getNamespaceURI();
         final String localPart = name.getLocalPart();
         String replacement = namespaceOf(localPart);
         if (replacement == null) {
-            replacement = importNS(namespaceURI);
+            replacement = version.importNS(namespaceURI);
         }
         if (!replacement.equals(namespaceURI)) {
             name = new QName(replacement, localPart, name.getPrefix());
         }
         return name;
+    }
+
+    /** Replaces the given URI if needed, then forwards the call. */
+    @Override
+    public void require(final int type, final String namespaceURI, final String localName) throws XMLStreamException {
+        super.require(type, version.exportNS(namespaceURI), localName);
+    }
+
+    /** Returns the context of the underlying reader wrapped in a filter that converts the namespaces on the fly. */
+    @Override
+    public NamespaceContext getNamespaceContext() {
+        return new FilteredNamespaces.Import(super.getNamespaceContext(), version);
+    }
+
+    /** Forwards the call, then replaces the namespace URI if needed. */
+    @Override
+    public QName getName() {
+        return importNS(super.getName());
+    }
+
+    /** Forwards the call, then replaces the namespace URI if needed. */
+    @Override
+    public QName getAttributeName(final int index) {
+        return importNS(super.getAttributeName(index));
     }
 
     /**
@@ -293,8 +358,37 @@ final class FilteredStreamResolver extends FilteredStreamReader {
     public String getNamespaceURI() {
         String namespace = namespaceOf(getLocalName());
         if (namespace == null) {
-            namespace = super.getNamespaceURI();
+            namespace = version.importNS(super.getNamespaceURI());
         }
         return namespace;
+    }
+
+    /**
+     * Forwards the call, then replaces the returned URI if needed.
+     *
+     * <b>Note:</b> the index passed to this method is the index of a namespace declaration on the root element.
+     * This should not matter as long as each <em>element</em> has the proper namespace URI.
+     */
+    @Override
+    public String getNamespaceURI(int index) {
+        return version.importNS(super.getNamespaceURI(index));
+    }
+
+    /** Forwards the call, then replaces the returned URI if needed. */
+    @Override
+    public String getNamespaceURI(final String prefix) {
+        return version.importNS(super.getNamespaceURI(prefix));
+    }
+
+    /** Forwards the call, then replaces the returned URI if needed. */
+    @Override
+    public String getAttributeNamespace(final int index) {
+        return version.importNS(super.getAttributeNamespace(index));
+    }
+
+    /** Replaces the given URI if needed, then forwards the call. */
+    @Override
+    public String getAttributeValue(final String namespaceUri, final String localName) {
+        return super.getAttributeValue(version.exportNS(namespaceUri), localName);
     }
 }
