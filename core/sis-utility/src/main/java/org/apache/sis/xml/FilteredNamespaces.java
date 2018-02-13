@@ -64,6 +64,51 @@ import javax.xml.XMLConstants;
  */
 class FilteredNamespaces implements NamespaceContext {
     /**
+     * Given the context for namespaces used in our JAXB annotations, returns a context working with namespaces
+     * used in XML document. The returned context converts namespace arguments from XML to JAXB namespaces, and
+     * converts returned namespaces from JAXB to XML. Prefixes are left unchanged since they can be arbitrary
+     * (even if not the standard match for a given namespace).
+     *
+     * <div class="note"><b>Example:</b>
+     * for a {@code "http://www.isotc211.org/2005/gmd"} namespace (legacy ISO 19139:2007) given in argument to
+     * {@link #getPrefixes(String)}, the context convert that namespace to all possible ISO 19115-3 namespaces
+     * (there is many) and returns the associated prefixes: {@code "mdb"}, {@code "cit"}, <i>etc.</i>
+     * Conversely given a {@code "mdb"}, {@code "cit"}, <i>etc.</i>, prefix, {@link #getNamespaceURI(String)}
+     * method returns the above-cited legacy GMD namespace.</div>
+     *
+     * This can be used when a {@link javax.xml.stream.XMLStreamWriter} has been created for writing with JAXB
+     * annotations and we want to expose an {@code XMLStreamReader} for writing a legacy XML document.
+     */
+    static NamespaceContext exportNS(NamespaceContext context, final FilterVersion version) {
+        if (context != null) {
+            if (context instanceof Import && ((Import) context).version == version) {
+                context = ((Import) context).context;
+            } else {
+                context = new FilteredNamespaces(context, version);
+            }
+        }
+        return context;
+    }
+
+    /**
+     * Given a context for namespaces used in XML document, returns a context working with the namespaces used
+     * in our JAXB annotations.  The returned context converts namespace arguments from JAXB to XML namespaces
+     * before to delegate to the wrapped context, and converts returned namespaces from XML to JAXB.  This can
+     * be used when a {@link javax.xml.stream.XMLStreamReader} has been created for reading a legacy XML document
+     * and we want to expose an {@code XMLStreamReader} for JAXB.
+     */
+    static NamespaceContext importNS(NamespaceContext context, final FilterVersion version) {
+        if (context != null) {
+            if (context.getClass() == FilteredNamespaces.class && ((FilteredNamespaces) context).version == version) {
+                context = ((FilteredNamespaces) context).context;
+            } else {
+                context = new FilteredNamespaces.Import(context, version);
+            }
+        }
+        return context;
+    }
+
+    /**
      * The context to wrap, given by {@link FilteredReader} or {@link FilteredWriter}.
      *
      * @see javax.xml.stream.XMLStreamReader#getNamespaceContext()
@@ -79,35 +124,21 @@ class FilteredNamespaces implements NamespaceContext {
     /**
      * Creates a new namespaces filter for the given target version.
      */
-    FilteredNamespaces(final NamespaceContext context, final FilterVersion version) {
+    private FilteredNamespaces(final NamespaceContext context, final FilterVersion version) {
         this.context = context;
         this.version = version;
     }
 
     /**
-     * Returns the inverse of {@code FilteredNamespaces}.
-     */
-    NamespaceContext inverse(final FilterVersion target) {
-        return (version == target) ? context : new Import(context, target);
-    }
-
-    /**
      * Substitutes the XML namespaces used in XML documents by namespaces used in JAXB annotations.
-     * This is used at unmarshalling time for importing legacy documents.
+     * This is used at unmarshalling time for importing legacy documents, performing the reverse of
+     * {@link FilteredNamespaces}. The <i>namespace → prefix</i> mapping is simpler because various
+     * ISO 19115-3 namespaces are mapped to the same legacy {@code "gmd"} prefix.
      */
-    static final class Import extends FilteredNamespaces {
-        /**
-         * Creates a new namespaces filter for the given source version.
-         */
+    private static final class Import extends FilteredNamespaces {
+        /** Creates a new namespaces filter for the given source version. */
         Import(final NamespaceContext context, final FilterVersion version) {
             super(context, version);
-        }
-
-        /**
-         * Returns the inverse of this namespace.
-         */
-        @Override NamespaceContext inverse(final FilterVersion target) {
-            return (version == target) ? context : new FilteredNamespaces(context, target);
         }
 
         /**
@@ -173,7 +204,9 @@ class FilteredNamespaces implements NamespaceContext {
          * legacy ISO 19139:2007) is mapped to multiple namespaces in the new ISO 19115-3:2016 or other standard.
          * In such case, we have to iterate over 'exports' entries until we find an inverse mapping.
          */
-        for (final Map.Entry<String, FilterVersion.Replacement> e : version.exports().entrySet()) {
+        final Iterator<Map.Entry<String, FilterVersion.Replacement>> it = version.exports();
+        while (it.hasNext()) {
+            final Map.Entry<String, FilterVersion.Replacement> e = it.next();
             if (namespaceURI.equals(e.getValue().namespace)) {
                 p = context.getPrefix(e.getKey());
                 if (p != null) return p;
@@ -213,9 +246,11 @@ class FilteredNamespaces implements NamespaceContext {
         private String next;
 
         /** Creates a new iterator for the prefixes associated to the given namespace URI. */
-        Prefixes(final NamespaceContext context, final Map<String, FilterVersion.Replacement> exports, final String namespaceURI) {
+        Prefixes(final NamespaceContext context, final Iterator<Map.Entry<String, FilterVersion.Replacement>> exports,
+                 final String namespaceURI)
+        {
             this.context      = context;
-            this.exports      = exports.entrySet().iterator();
+            this.exports      = exports;
             this.namespaceURI = namespaceURI;
         }
 

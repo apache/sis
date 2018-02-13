@@ -3,6 +3,7 @@
 # Lines with zero-spaces indentation are namespace URIs.
 # Lines with two-spaces  indentation are classes.
 # Lines with four-spaces indentation are attributes.
+# old/new means that a property needs to be renamed.
 #
 http://standards.iso.org/iso/19115/-3/cit/1.0
   AbstractCI_Party
@@ -965,11 +966,11 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
     <type>
     connectPoint
     dependsOn
-    distributedComputingPlatform
+    DCP/distributedComputingPlatform
     invocationName
     operationDescription
     operationName
-    parameter
+    parameters/parameter
   SV_Parameter
     <type>
     description

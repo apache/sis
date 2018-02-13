@@ -245,24 +245,29 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
             return null;
         }
 
-        /** Gets a read-only namespace context. */
-        @Override public NamespaceContext getNamespaceContext() {
-            final NamespaceContext context = event.getNamespaceContext();
-            return (context != null) ? new FilteredNamespaces(context, version) : null;
+        /**
+         * Gets a read-only namespace context.
+         *
+         * @see FilteredWriter#getNamespaceContext()
+         */
+        @Override
+        public NamespaceContext getNamespaceContext() {
+            return FilteredNamespaces.exportNS(event.getNamespaceContext(), version);
         }
 
-        /** Gets the value that the prefix is bound to in the context of this element. */
-        @Override public String getNamespaceURI(final String prefix) {
-            final NamespaceContext context = event.getNamespaceContext();
-            if (context != null) {
-                final String uri = context.getNamespaceURI(prefix);
-                return version.exportNS(uri);
-            }
-            return null;
+        /**
+         * Gets the value that the prefix is bound to in the context of this element.
+         */
+        @Override
+        public String getNamespaceURI(final String prefix) {
+            return version.exportNS(event.getNamespaceURI(prefix));
         }
 
-        /** Writes the event as per the XML 1.0 without indentation or whitespace. */
-        @Override void write(final Appendable out) throws IOException {
+        /**
+         * Writes the event as per the XML 1.0 without indentation or whitespace.
+         */
+        @Override
+        void write(final Appendable out) throws IOException {
             name(out.append('<'));
             final int n = attributes.size();
             for (int i=0; i<n; i++) {

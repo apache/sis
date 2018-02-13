@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Collections;
 import javax.xml.namespace.QName;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
@@ -92,8 +93,7 @@ final class FilterVersion {
 
     /**
      * GML using the legacy {@code "http://www.opengis.net/gml"} namespace.
-     * Note that the use of GML 3.2 may imply the use of ISO 19139:2007,
-     * which requires the use of {@link #ALL}.
+     * Note that the use of GML 3.2 implies the use of ISO 19139:2007.
      */
     static final FilterVersion GML31 = new FilterVersion(ISO19139);
     static {
@@ -170,11 +170,11 @@ final class FilterVersion {
     /**
      * The URI replacements to apply when going from the filtered reader/writer to the
      * model implemented by Apache SIS. This map is the converse of {@link #exports}.
+     * It does not contain the map of properties to rename because that map is handled
+     * by {@link FilteredReader} instead, as part of {@code NamespaceContent.txt} file.
      *
      * <p>This map shall not be modified after construction.
      * We do not wrap in {@link Collections#unmodifiableMap(Map)} for efficiency.</p>
-     *
-     * @see #imports()
      */
     private final Map<String, String> imports;
 
@@ -248,38 +248,36 @@ final class FilterVersion {
 
     /**
      * Converts a namespace used in JAXB annotation to the namespace used in XML document.
+     * Returns the same URI if there is no replacement.
      */
     final String exportNS(final String uri) {
         final FilterVersion.Replacement r = exports.get(uri);
         return (r != null) ? r.namespace : uri;
     }
 
-    final Replacement export(final String uri) {
-        return exports.get(uri);
-    }
-
     /**
      * Converts a namespace used in XML document to the namespace used in JAXB annotation.
+     * Returns the same URI if there is no replacement.
      */
     final String importNS(final String uri) {
         return imports.getOrDefault(uri, uri);
     }
 
     /**
-     * Returns the URI replacements to apply when going from the model implemented by Apache SIS to the
-     * filtered reader/writer. Used only for more sophisticated work than what {@link #exportNS(String)}
-     * does. Wrapped in a {@link Collections#unmodifiableMap(Map)} for safety.
+     * Converts a namespace used in JAXB annotation to the namespace used in XML document,
+     * together with a map of properties to rename.
+     * Returns {@code null} if there is no replacement.
      */
-    final Map<String, Replacement> exports() {
-        return Collections.unmodifiableMap(exports);
+    final Replacement export(final String uri) {
+        return exports.get(uri);
     }
 
     /**
-     * Returns the URI replacements to apply when going from the filtered reader/writer to the model implemented
-     * by Apache SIS. Used only for mor sophisticated work than what {@link #exportNS(String)} does. Wrapped in
-     * a {@link Collections#unmodifiableMap(Map)} for safety.
+     * Returns the URI replacements to apply when going from the model implemented by Apache SIS to the
+     * filtered reader/writer. Used only for more sophisticated work than what {@link #exportNS(String)} does.
+     * Returned as an iterator for avoiding to expose modifiable map; do not invoke {@link Iterator#remove()}.
      */
-    final Map<String, String> imports() {
-        return Collections.unmodifiableMap(imports);
+    final Iterator<Map.Entry<String, Replacement>> exports() {
+        return exports.entrySet().iterator();
     }
 }
