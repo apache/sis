@@ -205,6 +205,13 @@ final class FilteredReader extends StreamReaderDelegate {
     private final List<String> outerElements;
 
     /**
+     * The {@code localPart} argument given to {@link #namespaceOf(String)}, potentially renamed.
+     * For example given the {@code "DCP/distributedComputingPlatform"} entry in {@value #FILENAME} file,
+     * a call to {@code namespaceOf("DCP")} will set this field to {@code "distributedComputingPlatform"}.
+     */
+    private String renamed;
+
+    /**
      * Creates a new filter for the given version of the standards.
      */
     FilteredReader(final XMLStreamReader in, final FilterVersion version) {
@@ -268,6 +275,10 @@ final class FilteredReader extends StreamReaderDelegate {
      * @return a namespace for the given type, or {@code null} if unknown.
      */
     static String namespace(final String type) {
+        /*
+         * Same implementation than namespaceOf(type) but without DECLARING_TYPES.get(…)
+         * since that value should alway be null for class names.
+         */
         final Map<String,String> attributes = NAMESPACES.get(type);
         return (attributes != null) ? attributes.get(TYPE_KEY) : null;
     }
@@ -281,10 +292,13 @@ final class FilteredReader extends StreamReaderDelegate {
      *          or {@code null} if the given name is unknown.
      */
     private String namespaceOf(final String localPart) {
+        renamed = localPart;
         final Set<String> declaringTypes = DECLARING_TYPES.get(localPart);
         if (declaringTypes == null) {
             /*
              * If the element is a root element, return the associated namespace.
+             * We do not need to check if the value associated to TYPE_KEY is for
+             * a renaming since it is never the case for that key.
              */
             final Map<String,String> attributes = NAMESPACES.get(localPart);
             if (attributes != null) {
@@ -302,7 +316,13 @@ final class FilteredReader extends StreamReaderDelegate {
                      * A NullPointerException below would be a bug in our algorithm because
                      * we constructed DECLARING_TYPES from NAMESPACES keys only.
                      */
-                    return NAMESPACES.get(parent).get(localPart);
+                    final Map<String,String> attributes = NAMESPACES.get(parent);
+                    String uri = attributes.get(localPart);
+                    if (!isNamespace(uri)) {
+                        renamed = uri;
+                        uri = attributes.get(uri);
+                    }
+                    return uri;
                 }
             }
         }
@@ -320,8 +340,8 @@ final class FilteredReader extends StreamReaderDelegate {
         if (replacement == null) {
             replacement = version.importNS(namespaceURI);
         }
-        if (!replacement.equals(namespaceURI)) {
-            name = new QName(replacement, localPart, name.getPrefix());
+        if (!replacement.equals(namespaceURI) || !localPart.equals(renamed)) {
+            name = new QName(replacement, renamed, name.getPrefix());
         }
         return name;
     }
@@ -335,7 +355,7 @@ final class FilteredReader extends StreamReaderDelegate {
     /** Returns the context of the underlying reader wrapped in a filter that converts the namespaces on the fly. */
     @Override
     public NamespaceContext getNamespaceContext() {
-        return new FilteredNamespaces.Import(super.getNamespaceContext(), version);
+        return FilteredNamespaces.importNS(super.getNamespaceContext(), version);
     }
 
     /** Forwards the call, then replaces the namespace URI if needed. */

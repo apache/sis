@@ -276,20 +276,17 @@ final class FilteredWriter implements XMLEventWriter {
      */
     @Override
     public void setNamespaceContext(NamespaceContext context) throws XMLStreamException {
-        if (context instanceof FilteredNamespaces) {
-            context = ((FilteredNamespaces) context).inverse(version);
-        } else {
-            context = new FilteredNamespaces.Import(context, version);
-        }
-        out.setNamespaceContext(context);
+        out.setNamespaceContext(FilteredNamespaces.importNS(context, version));
     }
 
     /**
      * Returns the context of the underlying writer wrapped in a filter that convert the namespaces on the fly.
+     *
+     * @see FilteredEvent.Start#getNamespaceContext()
      */
     @Override
     public NamespaceContext getNamespaceContext() {
-        return new FilteredNamespaces(out.getNamespaceContext(), version);
+        return FilteredNamespaces.exportNS(out.getNamespaceContext(), version);
     }
 
     /**
