@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
 import javax.xml.namespace.QName;
+import org.apache.sis.util.Debug;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
@@ -153,6 +154,14 @@ final class FilterVersion {
         final String exportProperty(final String localPart) {
             return exports.getOrDefault(localPart, localPart);
         }
+
+        /**
+         * Returns the namespace for debugging purpose.
+         */
+        @Override @Debug
+        public String toString() {
+            return namespace;
+        }
     }
 
     /**
@@ -241,6 +250,10 @@ final class FilterVersion {
                 uri = r.namespace;
                 name = new QName(uri, r.exportProperty(name.getLocalPart()),
                         Namespaces.getPreferredPrefix(uri, name.getPrefix()));
+                /*
+                 * Note: the call for 'getPreferredPrefix' above is required:
+                 * JAXB seems to need the prefixes for recognizing namespaces.
+                 */
             }
         }
         return name;

@@ -55,7 +55,7 @@ import org.apache.sis.internal.jaxb.Context;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -117,7 +117,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * @param  version  identify the namespace substitutions to perform.
      * @return the unmarshalled object.
      */
-    private Object unmarshal(XMLStreamReader input, final FilterVersion version)
+    private Object unmarshal(XMLEventReader input, final FilterVersion version)
             throws XMLStreamException, JAXBException
     {
         input = new FilteredReader(input, version);
@@ -133,10 +133,10 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     }
 
     /**
-     * Same as {@link #unmarshal(XMLStreamReader, FilterVersion)}, but delegating to the unmarshaller
+     * Same as {@link #unmarshal(XMLEventReader, FilterVersion)}, but delegating to the unmarshaller
      * methods returning a JAXB element instead than the one returning the object.
      */
-    private <T> JAXBElement<T> unmarshal(XMLStreamReader input, final FilterVersion version, final Class<T> declaredType)
+    private <T> JAXBElement<T> unmarshal(XMLEventReader input, final FilterVersion version, final Class<T> declaredType)
             throws XMLStreamException, JAXBException
     {
         input = new FilteredReader(input, version);
@@ -158,7 +158,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final InputStream input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -179,7 +179,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
             try (InputStream s = input.openStream()) {
-                return unmarshal(InputFactory.createXMLStreamReader(s), version);
+                return unmarshal(InputFactory.createXMLEventReader(s), version);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
@@ -201,7 +201,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
             try (InputStream s = new BufferedInputStream(new FileInputStream(input))) {
-                return unmarshal(InputFactory.createXMLStreamReader(s), version);
+                return unmarshal(InputFactory.createXMLEventReader(s), version);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
@@ -222,7 +222,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final Reader input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -242,7 +242,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final InputSource input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -262,7 +262,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final Node input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -282,7 +282,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public <T> JAXBElement<T> unmarshal(final Node input, final Class<T> declaredType) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version, declaredType);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, declaredType);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -302,7 +302,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final Source input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -322,7 +322,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public <T> JAXBElement<T> unmarshal(final Source input, final Class<T> declaredType) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version, declaredType);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, declaredType);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -339,44 +339,10 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * Delegates the unmarshalling to the wrapped unmarshaller.
      */
     @Override
-    public Object unmarshal(XMLStreamReader input) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
-        if (version != null) {
-            input = new FilteredReader(input, version);
-        }
-        final Context context = begin();
-        try {
-            return unmarshaller.unmarshal(input);
-        } finally {
-            context.finish();
-        }
-    }
-
-    /**
-     * Delegates the unmarshalling to the wrapped unmarshaller.
-     */
-    @Override
-    public <T> JAXBElement<T> unmarshal(XMLStreamReader input, final Class<T> declaredType) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
-        if (version != null) {
-            input = new FilteredReader(input, version);
-        }
-        final Context context = begin();
-        try {
-            return unmarshaller.unmarshal(input, declaredType);
-        } finally {
-            context.finish();
-        }
-    }
-
-    /**
-     * Delegates the unmarshalling to the wrapped unmarshaller.
-     */
-    @Override
-    public Object unmarshal(final XMLEventReader input) throws JAXBException {
+    public Object unmarshal(final XMLStreamReader input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version);
+            return unmarshal(InputFactory.createXMLEventReader(input), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -393,10 +359,10 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * Delegates the unmarshalling to the wrapped unmarshaller.
      */
     @Override
-    public <T> JAXBElement<T> unmarshal(final XMLEventReader input, final Class<T> declaredType) throws JAXBException {
+    public <T> JAXBElement<T> unmarshal(final XMLStreamReader input, final Class<T> declaredType) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            return unmarshal(InputFactory.createXMLStreamReader(input), version, declaredType);
+            return unmarshal(InputFactory.createXMLEventReader(input), version, declaredType);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -406,6 +372,40 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
             } finally {
                 context.finish();
             }
+        }
+    }
+
+    /**
+     * Delegates the unmarshalling to the wrapped unmarshaller.
+     */
+    @Override
+    public Object unmarshal(XMLEventReader input) throws JAXBException {
+        final FilterVersion version = getFilterVersion();
+        if (version != null) {
+            input = new FilteredReader(input, version);
+        }
+        final Context context = begin();
+        try {
+            return unmarshaller.unmarshal(input);
+        } finally {
+            context.finish();
+        }
+    }
+
+    /**
+     * Delegates the unmarshalling to the wrapped unmarshaller.
+     */
+    @Override
+    public <T> JAXBElement<T> unmarshal(XMLEventReader input, final Class<T> declaredType) throws JAXBException {
+        final FilterVersion version = getFilterVersion();
+        if (version != null) {
+            input = new FilteredReader(input, version);
+        }
+        final Context context = begin();
+        try {
+            return unmarshaller.unmarshal(input, declaredType);
+        } finally {
+            context.finish();
         }
     }
 

@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,16 +50,11 @@ import static javax.xml.stream.XMLStreamConstants.*;
  * @since   1.0
  * @module
  */
-final class FilteredWriter implements XMLEventWriter {
+final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     /**
      * Where events are sent.
      */
     private final XMLEventWriter out;
-
-    /**
-     * The other version to marshal to.
-     */
-    private final FilterVersion version;
 
     /**
      * Keep track of namespace URIs that have already been declared so they don't get duplicated.
@@ -74,19 +68,12 @@ final class FilteredWriter implements XMLEventWriter {
     private final Map<String, Namespace> uniqueNamespaces;
 
     /**
-     * Temporary list of attributes after their namespace change.
-     * This list is recycled for each XML element to be read.
-     */
-    private final List<Attribute> exportedAttributes;
-
-    /**
      * Creates a new filter for the given version of the standards.
      */
     FilteredWriter(final XMLEventWriter out, final FilterVersion version) {
+        super(version);
         this.out = out;
-        this.version = version;
         uniqueNamespaces = new LinkedHashMap<>();
-        exportedAttributes = new ArrayList<>();
     }
 
     /**
@@ -113,11 +100,7 @@ final class FilteredWriter implements XMLEventWriter {
     private Namespace exportIfNew(final Namespace namespace) {
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
-            final int end = uri.length() - 1;
-            if (uri.charAt(end) == '/') {
-                uri = uri.substring(0, end);                            // Trim trailing '/' in URI.
-            }
-            final String exported = version.exportNS(uri);
+            final String exported = version.exportNS(removeTrailingSlash(uri));
             if (exported != uri) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
                     return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
@@ -188,21 +171,13 @@ final class FilteredWriter implements XMLEventWriter {
                     final Attribute a = it.next();
                     final Attribute ae = export(a);
                     changed |= (a != ae);
-                    exportedAttributes.add(ae);
+                    renamedAttributes.add(ae);
                 }
                 final List<Namespace> namespaces = export(e.getNamespaces(), changed);
                 if (namespaces != null) {
-                    final List<Attribute> attributes;
-                    switch (exportedAttributes.size()) {
-                        case 0:  attributes = Collections.emptyList(); break;      // Avoid object creation for this common case.
-                        case 1:  attributes = Collections.singletonList(exportedAttributes.remove(0)); break;
-                        default: attributes = Arrays.asList(exportedAttributes.toArray(new Attribute[exportedAttributes.size()]));
-                                 exportedAttributes.clear();
-                                 break;
-                    }
-                    event = new FilteredEvent.Start(e, name, namespaces, attributes, version);
+                    event = new FilteredEvent.Start(e, name, namespaces, attributes(), version);
                 } else {
-                    exportedAttributes.clear();
+                    renamedAttributes.clear();
                 }
                 break;
             }
