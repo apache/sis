@@ -22,23 +22,30 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Collections;
+import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
-import java.util.InvalidPropertiesFormatException;
 import javax.xml.namespace.QName;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.util.StreamReaderDelegate;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
 
+import static javax.xml.stream.XMLStreamConstants.*;
+
 
 /**
  * A filter replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
- * This class forwards every method calls to the wrapped {@link XMLStreamReader}, but with some {@code namespaceURI}
+ * This class forwards every method calls to the wrapped {@link XMLEventReader}, but with some {@code namespaceURI}
  * modified before being transfered. This class uses a dictionary for identifying the XML namespaces expected by JAXB
  * implementation. This is needed when a single namespace in a legacy schema has been splitted into many namespaces
  * in the newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3.
@@ -50,7 +57,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @since   1.0
  * @module
  */
-final class FilteredReader extends StreamReaderDelegate {
+final class FilteredReader extends FilteredXML implements XMLEventReader {
     /**
      * Location of the file listing types and attributes contained in namespaces.
      * The file location is relative to this {@code NamespaceContent} class.
@@ -164,6 +171,18 @@ final class FilteredReader extends StreamReaderDelegate {
     }
 
     /**
+     * Returns the namespace for the given ISO type, or {@code null} if unknown.
+     * This is the namespace used in JAXB annotations.
+     *
+     * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
+     * @return a namespace for the given type, or {@code null} if unknown.
+     */
+    static String namespace(final String type) {
+        final Map<String,String> attributes = NAMESPACES.get(type);
+        return (attributes != null) ? attributes.get(TYPE_KEY) : null;
+    }
+
+    /**
      * The mapping from attribute names to types where such attribute is declared.
      * An attribute of the same name may be declared in many types.
      *
@@ -194,105 +213,146 @@ final class FilteredReader extends StreamReaderDelegate {
     }
 
     /**
-     * The external XML format version to unmarshal from.
+     * The reader from which to read events.
      */
-    private final FilterVersion version;
+    private final XMLEventReader in;
 
     /**
-     * List of encountered XML tags, in order. Used for backtracking.
-     * Elements are removed from this list when they are closed.
+     * List of encountered XML tags, in order. Used for backtracking. Elements are removed from this list
+     * when they are closed. Names should be the ones we get after conversion from namespaces used in XML
+     * document to namespaces used in JAXB annotations.
      */
-    private final List<String> outerElements;
-
-    /**
-     * The {@code localPart} argument given to {@link #namespaceOf(String)}, potentially renamed.
-     * For example given the {@code "DCP/distributedComputingPlatform"} entry in {@value #FILENAME} file,
-     * a call to {@code namespaceOf("DCP")} will set this field to {@code "distributedComputingPlatform"}.
-     */
-    private String renamed;
+    private final List<QName> outerElements;
 
     /**
      * Creates a new filter for the given version of the standards.
      */
-    FilteredReader(final XMLStreamReader in, final FilterVersion version) {
-        super(in);
-        this.version = version;
+    FilteredReader(final XMLEventReader in, final FilterVersion version) {
+        super(version);
+        this.in = in;
         outerElements = new ArrayList<>();
     }
 
     /**
-     * Forwards the call and keep trace of the XML element opened up to this point.
+     * Checks if there are more events.
      */
     @Override
-    public int next() throws XMLStreamException {
-        return traceElements(super.next());
+    public boolean hasNext() {
+        return in.hasNext();
     }
 
     /**
-     * Forwards the call and keep trace of the XML element opened up to this point.
+     * Check the next XMLEvent without reading it from the stream.
      */
     @Override
-    public int nextTag() throws XMLStreamException {
-        return traceElements(super.nextTag());
+    public XMLEvent peek() throws XMLStreamException {
+        return convert(in.peek(), false);
     }
 
     /**
-     * Keeps trace of XML elements opened up to this point.
+     * Returns the next element. Use {@link #nextEvent()} instead.
+     */
+    @Override
+    public Object next() {
+        return convert((XMLEvent) in.next(), true);
+    }
+
+    /**
+     * Forwards the call and keep trace of the XML elements opened up to this point.
+     */
+    @Override
+    public XMLEvent nextEvent() throws XMLStreamException {
+        return convert(in.nextEvent(), true);
+    }
+
+    /**
+     * Forwards the call and keep trace of the XML elements opened up to this point.
+     */
+    @Override
+    public XMLEvent nextTag() throws XMLStreamException {
+        return convert(in.nextTag(), true);
+    }
+
+    /**
+     * Keeps trace of XML elements opened up to this point and imports the given event.
+     * This method replaces the namespaces used in XML document by the namespace used by JAXB annotations.
      *
-     * @param  type  value of {@link #getEventType()}.
-     * @return {@code type}, returned for convenience.
+     * @param  event  the event read from the underlying event reader.
+     * @param  next   {@code true} for a {@code next} operation, or {@code false} for a {@code peek} operation.
+     * @return the converted event (may be the same instance).
      */
-    private int traceElements(final int type) {
-        switch (type) {
+    @SuppressWarnings("unchecked")      // TODO: remove on JDK9
+    private XMLEvent convert(XMLEvent event, final boolean next) {
+        switch (event.getEventType()) {
+            case ATTRIBUTE: {
+                event = convert((Attribute) event);
+                break;
+            }
+            case NAMESPACE: {
+                event = importNS((Namespace) event);
+                break;
+            }
             case START_ELEMENT: {
-                outerElements.add(getLocalName());
+                final StartElement e = event.asStartElement();
+                final QName originalName = e.getName();
+                final QName name = convert(originalName);
+                boolean changed = name != originalName;
+                for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
+                    final Attribute a = it.next();
+                    final Attribute ae = convert(a);
+                    changed |= (a != ae);
+                    renamedAttributes.add(ae);
+                }
+                final List<Namespace> namespaces = importNS(e.getNamespaces(), changed);
+                if (namespaces != null) {
+                    event = new FilteredEvent.Import(e, name, namespaces, attributes(), version);
+                } else {
+                    renamedAttributes.clear();
+                }
+                if (next) {
+                    outerElements.add(e.getName());
+                }
                 break;
             }
             case END_ELEMENT: {
+                final EndElement e = event.asEndElement();
+                final QName originalName = e.getName();
+                final QName name = convert(originalName);
+                final List<Namespace> namespaces = importNS(e.getNamespaces(), name != originalName);
+                if (namespaces != null) {
+                    event = new FilteredEvent.End(e, name, namespaces);
+                }
                 /*
-                 * If this is an end element, close the last open one with a matching name.
-                 * It should be the last list element in a well-formed XML, but we loop in
-                 * the list anyway as a safety.
+                 * Close the last start element with a matching name. It should be the last element
+                 * on the list in a well-formed XML, but we loop in the list anyway as a safety.
                  */
-                final String name = getLocalName();
-                for (int i = outerElements.size(); --i >= 0;) {
-                    if (name.equals(outerElements.get(i))) {
-                        outerElements.remove(i);
-                        break;
+                if (next) {
+                    for (int i = outerElements.size(); --i >= 0;) {
+                        if (name.equals(outerElements.get(i))) {
+                            outerElements.remove(i);
+                            break;
+                        }
                     }
                 }
                 break;
             }
         }
-        return type;
+        return event;
     }
 
     /**
-     * Returns the namespace of the given ISO type, or {@code null} if unknown.
-     * This is the namespace used in JAXB annotations.
+     * Imports a name read from the XML document to the name to give to JAXB.
+     * The new namespace depends on both the old namespace and the element name.
+     * The prefix is left unchanged since it can be arbitrary (even if confusing for
+     * human reader used to ISO/TC211 prefixes, it is non-ambiguous to the computer).
      *
-     * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
-     * @return a namespace for the given type, or {@code null} if unknown.
-     */
-    static String namespace(final String type) {
-        /*
-         * Same implementation than namespaceOf(type) but without DECLARING_TYPES.get(…)
-         * since that value should alway be null for class names.
-         */
-        final Map<String,String> attributes = NAMESPACES.get(type);
-        return (attributes != null) ? attributes.get(TYPE_KEY) : null;
-    }
-
-    /**
-     * Return the namespace used by implementation (the SIS classes with JAXB annotations)
-     * in the context of the current part of the XML document being read.
-     *
-     * @param   localPart   the local name of the element or attribute currently being read.
+     * @param   name   the name of the element or attribute currently being read.
      * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace),
      *          or {@code null} if the given name is unknown.
      */
-    private String namespaceOf(final String localPart) {
-        renamed = localPart;
+    private QName convert(QName name) {
+        String namespace = null;                        // In this method, null means no change to given name.
+        String localPart = name.getLocalPart();
         final Set<String> declaringTypes = DECLARING_TYPES.get(localPart);
         if (declaringTypes == null) {
             /*
@@ -302,7 +362,7 @@ final class FilteredReader extends StreamReaderDelegate {
              */
             final Map<String,String> attributes = NAMESPACES.get(localPart);
             if (attributes != null) {
-                return attributes.get(TYPE_KEY);
+                namespace = attributes.get(TYPE_KEY);           // May be null.
             }
         } else {
             /*
@@ -310,105 +370,117 @@ final class FilteredReader extends StreamReaderDelegate {
              * possible parent element. Then, we use the namespace associated with that parent.
              */
             for (int i = outerElements.size(); --i >= 0;) {
-                final String parent = outerElements.get(i);
+                final String parent = outerElements.get(i).getLocalPart();
                 if (declaringTypes.contains(parent)) {
                     /*
                      * A NullPointerException below would be a bug in our algorithm because
                      * we constructed DECLARING_TYPES from NAMESPACES keys only.
                      */
                     final Map<String,String> attributes = NAMESPACES.get(parent);
-                    String uri = attributes.get(localPart);
-                    if (!isNamespace(uri)) {
-                        renamed = uri;
-                        uri = attributes.get(uri);
+                    namespace = attributes.get(localPart);
+                    if (!isNamespace(namespace)) {
+                        localPart = namespace;
+                        namespace = attributes.get(namespace);
                     }
-                    return uri;
+                    break;
                 }
             }
         }
-        return null;
-    }
-
-    /**
-     * Converts a name read from the XML document to the name to give to JAXB.
-     * The new namespace depends on both the old namespace and the element name.
-     */
-    private QName importNS(QName name) {
-        final String namespaceURI = name.getNamespaceURI();
-        final String localPart = name.getLocalPart();
-        String replacement = namespaceOf(localPart);
-        if (replacement == null) {
-            replacement = version.importNS(namespaceURI);
+        /*
+         * If above code found no namespace by looking in our dictionary of special cases,
+         * maybe there is a simple one-to-one relationship between the old and new namespaces.
+         * Otherwise we leave the namespace unchanged.
+         */
+        final String oldNS = name.getNamespaceURI();
+        if (namespace == null) {
+            namespace = version.importNS(oldNS);
         }
-        if (!replacement.equals(namespaceURI) || !localPart.equals(renamed)) {
-            name = new QName(replacement, renamed, name.getPrefix());
+        /*
+         * Build a new name if any component (URI or local part) changed. Do not specify the prefix
+         * because the same URI in the XML document could map to many different prefixes after we
+         * converted to the namespaces used by JAXB. Having the same prefix for those different URI
+         * may be a source of confusion.
+         */
+        if (!namespace.equals(oldNS) || !localPart.equals(name.getLocalPart())) {
+            name = new QName(namespace, localPart);
         }
         return name;
     }
 
-    /** Replaces the given URI if needed, then forwards the call. */
-    @Override
-    public void require(final int type, final String namespaceURI, final String localName) throws XMLStreamException {
-        super.require(type, version.exportNS(namespaceURI), localName);
-    }
-
-    /** Returns the context of the underlying reader wrapped in a filter that converts the namespaces on the fly. */
-    @Override
-    public NamespaceContext getNamespaceContext() {
-        return FilteredNamespaces.importNS(super.getNamespaceContext(), version);
-    }
-
-    /** Forwards the call, then replaces the namespace URI if needed. */
-    @Override
-    public QName getName() {
-        return importNS(super.getName());
-    }
-
-    /** Forwards the call, then replaces the namespace URI if needed. */
-    @Override
-    public QName getAttributeName(final int index) {
-        return importNS(super.getAttributeName(index));
+    /**
+     * Imports an attribute read from the XML document.
+     * If there is no name change, then this method returns the given instance as-is.
+     */
+    private Attribute convert(Attribute attribute) {
+        final QName originalName = attribute.getName();
+        final QName name = convert(originalName);
+        if (name != originalName) {
+            attribute = new FilteredEvent.Attr(attribute, name);
+        }
+        return attribute;
     }
 
     /**
-     * Returns the namespace of current element, after replacement by the URI used by SIS.
-     * This replacement depends on the current local name in addition of current namespace.
+     * Imports a namespace read from the XML document. This may imply a prefix change.
+     * If there is no namespace change, then this method returns the given instance as-is.
+     *
+     * @param  namespace  the namespace to import.
      */
-    @Override
-    public String getNamespaceURI() {
-        String namespace = namespaceOf(getLocalName());
-        if (namespace == null) {
-            namespace = version.importNS(super.getNamespaceURI());
+    private Namespace importNS(final Namespace namespace) {
+        String uri = namespace.getNamespaceURI();
+        if (uri != null && !uri.isEmpty()) {
+            uri = FilteredXML.removeTrailingSlash(uri);
+            final String imported = version.importNS(uri);
+            if (imported != uri) {
+                return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(imported, namespace.getPrefix()), imported);
+            }
         }
         return namespace;
     }
 
     /**
-     * Forwards the call, then replaces the returned URI if needed.
+     * Imports the namespaces read from the XML document.
      *
-     * <b>Note:</b> the index passed to this method is the index of a namespace declaration on the root element.
-     * This should not matter as long as each <em>element</em> has the proper namespace URI.
+     * @param  namespaces  the namespaces to filter.
+     * @param  changed     whether to unconditionally pretend that there is a change.
+     * @return the updated namespaces, or {@code null} if there is no changes.
+     */
+    private List<Namespace> importNS(final Iterator<Namespace> namespaces, boolean changed) {
+        if (!namespaces.hasNext()) {
+            return changed ? Collections.emptyList() : null;
+        }
+        final List<Namespace> modified = new ArrayList<>();
+        do {
+            Namespace namespace = namespaces.next();
+            changed |= (namespace != (namespace = importNS(namespace)));
+            modified.add(namespace);
+        } while (namespaces.hasNext());
+        return changed ? modified : null;
+    }
+
+    /**
+     * Reads the content of a text-only element. Forwards from the underlying reader as-is.
      */
     @Override
-    public String getNamespaceURI(int index) {
-        return version.importNS(super.getNamespaceURI(index));
+    public String getElementText() throws XMLStreamException {
+        return in.getElementText();
     }
 
-    /** Forwards the call, then replaces the returned URI if needed. */
+    /**
+     * Get the value of a feature/property from the underlying implementation.
+     */
     @Override
-    public String getNamespaceURI(final String prefix) {
-        return version.importNS(super.getNamespaceURI(prefix));
+    public Object getProperty​(final String name) {
+        return in.getProperty(name);
     }
 
-    /** Forwards the call, then replaces the returned URI if needed. */
+    /**
+     * Frees any resources associated with this reader.
+     * This method does not close the underlying input source.
+     */
     @Override
-    public String getAttributeNamespace(final int index) {
-        return version.importNS(super.getAttributeNamespace(index));
-    }
-
-    /** Replaces the given URI if needed, then forwards the call. */
-    @Override
-    public String getAttributeValue(final String namespaceUri, final String localName) {
-        return super.getAttributeValue(version.exportNS(namespaceUri), localName);
+    public void close() throws XMLStreamException {
+        outerElements.clear();
+        in.close();
     }
 }

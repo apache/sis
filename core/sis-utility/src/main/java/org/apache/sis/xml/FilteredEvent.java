@@ -207,7 +207,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
      * This wrapper is used for changing the namespace and sometime the name of the element.
      * The attributes may also be modified.
      */
-    static final class Start extends FilteredEvent<StartElement> implements StartElement {
+    static class Start extends FilteredEvent<StartElement> implements StartElement {
         /** The namespaces, may or may not be the same than the wrapped event. */
         private final List<Namespace> namespaces;
 
@@ -215,7 +215,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
         private final List<Attribute> attributes;
 
         /** The version to export, used for wrapping namespace context. */
-        private final FilterVersion version;
+        final FilterVersion version;
 
         /** Wraps the given event with potentially different name, namespaces and attributes. */
         Start(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, FilterVersion version) {
@@ -225,18 +225,18 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
             this.version    = version;
         }
 
-        @Override public boolean             isStartElement() {return true;}
-        @Override public StartElement        asStartElement() {return this;}
-        @Override public int                 getEventType()   {return START_ELEMENT;}
-        @Override public Iterator<Namespace> getNamespaces()  {return namespaces.iterator();}
-        @Override public Iterator<Attribute> getAttributes()  {return attributes.iterator();}
+        @Override public final boolean             isStartElement() {return true;}
+        @Override public final StartElement        asStartElement() {return this;}
+        @Override public final int                 getEventType()   {return START_ELEMENT;}
+        @Override public final Iterator<Namespace> getNamespaces()  {return namespaces.iterator();}
+        @Override public final Iterator<Attribute> getAttributes()  {return attributes.iterator();}
 
         /**
          * Returns the attribute referred to by the given name, or {@code null} if none.
          * Current implementation is okay on the assumption that there is few attributes.
          */
         @Override
-        public Attribute getAttributeByName(final QName name) {
+        public final Attribute getAttributeByName(final QName name) {
             for (final Attribute attr : attributes) {
                 if (name.equals(attr.getName())) {
                     return attr;
@@ -246,7 +246,8 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
         }
 
         /**
-         * Gets a read-only namespace context.
+         * Gets a read-only namespace context. Default implementation is suitable for exports
+         * (i.e. write operation). Needs to be overridden for imports (read operation).
          *
          * @see FilteredWriter#getNamespaceContext()
          */
@@ -257,6 +258,8 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
 
         /**
          * Gets the value that the prefix is bound to in the context of this element.
+         * Default implementation is suitable for export (i.e. write operation).
+         * Needs to be overridden for imports (read operation).
          */
         @Override
         public String getNamespaceURI(final String prefix) {
@@ -267,7 +270,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
          * Writes the event as per the XML 1.0 without indentation or whitespace.
          */
         @Override
-        void write(final Appendable out) throws IOException {
+        final void write(final Appendable out) throws IOException {
             name(out.append('<'));
             final int n = attributes.size();
             for (int i=0; i<n; i++) {
@@ -275,6 +278,32 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
                 Attr.castOrWrap(attributes.get(i)).write(out);
             }
             out.append('>');
+        }
+    }
+
+    /**
+     * Wrapper over an element emitted during the reading of an XML document.
+     */
+    static final class Import extends Start {
+        /** Wraps the given event with potentially different name, namespaces and attributes. */
+        Import(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, FilterVersion version) {
+            super(event, name, namespaces, attributes, version);
+        }
+
+        /**
+         * Gets a read-only namespace context.
+         */
+        @Override
+        public NamespaceContext getNamespaceContext() {
+            return FilteredNamespaces.importNS(event.getNamespaceContext(), version);
+        }
+
+        /**
+         * Gets the value that the prefix is bound to in the context of this element.
+         */
+        @Override
+        public String getNamespaceURI(final String prefix) {
+            return version.importNS(event.getNamespaceURI(prefix));
         }
     }
 }
