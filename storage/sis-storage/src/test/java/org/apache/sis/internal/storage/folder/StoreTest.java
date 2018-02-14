@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
@@ -68,13 +69,38 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
-        final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Set<String> identifiers = new HashSet<>(Arrays.asList("proj", "Sample 1", "Sample 2", "Sample 3", "data4"));
         try (Store store = new Store(null, new StorageConnector(testDirectory()))) {
-            assertEquals("Expected three data stores.", 3, store.components().size());
+            assertEquals("Expected three data stores.", 4, store.components().size());
             verifyContent(store, identifiers);
         }
         if (!identifiers.isEmpty()) {
             fail("Missing resources: " + identifiers);
+        }
+    }
+
+    /**
+     * Verify that the restricting provider parameter is used.
+     *
+     * @throws URISyntaxException if the URL to test data can not be converted to a path of the file system.
+     * @throws DataStoreException if an error occurred while reading the resources.
+     * @throws IOException if an I/O error occurs.
+     */
+    @Test
+    public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
+
+        {
+            final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
+            final Parameters params = Parameters.castOrWrap(FolderStoreProvider.PARAMETERS.createValue());
+            params.parameter("location").setValue(testDirectory());
+            params.parameter("provider").setValue("XML");
+            try (Store store = new Store(null, params)) {
+                assertEquals("Expected three data stores.", 3, store.components().size());
+                verifyContent(store, identifiers);
+            }
+            if (!identifiers.isEmpty()) {
+                fail("Missing resources: " + identifiers);
+            }
         }
     }
 

@@ -18,6 +18,9 @@ package org.apache.sis.internal.storage;
 
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -29,6 +32,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -123,6 +127,12 @@ public abstract class URIDataStore extends DataStore {
         private volatile ParameterDescriptorGroup openDescriptor;
 
         /**
+         * List of main file suffixes used.
+         */
+        protected final List<String> suffix = new ArrayList<>();
+        private final List<String> unSuffix = Collections.unmodifiableList(suffix);
+
+        /**
          * Creates a new provider.
          */
         protected Provider() {
@@ -142,6 +152,15 @@ public abstract class URIDataStore extends DataStore {
                 openDescriptor = desc = build(new ParameterBuilder().addName(getShortName()));
             }
             return desc;
+        }
+
+        /**
+         * Get the list of this format mainly used file suffixes.
+         *
+         * @return list of suffix, case insensitive, never null, can be empty.
+         */
+        public final List<String> getSuffix() {
+            return unSuffix;
         }
 
         /**
