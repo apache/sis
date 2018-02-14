@@ -29,8 +29,15 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import org.apache.sis.internal.storage.FileSystemResource;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
@@ -47,6 +54,16 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.storage.ReadOnlyStorageException;
+import org.apache.sis.storage.WritableAggregate;
+import org.apache.sis.storage.WritableFeatureSet;
+import org.opengis.feature.Feature;
+import org.opengis.metadata.identification.Identification;
 
 
 /**
@@ -71,32 +88,55 @@ import org.apache.sis.internal.storage.Resources;
  * @since   0.8
  * @module
  */
-final class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path> {
+class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path> {
+
+    /**
+     * File walker to delete file and folder recursively.
+     */
+    private static final SimpleFileVisitor<Path> FILE_DELETE = new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+        }
+    };
+
     /**
      * The {@link FolderStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
-    private final Path location;
+    protected final Path location;
 
     /**
      * Formating conventions of dates and numbers, or {@code null} if unspecified.
      */
-    private final Locale locale;
+    protected final Locale locale;
 
     /**
      * Timezone of dates in the data store, or {@code null} if unspecified.
      */
-    private final TimeZone timezone;
+    protected final TimeZone timezone;
 
     /**
      * Character encoding used by the data store, or {@code null} if unspecified.
      */
-    private final Charset encoding;
+    protected final Charset encoding;
+
+    /**
+     * Single provider to use in searches and creation operations, or {@code null} if unspecified.
+     */
+    protected final String providerName;
 
     /**
      * All data stores (including sub-folders) found in the directory structure, including the root directory.
      * This is used for avoiding never-ending loop with symbolic links.
      */
-    private final Map<Path,DataStore> children;
+    protected final Map<Path,DataStore> children;
 
     /**
      * Information about the data store as a whole, created when first needed.
@@ -110,13 +150,18 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
      *
      * @see #components()
      */
-    private transient Collection<Resource> components;
+    protected transient Collection<Resource> components;
 
     /**
      * {@code true} if {@link #sharedRepository(Path)} has already been invoked for {@link #location} path.
      * This is used for avoiding to report the same message many times.
      */
     private transient boolean sharedRepositoryReported;
+
+    /**
+     * Cached search and create provider to use.
+     */
+    private transient DataStoreProvider searchProvider;
 
     /**
      * Creates a new folder store from the given file, path or URI.
@@ -134,6 +179,18 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
         encoding = connector.getOption(OptionKey.ENCODING);
         children = new ConcurrentHashMap<>();
         children.put(location.toRealPath(), this);
+        providerName = null;
+    }
+
+    Store(final DataStoreProvider provider, final Parameters params) throws DataStoreException, IOException {
+        super(provider, new StorageConnector(params));
+        location     = params.getValue(FolderStoreProvider.LOCATION);
+        locale       = params.getValue(FolderStoreProvider.LOCALE);
+        timezone     = params.getValue(FolderStoreProvider.TIMEZONE);
+        encoding     = params.getValue(FolderStoreProvider.ENCODING);
+        providerName = params.getValue(FolderStoreProvider.PROVIDER);
+        children     = new ConcurrentHashMap<>();
+        children.put(location.toRealPath(), this);
     }
 
     /**
@@ -145,11 +202,13 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
      */
     private Store(final Store parent, final StorageConnector connector) throws DataStoreException {
         super(parent, connector);
-        location = connector.getStorageAs(Path.class);
-        locale   = connector.getOption(OptionKey.LOCALE);
-        timezone = connector.getOption(OptionKey.TIMEZONE);
-        encoding = connector.getOption(OptionKey.ENCODING);
-        children = parent.children;
+        location       = connector.getStorageAs(Path.class);
+        locale         = connector.getOption(OptionKey.LOCALE);
+        timezone       = connector.getOption(OptionKey.TIMEZONE);
+        encoding       = connector.getOption(OptionKey.ENCODING);
+        children       = parent.children;
+        providerName   = parent.providerName;
+        searchProvider = parent.searchProvider;
     }
 
     /**
@@ -158,10 +217,11 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
     @Override
     public ParameterValueGroup getOpenParameters() {
         final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : FolderStoreProvider.PARAMETERS).createValue();
-        pg.parameter(FolderStoreProvider.LOCATION).setValue(location);
-        if (locale   != null) pg.parameter("locale"  ).setValue(locale  );
-        if (timezone != null) pg.parameter("timezone").setValue(timezone);
-        if (encoding != null) pg.parameter("encoding").setValue(encoding);
+        pg.parameter(DataStoreProvider.LOCATION).setValue(location);
+        if (locale       != null) pg.parameter("locale"  ).setValue(locale  );
+        if (timezone     != null) pg.parameter("timezone").setValue(timezone);
+        if (encoding     != null) pg.parameter("encoding").setValue(encoding);
+        if (providerName != null) pg.parameter("provider").setValue(providerName);
         return pg;
     }
 
@@ -227,8 +287,20 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
                         connector.setOption(OptionKey.LOCALE,   locale);
                         connector.setOption(OptionKey.TIMEZONE, timezone);
                         connector.setOption(OptionKey.ENCODING, encoding);
+
+                        final DataStoreProvider provider = getSearchAndCreateProvider();
                         try {
-                            next = DataStores.open(connector);
+                            if (provider != null) {
+                                final ProbeResult result = provider.probeContent(connector);
+                                if (result.isSupported()) {
+                                    next = provider.open(connector);
+                                } else {
+                                    throw new UnsupportedStorageException();
+                                }
+                            } else {
+                                next = DataStores.open(connector);
+                            }
+
                         } catch (UnsupportedStorageException ex) {
                             if (!Files.isDirectory(candidate)) {
                                 connector.closeAllExcept(null);
@@ -272,6 +344,25 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
         return components;              // Safe because unmodifiable list.
     }
 
+    /**
+     *
+     * @return search and create provider, can be null
+     * @throws DataStoreException
+     */
+    protected DataStoreProvider getSearchAndCreateProvider() throws DataStoreException {
+        if (searchProvider == null && providerName != null) {
+            for (DataStoreProvider provider : DataStores.providers()) {
+                if (providerName.equals(provider.getShortName())) {
+                    searchProvider = provider;
+                    break;
+                }
+            }
+            if (searchProvider == null) {
+                throw new DataStoreException(message(Resources.Keys.FolderStoreProviderUnknown_1, providerName));
+            }
+        }
+        return searchProvider;
+    }
     /**
      * Builds an error message for an error occurring while reading files in the directory.
      */
@@ -327,4 +418,160 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
             }
         }
     }
+
+    /**
+     * Writable version of the store which rely on given datastore provider to create new types.
+     *
+     * Note 1 : this implementation is experimental.
+     * Note 2 : it has not been tested since we do not have writable feature sets yet.
+     */
+    static class Writable extends Store implements WritableAggregate {
+
+        public Writable(DataStoreProvider provider, Parameters params) throws DataStoreException, IOException {
+            super(provider, params);
+        }
+
+        /**
+         * Create a new resource.
+         * This implementation uses the provider given in store creation parameters.
+         *
+         * @param resource
+         * @return
+         * @throws DataStoreException
+         */
+        @Override
+        public synchronized Resource add(Resource resource) throws DataStoreException {
+            if (!(resource instanceof FeatureSet)) {
+                throw new DataStoreException("Only FeatureSet resources can be imported in this store.");
+            }
+
+            if (components().contains(resource)) {
+                throw new DataStoreException("Resource is already in this aggregate.");
+            }
+
+            //we know it is not null in this instance
+            final DataStoreProvider provider = getSearchAndCreateProvider();
+            if (!(provider instanceof URIDataStore.Provider)) {
+                throw new DataStoreException("Resource creation is possible only with URIProviders");
+            }
+
+            final URIDataStore.Provider p = (URIDataStore.Provider) provider;
+
+            //build location
+            String fileName = null;
+            for (Identification id : resource.getMetadata().getIdentificationInfo()) {
+                fileName = Citations.getIdentifier(id.getCitation());
+                if (fileName!=null && !fileName.isEmpty()) break;
+            }
+            if (fileName == null || fileName.isEmpty()) {
+                throw new DataStoreException("Resource does not have an identifier.");
+            }
+
+            //some format may have no suffix at all
+            if (!p.getSuffix().isEmpty()) {
+                fileName += "."+ p.getSuffix().get(0);
+            }
+
+            //create new store/resource
+            final Path location = this.location.resolve(fileName);
+            final StorageConnector connector = new StorageConnector(location);
+            connector.setOption(OptionKey.LOCALE,   locale);
+            connector.setOption(OptionKey.TIMEZONE, timezone);
+            connector.setOption(OptionKey.ENCODING, encoding);
+            final DataStore store = p.open(connector);
+
+            //check we can write datas
+            if (!(store instanceof WritableFeatureSet)) {
+                try {
+                    //remove any created file
+                    if (resource instanceof FileSystemResource) {
+                        //delete resource files
+                        final Path[] resourcePaths = ((FileSystemResource) resource).getResourcePaths();
+                        for (Path path : resourcePaths) {
+                            Files.walkFileTree(path, FILE_DELETE);
+                        }
+                    }
+                    Files.deleteIfExists(location);
+                } catch(IOException ex) {
+                    //do nothing
+                } finally {
+                    store.close();
+                }
+                throw new DataStoreException("Created resource is not a WritableFeatureSet.");
+            }
+
+            //copy datas between resources
+            children.put(location, store);
+            final FeatureSet source = (FeatureSet) resource;
+            final WritableFeatureSet target = (WritableFeatureSet) store;
+            target.updateType(source.getType());
+            try (Stream<Feature> stream = source.features(false)) {
+                target.add(stream.iterator());
+            }
+
+
+            //clear cache
+            components = null;
+
+            return store;
+        }
+
+        /**
+         * Note : in this implementation we clear the cache after closing the stores and before deleting the files.
+         * This ensure in the worse case scenario a new store will be created on the possible remaining files.
+         *
+         * @param resource
+         * @throws ReadOnlyStorageException
+         * @throws DataStoreException
+         */
+        @Override
+        public synchronized void remove(Resource resource) throws ReadOnlyStorageException, DataStoreException {
+            if (!(components().contains(resource))) {
+                throw new DataStoreException("Unknown resource, verify it is part of this aggregate.");
+            }
+
+            //clear cache
+            components = null;
+
+            if (resource instanceof Store) {
+                final Store store = (Store) resource;
+                store.close();
+                //clear cache
+                children.remove(store.location);
+
+                try {
+                    Files.walkFileTree(store.location, FILE_DELETE);
+                } catch (IOException ex) {
+                    throw new DataStoreException(ex.getMessage(), ex);
+                }
+            } else {
+                //resource is a datastore, we are sure of it
+                final DataStore store = (DataStore) resource;
+                store.close();
+
+                //clear cache, we need to do this loop in case the resource is
+                //not a FileSystemResource or wrongly declares the used files
+                for (Entry<Path,DataStore> entry : children.entrySet()) {
+                    if (entry.getValue() == store) {
+                        children.remove(entry.getKey());
+                        break;
+                    }
+                }
+
+                if (resource instanceof FileSystemResource) {
+                    //delete resource files
+                    final Path[] resourcePaths = ((FileSystemResource) resource).getResourcePaths();
+                    for (Path path : resourcePaths) {
+                        try {
+                            Files.walkFileTree(path, FILE_DELETE);
+                        } catch (IOException ex) {
+                            throw new DataStoreException(ex.getMessage(), ex);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
 }

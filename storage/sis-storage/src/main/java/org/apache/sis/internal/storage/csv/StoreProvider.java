@@ -126,6 +126,7 @@ public final class StoreProvider extends URIDataStore.Provider {
      * Creates a new provider.
      */
     public StoreProvider() {
+        suffix.add("csv");
     }
 
     /**

@@ -39,7 +39,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.internal.storage.io.IOUtilities;
 
 
 /**
@@ -60,33 +60,43 @@ public final class FolderStoreProvider extends DataStoreProvider {
     private static final String NAME = "folder";
 
     /**
+     * Description of the parameter for folder location.
+     */
+    static final ParameterDescriptor<Path> LOCATION;
+
+    /**
      * Description of the parameter for formating conventions of dates and numbers.
      */
-    private static final ParameterDescriptor<Locale> LOCALE;
+    static final ParameterDescriptor<Locale> LOCALE;
 
     /**
      * Description of the parameter for timezone of dates in the data store.
      */
-    private static final ParameterDescriptor<TimeZone> TIMEZONE;
+    static final ParameterDescriptor<TimeZone> TIMEZONE;
 
     /**
      * Description of the parameter for character encoding used by the data store.
      */
-    private static final ParameterDescriptor<Charset> ENCODING;
+    static final ParameterDescriptor<Charset> ENCODING;
+
+    /**
+     * Description of the parameter for restricting searched factories.
+     */
+    static final ParameterDescriptor<String> PROVIDER;
 
     /**
      * The group of parameter descriptors to be returned by {@link #getOpenParameters()}.
      */
     static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterDescriptor<Path> location;
         final ParameterBuilder builder = new ParameterBuilder();
         final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
         ENCODING   = annotate(builder, URIDataStore.Provider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
-        location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
-        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING);
+        PROVIDER   = builder.addName("provider").setDescription(Resources.formatInternational(Resources.Keys.FolderStoreProviderParameter)).create(String.class, null);
+        LOCATION   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
+        PARAMETERS = builder.addName(NAME).createGroup(LOCATION, LOCALE, TIMEZONE, ENCODING, PROVIDER);
     }
 
     /**
@@ -178,12 +188,17 @@ public final class FolderStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        final StorageConnector connector = URIDataStore.Provider.connector(this, parameters);
-        final Parameters pg = Parameters.castOrWrap(parameters);
-        connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
-        connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
-        connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
-        return open(connector);
+        final Parameters params = Parameters.castOrWrap(parameters);
+        try {
+            if (params.getValue(PROVIDER) != null) {
+                return new Store.Writable(this, params);
+            } else {
+                return new Store(this, params);
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadDirectory_1,
+                    IOUtilities.filename(params.getValue(LOCATION))), e);
+        }
     }
 
     /**
