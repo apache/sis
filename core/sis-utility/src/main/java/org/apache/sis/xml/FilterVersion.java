@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
-import javax.xml.namespace.QName;
 import org.apache.sis.util.Debug;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
@@ -235,28 +234,6 @@ final class FilterVersion {
         for (final String e : jaxb) {
             exports.put(e, r);
         }
-    }
-
-    /**
-     * Returns the name (prefix, namespace and local part) to write in the XML document.
-     * This method may replace the namespace, and in some case the name local part too.
-     * If there is no name change, then this method returns the given instance as-is.
-     */
-    final QName export(QName name) {
-        String uri = name.getNamespaceURI();
-        if (uri != null && !uri.isEmpty()) {                                // Optimization for a common case.
-            final Replacement r = exports.get(uri);
-            if (r != null) {
-                uri = r.namespace;
-                name = new QName(uri, r.exportProperty(name.getLocalPart()),
-                        Namespaces.getPreferredPrefix(uri, name.getPrefix()));
-                /*
-                 * Note: the call for 'getPreferredPrefix' above is required:
-                 * JAXB seems to need the prefixes for recognizing namespaces.
-                 */
-            }
-        }
-        return name;
     }
 
     /**

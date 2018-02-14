@@ -65,7 +65,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
      *   <li>In the namespaces of a start element.</li>
      * </ul>
      */
-    private final Map<String, Namespace> uniqueNamespaces;
+    private final Map<String,Namespace> uniqueNamespaces;
 
     /**
      * Creates a new filter for the given version of the standards.
@@ -77,12 +77,48 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     }
 
     /**
+     * Returns the name (prefix, namespace and local part) to write in the XML document.
+     * This method may replace the namespace, and in some case the name local part too.
+     * If there is no name change, then this method returns the given instance as-is.
+     */
+    private QName export(QName name) throws XMLStreamException {
+        String uri = name.getNamespaceURI();
+        if (uri != null && !uri.isEmpty()) {                                // Optimization for a common case.
+            final FilterVersion.Replacement r = version.export(uri);
+            if (r != null) {
+                uri = r.namespace;
+                /*
+                 * The wrapped XMLEventWriter maintains a mapping from prefixes to namespace URIs.
+                 * Arguments are exported URIs (e.g. from legacy ISO 19139:2007) and return values
+                 * are prefixes computed by 'Namespaces.getPreferredPrefix(…)' or any other means.
+                 * We fetch those prefixes for performance reasons and for improving the guarantees
+                 * that the URI → prefix mapping is stable, since JAXB seems to require them for
+                 * writing namespaces in XML.
+                 */
+                String prefix = out.getPrefix(uri);
+                if (prefix == null) {
+                    prefix = Namespaces.getPreferredPrefix(uri, name.getPrefix());
+                    out.setPrefix(prefix, uri);
+                    /*
+                     * The above call for 'getPreferredPrefix' above is required: JAXB seems to need the prefixes
+                     * for recognizing namespaces. The prefix shall be computed in the same way than 'exportIfNew'.
+                     * We enter in this block only for the root element, before to parse 'xmlns' attributes. For
+                     * all other elements after the root elements, above call to 'out.getPrefix(uri)' should succeed.
+                     */
+                }
+                name = new QName(uri, r.exportProperty(name.getLocalPart()), prefix);
+            }
+        }
+        return name;
+    }
+
+    /**
      * Returns the attribute to write in the XML document.
      * If there is no name change, then this method returns the given instance as-is.
      */
-    private Attribute export(Attribute attribute) {
+    private Attribute export(Attribute attribute) throws XMLStreamException {
         final QName originalName = attribute.getName();
-        final QName name = version.export(originalName);
+        final QName name = export(originalName);
         if (name != originalName) {
             attribute = new FilteredEvent.Attr(attribute, name);
         }
@@ -104,6 +140,10 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
             if (exported != uri) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
                     return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
+                    /*
+                     * The new prefix selected by above line will be saved by out.add(Namespace)
+                     * after this method has been invoked by the NAMESPACE case of add(XMLEvent).
+                     */
                 });
             }
             final Namespace c = uniqueNamespaces.put(uri, namespace);   // No namespace change needed. Overwrite wrapper if any.
@@ -165,7 +205,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
                 uniqueNamespaces.clear();                       // Discard entries created by NAMESPACE events.
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                final QName name = version.export(originalName);
+                final QName name = export(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
                     final Attribute a = it.next();
@@ -175,7 +215,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
                 }
                 final List<Namespace> namespaces = export(e.getNamespaces(), changed);
                 if (namespaces != null) {
-                    event = new FilteredEvent.Start(e, name, namespaces, attributes(), version);
+                    event = new Event(e, name, namespaces, attributes(), version);
                 } else {
                     renamedAttributes.clear();
                 }
@@ -184,7 +224,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
             case END_ELEMENT: {
                 final EndElement e = event.asEndElement();
                 final QName originalName = e.getName();
-                final QName name = version.export(originalName);
+                final QName name = export(originalName);
                 final List<Namespace> namespaces = export(e.getNamespaces(), name != originalName);
                 if (namespaces != null) {
                     event = new FilteredEvent.End(e, name, namespaces);
@@ -250,18 +290,60 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
      * <p>Implemented as a matter of principle, but JAXB did not invoked this method in our tests.</p>
      */
     @Override
-    public void setNamespaceContext(NamespaceContext context) throws XMLStreamException {
-        out.setNamespaceContext(FilteredNamespaces.importNS(context, version));
+    public void setNamespaceContext(final NamespaceContext context) throws XMLStreamException {
+        out.setNamespaceContext(FilteredNamespaces.asXML(context, version));
     }
 
     /**
-     * Returns the context of the underlying writer wrapped in a filter that convert the namespaces on the fly.
+     * Returns a naming context suitable for consumption by JAXB marshallers.
+     * The {@link XMLEventWriter} wrapped by this {@code FilteredWriter} has been created for writing in a file.
+     * Consequently its naming context manages namespaces used in the XML document. But the JAXB marshaller using
+     * this {@code FilteredWriter} facade expects the namespaces declared in JAXB annotations. Consequently this
+     * method returns an adapter that converts namespaces on the fly.
      *
-     * @see FilteredEvent.Start#getNamespaceContext()
+     * @see Event#getNamespaceContext()
      */
     @Override
     public NamespaceContext getNamespaceContext() {
-        return FilteredNamespaces.exportNS(out.getNamespaceContext(), version);
+        return FilteredNamespaces.asJAXB(out.getNamespaceContext(), version);
+    }
+
+    /**
+     * Wraps the {@link StartElement} produced by JAXB for using the namespaces used in the XML document.
+     */
+    private static final class Event extends FilteredEvent.Start {
+        /** Wraps the given event with potentially different name, namespaces and attributes. */
+        Event(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, FilterVersion version) {
+            super(event, name, namespaces, attributes, version);
+        }
+
+        /**
+         * Gets the URI used in the XML document for the given prefix used in JAXB annotations.
+         * At marshalling time, events are created by JAXB using namespaces used in JAXB annotations.
+         * {@link FilteredWriter} wraps those events for converting those namespaces to the ones used
+         * in the XML document.
+         *
+         * <div class="note"><b>Example:</b> the {@code "cit"} prefix from ISO 19115-3:2016 standard
+         * represents the {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"} namespace, which is
+         * mapped to {@code "http://www.isotc211.org/2005/gmd"} in the legacy ISO 19139:2007 standard.
+         * That later URI is returned.</div>
+         */
+        @Override
+        public String getNamespaceURI(final String prefix) {
+            return version.exportNS(event.getNamespaceURI(prefix));
+        }
+
+        /**
+         * Returns a context mapping prefixes used in JAXB annotations to namespaces used in XML document.
+         * The {@link FilteredNamespaces#getNamespaceURI(String)} method in that context shall do the same
+         * work than {@link #getNamespaceURI(String)} in this event.
+         *
+         * @see FilteredNamespaces#getNamespaceURI(String)
+         */
+        @Override
+        public NamespaceContext getNamespaceContext() {
+            return FilteredNamespaces.asXML(event.getNamespaceContext(), version);
+        }
     }
 
     /**

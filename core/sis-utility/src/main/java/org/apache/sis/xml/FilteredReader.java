@@ -225,12 +225,21 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     private final List<QName> outerElements;
 
     /**
+     * The prefixes for namespace URIs. Keys are URIs used in JAXB annotations and values are prefixes
+     * computed by {@link Namespaces#getPreferredPrefix(String, String)} or any other means. We store
+     * the prefix both for performance reasons and for improving the guarantees that the URI → prefix
+     * mapping is stable.
+     */
+    private final Map<String,String> prefixes;
+
+    /**
      * Creates a new filter for the given version of the standards.
      */
     FilteredReader(final XMLEventReader in, final FilterVersion version) {
         super(version);
         this.in = in;
         outerElements = new ArrayList<>();
+        prefixes = new HashMap<>();
     }
 
     /**
@@ -289,7 +298,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                 break;
             }
             case NAMESPACE: {
-                event = importNS((Namespace) event);
+                event = importNS((Namespace) event, null, null);
                 break;
             }
             case START_ELEMENT: {
@@ -303,9 +312,10 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                     changed |= (a != ae);
                     renamedAttributes.add(ae);
                 }
-                final List<Namespace> namespaces = importNS(e.getNamespaces(), changed);
+                final List<Namespace> namespaces = importNS(e.getNamespaces(),
+                        originalName.getNamespaceURI(), name.getNamespaceURI(), changed);
                 if (namespaces != null) {
-                    event = new FilteredEvent.Import(e, name, namespaces, attributes(), version);
+                    event = new FilteredEvent.Start(e, name, namespaces, attributes(), version);
                 } else {
                     renamedAttributes.clear();
                 }
@@ -318,7 +328,8 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                 final EndElement e = event.asEndElement();
                 final QName originalName = e.getName();
                 final QName name = convert(originalName);
-                final List<Namespace> namespaces = importNS(e.getNamespaces(), name != originalName);
+                final List<Namespace> namespaces = importNS(e.getNamespaces(),
+                        originalName.getNamespaceURI(), name.getNamespaceURI(), name != originalName);
                 if (namespaces != null) {
                     event = new FilteredEvent.End(e, name, namespaces);
                 }
@@ -350,7 +361,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace),
      *          or {@code null} if the given name is unknown.
      */
-    private QName convert(QName name) {
+    private QName convert(final QName name) {
         String namespace = null;                        // In this method, null means no change to given name.
         String localPart = name.getLocalPart();
         final Set<String> declaringTypes = DECLARING_TYPES.get(localPart);
@@ -395,16 +406,17 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
         if (namespace == null) {
             namespace = version.importNS(oldNS);
         }
-        /*
-         * Build a new name if any component (URI or local part) changed. Do not specify the prefix
-         * because the same URI in the XML document could map to many different prefixes after we
-         * converted to the namespaces used by JAXB. Having the same prefix for those different URI
-         * may be a source of confusion.
-         */
-        if (!namespace.equals(oldNS) || !localPart.equals(name.getLocalPart())) {
-            name = new QName(namespace, localPart);
+        if (namespace.equals(oldNS) && localPart.equals(name.getLocalPart())) {
+            return name;
         }
-        return name;
+        /*
+         * Build a new name if any component (URI or local part) changed. The prefix should have
+         * been specified (indirectly) by a previous call to 'importNS(Namespace)', for example
+         * as a result of a NAMESPACE event. If not, we compute it now using the same method.
+         */
+        final String prefix = prefixes.computeIfAbsent(namespace,
+                (ns) -> Namespaces.getPreferredPrefix(ns, name.getPrefix()));
+        return new QName(namespace, localPart, prefix);
     }
 
     /**
@@ -421,18 +433,28 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     }
 
     /**
-     * Imports a namespace read from the XML document. This may imply a prefix change.
-     * If there is no namespace change, then this method returns the given instance as-is.
+     * Converts a namespace read from the XML document to the namespace used by JAXB annotations.
+     * This methods can convert the namespace for which there is a bijective mapping, for example
+     * {@code "http://www.isotc211.org/2005/gco"} to {@code "http://standards.iso.org/iso/19115/-3/gco/1.0"}.
+     * However some namespaces like {@code "http://www.isotc211.org/2005/gmd"} may be left unchanged,
+     * because that namespace from legacy ISO 19139:2007 can be mapped to many different namespaces
+     * in newer ISO 19115-3:2016 standard. However in some cases the context allows us to determines
+     * which newer namespace is used. In such case, that mapping is specified by the
+     * ({@code oldURI}, {@code newURI}) pair.
      *
      * @param  namespace  the namespace to import.
+     * @param  oldURI     an old URI which has been renamed as {@code newURI}, or {@code null} if none.
+     * @param  newURI     the new URI for {@code oldURI}, or {@code null} if {@code newURI} is null.
      */
-    private Namespace importNS(final Namespace namespace) {
+    private Namespace importNS(final Namespace namespace, final String oldURI, final String newURI) {
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
             uri = FilteredXML.removeTrailingSlash(uri);
-            final String imported = version.importNS(uri);
+            final String imported = uri.equals(oldURI) ? newURI : version.importNS(uri);
             if (imported != uri) {
-                return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(imported, namespace.getPrefix()), imported);
+                final String prefix = prefixes.computeIfAbsent(imported,
+                        (ns) -> Namespaces.getPreferredPrefix(ns, namespace.getPrefix()));
+                return new FilteredEvent.NS(namespace, prefix, imported);
             }
         }
         return namespace;
@@ -442,17 +464,21 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      * Imports the namespaces read from the XML document.
      *
      * @param  namespaces  the namespaces to filter.
+     * @param  oldURI      an old URI which has been renamed as {@code newURI}, or {@code null} if none.
+     * @param  newURI      the new URI for {@code oldURI}, or {@code null} if {@code newURI} is null.
      * @param  changed     whether to unconditionally pretend that there is a change.
      * @return the updated namespaces, or {@code null} if there is no changes.
      */
-    private List<Namespace> importNS(final Iterator<Namespace> namespaces, boolean changed) {
+    private List<Namespace> importNS(final Iterator<Namespace> namespaces,
+            final String oldURI, final String newURI, boolean changed)
+    {
         if (!namespaces.hasNext()) {
             return changed ? Collections.emptyList() : null;
         }
         final List<Namespace> modified = new ArrayList<>();
         do {
             Namespace namespace = namespaces.next();
-            changed |= (namespace != (namespace = importNS(namespace)));
+            changed |= (namespace != (namespace = importNS(namespace, oldURI, newURI)));
             modified.add(namespace);
         } while (namespaces.hasNext());
         return changed ? modified : null;

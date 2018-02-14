@@ -246,24 +246,37 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
         }
 
         /**
-         * Gets a read-only namespace context. Default implementation is suitable for exports
-         * (i.e. write operation). Needs to be overridden for imports (read operation).
+         * Gets the URI used by JAXB annotations for the given prefix used in the XML document.
+         * Returns {@code null} if no unique URI can be provided for the given prefix.
          *
-         * @see FilteredWriter#getNamespaceContext()
-         */
-        @Override
-        public NamespaceContext getNamespaceContext() {
-            return FilteredNamespaces.exportNS(event.getNamespaceContext(), version);
-        }
-
-        /**
-         * Gets the value that the prefix is bound to in the context of this element.
-         * Default implementation is suitable for export (i.e. write operation).
-         * Needs to be overridden for imports (read operation).
+         * <div class="note"><b>Example:</b>
+         * the {@code "gmd"} prefix from legacy ISO 19139:2007 standard can map to the
+         * {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"}, {@code "…/cit/1.0"}
+         * and other namespaces in ISO 19115-3:2016. Because of this ambiguity,
+         * this method returns {@code null}.</div>
+         *
+         * <p>At unmarshalling time, events are created by an arbitrary {@link javax.xml.stream.XMLEventReader}
+         * with namespaces used in the XML document. {@link FilteredReader} wraps those events using this class
+         * for converting the XML namespaces to the namespaces used by JAXB annotations.</p>
+         *
+         * <p>At marshalling time, events are created by JAXB using namespaces used in JAXB annotations.
+         * {@link FilteredWriter} wraps those events for converting those namespaces to the ones used in
+         * the XML document. This is the opposite than the work performed by this default implementation
+         * and must be handled by a {@code Start} subclass.</p>
          */
         @Override
         public String getNamespaceURI(final String prefix) {
-            return version.exportNS(event.getNamespaceURI(prefix));
+            return version.importNS(event.getNamespaceURI(prefix));
+        }
+
+        /**
+         * Returns a context mapping prefixes used in XML document to namespaces used in JAXB annotations.
+         * The {@code FilteredNamespaces.Inverse.getNamespaceURI(String)} method in that context shall do
+         * the same work than {@link #getNamespaceURI(String)} in this event.
+         */
+        @Override
+        public NamespaceContext getNamespaceContext() {
+            return FilteredNamespaces.asJAXB(event.getNamespaceContext(), version);
         }
 
         /**
@@ -278,32 +291,6 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
                 Attr.castOrWrap(attributes.get(i)).write(out);
             }
             out.append('>');
-        }
-    }
-
-    /**
-     * Wrapper over an element emitted during the reading of an XML document.
-     */
-    static final class Import extends Start {
-        /** Wraps the given event with potentially different name, namespaces and attributes. */
-        Import(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, FilterVersion version) {
-            super(event, name, namespaces, attributes, version);
-        }
-
-        /**
-         * Gets a read-only namespace context.
-         */
-        @Override
-        public NamespaceContext getNamespaceContext() {
-            return FilteredNamespaces.importNS(event.getNamespaceContext(), version);
-        }
-
-        /**
-         * Gets the value that the prefix is bound to in the context of this element.
-         */
-        @Override
-        public String getNamespaceURI(final String prefix) {
-            return version.importNS(event.getNamespaceURI(prefix));
         }
     }
 }
