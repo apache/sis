@@ -16,12 +16,7 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Iterator;
-import org.apache.sis.internal.storage.Resources;
-
 // Branch-dependent imports
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -73,33 +68,6 @@ public interface FeatureSet extends DataSet {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     FeatureType getType() throws DataStoreException;
-
-    /**
-     * Redefine the feature type of this feature set, including all features.
-     * This operation may take an undefined time since all features in the set must be transformed.
-     *
-     * <p>
-     * An {@linkplain  org.apache.sis.storage.IllegalFeatureTypeException} will be throw
-     * when the provided type contains incompatible attribute changes.
-     * </p>
-     *
-     * <p>
-     * In the case of a newly created feature set, this method can be used to define
-     * stored feature type.
-     * </p>
-     *
-     * <p>
-     * Default implementation throw a {@linkplain  org.apache.sis.storage.ReadOnlyStorageException}.
-     * </p>
-     *
-     * @param newType new feature type definition, (not {@code null}).
-     * @throws ReadOnlyStorageException if this instance does not support schema update
-     * @throws IllegalFeatureTypeException if the given type is not compatible
-     * @throws DataStoreException if another error occurred while changing feature type.
-     */
-    default void updateType(FeatureType newType) throws ReadOnlyStorageException, IllegalFeatureTypeException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
 
     /**
      * Requests a subset of features and feature properties from this resource.
@@ -168,71 +136,4 @@ public interface FeatureSet extends DataSet {
      */
     Stream<Feature> features(boolean parallel) throws DataStoreException;
 
-    /**
-     * Inserts new features in this {@code FeatureSet}.
-     * Any feature already present in the {@link FeatureSet} will remain unmodified.
-     *
-     * <div class="note"><b>API note:</b>
-     * this method expects an {@link Iterator} rather then a {@link java.util.stream.Stream} for easing
-     * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
-     * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
-     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
-     *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
-     *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
-     * @param  features features to insert in this {@code FeatureSet}.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
-     * @throws DataStoreException if another error occurred while storing new features.
-     */
-    default void add(Iterator<? extends Feature> features) throws ReadOnlyStorageException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
-
-    /**
-     * Removes all features from this {@code FeatureSet} which matches the given predicate.
-     *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
-     *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
-     * @param  filter  a predicate which returns true for resources to be removed.
-     * @return {@code true} if any elements were removed.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
-     * @throws DataStoreException if another error occurred while removing features.
-     */
-    default boolean removeIf(Predicate<? super Feature> filter) throws ReadOnlyStorageException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
-
-    /**
-     * Updates all features from this {@code FeatureSet} which matches the given predicate.
-     * For each {@link Feature} instance matching the given {@link Predicate},
-     * the <code>{@linkplain UnaryOperator#apply UnaryOperator.apply(Feature)}</code> method will be invoked.
-     * {@code UnaryOperator}s are free to modify the given {@code Feature} <i>in-place</i> or to return a
-     * different feature instance. Two behaviors are possible:
-     * <ul>
-     *   <li>If the operator returns a non-null {@link Feature}, then the modified feature is stored
-     *       in replacement of the previous feature (not necessarily at the same location).</li>
-     *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
-     * </ul>
-     *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
-     *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
-     * @param  filter   a predicate which returns true for resources to be updated.
-     * @param  updater  operation called for each matching {@link Feature}.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
-     * @throws DataStoreException if another error occurred while replacing features.
-     */
-    default void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater)
-            throws ReadOnlyStorageException, DataStoreException
-    {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
 }
