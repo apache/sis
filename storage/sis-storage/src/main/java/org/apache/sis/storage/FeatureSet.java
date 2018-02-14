@@ -75,6 +75,33 @@ public interface FeatureSet extends DataSet {
     FeatureType getType() throws DataStoreException;
 
     /**
+     * Redefine the feature type of this feature set, including all features.
+     * This operation may take an undefined time since all features in the set must be transformed.
+     *
+     * <p>
+     * An {@linkplain  org.apache.sis.storage.IllegalFeatureTypeException} will be throw
+     * when the provided type contains incompatible attribute changes.
+     * </p>
+     *
+     * <p>
+     * In the case of a newly created feature set, this method can be used to define
+     * stored feature type.
+     * </p>
+     *
+     * <p>
+     * Default implementation throw a {@linkplain  org.apache.sis.storage.ReadOnlyStorageException}.
+     * </p>
+     *
+     * @param newType new feature type definition, (not {@code null}).
+     * @throws ReadOnlyStorageException if this instance does not support schema update
+     * @throws IllegalFeatureTypeException if the given type is not compatible
+     * @throws DataStoreException if another error occurred while changing feature type.
+     */
+    default void updateType(FeatureType newType) throws ReadOnlyStorageException, IllegalFeatureTypeException, DataStoreException {
+        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
+    }
+
+    /**
      * Requests a subset of features and feature properties from this resource.
      * The filtering can be applied in two domains:
      *
