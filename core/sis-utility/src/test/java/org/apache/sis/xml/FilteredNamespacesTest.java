@@ -50,8 +50,9 @@ public final strictfp class FilteredNamespacesTest extends TestCase implements N
      * Tests {@link FilteredNamespaces#getPrefixes(String)}.
      */
     @Test
+    @SuppressWarnings("unchecked")      // TODO: remove with JDK9
     public void testGetPrefixes() {
-        final NamespaceContext fns = FilteredNamespaces.exportNS(this, FilterVersion.ISO19139);
+        final NamespaceContext fns = FilteredNamespaces.asXML(this, FilterVersion.ISO19139);
         final Iterator<String> it = fns.getPrefixes(LegacyNamespaces.GMD);
         final Set<String> prefixes = new HashSet<>();
         while (it.hasNext()) {
@@ -91,7 +92,7 @@ public final strictfp class FilteredNamespacesTest extends TestCase implements N
      */
     @Test
     public void testGetPrefix() {
-        final NamespaceContext fns = FilteredNamespaces.exportNS(this, FilterVersion.ISO19139);
+        final NamespaceContext fns = FilteredNamespaces.asXML(this, FilterVersion.ISO19139);
         /*
          * Following tests are not really interesting since FilteredNamespaces,
          * after failing to find a mapping, just delegates to this.getPrefix(…).

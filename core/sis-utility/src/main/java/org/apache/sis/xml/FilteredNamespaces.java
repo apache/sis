@@ -26,8 +26,7 @@ import javax.xml.XMLConstants;
 /**
  * In the associations between prefixes and namespaces, substitutes the namespaces used in JAXB annotations by the
  * namespaces used in the XML document at marshalling time. This class is used internally by {@link FilteredReader}
- * and {@link FilteredWriter} only. Current {@code FilteredNamespaces} implementation takes care of XML prefixes only;
- * the stream reader and writer do the rest of the work.
+ * and {@link FilteredWriter} only.
  *
  * <div class="section">The problem</div>
  * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
@@ -51,7 +50,7 @@ import javax.xml.XMLConstants;
  *
  * An alternative is to support only one version of each standard, and transform XML documents before unmarshalling
  * or after marshalling if they use different versions of standards. We could use XSLT for that, but this is heavy.
- * A lighter approach is to use {@link javax.xml.stream.XMLStreamReader} and {@link javax.xml.stream.XMLStreamWriter}
+ * A lighter approach is to use {@link javax.xml.stream.XMLEventReader} and {@link javax.xml.stream.XMLEventWriter}
  * as "micro-transformers".
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -66,23 +65,19 @@ class FilteredNamespaces implements NamespaceContext {
     /**
      * Given the context for namespaces used in our JAXB annotations, returns a context working with namespaces
      * used in XML document. The returned context converts namespace arguments from XML to JAXB namespaces, and
-     * converts returned namespaces from JAXB to XML. Prefixes are left unchanged since they can be arbitrary
-     * (even if not the standard match for a given namespace).
+     * converts returned namespaces from JAXB to XML.
      *
      * <div class="note"><b>Example:</b>
      * for a {@code "http://www.isotc211.org/2005/gmd"} namespace (legacy ISO 19139:2007) given in argument to
-     * {@link #getPrefixes(String)}, the context convert that namespace to all possible ISO 19115-3 namespaces
+     * {@link #getPrefixes(String)}, the context converts that namespace to all possible ISO 19115-3 namespaces
      * (there is many) and returns the associated prefixes: {@code "mdb"}, {@code "cit"}, <i>etc.</i>
      * Conversely given a {@code "mdb"}, {@code "cit"}, <i>etc.</i>, prefix, {@link #getNamespaceURI(String)}
      * method returns the above-cited legacy GMD namespace.</div>
-     *
-     * This can be used when a {@link javax.xml.stream.XMLStreamWriter} has been created for writing with JAXB
-     * annotations and we want to expose an {@code XMLStreamReader} for writing a legacy XML document.
      */
-    static NamespaceContext exportNS(NamespaceContext context, final FilterVersion version) {
+    static NamespaceContext asXML(NamespaceContext context, final FilterVersion version) {
         if (context != null) {
-            if (context instanceof Import && ((Import) context).version == version) {
-                context = ((Import) context).context;
+            if (context instanceof Inverse && ((Inverse) context).version == version) {
+                context = ((Inverse) context).context;
             } else {
                 context = new FilteredNamespaces(context, version);
             }
@@ -93,16 +88,17 @@ class FilteredNamespaces implements NamespaceContext {
     /**
      * Given a context for namespaces used in XML document, returns a context working with the namespaces used
      * in our JAXB annotations.  The returned context converts namespace arguments from JAXB to XML namespaces
-     * before to delegate to the wrapped context, and converts returned namespaces from XML to JAXB.  This can
-     * be used when a {@link javax.xml.stream.XMLStreamReader} has been created for reading a legacy XML document
-     * and we want to expose an {@code XMLStreamReader} for JAXB.
+     * before to delegate to the wrapped context, and converts returned namespaces from XML to JAXB.
+     *
+     * <p>This can be used when a {@link javax.xml.stream.XMLEventWriter} has been created for writing a legacy
+     * XML document and we want to expose a {@link FilteredWriter} view to give to JAXB.</p>
      */
-    static NamespaceContext importNS(NamespaceContext context, final FilterVersion version) {
+    static NamespaceContext asJAXB(NamespaceContext context, final FilterVersion version) {
         if (context != null) {
             if (context.getClass() == FilteredNamespaces.class && ((FilteredNamespaces) context).version == version) {
                 context = ((FilteredNamespaces) context).context;
             } else {
-                context = new FilteredNamespaces.Import(context, version);
+                context = new FilteredNamespaces.Inverse(context, version);
             }
         }
         return context;
@@ -111,8 +107,7 @@ class FilteredNamespaces implements NamespaceContext {
     /**
      * The context to wrap, given by {@link FilteredReader} or {@link FilteredWriter}.
      *
-     * @see javax.xml.stream.XMLStreamReader#getNamespaceContext()
-     * @see javax.xml.stream.XMLStreamWriter#getNamespaceContext()
+     * @see javax.xml.stream.XMLEventWriter#getNamespaceContext()
      */
     final NamespaceContext context;
 
@@ -131,13 +126,14 @@ class FilteredNamespaces implements NamespaceContext {
 
     /**
      * Substitutes the XML namespaces used in XML documents by namespaces used in JAXB annotations.
-     * This is used at unmarshalling time for importing legacy documents, performing the reverse of
-     * {@link FilteredNamespaces}. The <i>namespace → prefix</i> mapping is simpler because various
-     * ISO 19115-3 namespaces are mapped to the same legacy {@code "gmd"} prefix.
+     * This is used at marshalling time for exporting legacy documents, performing the reverse of
+     * {@link FilteredNamespaces}. The <i>namespace → prefix</i> mapping is simple because various
+     * ISO 19115-3 namespaces are mapped to the same legacy {@code "gmd"} prefix, but the reverse
+     * operation (<i>prefix → namespace</i> mapping) can often not be resolved.
      */
-    private static final class Import extends FilteredNamespaces {
+    private static final class Inverse extends FilteredNamespaces {
         /** Creates a new namespaces filter for the given source version. */
-        Import(final NamespaceContext context, final FilterVersion version) {
+        Inverse(final NamespaceContext context, final FilterVersion version) {
             super(context, version);
         }
 
@@ -148,6 +144,8 @@ class FilteredNamespaces implements NamespaceContext {
          *
          * <p>Except for {@code NULL_NS_URI}, this is usually an <cite>injective</cite> function:
          * each namespace can be created from at most one prefix.</p>
+         *
+         * @see FilteredEvent.Start#getNamespaceURI(String)
          */
         @Override public String getNamespaceURI(final String prefix) {
             return version.importNS(context.getNamespaceURI(prefix));
