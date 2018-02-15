@@ -21,6 +21,7 @@ import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.measure.Unit;
 import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
@@ -33,11 +34,14 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
@@ -68,7 +72,8 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  */
 @SuppressWarnings("rawtypes")               // For the omission of <T> in ParameterDescriptor<T> - see javadoc.
 @XmlType(name = "SV_Parameter_Type", namespace = Namespaces.SRV, propOrder = {
-    "memberName",
+    "memberName",           // The  ISO 19115-3:2016 way to marshal name.
+    "legacyName",           // Legacy ISO 19139:2007 way to marshal name.
     "direction",
     "description",
     "optionality",
@@ -87,11 +92,23 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * The name, as used by the service for this parameter. Note that in ISO 19115-3:2016, this element is
      * inside a {@code <gco:MemberName>} element  (i.e. ISO inserts the same kind of {@code Property_Type}
      * element as it does for all other attributes) while in ISO 19139:2007 it was not (i.e. name attributes
-     * like {@code <gco:aName>} were marshalled directly, without wrapper).
+     * like {@code <gco:aName>} were marshalled directly, without wrapper). Example:
      *
+     * {@preformat xml
+     *   <srv:name>
+     *     <gco:MemberName>
+     *       <gco:aName>
+     *         <gco:CharacterString>A parameter name</gco:CharacterString>
+     *       </gco:aName>
+     *     </gco:MemberName>
+     *   </srv:name>
+     * }
+     *
+     * @see #getLegacyName()
      * @see #getValueType()
      */
     @XmlElement(required=true, name="name")
+    @XmlJavaTypeAdapter(GO_GenericName.Since2014.class)
     MemberName memberName;
 
     /**
@@ -199,6 +216,48 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
+     * Returns the name to be marshalled in the ISO 19139:2007 way. Example:
+     *
+     * {@preformat xml
+     *   <srv:name>
+     *     <gco:aName>
+     *       <gco:CharacterString>A parameter name</gco:CharacterString>
+     *     </gco:aName>
+     *   </srv:name>
+     * }
+     *
+     * @return the name if marshalling legacy ISO 19139:2007 format, or {@code null} otherwise.
+     */
+    @XmlElement(name = "name", namespace = LegacyNamespaces.SRV)
+    private DefaultMemberName getLegacyName() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? DefaultMemberName.castOrCopy(memberName) : null;
+    }
+
+    /**
+     * Sets the value from the {@code <gco:aName>} (legacy ISO 19139:2007 format).
+     * This method is called at unmarshalling-time by JAXB.
+     *
+     * @param  value  the new name.
+     * @throws IllegalStateException if a name is already defined.
+     */
+    @SuppressWarnings("unused")
+    private void setLegacyName(final DefaultMemberName value) {
+        ensureUndefined();
+        memberName = value;
+    }
+
+    /**
+     * Ensures that the {@linkplain #memberName} is not already defined.
+     *
+     * @throws IllegalStateException if a name is already defined.
+     */
+    private void ensureUndefined() throws IllegalStateException {
+        if (memberName != null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "name"));
+        }
+    }
+
+    /**
      * Returns the name as an {@code Identifier}, which is the type requested by ISO 19111.
      * Note that this is different than the type requested by ISO 19115, which is {@link MemberName}.
      *
@@ -232,11 +291,12 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * For JAXB marshalling of ISO 19139 document only.
+     * For JAXB marshalling of ISO 19139:2007 document only.
      * Note that there is not setter method, since we expect the same information
      * to be provided in the {@link #name} attribute type.
      */
     @XmlElement(name = "valueType", namespace = LegacyNamespaces.SRV)
+    @XmlJavaTypeAdapter(GO_GenericName.class)    // Not in package-info because shall not be applied to getLegacyName().
     final TypeName getValueType() {
         if (memberName != null && FilterByVersion.LEGACY_METADATA.accept()) {
             return memberName.getAttributeType();

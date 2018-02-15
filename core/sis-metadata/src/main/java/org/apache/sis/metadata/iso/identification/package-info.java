@@ -119,7 +119,6 @@
     @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_ScopedName.class),
     @XmlJavaTypeAdapter(MD_AggregateInformation.class),
     @XmlJavaTypeAdapter(MD_AssociatedResource.class),
     @XmlJavaTypeAdapter(MD_BrowseGraphic.class),

@@ -44,8 +44,6 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_MemberName.class),
     @XmlJavaTypeAdapter(SV_ParameterDirection.class),
 
     // Java types, primitive types and basic OGC types handling
