@@ -287,7 +287,6 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
             name(out.append('<'));
             final int n = attributes.size();
             for (int i=0; i<n; i++) {
-                if (i != 0) out.append(' ');
                 Attr.castOrWrap(attributes.get(i)).write(out);
             }
             out.append('>');
