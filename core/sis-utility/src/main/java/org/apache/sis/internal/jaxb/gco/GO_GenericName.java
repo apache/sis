@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import org.opengis.util.GenericName;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -34,11 +35,11 @@ import org.opengis.util.GenericName;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericName> {
+public class GO_GenericName extends NameAdapter<GO_GenericName, GenericName> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -72,7 +73,26 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
      * @return the implementing class.
      */
     @Override
-    public GenericName unmarshal(final GO_GenericName value) {
+    public final GenericName unmarshal(final GO_GenericName value) {
         return (value != null) ? value.name : null;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends GO_GenericName {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_GenericName marshal(final GenericName value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+        }
     }
 }

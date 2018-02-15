@@ -64,17 +64,6 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     }
 
     /**
-     * Ensures that the {@linkplain #name} is not already defined.
-     *
-     * @throws IllegalStateException if a name is already defined.
-     */
-    private void ensureUndefined() throws IllegalStateException {
-        if (name != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "name"));
-        }
-    }
-
-    /**
      * Returns the {@code LocalName} or {@code ScopedName} to marshal. Returns {@code null} if the name
      * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getName()} instead.
      * Example:
@@ -162,5 +151,16 @@ abstract class NameAdapter<ValueType extends NameAdapter<ValueType,BoundType>, B
     public final void setName(final DefaultLocalName value) throws IllegalStateException {
         ensureUndefined();
         name = value;
+    }
+
+    /**
+     * Ensures that the {@linkplain #name} is not already defined.
+     *
+     * @throws IllegalStateException if a name is already defined.
+     */
+    private void ensureUndefined() throws IllegalStateException {
+        if (name != null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "name"));
+        }
     }
 }

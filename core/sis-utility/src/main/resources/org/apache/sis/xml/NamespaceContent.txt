@@ -975,7 +975,6 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
     <type>
     description
     direction
-    name
     repeatability
     valueType
   SV_ParameterDirection

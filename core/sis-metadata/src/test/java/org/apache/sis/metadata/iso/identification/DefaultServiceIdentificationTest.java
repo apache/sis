@@ -109,26 +109,6 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     }
 
     /**
-     * Tests the marshalling of a service metadata.
-     *
-     * @throws JAXBException if an error occurred during the during marshalling process.
-     */
-    @Test
-    public void testMarshal() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, create(), "xlmns:*", "xsi:schemaLocation");
-    }
-
-    /**
-     * Tests the marshalling of a service metadata to legacy ISO 19139:2007 schema.
-     *
-     * @throws JAXBException if an error occurred during the during marshalling process.
-     */
-    @Test
-    public void testMarshalLegacy() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), VERSION_2007, "xlmns:*", "xsi:schemaLocation");
-    }
-
-    /**
      * Tests the unmarshalling of a service metadata.
      *
      * <p><b>XML test file:</b>
@@ -155,5 +135,25 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
         verify(id);
         final CoupledResource resource = getSingleton(id.getCoupledResources());
         assertEquals("scopedName", "mySpace:ABC-123", String.valueOf(resource.getScopedName()));
+    }
+
+    /**
+     * Tests the marshalling of a service metadata.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling process.
+     */
+    @Test
+    public void testMarshal() throws JAXBException {
+        assertMarshalEqualsFile(XML_FILE, create(), "xlmns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests the marshalling of a service metadata to legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling process.
+     */
+    @Test
+    public void testMarshalLegacy() throws JAXBException {
+        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 }
