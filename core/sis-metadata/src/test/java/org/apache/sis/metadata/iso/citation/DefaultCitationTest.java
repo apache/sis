@@ -278,7 +278,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
 
         final CitationDate date = getSingleton(c.getDates());
         assertEquals("date", date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
-        assertEquals("dateType", date.getDateType(), DateType.ADOPTED);
+        assertEquals("dateType", DateType.ADOPTED, date.getDateType());
         assertEquals("presentationForm", PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
 
         final Iterator<Responsibility> it = c.getCitedResponsibleParties().iterator();

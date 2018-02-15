@@ -233,6 +233,14 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     private final Map<String,String> prefixes;
 
     /**
+     * The next event to return after a call to {@link #peek()}. This is used for avoiding to recompute
+     * the same object many times when {@link #peek()} is invoked before a call to {@link #nextEvent()}.
+     * This is also required for avoiding to duplicate additions and removals of elements in the
+     * {@link #outerElements} list.
+     */
+    private XMLEvent nextEvent;
+
+    /**
      * Creates a new filter for the given version of the standards.
      */
     FilteredReader(final XMLEventReader in, final FilterVersion version) {
@@ -243,19 +251,33 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     }
 
     /**
+     * Returns {@code true} if the given {@code wrapper} is a wrapper for the given {@code event}.
+     * This method is used for assertions only.
+     */
+    private static boolean isWrapper(final XMLEvent event, final XMLEvent wrapper) {
+        return (event == wrapper) || (wrapper instanceof FilteredEvent && ((FilteredEvent) wrapper).event == event);
+    }
+
+    /**
      * Checks if there are more events.
      */
     @Override
     public boolean hasNext() {
-        return in.hasNext();
+        return (nextEvent != null) || in.hasNext();
     }
 
     /**
-     * Check the next XMLEvent without reading it from the stream.
+     * Checks the next {@code XMLEvent} without removing it from the stream.
      */
     @Override
     public XMLEvent peek() throws XMLStreamException {
-        return convert(in.peek(), false);
+        if (nextEvent == null) {
+            final XMLEvent event = in.peek();
+            if (event != null) {
+                nextEvent = convert(event);
+            }
+        }
+        return nextEvent;
     }
 
     /**
@@ -263,7 +285,14 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      */
     @Override
     public Object next() {
-        return convert((XMLEvent) in.next(), true);
+        final XMLEvent event = (XMLEvent) in.next();
+        final XMLEvent next  = nextEvent;
+        if (next != null) {
+            nextEvent = null;
+            assert isWrapper(event, next) : event;
+            return next;
+        }
+        return convert(event);
     }
 
     /**
@@ -271,7 +300,14 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      */
     @Override
     public XMLEvent nextEvent() throws XMLStreamException {
-        return convert(in.nextEvent(), true);
+        final XMLEvent event = in.nextEvent();
+        final XMLEvent next  = nextEvent;
+        if (next != null) {
+            nextEvent = null;
+            assert isWrapper(event, next) : event;
+            return next;
+        }
+        return convert(event);
     }
 
     /**
@@ -279,19 +315,32 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      */
     @Override
     public XMLEvent nextTag() throws XMLStreamException {
-        return convert(in.nextTag(), true);
+        final XMLEvent event = in.nextTag();
+        final XMLEvent next  = nextEvent;
+        if (next != null) {
+            nextEvent = null;
+            switch (event.getEventType()) {
+                case START_ELEMENT:
+                case END_ELEMENT: {
+                    assert isWrapper(event, next) : event;
+                    return event;
+                }
+            }
+        }
+        return convert(event);
     }
 
     /**
      * Keeps trace of XML elements opened up to this point and imports the given event.
      * This method replaces the namespaces used in XML document by the namespace used by JAXB annotations.
+     * It is caller's responsibility to ensure that this method is invoked exactly once for each element,
+     * or at least for each {@code START_ELEMENT} and {@code END_ELEMENT}.
      *
      * @param  event  the event read from the underlying event reader.
-     * @param  next   {@code true} for a {@code next} operation, or {@code false} for a {@code peek} operation.
      * @return the converted event (may be the same instance).
      */
     @SuppressWarnings("unchecked")      // TODO: remove on JDK9
-    private XMLEvent convert(XMLEvent event, final boolean next) {
+    private XMLEvent convert(XMLEvent event) {
         switch (event.getEventType()) {
             case ATTRIBUTE: {
                 event = convert((Attribute) event);
@@ -319,9 +368,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                 } else {
                     renamedAttributes.clear();
                 }
-                if (next) {
-                    outerElements.add(e.getName());
-                }
+                outerElements.add(name);
                 break;
             }
             case END_ELEMENT: {
@@ -337,12 +384,10 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                  * Close the last start element with a matching name. It should be the last element
                  * on the list in a well-formed XML, but we loop in the list anyway as a safety.
                  */
-                if (next) {
-                    for (int i = outerElements.size(); --i >= 0;) {
-                        if (name.equals(outerElements.get(i))) {
-                            outerElements.remove(i);
-                            break;
-                        }
+                for (int i = outerElements.size(); --i >= 0;) {
+                    if (name.equals(outerElements.get(i))) {
+                        outerElements.remove(i);
+                        break;
                     }
                 }
                 break;
