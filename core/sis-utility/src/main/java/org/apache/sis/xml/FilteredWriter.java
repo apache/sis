@@ -17,8 +17,12 @@
 package org.apache.sis.xml;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.List;
+import java.util.Queue;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -52,6 +56,35 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     /**
+     * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
+     * to ISO 19115-3:2016 (or other newer standards). Key are names of elements to reorder. Values
+     * are the elements to skip before to write the element to reorder.
+     *
+     * <div class="note"><b>Example:</b>
+     * In {@code SV_ServiceIdentification}, {@code <srv:couplingType>} appears before {@code <srv:coupledResource>}
+     * according ISO 19115-3:2016. But in ISO 19139:2007, it was the reverse order. Since Apache SIS writes elements
+     * in the order defined by the newer standard, {@code <couplingType>} is encountered first. The set associated
+     * to that key tells us that, when writing legacy ISO 19139 document, we should skip {@code <coupledResource>}
+     * before to write {@code <srv:couplingType>}.</div>
+     *
+     * While this map is used for reordering elements according legacy standards, the {@link QName} keys and values
+     * use the namespaces of newer standards. This is because newer standards like ISO 19115-3 uses many namespaces
+     * where legacy ISO 19139:2007 used only one namespace, so using the newer names reduce the risk of confusion.
+     *
+     * @see #toSkip
+     * @see #deferred
+     *
+     * @todo Hard-coded for now. Should move to a resource file in a future version.
+     */
+    private static final Map<QName, Set<QName>> ELEMENTS_TO_REORDER;
+    static {
+        final Map<QName, Set<QName>> m = new HashMap<>(4);
+        m.put(new QName(Namespaces.SRV, "couplingType", "srv"), Collections.singleton(new QName(Namespaces.SRV, "coupledResource", "srv")));
+        m.put(new QName(Namespaces.SRV, "connectPoint", "srv"), Collections.singleton(new QName(Namespaces.SRV, "parameter",       "srv")));
+        ELEMENTS_TO_REORDER = m;
+    }
+
+    /**
      * Where events are sent.
      */
     private final XMLEventWriter out;
@@ -68,12 +101,52 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     private final Map<String,Namespace> uniqueNamespaces;
 
     /**
+     * {@code true} if events should be sent to {@link #deferred} instead than to {@link #out}.
+     * This is set to {@code true} when we see a {@link StartElement} having one of the names
+     * contained in the {@link #ELEMENTS_TO_REORDER} keys set.
+     */
+    private boolean isDeferring;
+
+    /**
+     * Events for which writing is deferred as long as there is elements {@linkplain #toSkip to skip}.
+     * The intent is to reorder elements that appear in a different order in legacy standards compared
+     * to newer standards. This is a FIFO (First-In-First-Out) queue. Namespaces are the exported ones
+     * (the ones after conversions from JAXB to the XML document to write).
+     *
+     * @see #ELEMENTS_TO_REORDER
+     */
+    private final Queue<XMLEvent> deferred;
+
+    /**
+     * If non-null, elements to skip before we can write the {@linkplain #deferred} events.
+     * Should be the {@link #ELEMENTS_TO_REORDER} value associated to the element to defer.
+     * A null value means that events can be written immediately to {@link #out}.
+     */
+    private Set<QName> toSkip;
+
+    /**
+     * Name of the the root element of a sub-tree to handle in a special way, or {@code null} if none.
+     * At first, this is the name of the {@link StartElement} of a sub-tree to defer (i.e. one of the
+     * keys in the {@link #ELEMENTS_TO_REORDER} map). Later, it becomes the names of sub-trees to skip
+     * (i.e. the {@link #toSkip} values).
+     */
+    private QName subtreeRootName;
+
+    /**
+     * Number of times that {@link #subtreeRootName} has been found. A value of 1 means that we started
+     * receiving events for that subtree. A value of 0 means that we finished receiving events for that
+     * subtree. A value greater than 1 means that there is nested sub-trees (should not happen).
+     */
+    private int subtreeNesting;
+
+    /**
      * Creates a new filter for the given version of the standards.
      */
     FilteredWriter(final XMLEventWriter out, final FilterVersion version) {
         super(version);
         this.out = out;
         uniqueNamespaces = new LinkedHashMap<>();
+        deferred = new ArrayDeque<>();
     }
 
     /**
@@ -182,8 +255,11 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     }
 
     /**
-     * Adds an event to the output stream. This method may wrap the given event into another event
-     * for changing the namespace and/or the prefix.
+     * Converts an event from the namespaces used in JAXB annotations to the namespaces used in the XML document
+     * to write. This method may wrap the given event into another event for changing the namespace and prefix,
+     * or use the event as-is if no change is needed.
+     *
+     * @param  event  the event using JAXB namespaces.
      */
     @Override
     @SuppressWarnings("unchecked")      // TODO: remove on JDK9
@@ -198,6 +274,23 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
                 event = exportIfNew((Namespace) event);
                 if (uniqueNamespaces.size() == n) {
                     return;                                     // An event has already been created for that namespace.
+                }
+                break;
+            }
+            case END_ELEMENT: {
+                final EndElement e = event.asEndElement();
+                final QName originalName = e.getName();
+                final QName name = export(originalName);
+                final List<Namespace> namespaces = export(e.getNamespaces(), name != originalName);
+                if (namespaces != null) {
+                    event = new FilteredEvent.End(e, name, namespaces);
+                }
+                if (toSkip != null) {                           // Check if a previous START_ELEMENT found a need to reorder.
+                    if (originalName.equals(subtreeRootName)) {
+                        subtreeNesting--;                       // May reach 0 but be followed by another element to skip.
+                    } else if (subtreeNesting == 0) {
+                        writeDeferred();                        // About to exit the parent element containing deferred element.
+                    }
                 }
                 break;
             }
@@ -219,20 +312,52 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
                 } else {
                     renamedAttributes.clear();
                 }
-                break;
-            }
-            case END_ELEMENT: {
-                final EndElement e = event.asEndElement();
-                final QName originalName = e.getName();
-                final QName name = export(originalName);
-                final List<Namespace> namespaces = export(e.getNamespaces(), name != originalName);
-                if (namespaces != null) {
-                    event = new FilteredEvent.End(e, name, namespaces);
+                /*
+                 * At this point, we finished to export the event (i.e. to convert namespaces to the URI
+                 * used in the XML documents). The remaining code in this block is for handling the case
+                 * where the elements should not be written immediately, but after some other events.
+                 * This happen when legacy standards ordered some elements differently.
+                 */
+                if (toSkip == null) {
+                    toSkip = ELEMENTS_TO_REORDER.get(originalName);
+                    if (toSkip != null) {
+                        subtreeRootName = originalName;                 // Found a new element to defer.
+                        subtreeNesting = 1;
+                        isDeferring = true;
+                    }
+                } else if (subtreeNesting == 0) {
+                    if (toSkip.contains(originalName)) {
+                        subtreeRootName = originalName;                 // Defer until after that element.
+                        subtreeNesting = 1;
+                    } else {
+                        writeDeferred();                                // End of deferring.
+                    }
+                } else if (originalName.equals(subtreeRootName)) {
+                    subtreeNesting++;
                 }
                 break;
             }
         }
-        out.add(event);
+        if (isDeferring) {
+            deferred.add(event);
+            isDeferring = (subtreeNesting != 0);
+        } else {
+            out.add(event);
+        }
+    }
+
+    /**
+     * Writes immediately all elements that were deferred. This happen because the next {@link StartElement}
+     * to write should be after the deferred element, or because we are about to exit the parent element that
+     * contains the deferred element, or because {@link #flush()} has been invoked.
+     *
+     * @see #ELEMENTS_TO_REORDER
+     */
+    private void writeDeferred() throws XMLStreamException {
+        subtreeRootName = null;
+        toSkip = null;
+        XMLEvent v;
+        while ((v = deferred.poll()) != null) out.add(v);
     }
 
     /**
@@ -351,6 +476,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
      */
     @Override
     public void flush() throws XMLStreamException {
+        writeDeferred();
         out.flush();
     }
 
