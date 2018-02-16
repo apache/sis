@@ -57,7 +57,6 @@ final class FilterVersion {
                 Namespaces.MD2,
                 Namespaces.MDA,
                 Namespaces.MDB,
-                Namespaces.MDQ,
                 Namespaces.MDS,
                 Namespaces.MDT,
                 Namespaces.MEX,
@@ -68,18 +67,26 @@ final class FilterVersion {
                 Namespaces.MRI,
                 Namespaces.MRL,
                 Namespaces.MRS,
-                Namespaces.MSR,
                 Namespaces.RCE
             }, LegacyNamespaces.GMD);
         /*
          * SV_OperationMetadata has two properties that are identical except for the name
          * between ISO 19115-3:2016 and legacy ISO 19139:2007. Instead than complicating
          * the class with JAXB annotations, we perform the renaming in this package.
+         * We apply the same mechanic to some other namespaces too.
          */
         Replacement r = new Replacement(LegacyNamespaces.SRV, 4);
         r.addProperty("distributedComputingPlatform", "DCP");
         r.addProperty("parameter", "parameters");
         ISO19139.exports.put(Namespaces.SRV, r);
+
+        // Metadata for Spatial Representation
+        r = new Replacement(LegacyNamespaces.GMD, "centrePoint", "centerPoint");
+        ISO19139.exports.put(Namespaces.MSR, r);
+
+        // Metadata for Data Quality
+        r = new Replacement(LegacyNamespaces.GMD, "valueRecordType", "valueType");
+        ISO19139.exports.put(Namespaces.MDQ, r);
         /*
          * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on
          * FilteredReader (do NOT declare entries in 'imports', because some namespaces must be
@@ -128,6 +135,14 @@ final class FilterVersion {
         Replacement(final String namespace) {
             this.namespace  = namespace;
             this.exports = Collections.emptyMap();
+        }
+
+        /**
+         * Constructs a replacement for a namespace with exactly one property renaming.
+         */
+        Replacement(final String namespace, final String jaxb, final String xml) {
+            this.namespace  = namespace;
+            this.exports = Collections.singletonMap(jaxb, xml);
         }
 
         /**
