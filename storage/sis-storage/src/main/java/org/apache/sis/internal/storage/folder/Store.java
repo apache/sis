@@ -35,7 +35,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.sis.internal.storage.FileSystemResource;
 import org.opengis.metadata.Metadata;
@@ -492,7 +491,7 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
                         }
                     }
                     Files.deleteIfExists(location);
-                } catch(IOException ex) {
+                } catch (IOException ex) {
                     //do nothing
                 } finally {
                     store.close();
