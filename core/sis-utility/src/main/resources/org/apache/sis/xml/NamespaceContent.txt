@@ -925,7 +925,7 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
   MI_Georectified
     axisDimensionProperties
     cellGeometry
-    centrePoint
+    centerPoint/centrePoint
     checkPoint
     checkPointAvailability
     checkPointDescription
@@ -1099,7 +1099,7 @@ http://standards.iso.org/iso/19157/-2/mdq/1.0
   DQ_QuantitativeResult
     <type>
     value
-    valueRecordType
+    valueType/valueRecordType
     valueUnit
   DQ_RelativeInternalPositionalAccuracy
     <type>
