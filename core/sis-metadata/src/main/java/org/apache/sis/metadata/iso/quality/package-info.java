@@ -111,7 +111,10 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
- * @since   0.3
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-394">SIS-394</a>
+ *
+ * @since 0.3
  * @module
  */
 @XmlSchema(location="http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd",

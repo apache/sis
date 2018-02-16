@@ -107,6 +107,7 @@
                 @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
                 @XmlNs(prefix = "lan",  namespaceURI = Namespaces.LAN),        // Language localization
                 @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
+                @XmlNs(prefix = "gco",  namespaceURI = Namespaces.GCO),        // Geographic Common
                 @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD),  // Metadata ISO 19139:2007
                 @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV)   // Metadata for Services 1.0
 })

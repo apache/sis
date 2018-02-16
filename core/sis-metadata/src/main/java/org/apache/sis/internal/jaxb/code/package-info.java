@@ -54,8 +54,7 @@
     @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
     @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
-    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 package org.apache.sis.internal.jaxb.code;
 
