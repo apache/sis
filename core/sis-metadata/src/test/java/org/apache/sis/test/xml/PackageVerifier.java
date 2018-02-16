@@ -19,10 +19,10 @@ package org.apache.sis.test.xml;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.AbstractSet;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
@@ -42,6 +42,7 @@ import org.opengis.annotation.UML;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -55,10 +56,38 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  */
 final strictfp class PackageVerifier {
     /**
-     * Classes or properties having a JAXB annotation in this namespace should be deprecated.
+     * Sentinel value used in {@link #LEGACY_NAMESPACES} for meaning "all properties in that namespace".
      */
-    private static final Set<String> LEGACY_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.GMX, LegacyNamespaces.SRV)));
+    private static final Set<String> ALL = new AbstractSet<String>() {
+        @Override public boolean          contains(Object v) {return true;}
+        @Override public int              size()             {return 0;}
+        @Override public Iterator<String> iterator()         {return Collections.emptyIterator();}
+    };
+
+    /**
+     * Classes or properties having a JAXB annotation in this namespace should be deprecated.
+     * Deprecated namespaces are enumerated as keys. If the associated value is {@link #ALL},
+     * the whole namespace is deprecated. If the value is not ALL, then only the enumerated
+     * properties are deprecated.
+     *
+     * <p>Non-ALL values are rare. They happen in a few cases where a property is legacy despite its namespace.
+     * Those "properties" are errors in the legacy ISO 19139:2007 schema; they were types without their property
+     * wrappers. For example in {@code SV_CoupledResource}, {@code <gco:ScopedName>} was marshalled without its
+     * {@code <srv:scopedName>} wrapper — note the upper and lower-case "s". Because {@code ScopedName} is a type,
+     * we had to keep the namespace declared in {@link org.apache.sis.util.iso.DefaultScopedName}
+     * (the replacement is performed by {@code org.apache.sis.xml.FilteredWriter}).
+     * </p>
+     */
+    private static final Map<String, Set<String>> LEGACY_NAMESPACES;
+    static {
+        final Map<String, Set<String>> m = new HashMap<>(8);
+        m.put(LegacyNamespaces.GMD, ALL);
+        m.put(LegacyNamespaces.GMI, ALL);
+        m.put(LegacyNamespaces.GMX, ALL);
+        m.put(LegacyNamespaces.SRV, ALL);
+        m.put(Namespaces.GCO, Collections.singleton("ScopedName"));     // Not to be confused with standard <srv:scopedName>
+        LEGACY_NAMESPACES = Collections.unmodifiableMap(m);
+    }
 
     /**
      * Types declared in JAXB annotations to be considered as equivalent to types in XML schemas.
@@ -284,7 +313,7 @@ final strictfp class PackageVerifier {
          * is already available or not. However properties in other namespaces should not be deprecated.
          * Some validations of deprecated properties are skipped because we didn't loaded their schema.
          */
-        isDeprecatedClass = LEGACY_NAMESPACES.contains(classNS);
+        isDeprecatedClass = (LEGACY_NAMESPACES.get(classNS) == ALL);
         if (!isDeprecatedClass) {
             if (type.isAnnotationPresent(Deprecated.class)) {
                 throw new SchemaException(errorInClassMember(null)
@@ -382,7 +411,7 @@ final strictfp class PackageVerifier {
          * We do not verify fully the properties in legacy namespaces because we didn't loaded their schemas.
          * However we verify at least that those properties are not declared as required.
          */
-        if (LEGACY_NAMESPACES.contains(ns)) {
+        if (LEGACY_NAMESPACES.getOrDefault(ns, Collections.emptySet()).contains(name)) {
             if (!isDeprecatedClass && element.required()) {
                 throw new SchemaException(errorInClassMember(javaName)
                         .append("Legacy property should not be required."));

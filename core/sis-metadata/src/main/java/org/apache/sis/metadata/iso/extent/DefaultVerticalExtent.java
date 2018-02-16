@@ -58,6 +58,8 @@ import org.apache.sis.xml.NilReason;
  *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
  *       Serialization support is appropriate for short term storage or RMI between applications running the
  *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ *   <li>Coordinate Reference System can not be specified by identifier only; they have to be specified in full.
+ *       See <a href="https://issues.apache.org/jira/browse/SIS-397">SIS-397</a>.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -212,6 +214,8 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * The CRS identification includes unit of measure.
      *
      * @return the vertical CRS, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-397">SIS-397</a>
      */
     @Override
     @XmlElement(name = "verticalCRS")

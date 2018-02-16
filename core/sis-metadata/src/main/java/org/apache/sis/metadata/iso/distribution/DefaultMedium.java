@@ -182,6 +182,9 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Returns the name of the medium on which the resource can be received.
      *
      * @return name of the medium, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-389">SIS-389</a>
+     *
      */
     @Override
     @XmlElement(name = "name")

@@ -372,6 +372,10 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      */
     protected String getExpectedXmlRootElementName(final Stereotype stereotype, final UML uml) {
         String name = uml.identifier();
+        switch (name) {
+            // This case can be removed if https://issues.apache.org/jira/browse/SIS-398 is fixed.
+            case "MI_PolarizationOrientationCode": name = "MI_PolarisationOrientationCode"; break;
+        }
         if (Stereotype.ABSTRACT.equals(stereotype)) {
             name = "Abstract".concat(name);
         }
@@ -903,7 +907,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 assertFalse("Expected @XmlElementRef.", wrapper.isInherited);
                 final UML uml = type.getAnnotation(UML.class);
                 if (uml != null) {                  // 'assertNotNull' is 'testInterfaceAnnotations()' job.
-                    assertEquals("Wrong @XmlElement.", uml.identifier(), element.name());
+                    assertEquals("Wrong @XmlElement.", getExpectedXmlRootElementName(null, uml), element.name());
                 }
                 final String namespace = assertExpectedNamespace(element.namespace(), wrapper.type, uml);
                 if (!ControlledVocabulary.class.isAssignableFrom(type)) {

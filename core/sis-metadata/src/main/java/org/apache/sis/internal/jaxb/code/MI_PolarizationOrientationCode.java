@@ -31,7 +31,10 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
- * @since   0.3
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-398">SIS-398</a>
+ *
+ * @since 0.3
  * @module
  */
 public final class MI_PolarizationOrientationCode
@@ -76,7 +79,7 @@ public final class MI_PolarizationOrientationCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_PolarizationOrientationCode", namespace = Namespaces.GMI)
+    @XmlElement(name = "MI_PolarisationOrientationCode", namespace = Namespaces.MRC)
     public CodeListUID getElement() {
         return identifier;
     }
