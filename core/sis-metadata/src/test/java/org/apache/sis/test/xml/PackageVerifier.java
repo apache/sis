@@ -70,8 +70,7 @@ final strictfp class PackageVerifier {
      * wrappers. For example in {@code SV_CoupledResource}, {@code <gco:ScopedName>} was marshalled without its
      * {@code <srv:scopedName>} wrapper — note the upper and lower-case "s". Because {@code ScopedName} is a type,
      * we had to keep the namespace declared in {@link org.apache.sis.util.iso.DefaultScopedName}
-     * (the replacement is performed by {@code org.apache.sis.xml.FilteredWriter}).
-     * </p>
+     * (the replacement is performed by {@code org.apache.sis.xml.TransformingWriter}).</p>
      */
     private static final Map<String, Set<String>> LEGACY_NAMESPACES;
     static {

@@ -27,7 +27,7 @@ import javax.xml.stream.events.Attribute;
  * Base class of XML reader or writer replacing the namespaces used by JAXB by namespaces used in the XML document,
  * or conversely (depending on the direction of the I/O operation).
  *
- * See {@link FilteredNamespaces} for more information.
+ * See {@link TransformingNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
@@ -35,11 +35,11 @@ import javax.xml.stream.events.Attribute;
  * @since   1.0
  * @module
  */
-abstract class FilteredXML {
+abstract class Transformer {
     /**
      * The external XML format version to (un)marshal from.
      */
-    final FilterVersion version;
+    final TransformVersion version;
 
     /**
      * Temporary list of attributes after their namespace change.
@@ -50,7 +50,7 @@ abstract class FilteredXML {
     /**
      * Creates a new XML reader or writer.
      */
-    FilteredXML(final FilterVersion version) {
+    Transformer(final TransformVersion version) {
         this.version = version;
         renamedAttributes = new ArrayList<>();
     }

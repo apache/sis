@@ -48,7 +48,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *       when the marshaller is recycled.</li>
  *   <li>Constructs a SIS {@link Context} object on marshalling, in order to give
  *       additional information to the SIS object being marshalled.</li>
- *   <li>Wraps the output stream in a {@link FilteredWriter} if the desired GML version
+ *   <li>Wraps the output stream in a {@link TransformingWriter} if the desired GML version
  *       in not the SIS native GML version.</li>
  * </ul>
  *
@@ -132,18 +132,17 @@ final class PooledMarshaller extends Pooled implements Marshaller {
 
     /**
      * Marshals to the given output with on-the-fly substitution of namespaces.
-     * This method is invoked only when the user asked to marshal to a different GML version
-     * than the one supported natively by SIS, i.e. when {@link #getFilterVersion()} returns
-     * a non-null value.
+     * This method is invoked when the user asked to marshal to a different GML or metadata version than the
+     * one supported natively by SIS, i.e. when {@link #getTransformVersion()} returns a non-null value.
      *
      * @param object   the object to marshal.
      * @param output   the writer created by SIS (<b>not</b> the writer given by the user).
      * @param version  identifies the namespace substitutions to perform.
      */
-    private void marshal(final Object object, XMLEventWriter output, final FilterVersion version)
+    private void marshal(final Object object, XMLEventWriter output, final TransformVersion version)
             throws XMLStreamException, JAXBException
     {
-        output = new FilteredWriter(output, version);
+        output = new TransformingWriter(output, version);
         final Context context = begin();
         try {
             marshaller.marshal(toImplementation(object), output);
@@ -158,7 +157,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final Result output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
@@ -179,7 +178,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final OutputStream output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             marshal(object, OutputFactory.createXMLEventWriter(output, getEncoding()), version);
         } catch (XMLStreamException e) {
@@ -200,7 +199,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final File output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             try (OutputStream s = new BufferedOutputStream(new FileOutputStream(output))) {
                 marshal(object, OutputFactory.createXMLEventWriter(s, getEncoding()), version);
@@ -223,7 +222,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final Writer output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
@@ -244,7 +243,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final ContentHandler output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
@@ -265,7 +264,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final Node output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
@@ -286,7 +285,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final XMLStreamWriter output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
@@ -307,9 +306,9 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, XMLEventWriter output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) {
-            output = new FilteredWriter(output, version);
+            output = new TransformingWriter(output, version);
         }
         final Context context = begin();
         try {
@@ -324,7 +323,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public Node getNode(final Object object) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+        final TransformVersion version = getTransformVersion();
         if (version != null) {
             // This exception is thrown by javax.xml.bind.helpers.AbstractMarshallerImpl anyway.
             throw new UnsupportedOperationException();

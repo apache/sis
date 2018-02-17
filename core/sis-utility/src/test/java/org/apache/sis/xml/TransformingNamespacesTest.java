@@ -31,14 +31,14 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link FilteredNamespaces}.
+ * Tests {@link TransformingNamespaces}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final strictfp class FilteredNamespacesTest extends TestCase implements NamespaceContext {
+public final strictfp class TransformingNamespacesTest extends TestCase implements NamespaceContext {
     /**
      * All prefixes declared in this test.
      */
@@ -47,12 +47,12 @@ public final strictfp class FilteredNamespacesTest extends TestCase implements N
     }
 
     /**
-     * Tests {@link FilteredNamespaces#getPrefixes(String)}.
+     * Tests {@link TransformingNamespaces#getPrefixes(String)}.
      */
     @Test
     @SuppressWarnings("unchecked")      // TODO: remove with JDK9
     public void testGetPrefixes() {
-        final NamespaceContext fns = FilteredNamespaces.asXML(this, FilterVersion.ISO19139);
+        final NamespaceContext fns = TransformingNamespaces.asXML(this, TransformVersion.ISO19139);
         final Iterator<String> it = fns.getPrefixes(LegacyNamespaces.GMD);
         final Set<String> prefixes = new HashSet<>();
         while (it.hasNext()) {
@@ -63,7 +63,7 @@ public final strictfp class FilteredNamespacesTest extends TestCase implements N
 
     /**
      * Dummy implementation of {@link NamespaceContext#getPrefixes(String)} for {@link #testGetPrefixes()} purpose.
-     * This method will be invoked many times by the prefix iterator implemented by {@link FilteredNamespaces}.
+     * This method will be invoked many times by the prefix iterator implemented by {@link TransformingNamespaces}.
      * This method implementation uses a hard-coded list of arbitrary prefixes.
      *
      * @param  namespaceURI  the namespace for which to get one or more prefixes.
@@ -88,20 +88,20 @@ public final strictfp class FilteredNamespacesTest extends TestCase implements N
     }
 
     /**
-     * Tests {@link FilteredNamespaces#getPrefix(String)}.
+     * Tests {@link TransformingNamespaces#getPrefix(String)}.
      */
     @Test
     public void testGetPrefix() {
-        final NamespaceContext fns = FilteredNamespaces.asXML(this, FilterVersion.ISO19139);
+        final NamespaceContext fns = TransformingNamespaces.asXML(this, TransformVersion.ISO19139);
         /*
-         * Following tests are not really interesting since FilteredNamespaces,
+         * Following tests are not really interesting since TransformingNamespaces,
          * after failing to find a mapping, just delegates to this.getPrefix(…).
          */
         assertEquals("cit", fns.getPrefix(Namespaces.CIT));
         assertEquals("mdb", fns.getPrefix(Namespaces.MDB));
         assertEquals("gex", fns.getPrefix(Namespaces.GEX));
         /*
-         * This is the interesting test: FilteredNamespaces replaces the gmd namespace
+         * This is the interesting test: TransformingNamespaces replaces the gmd namespace
          * by one of the namespace recognized by this NamespaceContext, then delegates.
          */
         assertNull(getPrefix(LegacyNamespaces.GMD));                // This test is useless if this is non-null.
@@ -111,7 +111,7 @@ public final strictfp class FilteredNamespacesTest extends TestCase implements N
 
     /**
      * Dummy implementation of {@link NamespaceContext#getPrefix(String)} for {@link #testGetPrefix()} purpose.
-     * This method will be invoked many times by the prefix iterator implemented by {@link FilteredNamespaces}.
+     * This method will be invoked many times by the prefix iterator implemented by {@link TransformingNamespaces}.
      * This method implementation uses a hard-coded list of arbitrary prefixes.
      *
      * @param  namespaceURI  the namespace for which to get an arbitrary prefixes.

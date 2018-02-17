@@ -150,7 +150,7 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.ValueConverterTest.class,
     org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,
-    org.apache.sis.xml.FilteredNamespacesTest.class,
+    org.apache.sis.xml.TransformingNamespacesTest.class,
     org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
     org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,

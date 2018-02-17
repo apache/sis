@@ -42,11 +42,11 @@ import static javax.xml.stream.XMLStreamConstants.*;
 
 
 /**
- * A filter replacing the namespaces used by JAXB by other namespaces to be used in the XML document
+ * A writer replacing the namespaces used by JAXB by other namespaces to be used in the XML document
  * at marshalling time. This class forwards every method calls to the wrapped {@link XMLEventWriter},
- * with all {@code namespaceURI} arguments filtered before to be delegated.
+ * with all {@code namespaceURI} arguments transformed before to be delegated.
  *
- * See {@link FilteredNamespaces} for more information.
+ * See {@link TransformingNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
@@ -54,7 +54,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  * @since   1.0
  * @module
  */
-final class FilteredWriter extends FilteredXML implements XMLEventWriter {
+final class TransformingWriter extends Transformer implements XMLEventWriter {
     /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
      * to ISO 19115-3:2016 (or other newer standards). Key are names of elements to reorder. Values
@@ -140,9 +140,9 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     private int subtreeNesting;
 
     /**
-     * Creates a new filter for the given version of the standards.
+     * Creates a new writer for the given version of the standards.
      */
-    FilteredWriter(final XMLEventWriter out, final FilterVersion version) {
+    TransformingWriter(final XMLEventWriter out, final TransformVersion version) {
         super(version);
         this.out = out;
         uniqueNamespaces = new LinkedHashMap<>();
@@ -157,7 +157,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
     private QName export(QName name) throws XMLStreamException {
         String uri = name.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {                                // Optimization for a common case.
-            final FilterVersion.Replacement r = version.export(uri);
+            final TransformVersion.Replacement r = version.export(uri);
             if (r != null) {
                 uri = r.namespace;
                 /*
@@ -193,7 +193,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
         final QName originalName = attribute.getName();
         final QName name = export(originalName);
         if (name != originalName) {
-            attribute = new FilteredEvent.Attr(attribute, name);
+            attribute = new TransformedEvent.Attr(attribute, name);
         }
         return attribute;
     }
@@ -212,7 +212,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
             final String exported = version.exportNS(removeTrailingSlash(uri));
             if (exported != uri) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
-                    return new FilteredEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
+                    return new TransformedEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
                     /*
                      * The new prefix selected by above line will be saved by out.add(Namespace)
                      * after this method has been invoked by the NAMESPACE case of add(XMLEvent).
@@ -231,7 +231,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
      * (duplication may occur as a result of replacing various ISO 19115-3 namespaces by the legacy
      * ISO 19139:2007 {@code "gmd"} unique namespace).
      *
-     * @param  namespaces  the namespaces to filter.
+     * @param  namespaces  the namespaces to transform.
      * @param  changed     whether to unconditionally pretend that there is a change.
      * @return the updated namespaces, or {@code null} if there is no changes.
      */
@@ -283,7 +283,7 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
                 final QName name = export(originalName);
                 final List<Namespace> namespaces = export(e.getNamespaces(), name != originalName);
                 if (namespaces != null) {
-                    event = new FilteredEvent.End(e, name, namespaces);
+                    event = new TransformedEvent.End(e, name, namespaces);
                 }
                 if (toSkip != null) {                           // Check if a previous START_ELEMENT found a need to reorder.
                     if (originalName.equals(subtreeRootName)) {
@@ -416,36 +416,36 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
      */
     @Override
     public void setNamespaceContext(final NamespaceContext context) throws XMLStreamException {
-        out.setNamespaceContext(FilteredNamespaces.asXML(context, version));
+        out.setNamespaceContext(TransformingNamespaces.asXML(context, version));
     }
 
     /**
      * Returns a naming context suitable for consumption by JAXB marshallers.
-     * The {@link XMLEventWriter} wrapped by this {@code FilteredWriter} has been created for writing in a file.
+     * The {@link XMLEventWriter} wrapped by this {@code TransformingWriter} has been created for writing in a file.
      * Consequently its naming context manages namespaces used in the XML document. But the JAXB marshaller using
-     * this {@code FilteredWriter} facade expects the namespaces declared in JAXB annotations. Consequently this
+     * this {@code TransformingWriter} facade expects the namespaces declared in JAXB annotations. Consequently this
      * method returns an adapter that converts namespaces on the fly.
      *
      * @see Event#getNamespaceContext()
      */
     @Override
     public NamespaceContext getNamespaceContext() {
-        return FilteredNamespaces.asJAXB(out.getNamespaceContext(), version);
+        return TransformingNamespaces.asJAXB(out.getNamespaceContext(), version);
     }
 
     /**
      * Wraps the {@link StartElement} produced by JAXB for using the namespaces used in the XML document.
      */
-    private static final class Event extends FilteredEvent.Start {
+    private static final class Event extends TransformedEvent.Start {
         /** Wraps the given event with potentially different name, namespaces and attributes. */
-        Event(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, FilterVersion version) {
+        Event(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, TransformVersion version) {
             super(event, name, namespaces, attributes, version);
         }
 
         /**
          * Gets the URI used in the XML document for the given prefix used in JAXB annotations.
          * At marshalling time, events are created by JAXB using namespaces used in JAXB annotations.
-         * {@link FilteredWriter} wraps those events for converting those namespaces to the ones used
+         * {@link TransformingWriter} wraps those events for converting those namespaces to the ones used
          * in the XML document.
          *
          * <div class="note"><b>Example:</b> the {@code "cit"} prefix from ISO 19115-3:2016 standard
@@ -460,14 +460,14 @@ final class FilteredWriter extends FilteredXML implements XMLEventWriter {
 
         /**
          * Returns a context mapping prefixes used in JAXB annotations to namespaces used in XML document.
-         * The {@link FilteredNamespaces#getNamespaceURI(String)} method in that context shall do the same
+         * The {@link TransformingNamespaces#getNamespaceURI(String)} method in that context shall do the same
          * work than {@link #getNamespaceURI(String)} in this event.
          *
-         * @see FilteredNamespaces#getNamespaceURI(String)
+         * @see TransformingNamespaces#getNamespaceURI(String)
          */
         @Override
         public NamespaceContext getNamespaceContext() {
-            return FilteredNamespaces.asXML(event.getNamespaceContext(), version);
+            return TransformingNamespaces.asXML(event.getNamespaceContext(), version);
         }
     }
 
