@@ -16,10 +16,8 @@
  */
 package org.apache.sis.xml;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.List;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,7 +30,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
-import org.apache.sis.internal.util.CollectionsExt;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -99,46 +96,9 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
-     * The mapping from attribute names to types where such attribute is declared.
-     * An attribute of the same name may be declared in many types.
-     *
-     * <p>This method does not look at namespaces. Consequently the renaming encoding
-     * (e.g. {@code "DCP/distributedComputingPlatform"}) is not of concern here.</p>
-     */
-    private static final Map<String, Set<String>> DECLARING_TYPES;
-    static {
-        final Map<String, Set<String>> m = new HashMap<>(500);
-        for (final Map.Entry<String, Map<String,String>> forTypes : NAMESPACES.entrySet()) {
-            final String type = forTypes.getKey();
-            for (final String attribute : forTypes.getValue().keySet()) {
-                m.computeIfAbsent(attribute, (k) -> new HashSet<>()).add(type);
-            }
-        }
-        /*
-         * At this point we finished computing the map values. Many values are the same sets.
-         * For example the {CI_Citation} singleton set occurs often. Following code replaces
-         * duplicated sets by shared instances in order to save a little bit of space.
-         */
-        final Map<Set<String>, Set<String>> unique = new HashMap<>(200);
-        m.replaceAll((k, v) -> {
-            v = CollectionsExt.compact(v);
-            final Set<String> r = unique.putIfAbsent(v, v);
-            return (r != null) ? r : v;
-        });
-        DECLARING_TYPES = m;
-    }
-
-    /**
      * The reader from which to read events.
      */
     private final XMLEventReader in;
-
-    /**
-     * List of encountered XML tags, in order. Used for backtracking. Elements are removed from this list
-     * when they are closed. Names should be the ones we get after conversion from namespaces used in XML
-     * document to namespaces used in JAXB annotations.
-     */
-    private final List<QName> outerElements;
 
     /**
      * The prefixes for namespace URIs. Keys are URIs used in JAXB annotations and values are prefixes
@@ -152,7 +112,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * The next event to return after a call to {@link #peek()}. This is used for avoiding to recompute
      * the same object many times when {@link #peek()} is invoked before a call to {@link #nextEvent()}.
      * This is also required for avoiding to duplicate additions and removals of elements in the
-     * {@link #outerElements} list.
+     * {@code outerElements} list.
      */
     private XMLEvent nextEvent;
 
@@ -162,7 +122,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     TransformingReader(final XMLEventReader in, final TransformVersion version) {
         super(version);
         this.in = in;
-        outerElements = new ArrayList<>();
         prefixes = new HashMap<>();
     }
 
@@ -269,6 +228,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
             case START_ELEMENT: {
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
+                open(originalName, NAMESPACES);                 // Must be invoked before 'convert(QName)'.
                 final QName name = convert(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
@@ -284,7 +244,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 } else {
                     renamedAttributes.clear();
                 }
-                outerElements.add(name);
                 break;
             }
             case END_ELEMENT: {
@@ -296,16 +255,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 if (namespaces != null) {
                     event = new TransformedEvent.End(e, name, namespaces);
                 }
-                /*
-                 * Close the last start element with a matching name. It should be the last element
-                 * on the list in a well-formed XML, but we loop in the list anyway as a safety.
-                 */
-                for (int i = outerElements.size(); --i >= 0;) {
-                    if (name.equals(outerElements.get(i))) {
-                        outerElements.remove(i);
-                        break;
-                    }
-                }
+                close(originalName);                        // Must be invoked only after 'convert(QName)'
                 break;
             }
         }
@@ -323,39 +273,26 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      *          or {@code null} if the given name is unknown.
      */
     private QName convert(final QName name) {
-        String namespace = null;                        // In this method, null means no change to given name.
+        String namespace;                               // In this method, null means no change to given name.
         String localPart = name.getLocalPart();
-        final Set<String> declaringTypes = DECLARING_TYPES.get(localPart);
-        if (declaringTypes == null) {
-            /*
-             * If the element is a root element, return the associated namespace.
-             * We do not need to check if the value associated to TYPE_KEY is for
-             * a renaming since it is never the case for that key.
-             */
-            final Map<String,String> attributes = NAMESPACES.get(localPart);
-            if (attributes != null) {
-                namespace = attributes.get(TYPE_KEY);           // May be null.
-            }
+        /*
+         * If the element is a root element, return the associated namespace.
+         * We do not need to check if the value associated to TYPE_KEY is for
+         * a renaming since it is never the case for that key.
+         */
+        Map<String,String> attributeNS;
+        if (isOuterElement(localPart) && (attributeNS = NAMESPACES.get(localPart)) != null) {
+            namespace = attributeNS.get(TYPE_KEY);      // May be null.
         } else {
             /*
-             * If the element is not a root element, we need to backtrack until we find the latest
-             * possible parent element. Then, we use the namespace associated with that parent.
+             * If the element is not a root element, we need to use the map of attributes
+             * of the parent element.
              */
-            for (int i = outerElements.size(); --i >= 0;) {
-                final String parent = outerElements.get(i).getLocalPart();
-                if (declaringTypes.contains(parent)) {
-                    /*
-                     * A NullPointerException below would be a bug in our algorithm because
-                     * we constructed DECLARING_TYPES from NAMESPACES keys only.
-                     */
-                    final Map<String,String> attributes = NAMESPACES.get(parent);
-                    namespace = attributes.get(localPart);
-                    if (!isNamespace(namespace)) {
-                        localPart = namespace;
-                        namespace = attributes.get(namespace);
-                    }
-                    break;
-                }
+            attributeNS = attributeNS();
+            namespace = attributeNS.get(localPart);
+            if (namespace != null && !isNamespace(namespace)) {
+                localPart = namespace;
+                namespace = attributeNS.get(namespace);
             }
         }
         /*
@@ -448,8 +385,8 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     /**
      * Reads the content of a text-only element. Forwards from the underlying reader as-is.
      *
-     * @todo Untested. In particular, it is not clear how to update {@link #outerElements}.
-     *       By change, JAXB does not seem to invoke this method.
+     * @todo Untested. In particular, it is not clear how to update {@code outerElements}.
+     *       By chance, JAXB does not seem to invoke this method.
      */
     @Override
     public String getElementText() throws XMLStreamException {
@@ -470,7 +407,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      */
     @Override
     public void close() throws XMLStreamException {
-        outerElements.clear();
+        super.close();
         in.close();
     }
 }
