@@ -16,11 +16,20 @@
  */
 package org.apache.sis.xml;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.InvalidPropertiesFormatException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import javax.xml.stream.events.Attribute;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -78,6 +87,13 @@ import javax.xml.stream.events.Attribute;
  */
 abstract class Transformer {
     /**
+     * Character used for separating an old name from the new name. For example in {@code SV_OperationMetadata},
+     * {@code "DCP"} in ISO 19139:2007 has been renamed {@code "distributedComputingPlatform"} in ISO 19115-3.
+     * This is encoded in {@value TransformingReader#FILENAME} file as {@code "DCP/distributedComputingPlatform"}.
+     */
+    private static final char RENAME_SEPARATOR = '/';
+
+    /**
      * The external XML format version to (un)marshal from.
      */
     final TransformVersion version;
@@ -94,6 +110,98 @@ abstract class Transformer {
     Transformer(final TransformVersion version) {
         this.version = version;
         renamedAttributes = new ArrayList<>();
+    }
+
+    /**
+     * Returns {@code true} if the given string is a namespace URI, or {@code false} if it is a property name.
+     * This method implements a very fast check based on the presence of {@code ':'} in {@code "http://foo.bar"}.
+     * It assumes that all namespaces declared in files loaded by {@link #load(String)} use the {@code "http"}
+     * protocol and no property name use the {@code ':'} character.
+     */
+    static boolean isNamespace(final String candidate) {
+        return (candidate.length() > 4) && (candidate.charAt(4) == ':');
+    }
+
+    /**
+     * Loads a file listing types and properties contained in namespaces.
+     * The file location is relative to the {@code Transformer} class.
+     * The file format is a tree structured with indentation as below:
+     *
+     * <ul>
+     *   <li>Lines with zero-space indentation are namespace URIs.</li>
+     *   <li>Lines with one-space  indentation are classes within the last namespace URIs found so far.</li>
+     *   <li>Lines with two-spaces indentation are properties within the last class found so far.</li>
+     *   <li>All other indentations are illegal and cause an {@link InvalidPropertiesFormatException} to be thrown.
+     *       This exception type is not really appropriate since the file format is not a {@code .properties} file,
+     *       but it is the closest we could find in existing exceptions and we don't want to define a new exception
+     *       type since this error should never happen.</li>
+     * </ul>
+     *
+     * The returned map is structured as below:
+     *
+     * <ul>
+     *   <li>Keys are XML names of types, ignoring {@code "_TYPE"} suffix (e.g. {@code "CI_Citation"})</li>
+     *   <li>Values are maps where:<ul>
+     *     <li>Keys are XML names of properties (e.g. {@code "title"})</li>
+     *     <li>Values are either:<ul>
+     *       <li>Namespace URI if {@link #isNamespace(String)} returns {@code true} for that value.</li>
+     *       <li>New name of the element otherwise. In such case, the map must be queried again with
+     *           that new name for obtaining the namespace.</li>
+     *     </ul></li>
+     *   </ul></li>
+     * </ul>
+     */
+    static Map<String, Map<String,String>> load(final String filename) {
+        final Map<String, Map<String,String>> m = new HashMap<>(250);
+        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
+                TransformingReader.class.getResourceAsStream(filename), "UTF-8")))
+        {
+            Map<String,String> attributes = null;               // All attributes for a given type.
+            String namespace = null;                            // Value to store in 'attributes' map.
+            String line;
+            while ((line = in.readLine()) != null) {
+                final int length = line.length();
+                final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
+                if (start < length && line.charAt(start) != '#') {
+                    String element = line.substring(start).trim();
+                    switch (start) {
+                        case 0: {                                                   // New namespace URI.
+                            if (!isNamespace(element)) break;                       // Report illegal format.
+                            namespace  = element.intern();
+                            attributes = null;
+                            continue;
+                        }
+                        case 1: {                                                   // New type in above namespace URI.
+                            attributes = m.computeIfAbsent(element.intern(), (k) -> new HashMap<>());
+                            continue;
+                        }
+                        case 2: {                                                   // New attribute in above type.
+                            if (attributes == null || namespace == null) break;     // Report illegal format.
+                            final int s = element.indexOf(RENAME_SEPARATOR);
+                            if (s >= 0) {
+                                final String old = element.substring(0, s).trim().intern();
+                                element = element.substring(s+1).trim().intern();
+                                attributes.put(old, element);
+                            } else {
+                                element = element.intern();
+                            }
+                            attributes.put(element, namespace);
+                            continue;
+                        }
+                    }
+                    throw new InvalidPropertiesFormatException(Errors.format(       // See FILE javadoc.
+                            Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber()));
+                }
+            }
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+        /*
+         * At this point we finished computing the map values. Many values are maps with only 1 entry.
+         * Save a little bit of space by replacing maps of 1 element by Collections.singletonMap(…).
+         */
+        m.replaceAll((k, v) -> CollectionsExt.compact(v));
+        return m;
     }
 
     /**
