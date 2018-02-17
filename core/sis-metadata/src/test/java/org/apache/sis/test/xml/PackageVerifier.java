@@ -19,10 +19,8 @@ package org.apache.sis.test.xml;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.AbstractSet;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
@@ -58,11 +56,8 @@ final strictfp class PackageVerifier {
     /**
      * Sentinel value used in {@link #LEGACY_NAMESPACES} for meaning "all properties in that namespace".
      */
-    private static final Set<String> ALL = new AbstractSet<String>() {
-        @Override public boolean          contains(Object v) {return true;}
-        @Override public int              size()             {return 0;}
-        @Override public Iterator<String> iterator()         {return Collections.emptyIterator();}
-    };
+    @SuppressWarnings("unchecked")
+    private static final Set<String> ALL = InfiniteSet.INSTANCE;
 
     /**
      * Classes or properties having a JAXB annotation in this namespace should be deprecated.
