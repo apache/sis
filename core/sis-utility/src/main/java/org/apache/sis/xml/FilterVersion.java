@@ -198,7 +198,7 @@ final class FilterVersion {
      * The URI replacements to apply when going from the filtered reader/writer to the
      * model implemented by Apache SIS. This map is the converse of {@link #exports}.
      * It does not contain the map of properties to rename because that map is handled
-     * by {@link FilteredReader} instead, as part of {@code NamespaceContent.txt} file.
+     * by {@link FilteredReader} instead, as part of {@code NamespaceContent.lst} file.
      *
      * <p>This map shall not be modified after construction.
      * We do not wrap in {@link Collections#unmodifiableMap(Map)} for efficiency.</p>

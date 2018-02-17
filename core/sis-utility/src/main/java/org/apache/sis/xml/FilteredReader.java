@@ -73,7 +73,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      *       type since this error should never happen.</li>
      * </ul>
      */
-    private static final String FILENAME = "NamespaceContent.txt";
+    static final String FILENAME = "NamespaceContent.lst";
 
     /**
      * A key in {@link #NAMESPACES} sub-map meaning that the value (a namespace URI) is for the type instead
