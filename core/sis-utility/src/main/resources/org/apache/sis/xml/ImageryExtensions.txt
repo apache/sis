@@ -1,0 +1,152 @@
+#
+# Properties defined by ISO 19115-2 (extensions for imagery and gridded data).
+# Non-indented names are classes. Indented names are properties in that class
+# that are defined by ISO 19115-2. Example: "checkPoint" in "MI_Georectified".
+#
+MI_Instrument
+ citation
+ identifier
+ type
+ description
+ mountedOn
+MI_Operation
+ description
+ citation
+ identifier
+ status
+ type
+ parentOperation
+ childOperation
+ platform
+ objective
+ plan
+ significantEvent
+MI_Platform
+ citation
+ identifier
+ description
+ sponsor
+ instrument
+MI_AcquisitionInformation
+ instrument
+ operation
+ platform
+ acquisitionPlan
+ objective
+ acquisitionRequirement
+ environmentalConditions
+MI_Event
+ identifier
+ trigger
+ context
+ sequence
+ time
+ relatedPass
+ relatedSensor
+ expectedObjective
+MI_Requirement
+ citation
+ identifier
+ requestor
+ recipient
+ priority
+ requestedDate
+ expiryDate
+ satisifiedPlan
+MI_PlatformPass
+ identifier
+ extent
+ relatedEvent
+MI_Objective
+ identifier
+ priority
+ type
+ function
+ extent
+ sensingInstrument
+ pass
+ objectiveOccurance
+MI_Plan
+ type
+ status
+ citation
+ operation
+ satisfiedRequirement
+MI_RequestedDate
+ requestedDateOfCollection
+ latestAcceptableDate
+MI_SensorTypeCode
+MI_ContextCode
+MI_GeometryTypeCode
+MI_TriggerCode
+MI_SequenceCode
+MI_PriorityCode
+MI_ObjectiveTypeCode
+MI_EnvironmentalRecord
+ averageAirTemperature
+ maxRelativeHumidity
+ maxAltitude
+ meterologicalConditions
+MI_OperationTypeCode
+MI_Band|MD_Band
+ bandBoundaryDefinition
+ nominalSpatialResolution
+ transferFunctionType
+ transmittedPolarisation
+ detectedPolarisation
+MI_CoverageDescription|MD_CoverageDescription
+ rangeElementDescription
+MI_ImageDescription|MD_ImageDescription
+ rangeElementDescription
+MI_RangeElementDescription
+ name
+ definition
+ rangeElement
+MI_BandDefinition
+MI_PolarisationOrientationCode
+MI_TransferFunctionTypeCode
+LE_Algorithm
+ citation
+ description
+LE_Processing
+ identifier
+ softwareReference
+ procedureDescription
+ documentation
+ runTimeParameters
+ algorithm
+LE_Source|LI_Source
+ processedLevel
+ resolution
+LE_ProcessStep|LI_ProcessStep
+ processingInformation
+ output
+ report
+LE_ProcessStepReport
+ name
+ description
+ fileType
+QE_CoverageResult
+ spatialRepresentationType
+ resultFile
+ resultSpatialRepresentation
+ resultContentDescription
+ resultFormat
+QE_Usability
+LE_NominalResolution
+ scanningResolution
+ groundResolution
+MI_Metadata|MD_Metadata
+ acquisitionInformation
+MI_Georeferenceable|MD_Georeferenceable
+ geolocationInformation
+MI_Georectified|MD_Georectified
+ checkPoint
+MI_GCP
+ geographicCoordinates
+AbstractMI_GeolocationInformation
+MI_GCPCollection
+ collectionIdentification
+ collectionName
+ coordinateReferenceSystem
+ gcp
