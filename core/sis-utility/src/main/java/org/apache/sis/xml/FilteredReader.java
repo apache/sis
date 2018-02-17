@@ -59,14 +59,14 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 final class FilteredReader extends FilteredXML implements XMLEventReader {
     /**
-     * Location of the file listing types and attributes contained in namespaces.
-     * The file location is relative to this {@code NamespaceContent} class.
+     * Location of the file listing types and properties contained in namespaces.
+     * The file location is relative to this {@code FilteredReader} class.
      * The file format is a tree structured with indentation as below:
      *
      * <ul>
-     *   <li>Lines with zero-spaces indentation are namespace URIs.</li>
+     *   <li>Lines with zero-space  indentation are namespace URIs.</li>
      *   <li>Lines with two-spaces  indentation are classes within the last namespace URIs found so far.</li>
-     *   <li>Lines with four-spaces indentation are attributes within the last class found so far.</li>
+     *   <li>Lines with four-spaces indentation are properties within the last class found so far.</li>
      *   <li>All other indentations are illegal and cause an {@link InvalidPropertiesFormatException} to be thrown.
      *       This exception type is not really appropriate since the file format is not a {@code .properties} file,
      *       but it is the closest we could find in existing exceptions and we don't want to define a new exception
@@ -102,9 +102,9 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
      *
      * <ul>
-     *   <li>Keys are XML names of types (e.g. {@code "CI_Citation"})</li>
+     *   <li>Keys are XML names of types, ignoring {@code "_TYPE"} suffix (e.g. {@code "CI_Citation"})</li>
      *   <li>Values are maps where:<ul>
-     *     <li>Keys are XML names of attributes (e.g. {@code "title"}) or {@value #TYPE_KEY}</li>
+     *     <li>Keys are XML names of properties (e.g. {@code "title"}) or {@value #TYPE_KEY}</li>
      *     <li>Values are either:<ul>
      *       <li>Namespace URI if {@link #isNamespace(String)} returns {@code true} for that value.</li>
      *       <li>New name of the element otherwise. In such case, the map must be queried again with
@@ -531,6 +531,9 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
 
     /**
      * Reads the content of a text-only element. Forwards from the underlying reader as-is.
+     *
+     * @todo Untested. In particular, it is not clear how to update {@link #outerElements}.
+     *       By change, JAXB does not seem to invoke this method.
      */
     @Override
     public String getElementText() throws XMLStreamException {

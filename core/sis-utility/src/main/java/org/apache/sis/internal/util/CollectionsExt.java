@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
@@ -27,9 +28,6 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
-
-// Branch-dependent imports
-import java.util.function.Predicate;
 
 
 /**
@@ -60,6 +58,21 @@ public final class CollectionsExt extends Static {
      * Do not allow instantiation of this class.
      */
     private CollectionsExt() {
+    }
+
+    /**
+     * Returns a queue which is always empty and accepts no element.
+     * This method will be removed if a future JDK version provides such method in {@link Collections}.
+     *
+     * @param  <E>  the type of elements in the empty collection.
+     * @return an empty collection.
+     *
+     * @see Collections#emptyList()
+     * @see Collections#emptySet()
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> Queue<E> emptyQueue() {
+        return EmptyQueue.INSTANCE;
     }
 
     /**
@@ -138,20 +151,6 @@ public final class CollectionsExt extends Static {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns a {@linkplain Queue queue} which is always empty and accepts no element.
-     *
-     * @param  <E>  the type of elements in the empty collection.
-     * @return an empty collection.
-     *
-     * @see Collections#emptyList()
-     * @see Collections#emptySet()
-     */
-    @SuppressWarnings({"unchecked","rawtype"})
-    public static <E> Queue<E> emptyQueue() {
-        return EmptyQueue.INSTANCE;
     }
 
     /**
