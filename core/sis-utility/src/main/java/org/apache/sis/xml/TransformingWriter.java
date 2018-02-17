@@ -46,7 +46,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  * at marshalling time. This class forwards every method calls to the wrapped {@link XMLEventWriter},
  * with all {@code namespaceURI} arguments transformed before to be delegated.
  *
- * See {@link TransformingNamespaces} for more information.
+ * See {@link Transformer} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
