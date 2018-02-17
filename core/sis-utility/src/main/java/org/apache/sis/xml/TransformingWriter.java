@@ -56,6 +56,34 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 final class TransformingWriter extends Transformer implements XMLEventWriter {
     /**
+     * Location of the file listing types and their properties contained in legacy namespaces.
+     * This is used for mapping new ISO 19115-3:2016 namespaces to legacy ISO 19139:2007 ones,
+     * where the same {@code "http://standards.iso.org/iso/19115/-3/…"} URI is used in places
+     * where legacy schemas had two distinct URIs: {@code "http://www.isotc211.org/2005/gmd"}
+     * and {@code "http://standards.iso.org/iso/19115/-2/gmi/1.0"}.
+     */
+    static final String FILENAME = "ImageryExtensions.lst";
+
+    /**
+     * The mapping from (<var>type</var>, <var>attribute</var>) pairs to legacy namespaces.
+     *
+     * <ul>
+     *   <li>Keys are XML names of types, ignoring {@code "_TYPE"} suffix (e.g. {@code "MI_Georectified"})</li>
+     *   <li>Values are maps where:<ul>
+     *     <li>Keys are XML names of properties (e.g. {@code "checkPoint"})</li>
+     *     <li>Values are either:<ul>
+     *       <li>Namespace URI if {@link #isNamespace(String)} returns {@code true} for that value.</li>
+     *       <li>New name of the element otherwise. In such case, the map must be queried again with
+     *           that new name for obtaining the namespace.</li>
+     *     </ul></li>
+     *   </ul></li>
+     * </ul>
+     *
+     * This map is initialized only once and should not be modified after that point.
+     */
+    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME);
+
+    /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
      * to ISO 19115-3:2016 (or other newer standards). Key are names of elements to reorder. Values
      * are the elements to skip before to write the element to reorder.
@@ -486,6 +514,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     @Override
     public void close() throws XMLStreamException {
         uniqueNamespaces.clear();
+        super.close();
         out.close();
     }
 }

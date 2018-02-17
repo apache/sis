@@ -26,6 +26,8 @@ import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -99,6 +101,34 @@ abstract class Transformer {
     final TransformVersion version;
 
     /**
+     * The outer element name together with its attribute. This is an element in a linked list.
+     */
+    private static final class OuterElement {
+        /** The outer element name as used in JAXB annotations. */
+        final QName name;
+
+        /** The attribute namespaces, as one of the values of the map loaded by {@link #load(String)}. */
+        final Map<String, String> attributeNS;
+
+        /** The previous outer element (in other words, the parent), or {@code null} if none. */
+        final OuterElement parent;
+
+        /** Creates a new outer element. */
+        private OuterElement(final OuterElement parent, final QName name, final Map<String, String> attributeNS) {
+            this.parent      = parent;
+            this.name        = name;
+            this.attributeNS = attributeNS;
+        }
+    }
+
+    /**
+     * Linked list of encountered XML tags, in reverse order. Used for backtracking.  Elements are removed from
+     * this list when they are closed. Names should be the ones we get after conversion from namespaces used in
+     * XML document to namespaces used in JAXB annotations.
+     */
+    private OuterElement outerElements;
+
+    /**
      * Temporary list of attributes after their namespace change.
      * This list is recycled for each XML element to be read or written.
      */
@@ -108,7 +138,7 @@ abstract class Transformer {
      * Creates a new XML reader or writer.
      */
     Transformer(final TransformVersion version) {
-        this.version = version;
+        this.version      = version;
         renamedAttributes = new ArrayList<>();
     }
 
@@ -229,5 +259,80 @@ abstract class Transformer {
                      break;
         }
         return attributes;
+    }
+
+    /**
+     * Returns {@code true} if an element with the given name is likely to be an OGC/ISO type (as opposed to property).
+     * For example given the following XML, this method returns {@code true} for {@code cit:CI_Date} but {@code false}
+     * for {@code cit:date}:
+     *
+     * {@preformat xml
+     *   <cit:CI_Citation>
+     *     <cit:date>
+     *       <cit:CI_Date>
+     *         …
+     *       </cit:CI_Date>
+     *     </cit:date>
+     *   </cit:CI_Citation>
+     * }
+     *
+     * This method is based on simple heuristic applicable to OGC/ISO conventions, and may change in any future SIS
+     * version depending on new formats to support. The intent is only to reduce the amount of nodes created in the
+     * {@link #outerElements} linked list.
+     */
+    static boolean isOuterElement(final String localPart) {
+        if (localPart.length() < 4) return false;
+        final char c = localPart.charAt(0);
+        return (c >= 'A' && c <= 'Z');
+    }
+
+    /**
+     * Notifies that we are opening an element of the given name.
+     *
+     * @param  name        element name as declared in JAXB annotations.
+     * @param  namespaces  namespaces map loaded by {@link #load(String)}.
+     */
+    final void open(final QName name, final Map<String, Map<String,String>> namespaces) {
+        final String localPart = name.getLocalPart();
+        if (isOuterElement(localPart)) {
+            outerElements = new OuterElement(outerElements, name,
+                    namespaces.getOrDefault(localPart, Collections.emptyMap()));
+        }
+    }
+
+    /**
+     * Notifies that we are closing an element of the given name. This method closes the last start element
+     * with a matching name. It should be the last element on the list in a well-formed XML, but we loop in
+     * the list anyway as a safety.
+     *
+     * @param  name  element name as declared in JAXB annotations.
+     */
+    final void close(final QName name) {
+        if (isOuterElement(name.getLocalPart())) {
+            OuterElement e = outerElements;
+            while (e != null) {
+                if (name.equals(e.name)) {
+                    outerElements = e.parent;       // Discard e and all children of e.
+                    break;
+                }
+                e = e.parent;
+            }
+        }
+    }
+
+    /**
+     * Attributes expected in the namespace of current element. This method may return a different {@code Map}
+     * instance after each call to {@link #open(QName, Map)} or {@link #close(QName)}. The returned map shall
+     * not be modified.
+     */
+    final Map<String,String> attributeNS() {
+        return (outerElements != null) ? outerElements.attributeNS : Collections.emptyMap();
+    }
+
+    /**
+     * Frees any resources associated with this reader.
+     */
+    public void close() throws XMLStreamException {
+        outerElements = null;
     }
 }
