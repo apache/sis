@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * Creates the {@code NamespaceContent.txt} file. This class needs to be executed only when the content
+ * Creates the {@value FilteredReader#FILENAME} file. This class needs to be executed only when the content
  * has changed, or for verifying the current file. Output format contains namespaces first, then classes,
  * then properties. Example:
  *
@@ -74,7 +74,7 @@ public final class NamespaceContent {
     private final Map<String, Map<String, Set<String>>> content;
 
     /**
-     * Creates a new {@code NamespaceContent.txt} generator for classes under the given directory.
+     * Creates a new {@value FilteredReader#FILENAME} generator for classes under the given directory.
      * The given directory shall be the root of {@code "*.class"} files.
      *
      * @param  classRootDirectory   the root of compiled class files.
@@ -198,7 +198,7 @@ public final class NamespaceContent {
     }
 
     /**
-     * Prints the {@code NamespaceContent.txt} file.
+     * Prints the {@value FilteredReader#FILENAME} file.
      *
      * @param  out  where to print the content.
      * @throws IOException if an error occurred while printing the content.
