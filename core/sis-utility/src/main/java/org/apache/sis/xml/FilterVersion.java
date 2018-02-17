@@ -87,6 +87,10 @@ final class FilterVersion {
         // Metadata for Data Quality
         r = new Replacement(LegacyNamespaces.GMD, "valueRecordType", "valueType");
         ISO19139.exports.put(Namespaces.MDQ, r);
+
+        // Metadata for Acquisition
+        r = new Replacement(LegacyNamespaces.GMD, "objectiveOccurence", "objectiveOccurance");
+        ISO19139.exports.put(Namespaces.MAC, r);
         /*
          * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on
          * FilteredReader (do NOT declare entries in 'imports', because some namespaces must be
