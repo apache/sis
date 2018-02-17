@@ -24,10 +24,6 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collections;
-import java.util.InvalidPropertiesFormatException;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.InputStreamReader;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLEventReader;
@@ -36,8 +32,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
 
 import static javax.xml.stream.XMLStreamConstants.*;
@@ -59,19 +53,11 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 final class TransformingReader extends Transformer implements XMLEventReader {
     /**
-     * Location of the file listing types and properties contained in namespaces.
-     * The file location is relative to this {@code TransformingReader} class.
-     * The file format is a tree structured with indentation as below:
-     *
-     * <ul>
-     *   <li>Lines with zero-space indentation are namespace URIs.</li>
-     *   <li>Lines with one-space  indentation are classes within the last namespace URIs found so far.</li>
-     *   <li>Lines with two-spaces indentation are properties within the last class found so far.</li>
-     *   <li>All other indentations are illegal and cause an {@link InvalidPropertiesFormatException} to be thrown.
-     *       This exception type is not really appropriate since the file format is not a {@code .properties} file,
-     *       but it is the closest we could find in existing exceptions and we don't want to define a new exception
-     *       type since this error should never happen.</li>
-     * </ul>
+     * Location of the file listing types and their properties contained in various namespaces.
+     * This is used for mapping legacy ISO 19139:2007 namespace to newer ISO 19115-3:2016 ones,
+     * where the same legacy {@code "http://www.isotc211.org/2005/gmd"} URI can be replaced by
+     * different URIs under {@code "http://standards.iso.org/iso/19115/-3/…"} depending on the
+     * class name.
      */
     static final String FILENAME = "NamespaceContent.lst";
 
@@ -80,23 +66,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * than for an attribute. Shall be the same string than the one used in {@value #FILENAME} resource file.
      */
     static final String TYPE_KEY = "<type>";
-
-    /**
-     * Character used for separating a old name for the new name. For example in {@code SV_OperationMetadata},
-     * {@code "DCP"} in ISO 19139:2007 has been renamed {@code "distributedComputingPlatform"} in ISO 19115-3.
-     * This is encoded in {@value #FILENAME} file as {@code "DCP/distributedComputingPlatform"}.
-     */
-    private static final char RENAME_SEPARATOR = '/';
-
-    /**
-     * Returns {@code true} if the given string is a namespace URI, or {@code false} if it is a property name.
-     * This method implements a very fast check based on the presence of {@code ':'} in {@code "http://foo.bar"}.
-     * It assumes that all namespaces declared in the {@value #FILENAME} file use the {@code "http"} protocol and
-     * no property name use the {@code ':'} character.
-     */
-    private static boolean isNamespace(final String candidate) {
-        return (candidate.length() > 4) && (candidate.charAt(4) == ':');
-    }
 
     /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
@@ -114,61 +83,8 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * </ul>
      *
      * This map is initialized only once and should not be modified after that point.
-     * The file format is described in {@link #FILENAME}.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES;
-    static {
-        final Map<String, Map<String,String>> m = new HashMap<>(250);
-        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
-                TransformingReader.class.getResourceAsStream(FILENAME), "UTF-8")))
-        {
-            Map<String,String> attributes = null;               // All attributes for a given type.
-            String namespace = null;                            // Value to store in 'attributes' map.
-            String line;
-            while ((line = in.readLine()) != null) {
-                final int length = line.length();
-                final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
-                if (start < length && line.charAt(start) != '#') {
-                    String element = line.substring(start).trim();
-                    switch (start) {
-                        case 0: {                                                   // New namespace URI.
-                            if (!isNamespace(element)) break;                       // Report illegal format.
-                            namespace  = element.intern();
-                            attributes = null;
-                            continue;
-                        }
-                        case 1: {                                                   // New type in above namespace URI.
-                            attributes = m.computeIfAbsent(element.intern(), (k) -> new HashMap<>());
-                            continue;
-                        }
-                        case 2: {                                                   // New attribute in above type.
-                            if (attributes == null || namespace == null) break;     // Report illegal format.
-                            final int s = element.indexOf(RENAME_SEPARATOR);
-                            if (s >= 0) {
-                                final String old = element.substring(0, s).trim().intern();
-                                element = element.substring(s+1).trim().intern();
-                                attributes.put(old, element);
-                            } else {
-                                element = element.intern();
-                            }
-                            attributes.put(element, namespace);
-                            continue;
-                        }
-                    }
-                    throw new InvalidPropertiesFormatException(Errors.format(       // See FILE javadoc.
-                            Errors.Keys.ErrorInFileAtLine_2, FILENAME, in.getLineNumber()));
-                }
-            }
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-        /*
-         * At this point we finished computing the map values. Many values are maps with only 1 entry.
-         * Save a little bit of space by replacing maps of 1 element by Collections.singletonMap(…).
-         */
-        m.replaceAll((k, v) -> CollectionsExt.compact(v));
-        NAMESPACES = m;
-    }
+    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME);
 
     /**
      * Returns the namespace for the given ISO type, or {@code null} if unknown.
