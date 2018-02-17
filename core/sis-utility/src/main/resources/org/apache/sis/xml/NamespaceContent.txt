@@ -224,7 +224,7 @@ http://standards.iso.org/iso/19115/-3/mac/1.0
     extent
     function
     identifier
-    objectiveOccurence
+    objectiveOccurance/objectiveOccurence
     pass
     priority
     sensingInstrument
