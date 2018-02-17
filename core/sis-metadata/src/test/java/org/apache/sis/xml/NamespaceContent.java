@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * Creates the {@value FilteredReader#FILENAME} file. This class needs to be executed only when the content
+ * Creates the {@value TransformingReader#FILENAME} file. This class needs to be executed only when the content
  * has changed, or for verifying the current file. Output format contains namespaces first, then classes,
  * then properties. Example:
  *
@@ -74,7 +74,7 @@ public final class NamespaceContent {
     private final Map<String, Map<String, Set<String>>> content;
 
     /**
-     * Creates a new {@value FilteredReader#FILENAME} generator for classes under the given directory.
+     * Creates a new {@value TransformingReader#FILENAME} generator for classes under the given directory.
      * The given directory shall be the root of {@code "*.class"} files.
      *
      * @param  classRootDirectory   the root of compiled class files.
@@ -136,7 +136,7 @@ public final class NamespaceContent {
              */
             final String topLevelTypeName = root.name();
             String classNS = namespace(classe, root.namespace());
-            add(classNS, topLevelTypeName, FilteredReader.TYPE_KEY);
+            add(classNS, topLevelTypeName, TransformingReader.TYPE_KEY);
             for (;; classNS = namespace(classe, root.namespace())) {
                 for (final Method method : classe.getDeclaredMethods()) {
                     if (!method.isBridge()) {
@@ -170,7 +170,7 @@ public final class NamespaceContent {
                 }
             }
             if (singleton != null) {
-                add(namespace(classe, singleton.namespace()), singleton.name(), FilteredReader.TYPE_KEY);
+                add(namespace(classe, singleton.namespace()), singleton.name(), TransformingReader.TYPE_KEY);
             }
         }
     }
@@ -198,7 +198,7 @@ public final class NamespaceContent {
     }
 
     /**
-     * Prints the {@value FilteredReader#FILENAME} file.
+     * Prints the {@value TransformingReader#FILENAME} file.
      *
      * @param  out  where to print the content.
      * @throws IOException if an error occurred while printing the content.

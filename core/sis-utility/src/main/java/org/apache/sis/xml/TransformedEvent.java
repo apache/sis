@@ -42,7 +42,7 @@ import javax.xml.namespace.QName;
  * @since   1.0
  * @module
  */
-abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
+abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
     /**
      * The event to be exported in a different namespace.
      */
@@ -60,7 +60,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
      * @param  event  the event to be exported in a different namespace.
      * @param  name   the exported name of the attribute or element.
      */
-    FilteredEvent(final E event, final QName name) {
+    TransformedEvent(final E event, final QName name) {
         this.event  = event;
         this.name   = name;
     }
@@ -130,7 +130,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
      * Wrapper over a namespace emitted during the reading or writing of an XML document.
      * This wrapper is used for changing the namespace URI.
      */
-    static final class NS extends FilteredEvent<Namespace> implements Namespace {
+    static final class NS extends TransformedEvent<Namespace> implements Namespace {
         /** The URI of the namespace. */
         private final String namespaceURI;
 
@@ -157,7 +157,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
      * Wrapper over an attribute emitted during the reading or writing of an XML document.
      * This wrapper is used for changing the namespace of the attribute.
      */
-    static final class Attr extends FilteredEvent<Attribute> implements Attribute {
+    static final class Attr extends TransformedEvent<Attribute> implements Attribute {
         /** Wraps the given event with a different name. */
         Attr(final Attribute event, final QName name) {
             super(event, name);
@@ -183,7 +183,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
      * Wrapper over an element emitted during the reading or writing of an XML document.
      * This wrapper is used for changing the namespace and sometime the name of the element.
      */
-    static final class End extends FilteredEvent<EndElement> implements EndElement {
+    static final class End extends TransformedEvent<EndElement> implements EndElement {
         /** The namespaces, may or may not be the same than the wrapped event. */
         private final List<Namespace> namespaces;
 
@@ -207,7 +207,7 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
      * This wrapper is used for changing the namespace and sometime the name of the element.
      * The attributes may also be modified.
      */
-    static class Start extends FilteredEvent<StartElement> implements StartElement {
+    static class Start extends TransformedEvent<StartElement> implements StartElement {
         /** The namespaces, may or may not be the same than the wrapped event. */
         private final List<Namespace> namespaces;
 
@@ -215,10 +215,10 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
         private final List<Attribute> attributes;
 
         /** The version to export, used for wrapping namespace context. */
-        final FilterVersion version;
+        final TransformVersion version;
 
         /** Wraps the given event with potentially different name, namespaces and attributes. */
-        Start(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, FilterVersion version) {
+        Start(StartElement event, QName name, List<Namespace> namespaces, List<Attribute> attributes, TransformVersion version) {
             super(event, name);
             this.namespaces = namespaces;
             this.attributes = attributes;
@@ -256,12 +256,12 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
          * this method returns {@code null}.</div>
          *
          * <p>At unmarshalling time, events are created by an arbitrary {@link javax.xml.stream.XMLEventReader}
-         * with namespaces used in the XML document. {@link FilteredReader} wraps those events using this class
-         * for converting the XML namespaces to the namespaces used by JAXB annotations.</p>
+         * with namespaces used in the XML document. {@link TransformingReader} wraps those events using this
+         * class for converting the XML namespaces to the namespaces used by JAXB annotations.</p>
          *
          * <p>At marshalling time, events are created by JAXB using namespaces used in JAXB annotations.
-         * {@link FilteredWriter} wraps those events for converting those namespaces to the ones used in
-         * the XML document. This is the opposite than the work performed by this default implementation
+         * {@link TransformingWriter} wraps those events for converting those namespaces to the ones used
+         * in the XML document. This is the opposite than the work performed by this default implementation
          * and must be handled by a {@code Start} subclass.</p>
          */
         @Override
@@ -271,12 +271,12 @@ abstract class FilteredEvent<E extends XMLEvent> implements XMLEvent {
 
         /**
          * Returns a context mapping prefixes used in XML document to namespaces used in JAXB annotations.
-         * The {@code FilteredNamespaces.Inverse.getNamespaceURI(String)} method in that context shall do
+         * The {@code TransformingNamespaces.Inverse.getNamespaceURI(String)} method in that context shall do
          * the same work than {@link #getNamespaceURI(String)} in this event.
          */
         @Override
         public NamespaceContext getNamespaceContext() {
-            return FilteredNamespaces.asJAXB(event.getNamespaceContext(), version);
+            return TransformingNamespaces.asJAXB(event.getNamespaceContext(), version);
         }
 
         /**

@@ -25,9 +25,9 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * The target version of standards for {@link FilteredNamespaces}.
+ * The target version of standards for {@link TransformingNamespaces}.
  *
- * See {@link FilteredNamespaces} for more information.
+ * See {@link TransformingNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
@@ -35,11 +35,11 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @since   0.4
  * @module
  */
-final class FilterVersion {
+final class TransformVersion {
     /**
      * Metadata using the legacy ISO 19139:2007 schema (replaced by ISO 19115-3).
      */
-    static final FilterVersion ISO19139 = new FilterVersion(42, 2);
+    static final TransformVersion ISO19139 = new TransformVersion(42, 2);
     static {
         ISO19139.addSurjectives(new String[] {
                 Namespaces.CAT,
@@ -92,11 +92,10 @@ final class FilterVersion {
         r = new Replacement(LegacyNamespaces.GMD, "objectiveOccurence", "objectiveOccurance");
         ISO19139.exports.put(Namespaces.MAC, r);
         /*
-         * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on
-         * FilteredReader (do NOT declare entries in 'imports', because some namespaces must be
-         * left unchanged). An exception to this rule is the "gco" namespace because our reader
-         * renames only element namespaces while we need to rename also attributes in "gco"
-         * namespace (e.g. "gco:nilReason").
+         * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on TransformingReader
+         * (do NOT declare entries in 'imports', because some namespaces must be left unchanged). An exception to
+         * this rule is the "gco" namespace, because our reader renames only element namespaces while we need to
+         * rename also attributes in "gco" namespace (e.g. "gco:nilReason").
          */
         ISO19139.addSurjective(Namespaces.GCX, LegacyNamespaces.GMX);
         ISO19139.addBijective (Namespaces.GCO, LegacyNamespaces.GCO);
@@ -106,7 +105,7 @@ final class FilterVersion {
      * GML using the legacy {@code "http://www.opengis.net/gml"} namespace.
      * Note that the use of GML 3.2 implies the use of ISO 19139:2007.
      */
-    static final FilterVersion GML31 = new FilterVersion(ISO19139);
+    static final TransformVersion GML31 = new TransformVersion(ISO19139);
     static {
         GML31.addBijective(Namespaces.GML, LegacyNamespaces.GML);
     }
@@ -115,7 +114,7 @@ final class FilterVersion {
      * Apply all known namespace replacements. This can be used only at unmarshalling time,
      * for replacing all namespaces by the namespaces declared in Apache SIS JAXB annotations.
      */
-    static final FilterVersion ALL = GML31;
+    static final TransformVersion ALL = GML31;
 
     /**
      * The exported namespace used in the XML file instead then the namespaces used by JAXB annotations.
@@ -184,7 +183,7 @@ final class FilterVersion {
 
     /**
      * The URI replacements to apply when going from the model implemented by Apache SIS
-     * to the filtered reader/writer. Keys are the URIs as declared in JAXB annotations,
+     * to the transforming reader/writer. Keys are the URIs as declared in JAXB annotations,
      * and values are the URIs to write instead of the actual ones.
      *
      * <p>This map shall not be modified after construction.
@@ -195,10 +194,10 @@ final class FilterVersion {
     private final Map<String, Replacement> exports;
 
     /**
-     * The URI replacements to apply when going from the filtered reader/writer to the
-     * model implemented by Apache SIS. This map is the converse of {@link #exports}.
+     * The URI replacements to apply when going from the transforming reader/writer to
+     * the model implemented by Apache SIS. This map is the converse of {@link #exports}.
      * It does not contain the map of properties to rename because that map is handled
-     * by {@link FilteredReader} instead, as part of {@code NamespaceContent.lst} file.
+     * by {@link TransformingReader} instead, as part of {@code NamespaceContent.lst} file.
      *
      * <p>This map shall not be modified after construction.
      * We do not wrap in {@link Collections#unmodifiableMap(Map)} for efficiency.</p>
@@ -211,7 +210,7 @@ final class FilterVersion {
      * @param  ec  exports capacity.
      * @param  ic  imports capacity.
      */
-    private FilterVersion(final int ec, final int ic) {
+    private TransformVersion(final int ec, final int ic) {
         exports = new HashMap<>(ec);
         imports = new HashMap<>(ic);
     }
@@ -220,7 +219,7 @@ final class FilterVersion {
      * Creates an enumeration initialized to a copy of the given enumeration.
      * This construction should be followed by calls to {@code add(…)} methods.
      */
-    private FilterVersion(final FilterVersion first) {
+    private TransformVersion(final TransformVersion first) {
         exports = new HashMap<>(first.exports);
         imports = new HashMap<>(first.imports);
     }
@@ -260,7 +259,7 @@ final class FilterVersion {
      * Returns the same URI if there is no replacement.
      */
     final String exportNS(final String uri) {
-        final FilterVersion.Replacement r = exports.get(uri);
+        final TransformVersion.Replacement r = exports.get(uri);
         return (r != null) ? r.namespace : uri;
     }
 
@@ -283,7 +282,7 @@ final class FilterVersion {
 
     /**
      * Returns the URI replacements to apply when going from the model implemented by Apache SIS to the
-     * filtered reader/writer. Used only for more sophisticated work than what {@link #exportNS(String)} does.
+     * transforming reader/writer. Used only for more sophisticated work than what {@link #exportNS(String)} does.
      * Returned as an iterator for avoiding to expose modifiable map; do not invoke {@link Iterator#remove()}.
      */
     final Iterator<Map.Entry<String, Replacement>> exports() {

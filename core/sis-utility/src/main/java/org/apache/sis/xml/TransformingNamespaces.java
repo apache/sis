@@ -24,9 +24,9 @@ import javax.xml.XMLConstants;
 
 
 /**
- * In the associations between prefixes and namespaces, substitutes the namespaces used in JAXB annotations by the
- * namespaces used in the XML document at marshalling time. This class is used internally by {@link FilteredReader}
- * and {@link FilteredWriter} only.
+ * In the associations between prefixes and namespaces, substitutes the namespaces used in JAXB annotations
+ * by the namespaces used in the XML document at marshalling time. This class is used internally by
+ * {@link TransformingReader} and {@link TransformingWriter} only.
  *
  * <div class="section">The problem</div>
  * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
@@ -61,7 +61,7 @@ import javax.xml.XMLConstants;
  * @since 0.4
  * @module
  */
-class FilteredNamespaces implements NamespaceContext {
+class TransformingNamespaces implements NamespaceContext {
     /**
      * Given the context for namespaces used in our JAXB annotations, returns a context working with namespaces
      * used in XML document. The returned context converts namespace arguments from XML to JAXB namespaces, and
@@ -74,12 +74,12 @@ class FilteredNamespaces implements NamespaceContext {
      * Conversely given a {@code "mdb"}, {@code "cit"}, <i>etc.</i>, prefix, {@link #getNamespaceURI(String)}
      * method returns the above-cited legacy GMD namespace.</div>
      */
-    static NamespaceContext asXML(NamespaceContext context, final FilterVersion version) {
+    static NamespaceContext asXML(NamespaceContext context, final TransformVersion version) {
         if (context != null) {
             if (context instanceof Inverse && ((Inverse) context).version == version) {
                 context = ((Inverse) context).context;
             } else {
-                context = new FilteredNamespaces(context, version);
+                context = new TransformingNamespaces(context, version);
             }
         }
         return context;
@@ -91,21 +91,21 @@ class FilteredNamespaces implements NamespaceContext {
      * before to delegate to the wrapped context, and converts returned namespaces from XML to JAXB.
      *
      * <p>This can be used when a {@link javax.xml.stream.XMLEventWriter} has been created for writing a legacy
-     * XML document and we want to expose a {@link FilteredWriter} view to give to JAXB.</p>
+     * XML document and we want to expose a {@link TransformingWriter} view to give to JAXB.</p>
      */
-    static NamespaceContext asJAXB(NamespaceContext context, final FilterVersion version) {
+    static NamespaceContext asJAXB(NamespaceContext context, final TransformVersion version) {
         if (context != null) {
-            if (context.getClass() == FilteredNamespaces.class && ((FilteredNamespaces) context).version == version) {
-                context = ((FilteredNamespaces) context).context;
+            if (context.getClass() == TransformingNamespaces.class && ((TransformingNamespaces) context).version == version) {
+                context = ((TransformingNamespaces) context).context;
             } else {
-                context = new FilteredNamespaces.Inverse(context, version);
+                context = new TransformingNamespaces.Inverse(context, version);
             }
         }
         return context;
     }
 
     /**
-     * The context to wrap, given by {@link FilteredReader} or {@link FilteredWriter}.
+     * The context to wrap, given by {@link TransformingReader} or {@link TransformingWriter}.
      *
      * @see javax.xml.stream.XMLEventWriter#getNamespaceContext()
      */
@@ -114,12 +114,12 @@ class FilteredNamespaces implements NamespaceContext {
     /**
      * The URI replacements to apply when exporting from the JAXB annotations to the XML documents.
      */
-    final FilterVersion version;
+    final TransformVersion version;
 
     /**
-     * Creates a new namespaces filter for the given target version.
+     * Creates a new namespaces transformer for the given target version.
      */
-    private FilteredNamespaces(final NamespaceContext context, final FilterVersion version) {
+    private TransformingNamespaces(final NamespaceContext context, final TransformVersion version) {
         this.context = context;
         this.version = version;
     }
@@ -127,13 +127,13 @@ class FilteredNamespaces implements NamespaceContext {
     /**
      * Substitutes the XML namespaces used in XML documents by namespaces used in JAXB annotations.
      * This is used at marshalling time for exporting legacy documents, performing the reverse of
-     * {@link FilteredNamespaces}. The <i>namespace → prefix</i> mapping is simple because various
+     * {@link TransformingNamespaces}. The <i>namespace → prefix</i> mapping is simple because various
      * ISO 19115-3 namespaces are mapped to the same legacy {@code "gmd"} prefix, but the reverse
      * operation (<i>prefix → namespace</i> mapping) can often not be resolved.
      */
-    private static final class Inverse extends FilteredNamespaces {
-        /** Creates a new namespaces filter for the given source version. */
-        Inverse(final NamespaceContext context, final FilterVersion version) {
+    private static final class Inverse extends TransformingNamespaces {
+        /** Creates a new namespaces transformer for the given source version. */
+        Inverse(final NamespaceContext context, final TransformVersion version) {
             super(context, version);
         }
 
@@ -145,7 +145,7 @@ class FilteredNamespaces implements NamespaceContext {
          * <p>Except for {@code NULL_NS_URI}, this is usually an <cite>injective</cite> function:
          * each namespace can be created from at most one prefix.</p>
          *
-         * @see FilteredEvent.Start#getNamespaceURI(String)
+         * @see TransformedEvent.Start#getNamespaceURI(String)
          */
         @Override public String getNamespaceURI(final String prefix) {
             return version.importNS(context.getNamespaceURI(prefix));
@@ -166,7 +166,7 @@ class FilteredNamespaces implements NamespaceContext {
 
         /**
          * Returns all prefixes for the given namespace. There is usually only one, contrarily
-         * to {@link FilteredNamespaces#getPrefixes(String)} which have many.
+         * to {@link TransformingNamespaces#getPrefixes(String)} which have many.
          *
          * <p>This is a <cite>surjective</cite> function:
          * many prefixes can be created from the same namespace.</p>
@@ -202,9 +202,9 @@ class FilteredNamespaces implements NamespaceContext {
          * legacy ISO 19139:2007) is mapped to multiple namespaces in the new ISO 19115-3:2016 or other standard.
          * In such case, we have to iterate over 'exports' entries until we find an inverse mapping.
          */
-        final Iterator<Map.Entry<String, FilterVersion.Replacement>> it = version.exports();
+        final Iterator<Map.Entry<String, TransformVersion.Replacement>> it = version.exports();
         while (it.hasNext()) {
-            final Map.Entry<String, FilterVersion.Replacement> e = it.next();
+            final Map.Entry<String, TransformVersion.Replacement> e = it.next();
             if (namespaceURI.equals(e.getValue().namespace)) {
                 p = context.getPrefix(e.getKey());
                 if (p != null) return p;
@@ -224,18 +224,18 @@ class FilteredNamespaces implements NamespaceContext {
     }
 
     /**
-     * Iterator for the prefixes to be returned by {@link FilteredNamespaces#getPrefixes(String)}.
+     * Iterator for the prefixes to be returned by {@link TransformingNamespaces#getPrefixes(String)}.
      * Each prefix is fetched only when first needed.
      */
     private static final class Prefixes implements Iterator<String> {
         /** The namespace for which prefixes are desired. */
         private final String namespaceURI;
 
-        /** The {@link FilteredNamespaces#context} reference. */
+        /** *  The {@link TransformingNamespaces#context} reference. */
         private final NamespaceContext context;
 
         /** Iterator over the namespace replacements. */
-        private final Iterator<Map.Entry<String, FilterVersion.Replacement>> exports;
+        private final Iterator<Map.Entry<String, TransformVersion.Replacement>> exports;
 
         /** Iterator over some (not all) prefixes, or {@code null} if a new iterator needs to be fetched. */
         private Iterator<String> prefixes;
@@ -244,7 +244,7 @@ class FilteredNamespaces implements NamespaceContext {
         private String next;
 
         /** Creates a new iterator for the prefixes associated to the given namespace URI. */
-        Prefixes(final NamespaceContext context, final Iterator<Map.Entry<String, FilterVersion.Replacement>> exports,
+        Prefixes(final NamespaceContext context, final Iterator<Map.Entry<String, TransformVersion.Replacement>> exports,
                  final String namespaceURI)
         {
             this.context      = context;
@@ -264,7 +264,7 @@ class FilteredNamespaces implements NamespaceContext {
                     if (!exports.hasNext()) {
                         return false;
                     }
-                    final Map.Entry<String, FilterVersion.Replacement> e = exports.next();
+                    final Map.Entry<String, TransformVersion.Replacement> e = exports.next();
                     if (namespaceURI.equals(e.getValue().namespace)) {
                         prefixes = context.getPrefixes(e.getKey());
                     }

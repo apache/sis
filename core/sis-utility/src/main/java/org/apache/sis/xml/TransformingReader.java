@@ -44,7 +44,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 
 
 /**
- * A filter replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
+ * A XML reader replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
  * This class forwards every method calls to the wrapped {@link XMLEventReader}, but with some {@code namespaceURI}
  * modified before being transfered. This class uses a dictionary for identifying the XML namespaces expected by JAXB
  * implementation. This is needed when a single namespace in a legacy schema has been splitted into many namespaces
@@ -57,10 +57,10 @@ import static javax.xml.stream.XMLStreamConstants.*;
  * @since   1.0
  * @module
  */
-final class FilteredReader extends FilteredXML implements XMLEventReader {
+final class TransformingReader extends Transformer implements XMLEventReader {
     /**
      * Location of the file listing types and properties contained in namespaces.
-     * The file location is relative to this {@code FilteredReader} class.
+     * The file location is relative to this {@code TransformingReader} class.
      * The file format is a tree structured with indentation as below:
      *
      * <ul>
@@ -120,7 +120,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     static {
         final Map<String, Map<String,String>> m = new HashMap<>(250);
         try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
-                FilteredReader.class.getResourceAsStream(FILENAME), "UTF-8")))
+                TransformingReader.class.getResourceAsStream(FILENAME), "UTF-8")))
         {
             Map<String,String> attributes = null;               // All attributes for a given type.
             String namespace = null;                            // Value to store in 'attributes' map.
@@ -241,9 +241,9 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     private XMLEvent nextEvent;
 
     /**
-     * Creates a new filter for the given version of the standards.
+     * Creates a new reader for the given version of the standards.
      */
-    FilteredReader(final XMLEventReader in, final FilterVersion version) {
+    TransformingReader(final XMLEventReader in, final TransformVersion version) {
         super(version);
         this.in = in;
         outerElements = new ArrayList<>();
@@ -255,7 +255,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      * This method is used for assertions only.
      */
     private static boolean isWrapper(final XMLEvent event, final XMLEvent wrapper) {
-        return (event == wrapper) || (wrapper instanceof FilteredEvent && ((FilteredEvent) wrapper).event == event);
+        return (event == wrapper) || (wrapper instanceof TransformedEvent && ((TransformedEvent) wrapper).event == event);
     }
 
     /**
@@ -364,7 +364,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                 final List<Namespace> namespaces = importNS(e.getNamespaces(),
                         originalName.getNamespaceURI(), name.getNamespaceURI(), changed);
                 if (namespaces != null) {
-                    event = new FilteredEvent.Start(e, name, namespaces, attributes(), version);
+                    event = new TransformedEvent.Start(e, name, namespaces, attributes(), version);
                 } else {
                     renamedAttributes.clear();
                 }
@@ -378,7 +378,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                 final List<Namespace> namespaces = importNS(e.getNamespaces(),
                         originalName.getNamespaceURI(), name.getNamespaceURI(), name != originalName);
                 if (namespaces != null) {
-                    event = new FilteredEvent.End(e, name, namespaces);
+                    event = new TransformedEvent.End(e, name, namespaces);
                 }
                 /*
                  * Close the last start element with a matching name. It should be the last element
@@ -472,7 +472,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
         final QName originalName = attribute.getName();
         final QName name = convert(originalName);
         if (name != originalName) {
-            attribute = new FilteredEvent.Attr(attribute, name);
+            attribute = new TransformedEvent.Attr(attribute, name);
         }
         return attribute;
     }
@@ -494,12 +494,12 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     private Namespace importNS(final Namespace namespace, final String oldURI, final String newURI) {
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
-            uri = FilteredXML.removeTrailingSlash(uri);
+            uri = removeTrailingSlash(uri);
             final String imported = uri.equals(oldURI) ? newURI : version.importNS(uri);
             if (imported != uri) {
                 final String prefix = prefixes.computeIfAbsent(imported,
                         (ns) -> Namespaces.getPreferredPrefix(ns, namespace.getPrefix()));
-                return new FilteredEvent.NS(namespace, prefix, imported);
+                return new TransformedEvent.NS(namespace, prefix, imported);
             }
         }
         return namespace;
@@ -508,7 +508,7 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
     /**
      * Imports the namespaces read from the XML document.
      *
-     * @param  namespaces  the namespaces to filter.
+     * @param  namespaces  the namespaces to transform.
      * @param  oldURI      an old URI which has been renamed as {@code newURI}, or {@code null} if none.
      * @param  newURI      the new URI for {@code oldURI}, or {@code null} if {@code newURI} is null.
      * @param  changed     whether to unconditionally pretend that there is a change.
