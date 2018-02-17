@@ -127,8 +127,8 @@ public final class NamespaceContent {
              * Add the following entry:
              *
              *     http://a.namespace
-             *       PX_AClass
-             *         <type>
+             *      PX_AClass
+             *       <type>
              *
              * Then list all properties below "PX_AClass". Note that the namespace may change because properties
              * may be declared in different namespaces, but the class name stay the same. If the same properties
@@ -207,9 +207,9 @@ public final class NamespaceContent {
         for (final Map.Entry<String, Map<String, Set<String>>> e : content.entrySet()) {
             out.append(e.getKey()).append('\n');                                            // Namespace
             for (final Map.Entry<String, Set<String>> c : e.getValue().entrySet()) {
-                out.append("  ").append(c.getKey()).append('\n');                           // Class
+                out.append(' ').append(c.getKey()).append('\n');                            // Class
                 for (final String p : c.getValue()) {
-                    out.append("    ").append(p).append('\n');                              // Property
+                    out.append("  ").append(p).append('\n');                                // Property
                 }
             }
         }
