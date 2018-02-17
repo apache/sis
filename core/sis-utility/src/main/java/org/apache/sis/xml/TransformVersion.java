@@ -25,14 +25,15 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * The target version of standards for {@link TransformingNamespaces}.
- *
- * See {@link TransformingNamespaces} for more information.
+ * The target version of standards for {@link Transformer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
- * @since   0.4
+ *
+ * @see Transformer
+ *
+ * @since 0.4
  * @module
  */
 final class TransformVersion {

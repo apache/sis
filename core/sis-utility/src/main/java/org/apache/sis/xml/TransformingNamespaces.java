@@ -26,32 +26,7 @@ import javax.xml.XMLConstants;
 /**
  * In the associations between prefixes and namespaces, substitutes the namespaces used in JAXB annotations
  * by the namespaces used in the XML document at marshalling time. This class is used internally by
- * {@link TransformingReader} and {@link TransformingWriter} only.
- *
- * <div class="section">The problem</div>
- * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
- * For example when GML has been updated from version 3.1 to 3.2, the URL mandated by the international standard
- * changed from {@code "http://www.opengis.net/gml"} to {@code "http://www.opengis.net/gml/3.2"}
- * (XML namespaces usually have a version number or publication year - GML before 3.2 were an exception).
- *
- * The problem is that namespaces in JAXB annotations are static. The straightforward solution is
- * to generate complete new set of classes for every GML version using the {@code xjc} compiler.
- * But this approach has many inconvenient:
- *
- * <ul>
- *   <li>Massive code duplication (hundreds of classes, many of them strictly identical except for the namespace).</li>
- *   <li>Handling of above-cited classes duplication requires either a bunch of {@code if (x instanceof Y)} in every
- *       SIS corners, or to modify the {@code xjc} output in order to give to generated classes a common parent class
- *       or interface. In the later case, the auto-generated classes require significant work anyways.</li>
- *   <li>The namespaces of all versions appear in the {@code xmlns} attributes of the root element (we can not always
- *       create separated JAXB contexts), which is confusing and prevent usage of usual prefixes for all versions
- *       except one.</li>
- * </ul>
- *
- * An alternative is to support only one version of each standard, and transform XML documents before unmarshalling
- * or after marshalling if they use different versions of standards. We could use XSLT for that, but this is heavy.
- * A lighter approach is to use {@link javax.xml.stream.XMLEventReader} and {@link javax.xml.stream.XMLEventWriter}
- * as "micro-transformers".
+ * {@link TransformingWriter} and {@link TransformedEvent} only.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
