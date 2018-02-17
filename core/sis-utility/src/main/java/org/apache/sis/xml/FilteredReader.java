@@ -64,9 +64,9 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
      * The file format is a tree structured with indentation as below:
      *
      * <ul>
-     *   <li>Lines with zero-space  indentation are namespace URIs.</li>
-     *   <li>Lines with two-spaces  indentation are classes within the last namespace URIs found so far.</li>
-     *   <li>Lines with four-spaces indentation are properties within the last class found so far.</li>
+     *   <li>Lines with zero-space indentation are namespace URIs.</li>
+     *   <li>Lines with one-space  indentation are classes within the last namespace URIs found so far.</li>
+     *   <li>Lines with two-spaces indentation are properties within the last class found so far.</li>
      *   <li>All other indentations are illegal and cause an {@link InvalidPropertiesFormatException} to be thrown.
      *       This exception type is not really appropriate since the file format is not a {@code .properties} file,
      *       but it is the closest we could find in existing exceptions and we don't want to define a new exception
@@ -137,11 +137,11 @@ final class FilteredReader extends FilteredXML implements XMLEventReader {
                             attributes = null;
                             continue;
                         }
-                        case 2: {                                                   // New type in above namespace URI.
+                        case 1: {                                                   // New type in above namespace URI.
                             attributes = m.computeIfAbsent(element.intern(), (k) -> new HashMap<>());
                             continue;
                         }
-                        case 4: {                                                   // New attribute in above type.
+                        case 2: {                                                   // New attribute in above type.
                             if (attributes == null || namespace == null) break;     // Report illegal format.
                             final int s = element.indexOf(RENAME_SEPARATOR);
                             if (s >= 0) {
