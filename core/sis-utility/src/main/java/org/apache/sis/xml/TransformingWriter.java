@@ -188,29 +188,42 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
             final TransformVersion.Replacement r = version.export(uri);
             if (r != null) {
                 uri = r.namespace;
-                /*
-                 * The wrapped XMLEventWriter maintains a mapping from prefixes to namespace URIs.
-                 * Arguments are exported URIs (e.g. from legacy ISO 19139:2007) and return values
-                 * are prefixes computed by 'Namespaces.getPreferredPrefix(…)' or any other means.
-                 * We fetch those prefixes for performance reasons and for improving the guarantees
-                 * that the URI → prefix mapping is stable, since JAXB seems to require them for
-                 * writing namespaces in XML.
-                 */
-                String prefix = out.getPrefix(uri);
-                if (prefix == null) {
-                    prefix = Namespaces.getPreferredPrefix(uri, name.getPrefix());
-                    out.setPrefix(prefix, uri);
-                    /*
-                     * The above call for 'getPreferredPrefix' above is required: JAXB seems to need the prefixes
-                     * for recognizing namespaces. The prefix shall be computed in the same way than 'exportIfNew'.
-                     * We enter in this block only for the root element, before to parse 'xmlns' attributes. For
-                     * all other elements after the root elements, above call to 'out.getPrefix(uri)' should succeed.
-                     */
-                }
-                name = new QName(uri, r.exportProperty(name.getLocalPart()), prefix);
+                name = new QName(uri, r.exportProperty(name.getLocalPart()), prefixReplacement(name.getPrefix(), uri));
             }
         }
         return name;
+    }
+
+    /**
+     * Returns the prefix to use for a name in a new namespace.
+     *
+     * @param  previous   the prefix associated to old namespace.
+     * @param  namespace  the new namespace URI.
+     * @return prefix to use for the new namespace.
+     * @throws XMLStreamException if an error occurred while fetching the prefix.
+     */
+    @Override
+    final String prefixReplacement(final String previous, final String namespace) throws XMLStreamException {
+        /*
+         * The wrapped XMLEventWriter maintains a mapping from prefixes to namespace URIs.
+         * Arguments are exported URIs (e.g. from legacy ISO 19139:2007) and return values
+         * are prefixes computed by 'Namespaces.getPreferredPrefix(…)' or any other means.
+         * We fetch those prefixes for performance reasons and for improving the guarantees
+         * that the URI → prefix mapping is stable, since JAXB seems to require them for
+         * writing namespaces in XML.
+         */
+        String prefix = out.getPrefix(namespace);
+        if (prefix == null) {
+            prefix = Namespaces.getPreferredPrefix(namespace, previous);
+            out.setPrefix(prefix, namespace);
+            /*
+             * The above call for 'getPreferredPrefix' above is required: JAXB seems to need the prefixes
+             * for recognizing namespaces. The prefix shall be computed in the same way than 'exportIfNew'.
+             * We enter in this block only for the root element, before to parse 'xmlns' attributes. For
+             * all other elements after the root elements, above call to 'out.getPrefix(uri)' should succeed.
+             */
+        }
+        return prefix;
     }
 
     /**

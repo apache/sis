@@ -30,6 +30,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
+import org.apache.sis.util.collection.BackingStoreException;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -59,12 +60,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     static final String FILENAME = "NamespaceContent.lst";
 
     /**
-     * A key in {@link #NAMESPACES} sub-map meaning that the value (a namespace URI) is for the type instead
-     * than for an attribute. Shall be the same string than the one used in {@value #FILENAME} resource file.
-     */
-    static final String TYPE_KEY = "<type>";
-
-    /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
      *
      * <ul>
@@ -92,7 +87,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      */
     static String namespace(final String type) {
         final Map<String,String> attributes = NAMESPACES.get(type);
-        return (attributes != null) ? attributes.get(TYPE_KEY) : null;
+        return (attributes != null) ? attributes.get(type) : null;
     }
 
     /**
@@ -105,6 +100,8 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * computed by {@link Namespaces#getPreferredPrefix(String, String)} or any other means. We store
      * the prefix both for performance reasons and for improving the guarantees that the URI → prefix
      * mapping is stable.
+     *
+     * @see #prefixReplacement(String, String)
      */
     private final Map<String,String> prefixes;
 
@@ -160,14 +157,11 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      */
     @Override
     public Object next() {
-        final XMLEvent event = (XMLEvent) in.next();
-        final XMLEvent next  = nextEvent;
-        if (next != null) {
-            nextEvent = null;
-            assert isWrapper(event, next) : event;
-            return next;
+        try {
+            return nextEvent();
+        } catch (XMLStreamException e) {
+            throw new BackingStoreException(e);
         }
-        return convert(event);
     }
 
     /**
@@ -215,7 +209,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * @return the converted event (may be the same instance).
      */
     @SuppressWarnings("unchecked")      // TODO: remove on JDK9
-    private XMLEvent convert(XMLEvent event) {
+    private XMLEvent convert(XMLEvent event) throws XMLStreamException {
         switch (event.getEventType()) {
             case ATTRIBUTE: {
                 event = convert((Attribute) event);
@@ -255,7 +249,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 if (namespaces != null) {
                     event = new TransformedEvent.End(e, name, namespaces);
                 }
-                close(originalName);                        // Must be invoked only after 'convert(QName)'
+                close(originalName, NAMESPACES);            // Must be invoked only after 'convert(QName)'
                 break;
             }
         }
@@ -263,71 +257,30 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
-     * Imports a name read from the XML document to the name to give to JAXB.
-     * The new namespace depends on both the old namespace and the element name.
-     * The prefix is left unchanged since it can be arbitrary (even if confusing for
-     * human reader used to ISO/TC211 prefixes, it is non-ambiguous to the computer).
-     *
-     * @param   name   the name of the element or attribute currently being read.
-     * @return  the namespace URI for the element or attribute in the current context (e.g. an ISO 19115-3 namespace),
-     *          or {@code null} if the given name is unknown.
-     */
-    private QName convert(final QName name) {
-        String namespace;                               // In this method, null means no change to given name.
-        String localPart = name.getLocalPart();
-        /*
-         * If the element is a root element, return the associated namespace.
-         * We do not need to check if the value associated to TYPE_KEY is for
-         * a renaming since it is never the case for that key.
-         */
-        Map<String,String> attributeNS;
-        if (isOuterElement(localPart) && (attributeNS = NAMESPACES.get(localPart)) != null) {
-            namespace = attributeNS.get(TYPE_KEY);      // May be null.
-        } else {
-            /*
-             * If the element is not a root element, we need to use the map of attributes
-             * of the parent element.
-             */
-            attributeNS = attributeNS();
-            namespace = attributeNS.get(localPart);
-            if (namespace != null && !isNamespace(namespace)) {
-                localPart = namespace;
-                namespace = attributeNS.get(namespace);
-            }
-        }
-        /*
-         * If above code found no namespace by looking in our dictionary of special cases,
-         * maybe there is a simple one-to-one relationship between the old and new namespaces.
-         * Otherwise we leave the namespace unchanged.
-         */
-        final String oldNS = name.getNamespaceURI();
-        if (namespace == null) {
-            namespace = version.importNS(oldNS);
-        }
-        if (namespace.equals(oldNS) && localPart.equals(name.getLocalPart())) {
-            return name;
-        }
-        /*
-         * Build a new name if any component (URI or local part) changed. The prefix should have
-         * been specified (indirectly) by a previous call to 'importNS(Namespace)', for example
-         * as a result of a NAMESPACE event. If not, we compute it now using the same method.
-         */
-        final String prefix = prefixes.computeIfAbsent(namespace,
-                (ns) -> Namespaces.getPreferredPrefix(ns, name.getPrefix()));
-        return new QName(namespace, localPart, prefix);
-    }
-
-    /**
      * Imports an attribute read from the XML document.
      * If there is no name change, then this method returns the given instance as-is.
      */
-    private Attribute convert(Attribute attribute) {
+    private Attribute convert(Attribute attribute) throws XMLStreamException {
         final QName originalName = attribute.getName();
         final QName name = convert(originalName);
         if (name != originalName) {
             attribute = new TransformedEvent.Attr(attribute, name);
         }
         return attribute;
+    }
+
+    /**
+     * Returns the prefix to use for a name in a new namespace. The prefix should have been specified (indirectly)
+     * by a previous call to {@code importNS(Namespace, …)}, for example as a result of a {@code NAMESPACE} event.
+     * If not, we compute it now using the same algorithm than in {@code importNS}.
+     *
+     * @param  previous   the prefix associated to old namespace.
+     * @param  namespace  the new namespace URI.
+     * @return prefix to use for the new namespace.
+     */
+    @Override
+    final String prefixReplacement(final String previous, final String namespace) {
+        return prefixes.computeIfAbsent(namespace, (ns) -> Namespaces.getPreferredPrefix(ns, previous));
     }
 
     /**
@@ -350,8 +303,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
             uri = removeTrailingSlash(uri);
             final String imported = uri.equals(oldURI) ? newURI : version.importNS(uri);
             if (imported != uri) {
-                final String prefix = prefixes.computeIfAbsent(imported,
-                        (ns) -> Namespaces.getPreferredPrefix(ns, namespace.getPrefix()));
+                final String prefix = prefixReplacement(namespace.getPrefix(), imported);
                 return new TransformedEvent.NS(namespace, prefix, imported);
             }
         }

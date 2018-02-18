@@ -136,7 +136,7 @@ public final class NamespaceContent {
              */
             final String topLevelTypeName = root.name();
             String classNS = namespace(classe, root.namespace());
-            add(classNS, topLevelTypeName, TransformingReader.TYPE_KEY);
+            add(classNS, topLevelTypeName, Transformer.TYPE_KEY);
             for (;; classNS = namespace(classe, root.namespace())) {
                 for (final Method method : classe.getDeclaredMethods()) {
                     if (!method.isBridge()) {
@@ -170,7 +170,7 @@ public final class NamespaceContent {
                 }
             }
             if (singleton != null) {
-                add(namespace(classe, singleton.namespace()), singleton.name(), TransformingReader.TYPE_KEY);
+                add(namespace(classe, singleton.namespace()), singleton.name(), Transformer.TYPE_KEY);
             }
         }
     }
