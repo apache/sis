@@ -81,7 +81,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME, 60);
 
     /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
@@ -178,20 +178,13 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     }
 
     /**
-     * Returns the name (prefix, namespace and local part) to write in the XML document.
-     * This method may replace the namespace, and in some case the name local part too.
-     * If there is no name change, then this method returns the given instance as-is.
+     * Returns the old namespace for elements (types and properties) in the given namespace.
+     * This method is used only for default relocations, i.e. the fallback to apply when no
+     * explicit rule has been found.
      */
-    private QName export(QName name) throws XMLStreamException {
-        String uri = name.getNamespaceURI();
-        if (uri != null && !uri.isEmpty()) {                                // Optimization for a common case.
-            final TransformVersion.Replacement r = version.export(uri);
-            if (r != null) {
-                uri = r.namespace;
-                name = new QName(uri, r.exportProperty(name.getLocalPart()), prefixReplacement(name.getPrefix(), uri));
-            }
-        }
-        return name;
+    @Override
+    final String relocate(final String namespace) {
+        return version.exportNS(namespace);
     }
 
     /**
@@ -232,7 +225,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      */
     private Attribute export(Attribute attribute) throws XMLStreamException {
         final QName originalName = attribute.getName();
-        final QName name = export(originalName);
+        final QName name = convert(originalName);
         if (name != originalName) {
             attribute = new TransformedEvent.Attr(attribute, name);
         }
@@ -250,7 +243,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     private Namespace exportIfNew(final Namespace namespace) {
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
-            final String exported = version.exportNS(removeTrailingSlash(uri));
+            final String exported = relocate(removeTrailingSlash(uri));
             if (exported != uri) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
                     return new TransformedEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
@@ -321,7 +314,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
             case END_ELEMENT: {
                 final EndElement e = event.asEndElement();
                 final QName originalName = e.getName();
-                final QName name = export(originalName);
+                final QName name = convert(originalName);
                 final List<Namespace> namespaces = export(e.getNamespaces(), name != originalName);
                 if (namespaces != null) {
                     event = new TransformedEvent.End(e, name, namespaces);
@@ -333,13 +326,15 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                         writeDeferred();                        // About to exit the parent element containing deferred element.
                     }
                 }
+                close(originalName, NAMESPACES);                // Must be invoked only after 'convert(QName)'
                 break;
             }
             case START_ELEMENT: {
                 uniqueNamespaces.clear();                       // Discard entries created by NAMESPACE events.
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                final QName name = export(originalName);
+                open(originalName, NAMESPACES);                 // Must be invoked before 'convert(QName)'.
+                final QName name = convert(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
                     final Attribute a = it.next();
@@ -434,7 +429,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      */
     @Override
     public void setPrefix(final String prefix, final String uri) throws XMLStreamException {
-        out.setPrefix(prefix, version.exportNS(uri));
+        out.setPrefix(prefix, relocate(uri));
     }
 
     /**
@@ -446,7 +441,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      */
     @Override
     public void setDefaultNamespace(final String uri) throws XMLStreamException {
-        out.setDefaultNamespace(version.exportNS(uri));
+        out.setDefaultNamespace(relocate(uri));
     }
 
     /**

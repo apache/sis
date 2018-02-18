@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
-import org.apache.sis.util.Debug;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
@@ -58,6 +57,7 @@ final class TransformVersion {
                 Namespaces.MD2,
                 Namespaces.MDA,
                 Namespaces.MDB,
+                Namespaces.MDQ,
                 Namespaces.MDS,
                 Namespaces.MDT,
                 Namespaces.MEX,
@@ -68,36 +68,16 @@ final class TransformVersion {
                 Namespaces.MRI,
                 Namespaces.MRL,
                 Namespaces.MRS,
+                Namespaces.MSR,
                 Namespaces.RCE
             }, LegacyNamespaces.GMD);
-        /*
-         * SV_OperationMetadata has two properties that are identical except for the name
-         * between ISO 19115-3:2016 and legacy ISO 19139:2007. Instead than complicating
-         * the class with JAXB annotations, we perform the renaming in this package.
-         * We apply the same mechanic to some other namespaces too.
-         */
-        Replacement r = new Replacement(LegacyNamespaces.SRV, 4);
-        r.addProperty("distributedComputingPlatform", "DCP");
-        r.addProperty("parameter", "parameters");
-        ISO19139.exports.put(Namespaces.SRV, r);
-
-        // Metadata for Spatial Representation
-        r = new Replacement(LegacyNamespaces.GMD, "centrePoint", "centerPoint");
-        ISO19139.exports.put(Namespaces.MSR, r);
-
-        // Metadata for Data Quality
-        r = new Replacement(LegacyNamespaces.GMD, "valueRecordType", "valueType");
-        ISO19139.exports.put(Namespaces.MDQ, r);
-
-        // Metadata for Acquisition
-        r = new Replacement(LegacyNamespaces.GMD, "objectiveOccurence", "objectiveOccurance");
-        ISO19139.exports.put(Namespaces.MAC, r);
         /*
          * For the way back from legacy ISO 19139:2007 to new ISO 19115-3:2016, we must rely on TransformingReader
          * (do NOT declare entries in 'imports', because some namespaces must be left unchanged). An exception to
          * this rule is the "gco" namespace, because our reader renames only element namespaces while we need to
          * rename also attributes in "gco" namespace (e.g. "gco:nilReason").
          */
+        ISO19139.addSurjective(Namespaces.SRV, LegacyNamespaces.SRV);
         ISO19139.addSurjective(Namespaces.GCX, LegacyNamespaces.GMX);
         ISO19139.addBijective (Namespaces.GCO, LegacyNamespaces.GCO);
     }
@@ -118,71 +98,6 @@ final class TransformVersion {
     static final TransformVersion ALL = GML31;
 
     /**
-     * The exported namespace used in the XML file instead then the namespaces used by JAXB annotations.
-     * Contains also the properties renamed in that exported namespaces if any.
-     */
-    static final class Replacement {
-        /**
-         * The exported namespace (used in XML document).
-         */
-        final String namespace;
-
-        /**
-         * The properties having a different name in the exported namespace. Keys are property names
-         * as declared in JAXB annotations, and values are property names used in the XML document.
-         */
-        private final Map<String,String> exports;
-
-        /**
-         * Constructs a replacement for a namespace only (no renamed property).
-         */
-        Replacement(final String namespace) {
-            this.namespace  = namespace;
-            this.exports = Collections.emptyMap();
-        }
-
-        /**
-         * Constructs a replacement for a namespace with exactly one property renaming.
-         */
-        Replacement(final String namespace, final String jaxb, final String xml) {
-            this.namespace  = namespace;
-            this.exports = Collections.singletonMap(jaxb, xml);
-        }
-
-        /**
-         * Constructs a replacement for a namespace, together with the map of properties
-         * that need to be renamed for that exported namespace.
-         */
-        Replacement(final String namespace, final int capacity) {
-            this.namespace  = namespace;
-            this.exports = new HashMap<>(capacity);
-        }
-
-        /**
-         * Adds a two-directional association between a property used in JAXB annotation and a property
-         * used in XML document. A bijective association means that the renaming is reversible.
-         */
-        final void addProperty(final String jaxb, final String xml) {
-            exports.put(jaxb, xml);
-        }
-
-        /**
-         * Converts a property name used in JAXB annotations to a property name used in XML document.
-         */
-        final String exportProperty(final String localPart) {
-            return exports.getOrDefault(localPart, localPart);
-        }
-
-        /**
-         * Returns the namespace for debugging purpose.
-         */
-        @Override @Debug
-        public String toString() {
-            return namespace;
-        }
-    }
-
-    /**
      * The URI replacements to apply when going from the model implemented by Apache SIS
      * to the transforming reader/writer. Keys are the URIs as declared in JAXB annotations,
      * and values are the URIs to write instead of the actual ones.
@@ -192,7 +107,7 @@ final class TransformVersion {
      *
      * @see #exports()
      */
-    private final Map<String, Replacement> exports;
+    private final Map<String,String> exports;
 
     /**
      * The URI replacements to apply when going from the transforming reader/writer to
@@ -203,7 +118,7 @@ final class TransformVersion {
      * <p>This map shall not be modified after construction.
      * We do not wrap in {@link Collections#unmodifiableMap(Map)} for efficiency.</p>
      */
-    private final Map<String, String> imports;
+    private final Map<String,String> imports;
 
     /**
      * Creates a new enumeration initialized to the given capacity.
@@ -230,7 +145,7 @@ final class TransformVersion {
      * used in XML document. A bijective association means that the renaming is reversible.
      */
     private void addBijective(final String jaxb, final String xml) {
-        exports.put(jaxb, new Replacement(xml));
+        exports.put(jaxb, xml);
         imports.put(xml, jaxb);
     }
 
@@ -240,7 +155,7 @@ final class TransformVersion {
      * ISO 19139:2007 namespace. Consequently this association is not easily reversible.
      */
     private void addSurjective(final String jaxb, final String xml) {
-        exports.put(jaxb, new Replacement(xml));
+        exports.put(jaxb, xml);
     }
 
     /**
@@ -249,9 +164,8 @@ final class TransformVersion {
      * and the new schema (represented by {@code jaxb}) has been separated in many smaller modules.
      */
     private void addSurjectives(final String[] jaxb, final String xml) {
-        final Replacement r = new Replacement(xml);
         for (final String e : jaxb) {
-            exports.put(e, r);
+            exports.put(e, xml);
         }
     }
 
@@ -260,8 +174,7 @@ final class TransformVersion {
      * Returns the same URI if there is no replacement.
      */
     final String exportNS(final String uri) {
-        final TransformVersion.Replacement r = exports.get(uri);
-        return (r != null) ? r.namespace : uri;
+        return exports.getOrDefault(uri, uri);
     }
 
     /**
@@ -273,20 +186,11 @@ final class TransformVersion {
     }
 
     /**
-     * Converts a namespace used in JAXB annotation to the namespace used in XML document,
-     * together with a map of properties to rename.
-     * Returns {@code null} if there is no replacement.
-     */
-    final Replacement export(final String uri) {
-        return exports.get(uri);
-    }
-
-    /**
      * Returns the URI replacements to apply when going from the model implemented by Apache SIS to the
      * transforming reader/writer. Used only for more sophisticated work than what {@link #exportNS(String)} does.
      * Returned as an iterator for avoiding to expose modifiable map; do not invoke {@link Iterator#remove()}.
      */
-    final Iterator<Map.Entry<String, Replacement>> exports() {
+    final Iterator<Map.Entry<String,String>> exports() {
         return exports.entrySet().iterator();
     }
 }

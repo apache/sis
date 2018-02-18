@@ -76,7 +76,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME, 250);
 
     /**
      * Returns the namespace for the given ISO type, or {@code null} if unknown.
@@ -270,6 +270,16 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
+     * Returns the new namespace for elements (types and properties) in the given namespace.
+     * This method is used only for default relocations, i.e. the fallback to apply when no
+     * explicit rule has been found.
+     */
+    @Override
+    final String relocate(final String namespace) {
+        return version.importNS(namespace);
+    }
+
+    /**
      * Returns the prefix to use for a name in a new namespace. The prefix should have been specified (indirectly)
      * by a previous call to {@code importNS(Namespace, …)}, for example as a result of a {@code NAMESPACE} event.
      * If not, we compute it now using the same algorithm than in {@code importNS}.
@@ -301,7 +311,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
             uri = removeTrailingSlash(uri);
-            final String imported = uri.equals(oldURI) ? newURI : version.importNS(uri);
+            final String imported = uri.equals(oldURI) ? newURI : relocate(uri);
             if (imported != uri) {
                 final String prefix = prefixReplacement(namespace.getPrefix(), imported);
                 return new TransformedEvent.NS(namespace, prefix, imported);
