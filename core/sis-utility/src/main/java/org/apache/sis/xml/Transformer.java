@@ -96,23 +96,22 @@ abstract class Transformer {
     private static final char RENAME_SEPARATOR = '/';
 
     /**
-     * A sentinel value in files loaded by {@link #load(String, int)} meaning that the identifier stands for the type
-     * name instead than for a property name. This sentinel value is used in {@value TransformingReader#FILENAME} and
-     * {@value TransformingWriter#FILENAME} resource files. For example in the following:
+     * A flag after type name in files loaded by {@link #load(String, int)}, meaning that the type itself
+     * is in a different namespace than the properties listed below the type. For example in the following:
      *
      * {@preformat text
-     *  http://standards.iso.org/iso/19115/-3/cit/1.0
-     *   CI_Citation
-     *    <type>
-     *    title
-     *    alternateTitle
+     *  http://standards.iso.org/iso/19115/-3/mri/1.0
+     *   SV_ServiceIdentification !other namespace
+     *    citation
+     *    abstract
      * }
      *
-     * The {@code <type>} sentinel value is substituted by {@code CI_Citation}, which means that the {@code Citation}
-     * class itself is in the {@code cit} namespace. This needs to be specified explicitely because the properties in
-     * a class are not necessarily in the same namespace than the enclosing class.
+     * {@code SV_ServiceIdentification} type is defined in the {@code "http://standards.iso.org/iso/19115/-3/srv/2.0"}
+     * namespace, but the {@code citation} and {@code abstract} properties inherited from {@code Identification} are
+     * defined in the {@code http://standards.iso.org/iso/19115/-3/mri/1.0} namespace. If the {@value} flag is not
+     * present, then the type is assumed in the same namespace than the properties (this is the most common case).
      */
-    static final String TYPE_KEY = "<type>";
+    static final char NO_NAMESPACE = '!';
 
     /**
      * The external XML format version to (un)marshal from.
@@ -220,7 +219,6 @@ abstract class Transformer {
         {
             Map<String,String> attributes = null;               // All attributes for a given type.
             String namespace = null;                            // Value to store in 'attributes' map.
-            String type = null;                                 // Class or code list containing attributes.
             String line;
             while ((line = in.readLine()) != null) {
                 final int length = line.length();
@@ -232,12 +230,20 @@ abstract class Transformer {
                             if (!isNamespace(element)) break;                       // Report illegal format.
                             namespace  = element.intern();
                             attributes = null;
-                            type       = null;
                             continue;
                         }
                         case 1: {                                                   // New type in above namespace URI.
-                            type = element.intern();
-                            attributes = m.computeIfAbsent(type, (k) -> new HashMap<>());
+                            if (namespace == null) break;                           // Report illegal format.
+                            final int s = element.indexOf(NO_NAMESPACE);
+                            if (s >= 0) {
+                                element = element.substring(0, s).trim();
+                            }
+                            element = element.intern();
+                            attributes = m.computeIfAbsent(element, (k) -> new HashMap<>());
+                            if (s < 0) {
+                                // Record namespace for this type only if '!' is not present.
+                                if (attributes.put(element, namespace) != null) break;
+                            }
                             continue;
                         }
                         case 2: {                                                   // New attribute in above type.
@@ -246,15 +252,15 @@ abstract class Transformer {
                             if (s >= 0) {
                                 final String old = element.substring(0, s).trim().intern();
                                 element = element.substring(s+1).trim().intern();
-                                attributes.put(old, element);
+                                if (attributes.put(old, element) != null) break;    // Report an error if duplicated values.
                             } else {
-                                element = element.equals(TYPE_KEY) ? type : element.intern();
+                                element = element.intern();
                             }
-                            attributes.put(element, namespace);
+                            if (attributes.put(element, namespace) != null) break;  // Report an error if duplicated values.
                             continue;
                         }
                     }
-                    throw new InvalidPropertiesFormatException(Errors.format(       // See FILE javadoc.
+                    throw new InvalidPropertiesFormatException(Errors.format(       // See method javadoc.
                             Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber()));
                 }
             }

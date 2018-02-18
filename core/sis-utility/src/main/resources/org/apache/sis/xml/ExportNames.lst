@@ -7,6 +7,8 @@
 http://www.isotc211.org/2005/gmd
  MD_Georectified
   centrePoint/centerPoint
+ MI_Georectified !other namespace
+  centrePoint/centerPoint
  DQ_QuantitativeResult
   valueRecordType/valueType
 http://www.isotc211.org/2005/srv
@@ -99,22 +101,23 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
   maxAltitude
   meterologicalConditions
  MI_OperationTypeCode
- MI_Band|MD_Band
+ MI_Band
   bandBoundaryDefinition
   nominalSpatialResolution
   transferFunctionType
   transmittedPolarisation
   detectedPolarisation
- MI_CoverageDescription|MD_CoverageDescription
+ MI_CoverageDescription
   rangeElementDescription
- MI_ImageDescription|MD_ImageDescription
+ MI_ImageDescription
   rangeElementDescription
  MI_RangeElementDescription
   name
   definition
   rangeElement
  MI_BandDefinition
- MI_PolarisationOrientationCode
+ MI_PolarisationOrientationCode !renamed
+  MI_PolarisationOrientationCode/MI_PolarizationOrientationCode
  MI_TransferFunctionTypeCode
  LE_Algorithm
   citation
@@ -126,10 +129,10 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
   documentation
   runTimeParameters
   algorithm
- LE_Source|LI_Source
+ LE_Source
   processedLevel
   resolution
- LE_ProcessStep|LI_ProcessStep
+ LE_ProcessStep
   processingInformation
   output
   report
@@ -147,11 +150,11 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
  LE_NominalResolution
   scanningResolution
   groundResolution
- MI_Metadata|MD_Metadata
+ MI_Metadata
   acquisitionInformation
- MI_Georeferenceable|MD_Georeferenceable
+ MI_Georeferenceable
   geolocationInformation
- MI_Georectified|MD_Georectified
+ MI_Georectified
   checkPoint
  MI_GCP
   geographicCoordinates

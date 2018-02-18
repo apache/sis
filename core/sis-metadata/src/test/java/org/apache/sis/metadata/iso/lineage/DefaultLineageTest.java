@@ -16,13 +16,14 @@
  */
 package org.apache.sis.metadata.iso.lineage;
 
-import java.util.Arrays;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.lineage.Source;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -48,11 +49,19 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
         final DefaultLineage lineage = new DefaultLineage();
         final DefaultSource source = new DefaultSource();
         source.setDescription(new SimpleInternationalString("Description of source data level."));
-        lineage.setSources(Arrays.asList(source));
+        lineage.getSources().add(source);
         if (extension) {
             source.setProcessedLevel(new DefaultIdentifier("DummyLevel"));
         }
         return lineage;
+    }
+
+    /**
+     * Verifies the unmarshalling result.
+     */
+    private static void verify(final DefaultLineage lineage) {
+        final Source source = TestUtilities.getSingleton(lineage.getSources());
+        assertEquals("source.description", "Description of source data level.", String.valueOf(source.getDescription()));
     }
 
     /**
@@ -76,6 +85,8 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </mrl:LI_Source>\n" +
             "  </mrl:source>\n" +
             "</mrl:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
     }
 
     /**
@@ -100,6 +111,8 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </gmd:LI_Source>\n" +
             "  </gmd:source>\n" +
             "</gmd:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
     }
 
     /**
@@ -133,6 +146,8 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </mrl:LE_Source>\n" +
             "  </mrl:source>\n" +
             "</mrl:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
     }
 
     /**
@@ -166,5 +181,7 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </gmi:LE_Source>\n" +
             "  </gmd:source>\n" +
             "</gmd:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
     }
 }
