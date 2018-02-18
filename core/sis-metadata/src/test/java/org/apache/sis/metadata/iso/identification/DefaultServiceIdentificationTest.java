@@ -144,7 +144,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testMarshal() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, create(), "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, create(), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**

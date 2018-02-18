@@ -57,7 +57,7 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
         /*
          * XML marshalling, and compare with the content of "ProcessStep.xml" file.
          */
-        assertMarshalEqualsFile(XML_FILE, processStep, VERSION_2007, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, processStep, VERSION_2007, "xmlns:*", "xsi:schemaLocation");
         /*
          * XML unmarshalling: ensure that we didn't lost any information.
          * Note that since the XML uses the <gmi:…> namespace, we got an instance of LE_ProcessStep, which

@@ -61,7 +61,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setLanguages(Arrays.asList(LOCALES));
         assertMarshalEqualsFile(filename, metadata, version, STRICT, ignoredNodes,
-                new String[] {"xlmns:*", "xsi:*"});
+                new String[] {"xmlns:*", "xsi:*"});
     }
 
     /**
