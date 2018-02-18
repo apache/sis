@@ -96,37 +96,52 @@ abstract class Transformer {
     private static final char RENAME_SEPARATOR = '/';
 
     /**
+     * A sentinel value in files loaded by {@link #load(String)} meaning that the identifier stands for the type
+     * name instead than for a property name. This sentinel value is used in {@value TransformingReader#FILENAME}
+     * and {@value TransformingWriter#FILENAME} resource files. For example in the following:
+     *
+     * {@preformat text
+     *  http://standards.iso.org/iso/19115/-3/cit/1.0
+     *   CI_Citation
+     *    <type>
+     *    title
+     *    alternateTitle
+     * }
+     *
+     * The {@code <type>} sentinel value is substituted by {@code CI_Citation}, which means that the {@code Citation}
+     * class itself is in the {@code cit} namespace. This needs to be specified explicitely because the properties in
+     * a class are not necessarily in the same namespace than the enclosing class.
+     */
+    static final String TYPE_KEY = "<type>";
+
+    /**
      * The external XML format version to (un)marshal from.
      */
     final TransformVersion version;
 
     /**
-     * The outer element name together with its attribute. This is an element in a linked list.
+     * List of encountered XML tags, used for backtracking. Elements are removed from this list when they are closed.
+     * Names should be the ones we get after conversion from namespaces used in XML document to namespaces used in
+     * JAXB annotations. For example given the following XML, this list should contains {@code cit:CI_Citation},
+     * {@code cit:date} and {@code cit:CI_Date} (in that order) when the (un)marshalling reaches the "…" location.
+     *
+     * {@preformat xml
+     *   <cit:CI_Citation>
+     *     <cit:date>
+     *       <cit:CI_Date>
+     *         …
+     *       </cit:CI_Date>
+     *     </cit:date>
+     *   </cit:CI_Citation>
+     * }
      */
-    private static final class OuterElement {
-        /** The outer element name as used in JAXB annotations. */
-        final QName name;
-
-        /** The attribute namespaces, as one of the values of the map loaded by {@link #load(String)}. */
-        final Map<String, String> attributeNS;
-
-        /** The previous outer element (in other words, the parent), or {@code null} if none. */
-        final OuterElement parent;
-
-        /** Creates a new outer element. */
-        private OuterElement(final OuterElement parent, final QName name, final Map<String, String> attributeNS) {
-            this.parent      = parent;
-            this.name        = name;
-            this.attributeNS = attributeNS;
-        }
-    }
+    private final List<QName> outerElements;
 
     /**
-     * Linked list of encountered XML tags, in reverse order. Used for backtracking.  Elements are removed from
-     * this list when they are closed. Names should be the ones we get after conversion from namespaces used in
-     * XML document to namespaces used in JAXB annotations.
+     * Properties of the last outer elements, or {@code null} if not yet determined.
+     * If non-empty, this is one of the values got from the map given in argument to {@link #open(QName, Map)}.
      */
-    private OuterElement outerElements;
+    private Map<String,String> outerElementProperties;
 
     /**
      * Temporary list of attributes after their namespace change.
@@ -138,8 +153,22 @@ abstract class Transformer {
      * Creates a new XML reader or writer.
      */
     Transformer(final TransformVersion version) {
-        this.version      = version;
-        renamedAttributes = new ArrayList<>();
+        this.version           = version;
+        outerElements          = new ArrayList<>();
+        renamedAttributes      = new ArrayList<>();
+        outerElementProperties = Collections.emptyMap();
+    }
+
+    /**
+     * Removes the trailing slash in given URI, if any. It is caller's responsibility
+     * to ensure that the URI is not null and not empty before to invoke this method.
+     */
+    static String removeTrailingSlash(String uri) {
+        final int end = uri.length() - 1;
+        if (uri.charAt(end) == '/') {
+            uri = uri.substring(0, end);
+        }
+        return uri;
     }
 
     /**
@@ -188,6 +217,7 @@ abstract class Transformer {
         {
             Map<String,String> attributes = null;               // All attributes for a given type.
             String namespace = null;                            // Value to store in 'attributes' map.
+            String type = null;                                 // Class or code list containing attributes.
             String line;
             while ((line = in.readLine()) != null) {
                 final int length = line.length();
@@ -199,10 +229,12 @@ abstract class Transformer {
                             if (!isNamespace(element)) break;                       // Report illegal format.
                             namespace  = element.intern();
                             attributes = null;
+                            type       = null;
                             continue;
                         }
                         case 1: {                                                   // New type in above namespace URI.
-                            attributes = m.computeIfAbsent(element.intern(), (k) -> new HashMap<>());
+                            type = element.intern();
+                            attributes = m.computeIfAbsent(type, (k) -> new HashMap<>());
                             continue;
                         }
                         case 2: {                                                   // New attribute in above type.
@@ -213,7 +245,7 @@ abstract class Transformer {
                                 element = element.substring(s+1).trim().intern();
                                 attributes.put(old, element);
                             } else {
-                                element = element.intern();
+                                element = element.equals(TYPE_KEY) ? type : element.intern();
                             }
                             attributes.put(element, namespace);
                             continue;
@@ -235,18 +267,6 @@ abstract class Transformer {
     }
 
     /**
-     * Removes the trailing slash in given URI, if any. It is caller's responsibility
-     * to ensure that the URI is not null and not empty before to invoke this method.
-     */
-    static String removeTrailingSlash(String uri) {
-        final int end = uri.length() - 1;
-        if (uri.charAt(end) == '/') {
-            uri = uri.substring(0, end);
-        }
-        return uri;
-    }
-
-    /**
      * Returns a snapshot of {@link #renamedAttributes} list and clears the later.
      */
     final List<Attribute> attributes() {
@@ -262,9 +282,9 @@ abstract class Transformer {
     }
 
     /**
-     * Returns {@code true} if an element with the given name is likely to be an OGC/ISO type (as opposed to property).
-     * For example given the following XML, this method returns {@code true} for {@code cit:CI_Date} but {@code false}
-     * for {@code cit:date}:
+     * Returns {@code true} if an element with the given name is an OGC/ISO type (as opposed to property).
+     * For example given the following XML, this method returns {@code true} for {@code cit:CI_Date} but
+     * {@code false} for {@code cit:date}:
      *
      * {@preformat xml
      *   <cit:CI_Citation>
@@ -277,10 +297,9 @@ abstract class Transformer {
      * }
      *
      * This method is based on simple heuristic applicable to OGC/ISO conventions, and may change in any future SIS
-     * version depending on new formats to support. The intent is only to reduce the amount of nodes created in the
-     * {@link #outerElements} linked list.
+     * version depending on new formats to support.
      */
-    static boolean isOuterElement(final String localPart) {
+    private static boolean isTypeElement(final String localPart) {
         if (localPart.length() < 4) return false;
         final char c = localPart.charAt(0);
         return (c >= 'A' && c <= 'Z');
@@ -294,9 +313,9 @@ abstract class Transformer {
      */
     final void open(final QName name, final Map<String, Map<String,String>> namespaces) {
         final String localPart = name.getLocalPart();
-        if (isOuterElement(localPart)) {
-            outerElements = new OuterElement(outerElements, name,
-                    namespaces.getOrDefault(localPart, Collections.emptyMap()));
+        if (isTypeElement(localPart)) {
+            outerElements.add(name);
+            outerElementProperties = namespaces.getOrDefault(localPart, Collections.emptyMap());
         }
     }
 
@@ -305,34 +324,70 @@ abstract class Transformer {
      * with a matching name. It should be the last element on the list in a well-formed XML, but we loop in
      * the list anyway as a safety.
      *
-     * @param  name  element name as declared in JAXB annotations.
+     * @param  name        element name as declared in JAXB annotations.
+     * @param  namespaces  namespaces map loaded by {@link #load(String)}.
      */
-    final void close(final QName name) {
-        if (isOuterElement(name.getLocalPart())) {
-            OuterElement e = outerElements;
-            while (e != null) {
-                if (name.equals(e.name)) {
-                    outerElements = e.parent;       // Discard e and all children of e.
+    final void close(final QName name, final Map<String, Map<String,String>> namespaces) {
+        if (isTypeElement(name.getLocalPart())) {
+            outerElementProperties = null;
+            for (int i=outerElements.size(); --i >= 0;) {
+                if (name.equals(outerElements.get(i))) {
+                    outerElements.remove(i);
+                    final String parent = (--i >= 0) ? outerElements.get(i).getLocalPart() : null;
+                    outerElementProperties = namespaces.getOrDefault(parent, Collections.emptyMap());
                     break;
                 }
-                e = e.parent;
             }
         }
-    }
-
-    /**
-     * Attributes expected in the namespace of current element. This method may return a different {@code Map}
-     * instance after each call to {@link #open(QName, Map)} or {@link #close(QName)}. The returned map shall
-     * not be modified.
-     */
-    final Map<String,String> attributeNS() {
-        return (outerElements != null) ? outerElements.attributeNS : Collections.emptyMap();
     }
 
     /**
      * Frees any resources associated with this reader.
      */
     public void close() throws XMLStreamException {
-        outerElements = null;
+        outerElementProperties = null;
+        outerElements.clear();
     }
+
+    /**
+     * Renames en element using the namespaces map give to the {@code open(…)} and {@code close(…)} methods.
+     * When unmarshalling, this imports a name read from the XML document to the name to give to JAXB.
+     * When marshalling, this exports a name used in JAXB annotation to the name to use in XML document.
+     * The new namespace depends on both the old namespace and the element name.
+     * The prefix is computed by {@link #prefixReplacement(String, String)}.
+     *
+     * @param   name   the name of the element or attribute currently being read or written.
+     * @return  a name with potentially the namespace and the local part replaced.
+     */
+    final QName convert(QName name) throws XMLStreamException {
+        String localPart = name.getLocalPart();
+        String namespace = outerElementProperties.get(localPart);
+        if (namespace != null && !isNamespace(namespace)) {
+            localPart = namespace;
+            namespace = outerElementProperties.get(localPart);
+        }
+        /*
+         * If above code found no namespace by looking in our dictionary of special cases,
+         * maybe there is a simple one-to-one relationship between the old and new namespaces.
+         * Otherwise we leave the namespace unchanged.
+         */
+        final String oldNS = name.getNamespaceURI();
+        if (namespace == null) {
+            namespace = version.importNS(oldNS);
+        }
+        if (!namespace.equals(oldNS) || !localPart.equals(name.getLocalPart())) {
+            name = new QName(namespace, localPart, prefixReplacement(name.getPrefix(), namespace));
+        }
+        return name;
+    }
+
+    /**
+     * Returns the prefix to use for a name in a new namespace.
+     *
+     * @param  previous   the prefix associated to old namespace.
+     * @param  namespace  the new namespace URI.
+     * @return prefix to use for the new namespace.
+     * @throws XMLStreamException if an error occurred while fetching the prefix.
+     */
+    abstract String prefixReplacement(String previous, String namespace) throws XMLStreamException;
 }
