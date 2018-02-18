@@ -1,9 +1,18 @@
 #
-# Properties defined by ISO 19115-2 (extensions for imagery and gridded data).
+# Elements to rename during exports.
 # Lines with zero-space indentation are namespace URIs.
 # Lines with one-space  indentation are XML types.
 # Lines with two-spaces indentation are properties.
 #
+http://www.isotc211.org/2005/gmd
+ MD_Georectified
+  centrePoint/centerPoint
+ DQ_QuantitativeResult
+  valueRecordType/valueType
+http://www.isotc211.org/2005/srv
+ SV_OperationMetadata
+  distributedComputingPlatform/DCP
+  parameter/parameters
 http://standards.iso.org/iso/19115/-2/gmi/1.0
  MI_Instrument
   citation
@@ -67,7 +76,7 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
   extent
   sensingInstrument
   pass
-  objectiveOccurance
+  objectiveOccurence/objectiveOccurance
  MI_Plan
   type
   status

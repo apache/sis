@@ -96,9 +96,9 @@ abstract class Transformer {
     private static final char RENAME_SEPARATOR = '/';
 
     /**
-     * A sentinel value in files loaded by {@link #load(String)} meaning that the identifier stands for the type
-     * name instead than for a property name. This sentinel value is used in {@value TransformingReader#FILENAME}
-     * and {@value TransformingWriter#FILENAME} resource files. For example in the following:
+     * A sentinel value in files loaded by {@link #load(String, int)} meaning that the identifier stands for the type
+     * name instead than for a property name. This sentinel value is used in {@value TransformingReader#FILENAME} and
+     * {@value TransformingWriter#FILENAME} resource files. For example in the following:
      *
      * {@preformat text
      *  http://standards.iso.org/iso/19115/-3/cit/1.0
@@ -174,7 +174,7 @@ abstract class Transformer {
     /**
      * Returns {@code true} if the given string is a namespace URI, or {@code false} if it is a property name.
      * This method implements a very fast check based on the presence of {@code ':'} in {@code "http://foo.bar"}.
-     * It assumes that all namespaces declared in files loaded by {@link #load(String)} use the {@code "http"}
+     * It assumes that all namespaces declared in files loaded by {@link #load(String, int)} use the {@code "http"}
      * protocol and no property name use the {@code ':'} character.
      */
     static boolean isNamespace(final String candidate) {
@@ -209,9 +209,12 @@ abstract class Transformer {
      *     </ul></li>
      *   </ul></li>
      * </ul>
+     *
+     * @param  filename  name of the file to load.
+     * @param  capacity  initial hash map capacity. This is only a hint.
      */
-    static Map<String, Map<String,String>> load(final String filename) {
-        final Map<String, Map<String,String>> m = new HashMap<>(250);
+    static Map<String, Map<String,String>> load(final String filename, final int capacity) {
+        final Map<String, Map<String,String>> m = new HashMap<>(capacity);
         try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
                 TransformingReader.class.getResourceAsStream(filename), "UTF-8")))
         {
@@ -309,7 +312,7 @@ abstract class Transformer {
      * Notifies that we are opening an element of the given name.
      *
      * @param  name        element name as declared in JAXB annotations.
-     * @param  namespaces  namespaces map loaded by {@link #load(String)}.
+     * @param  namespaces  namespaces map loaded by {@link #load(String, int)}.
      */
     final void open(final QName name, final Map<String, Map<String,String>> namespaces) {
         final String localPart = name.getLocalPart();
@@ -325,7 +328,7 @@ abstract class Transformer {
      * the list anyway as a safety.
      *
      * @param  name        element name as declared in JAXB annotations.
-     * @param  namespaces  namespaces map loaded by {@link #load(String)}.
+     * @param  namespaces  namespaces map loaded by {@link #load(String, int)}.
      */
     final void close(final QName name, final Map<String, Map<String,String>> namespaces) {
         if (isTypeElement(name.getLocalPart())) {
@@ -373,13 +376,20 @@ abstract class Transformer {
          */
         final String oldNS = name.getNamespaceURI();
         if (namespace == null) {
-            namespace = version.importNS(oldNS);
+            namespace = relocate(oldNS);
         }
         if (!namespace.equals(oldNS) || !localPart.equals(name.getLocalPart())) {
             name = new QName(namespace, localPart, prefixReplacement(name.getPrefix(), namespace));
         }
         return name;
     }
+
+    /**
+     * Returns the new namespace for elements (types and properties) in the given namespace.
+     * This method is used only for default relocations, i.e. the fallback to apply when no
+     * explicit rule has been found.
+     */
+    abstract String relocate(String namespace);
 
     /**
      * Returns the prefix to use for a name in a new namespace.

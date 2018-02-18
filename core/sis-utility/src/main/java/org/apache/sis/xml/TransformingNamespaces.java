@@ -177,10 +177,10 @@ class TransformingNamespaces implements NamespaceContext {
          * legacy ISO 19139:2007) is mapped to multiple namespaces in the new ISO 19115-3:2016 or other standard.
          * In such case, we have to iterate over 'exports' entries until we find an inverse mapping.
          */
-        final Iterator<Map.Entry<String, TransformVersion.Replacement>> it = version.exports();
+        final Iterator<Map.Entry<String,String>> it = version.exports();
         while (it.hasNext()) {
-            final Map.Entry<String, TransformVersion.Replacement> e = it.next();
-            if (namespaceURI.equals(e.getValue().namespace)) {
+            final Map.Entry<String,String> e = it.next();
+            if (namespaceURI.equals(e.getValue())) {
                 p = context.getPrefix(e.getKey());
                 if (p != null) return p;
             }
@@ -210,7 +210,7 @@ class TransformingNamespaces implements NamespaceContext {
         private final NamespaceContext context;
 
         /** Iterator over the namespace replacements. */
-        private final Iterator<Map.Entry<String, TransformVersion.Replacement>> exports;
+        private final Iterator<Map.Entry<String,String>> exports;
 
         /** Iterator over some (not all) prefixes, or {@code null} if a new iterator needs to be fetched. */
         private Iterator<String> prefixes;
@@ -219,7 +219,7 @@ class TransformingNamespaces implements NamespaceContext {
         private String next;
 
         /** Creates a new iterator for the prefixes associated to the given namespace URI. */
-        Prefixes(final NamespaceContext context, final Iterator<Map.Entry<String, TransformVersion.Replacement>> exports,
+        Prefixes(final NamespaceContext context, final Iterator<Map.Entry<String,String>> exports,
                  final String namespaceURI)
         {
             this.context      = context;
@@ -239,8 +239,8 @@ class TransformingNamespaces implements NamespaceContext {
                     if (!exports.hasNext()) {
                         return false;
                     }
-                    final Map.Entry<String, TransformVersion.Replacement> e = exports.next();
-                    if (namespaceURI.equals(e.getValue().namespace)) {
+                    final Map.Entry<String,String> e = exports.next();
+                    if (namespaceURI.equals(e.getValue())) {
                         prefixes = context.getPrefixes(e.getKey());
                     }
                 }

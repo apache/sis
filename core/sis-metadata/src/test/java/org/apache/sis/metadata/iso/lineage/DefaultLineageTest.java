@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.lineage;
 
 import java.util.Arrays;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -55,6 +56,29 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
     }
 
     /**
+     * Tests the marshalling of a {@code "mrl:LI_Source"} element.
+     * If this case, the test uses only ISO 19115-1 elements (no ISO 19115-2).
+     * Consequently the XML name shall be {@code "mrl:LI_Source"}.
+     *
+     * @throws JAXBException if an error occurred while marshalling the XML.
+     */
+    @Test
+    public void testSource() throws JAXBException {
+        String actual = marshal(create(false));
+        assertXmlEquals(
+            "<mrl:LI_Lineage xmlns:mrl=\"" + Namespaces.MRL + '"' +
+                           " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <mrl:source>\n" +
+            "    <mrl:LI_Source>\n" +
+            "      <mrl:description>\n" +
+            "        <gco:CharacterString>Description of source data level.</gco:CharacterString>\n" +
+            "      </mrl:description>\n" +
+            "    </mrl:LI_Source>\n" +
+            "  </mrl:source>\n" +
+            "</mrl:LI_Lineage>", actual, "xmlns:*");
+    }
+
+    /**
      * Tests the marshalling of a legacy {@code "gmd:LI_Source"} element.
      * If this case, the test uses only ISO 19115-1 elements (no ISO 19115-2).
      * Consequently the legacy XML name shall be {@code "gmd:LI_Source"}.
@@ -62,6 +86,7 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
+    @DependsOnMethod("testSource")
     public void testLegacySource() throws JAXBException {
         String actual = marshal(create(false), VERSION_2007);
         assertXmlEquals(
@@ -75,6 +100,39 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </gmd:LI_Source>\n" +
             "  </gmd:source>\n" +
             "</gmd:LI_Lineage>", actual, "xmlns:*");
+    }
+
+    /**
+     * Tests the marshalling of a {@code "mrl:LE_Source"} element.
+     * This test starts with the same metadata than {@link #testSource()} and adds an
+     * ISO 19115-2 specific property. Consequently the XML name, which was originally
+     * {@code "mrl:LI_Source"}, shall become {@code "mrl:LE_Source"}.
+     *
+     * @throws JAXBException if an error occurred while marshalling the XML.
+     */
+    @Test
+    @DependsOnMethod("testSource")
+    public void testSourceImagery() throws JAXBException {
+        String actual = marshal(create(true));
+        assertXmlEquals(
+            "<mrl:LI_Lineage xmlns:mrl=\"" + Namespaces.MRL + '"' +
+                           " xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                           " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <mrl:source>\n" +
+            "    <mrl:LE_Source>\n" +
+            "      <mrl:description>\n" +
+            "        <gco:CharacterString>Description of source data level.</gco:CharacterString>\n" +
+            "      </mrl:description>\n" +
+            "      <mrl:processedLevel>\n" +
+            "        <mcc:MD_Identifier>\n" +
+            "          <mcc:code>\n" +
+            "            <gco:CharacterString>DummyLevel</gco:CharacterString>\n" +
+            "          </mcc:code>\n" +
+            "        </mcc:MD_Identifier>\n" +
+            "      </mrl:processedLevel>\n" +
+            "    </mrl:LE_Source>\n" +
+            "  </mrl:source>\n" +
+            "</mrl:LI_Lineage>", actual, "xmlns:*");
     }
 
     /**
