@@ -128,7 +128,7 @@ public final class NamespaceContent {
              *
              *     http://a.namespace
              *      PX_AClass
-             *       <type>
+             *       …
              *
              * Then list all properties below "PX_AClass". Note that the namespace may change because properties
              * may be declared in different namespaces, but the class name stay the same. If the same properties
@@ -136,7 +136,6 @@ public final class NamespaceContent {
              */
             final String topLevelTypeName = root.name();
             String classNS = namespace(classe, root.namespace());
-            add(classNS, topLevelTypeName, Transformer.TYPE_KEY);
             for (;; classNS = namespace(classe, root.namespace())) {
                 for (final Method method : classe.getDeclaredMethods()) {
                     if (!method.isBridge()) {
@@ -168,9 +167,6 @@ public final class NamespaceContent {
                     if (singleton != null) return;
                     singleton = xe;
                 }
-            }
-            if (singleton != null) {
-                add(namespace(classe, singleton.namespace()), singleton.name(), Transformer.TYPE_KEY);
             }
         }
     }

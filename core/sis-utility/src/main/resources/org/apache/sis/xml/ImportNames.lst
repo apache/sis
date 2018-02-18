@@ -7,11 +7,9 @@
 #
 http://standards.iso.org/iso/19115/-3/cit/1.0
  AbstractCI_Party
-  <type>
   contactInfo
   name
  CI_Address
-  <type>
   administrativeArea
   city
   country
@@ -19,7 +17,6 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   electronicMailAddress
   postalCode
  CI_Citation
-  <type>
   ISBN
   ISSN
   alternateTitle
@@ -35,7 +32,6 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   series
   title
  CI_Contact
-  <type>
   address
   contactInstructions
   contactType
@@ -43,20 +39,15 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   onlineResource
   phone
  CI_Date
-  <type>
   date
   dateType
  CI_DateTypeCode
-  <type>
  CI_Individual
-  <type>
   contactInfo
   name
   positionName
  CI_OnLineFunctionCode
-  <type>
  CI_OnlineResource
-  <type>
   applicationProfile
   description
   function
@@ -65,118 +56,82 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   protocol
   protocolRequest
  CI_Organisation
-  <type>
   contactInfo
   individual
   logo
   name
  CI_PresentationFormCode
-  <type>
  CI_Responsibility
-  <type>
   extent
   party
   role
- CI_ResponsibleParty
+ CI_ResponsibleParty !other namespace
   extent
   party
   role
  CI_RoleCode
-  <type>
  CI_Series
-  <type>
   issueIdentification
   name
   page
  CI_Telephone
-  <type>
   number
   numberType
  CI_TelephoneTypeCode
-  <type>
 http://standards.iso.org/iso/19115/-3/gco/1.0
  Boolean
-  <type>
  CharacterString
-  <type>
  Date
-  <type>
  DateTime
-  <type>
  Decimal
-  <type>
  Distance
-  <type>
  Integer
-  <type>
  LocalName
-  <type>
  Measure
-  <type>
  Real
-  <type>
  Record
-  <type>
  RecordType
-  <type>
  ScopedName
-  <type>
 http://standards.iso.org/iso/19115/-3/gcx/1.0
  Anchor
-  <type>
  FileName
-  <type>
  MimeFileType
-  <type>
 http://standards.iso.org/iso/19115/-3/gex/1.0
  AbstractEX_GeographicExtent
-  <type>
   extentTypeCode
  EX_BoundingPolygon
-  <type>
   extentTypeCode
   polygon
  EX_Extent
-  <type>
   description
   geographicElement
   temporalElement
   verticalElement
  EX_GeographicBoundingBox
-  <type>
   eastBoundLongitude
   extentTypeCode
   northBoundLatitude
   southBoundLatitude
   westBoundLongitude
  EX_GeographicDescription
-  <type>
   extentTypeCode
   geographicIdentifier
  EX_SpatialTemporalExtent
-  <type>
   extent
   spatialExtent
   verticalExtent
  EX_TemporalExtent
-  <type>
   extent
  EX_VerticalExtent
-  <type>
   maximumValue
   minimumValue
   verticalCRS
 http://standards.iso.org/iso/19115/-3/lan/1.0
  CountryCode
-  <type>
  LanguageCode
-  <type>
  LocalisedCharacterString
-  <type>
  MD_CharacterSetCode
-  <type>
  PT_Locale
-  <type>
   characterEncoding
   country
   language
@@ -184,7 +139,6 @@ http://standards.iso.org/iso/19115/-3/lan/1.0
   <type>
 http://standards.iso.org/iso/19115/-3/mac/1.0
  MI_AcquisitionInformation
-  <type>
   acquisitionPlan
   acquisitionRequirement
   environmentalConditions
@@ -193,15 +147,12 @@ http://standards.iso.org/iso/19115/-3/mac/1.0
   operation
   platform
  MI_ContextCode
-  <type>
  MI_EnvironmentalRecord
-  <type>
   averageAirTemperature
   maxAltitude
   maxRelativeHumidity
   meterologicalConditions
  MI_Event
-  <type>
   context
   expectedObjective
   identifier
@@ -211,16 +162,13 @@ http://standards.iso.org/iso/19115/-3/mac/1.0
   time
   trigger
  MI_GeometryTypeCode
-  <type>
  MI_Instrument
-  <type>
   citation
   description
   identifier
   mountedOn
   type
  MI_Objective
-  <type>
   extent
   function
   identifier
@@ -230,9 +178,7 @@ http://standards.iso.org/iso/19115/-3/mac/1.0
   sensingInstrument
   type
  MI_ObjectiveTypeCode
-  <type>
  MI_Operation
-  <type>
   childOperation
   citation
   description
@@ -245,34 +191,27 @@ http://standards.iso.org/iso/19115/-3/mac/1.0
   status
   type
  MI_OperationTypeCode
-  <type>
  MI_Plan
-  <type>
   citation
   operation
   satisfiedRequirement
   status
   type
  MI_Platform
-  <type>
   citation
   description
   identifier
   instrument
   sponsor
  MI_PlatformPass
-  <type>
   extent
   identifier
   relatedEvent
  MI_PriorityCode
-  <type>
  MI_RequestedDate
-  <type>
   latestAcceptableDate
   requestedDateOfCollection
  MI_Requirement
-  <type>
   citation
   expiryDate
   identifier
@@ -282,12 +221,9 @@ http://standards.iso.org/iso/19115/-3/mac/1.0
   requestor
   satisifiedPlan
  MI_SequenceCode
-  <type>
  MI_TriggerCode
-  <type>
 http://standards.iso.org/iso/19115/-3/mas/1.0
  MD_ApplicationSchemaInformation
-  <type>
   constraintLanguage
   graphicsFile
   name
@@ -297,30 +233,24 @@ http://standards.iso.org/iso/19115/-3/mas/1.0
   softwareDevelopmentFileFormat
 http://standards.iso.org/iso/19115/-3/mcc/1.0
  MD_BrowseGraphic
-  <type>
   fileDescription
   fileName
   fileType
   imageConstraints
   linkage
  MD_Identifier
-  <type>
   authority
   code
   codeSpace
   description
   version
  MD_ProgressCode
-  <type>
  MD_Scope
-  <type>
   extent
   level
   levelDescription
  MD_ScopeCode
-  <type>
  MD_ScopeDescription
-  <type>
   attributeInstances
   attributes
   dataset
@@ -328,12 +258,9 @@ http://standards.iso.org/iso/19115/-3/mcc/1.0
   features
   other
  MD_SpatialRepresentationTypeCode
-  <type>
 http://standards.iso.org/iso/19115/-3/mco/1.0
  MD_ClassificationCode
-  <type>
  MD_Constraints
-  <type>
   constraintApplicationScope
   graphic
   reference
@@ -341,7 +268,6 @@ http://standards.iso.org/iso/19115/-3/mco/1.0
   responsibleParty
   useLimitation
  MD_LegalConstraints
-  <type>
   accessConstraints
   constraintApplicationScope
   graphic
@@ -352,14 +278,11 @@ http://standards.iso.org/iso/19115/-3/mco/1.0
   useConstraints
   useLimitation
  MD_Releasability
-  <type>
   addressee
   disseminationConstraints
   statement
  MD_RestrictionCode
-  <type>
  MD_SecurityConstraints
-  <type>
   classification
   classificationSystem
   constraintApplicationScope
@@ -372,7 +295,6 @@ http://standards.iso.org/iso/19115/-3/mco/1.0
   userNote
 http://standards.iso.org/iso/19115/-3/mdb/1.0
  MD_Metadata
-  <type>
   acquisitionInformation
   alternativeMetadataReference
   applicationSchemaInfo
@@ -398,10 +320,9 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
   resourceLineage
   spatialRepresentationInfo
  MD_MetadataScope
-  <type>
   name
   resourceScope
- MI_Metadata
+ MI_Metadata !other namespace
   acquisitionInformation
   alternativeMetadataReference
   applicationSchemaInfo
@@ -428,16 +349,13 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
   spatialRepresentationInfo
 http://standards.iso.org/iso/19115/-3/mdt/1.0
  MX_DataFile
-  <type>
   featureTypes
   fileDescription
   fileName
   fileType
 http://standards.iso.org/iso/19115/-3/mex/1.0
  MD_DatatypeCode
-  <type>
  MD_ExtendedElementInformation
-  <type>
   condition
   dataType
   definition
@@ -450,14 +368,11 @@ http://standards.iso.org/iso/19115/-3/mex/1.0
   rule
   source
  MD_MetadataExtensionInformation
-  <type>
   extendedElementInformation
   extensionOnLineResource
 http://standards.iso.org/iso/19115/-3/mmi/1.0
  MD_MaintenanceFrequencyCode
-  <type>
  MD_MaintenanceInformation
-  <type>
   contact
   maintenanceAndUpdateFrequency
   maintenanceDate
@@ -466,17 +381,13 @@ http://standards.iso.org/iso/19115/-3/mmi/1.0
   userDefinedMaintenanceFrequency
 http://standards.iso.org/iso/19115/-3/mpc/1.0
  MD_PortrayalCatalogueReference
-  <type>
   portrayalCatalogueCitation
 http://standards.iso.org/iso/19115/-3/mrc/1.0
  AbstractMD_ContentInformation
-  <type>
  MD_AttributeGroup
-  <type>
   attribute
   contentType
  MD_Band
-  <type>
   bandBoundaryDefinition
   bitsPerValue
   boundMax
@@ -502,26 +413,21 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
   transmittedPolarisation
   units
  MD_CoverageContentTypeCode
-  <type>
  MD_CoverageDescription
-  <type>
   attributeDescription
   attributeGroup
   processingLevelCode
   rangeElementDescription
  MD_FeatureCatalogueDescription
-  <type>
   complianceCode
   featureCatalogueCitation
   featureTypes
   includedWithDataset
   locale
  MD_FeatureTypeInfo
-  <type>
   featureInstanceCount
   featureTypeName
  MD_ImageDescription
-  <type>
   attributeDescription
   attributeGroup
   cameraCalibrationInformationAvailability
@@ -538,14 +444,11 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
   rangeElementDescription
   triangulationIndicator
  MD_ImagingConditionCode
-  <type>
  MD_RangeDimension
-  <type>
   description
   name
   sequenceIdentifier
  MD_SampleDimension
-  <type>
   bitsPerValue
   description
   maxValue
@@ -586,7 +489,6 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
   transmittedPolarisation
   units
  MI_BandDefinition
-  <type>
  MI_CoverageDescription
   attributeDescription
   attributeGroup
@@ -609,15 +511,12 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
   rangeElementDescription
   triangulationIndicator
  MI_RangeElementDescription
-  <type>
   definition
   name
   rangeElement
  MI_TransferFunctionTypeCode
-  <type>
 http://standards.iso.org/iso/19115/-3/mrd/1.0
  MD_DigitalTransferOptions
-  <type>
   distributionFormat
   offLine
   onLine
@@ -625,26 +524,22 @@ http://standards.iso.org/iso/19115/-3/mrd/1.0
   transferSize
   unitsOfDistribution
  MD_Distribution
-  <type>
   description
   distributionFormat
   distributor
   transferOptions
  MD_Distributor
-  <type>
   distributionOrderProcess
   distributorContact
   distributorFormat
   distributorTransferOptions
  MD_Format
-  <type>
   amendmentNumber
   fileDecompressionTechnique
   formatDistributor
   formatSpecificationCitation
   medium
  MD_Medium
-  <type>
   density
   densityUnits
   identifier
@@ -653,9 +548,7 @@ http://standards.iso.org/iso/19115/-3/mrd/1.0
   name
   volumes
  MD_MediumFormatCode
-  <type>
  MD_StandardOrderProcess
-  <type>
   fees
   orderOptions
   orderOptionsType
@@ -664,7 +557,6 @@ http://standards.iso.org/iso/19115/-3/mrd/1.0
   turnaround
 http://standards.iso.org/iso/19115/-3/mri/1.0
  AbstractMD_Identification
-  <type>
   abstract
   additionalDocumentation
   associatedResource
@@ -686,22 +578,18 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   temporalResolution
   topicCategory
  DS_AssociationTypeCode
-  <type>
  DS_InitiativeTypeCode
-  <type>
- MD_AggregateInformation
+ MD_AggregateInformation !other namespace
   associationType
   initiativeType
   metadataReference
   name
  MD_AssociatedResource
-  <type>
   associationType
   initiativeType
   metadataReference
   name
  MD_DataIdentification
-  <type>
   abstract
   additionalDocumentation
   associatedResource
@@ -727,29 +615,23 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   temporalResolution
   topicCategory
  MD_KeywordClass
-  <type>
   className
   conceptIdentifier
   ontology
  MD_KeywordTypeCode
-  <type>
  MD_Keywords
-  <type>
   keyword
   keywordClass
   thesaurusName
   type
  MD_RepresentativeFraction
-  <type>
   denominator
  MD_Resolution
-  <type>
   distance
   equivalentScale
   levelOfDetail
   vertical
  MD_Usage
-  <type>
   additionalDocumentation
   identifiedIssues
   response
@@ -757,7 +639,7 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   usageDateTime
   userContactInfo
   userDeterminedLimitations
- SV_ServiceIdentification
+ SV_ServiceIdentification !other namespace
   abstract
   additionalDocumentation
   associatedResource
@@ -780,11 +662,9 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   topicCategory
 http://standards.iso.org/iso/19115/-3/mrl/1.0
  LE_Algorithm
-  <type>
   citation
   description
  LE_NominalResolution
-  <type>
   groundResolution
   scanningResolution
  LE_ProcessStep
@@ -799,12 +679,10 @@ http://standards.iso.org/iso/19115/-3/mrl/1.0
   source
   stepDateTime
  LE_ProcessStepReport
-  <type>
   description
   fileType
   name
  LE_Processing
-  <type>
   algorithm
   documentation
   identifier
@@ -820,14 +698,12 @@ http://standards.iso.org/iso/19115/-3/mrl/1.0
   sourceSpatialResolution
   sourceStep
  LI_Lineage
-  <type>
   additionalDocumentation
   processStep
   scope
   source
   statement
  LI_ProcessStep
-  <type>
   description
   output
   processingInformation
@@ -839,7 +715,6 @@ http://standards.iso.org/iso/19115/-3/mrl/1.0
   source
   stepDateTime
  LI_Source
-  <type>
   description
   scope
   sourceCitation
@@ -849,33 +724,24 @@ http://standards.iso.org/iso/19115/-3/mrl/1.0
   sourceStep
 http://standards.iso.org/iso/19115/-3/mrs/1.0
  MD_ReferenceSystem
-  <type>
   referenceSystemIdentifier
 http://standards.iso.org/iso/19115/-3/msr/1.0
  AbstractMD_SpatialRepresentation
-  <type>
  AbstractMI_GeolocationInformation
-  <type>
   qualityInfo
  MD_CellGeometryCode
-  <type>
  MD_Dimension
-  <type>
   dimensionDescription
   dimensionName
   dimensionSize
   dimensionTitle
   resolution
  MD_DimensionNameTypeCode
-  <type>
  MD_GeometricObjectTypeCode
-  <type>
  MD_GeometricObjects
-  <type>
   geometricObjectCount
   geometricObjectType
  MD_Georectified
-  <type>
   axisDimensionProperties
   cellGeometry
   centrePoint
@@ -889,7 +755,6 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
   transformationDimensionMapping
   transformationParameterAvailability
  MD_Georeferenceable
-  <type>
   axisDimensionProperties
   cellGeometry
   controlPointAvailability
@@ -901,22 +766,17 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
   parameterCitation
   transformationParameterAvailability
  MD_GridSpatialRepresentation
-  <type>
   axisDimensionProperties
   cellGeometry
   numberOfDimensions
   transformationParameterAvailability
  MD_TopologyLevelCode
-  <type>
  MD_VectorSpatialRepresentation
-  <type>
   geometricObjects
   topologyLevel
  MI_GCP
-  <type>
   accuracyReport
  MI_GCPCollection
-  <type>
   collectionIdentification
   collectionName
   coordinateReferenceSystem
@@ -948,22 +808,17 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
   transformationParameterAvailability
 http://standards.iso.org/iso/19115/-3/srv/2.0
  DCPList
-  <type>
  SV_CoupledResource
-  <type>
   operation
   resource
   resourceReference
   scopedName
  SV_CouplingType
-  <type>
  SV_OperationChainMetadata
-  <type>
   description
   name
   operation
  SV_OperationMetadata
-  <type>
   connectPoint
   dependsOn
   DCP/distributedComputingPlatform
@@ -972,15 +827,12 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
   operationName
   parameters/parameter
  SV_Parameter
-  <type>
   description
   direction
   repeatability
   valueType
  SV_ParameterDirection
-  <type>
  SV_ServiceIdentification
-  <type>
   accessProperties
   containsChain
   containsOperations
@@ -993,149 +845,120 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
   serviceType
   serviceTypeVersion
 http://standards.iso.org/iso/19157/-2/dqc/1.0
- AbstractDQ_Completeness
+ AbstractDQ_Completeness !other namespace
   dateTime
- AbstractDQ_Element
+ AbstractDQ_Element !other namespace
   dateTime
- AbstractDQ_LogicalConsistency
+ AbstractDQ_LogicalConsistency !other namespace
   dateTime
- AbstractDQ_PositionalAccuracy
+ AbstractDQ_PositionalAccuracy !other namespace
   dateTime
- AbstractDQ_TemporalAccuracy
+ AbstractDQ_TemporalAccuracy !other namespace
   dateTime
- AbstractDQ_ThematicAccuracy
+ AbstractDQ_ThematicAccuracy !other namespace
   dateTime
- DQ_AbsoluteExternalPositionalAccuracy
+ DQ_AbsoluteExternalPositionalAccuracy !other namespace
   dateTime
- DQ_AccuracyOfATimeMeasurement
+ DQ_AccuracyOfATimeMeasurement !other namespace
   dateTime
- DQ_CompletenessCommission
+ DQ_CompletenessCommission !other namespace
   dateTime
- DQ_CompletenessOmission
+ DQ_CompletenessOmission !other namespace
   dateTime
- DQ_ConceptualConsistency
+ DQ_ConceptualConsistency !other namespace
   dateTime
- DQ_DomainConsistency
+ DQ_DomainConsistency !other namespace
   dateTime
- DQ_FormatConsistency
+ DQ_FormatConsistency !other namespace
   dateTime
- DQ_GriddedDataPositionalAccuracy
+ DQ_GriddedDataPositionalAccuracy !other namespace
   dateTime
- DQ_NonQuantitativeAttributeAccuracy
+ DQ_NonQuantitativeAttributeAccuracy !other namespace
   dateTime
- DQ_QuantitativeAttributeAccuracy
+ DQ_QuantitativeAttributeAccuracy !other namespace
   dateTime
- DQ_RelativeInternalPositionalAccuracy
+ DQ_RelativeInternalPositionalAccuracy !other namespace
   dateTime
- DQ_TemporalConsistency
+ DQ_TemporalConsistency !other namespace
   dateTime
- DQ_TemporalValidity
+ DQ_TemporalValidity !other namespace
   dateTime
- DQ_ThematicClassificationCorrectness
+ DQ_ThematicClassificationCorrectness !other namespace
   dateTime
- DQ_TopologicalConsistency
+ DQ_TopologicalConsistency !other namespace
   dateTime
- QE_Usability
+ QE_Usability !other namespace
   dateTime
 http://standards.iso.org/iso/19157/-2/mdq/1.0
  AbstractDQ_Completeness
-  <type>
   result
  AbstractDQ_Element
-  <type>
   result
  AbstractDQ_LogicalConsistency
-  <type>
   result
  AbstractDQ_PositionalAccuracy
-  <type>
   result
  AbstractDQ_Result
-  <type>
- AbstractDQ_TemporalAccuracy
+ AbstractDQ_TemporalAccuracy !other namespace
   result
  AbstractDQ_ThematicAccuracy
-  <type>
   result
  DQ_AbsoluteExternalPositionalAccuracy
-  <type>
   result
  DQ_AccuracyOfATimeMeasurement
-  <type>
   result
  DQ_CompletenessCommission
-  <type>
   result
  DQ_CompletenessOmission
-  <type>
   result
  DQ_ConceptualConsistency
-  <type>
   result
  DQ_ConformanceResult
-  <type>
   explanation
   specification
  DQ_DataQuality
-  <type>
   report
   scope
  DQ_DomainConsistency
-  <type>
   result
  DQ_EvaluationMethodTypeCode
-  <type>
  DQ_FormatConsistency
-  <type>
   result
  DQ_GriddedDataPositionalAccuracy
-  <type>
   result
- DQ_NonQuantitativeAttributeAccuracy
+ DQ_NonQuantitativeAttributeAccuracy !other namespace
   result
  DQ_QuantitativeAttributeAccuracy
-  <type>
   result
  DQ_QuantitativeResult
-  <type>
   value
   valueType/valueRecordType
   valueUnit
  DQ_RelativeInternalPositionalAccuracy
-  <type>
   result
  DQ_TemporalConsistency
-  <type>
   result
  DQ_TemporalValidity
-  <type>
   result
  DQ_ThematicClassificationCorrectness
-  <type>
   result
  DQ_TopologicalConsistency
-  <type>
   result
  QE_CoverageResult
-  <type>
   resultContentDescription
   resultFile
   resultFormat
   resultSpatialRepresentation
   spatialRepresentationType
- QE_Usability
+ QE_Usability !other namespace
   result
 http://www.isotc211.org/2005/gts
  TM_Duration
-  <type>
  TM_PeriodDuration
-  <type>
 http://www.opengis.net/gml/3.2
  TimeInstant
-  <type>
   timePosition
  TimePeriod
-  <type>
   begin
   beginPosition
   end
