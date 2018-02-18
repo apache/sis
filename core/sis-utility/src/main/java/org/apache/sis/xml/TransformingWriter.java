@@ -62,7 +62,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      * where legacy schemas had two distinct URIs: {@code "http://www.isotc211.org/2005/gmd"}
      * and {@code "http://standards.iso.org/iso/19115/-2/gmi/1.0"}.
      */
-    static final String FILENAME = "ImageryExtensions.lst";
+    static final String FILENAME = "ExportNames.lst";
 
     /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to legacy namespaces.
