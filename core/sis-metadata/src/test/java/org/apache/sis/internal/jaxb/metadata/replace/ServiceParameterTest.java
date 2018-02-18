@@ -110,6 +110,6 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
                 "  <srv:repeatability>\n" +
                 "    <gco:Boolean>false</gco:Boolean>\n" +
                 "  </srv:repeatability>\n" +
-                "</srv:SV_Parameter>\n", xml, "xlmns:*");
+                "</srv:SV_Parameter>\n", xml, "xmlns:*");
     }
 }
