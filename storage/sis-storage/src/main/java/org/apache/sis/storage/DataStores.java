@@ -16,7 +16,9 @@
  */
 package org.apache.sis.storage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -28,7 +30,8 @@ import org.apache.sis.internal.system.SystemListener;
  * but can also be any other objects documented in the {@link StorageConnector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -88,6 +91,35 @@ public final class DataStores extends Static {
      */
     public static Collection<DataStoreProvider> providers() {
         return registry().providers();
+    }
+
+    /**
+     * Returns the list of data store providers capable of opening the given input.
+     * Any provider causing an exception while probing the input is considered
+     * as unsupported.
+     *
+     * @param input data input, usually a StorageConnector, Path or URI to test.
+     * @return descriptions of compatible data stores.
+     *
+     * @since 1.0
+     */
+    public static Collection<DataStoreProvider> providers(Object input) {
+        final StorageConnector connector = (input instanceof StorageConnector) ?
+                (StorageConnector) input : new StorageConnector(input);
+
+        final List<DataStoreProvider> providers = new ArrayList<>();
+        for (DataStoreProvider provider : registry().providers()) {
+            try {
+                final ProbeResult result = provider.probeContent(connector);
+                if (result.isSupported()) {
+                    providers.add(provider);
+                }
+            } catch (DataStoreException ex) {
+                // could be caused for multiple reasons, we assume it does not
+                // support the given input.
+            }
+        }
+        return providers;
     }
 
     /**
