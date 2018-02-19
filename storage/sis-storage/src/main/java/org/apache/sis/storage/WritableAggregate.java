@@ -35,8 +35,8 @@ public interface WritableAggregate extends Aggregate {
      * The possible changes may include the followings but not only:
      * <ul>
      *  <li>types and properties names</li>
-     *  <li>{@link CoordinateReferenceSystem}</li>
-     *  <li>{@link Metadata}</li>
+     *  <li>{@link org.opengis.referencing.crs.CoordinateReferenceSystem}</li>
+     *  <li>{@link org.opengis.metadata.Metadata}</li>
      * </ul>
      *
      * <div class="note"><b>Warning:</b>
