@@ -42,6 +42,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.UseLegacyMetadata;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -116,7 +117,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -133,6 +134,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
     org.apache.sis.referencing.datum.DefaultPrimeMeridian.class,
     org.apache.sis.referencing.cs.AbstractCS.class
 })
+@UseLegacyMetadata
 public class AbstractIdentifiedObject extends FormattableObject implements IdentifiedObject,
         LenientComparable, Deprecable, Serializable
 {

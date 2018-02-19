@@ -91,15 +91,15 @@ public final class Context extends MarshalContext {
     public static final int SUBSTITUTE_MIMETYPE = 0x10;
 
     /**
-     * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
-     */
-    private static final int CLEAR_SEMAPHORE = 0x20;
-
-    /**
      * Whether we are (un)marshalling legacy metadata as defined in 2003 model (ISO 19139:2007).
      * If this flag is not set, then we assume latest metadata as defined in 2014 model (ISO 19115-3).
      */
-    public static final int LEGACY_METADATA = 0x40;
+    public static final int LEGACY_METADATA = 0x20;
+
+    /**
+     * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
+     */
+    private static final int CLEAR_SEMAPHORE = 0x40;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a

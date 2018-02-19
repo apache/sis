@@ -69,7 +69,10 @@ import static org.junit.Assert.*;
  *
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
- * @since   1.0
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
+ *
+ * @since 1.0
  * @module
  */
 public final class MarshallingTest extends XMLTestCase implements WarningListener<Object> {
@@ -303,7 +306,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
                                              new Anchor(new URI("http://example.com"), "alternateTitle")));
         cit.getDates().add(new DefaultCitationDate(new Date(), DateType.CREATION));
         dataId.setCitation(cit);
-        dataId.setTemporalResolutions(Collections.emptySet());              // TODO
+        dataId.setTemporalResolutions(Collections.emptySet());              // TODO: depends on sis-temporal
         final Collection<MaintenanceInformation> resourceMaintenances;
         {
             // Resource maintenance
@@ -408,7 +411,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             final DefaultCoverageDescription coverageDescription;
             {
                 coverageDescription = new DefaultCoverageDescription();
-                // Attribute description TODO: this doesn't work properly.
+                // Attribute description
                 final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
                 final Map<CharSequence,Class<?>> members = new LinkedHashMap<>();
                 members.put("city",      String.class);
@@ -451,9 +454,12 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
 
     /**
      * Tests marshalling of an ISO 19139:2007 document (based on ISO 19115:2003 model).
+     * Current implementation merely tests that marshalling does not produce exception.
      *
      * @throws URISyntaxException if an error occurred while creating the metadata object.
      * @throws JAXBException if an error occurred while marshalling the document.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
      */
     @Test
     public void testLegacySchema() throws URISyntaxException, JAXBException {
@@ -465,9 +471,12 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
 
     /**
      * Tests marshalling of an ISO 19115-3 document (based on ISO 19115:2014 model).
+     * Current implementation merely tests that marshalling does not produce exception.
      *
      * @throws URISyntaxException if an error occurred while creating the metadata object.
      * @throws JAXBException if an error occurred while marshalling the document.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
      */
     @Test
     public void testCurrentSchema() throws JAXBException, URISyntaxException {

@@ -260,7 +260,7 @@ abstract class Pooled {
          *   1: namespace replacement needed for GML
          *   2: namespace replacement needed for metadata.
          */
-        int combine = 0;
+        int combine = (specificBitMasks() & Context.LEGACY_METADATA) != 0 ? 2 : 0;
         if (versionGML      == null ? byDefault : versionGML     .compareTo(LegacyNamespaces.VERSION_3_2_1) < 0) combine  = 1;
         if (versionMetadata == null ? byDefault : versionMetadata.compareTo(LegacyNamespaces.VERSION_2014)  < 0) combine |= 2;
         switch (combine) {
@@ -515,6 +515,20 @@ abstract class Pooled {
     public abstract ValidationEventHandler getEventHandler() throws JAXBException;
 
     /**
+     * Returns bit masks specific to the object being marshalled. This mask will be combined with the
+     * bit masks managed by the {@link Pooled} base class. This is used mostly for mandating legacy
+     * metadata format (ISO 19139:2007) for some object to marshal.
+     *
+     * <p>This is a hopefully temporary hack for marshalling metadata in GML.
+     * May be deleted if we implement SIS-401.</p>
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-401">SIS-401</a>
+     */
+    int specificBitMasks() {
+        return 0;
+    }
+
+    /**
      * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling
      * operation. Must be followed by a call to {@code finish()} in a {@code finally} block.
      *
@@ -530,6 +544,7 @@ abstract class Pooled {
      * @see Context#finish()
      */
     final Context begin() {
-        return new Context(bitMasks, locale, timezone, schemas, versionGML, versionMetadata, resolver, converter, warningListener);
+        return new Context(bitMasks | specificBitMasks(), locale, timezone,
+                schemas, versionGML, versionMetadata, resolver, converter, warningListener);
     }
 }
