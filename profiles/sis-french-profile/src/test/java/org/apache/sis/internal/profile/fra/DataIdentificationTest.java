@@ -17,8 +17,8 @@
 package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.JAXBException;
-import org.apache.sis.xml.XML;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -29,17 +29,20 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests (un)marshalling of French profile of data identification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.4
  * @module
  */
-public final strictfp class DataIdentificationTest extends TestCase {
+public final strictfp class DataIdentificationTest extends XMLTestCase {
     /**
      * Tests marshalling and unmarshalling of a XML fragment.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-404">SIS-404</a>
      */
     @Test
+    @Ignore("Verify if we should discontinue this profile.")
     public void testMarshalling() throws JAXBException {
         final String xml =
                 "<fra:FRA_DataIdentification xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"" +
@@ -61,12 +64,11 @@ public final strictfp class DataIdentificationTest extends TestCase {
                 "  </fra:relatedCitation>\n" +
                 "</fra:FRA_DataIdentification>";
 
-        final Object id = XML.unmarshal(xml);
-        assertInstanceOf("Expected an AFNOR instance.", DataIdentification.class, id);
-        assertTitleEquals("citation", "Main documentation.", ((DataIdentification) id).getCitation());
-        assertTitleEquals("relatedCitations", "Related documentation.", getSingleton(((DataIdentification) id).getRelatedCitations()));
+        final DataIdentification id = unmarshal(DataIdentification.class, xml);
+        assertTitleEquals("citation", "Main documentation.", id.getCitation());
+        assertTitleEquals("relatedCitations", "Related documentation.", getSingleton(id.getRelatedCitations()));
 
-        final String actual = XML.marshal(id);
+        final String actual = marshal(id, VERSION_2007);
         assertXmlEquals(xml, actual, "xmlns:*");
     }
 }
