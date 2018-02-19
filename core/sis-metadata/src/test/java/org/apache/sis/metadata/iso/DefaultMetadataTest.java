@@ -61,6 +61,16 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
 public final strictfp class DefaultMetadataTest extends XMLTestCase implements WarningListener<Object> {
     /**
+     * A flag for tracing workarounds for allowing some tests to pass despite regression.
+     * This boolean should be set to {@code false} and removed after the following issues has been fixed:
+     *
+     * <ul>
+     *   <li><a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a></li>
+     * </ul>
+     */
+    public static final boolean REGRESSION = true;
+
+    /**
      * The resource key for the message of the warning that occurred while unmarshalling a XML fragment,
      * or {@code null} if none.
      */
