@@ -605,6 +605,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @see #getLanguages()
      * @see org.opengis.metadata.identification.DataIdentification#getCharacterSets()
      * @see Charset#forName(String)
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a>
      *
      * @since 0.5
      */

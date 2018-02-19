@@ -79,7 +79,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     protected abstract L unwrap(final N container);
 
     /**
-     * Update a new value with the given legacy value.
+     * Updates a new value with the given legacy value.
      *
      * @param  container  the new value to be used as a container for the old value.
      * @param  value      the value to update in the container.

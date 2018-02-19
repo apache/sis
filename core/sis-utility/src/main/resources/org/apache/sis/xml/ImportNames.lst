@@ -32,12 +32,9 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   series
   title
  CI_Contact
-  address
   contactInstructions
   contactType
   hoursOfService
-  onlineResource
-  phone
  CI_Date
   date
   dateType
@@ -634,6 +631,7 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   equivalentScale
   levelOfDetail
   vertical
+ MD_TopicCategoryCode
  MD_Usage
   additionalDocumentation
   identifiedIssues

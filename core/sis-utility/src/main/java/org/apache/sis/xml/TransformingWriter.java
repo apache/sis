@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.ArrayDeque;
@@ -37,6 +38,8 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -107,8 +110,39 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     private static final Map<QName, Set<QName>> ELEMENTS_TO_REORDER;
     static {
         final Map<QName, Set<QName>> m = new HashMap<>(4);
-        m.put(new QName(Namespaces.SRV, "couplingType", "srv"), Collections.singleton(new QName(Namespaces.SRV, "coupledResource", "srv")));
-        m.put(new QName(Namespaces.SRV, "connectPoint", "srv"), Collections.singleton(new QName(Namespaces.SRV, "parameter",       "srv")));
+        m.put(new QName(Namespaces.SRV, "couplingType",  "srv"), Collections.singleton(new QName(Namespaces.SRV, "coupledResource", "srv")));
+        m.put(new QName(Namespaces.SRV, "connectPoint",  "srv"), Collections.singleton(new QName(Namespaces.SRV, "parameter",       "srv")));
+        /*
+         * ISO 19139:2997 declared 'topicCategory' and 'extent' in MD_DataIdentification subclass, while ISO 19115-3
+         * moves them to the MD_Identification parent class. In order to write topicCategory at location expected by
+         * legacy metadata, we need to skip all properties declared after 'topicCategory' in that parent class.
+         */
+        QName first;
+        HashSet<QName> toSkip = new HashSet<>(Arrays.asList(
+            first = new QName(      Namespaces.MRI, "extent",                  "mri"),
+                    new QName(      Namespaces.MRI, "additionalDocumentation", "mri"),
+                    new QName(      Namespaces.MRI, "processingLevel",         "mri"),
+                    new QName(      Namespaces.MRI, "resourceMaintenance",     "mri"),
+                    new QName(      Namespaces.MRI, "graphicOverview",         "mri"),
+                    new QName(      Namespaces.MRI, "resourceFormat",          "mri"),
+                    new QName(      Namespaces.MRI, "descriptiveKeywords",     "mri"),
+                    new QName(      Namespaces.MRI, "resourceSpecificUsage",   "mri"),
+                    new QName(      Namespaces.MRI, "resourceConstraints",     "mri"),
+                    new QName(      Namespaces.MRI, "associatedResource",      "mri"),
+                    new QName(LegacyNamespaces.GMD, "aggregationInfo",         "gmd"),
+                    new QName(LegacyNamespaces.GMD, "language",                "gmd"),
+                    new QName(LegacyNamespaces.GMD, "characterSet",            "gmd"),
+                    new QName(      Namespaces.MRI, "defaultLocale",           "mri"),
+                    new QName(      Namespaces.MRI, "otherLocale",             "mri")));
+        /*
+         * The 'extent' element is right after 'topicCategory' in ISO 19115-3:2016, but there was an
+         * 'environmentDescription' between them in legacy ISO 19139:2007. So we add the later in the
+         * list of elements to skip for 'extent'.
+         */
+        m.put(new QName(Namespaces.MRI, "topicCategory", "mri"), CollectionsExt.clone(toSkip));
+        toSkip.remove(first);
+        toSkip.add(new QName(Namespaces.MRI, "environmentDescription", "mri"));
+        m.put(first, toSkip);                                                     // For <mri:extent>
         ELEMENTS_TO_REORDER = m;
     }
 
@@ -360,8 +394,17 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                     }
                 } else if (subtreeNesting == 0) {
                     if (toSkip.contains(originalName)) {
-                        subtreeRootName = originalName;                 // Defer until after that element.
+                        /*
+                         * Found an element to skip. That element will be written immediately (except if
+                         * it is another element which needs reordering), and the elements currently in
+                         * the 'deferred' list will continue to be deferred at least until we reached the
+                         * end of the current element. It may happen that the current element is itself
+                         * an element that needs reordering (i.e. we may have nested reordered elements),
+                         * in which case we reset the 'isDeferring' flag to 'true'.
+                         */
+                        subtreeRootName = originalName;
                         subtreeNesting = 1;
+                        isDeferring = ELEMENTS_TO_REORDER.containsKey(originalName);
                     } else {
                         writeDeferred();                                // End of deferring.
                     }
