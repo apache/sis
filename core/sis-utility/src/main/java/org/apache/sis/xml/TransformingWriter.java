@@ -175,9 +175,11 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      * to newer standards. This is a FIFO (First-In-First-Out) queue. Namespaces are the exported ones
      * (the ones after conversions from JAXB to the XML document to write).
      *
+     * <p>Elements are instance of {@link XMLEvent} or {@link NewDeferred}.</p>
+     *
      * @see #ELEMENTS_TO_REORDER
      */
-    private final Queue<XMLEvent> deferred;
+    private final Queue<Object> deferred;
 
     /**
      * If non-null, elements to skip before we can write the {@linkplain #deferred} events.
@@ -354,7 +356,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                     if (originalName.equals(subtreeRootName)) {
                         subtreeNesting--;                       // May reach 0 but be followed by another element to skip.
                     } else if (subtreeNesting == 0) {
-                        writeDeferred();                        // About to exit the parent element containing deferred element.
+                        writeDeferred(null);                    // About to exit the parent element containing deferred element.
                     }
                 }
                 close(originalName);                            // Must be invoked only after 'convert(QName)'
@@ -393,7 +395,13 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                         isDeferring = true;
                     }
                 } else if (subtreeNesting == 0) {
-                    if (toSkip.contains(originalName)) {
+                    /*
+                     * If the current element should not be skipped (toSkip.contains(…) = false), then
+                     * we need to write all deferred elements. Usually 'writeDeferred(…) returns false,
+                     * so the block inside the 'if' is executed only if 'toSkip.contains(…)' is true.
+                     * But in few cases, we still need to be in "skipping" state after 'writeDeferred'.
+                     */
+                    if (toSkip.contains(originalName) || writeDeferred(originalName)) {
                         /*
                          * Found an element to skip. That element will be written immediately (except if
                          * it is another element which needs reordering), and the elements currently in
@@ -404,9 +412,11 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                          */
                         subtreeRootName = originalName;
                         subtreeNesting = 1;
-                        isDeferring = ELEMENTS_TO_REORDER.containsKey(originalName);
-                    } else {
-                        writeDeferred();                                // End of deferring.
+                        final Set<QName> interleaved = ELEMENTS_TO_REORDER.get(originalName);
+                        if (interleaved != null) {
+                            isDeferring = true;
+                            deferred.add(new NewDeferred(interleaved));
+                        }
                     }
                 } else if (originalName.equals(subtreeRootName)) {
                     subtreeNesting++;
@@ -423,17 +433,58 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     }
 
     /**
+     * A sentinel value in the {@link TransformingWriter#deferred} queue meaning that after reaching this point,
+     * we need to reevaluate if the remaining elements should be written immediately of deferred again.
+     * This happen when some elements to move are interleaved. For example in {@code MD_DataIdentification}:
+     *
+     * <ol>
+     *   <li>{@code topicCategory} needs to move before {@code environmentDescription}</li>
+     *   <li>{@code extent} needs to move before {@code supplementalInformation}</li>
+     *   <li>{@code graphicOverviews}</li>
+     *   <li>{@code resourceFormats}</li>
+     *   <li><i>etc.</i>
+     *   <li>{@code environmentDescription}</li>
+     *   <li>{@code supplementalInformation}</li>
+     * </ol>
+     *
+     * This class is for handling the {@code extent} case in such scenario.
+     */
+    private static final class NewDeferred {
+        /** The value to assign to {@link TransformingWriter#deferred} after we reach this point. */
+        final Set<QName> toSkip;
+
+        /** Creates a new sentinel value for a reevaluation point. */
+        NewDeferred(final Set<QName> toSkip) {
+            this.toSkip = toSkip;
+        }
+    }
+
+    /**
      * Writes immediately all elements that were deferred. This happen because the next {@link StartElement}
      * to write should be after the deferred element, or because we are about to exit the parent element that
      * contains the deferred element, or because {@link #flush()} has been invoked.
      *
+     * @param  element  the {@link StartElement} element name, or {@code null} for other events.
+     * @return {@code true} if the given element starts a new subtree to skip.
+     *
      * @see #ELEMENTS_TO_REORDER
      */
-    private void writeDeferred() throws XMLStreamException {
+    private boolean writeDeferred(final QName element) throws XMLStreamException {
         subtreeRootName = null;
         toSkip = null;
-        XMLEvent v;
-        while ((v = deferred.poll()) != null) out.add(v);
+        Object v;
+        while ((v = deferred.poll()) != null) {
+            if (!(v instanceof NewDeferred)) {
+                out.add((XMLEvent) v);
+            } else if (element != null) {
+                final Set<QName> s = ((NewDeferred) v).toSkip;
+                if (s.contains(element)) {
+                    toSkip = s;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -552,7 +603,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      */
     @Override
     public void flush() throws XMLStreamException {
-        writeDeferred();
+        writeDeferred(null);
         out.flush();
     }
 
