@@ -29,6 +29,7 @@ import java.io.LineNumberReader;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -138,7 +139,7 @@ abstract class Transformer {
 
     /**
      * Properties of the last outer elements, or {@code null} if not yet determined.
-     * If non-empty, this is one of the values got from the map given in argument to {@link #open(QName, Map)}.
+     * If non-empty, this is one of the values got from the map given in argument to {@link #open(QName)}.
      */
     private Map<String,String> outerElementProperties;
 
@@ -149,10 +150,19 @@ abstract class Transformer {
     final List<Attribute> renamedAttributes;
 
     /**
+     * The namespaces associated to prefixes in the source. When unmarshalling, this is for the namespaces in
+     * the source XML document (e.g. using legacy ISO 19139:2007 standard). When marshalling, this is for the
+     * namespaces in the JAXB annotations (e.g. using newer ISO 19115-3 standard).  This is used for handling
+     * {@code xsi:type} attribute values.
+     */
+    private final Map<String,String> namespaces;
+
+    /**
      * Creates a new XML reader or writer.
      */
     Transformer(final TransformVersion version) {
         this.version           = version;
+        namespaces             = new HashMap<>();
         outerElements          = new ArrayList<>();
         renamedAttributes      = new ArrayList<>();
         outerElementProperties = Collections.emptyMap();
@@ -276,6 +286,15 @@ abstract class Transformer {
     }
 
     /**
+     * Notifies that a new namespace is declared in the source. When unmarshalling, this is for a namespace
+     * in the source XML document (e.g. using legacy ISO 19139:2007 standard). When marshalling, this is for
+     * a namespaces in the JAXB annotations (e.g. using newer ISO 19115-3 standard).
+     */
+    final void notify(final Namespace namespace) {
+        namespaces.put(namespace.getPrefix(), namespace.getNamespaceURI());
+    }
+
+    /**
      * Returns a snapshot of {@link #renamedAttributes} list and clears the later.
      */
     final List<Attribute> attributes() {
@@ -288,6 +307,53 @@ abstract class Transformer {
                      break;
         }
         return attributes;
+    }
+
+    /**
+     * Imports or exports an attribute read or write from/to the XML document.
+     * If there is no name change, then this method returns the given instance as-is.
+     * This method performs a special check for the {@code "xsi:type"} attribute:
+     * its value is parsed as a name and converted.
+     */
+    final Attribute convert(Attribute attribute) throws XMLStreamException {
+        final QName originalName = attribute.getName();
+        if ("type".equals(originalName.getLocalPart()) && Namespaces.XSI.equals(originalName.getNamespaceURI())) {
+            /*
+             * In the special case of "xsi:type", do not convert the attribute name.
+             * Instead, parse and convert the attribute value.
+             */
+            final String value = attribute.getValue();
+            if (value != null) {
+                final int s = value.indexOf(':');
+                if (s >= 0) {
+                    String prefix = value.substring(0, s);
+                    String ns = namespaces.get(prefix);
+                    if (ns != null) {
+                        String localPart = value.substring(s+1);
+                        final Map<String,String> renaming = renamingMap().get(localPart);
+                        if (renaming != null) {
+                            QName name = new QName(ns, localPart, prefix);
+                            final Map<String,String> currentMap = outerElementProperties;
+                            outerElementProperties = renaming;
+                            name = convert(name);
+                            outerElementProperties = currentMap;
+                            prefix    = name.getPrefix();
+                            localPart = name.getLocalPart();
+                            final String exported = prefix + ':' + localPart;
+                            if (!exported.equals(value)) {
+                                return new TransformedEvent.TypeAttr(attribute, originalName, exported);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {    // For all attributes other than "xsi:type", convert the attribute name.
+            final QName name = convert(originalName);
+            if (name != originalName) {
+                attribute = new TransformedEvent.Attr(attribute, name);
+            }
+        }
+        return attribute;
     }
 
     /**
@@ -317,14 +383,13 @@ abstract class Transformer {
     /**
      * Notifies that we are opening an element of the given name.
      *
-     * @param  name        element name as declared in JAXB annotations.
-     * @param  namespaces  namespaces map loaded by {@link #load(String, int)}.
+     * @param  name  element name as declared in JAXB annotations.
      */
-    final void open(final QName name, final Map<String, Map<String,String>> namespaces) {
+    final void open(final QName name) {
         final String localPart = name.getLocalPart();
         if (isTypeElement(localPart)) {
             outerElements.add(name);
-            outerElementProperties = namespaces.getOrDefault(localPart, Collections.emptyMap());
+            outerElementProperties = renamingMap().getOrDefault(localPart, Collections.emptyMap());
         }
     }
 
@@ -333,17 +398,16 @@ abstract class Transformer {
      * with a matching name. It should be the last element on the list in a well-formed XML, but we loop in
      * the list anyway as a safety.
      *
-     * @param  name        element name as declared in JAXB annotations.
-     * @param  namespaces  namespaces map loaded by {@link #load(String, int)}.
+     * @param  name  element name as declared in JAXB annotations.
      */
-    final void close(final QName name, final Map<String, Map<String,String>> namespaces) {
+    final void close(final QName name) {
         if (isTypeElement(name.getLocalPart())) {
             outerElementProperties = null;
             for (int i=outerElements.size(); --i >= 0;) {
                 if (name.equals(outerElements.get(i))) {
                     outerElements.remove(i);
                     final String parent = (--i >= 0) ? outerElements.get(i).getLocalPart() : null;
-                    outerElementProperties = namespaces.getOrDefault(parent, Collections.emptyMap());
+                    outerElementProperties = renamingMap().getOrDefault(parent, Collections.emptyMap());
                     break;
                 }
             }
@@ -389,6 +453,12 @@ abstract class Transformer {
         }
         return name;
     }
+
+    /**
+     * Returns the map loaded by {@link #load(String, int)}.
+     * This is a static field in the {@link TransformingReader} or {@link TransformingWriter} subclass.
+     */
+    abstract Map<String, Map<String,String>> renamingMap();
 
     /**
      * Returns the new namespace for elements (types and properties) in the given namespace.

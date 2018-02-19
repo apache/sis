@@ -128,15 +128,18 @@ http://standards.iso.org/iso/19115/-3/gex/1.0
   verticalCRS
 http://standards.iso.org/iso/19115/-3/lan/1.0
  CountryCode
+ Country_PropertyType
  LanguageCode
+ LanguageCode_PropertyType
  LocalisedCharacterString
  MD_CharacterSetCode
+ PT_FreeText_PropertyType
+ PT_FreeText
+  textGroup
  PT_Locale
   characterEncoding
   country
   language
- textGroup
-  <type>
 http://standards.iso.org/iso/19115/-3/mac/1.0
  MI_AcquisitionInformation
   acquisitionPlan
@@ -915,6 +918,7 @@ http://standards.iso.org/iso/19157/-2/mdq/1.0
   result
  DQ_ConformanceResult
   explanation
+  pass
   specification
  DQ_DataQuality
   report

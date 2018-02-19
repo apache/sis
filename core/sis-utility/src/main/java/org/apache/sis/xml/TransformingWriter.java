@@ -178,6 +178,15 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     }
 
     /**
+     * Returns the map loaded by {@link #load(String, int)}.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Map<String, Map<String,String>> renamingMap() {
+        return NAMESPACES;
+    }
+
+    /**
      * Returns the old namespace for elements (types and properties) in the given namespace.
      * This method is used only for default relocations, i.e. the fallback to apply when no
      * explicit rule has been found.
@@ -220,19 +229,6 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     }
 
     /**
-     * Returns the attribute to write in the XML document.
-     * If there is no name change, then this method returns the given instance as-is.
-     */
-    private Attribute export(Attribute attribute) throws XMLStreamException {
-        final QName originalName = attribute.getName();
-        final QName name = convert(originalName);
-        if (name != originalName) {
-            attribute = new TransformedEvent.Attr(attribute, name);
-        }
-        return attribute;
-    }
-
-    /**
      * Returns the namespace to write in the XML document. This may imply a prefix change.
      * If there is no namespace change, then this method returns the given instance as-is.
      * To test if the returned namespace is a new one, callers should check if the size of
@@ -241,6 +237,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      * @param  namespace  the namespace to export.
      */
     private Namespace exportIfNew(final Namespace namespace) {
+        notify(namespace);
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
             final String exported = relocate(removeTrailingSlash(uri));
@@ -300,7 +297,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     public void add(XMLEvent event) throws XMLStreamException {
         switch (event.getEventType()) {
             case ATTRIBUTE: {
-                event = export((Attribute) event);
+                event = convert((Attribute) event);
                 break;
             }
             case NAMESPACE: {
@@ -326,19 +323,19 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                         writeDeferred();                        // About to exit the parent element containing deferred element.
                     }
                 }
-                close(originalName, NAMESPACES);                // Must be invoked only after 'convert(QName)'
+                close(originalName);                            // Must be invoked only after 'convert(QName)'
                 break;
             }
             case START_ELEMENT: {
                 uniqueNamespaces.clear();                       // Discard entries created by NAMESPACE events.
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                open(originalName, NAMESPACES);                 // Must be invoked before 'convert(QName)'.
+                open(originalName);                             // Must be invoked before 'convert(QName)'.
                 final QName name = convert(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
                     final Attribute a = it.next();
-                    final Attribute ae = export(a);
+                    final Attribute ae = convert(a);
                     changed |= (a != ae);
                     renamedAttributes.add(ae);
                 }
