@@ -83,10 +83,9 @@ import org.apache.sis.internal.util.CollectionsExt;
      * and an "extent" attribute before "supplementalInformation". In ISO 19115:2014 revision,
      * those attributes moved to the parent class. Apache SIS 1.0 aligns itself on the latest
      * standard, but the consequence is that attribute order is wrong when marshalling an ISO
-     * 19139:2007 document. We could workaround by defining private attributes  (experimented
-     * on commit 72d5b788703854b64d6be8eb57ba762afdfb0197), but it confuses PropertyAccessor.
-     * We choose to avoid this complication since it affects only marshalling in legacy format
-     * and we hope that most metadata readers are tolerant to attributes in a different order.
+     * 19139:2007 document.  We could workaround by defining private methods, but it confuses
+     * PropertyAccessor. We choose to avoid this complication in this class and handle element
+     * reordering in org.apache.sis.xml.TransformingWriter instead.
      */
 })
 @XmlRootElement(name = "MD_DataIdentification")

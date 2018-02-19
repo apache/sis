@@ -22,13 +22,18 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.AssociatedResource;
+import org.opengis.metadata.identification.AssociationType;
+import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.code.DS_AssociationTypeCode;
+import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
 
 
 /**
@@ -69,7 +74,8 @@ import org.apache.sis.internal.metadata.Dependencies;
 @XmlType(name = "MD_AggregateInformation_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",
-    // "associationType" and "initiativeType" will be written by parent class.
+    "association",                  // Actually "associationType", in replacement of the one defined in parent class.
+    "initiative"                    // Actually "initiativeType", ibid.
 })
 @XmlRootElement(name = "MD_AggregateInformation", namespace = LegacyNamespaces.GMD)
 public class DefaultAggregateInformation extends DefaultAssociatedResource implements AggregateInformation {
@@ -214,5 +220,54 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
                 it.remove();
             }
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    /**
+     * For (un)marshalling the {@code associationType} element at the location expected by ISO 19139:2007 schemas.
+     * We do not rely on {@code org.apache.sis.xml.TransformingWriter} reordering mechanism because this element
+     * is interleaved with other element to reorder (namely {@code "topicCategory"} and {@code "extent"}), and
+     * expanding {@code TransformingWriter} to handle those cases would be complicated.
+     */
+    @XmlElement(name = "associationType")
+    @XmlJavaTypeAdapter(DS_AssociationTypeCode.class)
+    private AssociationType getAssociation() {
+        return getAssociationType();
+    }
+
+    /** Must be declared together with {@link #getAssociation()}. */
+    @SuppressWarnings("unused")
+    private void setAssociation(final AssociationType newValue) {
+        setAssociationType(newValue);
+    }
+
+    /**
+     * For (un)marshalling the {@code initiativeType} element at the location expected by ISO 19139:2007 schemas.
+     * See {@link #getAssociation()} for more explanation.
+     */
+    @XmlElement(name = "initiativeType")
+    @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class)
+    private InitiativeType getInitiative() {
+        return getInitiativeType();
+    }
+
+    /** Must be declared together with {@link #getInitiative()}. */
+    @SuppressWarnings("unused")
+    private void setInitiative(final InitiativeType newValue) {
+        setInitiativeType(newValue);
     }
 }

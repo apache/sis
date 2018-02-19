@@ -656,6 +656,18 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns a clone of the given set. This method is only intended to avoid the "unchecked cast" warning.
+     *
+     * @param  <E>  type of elements in the set.
+     * @param  set  the set to clone.
+     * @return a clone of the given set.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> HashSet<E> clone(final HashSet<E> set) {
+        return (HashSet<E>) set.clone();
+    }
+
+    /**
      * Returns the given value as a collection. Special cases:
      *
      * <ul>
