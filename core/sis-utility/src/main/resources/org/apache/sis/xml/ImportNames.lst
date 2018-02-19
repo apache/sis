@@ -580,8 +580,6 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
  DS_AssociationTypeCode
  DS_InitiativeTypeCode
  MD_AggregateInformation !other namespace
-  associationType
-  initiativeType
   metadataReference
   name
  MD_AssociatedResource

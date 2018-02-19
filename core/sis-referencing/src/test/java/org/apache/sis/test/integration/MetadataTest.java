@@ -304,6 +304,13 @@ public strictfp class MetadataTest extends XMLTestCase {
                         new DefaultVerticalExtent(Double.NaN, Double.NaN, vcrs),
                         temporal)));
             }
+            /*
+             * Data identification / Environmental description and Supplemental information.
+             */
+            {
+                identification.setEnvironmentDescription (new SimpleInternationalString("Possibly cloudy."));
+                identification.setSupplementalInformation(new SimpleInternationalString("This metadata has been modified with dummy values."));
+            }
             metadata.setIdentificationInfo(singleton(identification));
         }
         /*
