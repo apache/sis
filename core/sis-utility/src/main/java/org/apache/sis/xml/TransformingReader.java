@@ -65,7 +65,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * <ul>
      *   <li>Keys are XML names of types, ignoring {@code "_TYPE"} suffix (e.g. {@code "CI_Citation"})</li>
      *   <li>Values are maps where:<ul>
-     *     <li>Keys are XML names of properties (e.g. {@code "title"}) or {@value #TYPE_KEY}</li>
+     *     <li>Keys are XML names of properties (e.g. {@code "title"}).</li>
      *     <li>Values are either:<ul>
      *       <li>Namespace URI if {@link #isNamespace(String)} returns {@code true} for that value.</li>
      *       <li>New name of the element otherwise. In such case, the map must be queried again with
@@ -222,7 +222,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
             case START_ELEMENT: {
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                open(originalName, NAMESPACES);                 // Must be invoked before 'convert(QName)'.
+                open(originalName);                         // Must be invoked before 'convert(QName)'.
                 final QName name = convert(originalName);
                 boolean changed = name != originalName;
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
@@ -249,7 +249,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 if (namespaces != null) {
                     event = new TransformedEvent.End(e, name, namespaces);
                 }
-                close(originalName, NAMESPACES);            // Must be invoked only after 'convert(QName)'
+                close(originalName);                    // Must be invoked only after 'convert(QName)'
                 break;
             }
         }
@@ -257,16 +257,12 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
-     * Imports an attribute read from the XML document.
-     * If there is no name change, then this method returns the given instance as-is.
+     * Returns the map loaded by {@link #load(String, int)}.
      */
-    private Attribute convert(Attribute attribute) throws XMLStreamException {
-        final QName originalName = attribute.getName();
-        final QName name = convert(originalName);
-        if (name != originalName) {
-            attribute = new TransformedEvent.Attr(attribute, name);
-        }
-        return attribute;
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Map<String, Map<String,String>> renamingMap() {
+        return NAMESPACES;
     }
 
     /**
@@ -308,6 +304,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * @param  newURI     the new URI for {@code oldURI}, or {@code null} if {@code newURI} is null.
      */
     private Namespace importNS(final Namespace namespace, final String oldURI, final String newURI) {
+        notify(namespace);
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
             uri = removeTrailingSlash(uri);

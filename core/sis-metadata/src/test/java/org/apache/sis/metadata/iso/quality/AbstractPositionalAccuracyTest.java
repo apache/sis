@@ -18,11 +18,13 @@ package org.apache.sis.metadata.iso.quality;
 
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.FreeTextMarshallingTest;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -51,10 +53,11 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      * @see FreeTextMarshallingTest
      */
     @Test
+    @Ignore("Depends on SIS-394")
     public void testXML() throws JAXBException {
         roundtrip("PositionalAccuracy.xml", VERSION_2014);
     }
@@ -63,6 +66,9 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      * Tests the (un)marshalling of a text group from/to legacy ISO 19139:2007 schema.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
+     *
+     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-399">SIS-399</a>
      */
     @Test
     public void testLegacyXML() throws JAXBException {
@@ -87,8 +93,9 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
          * Opportunist test. While it was not the purpose of this test, the above metadata
          * needs to contain a "result" element in order to pass XML validation test.
          */
-        assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class,
-                getSingleton(metadata.getResults()));
+        final Result result = getSingleton(metadata.getResults());
+        assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class, result);
+        assertEquals("result.pass", Boolean.TRUE, ((DefaultConformanceResult) result).pass());
         /*
          * Marshalling: ensure that we didn't lost any information.
          */

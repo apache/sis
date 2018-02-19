@@ -157,7 +157,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
      * Wrapper over an attribute emitted during the reading or writing of an XML document.
      * This wrapper is used for changing the namespace of the attribute.
      */
-    static final class Attr extends TransformedEvent<Attribute> implements Attribute {
+    static class Attr extends TransformedEvent<Attribute> implements Attribute {
         /** Wraps the given event with a different name. */
         Attr(final Attribute event, final QName name) {
             super(event, name);
@@ -177,6 +177,22 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
         @Override void write(final Appendable out) throws IOException {
             name(out).append("=\"").append(event.getValue()).append('"');
         }
+    }
+
+    /**
+     * The attribute for {@code "xsi:type"}.
+     */
+    static final class TypeAttr extends Attr {
+        /** The attribute value. */
+        private final String value;
+
+        /** Wraps the given event with a different name. */
+        TypeAttr(final Attribute event, final QName name, final String value) {
+            super(event, name);
+            this.value = value;
+        }
+
+        @Override public String getValue() {return value;}
     }
 
     /**
