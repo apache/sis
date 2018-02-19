@@ -88,6 +88,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 
 
 /**
@@ -107,16 +108,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
 })
 public strictfp class MetadataTest extends XMLTestCase {
-    /**
-     * Enables workaround for allowing some tests to pass despite regression.
-     * This boolean should be set to {@code false} and removed after the following issues have been fixed:
-     *
-     * <ul>
-     *   <li><a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a></li>
-     * </ul>
-     */
-    private static final boolean REGRESSION = true;
-
     /**
      * The resource file which contains an XML representation
      * of a {@link Metadata} object with a {@link VerticalCRS}.
