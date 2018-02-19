@@ -102,7 +102,7 @@ public abstract class URIDataStore extends DataStore {
      * @since   0.8
      * @module
      */
-    public abstract static class Provider extends DataStoreProvider {
+    public abstract static class Provider extends DataStoreProvider implements FileSystemProvider {
         /**
          * Description of the location parameter.
          */
