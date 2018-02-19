@@ -25,7 +25,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stax.StAXSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.util.Static;
@@ -99,7 +98,7 @@ final class InputFactory extends Static {
      * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLEventReader createXMLEventReader(final XMLStreamReader in) throws XMLStreamException {
-        return FACTORY.createXMLEventReader(new StAXSource(in));
+        return FACTORY.createXMLEventReader(in);
     }
 
     /**
