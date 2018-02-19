@@ -47,7 +47,7 @@ public final class Capability extends CodeList<Capability> {
 
     /**
      * The resource support writing operations.
-     * The methods related to writing such as {@link FeatureSet#add(java.util.Iterator) }
+     * The methods related to writing such as {@link org.apache.sis.storage.WritableFeatureSet#add(java.util.Iterator) }
      * should not throw any unsupported exception if this capability is set.
      */
     public static final Capability WRITABLE = new Capability("WRITABLE");

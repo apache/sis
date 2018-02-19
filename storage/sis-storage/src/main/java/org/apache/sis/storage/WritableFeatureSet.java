@@ -67,8 +67,8 @@ public interface WritableFeatureSet extends FeatureSet {
      * <div class="note"><b>API note:</b>
      * this method expects an {@link Iterator} rather then a {@link java.util.stream.Stream} for easing
      * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
-     * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
-     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
+     * than implementing a {@link java.util.stream.Stream}. On the other side if the user has a {@link java.util.stream.Stream},
+     * obtaining an {@link java.util.Iterator} can be done by a call to {@link java.util.stream.Stream#iterator()}.</div>
      *
      * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
      * indicate this method should be implemented</p>
