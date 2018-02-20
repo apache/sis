@@ -50,7 +50,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  *     citedResponsibleParty
  * }
  */
-public final class NamespaceContent {
+public final class RenameListGenerator {
     /**
      * Properties in those namespaces do not have older namespaces to map from.
      */
@@ -79,7 +79,7 @@ public final class NamespaceContent {
      *
      * @param  classRootDirectory   the root of compiled class files.
      */
-    public NamespaceContent(final Path classRootDirectory) {
+    public RenameListGenerator(final Path classRootDirectory) {
         this.classRootDirectory = classRootDirectory;
         content = new TreeMap<>();
     }
