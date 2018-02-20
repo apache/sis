@@ -406,9 +406,9 @@ public strictfp class MetadataTest extends XMLTestCase {
          * by the anchor version so we can compare the XML with the "Metadata.xml" file content.
          */
         final StringBuffer xml = writer.getBuffer();
-        replace(xml, "<gco1:CharacterString>Common Data Index record</gco1:CharacterString>",
+        replace(xml, "<gcol:CharacterString>Common Data Index record</gcol:CharacterString>",
                      "<gmx:Anchor xlink:href=\"SDN:L231:3:CDI\">Common Data Index record</gmx:Anchor>");
-        replace(xml, "<gco1:CharacterString>EPSG:4326</gco1:CharacterString>",
+        replace(xml, "<gcol:CharacterString>EPSG:4326</gcol:CharacterString>",
                      "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gmx:Anchor>");
         /*
          * The <gmd:EX_TemporalExtent> block can not be marshalled yet, since it requires the sis-temporal module.
