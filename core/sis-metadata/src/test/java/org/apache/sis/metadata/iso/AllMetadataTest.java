@@ -21,7 +21,7 @@ import org.opengis.annotation.UML;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.metadata.MetadataConsistencyCheck;
+import org.apache.sis.metadata.PropertyConsistencyCheck;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.junit.Rule;
@@ -37,7 +37,7 @@ import org.junit.Test;
  * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
-public final strictfp class AllMetadataTest extends MetadataConsistencyCheck {
+public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
