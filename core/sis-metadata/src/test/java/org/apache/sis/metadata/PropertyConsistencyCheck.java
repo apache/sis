@@ -54,7 +54,7 @@ import org.junit.Test;
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsistencyCheck {
+public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.
      */
@@ -71,7 +71,7 @@ public abstract strictfp class MetadataConsistencyCheck extends AnnotationConsis
      * @param  standard  the standard implemented by the metadata objects to test.
      * @param  types     the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
-    protected MetadataConsistencyCheck(final MetadataStandard standard, final Class<?>... types) {
+    protected PropertyConsistencyCheck(final MetadataStandard standard, final Class<?>... types) {
         super(types);
         this.standard = standard;
     }
