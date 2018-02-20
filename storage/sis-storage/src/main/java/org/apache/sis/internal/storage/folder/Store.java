@@ -36,10 +36,10 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
-import org.apache.sis.internal.storage.FileSystemResource;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.metadata.identification.Identification;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
@@ -54,15 +54,17 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.FileSystemResource;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.metadata.identification.Identification;
 
 
 /**
@@ -83,12 +85,11 @@ import org.opengis.metadata.identification.Identification;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
 class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path> {
-
     /**
      * File walker to delete file and folder recursively.
      */
@@ -170,25 +171,16 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'folders' does not escape.
-    Store(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException, IOException {
+    Store(final DataStoreProvider provider, final StorageConnector connector, final String format)
+            throws DataStoreException, IOException
+    {
         super(provider, connector);
         location = connector.getStorageAs(Path.class);
         locale   = connector.getOption(OptionKey.LOCALE);
         timezone = connector.getOption(OptionKey.TIMEZONE);
         encoding = connector.getOption(OptionKey.ENCODING);
+        providerName = format;
         children = new ConcurrentHashMap<>();
-        children.put(location.toRealPath(), this);
-        providerName = null;
-    }
-
-    Store(final DataStoreProvider provider, final Parameters params) throws DataStoreException, IOException {
-        super(provider, new StorageConnector(params));
-        location     = params.getValue(FolderStoreProvider.LOCATION);
-        locale       = params.getValue(FolderStoreProvider.LOCALE);
-        timezone     = params.getValue(FolderStoreProvider.TIMEZONE);
-        encoding     = params.getValue(FolderStoreProvider.ENCODING);
-        providerName = params.getValue(FolderStoreProvider.PROVIDER);
-        children     = new ConcurrentHashMap<>();
         children.put(location.toRealPath(), this);
     }
 
@@ -357,11 +349,12 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
                 }
             }
             if (searchProvider == null) {
-                throw new DataStoreException(message(Resources.Keys.FolderStoreProviderUnknown_1, providerName));
+                throw new DataStoreException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedFormat_1, providerName));
             }
         }
         return searchProvider;
     }
+
     /**
      * Builds an error message for an error occurring while reading files in the directory.
      */
@@ -426,8 +419,10 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
      */
     static class Writable extends Store implements WritableAggregate {
 
-        public Writable(DataStoreProvider provider, Parameters params) throws DataStoreException, IOException {
-            super(provider, params);
+        public Writable(final DataStoreProvider provider, final StorageConnector connector, final String format)
+            throws DataStoreException, IOException
+        {
+            super(provider, connector, format);
         }
 
         /**
@@ -570,7 +565,5 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
                 }
             }
         }
-
     }
-
 }

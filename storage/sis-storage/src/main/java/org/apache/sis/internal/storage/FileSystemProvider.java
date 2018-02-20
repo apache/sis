@@ -25,17 +25,21 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 
+
 /**
  * Files-related {@linkplain org.apache.sis.storage.DataStoreProvider provider}.
  * This interface provides additional descriptive informations on the supported
  * file types.
  *
- * @author Johann Sorel (Geomatys)
- * @since 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
+ *
+ * @todo Rename, as this interface may be confused with {@link java.nio.file.spi.FileSystemProvider}.
+ *       Do we need this interface or can we rely on {@link URIDataStore.Provider} only?
  */
 public interface FileSystemProvider {
-
     /**
      * Get the list of this format mainly used file suffixes.
      * If the provider uses multiple files, this method should return
@@ -63,7 +67,7 @@ public interface FileSystemProvider {
      * @return collection of signatures, never null, can be empty.
      */
     default Collection<byte[]> getSignature() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**
@@ -102,5 +106,4 @@ public interface FileSystemProvider {
         }
         return ProbeResult.UNSUPPORTED_STORAGE;
     }
-
 }

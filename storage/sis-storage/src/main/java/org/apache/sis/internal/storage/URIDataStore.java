@@ -32,7 +32,6 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -127,10 +126,10 @@ public abstract class URIDataStore extends DataStore {
         private volatile ParameterDescriptorGroup openDescriptor;
 
         /**
-         * List of main file suffixes used.
+         * The suffixes that may be used with the name of the "main" file.
+         * This is the collection to be returned by {@link #getSuffix()}.
          */
         protected final List<String> suffix = new ArrayList<>();
-        private final List<String> unSuffix = Collections.unmodifiableList(suffix);
 
         /**
          * Creates a new provider.
@@ -155,12 +154,24 @@ public abstract class URIDataStore extends DataStore {
         }
 
         /**
-         * Get the list of this format mainly used file suffixes.
+         * Returns the suffixes that may be used with the name of the "main" file.
+         * The "main" file is the file that users specify when opening the dataset.
+         * The returned collection should <em>not</em> include the suffixes of auxiliary files.
          *
-         * @return list of suffix, case insensitive, never null, can be empty.
+         * <div class="note"><b>Example:</b>
+         * GeoTIFF data are contained in files with the {@code ".tif"} or {@code ".tiff"} suffix,
+         * sometime accompanied by auxiliary files with {@code ".prj"} and {@code ".tfw"} suffixes.
+         * This method should return a collection containing only {@code "tif"} or {@code "tiff"}
+         * strings, without the leading dot.</div>
+         *
+         * The suffixes are case-insensitive (no need to declare both lower-case and upper-case variants)
+         * and shall not contain the leading dot.
+         *
+         * @return the filename suffixes, case insensitive. Never null but can be empty.
          */
+        @Override
         public final List<String> getSuffix() {
-            return unSuffix;
+            return Collections.unmodifiableList(suffix);
         }
 
         /**
