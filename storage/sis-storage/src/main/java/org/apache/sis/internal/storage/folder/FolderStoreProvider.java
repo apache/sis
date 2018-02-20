@@ -39,7 +39,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -49,7 +49,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -60,43 +60,40 @@ public final class FolderStoreProvider extends DataStoreProvider {
     private static final String NAME = "folder";
 
     /**
-     * Description of the parameter for folder location.
-     */
-    static final ParameterDescriptor<Path> LOCATION;
-
-    /**
      * Description of the parameter for formating conventions of dates and numbers.
      */
-    static final ParameterDescriptor<Locale> LOCALE;
+    private static final ParameterDescriptor<Locale> LOCALE;
 
     /**
      * Description of the parameter for timezone of dates in the data store.
      */
-    static final ParameterDescriptor<TimeZone> TIMEZONE;
+    private static final ParameterDescriptor<TimeZone> TIMEZONE;
 
     /**
      * Description of the parameter for character encoding used by the data store.
      */
-    static final ParameterDescriptor<Charset> ENCODING;
+    private static final ParameterDescriptor<Charset> ENCODING;
 
     /**
-     * Description of the parameter for restricting searched factories.
+     * Description of the parameter for name of format or {@code DataStoreProvider}
+     * to use for reading or writing the directory content.
      */
-    static final ParameterDescriptor<String> PROVIDER;
+    private static final ParameterDescriptor<String> FORMAT;
 
     /**
      * The group of parameter descriptors to be returned by {@link #getOpenParameters()}.
      */
     static final ParameterDescriptorGroup PARAMETERS;
     static {
+        final ParameterDescriptor<Path> location;
         final ParameterBuilder builder = new ParameterBuilder();
         final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
         ENCODING   = annotate(builder, URIDataStore.Provider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
-        PROVIDER   = builder.addName("provider").setDescription(Resources.formatInternational(Resources.Keys.FolderStoreProviderParameter)).create(String.class, null);
-        LOCATION   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
-        PARAMETERS = builder.addName(NAME).createGroup(LOCATION, LOCALE, TIMEZONE, ENCODING, PROVIDER);
+        FORMAT     = builder.addName("provider").setDescription(Resources.formatInternational(Resources.Keys.FolderStoreProviderParameter)).create(String.class, null);
+        location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
+        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT);
     }
 
     /**
@@ -164,6 +161,8 @@ public final class FolderStoreProvider extends DataStoreProvider {
 
     /**
      * Returns a data store implementation associated with this provider.
+     * The data store created by this method will try to auto-detect the format of every files in the directory.
+     * For exploring only the file of a known format, use {@link #open(ParameterValueGroup)} instead.
      *
      * @param  connector  information about the storage (URL, path, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
@@ -172,7 +171,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         try {
-            return new Store(this, connector);
+            return new Store(this, connector, null);
         } catch (IOException e) {
             throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadDirectory_1,
                     connector.getStorageName()), e);
@@ -188,16 +187,21 @@ public final class FolderStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        final Parameters params = Parameters.castOrWrap(parameters);
+        final StorageConnector connector = URIDataStore.Provider.connector(this, parameters);
+        final Parameters pg = Parameters.castOrWrap(parameters);
+        connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
+        connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
+        connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
+        final String format = pg.getValue(FORMAT);
         try {
-            if (params.getValue(PROVIDER) != null) {
-                return new Store.Writable(this, params);
+            if (format != null) {
+                return new Store.Writable(this, connector, format);
             } else {
-                return new Store(this, params);
+                return new Store(this, connector, format);
             }
         } catch (IOException e) {
             throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadDirectory_1,
-                    IOUtilities.filename(params.getValue(LOCATION))), e);
+                    connector.getStorageName()), e);
         }
     }
 

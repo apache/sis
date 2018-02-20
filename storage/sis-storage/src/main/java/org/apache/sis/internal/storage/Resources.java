@@ -158,14 +158,9 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FeatureNotFound_2 = 17;
 
         /**
-         * Restricted store provider identifier to use for resource discovery and creation.
+         * Name of the format to use for reading or writing the directory content.
          */
         public static final short FolderStoreProviderParameter = 40;
-
-        /**
-         * Unknown provider identifier {0}.
-         */
-        public static final short FolderStoreProviderUnknown_1 = 41;
 
         /**
          * Whether to assemble trajectory fragments (lines in CSV file) in a single feature instance.

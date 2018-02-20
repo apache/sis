@@ -43,7 +43,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -70,7 +70,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
         final Set<String> identifiers = new HashSet<>(Arrays.asList("proj", "Sample 1", "Sample 2", "Sample 3", "data4"));
-        try (Store store = new Store(null, new StorageConnector(testDirectory()))) {
+        try (Store store = new Store(null, new StorageConnector(testDirectory()), null)) {
             assertEquals("Expected three data stores.", 4, store.components().size());
             verifyContent(store, identifiers);
         }
@@ -88,19 +88,16 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
-
-        {
-            final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
-            final Parameters params = Parameters.castOrWrap(FolderStoreProvider.PARAMETERS.createValue());
-            params.parameter("location").setValue(testDirectory());
-            params.parameter("provider").setValue("XML");
-            try (Store store = new Store(null, params)) {
-                assertEquals("Expected three data stores.", 3, store.components().size());
-                verifyContent(store, identifiers);
-            }
-            if (!identifiers.isEmpty()) {
-                fail("Missing resources: " + identifiers);
-            }
+        final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Parameters params = Parameters.castOrWrap(FolderStoreProvider.PARAMETERS.createValue());
+        params.parameter("location").setValue(testDirectory());
+        params.parameter("provider").setValue("XML");
+        try (Store store = (Store) FolderStoreProvider.INSTANCE.open(params)) {
+            assertEquals("Expected three data stores.", 3, store.components().size());
+            verifyContent(store, identifiers);
+        }
+        if (!identifiers.isEmpty()) {
+            fail("Missing resources: " + identifiers);
         }
     }
 
