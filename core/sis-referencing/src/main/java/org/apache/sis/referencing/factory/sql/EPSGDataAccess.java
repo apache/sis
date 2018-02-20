@@ -3185,7 +3185,7 @@ next:               while (r.next()) {
                           ? " ORDER BY ABS(DEPRECATED), "
                           : " AND DEPRECATED=0 ORDER BY ");     // Do not put spaces around "=" - SQLTranslator searches for this exact match.
             if (isFloat) {
-                buffer.append("ABS(").append(select).append("-?), ");
+                buffer.append("ABS(").append(where).append("-?), ");
             }
             buffer.append(select);          // Only for making order determinist.
             /*
