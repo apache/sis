@@ -57,7 +57,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * different URIs under {@code "http://standards.iso.org/iso/19115/-3/…"} depending on the
      * class name.
      */
-    static final String FILENAME = "ImportNames.lst";
+    static final String FILENAME = "RenameOnImport.lst";
 
     /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
