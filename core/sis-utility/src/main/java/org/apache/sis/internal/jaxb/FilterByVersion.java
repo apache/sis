@@ -46,12 +46,6 @@ public enum FilterByVersion {
                      Context.MARSHALLING | Context.LEGACY_METADATA);
 
     /**
-     * {@code true} if the {@link Context} class has been initialized.
-     * This is used as a filter for the common case where XML marshalling is not used at all.
-     */
-    private static volatile boolean enabled;
-
-    /**
      * Mask to apply on {@link Context#bitMasks} in order to determine the version of the XML document
      * being marshalled.
      */
@@ -74,14 +68,6 @@ public enum FilterByVersion {
     }
 
     /**
-     * Invoked by {@link Context} class initializer for notifying this {@code FilterByVersion} class
-     * that XML marshalling may happen at any time in the future.
-     */
-    static void enable() {
-        enabled = true;
-    }
-
-    /**
      * Returns {@code true} if we are marshalling the metadata or GML format identified by this constant,
      * or if no marshalling is in progress.
      *
@@ -89,7 +75,6 @@ public enum FilterByVersion {
      *         by this enumeration value.
      */
     public boolean accept() {
-        if (!enabled) return true;
         final Context context = Context.current();
         return (context == null) || (context.bitMasks & mask) != exclude;
     }

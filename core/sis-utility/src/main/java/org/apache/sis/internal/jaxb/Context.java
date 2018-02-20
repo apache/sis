@@ -114,14 +114,6 @@ public final class Context extends MarshalContext {
     public static final Logger LOGGER = Logging.getLogger(Loggers.XML);
 
     /**
-     * Notifies {@code FilterByVersion} that (un)marshalling process may happen.
-     * This is used for avoiding classes loading before this possibility exists.
-     */
-    static {
-        FilterByVersion.enable();
-    }
-
-    /**
      * Various boolean attributes determines by the above static constants.
      */
     final int bitMasks;
