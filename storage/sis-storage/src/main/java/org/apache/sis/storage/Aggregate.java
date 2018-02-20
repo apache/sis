@@ -54,7 +54,7 @@ import java.util.Collection;
  * associated resources} with an {@link org.opengis.metadata.identification.AssociationType#IS_COMPOSED_OF} relation.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -86,5 +86,4 @@ public interface Aggregate extends Resource {
      * @throws DataStoreException if an error occurred while fetching the components.
      */
     Collection<Resource> components() throws DataStoreException;
-
 }

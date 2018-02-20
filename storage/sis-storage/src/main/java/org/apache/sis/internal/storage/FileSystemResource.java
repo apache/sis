@@ -20,24 +20,28 @@ import java.nio.file.Path;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 
+
 /**
- * Files-related {@linkplain org.apache.sis.storage.Resource resource}.
- * This interface allows a resource to indicate it's used files, it
- * can then be used to improve data management.
+ * A resource which is loaded from one or many files on an arbitrary file system. This interface
+ * allows a resource (typically a {@linkplain org.apache.sis.storage.DataStore data store}) to
+ * list the files that it uses. This information can be used for improving data management,
+ * for example copy operations.
  *
- * @author Johann Sorel (Geomatys)
- * @since 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
+ *
+ * @todo Current name suggests resources provided by the file system (i.e. files and directories).
+ *       Rename as {@code FileBackedResource}, {@code ResourceBackedByFiles} or {@code ResourceOnFileSystem}?
  */
 public interface FileSystemResource extends Resource {
-
     /**
-     * Get all files used by this {@linkplain org.apache.sis.storage.DataStore data store}.
+     * Gets the paths to all files used by this resource. This is typically the
+     * files opened by a {@linkplain org.apache.sis.storage.DataStore data store}.
      *
-     * @return Files used by this store. Should never be {@code null}.
-     * @throws org.apache.sis.storage.DataStoreException if an error on the file system prevent
-     *          the creation of the list.
+     * @return files used by this resource. Should never be {@code null}.
+     * @throws DataStoreException if an error on the file system prevent the creation of the list.
      */
     Path[] getResourcePaths() throws DataStoreException;
-
 }

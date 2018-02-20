@@ -20,41 +20,37 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import org.apache.sis.internal.storage.Resources;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+
 
 /**
  * Subtype of {@linkplain FeatureSet} with writing capabilities.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public interface WritableFeatureSet extends FeatureSet {
-
     /**
-     * Redefine the feature type of this feature set, including all features.
-     * This operation may take an undefined time since all features in the set must be transformed.
+     * Declares or redefines the type of all feature instances in this feature set.
+     * In the case of a newly created feature set, this method can be used for defining the type of features
+     * to be stored (this is not a required step however). In the case of a feature set which already contains
+     * feature instances, this operation may take an undefined amount of time to execute since all features in
+     * the set may need to be transformed.
      *
-     * <p>
-     * An {@linkplain  org.apache.sis.storage.IllegalFeatureTypeException} will be throw
-     * when the provided type contains incompatible attribute changes.
-     * </p>
+     * <p>Feature sets may restrict the kind of changes that are allowed. An {@link IllegalFeatureTypeException}
+     * will be thrown if the given type contains incompatible property changes.</p>
      *
-     * <p>
-     * In the case of a newly created feature set, this method can be used to define
-     * stored feature type.
-     * </p>
+     * <p>The default implementation throws a {@linkplain ReadOnlyStorageException}.</p>
      *
-     * <p>
-     * Default implementation throw a {@linkplain  org.apache.sis.storage.ReadOnlyStorageException}.
-     * </p>
-     *
-     * @param newType new feature type definition, (not {@code null}).
-     * @throws ReadOnlyStorageException if this instance does not support schema update
-     * @throws IllegalFeatureTypeException if the given type is not compatible
-     * @throws DataStoreException if another error occurred while changing feature type.
+     * @param  newType  new feature type definition (not {@code null}).
+     * @throws ReadOnlyStorageException if this instance does not support schema update.
+     * @throws IllegalFeatureTypeException if the given type is not compatible with the types supported by the store.
+     * @throws DataStoreException if another error occurred while changing the feature type.
      */
     default void updateType(FeatureType newType) throws ReadOnlyStorageException, IllegalFeatureTypeException, DataStoreException {
         throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
@@ -70,8 +66,8 @@ public interface WritableFeatureSet extends FeatureSet {
      * than implementing a {@link java.util.stream.Stream}. On the other side if the user has a {@link java.util.stream.Stream},
      * obtaining an {@link java.util.Iterator} can be done by a call to {@link java.util.stream.Stream#iterator()}.</div>
      *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
+     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
+     * indicates that this method should be implemented.</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
@@ -86,8 +82,8 @@ public interface WritableFeatureSet extends FeatureSet {
     /**
      * Removes all features from this {@code FeatureSet} which matches the given predicate.
      *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
+     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
+     * indicates that this method should be implemented.</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
@@ -112,8 +108,8 @@ public interface WritableFeatureSet extends FeatureSet {
      *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
      * </ul>
      *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
+     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
+     * indicates that this method should be implemented.</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *

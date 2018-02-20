@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage;
 
-// Branch-dependent imports
 import java.util.stream.Stream;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
@@ -30,7 +31,7 @@ import org.opengis.feature.FeatureType;
  * are also allowed.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -135,5 +136,4 @@ public interface FeatureSet extends DataSet {
      * @throws DataStoreException if an error occurred while creating the stream.
      */
     Stream<Feature> features(boolean parallel) throws DataStoreException;
-
 }
