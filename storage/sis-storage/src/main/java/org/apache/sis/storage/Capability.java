@@ -17,18 +17,21 @@
 package org.apache.sis.storage;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.opengis.util.CodeList;
+
 import static org.opengis.util.CodeList.valueOf;
 
+
 /**
- * A capability indicate a special behavior or information for a {@link Resource}.
- * Capabilities are used as flags returned by the {@link Resource#getCapabilities() } method.
+ * Indicates which optional behavior or information can be provided by a {@link Resource}.
+ * Capabilities are used as flags returned by the {@link Resource#getCapabilities()} method.
  *
- * A common {@link Capability} is {@link Capability#WRITABLE} which should be declared
- * accordingly by {@link Resource}s.
+ * A commonly used value is {@link Capability#WRITABLE}, which should be declared by all
+ * {@link Resource}s implementing {@code add(…)} and {@code update(…)} methods.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -43,12 +46,12 @@ public final class Capability extends CodeList<Capability> {
      * List of all enumerations of this type.
      * Must be declared before any enum declaration.
      */
-    private static final List<Capability> VALUES = new ArrayList<>();
+    private static final List<Capability> VALUES = new ArrayList<>(1);
 
     /**
-     * The resource support writing operations.
-     * The methods related to writing such as {@link org.apache.sis.storage.WritableFeatureSet#add(java.util.Iterator) }
-     * should not throw any unsupported exception if this capability is set.
+     * The resource supports write operations.
+     * The methods related to writing such as {@link org.apache.sis.storage.WritableFeatureSet#add(Iterator)}
+     * should not throw any {@link UnsupportedOperationException} if this capability is set.
      */
     public static final Capability WRITABLE = new Capability("WRITABLE");
 
@@ -100,4 +103,3 @@ public final class Capability extends CodeList<Capability> {
         return valueOf(Capability.class, code);
     }
 }
-

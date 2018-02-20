@@ -20,29 +20,36 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 
+
 /**
- * A transaction resource.
- * This transaction include both this resource and all children resources
- * if it is an {@linkplain Aggregate}.
+ * A writable resource containing data (features or coverages) that can be changed in a all-or-nothing way.
+ * Resource transaction shall also implement at least one of the {@code Writable*} interfaces.
+ * If the resource is an {@link Aggregate}, then this transaction includes both this resource
+ * and all children resources.
  *
- * @author Johann Sorel (Geomatys)
- * @since 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public interface ResourceTransaction extends Resource {
-
     /**
-     * Apply all the changes made in this transaction.
+     * Makes permanent all changes that have been in current transaction.
+     * The current transaction contains the changes performed since the {@code ResourceTransaction}
+     * creation, or since the last call to either the {@code commit()} or {@link #rollback()} methods.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while committing the transaction.
+     *         In such case, the system shall be in state before the commit attempt.
      */
     void commit() throws DataStoreException;
 
     /**
-     * Revert all changes made in this session.
+     * Undoes all changes made in the current transaction.
+     * The current transaction contains the changes performed since the {@code ResourceTransaction}
+     * creation, or since the last call to either the {@link #commit()} or {@code rollback()} methods.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while rolling back the transaction.
+     *         In such case, the system shall be in state before the rollback attempt.
      */
     void rollback() throws DataStoreException;
-
 }

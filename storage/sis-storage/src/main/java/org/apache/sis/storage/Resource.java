@@ -107,17 +107,18 @@ public interface Resource {
     Metadata getMetadata() throws DataStoreException;
 
     /**
-     * Returns the capabilities of this resource.
-     * Resources may have different capabilites based on the type and context.<br>
-     * Example : {@link Capability#WRITABLE} can be found on {@link Aggregate} or
-     * {@link FeatureSet} to indicate the resource support writing operations.
+     * Indicates which optional behavior or information can be provided by this resource.
+     * Resources may have different capabilites based on the type and context.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@link Capability#WRITABLE} can be found on {@link WritableAggregate} or {@link WritableFeatureSet}
+     * to indicate that the resource supports write operations.</div>
      *
      * <p>The default implementation returns an empty Set.</p>
      *
-     * @return Set of {@link Capability}, never null, unmodifiable, can be empty.
+     * @return supported capabilities (never null). May be empty.
      */
     default Set<Capability> getCapabilities() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
-
 }

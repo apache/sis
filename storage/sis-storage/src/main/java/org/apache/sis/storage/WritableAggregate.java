@@ -18,16 +18,16 @@ package org.apache.sis.storage;
 
 import org.apache.sis.internal.storage.Resources;
 
+
 /**
- * Subtype of {@linkplain Aggregate} with writing capabilities.
+ * An {@linkplain Aggregate} with writing capabilities.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public interface WritableAggregate extends Aggregate {
-
     /**
      * Adds a new {@code Resource} in this {@code Aggregate}.
      * The given {@link Resource} will be copied, and the <cite>effectively added</cite> resource returned.
@@ -46,8 +46,8 @@ public interface WritableAggregate extends Aggregate {
      * then this {@code Aggregate} may throw an exception.
      * </div>
      *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
+     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
+     * indicates that this method should be implemented.</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
@@ -64,8 +64,8 @@ public interface WritableAggregate extends Aggregate {
      * Removes a {@code Resource} from this {@code Aggregate}.
      * This operation is destructive: the {@link Resource} and it's related data will be removed.
      *
-     * <p>The {@link Capability#WRITABLE} flag if present in the {@link Resource#getCapabilities() } set
-     * indicate this method should be implemented</p>
+     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
+     * indicates that this method should be implemented.</p>
      *
      * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
      *
@@ -76,5 +76,4 @@ public interface WritableAggregate extends Aggregate {
     default void remove(Resource resource) throws ReadOnlyStorageException, DataStoreException {
         throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
     }
-
 }
