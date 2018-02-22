@@ -165,7 +165,8 @@ public abstract class URIDataStore extends DataStore {
          * strings, without the leading dot.</div>
          *
          * The suffixes are case-insensitive (no need to declare both lower-case and upper-case variants)
-         * and shall not contain the leading dot.
+         * and shall not contain the leading dot. The first element in the list is the preferred suffix
+         * to use for new files.
          *
          * @return the filename suffixes, case insensitive. Never null but can be empty.
          */

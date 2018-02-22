@@ -473,7 +473,16 @@ public final class Citations extends Static {
      *             after we moved the {@code sis-utility} code that use this method.
      */
     public static String getUnicodeIdentifier(final Citation citation) {
-        final String identifier = getIdentifier(citation, true);
+        return removeIgnorableCharacters(getIdentifier(citation, true));
+    }
+
+    /**
+     * Removes characters that are ignorable according Unicode specification.
+     *
+     * @param  identifier  the character sequence from which to remove ignorable characters, or {@code null}.
+     * @return a character sequence with ignorable character removed. May be the same instance than the given argument.
+     */
+    public static String removeIgnorableCharacters(final String identifier) {
         if (identifier != null) {
             /*
              * First perform a quick check to see if there is any ignorable characters.
