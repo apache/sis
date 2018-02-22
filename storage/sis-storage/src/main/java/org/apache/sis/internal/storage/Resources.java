@@ -67,7 +67,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
-         * Can not get metadata common to “{0}” files. Reason: {1}
+         * Can not create resources based on the content of “{0}” directory.
+         */
+        public static final short CanNotCreateFolderStore_1 = 43;
+
+        /**
+         * Can not get metadata common to “{0}” files. The reason is: {1}
          */
         public static final short CanNotGetCommonMetadata_2 = 39;
 
@@ -95,6 +100,16 @@ public final class Resources extends IndexedResourceBundle {
          * Can not read line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
          */
         public static final short CanNotReadFile_4 = 3;
+
+        /**
+         * Can not remove resource “{1}” from aggregate “{0}”.
+         */
+        public static final short CanNotRemoveResource_2 = 49;
+
+        /**
+         * Can not save resources of type ‘{1}’ in a “{0}” store.
+         */
+        public static final short CanNotStoreResourceType_2 = 41;
 
         /**
          * This {0} reader is closed.
@@ -137,6 +152,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DataStoreTimeZone = 32;
 
         /**
+         * Name of the format to use for reading or writing the directory content.
+         */
+        public static final short DirectoryContentFormatName = 40;
+
+        /**
          * Content of “{0}” directory.
          */
         public static final short DirectoryContent_1 = 35;
@@ -158,9 +178,14 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FeatureNotFound_2 = 17;
 
         /**
-         * Name of the format to use for reading or writing the directory content.
+         * A {1,choice,0#file|1#directory} already exists at “{0}”.
          */
-        public static final short FolderStoreProviderParameter = 40;
+        public static final short FileAlreadyExists_2 = 45;
+
+        /**
+         * The “{0}” file is not a directory of resources.
+         */
+        public static final short FileIsNotAResourceDirectory_1 = 44;
 
         /**
          * Whether to assemble trajectory fragments (lines in CSV file) in a single feature instance.
@@ -189,14 +214,39 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentNameComponents_2 = 10;
 
         /**
+         * Resource “{0}” does not have an identifier.
+         */
+        public static final short MissingResourceIdentifier_1 = 42;
+
+        /**
          * Missing scheme in “{0}” URI.
          */
         public static final short MissingSchemeInURI_1 = 11;
 
         /**
+         * No directory of resources found at “{0}”.
+         */
+        public static final short NoSuchResourceDirectory_1 = 46;
+
+        /**
+         * Resource “{1}” is not part of aggregate “{0}”.
+         */
+        public static final short NoSuchResourceInAggregate_2 = 50;
+
+        /**
+         * Resource “{0}” is not a writable feature set.
+         */
+        public static final short NotAWritableFeatureSet_1 = 47;
+
+        /**
          * Processing executed on {0}.
          */
         public static final short ProcessingExecutedOn_1 = 12;
+
+        /**
+         * A resource already exists at “{0}”.
+         */
+        public static final short ResourceAlreadyExists_1 = 48;
 
         /**
          * More than one resource have the “{1}” identifier in the “{0}” data store.

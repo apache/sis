@@ -91,7 +91,7 @@ public final strictfp class StoreTest extends TestCase {
         final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
         final Parameters params = Parameters.castOrWrap(FolderStoreProvider.PARAMETERS.createValue());
         params.parameter("location").setValue(testDirectory());
-        params.parameter("provider").setValue("XML");
+        params.parameter("format").setValue("XML");
         try (Store store = (Store) FolderStoreProvider.INSTANCE.open(params)) {
             assertEquals("Expected three data stores.", 3, store.components().size());
             verifyContent(store, identifiers);

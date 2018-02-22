@@ -16,13 +16,17 @@
  */
 package org.apache.sis.internal.storage.folder;
 
-import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.StandardOpenOption;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -57,7 +61,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
      */
-    private static final String NAME = "folder";
+    static final String NAME = "folder";
 
     /**
      * Description of the parameter for formating conventions of dates and numbers.
@@ -91,7 +95,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
         ENCODING   = annotate(builder, URIDataStore.Provider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
-        FORMAT     = builder.addName("provider").setDescription(Resources.formatInternational(Resources.Keys.FolderStoreProviderParameter)).create(String.class, null);
+        FORMAT     = builder.addName("format"  ).setDescription(Resources.formatInternational(Resources.Keys.DirectoryContentFormatName)).create(String.class, null);
         location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
         PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT);
     }
@@ -170,12 +174,73 @@ public final class FolderStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
+        return open(connector, null, EnumSet.noneOf(StandardOpenOption.class));
+    }
+
+    /**
+     * Shared implementation of public {@code open(…)} methods.
+     *
+     * @param  connector  information about the storage (URL, path, <i>etc</i>).
+     * @param  format     format name, or {@code null} if unspecified.
+     * @param  options    whether to create a new directory, overwrite existing content, <i>etc</i>.
+     */
+    private DataStore open(final StorageConnector connector, final String format, final EnumSet<StandardOpenOption> options)
+            throws DataStoreException
+    {
+        Path path = null;
+        final Store store;
         try {
-            return new Store(this, connector, null);
+            /*
+             * If the user asked to create a new directory, we need to perform this task before
+             * to create the Store (otherwise constructor will fail with NoSuchFileException).
+             * In the particular case of CREATE_NEW, we unconditionally attempt to create the
+             * directory in order to rely on the atomic check performed by Files.createDirectory(…).
+             */
+            if (options.contains(StandardOpenOption.CREATE)) {
+                path = connector.getStorageAs(Path.class);
+                if (options.contains(StandardOpenOption.CREATE_NEW) || Files.notExists(path)) {
+                    Files.createDirectory(path);                        // IOException if the directory already exists.
+                }
+            }
+            // TODO: check also if @Capabilities.values().contains(WRITE).
+            if (options.contains(StandardOpenOption.WRITE)) {
+                store = new WritableStore(this, connector, format);     // May throw NoSuchFileException.
+            } else {
+                store = new Store(this, connector, format);             // May throw NoSuchFileException.
+            }
+            /*
+             * If there is a destructive operation to perform (TRUNCATE_EXISTING), do it last only
+             * after we have successfully created the data store. The check for directory existence
+             * is also done after creation to be sure to check the path used by the store.
+             */
+            path = store.location;
+            if (!Files.isDirectory(path)) {
+                throw new DataStoreException(Resources.format(Resources.Keys.FileIsNotAResourceDirectory_1, path));
+            }
+            if (options.contains(StandardOpenOption.TRUNCATE_EXISTING)) {
+                WritableStore.deleteRecursively(path, false);
+            }
         } catch (IOException e) {
-            throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadDirectory_1,
-                    connector.getStorageName()), e);
+            /*
+             * In case of error, Java FileSystem implementation tries to throw a specific exception
+             * (NoSuchFileException or FileAlreadyExistsException), but this is not guaranteed.
+             */
+            int isDirectory = 0;
+            final short errorKey;
+            if (e instanceof FileAlreadyExistsException) {
+                if (path != null && Files.isDirectory(path)) {
+                    isDirectory = 1;
+                }
+                errorKey = Resources.Keys.FileAlreadyExists_2;
+            } else if (e instanceof NoSuchFileException) {
+                errorKey = Resources.Keys.NoSuchResourceDirectory_1;
+            } else {
+                errorKey = Resources.Keys.CanNotCreateFolderStore_1;
+            }
+            throw new DataStoreException(Resources.format(errorKey,
+                    (path != null) ? path : connector.getStorageName(), isDirectory), e);
         }
+        return store;
     }
 
     /**
@@ -193,16 +258,11 @@ public final class FolderStoreProvider extends DataStoreProvider {
         connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
         connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
         final String format = pg.getValue(FORMAT);
-        try {
-            if (format != null) {
-                return new Store.Writable(this, connector, format);
-            } else {
-                return new Store(this, connector, format);
-            }
-        } catch (IOException e) {
-            throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadDirectory_1,
-                    connector.getStorageName()), e);
+        final EnumSet<StandardOpenOption> options = EnumSet.noneOf(StandardOpenOption.class);
+        if (format != null) {
+            options.add(StandardOpenOption.WRITE);
         }
+        return open(connector, format, options);
     }
 
     /**
