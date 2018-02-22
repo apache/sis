@@ -89,6 +89,7 @@ public interface FileSystemProvider {
         if (buffer != null) {
             for (byte[] signature : signatures) {
                 try {
+                    buffer.mark();
                     if (buffer.remaining() < signature.length) {
                         continue;
                     }
@@ -100,7 +101,7 @@ public interface FileSystemProvider {
                         return ProbeResult.SUPPORTED;
                     }
                 } finally {
-                    buffer.reset();
+                    buffer.rewind();
                 }
             }
         }
