@@ -38,6 +38,7 @@ import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.storage.ReadOnlyStorageException;
 
 
 /**
@@ -53,10 +54,18 @@ import org.apache.sis.internal.storage.URIDataStore;
  */
 final class WritableStore extends Store implements WritableAggregate {
     /**
+     * {@code false} if this data store is capable to write {@link FeatureSet}.
+     * We currently have no easy way to determine that from the provider only,
+     * so this flag may be set after the first attempt to add a new resource.
+     */
+    private boolean isReadOnly;
+
+    /**
      * Creates a new folder store from the given file, path or URI.
      * Contrarily to the {@link Store} parent class, the {@code format} is mandatory for writable stores.
+     * This is not verified by this constructor; it should be verified by {@link FolderStoreProvider} instead.
      */
-    WritableStore(final DataStoreProvider provider, final StorageConnector connector, final String format)
+    WritableStore(DataStoreProvider provider, StorageConnector connector, DataStoreProvider format)
             throws DataStoreException, IOException
     {
         super(provider, connector, format);
@@ -64,7 +73,7 @@ final class WritableStore extends Store implements WritableAggregate {
 
     /**
      * Create a new file for the given resource.
-     * This implementation uses the provider specified by the format name given at creation time.
+     * This implementation uses the provider specified at creation time.
      */
     @Override
     public synchronized Resource add(final Resource resource) throws DataStoreException {
@@ -73,6 +82,13 @@ final class WritableStore extends Store implements WritableAggregate {
             throw new DataStoreException(message(Resources.Keys.CanNotStoreResourceType_2, new Object[] {
                 FolderStoreProvider.NAME, StoreUtilities.getInterface(resource.getClass())
             }));
+        }
+        /*
+         * If we determined in a previous method invocation that the given provider can not write feature set,
+         * we are better to fail now instead than polluting the directory with files that we can not use.
+         */
+        if (isReadOnly) {
+            throw new ReadOnlyStorageException(messages().getString(Resources.Keys.StoreIsReadOnly));
         }
         /*
          * Infer a filename from the resource identifier, if one can be found.
@@ -116,33 +132,18 @@ final class WritableStore extends Store implements WritableAggregate {
                 }
                 /*
                  * If the data store is not a WritableFeatureSet, current implementation can not use it.
-                 * Delete the file that the store may have created.
-                 *
-                 * TODO: we should set a flag for blocking next attempts to add a resources, since they are likely
-                 *       to fail as well. Maybe we should not delete any files since we are not sure to delete the
-                 *       right ones. For example store.getComponentPaths() may return a path outside the directory
-                 *       managed by this folder store.
+                 * Files created by this failed attempt may remain; instead of trying to delete them with
+                 * uncertain consequences, we set a flag for avoiding to pollute further the directory.
                  */
-                final DataStoreException ex = new DataStoreException(Resources.format(
-                        Resources.Keys.NotAWritableFeatureSet_1, store.getDisplayName()));
-                store.close();
-                try {
-                    if (store instanceof Store) {
-                        deleteRecursively(((Store) store).location, true);
-                    } else if (store instanceof ResourceOnFileSystem) {
-                        for (Path c : ((ResourceOnFileSystem) store).getComponentFiles()) {
-                            Files.delete(c);
-                        }
-                    }
-                } catch (IOException e) {
-                    ex.addSuppressed(e);
-                }
+                isReadOnly = true;
                 children.remove(path, store);
-                throw ex;
+                final String name = store.getDisplayName();
+                store.close();
+                throw new DataStoreException(message(Resources.Keys.NotAWritableFeatureSet_1, name));
             }
             store.close();
         }
-        throw new DataStoreException(Resources.format(Resources.Keys.ResourceAlreadyExists_1, path));
+        throw new DataStoreException(message(Resources.Keys.ResourceAlreadyExists_1, path));
     }
 
     /**
@@ -165,8 +166,15 @@ final class WritableStore extends Store implements WritableAggregate {
                 }
             } else if (resource instanceof ResourceOnFileSystem) {
                 final Path[] componentPaths = ((ResourceOnFileSystem) resource).getComponentFiles().clone();
-                for (final Path root : componentPaths) {
-                    if (Files.isSameFile(root.getParent(), location)) {
+                for (Path root : componentPaths) {
+                    root = root.getParent();
+                    if (Files.isSameFile(root, location)) {
+                        /*
+                         * If we enter in this block, we have determined that at least one file is located in the
+                         * directory managed by this store - NOT in a subdirectory since they could be managed by
+                         * different folder stores. We assume that this root file is the "main" file. Other files
+                         * could be in subdirectories, but we need to verify - we do not delete files outside.
+                         */
                         for (final Path path : componentPaths) {
                             if (path.startsWith(root)) {
                                 Files.delete(path);
@@ -179,10 +187,10 @@ final class WritableStore extends Store implements WritableAggregate {
                 }
             }
         } catch (IOException e) {
-            throw new DataStoreException(Resources.format(Resources.Keys.CanNotRemoveResource_2,
+            throw new DataStoreException(messages().getString(Resources.Keys.CanNotRemoveResource_2,
                         getDisplayName(), ((DataStore) resource).getDisplayName()), e);
         }
-        throw new DataStoreException(Resources.format(Resources.Keys.NoSuchResourceInAggregate_2,
+        throw new DataStoreException(messages().getString(Resources.Keys.NoSuchResourceInAggregate_2,
                     getDisplayName(), StoreUtilities.getLabel(resource)));
     }
 

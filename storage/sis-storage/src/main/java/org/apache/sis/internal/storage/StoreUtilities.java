@@ -27,10 +27,13 @@ import org.apache.sis.util.Static;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
@@ -39,7 +42,7 @@ import org.opengis.feature.Feature;
 
 /**
  * Utility methods related to {@link DataStore}s, {@link DataStoreProvider}s and {@link Resource}s.
- * This is not a commit API; any method in this class may change in any future Apache SIS version.
+ * This is not a committed API; any method in this class may change in any future Apache SIS version.
  * Some methods may also move in public API if we feel confident enough.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -206,6 +209,44 @@ public final class StoreUtilities extends Static {
             }
         }
         return set;
+    }
+
+    /**
+     * Returns a provider for the given format name.
+     *
+     * @param  format  name of the format for which to get a provider.
+     * @return first provider found for the given format name.
+     * @throws UnsupportedStorageException if no provider is found for the specified format.
+     */
+    public static DataStoreProvider providerByFormatName(final String format) throws UnsupportedStorageException {
+        for (DataStoreProvider provider : DataStores.providers()) {
+            if (format.equalsIgnoreCase(getIdentifier(provider))) {
+                return provider;
+            }
+        }
+        throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
+    }
+
+    /**
+     * Returns whether the given store has write capability.
+     * In case of doubt, this method returns {@code null}.
+     *
+     * @param  store  class of the store for which to determine if it has write capability, or {@code null}.
+     * @return whether the data store has write capability, or {@code null} if it can not be determined.
+     */
+    public static Boolean canWrite(final Class<? extends DataStoreProvider> store) {
+        if (store != null) {
+            Capabilities caps = store.getAnnotation(Capabilities.class);
+            if (caps != null) {
+                for (Capability c : caps.value()) {
+                    if (Capability.WRITE.equals(c)) {
+                        return Boolean.TRUE;
+                    }
+                }
+                return Boolean.FALSE;
+            }
+        }
+        return null;
     }
 
     /**

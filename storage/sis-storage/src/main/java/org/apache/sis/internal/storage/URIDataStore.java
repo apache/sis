@@ -214,6 +214,8 @@ public abstract class URIDataStore extends DataStore {
         /**
          * Creates a storage connector initialized to the location declared in given parameters.
          * This convenience method does not set any other parameters.
+         * In particular, reading (or ignoring) the {@value #CREATE} parameter is left to callers,
+         * because not all implementations may create data stores with {@link java.nio.file.StandardOpenOption}.
          *
          * @param  provider    the provider for which to create a storage connector (for error messages).
          * @param  parameters  the parameters to use for creating a storage connector.
@@ -224,7 +226,7 @@ public abstract class URIDataStore extends DataStore {
                 throws IllegalOpenParameterException
         {
             ParameterNotFoundException cause = null;
-            try {
+            if (parameters != null) try {
                 final Object location = parameters.parameter(LOCATION).getValue();
                 if (location != null) {
                     return new StorageConnector(location);

@@ -866,6 +866,25 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds a data and/or metadata identifier. This method performs the same work than
+     * {@link #addIdentifier(CharSequence, String, Scope)} for situations where the
+     * identifier instance is already available.
+     *
+     * @param  id     the identifier, or {@code null} if none.
+     * @param  scope  whether the date applies to data, to metadata or to both.
+     *
+     * @see #addIdentifier(CharSequence, String, Scope)
+     */
+    public final void addIdentifier(Identifier id, final Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
+        if (id != null) {
+            id = (Identifier) sharedValues.getOrDefault(id, id);
+            if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
+            if (scope != Scope.METADATA) addIfNotPresent(citation().getIdentifiers(), id);
+        }
+    }
+
+    /**
      * Adds a resource (data) identifier, a metadata identifier, or both as they are often the same.
      * The identifier is added only if {@code code} is non-null, regardless other argument values.
      * Empty strings (ignoring spaces) are ignored.
@@ -882,6 +901,7 @@ public class MetadataBuilder {
      *
      * @see #addTitle(CharSequence)
      * @see #addTitleOrIdentifier(String, Scope)
+     * @see #addIdentifier(Identifier, Scope)
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
