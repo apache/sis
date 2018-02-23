@@ -101,7 +101,7 @@ public abstract class URIDataStore extends DataStore {
      * @since   0.8
      * @module
      */
-    public abstract static class Provider extends DataStoreProvider implements FileSystemProvider {
+    public abstract static class Provider extends DataStoreProvider {
         /**
          * Description of the location parameter.
          */
@@ -170,7 +170,6 @@ public abstract class URIDataStore extends DataStore {
          *
          * @return the filename suffixes, case insensitive. Never null but can be empty.
          */
-        @Override
         public final List<String> getSuffix() {
             return Collections.unmodifiableList(suffix);
         }

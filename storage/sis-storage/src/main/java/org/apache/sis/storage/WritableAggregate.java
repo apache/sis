@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import org.apache.sis.internal.storage.Resources;
-
 
 /**
  * An {@linkplain Aggregate} with writing capabilities.
@@ -49,16 +47,11 @@ public interface WritableAggregate extends Aggregate {
      * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
      * indicates that this method should be implemented.</p>
      *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate} for another reason.
      */
-    default Resource add(Resource resource) throws ReadOnlyStorageException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
+    Resource add(Resource resource) throws DataStoreException;
 
     /**
      * Removes a {@code Resource} from this {@code Aggregate}.
@@ -67,13 +60,8 @@ public interface WritableAggregate extends Aggregate {
      * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
      * indicates that this method should be implemented.</p>
      *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
      * @param  resource  child resource to remove, should not be null.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if the given resource could not be removed for another reason.
      */
-    default void remove(Resource resource) throws ReadOnlyStorageException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
+    void remove(Resource resource) throws DataStoreException;
 }

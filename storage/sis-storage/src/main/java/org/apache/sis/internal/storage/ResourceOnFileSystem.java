@@ -40,11 +40,8 @@ import org.apache.sis.storage.Resource;
  * @version 1.0
  * @since   1.0
  * @module
- *
- * @todo Current name suggests resources provided by the file system (i.e. files and directories).
- *       Rename as {@code FileBackedResource}, {@code ResourceBackedByFiles} or {@code ResourceOnFileSystem}?
  */
-public interface FileSystemResource extends Resource {
+public interface ResourceOnFileSystem extends Resource {
     /**
      * Gets the paths to files potentially used by this resource.
      * This is typically the files opened by a {@linkplain org.apache.sis.storage.DataStore data store}.
@@ -67,10 +64,6 @@ public interface FileSystemResource extends Resource {
      *
      * @return files used by this resource. Should never be {@code null}.
      * @throws DataStoreException if an error on the file system prevent the creation of the list.
-     *
-     * @todo Rename {@code getComponentFiles()}? The reason is that it is not returning the paths of
-     *       multiple resources, but paths to components of this single resources. The use of "Files"
-     *       is for emphasing that this method should not return path to directories.
      */
-    Path[] getResourcePaths() throws DataStoreException;
+    Path[] getComponentFiles() throws DataStoreException;
 }
