@@ -97,15 +97,22 @@ public abstract class URIDataStore extends DataStore {
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.0
      * @since   0.8
      * @module
      */
     public abstract static class Provider extends DataStoreProvider {
         /**
-         * Description of the location parameter.
+         * Description of the {@value #LOCATION} parameter.
          */
         public static final ParameterDescriptor<URI> LOCATION_PARAM;
+
+        /**
+         * Description of the optional {@value #CREATE} parameter, which may be present in writable data store.
+         * This parameter is not included in the descriptor created by {@link #build(ParameterBuilder)} default
+         * implementation. It is subclass responsibility to add it if desired, only if supported.
+         */
+        public static final ParameterDescriptor<Boolean> CREATE_PARAM;
 
         /**
          * Description of the optional parameter for character encoding used by the data store.
@@ -116,6 +123,7 @@ public abstract class URIDataStore extends DataStore {
         static {
             final ParameterBuilder builder = new ParameterBuilder();
             ENCODING       = builder.addName("encoding").setDescription(Resources.formatInternational(Resources.Keys.DataStoreEncoding)).create(Charset.class, null);
+            CREATE_PARAM   = builder.addName( CREATE   ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreCreate  )).create(Boolean.class, null);
             LOCATION_PARAM = builder.addName( LOCATION ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocation)).setRequired(true).create(URI.class, null);
         }
 
