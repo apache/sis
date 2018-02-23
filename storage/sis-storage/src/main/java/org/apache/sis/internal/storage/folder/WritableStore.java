@@ -34,10 +34,10 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.storage.FileSystemProvider;
-import org.apache.sis.internal.storage.FileSystemResource;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.storage.ResourceOnFileSystem;
+import org.apache.sis.internal.storage.URIDataStore;
 
 
 /**
@@ -82,8 +82,8 @@ final class WritableStore extends Store implements WritableAggregate {
         if (filename == null) {
             throw new DataStoreException(message(Resources.Keys.MissingResourceIdentifier_1, StoreUtilities.getLabel(resource)));
         }
-        if (componentProvider instanceof FileSystemProvider) {
-            final Iterator<String> suffixes = ((FileSystemProvider) componentProvider).getSuffix().iterator();
+        if (componentProvider instanceof URIDataStore.Provider) {
+            final Iterator<String> suffixes = ((URIDataStore.Provider) componentProvider).getSuffix().iterator();
             if (suffixes.hasNext()) {
                 filename += '.' + suffixes.next();
             }
@@ -129,8 +129,8 @@ final class WritableStore extends Store implements WritableAggregate {
                 try {
                     if (store instanceof Store) {
                         deleteRecursively(((Store) store).location, true);
-                    } else if (store instanceof FileSystemResource) {
-                        for (Path c : ((FileSystemResource) store).getResourcePaths()) {
+                    } else if (store instanceof ResourceOnFileSystem) {
+                        for (Path c : ((ResourceOnFileSystem) store).getComponentFiles()) {
                             Files.delete(c);
                         }
                     }
@@ -163,8 +163,8 @@ final class WritableStore extends Store implements WritableAggregate {
                     children.remove(path);
                     return;
                 }
-            } else if (resource instanceof FileSystemResource) {
-                final Path[] componentPaths = ((FileSystemResource) resource).getResourcePaths().clone();
+            } else if (resource instanceof ResourceOnFileSystem) {
+                final Path[] componentPaths = ((ResourceOnFileSystem) resource).getComponentFiles().clone();
                 for (final Path root : componentPaths) {
                     if (Files.isSameFile(root.getParent(), location)) {
                         for (final Path path : componentPaths) {

@@ -19,7 +19,6 @@ package org.apache.sis.storage;
 import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import org.apache.sis.internal.storage.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -45,16 +44,11 @@ public interface WritableFeatureSet extends FeatureSet {
      * <p>Feature sets may restrict the kind of changes that are allowed. An {@link IllegalFeatureTypeException}
      * will be thrown if the given type contains incompatible property changes.</p>
      *
-     * <p>The default implementation throws a {@linkplain ReadOnlyStorageException}.</p>
-     *
      * @param  newType  new feature type definition (not {@code null}).
-     * @throws ReadOnlyStorageException if this instance does not support schema update.
      * @throws IllegalFeatureTypeException if the given type is not compatible with the types supported by the store.
      * @throws DataStoreException if another error occurred while changing the feature type.
      */
-    default void updateType(FeatureType newType) throws ReadOnlyStorageException, IllegalFeatureTypeException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
+    void updateType(FeatureType newType) throws IllegalFeatureTypeException, DataStoreException;
 
     /**
      * Inserts new features in this {@code FeatureSet}.
@@ -69,15 +63,10 @@ public interface WritableFeatureSet extends FeatureSet {
      * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
      * indicates that this method should be implemented.</p>
      *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
      * @param  features features to insert in this {@code FeatureSet}.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if another error occurred while storing new features.
      */
-    default void add(Iterator<? extends Feature> features) throws ReadOnlyStorageException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
+    void add(Iterator<? extends Feature> features) throws DataStoreException;
 
     /**
      * Removes all features from this {@code FeatureSet} which matches the given predicate.
@@ -85,16 +74,11 @@ public interface WritableFeatureSet extends FeatureSet {
      * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
      * indicates that this method should be implemented.</p>
      *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
      * @param  filter  a predicate which returns true for resources to be removed.
      * @return {@code true} if any elements were removed.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if another error occurred while removing features.
      */
-    default boolean removeIf(Predicate<? super Feature> filter) throws ReadOnlyStorageException, DataStoreException {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
+    boolean removeIf(Predicate<? super Feature> filter) throws DataStoreException;
 
     /**
      * Updates all features from this {@code FeatureSet} which matches the given predicate.
@@ -111,16 +95,10 @@ public interface WritableFeatureSet extends FeatureSet {
      * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
      * indicates that this method should be implemented.</p>
      *
-     * <p>The default implementation throws {@link ReadOnlyStorageException}.</p>
-     *
      * @param  filter   a predicate which returns true for resources to be updated.
      * @param  updater  operation called for each matching {@link Feature}.
-     * @throws ReadOnlyStorageException if this instance does not support write operations.
      * @throws DataStoreException if another error occurred while replacing features.
      */
-    default void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater)
-            throws ReadOnlyStorageException, DataStoreException
-    {
-        throw new ReadOnlyStorageException(this, Resources.Keys.StoreIsReadOnly);
-    }
+    void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater)
+            throws DataStoreException;
 }
