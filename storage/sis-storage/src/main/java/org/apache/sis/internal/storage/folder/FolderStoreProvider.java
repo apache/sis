@@ -43,6 +43,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -179,14 +180,31 @@ public final class FolderStoreProvider extends DataStoreProvider {
 
     /**
      * Shared implementation of public {@code open(…)} methods.
+     * Note that this method may modify the given {@code options} set for its own purpose.
      *
      * @param  connector  information about the storage (URL, path, <i>etc</i>).
-     * @param  format     format name, or {@code null} if unspecified.
+     * @param  format     format name for directory content, or {@code null} if unspecified.
      * @param  options    whether to create a new directory, overwrite existing content, <i>etc</i>.
      */
     private DataStore open(final StorageConnector connector, final String format, final EnumSet<StandardOpenOption> options)
             throws DataStoreException
     {
+        /*
+         * Determine now the provider to use for directory content. We do that for determining if the component
+         * has write capability. If not, then the WRITE, CREATE and related options will be ignored.  If we can
+         * not determine whether the component store has write capabilities (i.e. if canWrite(…) returns null),
+         * assume that the answer is "yes".
+         */
+        final DataStoreProvider componentProvider;
+        if (format != null) {
+            componentProvider = StoreUtilities.providerByFormatName(format.trim());
+            if (Boolean.FALSE.equals(StoreUtilities.canWrite(componentProvider.getClass()))) {
+                options.clear();            // No write capability.
+            }
+        } else {
+            componentProvider = null;
+            options.clear();                // Can not write if we don't know the components format.
+        }
         Path path = null;
         final Store store;
         try {
@@ -202,11 +220,10 @@ public final class FolderStoreProvider extends DataStoreProvider {
                     Files.createDirectory(path);                        // IOException if the directory already exists.
                 }
             }
-            // TODO: check also if @Capabilities.values().contains(WRITE).
             if (options.contains(StandardOpenOption.WRITE)) {
-                store = new WritableStore(this, connector, format);     // May throw NoSuchFileException.
+                store = new WritableStore(this, connector, componentProvider);    // May throw NoSuchFileException.
             } else {
-                store = new Store(this, connector, format);             // May throw NoSuchFileException.
+                store = new Store(this, connector, componentProvider);            // May throw NoSuchFileException.
             }
             /*
              * If there is a destructive operation to perform (TRUNCATE_EXISTING), do it last only
@@ -257,12 +274,11 @@ public final class FolderStoreProvider extends DataStoreProvider {
         connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
         connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
         connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
-        final String format = pg.getValue(FORMAT);
-        final EnumSet<StandardOpenOption> options = EnumSet.noneOf(StandardOpenOption.class);
-        if (format != null && Boolean.TRUE.equals(pg.getValue(URIDataStore.Provider.CREATE_PARAM))) {
-            options.add(StandardOpenOption.WRITE);
+        final EnumSet<StandardOpenOption> options = EnumSet.of(StandardOpenOption.WRITE);
+        if (Boolean.TRUE.equals(pg.getValue(URIDataStore.Provider.CREATE_PARAM))) {
+            options.add(StandardOpenOption.CREATE);
         }
-        return open(connector, format, options);
+        return open(connector, pg.getValue(FORMAT), options);
     }
 
     /**

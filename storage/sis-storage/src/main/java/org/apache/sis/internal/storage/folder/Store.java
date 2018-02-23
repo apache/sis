@@ -48,7 +48,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -130,18 +129,18 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
     /**
      * Creates a new folder store from the given file, path or URI.
      * The folder store will attempt to open only the files of the given format, if non-null.
-     * If a null format name is specified, then the folder store will attempt to open any file
+     * If a null format is specified, then the folder store will attempt to open any file
      * found in the directory (this may produce confusing results).
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @param  format     name of the format to use for reading or writing the directory content, or {@code null}.
+     * @param  format     format to use for reading or writing the directory content, or {@code null}.
      * @throws UnsupportedStorageException if the given format name is unknown.
      * @throws DataStoreException if an error occurred while fetching the directory {@link Path}.
      * @throws IOException if an error occurred while using the directory {@code Path}.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'folders' does not escape.
-    Store(final DataStoreProvider provider, final StorageConnector connector, String format)
+    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'children' does not escape.
+    Store(final DataStoreProvider provider, final StorageConnector connector, final DataStoreProvider format)
             throws DataStoreException, IOException
     {
         super(provider, connector);
@@ -151,18 +150,7 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
         encoding = connector.getOption(OptionKey.ENCODING);
         children = new ConcurrentHashMap<>();
         children.put(location.toRealPath(), this);
-        if (format == null) {
-            componentProvider = null;
-        } else {
-            format = format.trim();
-            for (DataStoreProvider cp : DataStores.providers()) {
-                if (format.equalsIgnoreCase(StoreUtilities.getIdentifier(cp))) {
-                    componentProvider = cp;
-                    return;
-                }
-            }
-            throw new UnsupportedStorageException(Errors.getResources(super.getLocale()).getString(Errors.Keys.UnsupportedFormat_1, format));
-        }
+        componentProvider = format;
     }
 
     /**
@@ -335,12 +323,19 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
     }
 
     /**
+     * Returns the resource bundle to use for error message in exceptions.
+     */
+    final Resources messages() {
+        return Resources.forLocale(getLocale());
+    }
+
+    /**
      * Returns a localized string for the given key and value.
      *
      * @param  key  one of the {@link Resources.Keys} constants ending with {@code _1} suffix.
      */
     final String message(final short key, final Object value) {
-        return Resources.forLocale(getLocale()).getString(key, value);
+        return messages().getString(key, value);
     }
 
     /**
