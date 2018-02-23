@@ -132,6 +132,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ConcurrentWrite_1 = 20;
 
         /**
+         * Whether to allow new data store creation if the source to open does not already exist.
+         */
+        public static final short DataStoreCreate = 51;
+
+        /**
          * Character encoding used by the data store.
          */
         public static final short DataStoreEncoding = 29;

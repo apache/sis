@@ -97,7 +97,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
         FORMAT     = builder.addName("format"  ).setDescription(Resources.formatInternational(Resources.Keys.DirectoryContentFormatName)).create(String.class, null);
         location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
-        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT);
+        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT, URIDataStore.Provider.CREATE_PARAM);
     }
 
     /**
@@ -259,7 +259,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
         connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
         final String format = pg.getValue(FORMAT);
         final EnumSet<StandardOpenOption> options = EnumSet.noneOf(StandardOpenOption.class);
-        if (format != null) {
+        if (format != null && Boolean.TRUE.equals(pg.getValue(URIDataStore.Provider.CREATE_PARAM))) {
             options.add(StandardOpenOption.WRITE);
         }
         return open(connector, format, options);

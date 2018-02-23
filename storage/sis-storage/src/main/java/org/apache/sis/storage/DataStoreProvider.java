@@ -83,14 +83,24 @@ public abstract class DataStoreProvider {
      * Name of the parameter that specifies whether to allow creation of a new {@code DataStore} if none exist
      * at the given location. A parameter named {@value} may be included in the group of parameters returned by
      * {@link #getOpenParameters()} if the data store supports write operations. The parameter value is often a
-     * {@link Boolean}, but other types are allowed. The default value should be {@link Boolean#FALSE} or equivalent.
+     * {@link Boolean} and the default value should be {@link Boolean#FALSE} or equivalent.
      *
-     * <p>Implementors are encouraged to define a parameter with this name in complement to the {@value #LOCATION}
-     * parameter if write operations are supported. The parameter should be defined as optional and typed with a
-     * well-known Java class such as {@link Boolean} or {@link String}. If this parameter value is not set or is
-     * set to {@code false}, then the {@link #open(ParameterValueGroup)} method should fail if no file or database
-     * exists at the URL or path given by the {@value #LOCATION} parameter. Otherwise if this parameter is set to
-     * {@code true}, then the {@code open(…)} method may create files, a directory or a database at the given location.</p>
+     * <p>Implementors are encouraged to define an <em>optional</em> parameter with this name in complement to the
+     * {@value #LOCATION} parameter <em>only if</em> write operations are supported. If this parameter value is not
+     * set or is set to {@code false}, then the {@link #open(ParameterValueGroup)} method should fail if no file or
+     * database exists at the URL or path given by the {@value #LOCATION} parameter. Otherwise if this parameter is
+     * set to {@code true}, then the {@code open(…)} method may create files, a directory or a database at the given
+     * location.</p>
+     *
+     * <div class="note"><b>Relationship with standard file open options</b>
+     * <p>For data stores on file systems, a <code>{@value} = true</code> parameter value is equivalent to opening a file
+     * with {@link java.nio.file.StandardOpenOption#CREATE} and {@link java.nio.file.StandardOpenOption#APPEND APPEND}.
+     * The other file standard options like {@link java.nio.file.StandardOpenOption#CREATE_NEW CREATE_NEW} and
+     * {@link java.nio.file.StandardOpenOption#TRUNCATE_EXISTING TRUNCATE_EXISTING} should not be accessible through
+     * this {@value} parameter. The reason is that {@link ParameterValueGroup} may be used for storing parameters
+     * permanently (for example in a configuration file or in a database) for reopening the same {@link DataStore}
+     * many times. File options designed for being used only once like {@code CREATE_NEW} and {@code TRUNCATE_EXISTING}
+     * are incompatible with this usage.</p></div>
      *
      * @see #LOCATION
      * @see #getOpenParameters()
