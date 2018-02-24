@@ -44,9 +44,6 @@ public interface WritableAggregate extends Aggregate {
      * then this {@code Aggregate} may throw an exception.
      * </div>
      *
-     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
-     * indicates that this method should be implemented.</p>
-     *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.
      * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate} for another reason.
@@ -56,9 +53,6 @@ public interface WritableAggregate extends Aggregate {
     /**
      * Removes a {@code Resource} from this {@code Aggregate}.
      * This operation is destructive: the {@link Resource} and it's related data will be removed.
-     *
-     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
-     * indicates that this method should be implemented.</p>
      *
      * @param  resource  child resource to remove, should not be null.
      * @throws DataStoreException if the given resource could not be removed for another reason.
