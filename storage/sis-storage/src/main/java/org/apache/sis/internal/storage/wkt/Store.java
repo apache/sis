@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.wkt;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.logging.LogRecord;
 import java.io.Reader;
 import java.io.IOException;
 import java.text.ParsePosition;
@@ -27,13 +26,13 @@ import java.text.ParseException;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
@@ -43,7 +42,7 @@ import org.apache.sis.util.CharSequences;
  * A data store which creates data objects from a WKT definition.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -144,19 +143,10 @@ final class Store extends URIDataStore {
     }
 
     /**
-     * Reports a warning.
-     */
-    private void log(final LogRecord record) {
-        record.setSourceClassName(Store.class.getName());
-        record.setSourceMethodName("getMetadata");          // Public facade for the parse() method.
-        record.setLoggerName(Loggers.WKT);
-        listeners.warning(record);
-    }
-
-    /**
      * Returns the metadata associated to the parsed objects, or {@code null} if none.
      * The current implementation retains only instances of {@link ReferenceSystem}
-     * and ignore other objects.
+     * and ignore other objects. The identification information {@code Citation} is
+     * set to the CRS name and identifier, unless there is ambiguity.
      *
      * @return the metadata associated to the parsed object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the parsing process.
@@ -166,13 +156,22 @@ final class Store extends URIDataStore {
         if (metadata == null) {
             parse();
             final MetadataBuilder builder = new MetadataBuilder();
-            builder.addTitle(getDisplayName());
+            String name = null;
+            int count = 0;
             for (final Object object : objects) {
                 if (object instanceof ReferenceSystem) {
-                    builder.addReferenceSystem((ReferenceSystem) object);
+                    final ReferenceSystem rs = (ReferenceSystem) object;
+                    builder.addReferenceSystem(rs);
+                    name = IdentifiedObjects.getName(rs, null);
+                    count++;
+                    builder.addIdentifier(IdentifiedObjects.getIdentifier(rs, null), MetadataBuilder.Scope.RESOURCE);
                 }
             }
-            addTitleOrIdentifier(builder);
+            if (count == 1) {                   // Set the citation title only if non-ambiguous.
+                builder.addTitle(name);
+            } else {
+                addTitleOrIdentifier(builder);
+            }
             metadata = builder.build(true);
         }
         return metadata;

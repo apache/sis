@@ -46,7 +46,7 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
     /**
      * {@code true} if the call to {@link #getFormat()} caught an exception. In such case,
      * we log a warning only the first time and use a finer logging level the other times.
-     * The intend is to avoid polluting the logs with too many warnings.
+     * The intent is to avoid polluting the logs with too many warnings.
      */
     private volatile boolean logged;
 

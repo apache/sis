@@ -76,7 +76,7 @@ public class MetadataServices extends OptionalDependency {
                 if (c == null) {
                     /*
                      * Double-checked locking: okay since Java 5 provided that the 'instance' field is volatile.
-                     * In the particular case of this class, the intend is to ensure that SystemListener.add(…)
+                     * In the particular case of this class, the intent is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
                     c = getInstance(MetadataServices.class, Modules.UTILITIES, "sis-metadata",

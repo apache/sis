@@ -73,7 +73,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * (<strong>not</strong> the UCUM format). In particular, this symbol uses Unicode characters
      * for arithmetic operators and superscripts, as in “m/s²”. However this symbol should never
      * contains the unit conversion terms. For example “km” is okay, but “1000⋅m” is not.
-     * The intend of those rules is to make easier to analyze the symbol in methods like
+     * The intent of those rules is to make easier to analyze the symbol in methods like
      * {@link ConventionalUnit#power(String)}.
      *
      * <p>Users can override this symbol by call to {@link UnitFormat#label(Unit, String)},

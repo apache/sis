@@ -384,7 +384,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
 
     /**
      * Tests unmarshalling of a parameter value group. The XML file does not use {@code xlink:href} attributes;
-     * descriptor definitions are repeated. The intend of this test is to test Apache SIS capability to replace
+     * descriptor definitions are repeated. The intent of this test is to test Apache SIS capability to replace
      * duplicates instances by unique instances.
      *
      * @throws JAXBException if an error occurred during unmarshalling.

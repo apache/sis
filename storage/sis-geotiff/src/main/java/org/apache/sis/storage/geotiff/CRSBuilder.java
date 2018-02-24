@@ -1369,7 +1369,7 @@ final class CRSBuilder {
 
     /**
      * Map projection parameters to be considered as aliases. This table is used for reading GeoTIFF files
-     * that are not really well-formed, but for which we can reasonably guess what was the producer intend
+     * that are not really well-formed, but for which we can reasonably guess what was the producer intent
      * and which parameters were confused. See {@link #aliases(Map)} for more explanation.
      */
     private static final short[][] PARAMETER_ALIASES = {

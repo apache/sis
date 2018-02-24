@@ -234,7 +234,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * @param  semiMajor  the descriptor for locating the semi-major axis parameter.
      * @param  semiMinor  the descriptor for locating the semi-minor axis parameter.
      * @param  candidate  an ellipsoid to return if the axis lengths match the lengths found in the parameters,
-     *                    or {@code null} if none. The intend is to use the pre-defined "GRS 1980" ellipsoid if
+     *                    or {@code null} if none. The intent is to use the pre-defined "GRS 1980" ellipsoid if
      *                    we can, because that ellipsoid is defined by inverse flattening factor instead than by
      *                    semi-minor axis length.
      * @return a temporary ellipsoid encapsulating the axis lengths found in the parameters.

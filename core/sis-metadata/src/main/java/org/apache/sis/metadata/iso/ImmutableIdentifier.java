@@ -500,7 +500,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         /*
          * The code, codeSpace, authority and version local variables in this method usually have the exact same
          * value than the fields of the same name in this class.  But we get those values by invoking the public
-         * methods in order to give to users a chance to override those properties.  The intend is also to use a
+         * methods in order to give to users a chance to override those properties.  The intent is also to use a
          * consistent approach for all 'formatTo' implementations, since some other classes have no choice other
          * than using the public methods.
          */

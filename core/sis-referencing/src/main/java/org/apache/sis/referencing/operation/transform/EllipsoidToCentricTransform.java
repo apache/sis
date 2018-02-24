@@ -898,7 +898,7 @@ next:   while (--numPts >= 0) {
         /**
          * If this transform returns three-dimensional outputs, and if the transform just after this one
          * just drops the height values, then replaces this transform by a two-dimensional one.
-         * The intend is to handle the following sequence of operations defined in the EPSG database:
+         * The intent is to handle the following sequence of operations defined in the EPSG database:
          *
          * <ol>
          *   <li>Inverse of <cite>Geographic/geocentric conversions</cite> (EPSG:9602)</li>
@@ -978,7 +978,7 @@ next:   while (--numPts >= 0) {
     /**
      * If this transform expects three-dimensional inputs, and if the transform just before this one
      * unconditionally sets the height to zero, then replaces this transform by a two-dimensional one.
-     * The intend is to handle the following sequence of operations defined in the EPSG database:
+     * The intent is to handle the following sequence of operations defined in the EPSG database:
      *
      * <ol>
      *   <li>Inverse of <cite>Geographic 3D to 2D conversion</cite> (EPSG:9659)</li>

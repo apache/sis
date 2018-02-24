@@ -47,7 +47,7 @@ import org.apache.sis.internal.util.Citations;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DataStores#open(Object)
  *

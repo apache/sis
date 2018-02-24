@@ -22,7 +22,7 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup} used in SIS.
- * Their intend is to bring some order in debugger informations, by grouping the threads created by SIS together
+ * Their intent is to bring some order in debugger informations, by grouping the threads created by SIS together
  * under the same parent tree node.
  *
  * <div class="section">Note on dependencies</div>
@@ -39,7 +39,7 @@ final class Threads extends Static {
     /**
      * The parent of every threads declared in this class. This parent will be declared as close
      * as possible to the root of all thread groups (i.e. not as an application thread subgroup).
-     * The intend is to separate the library thread groups from the user application thread groups.
+     * The intent is to separate the library thread groups from the user application thread groups.
      */
     static final ThreadGroup SIS;
     static {

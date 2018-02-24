@@ -39,11 +39,26 @@ import org.apache.sis.util.resources.Errors;
  * <p>If desired values in decreasing order can be supported by inverting the sign of all values,
  * then concatenating this transform with a transform that multiply all output values by -1.</p>
  *
+ * <div class="section">Extrapolation</div>
+ * If an input value is outside the expected range of values, this class extrapolates using the
+ * slope defined by the two first points if the requested value is before, or the slope defined
+ * by the two last points if the requested value is after.   In other words, extrapolations are
+ * computed using only values at the extremum where extrapolation happen. This rule causes less
+ * surprising behavior when computing a data cube envelope, which may need extrapolation by 0.5
+ * pixel before the first value or after the last value.
+ *
+ * <div class="note"><b>Example:</b>
+ * if a vertical dimension is made of slices at y₀=5, y₁=10, y₂=100 and y₃=250 meters, then linear
+ * interpolation at 0.5 is 7.5 meters and extrapolation at -0.5 is expected to give 2.5 meters.</div>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
- * @since   0.7
+ * @version 1.0
+ *
+ * @see MathTransforms#interpolate(double[], double[])
+ *
+ * @since 0.7
  * @module
  */
 final class LinearInterpolator1D extends AbstractMathTransform1D implements Serializable {
@@ -54,13 +69,9 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
 
     /**
      * The sequence values specified at construction time.
+     * Must contain at least 2 values.
      */
     private final double[] values;
-
-    /**
-     * The average function slope. Used only for extrapolations.
-     */
-    private final double slope;
 
     /**
      * If the transform is invertible, the inverse. Otherwise {@code null}.
@@ -72,15 +83,13 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      * Creates a new transform which will interpolate in the given table of values.
      * The inputs are {0, 1, … , <var>N</var>} where <var>N</var> is length of output values.
      *
-     * <p>This constructor assumes that the {@code values} array have already be clones,
-     * so it will not clone it again.</p>
+     * <p>This constructor assumes that the {@code values} array has already been cloned,
+     * so it will not clone it again. That array shall contain at least two values.</p>
      *
      * @param values  the <var>y</var> values in <var>y=f(x)</var> where <var>x</var> = {0, 1, … , {@code values.length-1}}.
-     * @param slope   the value to use for extrapolation.
      */
-    private LinearInterpolator1D(final double[] values, final double slope) {
+    private LinearInterpolator1D(final double[] values) {
         this.values = values;                           // Cloning this array is caller's responsibility.
-        this.slope  = slope;
         double last = values[0];
         for (int i=1; i<values.length; i++) {
             if (!(last <= (last = values[i]))) {        // Use '!' for catching NaN values.
@@ -93,14 +102,15 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
 
     /**
      * Creates a transform for the given values. This method returns an affine transform instead than an
-     * interpolator if the given values form a series with a constant increment.
+     * interpolator if the given values form a series with a constant increment. The given array shall
+     * contain at least two values.
      *
      * @param  values  a <strong>copy</strong> of the user-provided values. This array may be modified.
      */
     private static MathTransform1D create(final double[] values) {
         final int n = values.length - 1;
         final double offset = values[0];
-        double slope = (values[n] - offset) / n;
+        final double slope = (values[n] - offset) / n;
         final double as = Math.abs(slope);
         /*
          * If the increment between values is constant (with a small tolerance factor),
@@ -122,12 +132,11 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
          */
         final boolean isReverted = (slope < 0);
         if (isReverted) {
-            slope = -slope;
             for (i=0; i <= n; i++) {
                 values[i] = -values[i];
             }
         }
-        MathTransform1D tr = new LinearInterpolator1D(values, slope);
+        MathTransform1D tr = new LinearInterpolator1D(values);
         if (isReverted) {
             tr = new ConcatenatedTransformDirect1D(tr, LinearTransform1D.NEGATE);
         }
@@ -223,17 +232,21 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
             final int n = values.length - 1;
             if (i < n) {
                 x -= i;
-                y = values[i] * (1-x) + values[i+1] * x;
-                d = values[i+1] - values[i];
+                final double y0 = values[i  ];
+                final double y1 = values[i+1];
+                y = y0 * (1-x) + y1 * x;
+                d = y1 - y0;
             } else {
                 // x is after the last available value.
-                y = (x - n) * slope + values[n];
-                d = slope;
+                final double y1 = values[n];
+                d = y1 - values[n-1];
+                y = (x - n) * d + y1;
             }
         } else {
             // x is before the first available value.
-            y = x * slope + values[0];
-            d = slope;
+            final double y0 = values[0];
+            d = values[1] - y0;
+            y = x * d + y0;
         }
         if (dstPts != null) {
             dstPts[dstOff] = y;
@@ -256,11 +269,13 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
                 return values[i] * (1-x) + values[i+1] * x;
             } else {
                 // x is after the last available value.
-                return (x - n) * slope + values[n];
+                final double y1 = values[n];
+                return (x - n) * (y1 - values[n-1]) + y1;
             }
         } else {
             // x is before the first available value.
-            return x * slope + values[0];
+            final double y0 = values[0];
+            return x * (values[1] - y0) + y0;
         }
     }
 
@@ -271,13 +286,8 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      */
     @Override
     public double derivative(final double x) {
-        if (x >= 0) {
-            final int i = (int) x;
-            if (i < values.length - 1) {
-                return values[i+1] - values[i];
-            }
-        }
-        return slope;
+        final int i = Math.max(0, Math.min(values.length - 2, (int) x));
+        return values[i+1] - values[i];
     }
 
     /**
@@ -307,7 +317,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
 
         /**
          * Combines {@link #transform(double)}, {@link #derivative(double)} in a single method call.
-         * The intend is to avoid to call {@link Arrays#binarySearch(double[], double)} twice for the
+         * The intent is to avoid to call {@link Arrays#binarySearch(double[], double)} twice for the
          * same value.
          */
         @Override
@@ -320,7 +330,8 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
             int i = Arrays.binarySearch(values, y);
             if (i >= 0) {
                 x = i;
-                d = (i >= 1 && i < values.length) ? (values[i] - values[i-1]) : slope;
+                i = Math.max(1, Math.min(values.length - 1, i));
+                d = values[i] - values[i-1];
             } else {
                 i = ~i;
                 if (i >= 1) {
@@ -330,11 +341,13 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
                     } else {
                         // y is after the last available value.
                         final int n = values.length - 1;
-                        x = (y - values[n]) / (d = slope) + n;
+                        final double y1 = values[n];
+                        x = (y - y1) / (d = y1 - values[n-1]) + n;
                     }
                 } else {
                     // y is before the first available value.
-                    x = (y - values[0]) / (d = slope);
+                    final double y0 = values[0];
+                    x = (y - y0) / (d = values[1] - y0);
                 }
             }
             if (dstPts != null) {
@@ -361,11 +374,13 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
                     } else {
                         // y is after the last available value.
                         final int n = values.length - 1;
-                        return (y - values[n]) / slope + n;
+                        final double y1 = values[n];
+                        return (y - y1) / (y1 - values[n-1]) + n;
                     }
                 } else {
                     // y is before the first available value.
-                    return (y - values[0]) / slope;
+                    final double y0 = values[0];
+                    return (y - y0) / (values[1] - y0);
                 }
             }
         }
@@ -380,13 +395,8 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
             if (i < 0) {
                 i = ~i;
             }
-            final double d;
-            if (i >= 1 && i < values.length) {
-                d = (values[i] - values[i-1]);
-            } else {
-                d = slope;
-            }
-            return 1 / d;
+            i = Math.max(1, Math.min(values.length - 1, i));
+            return 1 / (values[i] - values[i-1]);
         }
     }
 

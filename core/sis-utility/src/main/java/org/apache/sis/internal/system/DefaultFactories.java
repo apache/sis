@@ -195,7 +195,7 @@ public final class DefaultFactories extends SystemListener {
      * is equal or is a child of the SIS loader, then it is left unchanged. Otherwise the context
      * class loader is replaced by the SIS one.
      *
-     * <p>The intend of this method is to ensure that {@link ServiceLoader#load(Class)} will find the
+     * <p>The intent of this method is to ensure that {@link ServiceLoader#load(Class)} will find the
      * Apache SIS services even in an environment that defined an unsuitable context class loader.</p>
      *
      * @return the context class loader if suitable, or another class loader otherwise.

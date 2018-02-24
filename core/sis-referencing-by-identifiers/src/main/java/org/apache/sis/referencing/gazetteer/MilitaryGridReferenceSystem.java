@@ -1055,7 +1055,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             xEnd  = (((int) Math.ceil(bounds.getMaxX() / step))) * step;                    // Exclusive
             yEnd  = (((int) Math.ceil(bounds.getMaxY() / step))) * step;
             /*
-             * Determine if we should iterate on rows upward or downward. The intend is to iterate from equator to pole
+             * Determine if we should iterate on rows upward or downward. The intent is to iterate from equator to pole
              * in UTM zones, or from projection center to projection border in UPS cases.  Those directions enable some
              * optimizations.
              */

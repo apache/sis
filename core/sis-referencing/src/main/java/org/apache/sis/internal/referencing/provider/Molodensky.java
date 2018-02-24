@@ -256,7 +256,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
 
     /**
      * A temporary ellipsoid used only for passing arguments to the {@link MolodenskyTransform} constructor.
-     * The intend is to use the Δa and Δf values explicitely specified in the EPSG parameters if available,
+     * The intent is to use the Δa and Δf values explicitely specified in the EPSG parameters if available,
      * or to compute them only if no Δa or Δf values where specified.
      */
     @SuppressWarnings("serial")

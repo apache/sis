@@ -175,7 +175,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Infers all {@link DoubleDouble#error} with a default values inferred from {@link DoubleDouble#value}.
      * For example if a matrix element is exactly 3.141592653589793, there is good chances that the user's
-     * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would
+     * intent was to specify the {@link Math#PI} value, in which case this method will infer that we would
      * need to add 1.2246467991473532E-16 in order to get a value closer to π.
      */
     static void inferErrors(final double[] elements) {

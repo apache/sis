@@ -220,7 +220,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
             /*
              * Following forces the authority factory to iterate over all codes.
              * Since the iterator returns only non-deprecated codes, EPSG:4329
-             * should not be included. The intend is to verify that the fields
+             * should not be included. The intent is to verify that the fields
              * of type BOOLEAN have been properly handled.
              */
             codes = new HashSet<>(codes);

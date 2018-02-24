@@ -312,7 +312,7 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Returns a mapper between Java character sequences and the characters to write in WKT.
-     * The intend is to specify how to write characters that are not allowed in WKT strings
+     * The intent is to specify how to write characters that are not allowed in WKT strings
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>

@@ -345,7 +345,7 @@ public final class DoubleDouble extends Number {
      * SIS often creates matrices for unit conversions, and most conversion factors are defined precisely in base 10.
      * For example the conversion from feet to metres is defined by a factor of exactly 0.3048, which can not be
      * represented precisely as a {@code double}. Consequently if a value of 0.3048 is given, we can assume that
-     * the intend was to provide the "feet to metres" conversion factor and complete the double-double instance
+     * the intent was to provide the "feet to metres" conversion factor and complete the double-double instance
      * accordingly.
      *
      * @param  value  the value for which to get this error.

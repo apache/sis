@@ -106,7 +106,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
- * on intend (except indirectly), in order to make clear that those parameters are not used by subclasses.
+ * on intent (except indirectly), in order to make clear that those parameters are not used by subclasses.
  * The ability to recognize two {@code NormalizedProjection}s as {@linkplain #equals(Object, ComparisonMode) equivalent}
  * without consideration for the scale factor (among other) allow more efficient concatenation in some cases
  * (typically some combinations of inverse projection followed by a direct projection).

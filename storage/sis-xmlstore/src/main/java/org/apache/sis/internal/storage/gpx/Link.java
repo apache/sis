@@ -99,7 +99,7 @@ public final class Link implements OnlineResource {
 
     /**
      * Invoked by JAXB after unmarshalling. If the {@linkplain #uri} is not set but the {@link #text} looks
-     * like a URI, uses that text. The intend is to handle link that should have been defined like below:
+     * like a URI, uses that text. The intent is to handle link that should have been defined like below:
      *
      * {@preformat xml
      *   <link href="http://some.site.org">

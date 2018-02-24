@@ -349,7 +349,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * Returns a child namespace of the given name. The returned namespace will
      * have this namespace as its parent, and will use the same separator.
      *
-     * <p>The {@link #headSeparator} is not inherited by the children on intend, because this
+     * <p>The {@link #headSeparator} is not inherited by the children on intent, because this
      * method is used only by {@link DefaultScopedName} constructors in order to create a
      * sequence of parsed local names. For example in {@code "http://www.opengeospatial.org"}
      * the head separator is {@code "://"} for {@code "www"} (which is having this namespace),

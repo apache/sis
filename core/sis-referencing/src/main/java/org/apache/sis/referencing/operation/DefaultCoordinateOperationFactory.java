@@ -546,7 +546,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             transform = getMathTransformFactory().createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
         }
         /*
-         * The "operationType" property is currently undocumented. The intend is to help this factory method in
+         * The "operationType" property is currently undocumented. The intent is to help this factory method in
          * situations where the given operation method is not an Apache SIS implementation or does not override
          * getOperationType(), or the method is ambiguous (e.g. "Affine" can be used for both a transformation
          * or a conversion).

@@ -67,7 +67,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * {@code 0} if the element should be sorted in the usual order, or {@code -1}
      * if the elements should be sorted in reverse order (most frequent element first).
      * This value is XORed with the number of times <var>n</var> that an element is added: {@code n ^ order}.
-     * The intend is to store negative numbers in the {@link #count} map if this {@code FrequencySortedSet}
+     * The intent is to store negative numbers in the {@link #count} map if this {@code FrequencySortedSet}
      * has been created for reverse order.
      *
      * <div class="note"><b>Implementation note:</b>

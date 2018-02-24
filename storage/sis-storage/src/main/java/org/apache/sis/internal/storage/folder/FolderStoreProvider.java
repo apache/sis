@@ -16,13 +16,17 @@
  */
 package org.apache.sis.internal.storage.folder;
 
-import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.StandardOpenOption;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -39,6 +43,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.StoreMetadata;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
 
 // Branch-dependent imports
@@ -52,15 +59,16 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
+@StoreMetadata(formatName=FolderStoreProvider.NAME, capabilities={Capability.READ, Capability.WRITE})
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
      */
-    private static final String NAME = "folder";
+    static final String NAME = "folder";
 
     /**
      * Description of the parameter for formating conventions of dates and numbers.
@@ -78,6 +86,12 @@ public final class FolderStoreProvider extends DataStoreProvider {
     private static final ParameterDescriptor<Charset> ENCODING;
 
     /**
+     * Description of the parameter for name of format or {@code DataStoreProvider}
+     * to use for reading or writing the directory content.
+     */
+    private static final ParameterDescriptor<String> FORMAT;
+
+    /**
      * The group of parameter descriptors to be returned by {@link #getOpenParameters()}.
      */
     static final ParameterDescriptorGroup PARAMETERS;
@@ -88,8 +102,9 @@ public final class FolderStoreProvider extends DataStoreProvider {
         ENCODING   = annotate(builder, URIDataStore.Provider.ENCODING, remark);
         LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
         TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(TimeZone.class, null);
+        FORMAT     = builder.addName("format"  ).setDescription(Resources.formatInternational(Resources.Keys.DirectoryContentFormatName)).create(String.class, null);
         location   = new ParameterBuilder(URIDataStore.Provider.LOCATION_PARAM).create(Path.class, null);
-        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING);
+        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT, URIDataStore.Provider.CREATE_PARAM);
     }
 
     /**
@@ -101,8 +116,6 @@ public final class FolderStoreProvider extends DataStoreProvider {
 
     /**
      * The unique instance of this provider.
-     *
-     * @see #open(Path)
      */
     public static final FolderStoreProvider INSTANCE = new FolderStoreProvider();
 
@@ -157,6 +170,8 @@ public final class FolderStoreProvider extends DataStoreProvider {
 
     /**
      * Returns a data store implementation associated with this provider.
+     * The data store created by this method will try to auto-detect the format of every files in the directory.
+     * For exploring only the file of a known format, use {@link #open(ParameterValueGroup)} instead.
      *
      * @param  connector  information about the storage (URL, path, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
@@ -164,12 +179,89 @@ public final class FolderStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        try {
-            return new Store(this, connector);
-        } catch (IOException e) {
-            throw new DataStoreException(Resources.format(Resources.Keys.CanNotReadDirectory_1,
-                    connector.getStorageName()), e);
+        return open(connector, null, EnumSet.noneOf(StandardOpenOption.class));
+    }
+
+    /**
+     * Shared implementation of public {@code open(…)} methods.
+     * Note that this method may modify the given {@code options} set for its own purpose.
+     *
+     * @param  connector  information about the storage (URL, path, <i>etc</i>).
+     * @param  format     format name for directory content, or {@code null} if unspecified.
+     * @param  options    whether to create a new directory, overwrite existing content, <i>etc</i>.
+     */
+    private DataStore open(final StorageConnector connector, final String format, final EnumSet<StandardOpenOption> options)
+            throws DataStoreException
+    {
+        /*
+         * Determine now the provider to use for directory content. We do that for determining if the component
+         * has write capability. If not, then the WRITE, CREATE and related options will be ignored.  If we can
+         * not determine whether the component store has write capabilities (i.e. if canWrite(…) returns null),
+         * assume that the answer is "yes".
+         */
+        final DataStoreProvider componentProvider;
+        if (format != null) {
+            componentProvider = StoreUtilities.providerByFormatName(format.trim());
+            if (Boolean.FALSE.equals(StoreUtilities.canWrite(componentProvider.getClass()))) {
+                options.clear();            // No write capability.
+            }
+        } else {
+            componentProvider = null;
+            options.clear();                // Can not write if we don't know the components format.
         }
+        final Path path = connector.getStorageAs(Path.class);
+        final Store store;
+        try {
+            /*
+             * If the user asked to create a new directory, we need to perform this task before
+             * to create the Store (otherwise constructor will fail with NoSuchFileException).
+             * In the particular case of CREATE_NEW, we unconditionally attempt to create the
+             * directory in order to rely on the atomic check performed by Files.createDirectory(…).
+             */
+            boolean isNew = false;
+            if (options.contains(StandardOpenOption.CREATE)) {
+                if (options.contains(StandardOpenOption.CREATE_NEW) || Files.notExists(path)) {
+                    Files.createDirectory(path);                        // IOException if the directory already exists.
+                    isNew = true;
+                }
+            }
+            if (isNew || (options.contains(StandardOpenOption.WRITE) && Files.isWritable(path))) {
+                store = new WritableStore(this, connector, path, componentProvider);  // May throw NoSuchFileException.
+            } else {
+                store = new Store(this, connector, path, componentProvider);          // May throw NoSuchFileException.
+            }
+            /*
+             * If there is a destructive operation to perform (TRUNCATE_EXISTING), do it last only
+             * after we have successfully created the data store. The check for directory existence
+             * is also done after creation to be sure to check the path used by the store.
+             */
+            if (!Files.isDirectory(path)) {
+                throw new DataStoreException(Resources.format(Resources.Keys.FileIsNotAResourceDirectory_1, path));
+            }
+            if (options.contains(StandardOpenOption.TRUNCATE_EXISTING)) {
+                WritableStore.deleteRecursively(path, false);
+            }
+        } catch (IOException e) {
+            /*
+             * In case of error, Java FileSystem implementation tries to throw a specific exception
+             * (NoSuchFileException or FileAlreadyExistsException), but this is not guaranteed.
+             */
+            int isDirectory = 0;
+            final short errorKey;
+            if (e instanceof FileAlreadyExistsException) {
+                if (path != null && Files.isDirectory(path)) {
+                    isDirectory = 1;
+                }
+                errorKey = Resources.Keys.FileAlreadyExists_2;
+            } else if (e instanceof NoSuchFileException) {
+                errorKey = Resources.Keys.NoSuchResourceDirectory_1;
+            } else {
+                errorKey = Resources.Keys.CanNotCreateFolderStore_1;
+            }
+            throw new DataStoreException(Resources.format(errorKey,
+                    (path != null) ? path : connector.getStorageName(), isDirectory), e);
+        }
+        return store;
     }
 
     /**
@@ -186,17 +278,10 @@ public final class FolderStoreProvider extends DataStoreProvider {
         connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
         connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
         connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
-        return open(connector);
-    }
-
-    /**
-     * Returns a folder data store for the given path.
-     *
-     * @param  path  the directory for which to create a data store.
-     * @return a data store for the given directory.
-     * @throws DataStoreException if an error occurred while creating the data store instance.
-     */
-    public static DataStore open(final Path path) throws DataStoreException {
-        return INSTANCE.open(new StorageConnector(path));
+        final EnumSet<StandardOpenOption> options = EnumSet.of(StandardOpenOption.WRITE);
+        if (Boolean.TRUE.equals(pg.getValue(URIDataStore.Provider.CREATE_PARAM))) {
+            options.add(StandardOpenOption.CREATE);
+        }
+        return open(connector, pg.getValue(FORMAT), options);
     }
 }

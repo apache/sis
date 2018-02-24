@@ -212,7 +212,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
             }
             /*
              * If there is more than one value, replace only the first one and keep all other ones unchanged.
-             * The intend is to be consistent with the getter method, which returns the first element.
+             * The intent is to be consistent with the getter method, which returns the first element.
              */
             final ArrayList<Identifier> identifiers = new ArrayList<>(name.getIdentifiers());
             if (identifiers.isEmpty()) {
