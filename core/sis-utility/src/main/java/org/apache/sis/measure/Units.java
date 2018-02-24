@@ -27,18 +27,14 @@ import org.opengis.geometry.DirectPosition;         // For javadoc
 import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 
 import org.apache.sis.util.Static;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
 import static org.apache.sis.measure.UnitRegistry.SI;
 import static org.apache.sis.measure.UnitRegistry.ACCEPTED;
 import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
 import static org.apache.sis.measure.UnitRegistry.OTHER;
 import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
-import static org.apache.sis.measure.SexagesimalConverter.EPS;
 
 
 /**
@@ -1117,7 +1113,7 @@ public final class Units extends Static {
         final LinearConverter ten4  = LinearConverter.scale(10000, 1);
         /*
          * All Unit<Angle>.
-         * 20 is the greatest common denominator between 180 and 200. The intend is to have arguments as small
+         * 20 is the greatest common denominator between 180 and 200. The intent is to have arguments as small
          * as possible in the call to the scale(double, double) method, while keeping the right side integer.
          * Staying closer to zero during conversions helo to reduce rounding errors.
          */
@@ -1471,51 +1467,6 @@ public final class Units extends Static {
      */
     public static <Q extends Quantity<Q>> Unit<Q> multiply(Unit<Q> unit, double numerator, double denominator) {
         return unit.transform(LinearConverter.scale(numerator, denominator));
-    }
-
-    /**
-     * Multiplies the given unit by the given factor. For example multiplying {@link #METRE}
-     * by 1000 gives {@link #KILOMETRE}. Invoking this method is equivalent to invoking
-     * {@link Unit#multiply(double)} except for the following:
-     *
-     * <ul>
-     *   <li>A small tolerance factor is applied for a few factors commonly used in GIS.
-     *       For example {@code multiply(RADIANS, 0.0174532925199...)} will return {@link #DEGREE}
-     *       even if the given numerical value is slightly different than {@linkplain Math#PI π}/180.
-     *       The tolerance factor and the set of units handled especially may change in future SIS versions.</li>
-     *   <li>This method tries to returns unique instances for some common units.</li>
-     * </ul>
-     *
-     * @param  <Q>     the quantity measured by the unit.
-     * @param  unit    the unit to multiply.
-     * @param  factor  the multiplication factor.
-     * @return the unit multiplied by the given factor.
-     *
-     * @deprecated Replaced by Apache SIS implementation of {@link Unit#multiply(double)}.
-     */
-    @Deprecated
-    @Workaround(library="JSR-275", version="0.9.3")
-    @SuppressWarnings("unchecked")
-    public static <Q extends Quantity<Q>> Unit<Q> multiply(Unit<Q> unit, final double factor) {
-        if (RADIAN.equals(unit)) {
-            if (abs(factor - (PI / 180)) <= (EPS * PI/180)) {
-                return (Unit<Q>) DEGREE;
-            }
-            if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
-                return (Unit<Q>) GRAD;
-            }
-        } else if (METRE.equals(unit)) {
-            if (abs(factor - 0.3048) <= (EPS * 0.3048)) {
-                return (Unit<Q>) FOOT;
-            }
-            if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
-                return (Unit<Q>) US_SURVEY_FOOT;
-            }
-        }
-        if (abs(factor - 1) > EPS) {
-            unit = unit.multiply(factor);
-        }
-        return unit;
     }
 
     /**

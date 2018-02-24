@@ -214,7 +214,7 @@ public class SQLBuilder {
      * Appends a string as an escaped {@code LIKE} argument.
      * This method does not put any {@code '} character, and does not accept null argument.
      *
-     * <p>This method does not double the simple quotes of the given string on intend, because
+     * <p>This method does not double the simple quotes of the given string on intent, because
      * it may be used in a {@code PreparedStatement}. If the simple quotes need to be doubled,
      * then {@link #doubleQuotes(Object)} should be invoked explicitly.</p>
      *
@@ -274,7 +274,7 @@ public class SQLBuilder {
      *   REFERENCES "schema"."target" (primaryKey) ON UPDATE CASCADE ON DELETE RESTRICT
      * }
      *
-     * Note that the primary key is <strong>not</strong> quoted on intend.
+     * Note that the primary key is <strong>not</strong> quoted on intent.
      * If quoted are desired, then they must be added explicitly before to call this method.
      *
      * @param  schema      the schema for both tables.

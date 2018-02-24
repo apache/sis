@@ -36,7 +36,7 @@ import java.io.Writer;
  *   <li>Between any Java identifiers separated by a {@code '.'} character, insert a zero-width space before the dot.</li>
  * </ul>
  *
- * The intend is to avoid large amount of white spaces in Javadoc when a line content long code.
+ * The intent is to avoid large amount of white spaces in Javadoc when a line content long code.
  *
  * <p>Current version does not try to extends the standard doclet because the later is under revision in JDK 9.
  * We may revisit when JDK 9 become available, if their new standard doclet API is public.</p>

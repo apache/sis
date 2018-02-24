@@ -17,16 +17,16 @@
 package org.apache.sis.internal.storage.csv;
 
 import java.util.Collection;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.time.DateTimeException;
 import java.io.IOException;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.collection.BackingStoreException;
 
 // Branch-dependent imports
-import java.util.Spliterator;
-import java.util.function.Consumer;
-import java.time.DateTimeException;
 import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
@@ -121,7 +121,7 @@ class FeatureIterator implements Spliterator<Feature> {
                     /*
                      * If there is no time columns, then this column may be the trajectory (note that allowing
                      * CSV files without time is obviously a departure from Moving Features specification.
-                     * The intend is to have a CSV format applicable to other features than moving ones).
+                     * The intent is to have a CSV format applicable to other features than moving ones).
                      * Fall through in order to process trajectory.
                      */
                 }

@@ -936,6 +936,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnsupportedFormatVersion_2 = 159;
 
         /**
+         * Format “{0}” is unsupported.
+         */
+        public static final short UnsupportedFormat_1 = 181;
+
+        /**
          * Can not handle this instance of ‘{0}’ because arbitrary implementations are not yet
          * supported.
          */

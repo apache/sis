@@ -43,7 +43,7 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
 
     /**
      * The singleton instance to be returned by {@link CollectionsExt#emptyQueue()}.
-     * This is not parameterized on intend.
+     * This is not parameterized on intent.
      */
     @SuppressWarnings("rawtypes")
     static final Queue INSTANCE = new EmptyQueue();

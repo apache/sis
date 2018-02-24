@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.Aggregate;
@@ -42,7 +43,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -68,9 +69,32 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
+        final Set<String> identifiers = new HashSet<>(Arrays.asList("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Path path = testDirectory();
+        try (Store store = new Store(null, new StorageConnector(path), path, null)) {
+            assertEquals("Wrong number of data stores.", 4, store.components().size());
+            verifyContent(store, identifiers);
+        }
+        if (!identifiers.isEmpty()) {
+            fail("Missing resources: " + identifiers);
+        }
+    }
+
+    /**
+     * Verifies that specifying a format effectively restricts the number of resources to be found.
+     *
+     * @throws URISyntaxException if the URL to test data can not be converted to a path of the file system.
+     * @throws DataStoreException if an error occurred while reading the resources.
+     * @throws IOException if an I/O error occurs.
+     */
+    @Test
+    public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
         final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
-        try (Store store = new Store(null, new StorageConnector(testDirectory()))) {
-            assertEquals("Expected three data stores.", 3, store.components().size());
+        final ParameterValueGroup params = FolderStoreProvider.PARAMETERS.createValue();
+        params.parameter("location").setValue(testDirectory());
+        params.parameter("format").setValue("XML");
+        try (Store store = (Store) FolderStoreProvider.INSTANCE.open(params)) {
+            assertEquals("Expected one less data store.", 3, store.components().size());
             verifyContent(store, identifiers);
         }
         if (!identifiers.isEmpty()) {

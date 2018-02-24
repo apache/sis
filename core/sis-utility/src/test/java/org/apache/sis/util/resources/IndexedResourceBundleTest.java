@@ -160,7 +160,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
 
     /**
      * Tests the {@link IndexedResourceBundle#getString(short, Object)} method with a {@code CodeList} argument.
-     * The intend is to test the code list localization.
+     * The intent is to test the code list localization.
      */
     @Test
     @DependsOnMethod("testGetStringWithParameter")

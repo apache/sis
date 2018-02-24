@@ -58,7 +58,7 @@ public final class Semaphores {
     /**
      * A flag to indicate that {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}
      * is querying parameters of a {@code MathTransform} enclosed in the operation. This is often in the
-     * intend to format WKT of a {@code "ProjectedCRS"} element.
+     * intent to format WKT of a {@code "ProjectedCRS"} element.
      */
     public static final int ENCLOSED_IN_OPERATION = 8;
 

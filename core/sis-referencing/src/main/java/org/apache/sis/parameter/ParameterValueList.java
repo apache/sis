@@ -193,7 +193,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
         /*
          * If we had an uninitialized parameter (a parameter created by the DefaultParameterValueGroup constructor
          * and never been queried or set by the user), then the given parameter will replace the uninitialized.
-         * The intend is to allow users to set its own parameters by a call to group.values().addAll(myParam).
+         * The intent is to allow users to set its own parameters by a call to group.values().addAll(myParam).
          * Otherwise the given parameter will be added, in which case we need to check the cardinality.
          */
         final Identifier name = desc.getName();

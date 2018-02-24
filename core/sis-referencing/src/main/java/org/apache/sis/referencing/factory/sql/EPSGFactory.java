@@ -45,6 +45,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -270,7 +271,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 throw new UnavailableFactoryException(Initializer.unspecified(locale));
             }
         } catch (Exception e) {
-            throw new UnavailableFactoryException(message(e), e);
+            throw new UnavailableFactoryException(canNotUse(e), e);
         }
         dataSource   = ds;
         nameFactory  = factory(NameFactory.class,                "nameFactory",  properties);
@@ -293,12 +294,19 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     /**
      * Returns the message to put in an {@link UnavailableFactoryException} having the given exception as its cause.
      */
-    private String message(final Exception e) {
+    private String canNotUse(final Exception e) {
         String message = Exceptions.getLocalizedMessage(e, locale);
         if (message == null) {
             message = Classes.getShortClassName(e);
         }
-        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
+        return canNotUse(message);
+    }
+
+    /**
+     * Returns the message to put in an {@link UnavailableFactoryException} having the given cause.
+     */
+    private String canNotUse(final String cause) {
+        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, cause);
     }
 
     /**
@@ -367,15 +375,18 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * See <a href="https://issues.apache.org/jira/browse/LEGAL-183">LEGAL-183</a> for more information.</p>
      *
      * @param  connection  connection to the database where to create the EPSG schema.
-     * @throws FileNotFoundException if a SQL script has not been found,
-     *         typically because a required resource is not on the classpath.
-     * @throws IOException  if an I/O error occurred while reading a SQL script.
-     * @throws SQLException if an error occurred while writing to the database.
+     * @throws UnavailableFactoryException if installation failed. The exception will have a
+     *         {@link FileNotFoundException} cause if a SQL script has not been found
+     *         (typically because a required resource is not on the classpath), an
+     *         {@link IOException} if an I/O error occurred while reading a SQL script, or a
+     *         {@link SQLException} if an error occurred while writing to the database.
      *
      * @see InstallationScriptProvider
      */
-    public synchronized void install(final Connection connection) throws IOException, SQLException {
+    public synchronized void install(final Connection connection) throws UnavailableFactoryException {
         ArgumentChecks.ensureNonNull("connection", connection);
+        String    message = null;
+        Exception failure = null;
         try (EPSGInstaller installer = new EPSGInstaller(connection)) {
             final boolean ac = connection.getAutoCommit();
             if (ac) {
@@ -403,9 +414,21 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                     }
                 }
             } catch (IOException | SQLException e) {
-                installer.logFailure(locale, e);
-                throw e;
+                message = installer.failure(locale, e);
+                failure = e;
             }
+        } catch (SQLException e) {
+            message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, Constants.EPSG);
+            failure = e;
+        }
+        if (failure != null) {
+            /*
+             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * little bit simpler, keep only the root cause provided that the exception type is compatible.
+             */
+            UnavailableFactoryException exception = new UnavailableFactoryException(message, Exceptions.unwrap(failure));
+            exception.setUnavailableFactory(this);
+            throw exception;
         }
     }
 
@@ -455,7 +478,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 return newDataAccess(connection, tr);
             } else {
                 connection.close();
-                exception = new UnavailableFactoryException(SQLTranslator.tableNotFound(locale));
+                exception = new UnavailableFactoryException(canNotUse(SQLTranslator.tableNotFound(locale)));
             }
         } catch (Exception e) {                     // Really want to catch all exceptions here.
             if (connection != null) try {
@@ -463,11 +486,14 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
+            if (e instanceof FactoryException) {
+                throw (FactoryException) e;
+            }
             /*
              * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
-            exception = new UnavailableFactoryException(message(e), Exceptions.unwrap(e));
+            exception = new UnavailableFactoryException(canNotUse(e), Exceptions.unwrap(e));
         }
         exception.setUnavailableFactory(this);
         throw exception;

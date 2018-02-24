@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -67,6 +67,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousName_4 = 15;
 
         /**
+         * Can not create resources based on the content of “{0}” directory.
+         */
+        public static final short CanNotCreateFolderStore_1 = 43;
+
+        /**
+         * Can not get metadata common to “{0}” files. The reason is: {1}
+         */
+        public static final short CanNotGetCommonMetadata_2 = 39;
+
+        /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
          */
         public static final short CanNotReadCRS_WKT_1 = 37;
@@ -92,6 +102,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_4 = 3;
 
         /**
+         * Can not remove resource “{1}” from aggregate “{0}”.
+         */
+        public static final short CanNotRemoveResource_2 = 49;
+
+        /**
+         * Can not save resources of type ‘{1}’ in a “{0}” store.
+         */
+        public static final short CanNotStoreResourceType_2 = 41;
+
+        /**
          * This {0} reader is closed.
          */
         public static final short ClosedReader_1 = 4;
@@ -112,6 +132,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ConcurrentWrite_1 = 20;
 
         /**
+         * Whether to allow new data store creation if the source to open does not already exist.
+         */
+        public static final short DataStoreCreate = 51;
+
+        /**
          * Character encoding used by the data store.
          */
         public static final short DataStoreEncoding = 29;
@@ -130,6 +155,11 @@ public final class Resources extends IndexedResourceBundle {
          * Timezone of dates in the data store.
          */
         public static final short DataStoreTimeZone = 32;
+
+        /**
+         * Name of the format to use for reading or writing the directory content.
+         */
+        public static final short DirectoryContentFormatName = 40;
 
         /**
          * Content of “{0}” directory.
@@ -153,6 +183,21 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FeatureNotFound_2 = 17;
 
         /**
+         * A {1,choice,0#file|1#directory} already exists at “{0}”.
+         */
+        public static final short FileAlreadyExists_2 = 45;
+
+        /**
+         * The “{0}” file is not a directory of resources.
+         */
+        public static final short FileIsNotAResourceDirectory_1 = 44;
+
+        /**
+         * Whether to assemble trajectory fragments (lines in CSV file) in a single feature instance.
+         */
+        public static final short FoliationRepresentation = 38;
+
+        /**
          * The {0} data store does not accept features of type “{1}”.
          */
         public static final short IllegalFeatureType_2 = 7;
@@ -174,14 +219,39 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentNameComponents_2 = 10;
 
         /**
+         * Resource “{0}” does not have an identifier.
+         */
+        public static final short MissingResourceIdentifier_1 = 42;
+
+        /**
          * Missing scheme in “{0}” URI.
          */
         public static final short MissingSchemeInURI_1 = 11;
 
         /**
+         * No directory of resources found at “{0}”.
+         */
+        public static final short NoSuchResourceDirectory_1 = 46;
+
+        /**
+         * Resource “{1}” is not part of aggregate “{0}”.
+         */
+        public static final short NoSuchResourceInAggregate_2 = 50;
+
+        /**
+         * Resource “{0}” is not a writable feature set.
+         */
+        public static final short NotAWritableFeatureSet_1 = 47;
+
+        /**
          * Processing executed on {0}.
          */
         public static final short ProcessingExecutedOn_1 = 12;
+
+        /**
+         * A resource already exists at “{0}”.
+         */
+        public static final short ResourceAlreadyExists_1 = 48;
 
         /**
          * More than one resource have the “{1}” identifier in the “{0}” data store.

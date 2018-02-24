@@ -30,14 +30,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.function.Predicate;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import java.util.function.Predicate;
 
 
 /**

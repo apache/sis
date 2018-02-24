@@ -801,7 +801,7 @@ public class MetadataStandard implements Serializable {
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
      * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
-     * for the properties that allow multiple values. If the intend is to unconditionally discard all previous
+     * for the properties that allow multiple values. If the intent is to unconditionally discard all previous
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *
@@ -832,23 +832,6 @@ public class MetadataStandard implements Serializable {
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
         return new ValueMap(metadata, getAccessor(new CacheKey(metadata.getClass(), baseType), true), keyPolicy, valuePolicy);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)}
-     * (i.e. a {@code Class} argument has been inserted after the metadata value).
-     *
-     * @param  metadata     the metadata object to view as a map.
-     * @param  keyPolicy    determines the string representation of map keys.
-     * @param  valuePolicy  whether the entries having null value or empty collection shall be included in the map.
-     * @return a map view over the metadata object.
-     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
-     */
-    @Deprecated
-    public Map<String,Object> asValueMap(final Object metadata, final KeyNamePolicy keyPolicy,
-            final ValueExistencePolicy valuePolicy) throws ClassCastException
-    {
-        return asValueMap(metadata, null, keyPolicy, valuePolicy);
     }
 
     /**
@@ -933,20 +916,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * @deprecated Replaced by {@link #asTreeTable(Object, Class, ValueExistencePolicy)}
-     * (i.e. a {@code Class} argument has been inserted after the metadata value).
-     *
-     * @param  metadata     the metadata object to view as a tree table.
-     * @param  valuePolicy  whether the property having null value or empty collection shall be included in the tree.
-     * @return a tree table representation of the specified metadata.
-     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
-     */
-    @Deprecated
-    public TreeTable asTreeTable(final Object metadata, final ValueExistencePolicy valuePolicy) throws ClassCastException {
-        return asTreeTable(metadata, null, valuePolicy);
-    }
-
-    /**
      * Replaces every properties in the specified metadata by their
      * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
      *
@@ -1016,7 +985,7 @@ public class MetadataStandard implements Serializable {
         if (inProgress.add(pair)) {
             /*
              * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
-             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
              * for all unused properties. Users should not see behavioral difference, except if they override
              * some getters with an implementation invoking other getters. However in such cases, users would
              * have been exposed to null values at XML marshalling time anyway.

@@ -191,7 +191,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
         final byte[] sample = new byte[32];
         data.readFully(sample);
         /*
-         * Request again the InputStream and read the same amount of bytes than above. The intend of this test
+         * Request again the InputStream and read the same amount of bytes than above. The intent of this test
          * is to verify that StorageConnector has reseted the InputStream position before to return it.
          * Note that this test requires InputStream implementations supporting mark/reset operations
          * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),

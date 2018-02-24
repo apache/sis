@@ -127,7 +127,7 @@ public final strictfp class AbridgedMolodenskyTransformTest extends MathTransfor
     }
 
     /**
-     * Tests a deserialized instance. The intend is to verify that the transient fields
+     * Tests a deserialized instance. The intent is to verify that the transient fields
      * are correctly recomputed.
      *
      * @throws FactoryException if an error occurred while creating a transform step.

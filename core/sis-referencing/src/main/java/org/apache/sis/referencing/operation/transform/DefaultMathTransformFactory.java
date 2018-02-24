@@ -686,7 +686,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * If the parameters given by the user were not created by {@code getDefaultParameters(String)}
          * or something equivalent, copies those parameters into the structure expected by the provider.
-         * The intend is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
+         * The intent is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
          * may write.
          *
          * <p>A side effect of this method is that the copy operation may perform a check of
@@ -1200,25 +1200,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         final Context context = ReferencingUtilities.createTransformContext(baseCRS, null, null);
         context.setTarget(derivedCS);
         return createParameterizedTransform(parameters, context);
-    }
-
-    /**
-     * Creates a math transform that represent a change of coordinate system.
-     *
-     * @param  source  the source coordinate system.
-     * @param  target  the target coordinate system.
-     * @return a conversion from the given source to the given target coordinate system.
-     * @throws FactoryException if the conversion can not be created.
-     *
-     * @deprecated Replaced by {@link #createCoordinateSystemChange(CoordinateSystem, CoordinateSystem, Ellipsoid)}
-     *
-     * @since 0.7
-     */
-    @Deprecated
-    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
-            throws FactoryException
-    {
-        return createCoordinateSystemChange(source, target, null);
     }
 
     /**

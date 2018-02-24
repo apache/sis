@@ -16,14 +16,23 @@
  */
 package org.apache.sis.internal.storage.csv;
 
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.feature.FoliationRepresentation;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -35,11 +44,13 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * the part of the caller. However the {@link Store} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
-@Capabilities(Capability.READ)
+@StoreMetadata(formatName   = StoreProvider.NAME,
+               fileSuffixes = "csv",
+               capabilities = Capability.READ)
 public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format names for static features and moving features.
@@ -101,6 +112,19 @@ public final class StoreProvider extends URIDataStore.Provider {
     }
 
     /**
+     * Description of the optional parameter for specifying whether the reader should assemble distinct CSV lines
+     * into a single {@code Feature} instance forming a foliation. This is ignored if the CSV file does not seem
+     * to contain moving features.
+     */
+    private static final ParameterDescriptor<FoliationRepresentation> FOLIATION;
+    static {
+        final ParameterBuilder builder = new ParameterBuilder();
+        FOLIATION = builder.addName("foliation")
+                .setDescription(Resources.formatInternational(Resources.Keys.FoliationRepresentation))
+                .create(FoliationRepresentation.class, FoliationRepresentation.ASSEMBLED);
+    }
+
+    /**
      * Creates a new provider.
      */
     public StoreProvider() {
@@ -138,6 +162,32 @@ public final class StoreProvider extends URIDataStore.Provider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector, false);
+        return new Store(this, connector);
+    }
+
+    /**
+     * Returns a CSV {@link Store} implementation from the given parameters.
+     *
+     * @return a data store implementation associated with this provider for the given parameters.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
+     */
+    @Override
+    public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("parameter", parameters);
+        final StorageConnector connector = connector(this, parameters);
+        final Parameters pg = Parameters.castOrWrap(parameters);
+        connector.setOption(DataOptionKey.ENCODING, pg.getValue(ENCODING));
+        connector.setOption(DataOptionKey.FOLIATION_REPRESENTATION, pg.getValue(FOLIATION));
+        return new Store(this, connector);
+    }
+
+    /**
+     * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
+     *
+     * @return the parameters descriptor for CSV files.
+     */
+    @Override
+    protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
+        return builder.createGroup(LOCATION_PARAM, ENCODING, FOLIATION);
     }
 }

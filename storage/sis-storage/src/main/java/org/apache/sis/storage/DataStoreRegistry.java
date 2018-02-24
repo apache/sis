@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Collection;
+import java.util.Set;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.internal.storage.Resources;
@@ -41,7 +41,7 @@ import org.apache.sis.util.ArgumentChecks;
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -80,7 +80,7 @@ final class DataStoreRegistry {
      *
      * @since 0.8
      */
-    public Collection<DataStoreProvider> providers() {
+    public Set<DataStoreProvider> providers() {
         synchronized (loader) {
             final Iterator<DataStoreProvider> providers = loader.iterator();
             return new LazySet<>(new Iterator<DataStoreProvider>() {

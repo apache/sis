@@ -183,6 +183,89 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
     }
 
     /**
+     * Returns the identified object scope from an authority code.
+     *
+     * @param  codeOrPath  the code allocated by an authority, or the path to a file.
+     * @return the object scope.
+     */
+    @Override
+    public String getScope(final String codeOrPath) {
+        final Object value;
+        try {
+            final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
+            value = IdentifiedObjects.getProperties(object).get(ReferenceSystem.SCOPE_KEY);
+        } catch (Exception exception) {
+            return getLocalizedMessage(exception);
+        }
+        return (value instanceof InternationalString)
+               ? ((InternationalString) value).toString(getJavaLocale()) : noResultString();
+    }
+
+    /**
+     * Returns the domain of validity from an authority code.
+     *
+     * @param  codeOrPath  the code allocated by an authority, or the path to a file.
+     * @return the domain of validity.
+     */
+    @Override
+    public String getDomainOfValidity(final String codeOrPath) {
+        final Object domain;
+        try {
+            final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
+            domain = IdentifiedObjects.getProperties(object).get(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY);
+        } catch (Exception exception) {
+            return getLocalizedMessage(exception);
+        }
+        if (domain instanceof Extent) {
+            final InternationalString description = ((Extent) domain).getDescription();
+            if (description != null) {
+                return description.toString(getJavaLocale());
+            }
+        }
+        return noResultString();
+    }
+
+    /**
+     * Returns the domain of validity as a geographic bounding box for an identified object.
+     * This method returns a 2×2 matrix:
+     * the first row contains the latitude and longitude of upper left corner,
+     * and the second row contains the latitude and longitude of bottom right corner.
+     * Units are degrees.
+     *
+     * @param  codeOrPath  the code allocated by an authority, or the path to a file.
+     * @return the object bounding box.
+     */
+    @Override
+    public double[][] getGeographicArea(final String codeOrPath) {
+        final CacheKey<GeographicBoundingBox> key = new CacheKey<>(GeographicBoundingBox.class, codeOrPath, null, null);
+        GeographicBoundingBox area = key.peek();
+        if (area == null) {
+            final Cache.Handler<GeographicBoundingBox> handler = key.lock();
+            try {
+                area = handler.peek();
+                if (area == null) try {
+                    final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
+                    final Object domain = IdentifiedObjects.getProperties(object).get(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY);
+                    if (domain instanceof Extent) {
+                        area = Extents.getGeographicBoundingBox((Extent) domain);
+                    }
+                } catch (Exception exception) {
+                    reportException("getGeographicArea", exception);
+                }
+            } finally {
+                handler.putAndUnlock(area);
+            }
+        }
+        if (area == null) {
+            return new double[][] {};
+        }
+        return new double[][] {
+            new double[] {area.getNorthBoundLatitude(), area.getWestBoundLongitude()},
+            new double[] {area.getSouthBoundLatitude(), area.getEastBoundLongitude()}
+        };
+    }
+
+    /**
      * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
      * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
      * instead of <cite>"Geodetic latitude"</cite>.
@@ -242,46 +325,6 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
             }
         }
         return name;
-    }
-
-    /**
-     * Returns the domain of validity as a geographic bounding box for an identified object.
-     * This method returns a 2×2 matrix:
-     * the first row contains the latitude and longitude of upper left corner,
-     * and the second row contains the latitude and longitude of bottom right corner.
-     * Units are degrees.
-     *
-     * @param  codeOrPath  the code allocated by an authority, or the path to a file.
-     * @return the object bounding box.
-     */
-    @Override
-    public double[][] getGeographicArea(final String codeOrPath) {
-        final CacheKey<GeographicBoundingBox> key = new CacheKey<>(GeographicBoundingBox.class, codeOrPath, null, null);
-        GeographicBoundingBox area = key.peek();
-        if (area == null) {
-            final Cache.Handler<GeographicBoundingBox> handler = key.lock();
-            try {
-                area = handler.peek();
-                if (area == null) try {
-                    final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
-                    final Object domain = IdentifiedObjects.getProperties(object).get(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY);
-                    if (domain instanceof Extent) {
-                        area = Extents.getGeographicBoundingBox((Extent) domain);
-                    }
-                } catch (Exception exception) {
-                    reportException("getGeographicArea", exception);
-                }
-            } finally {
-                handler.putAndUnlock(area);
-            }
-        }
-        if (area == null) {
-            return new double[][] {};
-        }
-        return new double[][] {
-            new double[] {area.getNorthBoundLatitude(), area.getWestBoundLongitude()},
-            new double[] {area.getSouthBoundLatitude(), area.getEastBoundLongitude()}
-        };
     }
 
     /**

@@ -21,6 +21,11 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
 import java.awt.geom.Rectangle2D;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
@@ -66,11 +71,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
 // Branch-dependent imports
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.function.Consumer;
-import java.util.stream.StreamSupport;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
@@ -1063,7 +1063,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             xEnd  = (((int) Math.ceil(bounds.getMaxX() / step))) * step;                    // Exclusive
             yEnd  = (((int) Math.ceil(bounds.getMaxY() / step))) * step;
             /*
-             * Determine if we should iterate on rows upward or downward. The intend is to iterate from equator to pole
+             * Determine if we should iterate on rows upward or downward. The intent is to iterate from equator to pole
              * in UTM zones, or from projection center to projection border in UPS cases.  Those directions enable some
              * optimizations.
              */

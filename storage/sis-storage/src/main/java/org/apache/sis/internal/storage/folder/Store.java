@@ -22,14 +22,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.concurrent.ConcurrentHashMap;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.UncheckedIOException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
@@ -45,10 +46,8 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
-
-// Branch-dependent imports
-import java.io.UncheckedIOException;
 
 
 /**
@@ -69,36 +68,36 @@ import java.io.UncheckedIOException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
-final class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path> {
+class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path> {
     /**
      * The {@link FolderStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
-    private final Path location;
+    protected final Path location;
 
     /**
      * Formating conventions of dates and numbers, or {@code null} if unspecified.
      */
-    private final Locale locale;
+    protected final Locale locale;
 
     /**
      * Timezone of dates in the data store, or {@code null} if unspecified.
      */
-    private final TimeZone timezone;
+    protected final TimeZone timezone;
 
     /**
      * Character encoding used by the data store, or {@code null} if unspecified.
      */
-    private final Charset encoding;
+    protected final Charset encoding;
 
     /**
      * All data stores (including sub-folders) found in the directory structure, including the root directory.
      * This is used for avoiding never-ending loop with symbolic links.
      */
-    private final Map<Path,DataStore> children;
+    final Map<Path,DataStore> children;
 
     /**
      * Information about the data store as a whole, created when first needed.
@@ -112,7 +111,14 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
      *
      * @see #components()
      */
-    private transient Collection<Resource> components;
+    transient Collection<Resource> components;
+
+    /**
+     * The provider to use for probing the directory content, opening files and creating new files.
+     * The provider is determined by the format name specified at construction time.
+     * This field is {@code null} if that format name is null.
+     */
+    protected final DataStoreProvider componentProvider;
 
     /**
      * {@code true} if {@link #sharedRepository(Path)} has already been invoked for {@link #location} path.
@@ -122,20 +128,30 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
 
     /**
      * Creates a new folder store from the given file, path or URI.
+     * The folder store will attempt to open only the files of the given format, if non-null.
+     * If a null format is specified, then the folder store will attempt to open any file
+     * found in the directory (this may produce confusing results).
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the stream.
+     * @param  path       the value of {@code connector.getStorageAs(Path.class)}.
+     * @param  format     format to use for reading or writing the directory content, or {@code null}.
+     * @throws UnsupportedStorageException if the given format name is unknown.
+     * @throws DataStoreException if an error occurred while fetching the directory {@link Path}.
+     * @throws IOException if an error occurred while using the directory {@code Path}.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'folders' does not escape.
-    Store(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException, IOException {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'children' does not escape.
+    Store(final DataStoreProvider provider, final StorageConnector connector, final Path path, final DataStoreProvider format)
+            throws DataStoreException, IOException
+    {
         super(provider, connector);
-        location = connector.getStorageAs(Path.class);
+        location = path;
         locale   = connector.getOption(OptionKey.LOCALE);
         timezone = connector.getOption(OptionKey.TIMEZONE);
         encoding = connector.getOption(OptionKey.ENCODING);
         children = new ConcurrentHashMap<>();
-        children.put(location.toRealPath(), this);
+        children.put(path.toRealPath(), this);
+        componentProvider = format;
     }
 
     /**
@@ -147,11 +163,12 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
      */
     private Store(final Store parent, final StorageConnector connector) throws DataStoreException {
         super(parent, connector);
-        location = connector.getStorageAs(Path.class);
-        locale   = connector.getOption(OptionKey.LOCALE);
-        timezone = connector.getOption(OptionKey.TIMEZONE);
-        encoding = connector.getOption(OptionKey.ENCODING);
-        children = parent.children;
+        location          = connector.getStorageAs(Path.class);
+        locale            = connector.getOption(OptionKey.LOCALE);
+        timezone          = connector.getOption(OptionKey.TIMEZONE);
+        encoding          = connector.getOption(OptionKey.ENCODING);
+        children          = parent.children;
+        componentProvider = parent.componentProvider;
     }
 
     /**
@@ -159,11 +176,13 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
+        final String format = StoreUtilities.getFormatName(componentProvider);
         final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : FolderStoreProvider.PARAMETERS).createValue();
-        pg.parameter(FolderStoreProvider.LOCATION).setValue(location);
+        pg.parameter(DataStoreProvider.LOCATION).setValue(location);
         if (locale   != null) pg.parameter("locale"  ).setValue(locale  );
         if (timezone != null) pg.parameter("timezone").setValue(timezone);
         if (encoding != null) pg.parameter("encoding").setValue(encoding);
+        if (format   != null) pg.parameter("format"  ).setValue(format);
         return pg;
     }
 
@@ -204,8 +223,8 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) {
+            final List<DataStore> resources = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(location, this)) {
-                final List<DataStore> resources = new ArrayList<>();
                 for (final Path candidate : stream) {
                     /*
                      * The candidate path may be a symbolic link to a file that we have previously read.
@@ -230,7 +249,16 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
                         connector.setOption(OptionKey.TIMEZONE, timezone);
                         connector.setOption(OptionKey.ENCODING, encoding);
                         try {
-                            next = DataStores.open(connector);
+                            if (componentProvider == null) {
+                                next = DataStores.open(connector);          // May throw UnsupportedStorageException.
+                            } else if (componentProvider.probeContent(connector).isSupported()) {
+                                next = componentProvider.open(connector);   // Open a file of specified format.
+                            } else if (Files.isDirectory(candidate)) {
+                                next = new Store(this, connector);          // Open a sub-directory.
+                            } else {
+                                connector.closeAllExcept(null);             // Not the format specified at construction time.
+                                continue;
+                            }
                         } catch (UnsupportedStorageException ex) {
                             if (!Files.isDirectory(candidate)) {
                                 connector.closeAllExcept(null);
@@ -261,7 +289,6 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
                     }
                     resources.add(next);
                 }
-                components = UnmodifiableArrayList.wrap(resources.toArray(new Resource[resources.size()]));
             } catch (DirectoryIteratorException | UncheckedIOException ex) {
                 // The cause is an IOException (no other type allowed).
                 throw new DataStoreException(canNotRead(), ex.getCause());
@@ -270,6 +297,7 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
             } catch (BackingStoreException ex) {
                 throw ex.unwrapOrRethrow(DataStoreException.class);
             }
+            components = UnmodifiableArrayList.wrap(resources.toArray(new Resource[resources.size()]));
         }
         return components;              // Safe because unmodifiable list.
     }
@@ -296,12 +324,19 @@ final class Store extends DataStore implements Aggregate, DirectoryStream.Filter
     }
 
     /**
+     * Returns the resource bundle to use for error message in exceptions.
+     */
+    final Resources messages() {
+        return Resources.forLocale(getLocale());
+    }
+
+    /**
      * Returns a localized string for the given key and value.
      *
      * @param  key  one of the {@link Resources.Keys} constants ending with {@code _1} suffix.
      */
-    private String message(final short key, final Object value) {
-        return Resources.forLocale(getLocale()).getString(key, value);
+    final String message(final short key, final Object value) {
+        return messages().getString(key, value);
     }
 
     /**

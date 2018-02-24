@@ -203,7 +203,7 @@ public final class ReferencingUtilities extends Static {
      * use an instance of {@link GeographicCRS}. Otherwise (i.e. if the two first dimensions are not geographic),
      * returns {@code null}.
      *
-     * <p>This method excludes geocentric CRS on intend. Some callers needs this exclusion as a way to identify
+     * <p>This method excludes geocentric CRS on intent. Some callers needs this exclusion as a way to identify
      * which CRS in a Geographic/Geocentric conversion is the geographic one. An other point of view is to said
      * that if this method returns a non-null value, then the coordinates are expected to be either two-dimensional
      * or three-dimensional with an ellipsoidal height.</p>
@@ -285,7 +285,7 @@ public final class ReferencingUtilities extends Static {
      *
      * <ul>
      *   <li>If the character is {@code '('} and the content until the closing {@code ')'} is a valid
-     *       Unicode identifier, then that part is included. The intend is to keep the prime meridian
+     *       Unicode identifier, then that part is included. The intent is to keep the prime meridian
      *       name in names like <cite>"NTF (Paris)"</cite>.</li>
      * </ul>
      *

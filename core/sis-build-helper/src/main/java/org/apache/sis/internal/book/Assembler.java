@@ -63,6 +63,8 @@ import static org.apache.sis.internal.book.CodeColorizer.toArray;
  *   <li>Generate below {@code <h1>} elements the navigation bar with links to the previous and next chapters.</li>
  * </ul>
  *
+ * See package javadoc for usage example.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
@@ -389,7 +391,9 @@ public final class Assembler {
                                         tableOfChapterContent = document.createElement("ul");
                                         tableOfChapterContent.setAttribute("class", "toc");
                                         final Node nav = document.createElement("nav");
-                                        nav.appendChild(document.createTextNode(resources.getString("this-chapter")));
+                                        final Node p = document.createElement("p");
+                                        p.appendChild(document.createTextNode(resources.getString("this-chapter")));
+                                        nav.appendChild(p);
                                         nav.appendChild(tableOfChapterContent);
                                         Node insertionPoint = node.getParentNode();             // The <header> element.
                                         do insertionPoint = insertionPoint.getNextSibling();    // The first paragraph.
@@ -595,6 +599,7 @@ public final class Assembler {
      * Generates the {@code "content/book/en|fr/developer-guide.html"} file from {@code "book/en|fr/index.html"}.
      * The only argument expected by this method is the language: {@code "en"} or {@code "fr"}.
      * The current directory shall be the parent directory of {@code "book"} and {@code "content"}.
+     * See package javadoc for usage example.
      *
      * @param  args  command-line arguments. Should contain exactly on value, which is the language.
      * @throws Exception if an I/O error, a XML parsing error or other kinds of error occurred.

@@ -130,7 +130,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * returned by {@link MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
      * because the Java reflection will discover and process the properties defined in the
-     * subclasses - which is usually not the intend when overriding a method.
+     * subclasses - which is usually not the intent when overriding a method.
      *
      * @return {@code true} if this metadata is empty.
      *
@@ -140,7 +140,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     public boolean isEmpty() {
         /*
          * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
-         * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+         * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
          * for all unused properties. Users should not see behavioral difference, except if they override
          * some getters with an implementation invoking other getters. However in such cases, users would
          * have been exposed to null values at XML marshalling time anyway.
@@ -196,7 +196,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
      * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
-     * for the properties that allow multiple values. If the intend is to unconditionally discard all previous
+     * for the properties that allow multiple values. If the intent is to unconditionally discard all previous
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *

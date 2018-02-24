@@ -28,6 +28,7 @@ import java.util.IdentityHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
+import java.util.logging.Level;
 import java.lang.ref.WeakReference;
 import java.lang.ref.PhantomReference;
 import java.io.PrintWriter;
@@ -50,6 +51,7 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
@@ -109,6 +111,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * The log level depends on the execution duration as specified in {@link PerformanceLevel}.
      */
     private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
+
+    /**
+     * Sentinel value when {@link #authority} can not be determined because the data access object
+     * can not be constructed.
+     */
+    private static final Citation UNAVAILABLE = new SimpleCitation("unavailable");
 
     /**
      * The authority, cached after first requested.
@@ -700,7 +708,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     @Override
     public Citation getAuthority() {
         Citation c = authority;
-        if (c == null) try {
+        if (c == null || c == UNAVAILABLE) try {
             final DAO factory = getDataAccess();
             try {
                 /*
@@ -712,8 +720,19 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 release("getAuthority", Citation.class, null);
             }
         } catch (FactoryException e) {
-            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
-                    ConcurrentAuthorityFactory.class, "getAuthority", e);
+            authority = UNAVAILABLE;
+            /*
+             * Use the warning level only on the first failure, then the fine level on all subsequent failures.
+             * Do not log the stack trace if we failed because of UnavailableFactoryException since it may be
+             * normal (the EPSG geodetic dataset is optional, even if strongly recommended).
+             */
+            final LogRecord record = new LogRecord(c == null ? Level.WARNING : Level.FINE, e.getLocalizedMessage());
+            if (!(e instanceof UnavailableFactoryException)) {
+                record.setThrown(e);
+            }
+            record.setLoggerName(Loggers.CRS_FACTORY);
+            Logging.log(ConcurrentAuthorityFactory.class, "getAuthority", record);
+            c = null;
         }
         return c;
     }
@@ -776,7 +795,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Returns {@code true} if the Data Access Object (DAO) does not provide a {@code create} method for the
-     * given type of object. The intend is to decide if the caller should delegate to the DAO or delegate to
+     * given type of object. The intent is to decide if the caller should delegate to the DAO or delegate to
      * a more generic method of this class (e.g. {@code createCoordinateReferenceSystem(String)} instead of
      * {@code createGeographicCRS(String)}) in order to give to {@code ConcurrentAuthorityFactory} a chance
      * to reuse a value presents in the cache.
@@ -1790,7 +1809,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory<?>) factory).getDataAccess();
                 /*
                  * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
-                 * The intend is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
+                 * The intent is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
                  * method succeed, no matter what happen after this point.
                  */
                 acquireCount = 1;

@@ -18,10 +18,9 @@ package org.apache.sis.storage;
 
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.simple.SimpleFormat;
-import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
@@ -58,7 +57,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -70,14 +69,43 @@ public abstract class DataStoreProvider {
      *
      * <p>Implementors are encouraged to define a parameter with this name
      * to ensure a common and consistent definition among providers.
-     * The parameter should be defined as mandatory and declared with a well-known Java class such as
+     * The parameter should be defined as mandatory and typed with a well-known Java class such as
      * {@link java.net.URI}, {@link java.nio.file.Path}, JDBC {@linkplain javax.sql.DataSource}, <i>etc</i>.
      * The type should have a compact textual representation, for serialization in XML or configuration files.
      * Consequently {@link java.io.InputStream} and {@link java.nio.channels.Channel} should be avoided.</p>
      *
+     * @see #CREATE
      * @see #getOpenParameters()
      */
     public static final String LOCATION = "location";
+
+    /**
+     * Name of the parameter that specifies whether to allow creation of a new {@code DataStore} if none exist
+     * at the given location. A parameter named {@value} may be included in the group of parameters returned by
+     * {@link #getOpenParameters()} if the data store supports write operations. The parameter value is often a
+     * {@link Boolean} and the default value should be {@link Boolean#FALSE} or equivalent.
+     *
+     * <p>Implementors are encouraged to define an <em>optional</em> parameter with this name in complement to the
+     * {@value #LOCATION} parameter <em>only if</em> write operations are supported. If this parameter value is not
+     * set or is set to {@code false}, then the {@link #open(ParameterValueGroup)} method should fail if no file or
+     * database exists at the URL or path given by the {@value #LOCATION} parameter. Otherwise if this parameter is
+     * set to {@code true}, then the {@code open(…)} method may create files, a directory or a database at the given
+     * location.</p>
+     *
+     * <div class="note"><b>Relationship with standard file open options</b>
+     * <p>For data stores on file systems, a <code>{@value} = true</code> parameter value is equivalent to opening a file
+     * with {@link java.nio.file.StandardOpenOption#CREATE} and {@link java.nio.file.StandardOpenOption#APPEND APPEND}.
+     * The other file standard options like {@link java.nio.file.StandardOpenOption#CREATE_NEW CREATE_NEW} and
+     * {@link java.nio.file.StandardOpenOption#TRUNCATE_EXISTING TRUNCATE_EXISTING} should not be accessible through
+     * this {@value} parameter. The reason is that {@link ParameterValueGroup} may be used for storing parameters
+     * permanently (for example in a configuration file or in a database) for reopening the same {@link DataStore}
+     * many times. File options designed for being used only once like {@code CREATE_NEW} and {@code TRUNCATE_EXISTING}
+     * are incompatible with this usage.</p></div>
+     *
+     * @see #LOCATION
+     * @see #getOpenParameters()
+     */
+    public static final String CREATE = "create";
 
     /**
      * Creates a new provider.
@@ -157,7 +185,8 @@ public abstract class DataStoreProvider {
      * from a path or URL, together with additional information like character encoding.
      *
      * <p>Implementors are responsible for declaring all parameters and whether they are mandatory or optional.
-     * It is recommended to define at least a parameter named {@value #LOCATION}.
+     * It is recommended to define at least a parameter named {@value #LOCATION}, completed by {@value #CREATE}
+     * if the data store supports write operations.
      * That parameter will be recognized by the default {@code DataStoreProvider} methods and used whenever a
      * {@link StorageConnector} is required.</p>
      *
@@ -175,6 +204,8 @@ public abstract class DataStoreProvider {
      *
      * @return description of the parameters required or accepted for opening a {@link DataStore}.
      *
+     * @see #LOCATION
+     * @see #CREATE
      * @see #open(ParameterValueGroup)
      * @see DataStore#getOpenParameters()
      *
@@ -281,24 +312,14 @@ public abstract class DataStoreProvider {
      * @return a data store implementation associated with this provider for the given parameters.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
+     * @see #LOCATION
+     * @see #CREATE
      * @see #getOpenParameters()
      *
      * @since 0.8
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        ParameterNotFoundException cause = null;
-        Object location;
-        try {
-            location = parameters.parameter(LOCATION).getValue();
-        } catch (ParameterNotFoundException e) {
-            location = null;
-            cause = e;
-        }
-        if (location == null) {
-            throw new IllegalOpenParameterException(Resources.format(Resources.Keys.UndefinedParameter_2,
-                    getShortName(), LOCATION), cause);
-        }
-        return open(new StorageConnector(location));
+        return open(URIDataStore.Provider.connector(this, parameters));
     }
 }

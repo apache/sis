@@ -87,7 +87,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
 
     /**
      * Verifies the {@link CommonCRS#WGS84} identifiers in both normalized and unnormalized CRS.
-     * The intend is actually to test the replacement of {@code "EPSG:4326"} by {@code "CRS:84"}.
+     * The intent is actually to test the replacement of {@code "EPSG:4326"} by {@code "CRS:84"}.
      */
     @Test
     public void testIdentifiers() {

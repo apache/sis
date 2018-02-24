@@ -24,7 +24,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Version;
@@ -34,11 +34,13 @@ import org.apache.sis.util.Version;
  * The provider of WKT {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
-@Capabilities(Capability.READ)
+@StoreMetadata(formatName   = StoreProvider.NAME,
+               fileSuffixes = "prj",
+               capabilities = Capability.READ)
 public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format name.

@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * Verifies the API changes caused by the ISO 19115:2003 to ISO 19115:2014 upgrade.
  * This class compares the presence of {@link Deprecated} and {@link UML} annotations against the content of an
  * {@linkplain #listAPIChanges(File, File, File, Appendable) automatically generated} {@code api-changes.properties} file.
- * The intend is to ensure that we did not forgot an annotation or put the wrong one.
+ * The intent is to ensure that we did not forgot an annotation or put the wrong one.
  *
  * <p>The content of the {@code api-changes.properties} files is typically empty on Apache SIS
  * branches that use a snapshot version of GeoAPI, thus making this test a no-op. However the
