@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -55,10 +56,10 @@ public interface WritableFeatureSet extends FeatureSet {
      * Any feature already present in the {@link FeatureSet} will remain unmodified.
      *
      * <div class="note"><b>API note:</b>
-     * this method expects an {@link Iterator} rather then a {@link java.util.stream.Stream} for easing
+     * this method expects an {@link Iterator} rather then a {@link Stream} for easing
      * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
-     * than implementing a {@link java.util.stream.Stream}. On the other side if the user has a {@link java.util.stream.Stream},
-     * obtaining an {@link java.util.Iterator} can be done by a call to {@link java.util.stream.Stream#iterator()}.</div>
+     * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
+     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
      *
      * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
      * indicates that this method should be implemented.</p>

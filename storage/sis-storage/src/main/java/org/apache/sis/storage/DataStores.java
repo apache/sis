@@ -82,7 +82,7 @@ public final class DataStores extends Static {
     }
 
     /**
-     * Returns the list of data store providers available at this method invocation time.
+     * Returns the set of data store providers available at this method invocation time.
      * More providers may be added later in a running JVM if new modules are added on the classpath.
      *
      * @return descriptions of available data stores.
@@ -102,8 +102,15 @@ public final class DataStores extends Static {
      * @return descriptions of compatible data stores.
      *
      * @since 1.0
+     *
+     * @deprecated this method force initialization and probing of all data stores, while maybe only
+     *             the first instance is needed. We could lazily probe the content during the first
+     *             iteration, but this would require an {@link AutoCloseable} iterator for closing
+     *             the {@link StorageConnector}. We could return a {@link java.util.stream.Stream}
+     *             for resolving that issue, but that would be at odd with the {@link #providers()} API.
      */
-    public static Collection<DataStoreProvider> providers(Object input) {
+    @Deprecated
+    public static Collection<DataStoreProvider> providers(final Object input) {
         final StorageConnector connector = (input instanceof StorageConnector) ?
                 (StorageConnector) input : new StorageConnector(input);
 
@@ -117,6 +124,9 @@ public final class DataStores extends Static {
             } catch (DataStoreException ex) {
                 // could be caused for multiple reasons, we assume it does not
                 // support the given input.
+                // TODO: should we? DataStoreException in probeContent are usually caused by IOException,
+                // in which state the stream is probably in an invalid state and likely to cause failure
+                // in next providers too.
             }
         }
         return providers;

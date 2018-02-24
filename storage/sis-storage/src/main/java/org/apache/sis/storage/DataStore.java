@@ -21,8 +21,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
-import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
@@ -30,9 +31,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.Resources;
-import static org.apache.sis.internal.util.Citations.titleMatches;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -51,7 +51,7 @@ import org.opengis.metadata.citation.Citation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DataStores#open(Object)
  *
@@ -349,7 +349,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         if (citation != null && identifier != null) {
             final Collection<? extends Identifier> identifiers = citation.getIdentifiers();
             if (identifiers == null || identifiers.isEmpty()) {
-                return titleMatches(citation, identifier);
+                return Citations.titleMatches(citation, identifier);
             } else {
                 return NameToIdentifier.isHeuristicMatchForIdentifier(identifiers, identifier);
             }
