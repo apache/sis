@@ -23,7 +23,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.io.IOException;
-import java.util.Iterator;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
@@ -37,7 +36,6 @@ import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
-import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.storage.ReadOnlyStorageException;
 
 
@@ -98,11 +96,9 @@ final class WritableStore extends Store implements WritableAggregate {
         if (filename == null) {
             throw new DataStoreException(message(Resources.Keys.MissingResourceIdentifier_1, StoreUtilities.getLabel(resource)));
         }
-        if (componentProvider instanceof URIDataStore.Provider) {
-            final Iterator<String> suffixes = ((URIDataStore.Provider) componentProvider).getSuffix().iterator();
-            if (suffixes.hasNext()) {
-                filename += '.' + suffixes.next();
-            }
+        final String[] suffixes = StoreUtilities.getFileSuffixes(componentProvider.getClass());
+        if (suffixes.length != 0) {
+            filename += '.' + suffixes[0];
         }
         /*
          * Create new store/resource for write access, provided that no store already exist for the path.

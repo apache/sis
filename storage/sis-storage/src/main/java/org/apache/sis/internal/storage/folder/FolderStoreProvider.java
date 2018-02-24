@@ -43,6 +43,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
 
@@ -58,6 +60,7 @@ import org.apache.sis.setup.OptionKey;
  * @since   0.8
  * @module
  */
+@StoreMetadata(formatName=FolderStoreProvider.NAME, capabilities={Capability.READ, Capability.WRITE})
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.

@@ -176,7 +176,7 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
-        final String format = StoreUtilities.getIdentifier(componentProvider);
+        final String format = StoreUtilities.getFormatName(componentProvider);
         final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : FolderStoreProvider.PARAMETERS).createValue();
         pg.parameter(DataStoreProvider.LOCATION).setValue(location);
         if (locale   != null) pg.parameter("locale"  ).setValue(locale  );

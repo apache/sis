@@ -25,7 +25,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
@@ -40,14 +40,16 @@ import org.apache.sis.internal.util.Constants;
  * the part of the caller. However the {@link GeoTiffStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see GeoTiffStore
  *
  * @since 0.8
  * @module
  */
-@Capabilities(Capability.READ)
+@StoreMetadata(formatName   = "GeoTIFF",
+               fileSuffixes = {"tiff", "tif"},
+               capabilities = Capability.READ)
 public class GeoTiffStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for GeoTIFF files.

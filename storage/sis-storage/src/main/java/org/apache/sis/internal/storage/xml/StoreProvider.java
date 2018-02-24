@@ -20,7 +20,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.Capability;
 
 
@@ -28,11 +28,13 @@ import org.apache.sis.internal.storage.Capability;
  * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
-@Capabilities(Capability.READ)
+@StoreMetadata(formatName   = StoreProvider.NAME,
+               fileSuffixes = "xml",
+               capabilities = Capability.READ)
 public final class StoreProvider extends AbstractProvider {
     /**
      * The format name.
