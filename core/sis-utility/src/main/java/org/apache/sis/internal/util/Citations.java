@@ -38,7 +38,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
  * implementation is defined here since it is needed by some utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
