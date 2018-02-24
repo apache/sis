@@ -107,7 +107,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     }
 
     /**
-     * Tests WKT 1 formatting using axes in kilometres. The intend of this test is to verify that
+     * Tests WKT 1 formatting using axes in kilometres. The intent of this test is to verify that
      * the coordinate system replacement documented in {@link #testWKT1()} preserves the axis units.
      *
      * @since 0.6

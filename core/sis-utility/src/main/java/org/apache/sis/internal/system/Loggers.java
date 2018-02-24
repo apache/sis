@@ -145,7 +145,7 @@ public final class Loggers extends Static {
             }
         }
         /*
-         * Process the loggers in alphabetical order. The intend is to process parent loggers before child.
+         * Process the loggers in alphabetical order. The intent is to process parent loggers before child.
          * The first logger in the map should be the SIS root logger, "org.apache.sis".
          */
         final Iterator<Map.Entry<String,Level>> it = levels.entrySet().iterator();

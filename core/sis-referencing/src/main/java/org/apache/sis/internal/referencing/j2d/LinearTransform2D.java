@@ -23,7 +23,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 /**
  * A two dimensional, linear transform.
- * The intend of this interface is to resolve type conflict in the {@link #inverse()} method.
+ * The intent of this interface is to resolve type conflict in the {@link #inverse()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
@@ -35,6 +35,7 @@ public interface LinearTransform2D extends MathTransform2D, LinearTransform {
      * Returns the inverse transform, which shall be linear and two-dimensional.
      *
      * @return the inverse transform.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
      */
     @Override
     LinearTransform2D inverse() throws NoninvertibleTransformException;

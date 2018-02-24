@@ -520,7 +520,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              *
              *     doubleValue(i)  =  first + increment*i
              *
-             * The intend is that if tolerance = 0 and this method returns a non-null value, then replacing
+             * The intent is that if tolerance = 0 and this method returns a non-null value, then replacing
              * this vector by an instance of SequenceVector should produce exactely the same double values.
              */
             if (type >= Numbers.FLOAT && type <= Numbers.DOUBLE) {

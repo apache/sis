@@ -94,15 +94,22 @@ public abstract class URIDataStore extends DataStore {
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.0
      * @since   0.8
      * @module
      */
     public abstract static class Provider extends DataStoreProvider {
         /**
-         * Description of the location parameter.
+         * Description of the {@value #LOCATION} parameter.
          */
         public static final ParameterDescriptor<URI> LOCATION_PARAM;
+
+        /**
+         * Description of the optional {@value #CREATE} parameter, which may be present in writable data store.
+         * This parameter is not included in the descriptor created by {@link #build(ParameterBuilder)} default
+         * implementation. It is subclass responsibility to add it if desired, only if supported.
+         */
+        public static final ParameterDescriptor<Boolean> CREATE_PARAM;
 
         /**
          * Description of the optional parameter for character encoding used by the data store.
@@ -113,6 +120,7 @@ public abstract class URIDataStore extends DataStore {
         static {
             final ParameterBuilder builder = new ParameterBuilder();
             ENCODING       = builder.addName("encoding").setDescription(Resources.formatInternational(Resources.Keys.DataStoreEncoding)).create(Charset.class, null);
+            CREATE_PARAM   = builder.addName( CREATE   ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreCreate  )).create(Boolean.class, null);
             LOCATION_PARAM = builder.addName( LOCATION ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocation)).setRequired(true).create(URI.class, null);
         }
 
@@ -176,6 +184,8 @@ public abstract class URIDataStore extends DataStore {
         /**
          * Creates a storage connector initialized to the location declared in given parameters.
          * This convenience method does not set any other parameters.
+         * In particular, reading (or ignoring) the {@value #CREATE} parameter is left to callers,
+         * because not all implementations may create data stores with {@link java.nio.file.StandardOpenOption}.
          *
          * @param  provider    the provider for which to create a storage connector (for error messages).
          * @param  parameters  the parameters to use for creating a storage connector.
@@ -186,7 +196,7 @@ public abstract class URIDataStore extends DataStore {
                 throws IllegalOpenParameterException
         {
             ParameterNotFoundException cause = null;
-            try {
+            if (parameters != null) try {
                 final Object location = parameters.parameter(LOCATION).getValue();
                 if (location != null) {
                     return new StorageConnector(location);
@@ -202,7 +212,7 @@ public abstract class URIDataStore extends DataStore {
     /**
      * Adds the filename (without extension) as the citation title if there is no title, or as the identifier otherwise.
      * This method should be invoked last, after {@code DataStore} implementation did its best effort for adding a title.
-     * The intend is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata, providing
+     * The intent is actually to provide an identifier, but since the title is mandatory in ISO 19115 metadata, providing
      * only an identifier without title would be invalid.
      *
      * @param  builder  where to add the title or identifier.

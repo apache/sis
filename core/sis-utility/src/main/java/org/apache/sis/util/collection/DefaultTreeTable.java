@@ -532,7 +532,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * cast will need to be replaced by an "instanceof" check.
          */
         @Override
-        @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Returned list is modifiable on intend.
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Returned list is modifiable on intent.
         public final List<TreeTable.Node> getChildren() {
             if (children == null) {
                 if (isLeaf()) {

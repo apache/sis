@@ -711,7 +711,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                         }
                         /*
                          * Format the value followed by the unit of measure, or followed by spaces if there is no unit
-                         * for this value. The intend is the right align the numerical value rather than the numerical
+                         * for this value. The intent is the right align the numerical value rather than the numerical
                          * + unit tupple.
                          */
                         final Format format = getFormat(value.getClass());
@@ -768,7 +768,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     }
 
     /**
-     * Configures the number pattern to use for the given value. The main intend of this method is to ensure that
+     * Configures the number pattern to use for the given value. The main intent of this method is to ensure that
      * the map projection scale factor (a value close to 1) is formatted with a sufficient number of fraction digits.
      * A common default NumberFormat precision is 3 digits, which is not sufficient. For example the scale factor of
      * Transverse Mercator projections is 0.9996 (4 digits), and the scale factor of "NTF (Paris) / Lambert zone II"

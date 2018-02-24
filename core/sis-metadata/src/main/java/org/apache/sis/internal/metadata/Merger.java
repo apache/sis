@@ -223,7 +223,7 @@ distribute:                 while (it.hasNext()) {
                                     case MERGE: {
                                         /*
                                          * If enabled, copy(…, true) call verified that the merge can be done, including
-                                         * by recursive checks in all children. The intend is to have a "all or nothing"
+                                         * by recursive checks in all children. The intent is to have a "all or nothing"
                                          * behavior, before the copy(…, false) call below starts to modify the values.
                                          */
                                         if (!copy(value, (ModifiableMetadata) element, false)) break;

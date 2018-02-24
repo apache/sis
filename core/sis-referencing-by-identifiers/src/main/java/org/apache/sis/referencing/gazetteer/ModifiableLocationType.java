@@ -114,7 +114,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @since 0.8
  * @module
  */
-public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intend.
+public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intent.
     /**
      * Name of the location type.
      */

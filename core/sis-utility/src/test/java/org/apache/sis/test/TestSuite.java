@@ -260,7 +260,7 @@ public abstract strictfp class TestSuite {
      * Simulates a module uninstall after all tests. This method will first notify any classpath-dependant
      * services that the should clear their cache, then stop the SIS daemon threads. Those operations are
      * actually not needed in non-server environment (it is okay to just let the JVM stop by itself), but
-     * the intend here is to ensure that no exception is thrown.
+     * the intent here is to ensure that no exception is thrown.
      *
      * <p>Since this method stops SIS daemon threads, the SIS library shall not be used anymore after
      * this method execution.</p>

@@ -65,7 +65,7 @@ public abstract strictfp class TestCase {
      *     }
      * }
      *
-     * The intend is to make easier to identify test cases that fail with the current version
+     * The intent is to make easier to identify test cases that fail with the current version
      * of SIS (e.g. because of unsupported operations), but should pass in a future version.
      *
      * @since 0.4

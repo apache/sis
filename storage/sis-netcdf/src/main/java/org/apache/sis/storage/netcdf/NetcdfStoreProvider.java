@@ -32,7 +32,7 @@ import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.system.SystemListener;
@@ -61,14 +61,16 @@ import org.apache.sis.util.Version;
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see NetcdfStore
  *
  * @since 0.3
  * @module
  */
-@Capabilities(Capability.READ)
+@StoreMetadata(formatName   = NetcdfStoreProvider.NAME,
+               fileSuffixes = "nc",
+               capabilities = Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The format name.

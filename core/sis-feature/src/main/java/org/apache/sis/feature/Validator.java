@@ -65,7 +65,7 @@ final class Validator {
      * a new {@link DefaultDomainConsistency} instance with the measure identification set to the property name.
      *
      * <div class="note"><b>Note:</b>
-     * setting {@code measureIdentification} to the property name may look like a departure from ISO intend,
+     * setting {@code measureIdentification} to the property name may look like a departure from ISO intent,
      * since the former should be an identification of the <em>quality measurement</em> rather then the measure itself.
      * (setting {@code measureDescription} to {@code type.getDescription()} would probably be wrong for that reason).
      * However {@code measureIdentification} is only an identifier, not a full description of the quality measurement

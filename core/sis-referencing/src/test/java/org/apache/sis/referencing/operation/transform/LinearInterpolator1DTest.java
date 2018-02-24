@@ -20,6 +20,7 @@ import java.util.Random;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -30,7 +31,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys).
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -236,5 +237,25 @@ public final strictfp class LinearInterpolator1DTest extends MathTransformTestCa
          * (including those working on arrays), verify consistency and derivatives.
          */
         verifyInDomain(new double[] {min}, new double[] {max}, new int[] {100}, new Random(randomSeed));
+    }
+
+    /**
+     * Tests input values outside the expected range.
+     * A few values inside ranges are also tested as a safety.
+     *
+     * @throws TransformException if an error occurred while testing a value.
+     */
+    @Test
+    @DependsOnMethod("testIndicesToIncreasingValues")
+    public void testExtrapolations() throws TransformException {
+        values = new double[] {5, 10, 100, 250};
+        transform = LinearInterpolator1D.create(preimage, values);
+        derivativeDeltas = new double[] {0.1};
+        verifyTransform(new double[] {0,  1, 0.5, -0.5, -1, -2,   3, 3.5,   4,   5},        // Values to transform.
+                        new double[] {5, 10, 7.5,  2.5,  0, -5, 250, 325, 400, 550});       // Expected results.
+
+        verifyDerivative(0.25);     // Interpolation (verified by safety)
+        verifyDerivative(-8);       // Extrapolation
+        verifyDerivative( 8);
     }
 }

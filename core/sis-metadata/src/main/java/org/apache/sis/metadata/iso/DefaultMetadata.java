@@ -398,7 +398,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * the deprecated getter methods invoke only the non-deprecated getter replacement, and the deprecated
      * setter methods invoke only the non-deprecated setter replacement (unless the invoked methods are final).
      * This means that if a deprecated setter methods need the old value, it will read the field directly.
-     * The intend is to avoid surprising code paths for user who override some methods.
+     * The intent is to avoid surprising code paths for user who override some methods.
      */
 
     /**

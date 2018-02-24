@@ -115,7 +115,7 @@ final class GridGeometryInfo extends GridGeometry {
     public Axis[] getAxes() throws IOException, DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
-         * This is often the same order than the indices, but not necessarily. The intend is to reduce the
+         * This is often the same order than the indices, but not necessarily. The intent is to reduce the
          * amount of disk seek operations.
          */
         final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();

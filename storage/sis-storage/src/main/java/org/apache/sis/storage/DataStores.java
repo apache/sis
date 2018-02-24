@@ -28,7 +28,8 @@ import org.apache.sis.internal.system.SystemListener;
  * but can also be any other objects documented in the {@link StorageConnector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -79,7 +80,7 @@ public final class DataStores extends Static {
     }
 
     /**
-     * Returns the list of data store providers available at this method invocation time.
+     * Returns the set of data store providers available at this method invocation time.
      * More providers may be added later in a running JVM if new modules are added on the classpath.
      *
      * @return descriptions of available data stores.

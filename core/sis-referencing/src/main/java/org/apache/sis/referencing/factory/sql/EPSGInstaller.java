@@ -186,7 +186,7 @@ final class EPSGInstaller extends ScriptRunner {
 
     /**
      * Invoked for each text found in a SQL statement. This method replaces {@code ''} by {@code Null}.
-     * The intend is to consistently use the null value for meaning "no information", which is not the
+     * The intent is to consistently use the null value for meaning "no information", which is not the
      * same than "information is an empty string". This replacement is okay in this particular case
      * since there is no field in the EPSG database for which we really want an empty string.
      *

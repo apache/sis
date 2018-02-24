@@ -138,7 +138,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         /*
          * Compute rn = (1-ℯ²)/nm, which is the reciprocal of the "real" n used in Snyder and EPSG guidance note.
          * We opportunistically use double-double arithmetic since the MatrixSIS operations use them anyway, but
-         * we do not really have that accuracy because of the limited precision of 'nm'. The intend is rather to
+         * we do not really have that accuracy because of the limited precision of 'nm'. The intent is rather to
          * increase the chances term cancellations happen during concatenation of coordinate operations.
          */
         final DoubleDouble rn = DoubleDouble.verbatim(1);

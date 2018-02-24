@@ -459,7 +459,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Returns the unit instance for the given long (un)localized or name.
      * This method is somewhat the converse of {@link #symbolToName()}, but recognizes also
      * international and American spelling of unit names in addition of localized names.
-     * The intend is to recognize "meter" as well as "metre".
+     * The intent is to recognize "meter" as well as "metre".
      *
      * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
      * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>

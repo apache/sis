@@ -542,7 +542,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 /*
                  * TODO: instead than creating parameters for an identity operation, we should create the
                  *       CoordinateOperation directly from the MathTransform created by mtFactory below.
-                 *       The intend if to get the correct OperationMethod, which should not be "Affine"
+                 *       The intent if to get the correct OperationMethod, which should not be "Affine"
                  *       if there is a CS type change.
                  */
                 parameters = Affine.identity(targetDim);
@@ -957,7 +957,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         /*
          * If one of the transform performs nothing more than a change of axis order or units, do
          * not expose that conversion in a ConcatenatedTransform.  Instead, merge that conversion
-         * with the "main" operation. The intend is to simplify the operation chain by hidding
+         * with the "main" operation. The intent is to simplify the operation chain by hidding
          * trivial operations.
          */
         CoordinateOperation main = null;

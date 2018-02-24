@@ -260,7 +260,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
 
     /**
      * Prints the error of the two methods for various eccentricity values.
-     * The intend of this method is to find an eccentricity threshold value where we consider the errors too high.
+     * The intent of this method is to find an eccentricity threshold value where we consider the errors too high.
      *
      * <p>This method is used for determining empirically a value for {@link ConformalProjection#ECCENTRICITY_THRESHOLD}.
      * The current threshold value is shown by inserting a horizontal line separator in the table when that threshold

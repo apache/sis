@@ -113,7 +113,7 @@ public final strictfp class GeographicOffsetsTest extends TransformTestCase {
 
     /**
      * Tests {@code VerticalOffset.createMathTransform(…)} indirectly, through a call to the math transform factory
-     * with the source and target coordinate systems specified. The intend of this test is to verify that the change
+     * with the source and target coordinate systems specified. The intent of this test is to verify that the change
      * of axis direction is properly handled, given source CRS axis direction up and target CRS axis direction down.
      *
      * @throws FactoryException if an error occurred while creating the transform.

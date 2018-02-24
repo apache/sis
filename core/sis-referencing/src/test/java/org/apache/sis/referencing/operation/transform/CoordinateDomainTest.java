@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link CoordinateDomain}.
- * The main intend of this class is to allow visual inspection (by looking in source code) of sampled data.
+ * The main intent of this class is to allow visual inspection (by looking in source code) of sampled data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6

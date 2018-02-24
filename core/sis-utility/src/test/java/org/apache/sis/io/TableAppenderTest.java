@@ -104,7 +104,7 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
 
     /**
      * Tests the {@link TableAppender#toString()} method.
-     * The intend of this test is also to ensure that we can use the API
+     * The intent of this test is also to ensure that we can use the API
      * more easily, without having to deal with {@link IOException}.
      */
     @Test

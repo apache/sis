@@ -16,17 +16,15 @@
  */
 package org.apache.sis.storage;
 
-import org.apache.sis.util.Localized;
-
 
 /**
  * Thrown when a {@code DataStore} can not perform a write operations.
- * This exception may occur either because:
- *
- * <ul>
- *   <li>the data store does not support write operations, or</li>
- *   <li>write operations are supported but the channel is read-only.</li>
- * </ul>
+ * If a data store does not support any write operation, then it should not implement
+ * {@link WritableAggregate} or {@link WritableFeatureSet} interface.
+ * But in some situations, a data store may implement a {@code Writable*} interface
+ * and nevertheless be unable to perform a write operation, for example because the
+ * underlying {@link java.nio.channels.Channel} is read-only or part of the file is
+ * locked by another process.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
@@ -73,16 +71,5 @@ public class ReadOnlyStorageException extends DataStoreException {
      */
     public ReadOnlyStorageException(final String message, final Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Creates a new exception which will format a localized message in the resource locale.
-     *
-     * @param originator  the instance throwing this exception, or {@code null} if unknown.
-     * @param key         one of {@link org.apache.sis.internal.storage.Resources.Keys} constants.
-     * @param parameters  parameters to use for formatting the messages.
-     */
-    ReadOnlyStorageException(final Resource originator, final short key, final Object... parameters) {
-        super((originator instanceof Localized) ? ((Localized) originator).getLocale() : null, key, parameters);
     }
 }
