@@ -65,21 +65,25 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRL,
+           xmlns = {
+                @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),      // Metadata for Resource Lineage
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(GO_Real.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(LE_Algorithm.class),
     @XmlJavaTypeAdapter(LE_NominalResolution.class),
     @XmlJavaTypeAdapter(LE_Processing.class),
@@ -90,7 +94,6 @@
     @XmlJavaTypeAdapter(MD_RepresentativeFraction.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.lineage;
@@ -104,6 +107,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.metadata.*;

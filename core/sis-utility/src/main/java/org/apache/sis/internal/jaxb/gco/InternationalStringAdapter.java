@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -30,15 +31,15 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, InternationalString> {
+public class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, InternationalString> {
     /**
      * Empty constructor for JAXB.
      */
-    private InternationalStringAdapter() {
+    InternationalStringAdapter() {
     }
 
     /**
@@ -49,7 +50,7 @@ public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterStr
      * @return the unwrapped {@link String} value, or {@code null}.
      */
     @Override
-    public InternationalString unmarshal(final GO_CharacterString value) {
+    public final InternationalString unmarshal(final GO_CharacterString value) {
         if (value != null) {
             final CharSequence text = value.toCharSequence();
             if (text != null) {
@@ -72,5 +73,24 @@ public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterStr
     @Override
     public GO_CharacterString marshal(final InternationalString value) {
         return CharSequenceAdapter.wrap(value);
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends InternationalStringAdapter {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_CharacterString marshal(final InternationalString value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+        }
     }
 }

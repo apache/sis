@@ -30,7 +30,7 @@ import org.apache.sis.internal.jaxb.Schemas;
 
 
 /**
- * Stores information about {@link CodeList} in order to marshal in the way defined by ISO-19139.
+ * Stores information about {@link CodeList} in order to marshal in the way defined by ISO 19115-3.
  * This class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
  * Those attributes should be unique for each code.
  *
@@ -41,7 +41,8 @@ import org.apache.sis.internal.jaxb.Schemas;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see CodeListAdapter
  *
@@ -56,6 +57,7 @@ public final class CodeListUID {
      * Some examples of strings returned by this method are:
      *
      * <ul>
+     *   <li>{@code "http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
@@ -64,11 +66,21 @@ public final class CodeListUID {
      * @param  context     the current (un)marshalling context, or {@code null} if none.
      * @param  identifier  the UML identifier of the code list.
      * @return the URL to the given code list in the given schema.
+     *
+     * @see org.apache.sis.xml.XML#SCHEMAS
      */
     private static String schema(final Context context, final String identifier) {
-        return Context.schema(context, "gmd", Schemas.METADATA_ROOT)
-                .append(Schemas.CODELISTS_PATH)     // Future SIS version may switch between localized/unlocalized file.
-                .append('#').append(identifier).toString();
+        final String prefix, root, path;
+        if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
+            prefix = "gmd";
+            root = Schemas.METADATA_ROOT_LEGACY;
+            path = Schemas.CODELISTS_PATH_LEGACY;   // Future SIS version may switch between localized/unlocalized file.
+        } else {
+            prefix = "cat";
+            root = Schemas.METADATA_ROOT;
+            path = Schemas.CODELISTS_PATH;
+        }
+        return Context.schema(context, prefix, root).append(path).append('#').append(identifier).toString();
     }
 
     /**
@@ -105,7 +117,7 @@ public final class CodeListUID {
     /**
      * Default empty constructor for JAXB.
      */
-    private CodeListUID() {
+    public CodeListUID() {
     }
 
     /**

@@ -43,12 +43,11 @@ public final strictfp class MimeTypeCommandTest extends TestCase {
      */
     @Test
     public void testWithMetadataXML() throws Exception {
-        final URL url = DefaultExtentTest.getResource("Extent.xml");
-        assertNotNull("Extent.xml", url);
+        final URL url = DefaultExtentTest.getTestFile(true);
         final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();
-        assertTrue(output, output.endsWith("Extent.xml: application/vnd.iso.19139+xml"));
+        assertTrue(output, output.endsWith(".xml: application/vnd.iso.19139+xml"));
     }
 
     /**

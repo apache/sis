@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.metadata.direct;
+package org.apache.sis.internal.jaxb;
 
-import org.apache.sis.util.iso.DefaultMemberName;
-import org.opengis.util.MemberName;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * Declares that marshalling the annotated object requires legacy ISO 19139:2007 metadata.
+ * This is a hopefully temporary hack for marshalling metadata in GML.
+ * May be deleted if we implement SIS-401.
  *
- * @author  Guilhem Legal (Geomatys)
- * @version 0.5
- * @since   0.5
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-401">SIS-401</a>
+ *
+ * @since 1.0
  * @module
  */
-public final class GO_MemberName extends MetadataAdapter<MemberName, DefaultMemberName> {
-    /**
-     * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
-     *
-     * @param  value  the bound type value, here the GeoAPI interface.
-     * @return the adapter for the given value, here the SIS implementation.
-     */
-    @Override
-    public DefaultMemberName marshal(MemberName value) {
-        return DefaultMemberName.castOrCopy(value);
-    }
+@Inherited
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UseLegacyMetadata {
 }

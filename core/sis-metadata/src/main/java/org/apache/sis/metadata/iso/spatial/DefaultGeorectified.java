@@ -29,7 +29,6 @@ import org.opengis.geometry.primitive.Point;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -68,7 +67,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -299,7 +298,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @return the center point, or {@code null}.
      */
     @Override
-    @XmlElement(name = "centerPoint")
+    @XmlElement(name = "centrePoint")
     public Point getCenterPoint() {
         return centerPoint;
     }
@@ -383,7 +382,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @return geographic references used to validate georectification.
      */
     @Override
-    @XmlElement(name = "checkPoint", namespace = Namespaces.GMI)
+    @XmlElement(name = "checkPoint")
     public Collection<GCP> getCheckPoints() {
         return checkPoints = nonNullCollection(checkPoints, GCP.class);
     }

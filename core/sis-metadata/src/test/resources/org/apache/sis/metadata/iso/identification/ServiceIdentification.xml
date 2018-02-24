@@ -19,85 +19,120 @@
 -->
 
 <srv:SV_ServiceIdentification
-    xmlns:srv = "http://www.isotc211.org/2005/srv"
-    xmlns:gmd = "http://www.isotc211.org/2005/gmd"
-    xmlns:gco = "http://www.isotc211.org/2005/gco"
+    xmlns:srv = "http://standards.iso.org/iso/19115/-3/srv/2.0"
+    xmlns:mri = "http://standards.iso.org/iso/19115/-3/mri/1.0"
+    xmlns:cit = "http://standards.iso.org/iso/19115/-3/cit/1.0"
+    xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://www.isotc211.org/2005/srv http://schemas.opengis.net/iso/19139/20060504/srv/srv.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/srv/2.0
+                          http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd">
 
-  <gmd:citation gco:nilReason="missing"/>
-  <gmd:abstract>
+  <mri:citation gco:nilReason="missing"/>
+  <mri:abstract>
     <gco:CharacterString>A dummy service for testing purpose.</gco:CharacterString>
-  </gmd:abstract>
+  </mri:abstract>
 
   <srv:serviceType>
-    <gco:LocalName>Web Map Server</gco:LocalName>
+    <gco:ScopedName>Web Map Server</gco:ScopedName>
   </srv:serviceType>
 
   <srv:serviceTypeVersion>
     <gco:CharacterString>1.0</gco:CharacterString>
   </srv:serviceTypeVersion>
 
+  <srv:couplingType>
+    <srv:SV_CouplingType codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#SV_CouplingType" codeListValue="loose" codeSpace="eng">Loose</srv:SV_CouplingType>
+  </srv:couplingType>
+
   <srv:coupledResource>
     <srv:SV_CoupledResource>
-      <srv:operationName>
-        <gco:CharacterString>Get Map</gco:CharacterString>
-      </srv:operationName>
-      <srv:identifier>
-        <gco:CharacterString>ABC-123</gco:CharacterString>
-      </srv:identifier>
-      <gco:ScopedName>mySpace:ABC-123</gco:ScopedName>
+      <srv:scopedName>
+        <gco:ScopedName>mySpace:ABC-123</gco:ScopedName>
+      </srv:scopedName>
+      <srv:resourceReference>
+        <cit:CI_Citation>
+          <cit:title>
+             <gco:CharacterString>WMS specification</gco:CharacterString>
+          </cit:title>
+       </cit:CI_Citation>
+      </srv:resourceReference>
+      <srv:operation>
+        <srv:SV_OperationMetadata>
+          <srv:operationName>
+            <gco:CharacterString>Get Map</gco:CharacterString>
+          </srv:operationName>
+          <srv:distributedComputingPlatform>
+            <srv:DCPList codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DCPList" codeListValue="WebServices" codeSpace="eng">Web services</srv:DCPList>
+          </srv:distributedComputingPlatform>
+          <srv:connectPoint gco:nilReason="missing"/>
+          <srv:parameter>
+            <srv:SV_Parameter>
+              <srv:name>
+                <gco:MemberName>
+                  <gco:aName>
+                    <gco:CharacterString>Version</gco:CharacterString>
+                  </gco:aName>
+                  <gco:attributeType>
+                    <gco:TypeName>
+                      <gco:aName>
+                        <gco:CharacterString>CharacterString</gco:CharacterString>
+                      </gco:aName>
+                    </gco:TypeName>
+                  </gco:attributeType>
+                </gco:MemberName>
+              </srv:name>
+              <srv:direction>
+                <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
+              </srv:direction>
+              <srv:optionality>
+                <gco:Boolean>true</gco:Boolean>
+              </srv:optionality>
+              <srv:repeatability>
+                <gco:Boolean>false</gco:Boolean>
+              </srv:repeatability>
+            </srv:SV_Parameter>
+          </srv:parameter>
+        </srv:SV_OperationMetadata>
+      </srv:operation>
     </srv:SV_CoupledResource>
   </srv:coupledResource>
-
-  <srv:couplingType>
-    <srv:SV_CouplingType codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose">Loose</srv:SV_CouplingType>
-  </srv:couplingType>
 
   <srv:containsOperations>
     <srv:SV_OperationMetadata>
       <srv:operationName>
         <gco:CharacterString>Get Map</gco:CharacterString>
       </srv:operationName>
-      <srv:DCP>
-        <srv:DCPList codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="WebServices">Web services</srv:DCPList>
-      </srv:DCP>
-      <srv:parameters>
+      <srv:distributedComputingPlatform>
+        <srv:DCPList codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DCPList" codeListValue="WebServices" codeSpace="eng">Web services</srv:DCPList>
+      </srv:distributedComputingPlatform>
+      <srv:connectPoint gco:nilReason="missing"/>
+      <srv:parameter>
         <srv:SV_Parameter>
           <srv:name>
-            <gco:aName>
-              <gco:CharacterString>Version</gco:CharacterString>
-            </gco:aName>
-            <gco:attributeType>
-              <gco:TypeName>
-                <gco:aName>
-                  <gco:CharacterString>CharacterString</gco:CharacterString>
-                </gco:aName>
-              </gco:TypeName>
-            </gco:attributeType>
+            <gco:MemberName>
+              <gco:aName>
+                <gco:CharacterString>Version</gco:CharacterString>
+              </gco:aName>
+              <gco:attributeType>
+                <gco:TypeName>
+                  <gco:aName>
+                    <gco:CharacterString>CharacterString</gco:CharacterString>
+                  </gco:aName>
+                </gco:TypeName>
+              </gco:attributeType>
+            </gco:MemberName>
           </srv:name>
           <srv:direction>
             <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
           </srv:direction>
           <srv:optionality>
-            <gco:CharacterString>Optional</gco:CharacterString>
+            <gco:Boolean>true</gco:Boolean>
           </srv:optionality>
           <srv:repeatability>
             <gco:Boolean>false</gco:Boolean>
           </srv:repeatability>
-
-          <!-- Deprecated element (removed from ISO 19115:2014), since it duplicates <gco:attributeType> above. -->
-          <srv:valueType>
-            <gco:TypeName>
-              <gco:aName>
-                <gco:CharacterString>CharacterString</gco:CharacterString>
-              </gco:aName>
-            </gco:TypeName>
-          </srv:valueType>
-
         </srv:SV_Parameter>
-      </srv:parameters>
-      <srv:connectPoint gco:nilReason="missing"/>
+      </srv:parameter>
     </srv:SV_OperationMetadata>
   </srv:containsOperations>
 </srv:SV_ServiceIdentification>

@@ -29,26 +29,27 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @since   1.0
  * @since   0.5
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
+    @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
+    @XmlNs(prefix = "mrs",  namespaceURI = Namespaces.MRS),        // Metadata for Reference System
+    @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
+    @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV),  // Metadata for Services 1.0
+    @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD)   // Metadata ISO 19139:2007
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(RS_Identifier.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(SV_ParameterDirection.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
 package org.apache.sis.internal.jaxb.metadata.replace;
 
@@ -59,10 +60,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import org.apache.sis.internal.jaxb.gco.GO_Boolean;
-import org.apache.sis.internal.jaxb.gco.GO_GenericName;
-import org.apache.sis.internal.jaxb.gco.StringAdapter;
-import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
-import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.code.SV_ParameterDirection;
+import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.xml.Namespaces;

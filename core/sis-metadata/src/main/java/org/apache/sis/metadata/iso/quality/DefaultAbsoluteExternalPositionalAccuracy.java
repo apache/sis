@@ -40,7 +40,7 @@ import org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */

@@ -17,28 +17,26 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
+import org.opengis.metadata.content.FeatureTypeInfo;
 
 
 /**
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @since   1.0
+ * @version 1.0
  * @module
  */
-public final class EX_GeographicBoundingBox extends
-        PropertyType<EX_GeographicBoundingBox, GeographicBoundingBox>
-{
+public final class MD_FeatureTypeInfo extends PropertyType<MD_FeatureTypeInfo, FeatureTypeInfo> {
     /**
      * Empty constructor for JAXB only.
      */
-    public EX_GeographicBoundingBox() {
+    public MD_FeatureTypeInfo() {
     }
 
     /**
@@ -46,42 +44,42 @@ public final class EX_GeographicBoundingBox extends
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code GeographicBoundingBox.class}
+     * @return {@code FeatureTypeInfo.class}
      */
     @Override
-    protected Class<GeographicBoundingBox> getBoundType() {
-        return GeographicBoundingBox.class;
+    protected Class<FeatureTypeInfo> getBoundType() {
+        return FeatureTypeInfo.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private EX_GeographicBoundingBox(final GeographicBoundingBox metadata) {
+    private MD_FeatureTypeInfo(final FeatureTypeInfo metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:EX_GeographicBoundingBox>} XML element.
+     * in a {@code <gmd:MD_FeatureTypeInfo>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected EX_GeographicBoundingBox wrap(final GeographicBoundingBox metadata) {
-        return new EX_GeographicBoundingBox(metadata);
+    protected MD_FeatureTypeInfo wrap(final FeatureTypeInfo metadata) {
+        return new MD_FeatureTypeInfo(metadata);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:EX_GeographicBoundingBox>} XML element.
+     * inside the {@code <gmd:MD_FeatureTypeInfo>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultGeographicBoundingBox getElement() {
-        return DefaultGeographicBoundingBox.castOrCopy(metadata);
+    public DefaultFeatureTypeInfo getElement() {
+        return DefaultFeatureTypeInfo.castOrCopy(metadata);
     }
 
     /**
@@ -89,7 +87,7 @@ public final class EX_GeographicBoundingBox extends
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultGeographicBoundingBox metadata) {
+    public void setElement(final DefaultFeatureTypeInfo metadata) {
         this.metadata = metadata;
     }
 }

@@ -36,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -59,14 +59,14 @@ public final strictfp class TreeTableViewTest extends TestCase {
             "  ├─Alternate title (2 of 2)…………………………………………… Second alternate title\n" +
             "  ├─Edition………………………………………………………………………………………… Some edition\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Organisation………………………………………………………………… Some organisation\n" +
-            "  │   └─Role……………………………………………………………………………………… Distributor\n" +
+            "  │   ├─Role……………………………………………………………………………………… Distributor\n" +
+            "  │   └─Organisation………………………………………………………………… Some organisation\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Individual……………………………………………………………………… Some person of contact\n" +
-            "  │   │   └─Contact info\n" +
-            "  │   │       └─Address\n" +
-            "  │   │           └─Electronic mail address…… Some email\n" +
-            "  │   └─Role……………………………………………………………………………………… Point of contact\n" +
+            "  │   ├─Role……………………………………………………………………………………… Point of contact\n" +
+            "  │   └─Individual……………………………………………………………………… Some person of contact\n" +
+            "  │       └─Contact info\n" +
+            "  │           └─Address\n" +
+            "  │               └─Electronic mail address…… Some email\n" +
             "  ├─Presentation form (1 of 2)……………………………………… Map digital\n" +
             "  ├─Presentation form (2 of 2)……………………………………… Map hardcopy\n" +
             "  └─Other citation details………………………………………………… Some other details\n";

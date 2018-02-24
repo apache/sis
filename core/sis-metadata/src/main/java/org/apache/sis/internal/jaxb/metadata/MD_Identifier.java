@@ -31,11 +31,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
+public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -50,7 +50,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      * @return {@code Identifier.class}
      */
     @Override
-    protected Class<Identifier> getBoundType() {
+    protected final Class<Identifier> getBoundType() {
         return Identifier.class;
     }
 
@@ -85,7 +85,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
         @XmlElementRef(type = ImmutableIdentifier.class)
     })
     @SuppressWarnings("deprecation")
-    public Identifier getElement() {
+    public final Identifier getElement() {
         if (metadata instanceof ImmutableIdentifier) {
             return (ImmutableIdentifier) metadata;
         }
@@ -100,7 +100,26 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final Identifier metadata) {
+    public final void setElement(final Identifier metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends MD_Identifier {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MD_Identifier wrap(final Identifier value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

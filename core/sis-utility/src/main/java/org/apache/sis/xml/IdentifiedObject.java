@@ -27,7 +27,7 @@ import org.opengis.metadata.citation.Citation;
  * <a href="http://www.epsg.org">EPSG</a> for Coordinate Reference System objects, or a
  * well-known acronym like ISBN for <cite>International Standard Book Number</cite>.
  *
- * <p>When an identified object is marshalled in a ISO 19139 compliant XML document, some identifiers
+ * <p>When an identified object is marshalled in a ISO 19115-3 compliant XML document, some identifiers
  * are handled in a special way: they appear as {@code gml:id}, {@code gco:uuid} or {@code xlink:href}
  * attributes of the XML element. Those identifiers can be specified using the {@link IdentifierSpace}
  * enum values as below:</p>

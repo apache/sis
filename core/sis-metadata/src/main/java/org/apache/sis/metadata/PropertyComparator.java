@@ -43,7 +43,7 @@ import org.opengis.annotation.Obligation;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -129,10 +129,7 @@ final class PropertyComparator implements Comparator<Method> {
                      * If duplicated properties are found, keep the first occurence (i.e. sort the property
                      * with the most specialized child that declared it).
                      */
-                    final Integer old = order.put(propOrder[i], order.size());
-                    if (old != null) {
-                        order.put(propOrder[i], old);
-                    }
+                    order.putIfAbsent(propOrder[i], order.size());
                 }
             }
             implementation = implementation.getSuperclass();

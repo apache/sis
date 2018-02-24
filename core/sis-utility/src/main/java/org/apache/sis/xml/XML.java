@@ -54,6 +54,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * Provides convenience methods for marshalling and unmarshalling SIS objects.
+ * Marshalling operations use the standard versions listed below
+ * (for marshalling a document in a different version, see {@link PooledMarshaller}).
+ * Unmarshalling detects the version automatically.
+ *
+ * <table class="sis">
+ *   <caption>Versions of standards applied at marshalling time</caption>
+ *   <tr><th>Topic</th>       <th>SIS 0.3 to 0.8</th>  <th>SIS 1.0</th>          <td>Remarks</td></tr>
+ *   <tr><td>Metadata</td>    <td>ISO 19139:2007</td>  <td>ISO 19115-3:2016</td> <td></td></tr>
+ *   <tr><td>Referencing</td> <td>ISO 19136:2007</td>  <td>ISO 19136:2007</td>   <td>Same as GML 3.2</td></tr>
+ * </table>
+ *
  * This class defines also some property keys that can be given to the {@link Marshaller}
  * and {@link Unmarshaller} instances created by {@link PooledMarshaller}:
  *
@@ -64,7 +75,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <tr><td>{@link #TIMEZONE}</td>           <td>{@link TimeZone}</td>          <td>for specifying the timezone to use for dates and times.</td></tr>
  *   <tr><td>{@link #SCHEMAS}</td>            <td>{@link Map}</td>               <td>for specifying the root URL of metadata schemas to use.</td></tr>
  *   <tr><td>{@link #DEFAULT_NAMESPACE}</td>  <td>{@link String}</td>            <td>for specifying the default namespace of the XML document to write.</td></tr>
- *   <tr><td>{@link #GML_VERSION}</td>        <td>{@link Version}</td>           <td>for specifying the GML version to the document be (un)marshalled.</td></tr>
+ *   <tr><td>{@link #GML_VERSION}</td>        <td>{@link Version}</td>           <td>for specifying the GML version of the document to be (un)marshalled.</td></tr>
+ *   <tr><td>{@link #METADATA_VERSION}</td>   <td>{@link Version}</td>           <td>for specifying the metadata version of the document to be (un)marshalled.</td></tr>
  *   <tr><td>{@link #RESOLVER}</td>           <td>{@link ReferenceResolver}</td> <td>for replacing {@code xlink} or {@code uuidref} attributes by the actual object to use.</td></tr>
  *   <tr><td>{@link #CONVERTER}</td>          <td>{@link ValueConverter}</td>    <td>for controlling the conversion of URL, UUID, Units or similar objects.</td></tr>
  *   <tr><td>{@link #STRING_SUBSTITUTES}</td> <td>{@code String[]}</td>          <td>for specifying which code lists to replace by simpler {@code <gco:CharacterString>} elements.</td></tr>
@@ -73,7 +85,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -130,23 +143,31 @@ public final class XML extends Static {
      *
      * <ul>
      *   <li>The value of the {@code codeList} attribute when marshalling subclasses of
-     *       {@link org.opengis.util.CodeList} in ISO 19139 compliant XML document.</li>
-     *   <li>The value of the {@code uom} attribute when marshalling measures (for example
-     *       {@code <gco:Distance>}) in ISO 19139 compliant XML document.</li>
+     *       {@link org.opengis.util.CodeList}.</li>
+     *   <li>The value of the {@code uom} attribute when marshalling measures
+     *       (for example {@code <gco:Distance>}).</li>
      * </ul>
      *
-     * As of SIS 0.3, only one {@code Map} key is recognized: {@code "gmd"}, which stands
-     * for the ISO 19139 schemas. Additional keys, if any, are ignored. Future SIS versions
-     * may recognize more keys.
+     * Two {@code Map} keys are currently recognized: {@code "cat"} and {@code "gmd"},
+     * which stands for the new ISO 19115-3:2016 and the legacy ISO 19139:2007 schemas respectively.
+     * The key to be used depends on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
+     * Additional keys, if any, are ignored. Future SIS versions may recognize more keys.
      *
      * <div class="section">Valid values</div>
+     * The following table gives some typical URLs.
+     * The URL in bold character is the default one.
+     *
      * <table class="sis">
      *   <caption>Supported schemas</caption>
      *   <tr><th>Map key</th> <th>Typical values (choose only one)</th></tr>
+     *   <tr><td><b>cat</b></td><td>
+     *     <b>http://standards.iso.org/iso/19115/</b>
+     *   </td></tr>
      *   <tr><td><b>gmd</b></td><td>
-     *     http://schemas.opengis.net/iso/19139/20070417/<br>
-     *     http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/<br>
-     *     http://eden.ign.fr/xsd/fra/20060922/
+     *        http://www.isotc211.org/2005/<br>
+     *     <b>http://schemas.opengis.net/iso/19139/20070417/</b><br>
+     *        http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/<br>
+     *        http://eden.ign.fr/xsd/fra/20060922/
      *   </td></tr>
      * </table>
      */
@@ -160,19 +181,23 @@ public final class XML extends Static {
      * <div class="section">Current limitation</div>
      * In current SIS implementation, this property is honored only by the {@link MarshallerPool} constructors.
      * Specifying this property to {@link javax.xml.bind.Marshaller#setProperty(String, Object)} is too late.
+     *
+     * @deprecated Use {@link javax.xml.bind.annotation.XmlSchema} instead.
      */
+    @Deprecated
     public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";
 
     /**
      * Specifies the GML version of the document to be marshalled or unmarshalled.
      * The GML version may affect the set of XML elements to be marshalled and their namespaces.
+     * Note that GML 3.2 is identical to ISO 19136:2007.
      *
      * <div class="note"><b>Compatibility note:</b>
      * Newer versions typically have more elements, but not always. For example in {@code <gml:VerticalDatum>},
      * the {@code <gml:verticalDatumType>} property presents in GML 3.0 and 3.1 has been removed in GML 3.2.</div>
      *
-     * The value can be {@link String} or {@link Version} objects.
-     * If no version is specified, then the most recent GML version is assumed.
+     * The value can be {@link String} or {@link Version} object.
+     * If no version is specified, then the most recent supported GML version is assumed.
      *
      * <div class="section">Supported GML versions</div>
      * Apache SIS currently supports GML 3.2.1 by default. SIS can read and write GML 3.2
@@ -182,6 +207,26 @@ public final class XML extends Static {
      * for information about the status of GML 3.1.1 support.
      */
     public static final String GML_VERSION = "org.apache.sis.gml.version";
+
+    /**
+     * Specifies the metadata version of the document to be marshalled or unmarshalled.
+     * The metadata version may affect the set of XML elements to be marshalled and their namespaces.
+     * The value can be {@link String} or {@link Version} object.
+     * If no version is specified, then the most recent supported metadata version is assumed.
+     *
+     * <p>The metadata version may be ignored when the metadata to marshal is inside a GML element.
+     * For example the {@code <gml:domainOfValidity>} element inside a coordinate reference system
+     * is always marshalled using ISO 19139:2007 if the enclosing element uses GML 3.2 schema.</p>
+     *
+     * <div class="section">Supported metadata versions</div>
+     * Apache SIS currently supports ISO 19115-3:2016 by default. This version can be explicitly
+     * set with value "2014" or above (because the abstract model was defined in ISO 19115-1:2014).
+     * SIS can write legacy ISO 19139:2007 documents if this property is set to a value less than "2014".
+     * Both versions can be read without the need to specify this property.
+     *
+     * @since 1.0
+     */
+    public static final String METADATA_VERSION = "org.apache.sis.xml.version.metadata";
 
     /**
      * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual objects to use.

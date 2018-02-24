@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
@@ -30,9 +31,11 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
 
 /**
@@ -54,15 +57,18 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
     "attributeDescription",
-    "contentType",
-    "dimensions",
+    "processingLevelCode",          // New in ISO 19115:2014
+    "attributeGroup",               // Ibid.
+    "contentType",                  // Legacy ISO 19115:2003
+    "dimensions",                   // Ibid.
     "rangeElementDescriptions"
 })
 @XmlRootElement(name = "MD_CoverageDescription")
@@ -175,13 +181,16 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns an identifier for the level of processing that has been applied to the resource, or {@code null} if none.
+     * For {@linkplain DefaultImageDescription image descriptions}, this is the image distributor's code that identifies
+     * the level of radiometric and geometric processing that has been applied.
      *
      * @return identifier for the level of processing that has been applied to the resource, or {@code null} if none.
      *
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "processingLevelCode")
+    @XmlElement(name = "processingLevelCode")
+    @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getProcessingLevelCode() {
         return processingLevelCode;
     }
@@ -206,7 +215,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "attributeGroup")
+    // @XmlElement at the end of this class.
     public Collection<AttributeGroup> getAttributeGroups() {
         return attributeGroups = nonNullCollection(attributeGroups, AttributeGroup.class);
     }
@@ -232,22 +241,24 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Override
     @Deprecated
-    @XmlElement(name = "contentType", required = true)
     @Dependencies("getAttributeGroups")
+    @XmlElement(name = "contentType", namespace = LegacyNamespaces.GMD)
     public CoverageContentType getContentType() {
         CoverageContentType type = null;
-        final Collection<AttributeGroup> groups = getAttributeGroups();
-        if (groups != null) {                                               // May be null on marshalling.
-            for (final AttributeGroup g : groups) {
-                final Collection<? extends CoverageContentType> contentTypes = g.getContentTypes();
-                if (contentTypes != null) {                                 // May be null on marshalling.
-                    for (final CoverageContentType t : contentTypes) {
-                        if (type == null) {
-                            type = t;
-                        } else {
-                            LegacyPropertyAdapter.warnIgnoredExtraneous(CoverageContentType.class,
-                                    DefaultCoverageDescription.class, "getContentType");
-                            break;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Collection<AttributeGroup> groups = getAttributeGroups();
+            if (groups != null) {                                               // May be null on marshalling.
+                for (final AttributeGroup g : groups) {
+                    final Collection<? extends CoverageContentType> contentTypes = g.getContentTypes();
+                    if (contentTypes != null) {                                 // May be null on marshalling.
+                        for (final CoverageContentType t : contentTypes) {
+                            if (type == null) {
+                                type = t;
+                            } else {
+                                LegacyPropertyAdapter.warnIgnoredExtraneous(CoverageContentType.class,
+                                        DefaultCoverageDescription.class, "getContentType");
+                                break;
+                            }
                         }
                     }
                 }
@@ -297,9 +308,10 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Override
     @Deprecated
-    @XmlElement(name = "dimension")
     @Dependencies("getAttributeGroups")
+    @XmlElement(name = "dimension", namespace = LegacyNamespaces.GMD)
     public final Collection<RangeDimension> getDimensions() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<RangeDimension,AttributeGroup>(getAttributeGroups()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected AttributeGroup wrap(final RangeDimension value) {
@@ -345,7 +357,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @return description of the specific range elements of a coverage.
      */
     @Override
-    @XmlElement(name = "rangeElementDescription", namespace = Namespaces.GMI)
+    @XmlElement(name = "rangeElementDescription")
     public Collection<RangeElementDescription> getRangeElementDescriptions() {
         return rangeElementDescriptions = nonNullCollection(rangeElementDescriptions, RangeElementDescription.class);
     }
@@ -357,5 +369,29 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     public void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
         rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "attributeGroup")
+    private Collection<AttributeGroup> getAttributeGroup() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAttributeGroups() : null;
     }
 }

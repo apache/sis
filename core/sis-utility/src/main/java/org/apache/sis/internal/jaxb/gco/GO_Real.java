@@ -22,10 +22,10 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * Surrounds double values by {@code <gco:Real>}.
- * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
+ * Wraps double values in {@code <gco:Real>} element.
+ * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
- * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
+ * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
  * <div class="section">Relationship with {@code GO_Decimal}</div>
  * This adapter is identical to {@link GO_Decimal} except for the element name, which is {@code "Real"}
@@ -33,16 +33,17 @@ import javax.xml.bind.annotation.XmlType;
  * The few exceptions are documented in {@link GO_Decimal}.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @XmlType(name = "Real_PropertyType")
-public final class GO_Real extends PropertyType<GO_Real, Double> {
+public class GO_Real extends PropertyType<GO_Real, Double> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Real() {
+    GO_Real() {
     }
 
     /**
@@ -60,20 +61,20 @@ public final class GO_Real extends PropertyType<GO_Real, Double> {
      * @return {@code Double.class}
      */
     @Override
-    protected Class<Double> getBoundType() {
+    protected final Class<Double> getBoundType() {
         return Double.class;
     }
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
-     * ISO-19139 standard and its requirements about primitive types.
+     * ISO 19115-3 standard and its requirements about primitive types.
      *
-     * @param  value  the double value we want to surround by an element representing its type.
-     * @return an adaptation of the double value, that is to say a double value surrounded
+     * @param  value  the double value we want to wrap in an element representing its type.
+     * @return a wrapper for the double value, that is to say a double value wrapped
      *         by {@code <gco:Real>} element.
      */
     @Override
-    public GO_Real wrap(final Double value) {
+    protected GO_Real wrap(final Double value) {
         return new GO_Real(value);
     }
 
@@ -84,7 +85,7 @@ public final class GO_Real extends PropertyType<GO_Real, Double> {
      */
     @XmlElement(name = "Real")
     @XmlSchemaType(name = "double")
-    public Double getElement() {
+    public final Double getElement() {
         return metadata;
     }
 
@@ -93,7 +94,26 @@ public final class GO_Real extends PropertyType<GO_Real, Double> {
      *
      * @param  metadata  the unmarshalled value.
      */
-    public void setElement(final Double metadata) {
+    public final void setElement(final Double metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends GO_Real {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected GO_Real wrap(final Double value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

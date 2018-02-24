@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link TreeTableFormat} applied to the formatting of metadata tree.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -91,18 +91,18 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   │   └─Alternate title…………………………… ISBN\n" +
             "  │   └─Code space…………………………………………………… ISBN\n"+
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Individual…………………………………………………… Testsuya Toyoda\n" +
-            "  │   └─Role…………………………………………………………………… Author\n" +
+            "  │   ├─Role…………………………………………………………………… Author\n" +
+            "  │   └─Individual…………………………………………………… Testsuya Toyoda\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Organisation……………………………………………… Kōdansha\n" +
             "  │   ├─Role…………………………………………………………………… Editor\n" +
-            "  │   └─Extent……………………………………………………………… World\n" +
-            "  │       └─Geographic element\n" +
-            "  │           ├─West bound longitude…… 180°W\n" +
-            "  │           ├─East bound longitude…… 180°E\n" +
-            "  │           ├─South bound latitude…… 90°S\n" +
-            "  │           ├─North bound latitude…… 90°N\n" +
-            "  │           └─Extent type code……………… true\n" +
+            "  │   ├─Extent……………………………………………………………… World\n" +
+            "  │   │   └─Geographic element\n" +
+            "  │   │       ├─West bound longitude…… 180°W\n" +
+            "  │   │       ├─East bound longitude…… 180°E\n" +
+            "  │   │       ├─South bound latitude…… 90°S\n" +
+            "  │   │       ├─North bound latitude…… 90°N\n" +
+            "  │   │       └─Extent type code……………… true\n" +
+            "  │   └─Organisation……………………………………………… Kōdansha\n" +
             "  ├─Presentation form (1 of 2)…………………… Document digital\n" +
             "  ├─Presentation form (2 of 2)…………………… Document hardcopy\n" +
             "  └─ISBN……………………………………………………………………………… 9782505004509\n", text);

@@ -18,43 +18,44 @@
   under the License.
 -->
 
-<gmd:EX_Extent
-    xmlns:gco = "http://www.isotc211.org/2005/gco"
-    xmlns:gmd = "http://www.isotc211.org/2005/gmd"
+<gex:EX_Extent
+    xmlns:gex = "http://standards.iso.org/iso/19115/-3/gex/1.0"
+    xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:gml = "http://www.opengis.net/gml/3.2"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/gex/1.0
+                          http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd">
 
-  <gmd:geographicElement>
-    <gmd:EX_GeographicBoundingBox id="bbox">
-      <gmd:extentTypeCode>
+  <gex:geographicElement>
+    <gex:EX_GeographicBoundingBox id="bbox">
+      <gex:extentTypeCode>
         <gco:Boolean>true</gco:Boolean>
-      </gmd:extentTypeCode>
-      <gmd:westBoundLongitude>
+      </gex:extentTypeCode>
+      <gex:westBoundLongitude>
         <gco:Decimal>-99.0</gco:Decimal>
-      </gmd:westBoundLongitude>
-      <gmd:eastBoundLongitude>
+      </gex:westBoundLongitude>
+      <gex:eastBoundLongitude>
         <gco:Decimal>-79.0</gco:Decimal>
-      </gmd:eastBoundLongitude>
-      <gmd:southBoundLatitude>
+      </gex:eastBoundLongitude>
+      <gex:southBoundLatitude>
         <gco:Decimal>14.9844</gco:Decimal>
-      </gmd:southBoundLatitude>
-      <gmd:northBoundLatitude>
+      </gex:southBoundLatitude>
+      <gex:northBoundLatitude>
         <gco:Decimal>31.0</gco:Decimal>
-      </gmd:northBoundLatitude>
-    </gmd:EX_GeographicBoundingBox>
-  </gmd:geographicElement>
-  <gmd:temporalElement>
-    <gmd:EX_TemporalExtent>
+      </gex:northBoundLatitude>
+    </gex:EX_GeographicBoundingBox>
+  </gex:geographicElement>
+  <gex:temporalElement>
+    <gex:EX_TemporalExtent>
       <!-- TODO: This block needs the sis-temporal module.
-      <gmd:extent>
+      <gex:extent>
         <gml:TimePeriod gml:id="period">
           <gml:description>Acquisition period</gml:description>
           <gml:beginPosition>2010-01-27T08:26:10-05:00</gml:beginPosition>
           <gml:endPosition>2010-08-27T08:26:10-05:00</gml:endPosition>
         </gml:TimePeriod>
-      </gmd:extent>
+      </gex:extent>
       -->
-    </gmd:EX_TemporalExtent>
-  </gmd:temporalElement>
-</gmd:EX_Extent>
+    </gex:EX_TemporalExtent>
+  </gex:temporalElement>
+</gex:EX_Extent>

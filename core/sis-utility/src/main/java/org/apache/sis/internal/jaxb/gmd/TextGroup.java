@@ -19,12 +19,13 @@ package org.apache.sis.internal.jaxb.gmd;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.Debug;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
  * A set of strings localized in different languages. This adapter represents the
- * {@code <gmd:textGroup>} element defined for embedded translations in ISO-19139
- * standard. See {@link PT_FreeText} class javadoc for an example.
+ * {@code <lan:textGroup>} element defined in ISO 19139:2007.
+ * See {@link PT_FreeText} class javadoc for an example.
  *
  * <p>If a localized string has a {@code null} locale, then this string will not be
  * included in this text group because that string should be already included in
@@ -35,40 +36,41 @@ import org.apache.sis.util.Debug;
  * <p>The {@code TextGroup} name suggests that this object can contain many localized strings.
  * However it appears that despite its name, {@code TextGroup} shall always contains exactly 1
  * localized strings and the whole {@code TextGroup} element shall be repeated for each additional
- * languages. SIS uses the ISO 19139 compliant form for marshalling, but accepts both forms during
- * unmarshalling. More specifically, the name suggests that the format should be:</p>
+ * languages. SIS uses the ISO 19139:2007 compliant form for marshalling, but accepts both forms
+ * during unmarshalling. More specifically, the name suggests that the format should be:</p>
  *
  * {@preformat xml
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
- *   <gmd:PT_FreeText>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</gmd:LocalisedCharacterString>
- *       <gmd:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</gmd:LocalisedCharacterString>
- *       <gmd:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *   </gmd:PT_FreeText>
+ *   <lan:PT_FreeText>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</lan:LocalisedCharacterString>
+ *       <lan:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</lan:LocalisedCharacterString>
+ *       <lan:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *   </lan:PT_FreeText>
  * }
  *
  * But the actual official format is:
  *
  * {@preformat xml
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
- *   <gmd:PT_FreeText>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *     <gmd:textGroup>
- *       <gmd:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</gmd:LocalisedCharacterString>
- *     </gmd:textGroup>
- *   </gmd:PT_FreeText>
+ *   <lan:PT_FreeText>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-ita">Apache SIS, progetto OpenSource</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *     <lan:textGroup>
+ *       <lan:LocalisedCharacterString locale="#locale-fra">Apache SIS, projet OpenSource</lan:LocalisedCharacterString>
+ *     </lan:textGroup>
+ *   </lan:PT_FreeText>
  * }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see LocalisedCharacterString
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
@@ -82,11 +84,11 @@ final class TextGroup {
      * JAXB uses this field at marshalling-time in order to wrap {@code N}
      * {@code <LocalisedCharacterString>} elements inside a single {@code <textGroup>} element.
      *
-     * <p>In ISO 19139 compliant documents, the length of this array shall be exactly 1,
+     * <p>In ISO 19139:2007 compliant documents, the length of this array shall be exactly 1,
      * as in the second example of class javadoc. However SIS allows arbitrary length
      * (as in the first example of class javadoc) for compatibility and convenience reasons.</p>
      */
-    @XmlElement(name = "LocalisedCharacterString")
+    @XmlElement(name = "LocalisedCharacterString", namespace = Namespaces.LAN)
     protected LocalisedCharacterString[] localized;
 
     /**
@@ -97,9 +99,9 @@ final class TextGroup {
 
     /**
      * Constructs a {@linkplain TextGroup text group} for a single locale. This constructor
-     * puts exactly one string in the {@code TextGroup}, as required by ISO 19139. However
-     * it would be possible to declare an other constructor allowing the more compact form
-     * (the smaller ) if there is a need for that in the future.
+     * puts exactly one string in the {@code TextGroup}, as required by ISO 19139:2007.
+     * However it would be possible to declare an other constructor allowing the more compact form
+     * (the smaller) if there is a need for that in the future.
      *
      * @param  locale  the string language.
      * @param  text    the string.

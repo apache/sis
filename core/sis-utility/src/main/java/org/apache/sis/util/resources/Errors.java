@@ -256,7 +256,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short EmptyProperty_1 = 32;
 
         /**
-         * An error occurred in file “{0}” at Line {1}.
+         * An error occurred in file “{0}” at line {1}.
          */
         public static final short ErrorInFileAtLine_2 = 33;
 
@@ -533,6 +533,11 @@ public final class Errors extends IndexedResourceBundle {
          * JAXB context has not been specified.
          */
         public static final short MissingJAXBContext = 86;
+
+        /**
+         * Missing or empty ‘{1}’ attribute in “{0}”.
+         */
+        public static final short MissingOrEmptyAttribute_2 = 182;
 
         /**
          * This operation requires the “{0}” module.

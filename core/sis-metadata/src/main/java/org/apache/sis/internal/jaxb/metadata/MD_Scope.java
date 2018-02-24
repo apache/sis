@@ -23,16 +23,16 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
 /**
- * JAXB adapter in order to map implementing class with the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter in order to map implementing class with the GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
+public class MD_Scope extends PropertyType<MD_Scope, Scope> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -47,7 +47,7 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
      * @return {@code Scope.class}
      */
     @Override
-    protected Class<Scope> getBoundType() {
+    protected final Class<Scope> getBoundType() {
         return Scope.class;
     }
 
@@ -60,7 +60,7 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:DQ_Scope>} XML element.
+     * in a {@code <mcc:MD_Scope>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
@@ -72,13 +72,13 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:DQ_Scope>} XML element.
+     * inside the {@code <mcc:MD_Scope>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultScope getElement() {
+    public final DefaultScope getElement() {
         return DefaultScope.castOrCopy(metadata);
     }
 
@@ -87,7 +87,26 @@ public final class MD_Scope extends PropertyType<MD_Scope, Scope> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultScope metadata) {
+    public final void setElement(final DefaultScope metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends MD_Scope {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MD_Scope wrap(final Scope value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

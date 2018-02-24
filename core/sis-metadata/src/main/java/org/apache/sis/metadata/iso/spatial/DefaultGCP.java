@@ -24,7 +24,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.spatial.GCP;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -47,7 +46,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @see DefaultGCPCollection
  *
@@ -59,7 +58,7 @@ import org.apache.sis.xml.Namespaces;
     //"geographicCoordinates",
     "accuracyReports"
 })
-@XmlRootElement(name = "MI_GCP", namespace = Namespaces.GMI)
+@XmlRootElement(name = "MI_GCP")
 public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Serial number for inter-operability with different versions.
@@ -153,7 +152,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * @return accuracy of a ground control point.
      */
     @Override
-    @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)
+    @XmlElement(name = "accuracyReport")
     public Collection<Element> getAccuracyReports() {
         return accuracyReports = nonNullCollection(accuracyReports, Element.class);
     }

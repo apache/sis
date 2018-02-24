@@ -62,28 +62,33 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MMI,
+           xmlns = {
+                @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(CI_Date.class),
     @XmlJavaTypeAdapter(CI_Responsibility.class),
+    @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
-    @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
+    @XmlJavaTypeAdapter(MD_Scope.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_ScopeDescription.class),
     @XmlJavaTypeAdapter(TM_PeriodDuration.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
+    @XmlJavaTypeAdapter(CharSequenceAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.maintenance;
@@ -97,7 +102,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration;

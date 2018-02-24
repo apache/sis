@@ -26,24 +26,35 @@ import org.apache.sis.util.iso.DefaultRecordType;
  * See package documentation for more information about JAXB and interface.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
+public class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
     /**
      * Empty constructor for JAXB only.
      */
-    public GO_RecordType() {
+    GO_RecordType() {
     }
 
     /**
-     * Wraps a {@code RecordType} value with a {@code gco:RecordType} tags at marshalling-time.
+     * Wraps a {@code RecordType} value with a {@code gco:RecordType} element at marshalling-time.
      *
      * @param  metadata  the metadata value to marshal.
      */
     private GO_RecordType(final RecordType metadata) {
         super(metadata);
+    }
+
+    /**
+     * Returns the GeoAPI interface which is bound by this adapter.
+     *
+     * @return {@code RecordType.class}
+     */
+    @Override
+    protected final Class<RecordType> getBoundType() {
+        return RecordType.class;
     }
 
     /**
@@ -58,23 +69,13 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
     }
 
     /**
-     * Returns the GeoAPI interface which is bound by this adapter.
-     *
-     * @return {@code RecordType.class}
-     */
-    @Override
-    protected Class<RecordType> getBoundType() {
-        return RecordType.class;
-    }
-
-    /**
      * Returns the {@link DefaultRecordType} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElement(name = "RecordType")
-    public DefaultRecordType getElement() {
+    public final DefaultRecordType getElement() {
         return DefaultRecordType.castOrCopy(metadata);
     }
 
@@ -84,7 +85,26 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRecordType metadata) {
+    public final void setElement(final DefaultRecordType metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends GO_RecordType {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_RecordType wrap(final RecordType value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

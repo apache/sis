@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.SampleDimension;
 import org.opengis.metadata.content.CoverageContentType;
@@ -28,6 +29,10 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
+import org.apache.sis.internal.jaxb.gco.GO_Integer;
+import org.apache.sis.internal.jaxb.gco.GO_Record;
+import org.apache.sis.internal.jaxb.gco.GO_RecordType;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
@@ -51,7 +56,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -60,14 +66,16 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "maxValue",
     "minValue",
     "units",
-/// "scaleFactor",
-/// "offset",
-/// "meanValue",
-/// "numberOfValues",
-/// "standardDeviation",
-/// "otherPropertyType",
-/// "otherProperty",
-/// "bitsPerValue"
+
+    // New in ISO 19115-3
+    "scaleFactor",
+    "offset",
+    "meanValue",
+    "numberOfValues",
+    "standardDeviation",
+    "otherPropertyType",
+    "otherProperty",
+    "bitsPerValue"
 })
 @XmlRootElement(name = "MD_SampleDimension")
 @XmlSeeAlso({DefaultBand.class, DefaultRangeDimension.class})
@@ -224,7 +232,8 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      */
     @Override
     @ValueRange(minimum = 0)
-/// @XmlElement(name = "numberOfValues")
+    @XmlElement(name = "numberOfValues")
+    @XmlJavaTypeAdapter(GO_Integer.Since2014.class)
     public Integer getNumberOfValues() {
         return numberOfValues;
     }
@@ -290,7 +299,8 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return the mean value of data values in each dimension included in the resource, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "meanValue")
+    @XmlElement(name = "meanValue")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getMeanValue() {
         return meanValue;
     }
@@ -311,7 +321,8 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return standard deviation of data values in each dimension included in the resource, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "standardDeviation")
+    @XmlElement(name = "standardDeviation")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     public Double getStandardDeviation() {
         return standardDeviation;
     }
@@ -353,7 +364,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return scale factor which has been applied to the cell value, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "scaleFactor")
+    @XmlElement(name = "scaleFactor")
     public Double getScaleFactor() {
         return scaleFactor;
     }
@@ -374,7 +385,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return the physical value corresponding to a cell value of zero, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "offset")
+    @XmlElement(name = "offset")
     public Double getOffset() {
         return offset;
     }
@@ -391,6 +402,12 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
 
     /**
      * Returns type of transfer function to be used when scaling a physical value for a given element.
+     *
+     * <div class="note"><b>Note on XML marshalling:</b>
+     * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
+     * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
+     * not only the measurements in the electromagnetic spectrum. However this property will not appear in XML
+     * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
      *
      * @return type of transfer function, or {@code null}.
      */
@@ -418,7 +435,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      */
     @Override
     @ValueRange(minimum = 1)
-/// @XmlElement(name = "bitsPerValues")
+    @XmlElement(name = "bitsPerValue")
     public Integer getBitsPerValue() {
         return bitsPerValue;
     }
@@ -440,6 +457,12 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
+     *
+     * <div class="note"><b>Note on XML marshalling:</b>
+     * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
+     * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
+     * not only the measurements in the electromagnetic spectrum. However this property will not appear in XML
+     * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
      *
      * @return smallest distance between which separate points can be distinguished, or {@code null}.
      */
@@ -469,7 +492,8 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return type of other attribute description, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "otherPropertyType")
+    @XmlElement(name = "otherPropertyType")
+    @XmlJavaTypeAdapter(GO_RecordType.Since2014.class)
     public RecordType getOtherPropertyType() {
         return otherPropertyType;
     }
@@ -491,7 +515,8 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @return instance of other/attributeType that defines attributes, or {@code null} if none.
      */
     @Override
-/// @XmlElement(name = "otherProperty")
+    @XmlElement(name = "otherProperty")
+    @XmlJavaTypeAdapter(GO_Record.Since2014.class)
     public Record getOtherProperty() {
         return otherProperty;
     }

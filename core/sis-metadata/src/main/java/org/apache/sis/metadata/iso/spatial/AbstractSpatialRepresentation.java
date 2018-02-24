@@ -40,13 +40,13 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMD_SpatialRepresentation_Type")
-@XmlRootElement(name = "MD_SpatialRepresentation")
+@XmlRootElement(name = "AbstractMD_SpatialRepresentation")
 @XmlSeeAlso({
     DefaultGridSpatialRepresentation.class,
     DefaultVectorSpatialRepresentation.class

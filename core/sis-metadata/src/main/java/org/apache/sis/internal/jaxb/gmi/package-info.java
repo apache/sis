@@ -16,8 +16,8 @@
  */
 
 /**
- * Extends some classes from the {@link org.apache.sis.metadata.iso} package in order
- * to give them the {@code "gmi"} namespace. This is required for XML (un)marshalling
+ * Extends some classes from {@link org.apache.sis.metadata.iso} packages in order to give them
+ * the name used by imagery extensions (ISO 19115-2). This is required for XML (un)marshalling
  * because GeoAPI merged some classes which were dissociated in the ISO specifications.
  * The GeoAPI merge were done in order to simplify the conceptual model for developers,
  * since the classes were different in ISO specifications for historical reasons - not
@@ -32,13 +32,15 @@
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMI, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
+    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),
+    @XmlNs(prefix = "mrl", namespaceURI = Namespaces.MRL),
+    @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),
+    @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.gmi;
@@ -48,4 +50,5 @@ import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;

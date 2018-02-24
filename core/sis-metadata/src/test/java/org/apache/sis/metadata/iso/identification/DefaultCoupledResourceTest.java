@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * Tests {@link DefaultCoupledResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -46,14 +46,13 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
     /**
      * Creates the resource to use for testing purpose.
      */
-    static DefaultCoupledResource create() {
+    static DefaultCoupledResource create(final NameFactory factory) {
         final DefaultOperationMetadata operation = new DefaultOperationMetadata("Get Map",
                 DistributedComputingPlatform.WEB_SERVICES, null);
         operation.setParameters(singleton((ParameterDescriptor<?>) ServiceParameterTest.create()));
         operation.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
 
         final DefaultCoupledResource resource = new DefaultCoupledResource();
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         resource.setScopedName((ScopedName) factory.createGenericName(null, "mySpace", "ABC-123"));
         resource.setOperation(operation);
         return resource;
@@ -64,7 +63,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
      */
     @Test
     public void testOperationNameResolve() {
-        final DefaultCoupledResource resource  = DefaultCoupledResourceTest.create();
+        final DefaultCoupledResource resource  = create(DefaultFactories.forBuildin(NameFactory.class));
         final OperationMetadata      operation = resource.getOperation();
         /*
          * Test OperationName replacement when the name matches.

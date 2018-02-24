@@ -41,7 +41,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * <p>There is two kinds of non-marshalled identifiers:</p>
  *
  * <ul>
- *   <li>The XML attributes declared by ISO 19139 specification in the {@code gco:PropertyType}
+ *   <li>The XML attributes declared by ISO 19115-3 specification in the {@code gco:PropertyType}
  *       element: {@code gml:id}, {@code gco:uuid} and {@code xlink:href}. Those attributes are
  *       not part of the ISO 19115 specification. Those authorities are declared in the
  *       {@link IdentifierSpace} interfaces.</li>
@@ -109,7 +109,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
 
     /**
      * Returns the first marshallable identifier from the given collection. This method omits
-     * "special" identifiers (ISO 19139 attributes, ISBN codes...), which are recognized by
+     * "special" identifiers (ISO 19115-3 attributes, ISBN codes...), which are recognized by
      * the implementation class of their authority.
      *
      * <p>This method is used for implementation of {@code getIdentifier()} methods (singular form)
@@ -132,9 +132,8 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
 
     /**
      * Sets the given identifier in the given collection. This method removes all identifiers
-     * that are not ISO 19139 identifiers before to adds the given one in the collection. This
-     * method is used when the given collection is expected to contains only one ISO 19115
-     * identifier.
+     * that are not ISO 19115-3 identifiers before to adds the given one in the collection.
+     * This method is used when the given collection is expected to contains only one ISO 19115-1 identifier.
      *
      * <p>This method is used for implementation of {@code setIdentifier(Identifier)} methods
      * in public metadata objects.</p>
