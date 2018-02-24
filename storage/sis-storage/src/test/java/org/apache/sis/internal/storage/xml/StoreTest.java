@@ -30,13 +30,14 @@ import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 
 
 /**
  * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -102,7 +103,8 @@ public final strictfp class StoreTest extends TestCase {
 
         assertInstanceOf("party", Organisation.class, party);
         assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLanguages()));
-        assertEquals(StandardCharsets.UTF_8,      getSingleton(metadata.getCharacterSets()));
+        if (!REGRESSION)
+            assertEquals(StandardCharsets.UTF_8,  getSingleton(metadata.getCharacterSets()));
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, resp.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getName()));
         assertEquals("http://sis.apache.org",     String.valueOf(resource.getLinkage()));

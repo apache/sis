@@ -17,9 +17,7 @@
 package org.apache.sis.metadata.iso;
 
 import javax.xml.bind.JAXBException;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
@@ -32,7 +30,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultIdentifier}.
  *
  * @author  Martin Desruisseaux
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -42,29 +41,23 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
      * The expected XML representation for this test.
      */
     private static final String XML =
-            "<gmd:MD_Identifier xmlns:gmd=\"" + Namespaces.GMD + "\" " +
+            "<mcc:MD_Identifier xmlns:mcc=\"" + Namespaces.MCC + "\" " +
+                               "xmlns:cit=\"" + Namespaces.CIT + "\" " +
                                "xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-            "  <gmd:authority>\n" +
-            "    <gmd:CI_Citation>\n" +
-            "      <gmd:title>\n" +
+            "  <mcc:authority>\n" +
+            "    <cit:CI_Citation>\n" +
+            "      <cit:title>\n" +
             "        <gco:CharacterString>EPSG</gco:CharacterString>\n" +
-            "      </gmd:title>\n" +
-            "    </gmd:CI_Citation>\n" +
-            "  </gmd:authority>\n" +
-            "  <gmd:code>\n" +
+            "      </cit:title>\n" +
+            "    </cit:CI_Citation>\n" +
+            "  </mcc:authority>\n" +
+            "  <mcc:code>\n" +
             "    <gco:CharacterString>4326</gco:CharacterString>\n" +
-            "  </gmd:code>\n" +
-            "</gmd:MD_Identifier>";
+            "  </mcc:code>\n" +
+            "</mcc:MD_Identifier>";
 
     /**
-     * Asserts that XML marshalling of the given object produce the {@link #XML} string.
-     */
-    void testMarshal(final String type, final Identifier identifier) throws JAXBException {
-        assertXmlEquals(CharSequences.replace(XML, "MD_Identifier", type).toString(), marshal(identifier), "xmlns:*");
-    }
-
-    /**
-     * Test XML marshalling.
+     * Tests XML marshalling.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
@@ -73,11 +66,11 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
         final DefaultIdentifier identifier = new DefaultIdentifier();
         identifier.setAuthority(new DefaultCitation("EPSG"));
         identifier.setCode("4326");
-        testMarshal("MD_Identifier", identifier);
+        assertXmlEquals(XML, marshal(identifier), "xmlns:*");
     }
 
     /**
-     * Test XML unmarshalling.
+     * Tests XML unmarshalling.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */

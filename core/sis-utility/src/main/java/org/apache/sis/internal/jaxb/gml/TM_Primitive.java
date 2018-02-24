@@ -30,15 +30,15 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * JAXB adapter for {@link TemporalPrimitive}, in order to integrate the value in an element complying
- * with OGC/ISO standard. Note that the CRS is formatted using the GML schema, not the ISO 19139 one.
+ * with OGC/ISO standard. Note that the CRS is formatted using the GML schema, not the ISO 19139:2007 one.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> {
+public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> {
     /**
      * Empty constructor for JAXB.
      */
@@ -71,7 +71,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * @return {@code TemporalPrimitive.class}
      */
     @Override
-    protected Class<TemporalPrimitive> getBoundType() {
+    protected final Class<TemporalPrimitive> getBoundType() {
         return TemporalPrimitive.class;
     }
 
@@ -82,7 +82,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * @return the time period, or {@code null}.
      */
     @XmlElement(name = "TimePeriod")
-    public TimePeriod getTimePeriod() {
+    public final TimePeriod getTimePeriod() {
         final TemporalPrimitive metadata = this.metadata;
         return (metadata instanceof Period) ? new TimePeriod((Period) metadata) : null;
     }
@@ -94,7 +94,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * @return the time instant, or {@code null}.
      */
     @XmlElement(name = "TimeInstant")
-    public TimeInstant getTimeInstant() {
+    public final TimeInstant getTimeInstant() {
         final TemporalPrimitive metadata = this.metadata;
         return (metadata instanceof Instant) ? new TimeInstant((Instant) metadata) : null;
     }
@@ -105,7 +105,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      *
      * @param  period  the wrapper to set.
      */
-    public void setTimePeriod(final TimePeriod period) {
+    public final void setTimePeriod(final TimePeriod period) {
         metadata = null;                                        // Cleaned first in case of failure.
         if (period != null) {
             final Context context = Context.current();
@@ -137,7 +137,7 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      *
      * @param  instant  the wrapper to set.
      */
-    public void setTimeInstant(final TimeInstant instant) {
+    public final void setTimeInstant(final TimeInstant instant) {
         metadata = null;                                        // Cleaned first in case of failure.
         if (instant != null) {
             final Date position = XmlUtilities.toDate(Context.current(), instant.timePosition);
@@ -166,6 +166,25 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
     private static void warningOccured(final String method, final Exception e) {
         if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {
             Context.warningOccured(Context.current(), TM_Primitive.class, method, e, true);
+        }
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends TM_Primitive {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected TM_Primitive wrap(final TemporalPrimitive value) {
+            return accept2014() ? super.wrap(value) : null;
         }
     }
 }

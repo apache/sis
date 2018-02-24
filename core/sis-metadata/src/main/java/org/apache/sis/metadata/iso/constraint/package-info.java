@@ -63,17 +63,22 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO,
+           xmlns = {
+                @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(CI_Responsibility.class),
+    @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_ClassificationCode.class),
     @XmlJavaTypeAdapter(MD_RestrictionCode.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
@@ -88,6 +93,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
+import org.apache.sis.internal.jaxb.metadata.*;

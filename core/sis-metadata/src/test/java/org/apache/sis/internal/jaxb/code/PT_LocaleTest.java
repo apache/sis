@@ -19,9 +19,8 @@ package org.apache.sis.internal.jaxb.code;
 import java.util.Arrays;
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.util.Version;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.internal.jaxb.Schemas;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -32,27 +31,12 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshaling of {@link PT_Locale}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
 public final strictfp class PT_LocaleTest extends XMLTestCase {
-    /**
-     * The path to the {@code gmxCodelists.xml} path.
-     */
-    private static final String CODELISTS_PATH = Schemas.METADATA_ROOT + Schemas.CODELISTS_PATH;
-
-    /**
-     * The {@code <gmd:characterEncoding>} element to be repeated for every locale. This element is not
-     * of interest for this test. In current Apache SIS implementation, it is totally redundant with the
-     * encoding declared in the XML header. Unfortunately those elements are mandatory according OGC/ISO
-     * schemas, so we have to carry their weight.
-     */
-    private static final String ENCODING =
-            "      <gmd:characterEncoding>\n" +
-            "        <gmd:MD_CharacterSetCode codeList=\"" + CODELISTS_PATH + "#MD_CharacterSetCode\" codeListValue=\"utf8\">UTF-8</gmd:MD_CharacterSetCode>\n" +
-            "      </gmd:characterEncoding>\n";
-
     /**
      * The locales to use for the tests. For better test coverage we need at least:
      *
@@ -66,51 +50,19 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
     };
 
     /**
-     * XML representation of the {@link #LOCALES} list.
+     * Tests marshalling of a few locales using the specified version of metadata schema.
+     *
+     * @param filename      name of the file containing expected result.
+     * @param ignoredNodes  the fully-qualified names of the nodes to ignore.
      */
-    private static final String XML =
-            "<gmd:MD_Metadata xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-            "  <gmd:language>\n" +
-            "    <gmd:LanguageCode codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode\" codeListValue=\"eng\" codeSpace=\"eng\">English</gmd:LanguageCode>\n" +
-            "  </gmd:language>\n" +
-            "  <gmd:locale>\n" +
-            "    <gmd:PT_Locale>\n" +
-            "      <gmd:languageCode>\n" +
-            "        <gmd:LanguageCode codeList=\"" + CODELISTS_PATH + "#LanguageCode\" codeListValue=\"jpn\" codeSpace=\"eng\">Japanese</gmd:LanguageCode>\n" +
-            "      </gmd:languageCode>\n" + ENCODING +
-            "    </gmd:PT_Locale>\n" +
-            "  </gmd:locale>\n" +
-            "  <gmd:locale>\n" +
-            "    <gmd:PT_Locale>\n" +
-            "      <gmd:languageCode>\n" +
-            "        <gmd:LanguageCode codeList=\"" + CODELISTS_PATH + "#LanguageCode\" codeListValue=\"eng\" codeSpace=\"eng\">English</gmd:LanguageCode>\n" +
-            "      </gmd:languageCode>\n" +
-            "      <gmd:country>\n" +
-            "        <gmd:Country codeList=\"" + CODELISTS_PATH + "#Country\" codeListValue=\"CA\" codeSpace=\"eng\">Canada</gmd:Country>\n" +
-            "      </gmd:country>\n" + ENCODING +
-            "    </gmd:PT_Locale>\n" +
-            "  </gmd:locale>\n" +
-            "  <gmd:locale>\n" +
-            "    <gmd:PT_Locale>\n" +
-            "      <gmd:languageCode>\n" +
-            "        <gmd:LanguageCode codeList=\"" + CODELISTS_PATH + "#LanguageCode\" codeListValue=\"fra\" codeSpace=\"eng\">French</gmd:LanguageCode>\n" +
-            "      </gmd:languageCode>\n" +
-            "      <gmd:country>\n" +
-            "        <gmd:Country codeList=\"" + CODELISTS_PATH + "#Country\" codeListValue=\"FR\" codeSpace=\"eng\">France</gmd:Country>\n" +
-            "      </gmd:country>\n" + ENCODING +
-            "    </gmd:PT_Locale>\n" +
-            "  </gmd:locale>\n" +
-            "  <gmd:locale>\n" +
-            "    <gmd:PT_Locale>\n" +
-            "      <gmd:languageCode>\n" +
-            "        <gmd:LanguageCode codeList=\"" + CODELISTS_PATH + "#LanguageCode\" codeListValue=\"fra\" codeSpace=\"eng\">French</gmd:LanguageCode>\n" +
-            "      </gmd:languageCode>\n" +
-            "      <gmd:country>\n" +
-            "        <gmd:Country codeList=\"" + CODELISTS_PATH + "#Country\" codeListValue=\"CA\" codeSpace=\"eng\">Canada</gmd:Country>\n" +
-            "      </gmd:country>\n" + ENCODING +
-            "    </gmd:PT_Locale>\n" +
-            "  </gmd:locale>\n" +
-            "</gmd:MD_Metadata>";
+    private void marshalAndCompare(final String filename, final Version version, final String... ignoredNodes)
+            throws JAXBException
+    {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        metadata.setLanguages(Arrays.asList(LOCALES));
+        assertMarshalEqualsFile(filename, metadata, version, STRICT, ignoredNodes,
+                new String[] {"xmlns:*", "xsi:*"});
+    }
 
     /**
      * Tests marshalling of a few locales.
@@ -119,9 +71,19 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setLanguages(Arrays.asList(LOCALES));
-        assertXmlEquals(XML, marshal(metadata), "xlmns:*");
+        marshalAndCompare("Locales.xml", VERSION_2014,
+                          "mdb:contact", "mdb:dateInfo", "mdb:identificationInfo");
+    }
+
+    /**
+     * Tests marshalling to legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     */
+    @Test
+    public void testMarshallingLegacy() throws JAXBException {
+        marshalAndCompare("Locales (legacy).xml", VERSION_2007,
+                          "gmd:contact", "gmd:dateStamp", "gmd:identificationInfo");
     }
 
     /**
@@ -131,7 +93,18 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final DefaultMetadata metadata = unmarshal(DefaultMetadata.class, XML);
+        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, "Locales.xml");
+        assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
+    }
+
+    /**
+     * Tests unmarshalling from legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     */
+    @Test
+    public void testUnmarshallingLegacy() throws JAXBException {
+        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, "Locales (legacy).xml");
         assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
     }
 }

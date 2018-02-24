@@ -80,20 +80,31 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRC,
+           xmlns = {
+                @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
+                @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Real.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
+    @XmlJavaTypeAdapter(GO_RecordType.class),
+    @XmlJavaTypeAdapter(MD_AttributeGroup.class),
     @XmlJavaTypeAdapter(MD_CoverageContentTypeCode.class),
+    @XmlJavaTypeAdapter(MD_FeatureTypeInfo.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_ImagingConditionCode.class),
     @XmlJavaTypeAdapter(MD_RangeDimension.class),
@@ -101,16 +112,12 @@
     @XmlJavaTypeAdapter(MI_PolarizationOrientationCode.class),
     @XmlJavaTypeAdapter(MI_RangeElementDescription.class),
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(UnitAdapter.class),
-    @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_RecordType.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Real.class),    @XmlJavaTypeAdapter(type=double.class,  value=GO_Real.class)
+    @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
 package org.apache.sis.metadata.iso.content;
 
@@ -122,8 +129,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

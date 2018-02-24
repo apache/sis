@@ -21,15 +21,17 @@
  * lists (except base classes), which are defined in their own package.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)

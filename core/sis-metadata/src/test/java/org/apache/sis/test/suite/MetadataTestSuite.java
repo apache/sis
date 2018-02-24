@@ -94,6 +94,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.DefaultMetadataTest.class,
     org.apache.sis.metadata.iso.CustomMetadataTest.class,
     org.apache.sis.metadata.iso.AllMetadataTest.class,
+    org.apache.sis.metadata.iso.MarshallingTest.class,
     org.apache.sis.metadata.iso.APIVerifier.class,
 
     org.apache.sis.io.wkt.ConventionTest.class,

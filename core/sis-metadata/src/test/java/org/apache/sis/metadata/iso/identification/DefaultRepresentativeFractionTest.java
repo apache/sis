@@ -17,10 +17,12 @@
 package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
-import org.apache.sis.xml.XML;
+import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.util.Version;
+import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -30,11 +32,36 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultRepresentativeFraction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
+public final strictfp class DefaultRepresentativeFractionTest extends XMLTestCase {
+    /**
+     * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
+     */
+    private boolean legacy;
+
+    /**
+     * Verifies that marshalling the given metadata produces the expected XML document,
+     * then verifies that unmarshalling that document gives back the original metadata object.
+     * If {@link #legacy} is {@code true}, then this method will use ISO 19139:2007 schema.
+     */
+    private void roundtrip(final RepresentativeFraction browse, String expected) throws JAXBException {
+        final String  actual;
+        final Version version;
+        if (legacy) {
+            expected = toLegacyXML(expected);
+            version  = VERSION_2007;
+        } else {
+            version  = VERSION_2014;
+        }
+        actual = marshal(browse, version);
+        assertXmlEquals(expected, actual, "xmlns:*");
+        assertEquals(browse, unmarshal(RepresentativeFraction.class, actual));
+    }
+
     /**
      * Test {@link DefaultRepresentativeFraction#setScale(double)}.
      */
@@ -50,27 +77,36 @@ public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
     }
 
     /**
-     * Tests XML marshalling of identifiers.
+     * Tests XML marshalling using ISO 19115-3 schema.
+     * This XML fragment contains an identifier.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
-    public void testIdentifiers() throws JAXBException {
+    public void testMarshalling() throws JAXBException {
         final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(8);
         fraction.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "scale");
-        final String xml = XML.marshal(fraction);
-        assertXmlEquals(
-                "<gmd:MD_RepresentativeFraction xmlns:gmd=\"" + Namespaces.GMD + '"' +
+        roundtrip(fraction,
+                "<mri:MD_RepresentativeFraction xmlns:mri=\"" + Namespaces.MRI + '"' +
                                               " xmlns:gco=\"" + Namespaces.GCO + '"' +
                                               " id=\"scale\">\n" +
-                "  <gmd:denominator>\n" +
+                "  <mri:denominator>\n" +
                 "    <gco:Integer>8</gco:Integer>\n" +
-                "  </gmd:denominator>\n" +
-                "</gmd:MD_RepresentativeFraction>", xml, "xmlns:*");
-        /*
-         * Unmarshal the element back to a Java object and compare to the original.
-         */
-        assertEquals(fraction, XML.unmarshal(xml));
+                "  </mri:denominator>\n" +
+                "</mri:MD_RepresentativeFraction>");
+    }
+
+    /**
+     * Tests XML marshalling using ISO 19139:2007 schema.
+     * This XML fragment contains an identifier.
+     *
+     * @throws JAXBException if an error occurred during marshalling.
+     */
+    @Test
+    @DependsOnMethod("testMarshalling")
+    public void testMarshallingLegacy() throws JAXBException {
+        legacy = true;
+        testMarshalling();
     }
 
     /**

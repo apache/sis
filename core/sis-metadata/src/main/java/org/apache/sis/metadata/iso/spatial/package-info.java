@@ -83,21 +83,25 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MSR,
+           xmlns = {
+                @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),      // Metadata for Spatial Representation
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC)       // Data Quality Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
     @XmlJavaTypeAdapter(DQ_Element.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
     @XmlJavaTypeAdapter(GM_Object.class),
     @XmlJavaTypeAdapter(MD_CellGeometryCode.class),
     @XmlJavaTypeAdapter(MD_Dimension.class),
@@ -112,8 +116,7 @@
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
 package org.apache.sis.metadata.iso.spatial;
 
@@ -125,7 +128,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

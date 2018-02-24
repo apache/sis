@@ -19,15 +19,16 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.annotation.Obligation;
 import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Obligation}, in order to wraps the value in an element
- * complying with ISO-19139 standard. See package documentation for more information
- * about the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Obligation}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -35,7 +36,7 @@ public final class MD_ObligationCode extends EnumAdapter<MD_ObligationCode, Obli
     /**
      * The enumeration value.
      */
-    @XmlElement(name = "MD_ObligationCode")
+    @XmlElement(name = "MD_ObligationCode", namespace = Namespaces.MEX)
     private String value;
 
     /**

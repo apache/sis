@@ -18,9 +18,11 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -28,7 +30,8 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @since   1.0
  * @since   0.5
  * @module
  */
@@ -80,10 +83,14 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
     @XmlElementRef
     @SuppressWarnings("deprecation")
     public DefaultResponsibility getElement() {
-        if (LEGACY_XML) {
-            return DefaultResponsibleParty.castOrCopy(metadata);
-        } else {
+        if (FilterByVersion.CURRENT_METADATA.accept()) {
+            if (metadata instanceof ResponsibleParty) {
+                // Need to build new DefaultResponsibility object here — simply casting doesn't work.
+                return new DefaultResponsibility(metadata);
+            }
             return DefaultResponsibility.castOrCopy(metadata);
+        } else {
+            return DefaultResponsibleParty.castOrCopy(metadata);
         }
     }
 

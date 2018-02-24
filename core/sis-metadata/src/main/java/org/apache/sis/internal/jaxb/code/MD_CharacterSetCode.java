@@ -21,19 +21,21 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
- * JAXB adapter for {@link Charset}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information about
- * the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Charset}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -90,7 +92,7 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
      *
      * @return the value to be marshalled.
      */
-    @XmlElement(name = "MD_CharacterSetCode")
+    @XmlElement(name = "MD_CharacterSetCode", namespace = Namespaces.LAN)
     public CodeListUID getElement() {
         return identifier;
     }

@@ -40,13 +40,13 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Result_Type")
-@XmlRootElement(name = "DQ_Result")
+@XmlRootElement(name = "AbstractDQ_Result")
 @XmlSeeAlso({
     DefaultConformanceResult.class,
     DefaultQuantitativeResult.class,

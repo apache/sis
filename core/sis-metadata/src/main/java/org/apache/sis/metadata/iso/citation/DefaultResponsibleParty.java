@@ -31,6 +31,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -52,20 +53,20 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @Deprecated
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "CI_ResponsibleParty_Type", propOrder = {
+@XmlType(name = "CI_ResponsibleParty_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "individualName",
     "organisationName",
     "positionName",
     "contactInfo",
     "role"
 })
-@XmlRootElement(name = "CI_ResponsibleParty")
+@XmlRootElement(name = "CI_ResponsibleParty", namespace = LegacyNamespaces.GMD)
 public class DefaultResponsibleParty extends DefaultResponsibility implements ResponsibleParty {
     /**
      * Serial number for inter-operability with different versions.
@@ -222,8 +223,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "individualName")
     @Dependencies("getParties")
+    @XmlElement(name = "individualName")
     public String getIndividualName() {
         final InternationalString name = getIndividual(false);
         return (name != null) ? name.toString() : null;
@@ -262,8 +263,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "organisationName")
     @Dependencies("getParties")
+    @XmlElement(name = "organisationName")
     public InternationalString getOrganisationName() {
         return getName(getParties(), Organisation.class, false);
     }
@@ -302,8 +303,8 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "positionName")
     @Dependencies("getParties")
+    @XmlElement(name = "positionName")
     public InternationalString getPositionName() {
         return getIndividual(true);
     }
@@ -339,16 +340,16 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Override
     @Deprecated
-    @XmlElement(name = "contactInfo")
     @Dependencies("getParties")
+    @XmlElement(name = "contactInfo")
     public Contact getContactInfo() {
         final Collection<Party> parties = getParties();
-        if (parties != null) { // May be null on marshalling.
+        if (parties != null) {                                          // May be null on marshalling.
             for (final Party party : parties) {
                 final Collection<? extends Contact> contacts = party.getContactInfo();
-                if (contacts != null) { // May be null on marshalling.
+                if (contacts != null) {                                 // May be null on marshalling.
                     for (final Contact contact : contacts) {
-                        if (contact != null) { // Paranoiac check.
+                        if (contact != null) {                          // Paranoiac check.
                             return contact;
                         }
                     }

@@ -23,7 +23,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Algorithm;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -48,7 +47,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -57,7 +56,7 @@ import org.apache.sis.xml.Namespaces;
     "citation",
     "description"
 })
-@XmlRootElement(name = "LE_Algorithm", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_Algorithm")
 public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Serial number for inter-operability with different versions.
@@ -128,7 +127,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * @return algorithm and version or date, or {@code null}.
      */
     @Override
-    @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "citation", required = true)
     public Citation getCitation() {
         return citation;
     }
@@ -149,7 +148,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * @return algorithm used to generate the data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "description", required = true)
     public InternationalString getDescription() {
         return description;
     }

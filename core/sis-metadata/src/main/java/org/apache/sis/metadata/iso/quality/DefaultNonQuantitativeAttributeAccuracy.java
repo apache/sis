@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -38,13 +39,13 @@ import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type")
-@XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy")
+@XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = Namespaces.GMD)     // TODO: renamed NonQuantitativeAttributeCorrectness
+@XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy", namespace = Namespaces.GMD)
 public class DefaultNonQuantitativeAttributeAccuracy extends AbstractThematicAccuracy
         implements NonQuantitativeAttributeAccuracy
 {

@@ -24,6 +24,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.jaxb.gco.GO_Measure;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
@@ -53,7 +54,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -63,8 +65,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "dimensionName",
     "dimensionSize",
     "resolution",
-/// "dimensionTitle",
-/// "dimensionDescription"
+    "dimensionTitle",
+    "dimensionDescription"
 })
 @XmlRootElement(name = "MD_Dimension")
 public class DefaultDimension extends ISOMetadata implements Dimension {
@@ -254,7 +256,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "dimensionTitle")
+    @XmlElement(name = "dimensionTitle")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     public InternationalString getDimensionTitle() {
         return dimensionTitle;
     }
@@ -279,7 +282,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "dimensionDescription")
+    @XmlElement(name = "dimensionDescription")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     public InternationalString getDimensionDescription() {
         return dimensionDescription;
     }

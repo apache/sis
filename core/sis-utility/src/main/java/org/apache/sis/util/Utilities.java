@@ -134,7 +134,9 @@ public final class Utilities extends Static {
             return true;
         }
         if (object1 == null || object2 == null) {
-            assert isNotDebug(mode) : "object" + (object1 == null ? '1' : '2') + " is null";
+            assert isNotDebug(mode) : ((object1 != null) ? object1.getClass()
+                                     : (object2 != null) ? object2.getClass()
+                                     : Object.class).getSimpleName() + " #" + (object1 == null ? '1' : '2') + " is null";
             return false;
         }
         if (object1 instanceof LenientComparable) {

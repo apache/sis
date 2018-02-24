@@ -24,12 +24,12 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Context}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Context}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -73,7 +73,7 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_ContextCode", namespace = Namespaces.GMI)
+    @XmlElement(name = "MI_ContextCode", namespace = Namespaces.MAC)
     public CodeListUID getElement() {
         return identifier;
     }

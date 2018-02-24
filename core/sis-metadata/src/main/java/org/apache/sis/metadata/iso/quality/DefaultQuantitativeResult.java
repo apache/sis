@@ -25,6 +25,8 @@ import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.util.InternationalString;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -46,12 +48,14 @@ import org.opengis.util.RecordType;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
+    "values",
     "valueType",
     "valueUnit",
     "errorStatistic"
@@ -139,7 +143,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @return Quantitative value or values.
      */
     @Override
-//  @XmlElement(name = "value", required = true) // TODO
+    @XmlElement(name = "value", required = true)
     public List<Record> getValues() {
         return values = nonNullList(values, Record.class);
     }
@@ -163,7 +167,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @return value type for reporting a data quality result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "valueType")
+    @XmlElement(name = "valueRecordType")
     public RecordType getValueType()  {
         RecordType type = valueType;
         if (type == null && values != null) {
@@ -200,7 +204,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @return value unit for reporting a data quality result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "valueUnit", required = true)
+    @XmlElement(name = "valueUnit")
     public Unit<?> getValueUnit()  {
         return valueUnit;
     }
@@ -219,11 +223,13 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * Returns the statistical method used to determine the value.
      *
      * @return statistical method used to determine the value, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "errorStatistic")
+    @XmlElement(name = "errorStatistic", namespace = LegacyNamespaces.GMD)
     public InternationalString getErrorStatistic()  {
-        return errorStatistic;
+        return FilterByVersion.LEGACY_METADATA.accept() ? errorStatistic : null;
     }
 
     /**

@@ -55,7 +55,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -216,7 +216,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * @return information about spatial-temporal axis properties.
      */
     @Override
-    @XmlElement(name = "axisDimensionProperties", required = true)
+    @XmlElement(name = "axisDimensionProperties")
     public List<Dimension> getAxisDimensionProperties() {
         return axisDimensionProperties = nonNullList(axisDimensionProperties, Dimension.class);
     }

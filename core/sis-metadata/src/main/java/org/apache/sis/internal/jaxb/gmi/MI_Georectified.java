@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.spatial.Georectified;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -29,12 +30,12 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "MI_Georectified_Type")
-@XmlRootElement(name = "MI_Georectified")
+@XmlType(name = "MI_Georectified_Type", namespace = Namespaces.MSR)
+@XmlRootElement(name = "MI_Georectified", namespace = Namespaces.MSR)
 @SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Georectified extends DefaultGeorectified {
     /**

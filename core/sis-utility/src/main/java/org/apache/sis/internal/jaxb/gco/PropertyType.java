@@ -31,6 +31,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
@@ -104,7 +105,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @param <ValueType>  the adapter subclass.
  * @param <BoundType>  the interface being adapted.
@@ -117,13 +119,6 @@ import org.apache.sis.util.resources.Errors;
 public abstract class PropertyType<ValueType extends PropertyType<ValueType,BoundType>, BoundType>
         extends XmlAdapter<ValueType,BoundType>
 {
-    /**
-     * {@code true} if marshalling an XML based on ISO 19115:2003 model. A value of {@code false}
-     * (ISO 19115:2014 model) is not yet supported, so we currently use this variable only as a way
-     * to identify the code to revisit when we will want to support the new model.
-     */
-    public static final boolean LEGACY_XML = true;
-
     /**
      * The wrapped GeoAPI metadata instance, or {@code null} if the metadata shall not be marshalled.
      * Metadata are not marshalled when replaced by {@code xlink:href} or {@code uuidref} attributes.
@@ -540,6 +535,16 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the bound type, which is typically the GeoAPI interface.
      */
     protected abstract Class<BoundType> getBoundType();
+
+    /**
+     * Returns {@code true} if a {@code Since2014} subclasses should return a non-null value.
+     * This is a convenience method for {@code FilterByVersion.CURRENT_METADATA.accept()}.
+     *
+     * @return whether {@code Since2014} subclasses should return a non-null value.
+     */
+    protected final boolean accept2014() {
+        return FilterByVersion.CURRENT_METADATA.accept();
+    }
 
     /**
      * Creates a new instance of this class wrapping the given metadata.

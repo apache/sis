@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
@@ -30,6 +31,9 @@ import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.code.DS_AssociationTypeCode;
+import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
 
 
 /**
@@ -58,7 +62,8 @@ import org.apache.sis.internal.metadata.Dependencies;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  *
@@ -66,13 +71,13 @@ import org.apache.sis.internal.metadata.Dependencies;
  */
 @Deprecated
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_AggregateInformation_Type", propOrder = {
+@XmlType(name = "MD_AggregateInformation_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",
-    "associationType",
-    "initiativeType"
+    "association",                  // Actually "associationType", in replacement of the one defined in parent class.
+    "initiative"                    // Actually "initiativeType", ibid.
 })
-@XmlRootElement(name = "MD_AggregateInformation")
+@XmlRootElement(name = "MD_AggregateInformation", namespace = LegacyNamespaces.GMD)
 public class DefaultAggregateInformation extends DefaultAssociatedResource implements AggregateInformation {
     /**
      * Serial number for compatibility with different versions.
@@ -132,8 +137,8 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      */
     @Override
     @Deprecated
-    @XmlElement(name = "aggregateDataSetName")
     @Dependencies("getName")
+    @XmlElement(name = "aggregateDataSetName")
     public Citation getAggregateDataSetName() {
         return getName();
     }
@@ -159,8 +164,8 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      */
     @Override
     @Deprecated
-    @XmlElement(name = "aggregateDataSetIdentifier")
     @Dependencies("getName")
+    @XmlElement(name = "aggregateDataSetIdentifier")
     public Identifier getAggregateDataSetIdentifier() {
         return getAggregateDataSetIdentifier(getAggregateDataSetName());
     }
@@ -168,7 +173,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Returns the first identifier of the given citation.
      */
-    static Identifier getAggregateDataSetIdentifier(final Citation name) {
+    private static Identifier getAggregateDataSetIdentifier(final Citation name) {
         if (name != null) {
             final Collection<? extends Identifier> names = name.getIdentifiers();
             if (names != null) { // May be null on XML marshalling.
@@ -217,45 +222,52 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
         }
     }
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     /**
-     * Association type of the aggregate dataset.
-     *
-     * @return association type of the aggregate dataset.
+     * For (un)marshalling the {@code associationType} element at the location expected by ISO 19139:2007 schemas.
+     * We do not rely on {@code org.apache.sis.xml.TransformingWriter} reordering mechanism because this element
+     * is interleaved with other element to reorder (namely {@code "topicCategory"} and {@code "extent"}), and
+     * expanding {@code TransformingWriter} to handle those cases would be complicated.
      */
-    @Override
-    @XmlElement(name = "associationType", required = true)
-    public AssociationType getAssociationType() {
-        return super.getAssociationType();
+    @XmlElement(name = "associationType")
+    @XmlJavaTypeAdapter(DS_AssociationTypeCode.class)
+    private AssociationType getAssociation() {
+        return getAssociationType();
+    }
+
+    /** Must be declared together with {@link #getAssociation()}. */
+    @SuppressWarnings("unused")
+    private void setAssociation(final AssociationType newValue) {
+        setAssociationType(newValue);
     }
 
     /**
-     * Sets the association type of the aggregate dataset.
-     *
-     * @param  newValue  the new association type.
+     * For (un)marshalling the {@code initiativeType} element at the location expected by ISO 19139:2007 schemas.
+     * See {@link #getAssociation()} for more explanation.
      */
-    @Override
-    public void setAssociationType(final AssociationType newValue) {
-        super.setAssociationType(newValue);
-    }
-
-    /**
-     * Type of initiative under which the aggregate dataset was produced.
-     *
-     * @return type of initiative under which the aggregate dataset was produced, or {@code null}.
-     */
-    @Override
     @XmlElement(name = "initiativeType")
-    public InitiativeType getInitiativeType() {
-        return super.getInitiativeType();
+    @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class)
+    private InitiativeType getInitiative() {
+        return getInitiativeType();
     }
 
-    /**
-     * Sets the type of initiative under which the aggregate dataset was produced.
-     *
-     * @param  newValue  the new initiative.
-     */
-    @Override
-    public void setInitiativeType(final InitiativeType newValue) {
-        super.setInitiativeType(newValue);
+    /** Must be declared together with {@link #getInitiative()}. */
+    @SuppressWarnings("unused")
+    private void setInitiative(final InitiativeType newValue) {
+        setInitiativeType(newValue);
     }
 }

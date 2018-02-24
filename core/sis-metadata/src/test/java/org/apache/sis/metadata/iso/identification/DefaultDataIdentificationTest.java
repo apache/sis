@@ -43,7 +43,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultDataIdentification}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -140,23 +140,23 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "  │   │   └─Date type………………………………… Creation\n" +
                 "  │   └─Identifier………………………………………… SST_Global.nc\n" +
                 "  ├─Abstract………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
+                "  ├─Spatial representation type……… Grid\n" +
+                "  ├─Extent……………………………………………………………… World\n" +
+                "  │   └─Geographic element\n" +
+                "  │       ├─West bound longitude…… 180°W\n" +
+                "  │       ├─East bound longitude…… 180°E\n" +
+                "  │       ├─South bound latitude…… 90°S\n" +
+                "  │       ├─North bound latitude…… 90°N\n" +
+                "  │       └─Extent type code……………… true\n" +
                 "  ├─Descriptive keywords\n" +
                 "  │   ├─Keyword………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
                 "  │   ├─Type………………………………………………………… Theme\n" +
                 "  │   └─Thesaurus name……………………………… GCMD Science Keywords\n" +
                 "  ├─Resource constraints\n" +
                 "  │   └─Use limitation……………………………… Freely available\n" +
-                "  ├─Spatial representation type……… Grid\n" +
                 "  ├─Language (1 of 2)………………………………… en_US\n" +
                 "  ├─Language (2 of 2)………………………………… en\n" +
-                "  ├─Character set…………………………………………… US-ASCII\n" +
-                "  └─Extent……………………………………………………………… World\n" +
-                "      └─Geographic element\n" +
-                "          ├─West bound longitude…… 180°W\n" +
-                "          ├─East bound longitude…… 180°E\n" +
-                "          ├─South bound latitude…… 90°S\n" +
-                "          ├─North bound latitude…… 90°N\n" +
-                "          └─Extent type code……………… true\n",
+                "  └─Character set…………………………………………… US-ASCII\n",
             TestUtilities.formatNameAndValue(create().asTreeTable()));
     }
 

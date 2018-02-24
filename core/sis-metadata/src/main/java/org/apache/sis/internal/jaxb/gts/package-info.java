@@ -19,7 +19,9 @@
  * Temporary placeholder for the Temporal Schema JAXB adapters.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */

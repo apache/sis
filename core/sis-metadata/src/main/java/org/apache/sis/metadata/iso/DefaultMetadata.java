@@ -66,9 +66,12 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.code.PT_Locale;
+import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
 
 /**
@@ -121,24 +124,45 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.8
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
+    // Attributes new in ISO 19115:2014
+    "metadataIdentifier",
+    "defaultLocale",
+    "parentMetadata",
+
+    // Legacy ISO 19115:2003 attributes
     "fileIdentifier",
     "language",
     "characterSet",
     "parentIdentifier",
     "hierarchyLevels",
     "hierarchyLevelNames",
+
+    // Common to both versions
     "contacts",
+
+    // Attributes new in ISO 19115:2014
+    "dates",                            // actually "dateInfo"
+    "metadataStandard",
+    "metadataProfile",
+    "alternativeMetadataReference",
+    "otherLocales",
+    "metadataLinkage",
+
+    // Legacy ISO 19115:2003 attributes
     "dateStamp",
     "metadataStandardName",
     "metadataStandardVersion",
     "dataSetUri",
     "locales",
+
+    // Common to both metadata models
     "spatialRepresentationInfo",
     "referenceSystemInfo",
     "metadataExtensionInfo",
@@ -150,6 +174,12 @@ import org.apache.sis.xml.Namespaces;
     "metadataConstraints",
     "applicationSchemaInfo",
     "metadataMaintenance",
+    "resourceLineage",
+
+    // Attributes new in ISO 19115:2014
+    "metadataScope",
+
+    // GMI extension
     "acquisitionInformation"
 })
 @XmlRootElement(name = "MD_Metadata")
@@ -390,6 +420,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "metadataIdentifier")
+    @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getMetadataIdentifier() {
         return metadataIdentifier;
     }
@@ -416,11 +448,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "fileIdentifier")
     @Dependencies("getMetadataIdentifier")
+    @XmlElement(name = "fileIdentifier", namespace = LegacyNamespaces.GMD)
     public String getFileIdentifier() {
-        final Identifier identifier = getMetadataIdentifier();
-        return (identifier != null) ? identifier.getCode() : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Identifier identifier = getMetadataIdentifier();
+            if (identifier != null) return identifier.getCode();
+        }
+        return null;
     }
 
     /**
@@ -459,6 +494,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -476,7 +512,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     public void setLanguages(final Collection<Locale> newValues) {
         languages = writeCollection(newValues, languages, Locale.class);
-        // The "magik" applying this language to every children
+        // The "magic" applying this language to every children
         // is performed by the 'beforeMarshal(Marshaller)' method.
     }
 
@@ -489,10 +525,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "language")
     @Dependencies("getLanguages")
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
+    @XmlJavaTypeAdapter(LocaleAdapter.class)
     public Locale getLanguage() {
-        return CollectionsExt.first(getLanguages());
+        return FilterByVersion.LEGACY_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
         /*
          * No warning if the collection contains more than one locale, because
          * this is allowed by the "getLanguage() + getLocales()" contract.
@@ -515,7 +552,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setLanguage(final Locale newValue) {
         checkWritePermission();
-        setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
+        setDefaultLocale(newValue);
     }
 
     /**
@@ -527,11 +564,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "locale")
-    @XmlJavaTypeAdapter(PT_Locale.class)
     @Dependencies("getLanguages")
+    @XmlElement(name = "locale", namespace = LegacyNamespaces.GMD)
     public Collection<Locale> getLocales() {
-        return OtherLocales.filter(getLanguages());
+        return FilterByVersion.LEGACY_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
     }
 
     /**
@@ -544,7 +580,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
         checkWritePermission();
-        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues)); // See "Note about deprecated methods implementation"
+        setOtherLocales(newValues);
     }
 
     /**
@@ -569,6 +605,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @see #getLanguages()
      * @see org.opengis.metadata.identification.DataIdentification#getCharacterSets()
      * @see Charset#forName(String)
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a>
      *
      * @since 0.5
      */
@@ -597,23 +634,25 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "characterSet")
     @Dependencies("getCharacterSets")
+    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
     public CharacterSet getCharacterSet() {
-        final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
-                Charset.class, null, DefaultMetadata.class, "getCharacterSet");
-        if (cs == null) {
-            return null;
-        }
-        final String name = cs.name();
-        for (final CharacterSet candidate : CharacterSet.values()) {
-            for (final String n : candidate.names()) {
-                if (name.equals(n)) {
-                    return candidate;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                    Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+            if (cs != null) {
+                final String name = cs.name();
+                for (final CharacterSet candidate : CharacterSet.values()) {
+                    for (final String n : candidate.names()) {
+                        if (name.equals(n)) {
+                            return candidate;
+                        }
+                    }
                 }
+                return CharacterSet.valueOf(name);
             }
         }
-        return CharacterSet.valueOf(name);
+        return null;
     }
 
     /**
@@ -637,6 +676,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "parentMetadata")
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
     public Citation getParentMetadata() {
         return parentMetadata;
     }
@@ -662,14 +703,16 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "parentIdentifier")
     @Dependencies("getParentMetadata")
+    @XmlElement(name = "parentIdentifier", namespace = LegacyNamespaces.GMD)
     public String getParentIdentifier() {
-        final Citation parentMetadata = getParentMetadata();
-        if (parentMetadata != null) {
-            final InternationalString title = parentMetadata.getTitle();
-            if (title != null) {
-                return title.toString();
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Citation parentMetadata = getParentMetadata();
+            if (parentMetadata != null) {
+                final InternationalString title = parentMetadata.getTitle();
+                if (title != null) {
+                    return title.toString();
+                }
             }
         }
         return null;
@@ -702,6 +745,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<MetadataScope> getMetadataScopes() {
         return metadataScopes = nonNullCollection(metadataScopes, MetadataScope.class);
     }
@@ -727,9 +771,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "hierarchyLevel")
     @Dependencies("getMetadataScopes")
+    @XmlElement(name = "hierarchyLevel", namespace = LegacyNamespaces.GMD)
     public final Collection<ScopeCode> getHierarchyLevels() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new MetadataScopeAdapter<ScopeCode>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected MetadataScope wrap(final ScopeCode value) {
@@ -776,9 +821,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "hierarchyLevelName")
     @Dependencies("getMetadataScopes")
+    @XmlElement(name = "hierarchyLevelName", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getHierarchyLevelNames() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new MetadataScopeAdapter<String>(getMetadataScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected MetadataScope wrap(final String value) {
@@ -847,6 +893,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<CitationDate> getDateInfo() {
         return dateInfo = nonNullCollection(dateInfo, CitationDate.class);
     }
@@ -872,14 +919,16 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "dateStamp", required = true)
     @Dependencies("getDateInfo")
+    @XmlElement(name = "dateStamp", namespace = LegacyNamespaces.GMD)
     public Date getDateStamp() {
-        final Collection<CitationDate> dates = getDateInfo();
-        if (dates != null) {
-            for (final CitationDate date : dates) {
-                if (DateType.CREATION.equals(date.getDateType())) {
-                    return date.getDate();
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Collection<CitationDate> dates = getDateInfo();
+            if (dates != null) {
+                for (final CitationDate date : dates) {
+                    if (DateType.CREATION.equals(date.getDateType())) {
+                        return date.getDate();
+                    }
                 }
             }
         }
@@ -936,6 +985,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Citation> getMetadataStandards() {
         return metadataStandards = nonNullCollection(metadataStandards, Citation.class);
     }
@@ -963,6 +1013,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Citation> getMetadataProfiles() {
         return metadataProfiles = nonNullCollection(metadataProfiles, Citation.class);
     }
@@ -987,6 +1038,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Citation> getAlternativeMetadataReferences() {
         return alternativeMetadataReferences = nonNullCollection(alternativeMetadataReferences, Citation.class);
     }
@@ -1006,12 +1058,15 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Implementation of legacy {@link #getMetadataStandardName()} and {@link #getMetadataStandardVersion()} methods.
      */
     private String getMetadataStandard(final boolean version) {
-        final Citation standard = LegacyPropertyAdapter.getSingleton(getMetadataStandards(),
-                Citation.class, null, DefaultMetadata.class, version ? "getMetadataStandardName" : "getMetadataStandardVersion");
-        if (standard != null) {
-            final InternationalString title = version ? standard.getEdition() : standard.getTitle();
-            if (title != null) {
-                return title.toString();
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Citation standard = LegacyPropertyAdapter.getSingleton(getMetadataStandards(),
+                    Citation.class, null, DefaultMetadata.class,
+                    version ? "getMetadataStandardName" : "getMetadataStandardVersion");
+            if (standard != null) {
+                final InternationalString title = version ? standard.getEdition() : standard.getTitle();
+                if (title != null) {
+                    return title.toString();
+                }
             }
         }
         return null;
@@ -1054,8 +1109,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "metadataStandardName")
     @Dependencies("getMetadataStandards")
+    @XmlElement(name = "metadataStandardName", namespace = LegacyNamespaces.GMD)
     public String getMetadataStandardName() {
         return getMetadataStandard(false);
     }
@@ -1083,8 +1138,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "metadataStandardVersion")
     @Dependencies("getMetadataStandards")
+    @XmlElement(name = "metadataStandardVersion", namespace = LegacyNamespaces.GMD)
     public String getMetadataStandardVersion() {
         return getMetadataStandard(true);
     }
@@ -1110,6 +1165,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<OnlineResource> getMetadataLinkages() {
         return metadataLinkages = nonNullCollection(metadataLinkages, OnlineResource.class);
     }
@@ -1135,12 +1191,12 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "dataSetURI")
     @Dependencies("getIdentificationInfo")
+    @XmlElement(name = "dataSetURI", namespace = LegacyNamespaces.GMD)
     public String getDataSetUri() {
         String linkage = null;
-        final Collection<Identification> info = getIdentificationInfo();
-        if (info != null) {
+        final Collection<Identification> info;
+        if (FilterByVersion.LEGACY_METADATA.accept() && (info = getIdentificationInfo()) != null) {
             for (final Identification identification : info) {
                 final Citation citation = identification.getCitation();
                 if (citation != null) {
@@ -1414,7 +1470,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @return the acquisition of data.
      */
     @Override
-    @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)
+    @XmlElement(name = "acquisitionInformation")
     public Collection<AcquisitionInformation> getAcquisitionInformation() {
         return acquisitionInformation = nonNullCollection(acquisitionInformation, AcquisitionInformation.class);
     }
@@ -1461,6 +1517,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
+    // @XmlElement at the end of this class.
     public Collection<Lineage> getResourceLineages() {
         return resourceLineages = nonNullCollection(resourceLineages, Lineage.class);
     }
@@ -1494,6 +1551,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
      * This method sets the locale to be used for XML marshalling to the metadata language.
      */
+    @SuppressWarnings("unused")
     private void beforeMarshal(final Marshaller marshaller) {
         Context.push(CollectionsExt.first(languages));
     }
@@ -1502,7 +1560,78 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Invoked by JAXB {@link javax.xml.bind.Marshaller} after this object has been marshalled to
      * XML. This method restores the locale to be used for XML marshalling to its previous value.
      */
+    @SuppressWarnings("unused")
     private void afterMarshal(final Marshaller marshaller) {
         Context.pull();
+    }
+
+    /**
+     * Gets the default locale for this record (used in ISO 19115-3 format).
+     */
+    @XmlElement(name = "defaultLocale")
+    private Locale getDefaultLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
+    }
+
+    /**
+     * Sets the default locale for this record (used in ISO 19115-3 format).
+     */
+    private void setDefaultLocale(final Locale newValue) {
+        setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
+    }
+
+    /**
+     * Gets the other locales for this record (used in ISO 19115-3 format).
+     */
+    @XmlElement(name = "otherLocale")
+    private Collection<Locale> getOtherLocales() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
+    }
+
+    /**
+     * Sets the other locales for this record (used in ISO 19115-3 format).
+     */
+    private void setOtherLocales(final Collection<? extends Locale> newValues) {
+        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues));
+    }
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "dateInfo", required = true)
+    private Collection<CitationDate> getDates() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getDateInfo() : null;
+    }
+
+    @XmlElement(name = "metadataStandard")
+    private Collection<Citation> getMetadataStandard() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataStandards() : null;
+    }
+
+    @XmlElement(name = "metadataProfile")
+    private Collection<Citation> getMetadataProfile() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataProfiles() : null;
+    }
+
+    @XmlElement(name = "alternativeMetadataReference")
+    private Collection<Citation> getAlternativeMetadataReference() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAlternativeMetadataReferences() : null;
+    }
+
+    @XmlElement(name = "metadataLinkage")
+    private Collection<OnlineResource> getMetadataLinkage() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataLinkages() : null;
+    }
+
+    @XmlElement(name = "resourceLineage")
+    private Collection<Lineage> getResourceLineage() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResourceLineages() : null;
+    }
+
+    @XmlElement(name = "metadataScope")
+    private Collection<MetadataScope> getMetadataScope() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getMetadataScopes() : null;
     }
 }

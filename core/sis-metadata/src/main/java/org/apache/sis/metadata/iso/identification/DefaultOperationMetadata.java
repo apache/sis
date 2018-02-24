@@ -22,12 +22,12 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
-import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.TitleProperty;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -52,7 +52,8 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -60,11 +61,11 @@ import org.apache.sis.xml.Namespaces;
 @TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
-    "distributedComputingPlatforms",
+    "distributedComputingPlatforms",    // Singular form used in ISO 19115:2014, was "DCP" in ISO 19115:2003.
     "operationDescription",
     "invocationName",
-    "parameters",
-    "connectPoints",
+    "connectPoints",                    // Was after "parameters" in ISO 19115:2003.
+    "parameters",                       // Actually "parameter" in ISO 19115:2014, was "parameters" in ISO 19115:2003.
     "dependsOn"
 })
 @XmlRootElement(name = "SV_OperationMetadata", namespace = Namespaces.SRV)
@@ -140,7 +141,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *
      * @see #castOrCopy(OperationMetadata)
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public DefaultOperationMetadata(final OperationMetadata object) {
         super(object);
         if (object != null) {
@@ -185,7 +186,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return an unique identifier for this interface.
      */
     @Override
-    @XmlElement(name = "operationName", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "operationName", required = true)
     public String getOperationName() {
         return operationName;
     }
@@ -206,7 +207,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return distributed computing platforms on which the operation has been implemented.
      */
     @Override
-    @XmlElement(name = "DCP", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "distributedComputingPlatform", required = true)
     public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {
         return distributedComputingPlatforms = nonNullCollection(distributedComputingPlatforms, DistributedComputingPlatform.class);
     }
@@ -226,7 +227,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return free text description of the intent of the operation and the results of the operation, or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "operationDescription", namespace = Namespaces.SRV)
+    @XmlElement(name = "operationDescription")
     public InternationalString getOperationDescription() {
         return operationDescription;
     }
@@ -248,7 +249,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *         or {@code null} if none.
      */
     @Override
-    @XmlElement(name = "invocationName", namespace = Namespaces.SRV)
+    @XmlElement(name = "invocationName")
     public InternationalString getInvocationName() {
         return invocationName;
     }
@@ -269,7 +270,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return handle for accessing the service interface.
      */
     @Override
-    @XmlElement(name = "connectPoint", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "connectPoint", required = true)
     public Collection<OnlineResource> getConnectPoints() {
         return connectPoints = nonNullCollection(connectPoints, OnlineResource.class);
     }
@@ -289,8 +290,8 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return the parameters that are required for this interface, or an empty collection if none.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    @XmlElement(name = "parameters", namespace = Namespaces.SRV)
+    @XmlElement(name = "parameter")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Collection<ParameterDescriptor<?>> getParameters() {
         return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
     }
@@ -300,7 +301,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      *
      * @param  newValues  the new set of parameters that are required for this interface.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void setParameters(final Collection<? extends ParameterDescriptor<?>> newValues) {
         parameters = writeCollection(newValues, parameters, (Class) ParameterDescriptor.class);
     }
@@ -311,7 +312,7 @@ public class DefaultOperationMetadata extends ISOMetadata implements OperationMe
      * @return list of operation that must be completed immediately, or an empty list if none.
      */
     @Override
-    @XmlElement(name = "dependsOn", namespace = Namespaces.SRV)
+    @XmlElement(name = "dependsOn")
     public List<OperationMetadata> getDependsOn() {
         return dependsOn = nonNullList(dependsOn, OperationMetadata.class);
     }

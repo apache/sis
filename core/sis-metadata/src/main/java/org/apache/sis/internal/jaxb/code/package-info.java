@@ -30,7 +30,9 @@
  * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  * @see org.opengis.util.CodeList
@@ -38,10 +40,21 @@
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
+    @XmlNs(prefix = "mri", namespaceURI = Namespaces.MRI),      // Metadata for Resource Identification
+    @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content
+    @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+    @XmlNs(prefix = "mmi", namespaceURI = Namespaces.MMI),      // Metadata for Maintenance Information
+    @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),      // Metadata for Spatial Representation
+    @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
+    @XmlNs(prefix = "mac", namespaceURI = Namespaces.MAC),      // Metadata for Acquisition
+    @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
+    @XmlNs(prefix = "mco", namespaceURI = Namespaces.MCO),      // Metadata for Constraints
+    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),      // Metadata for Services
+    @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
+    @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 package org.apache.sis.internal.jaxb.code;
 
@@ -49,3 +62,4 @@ import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;

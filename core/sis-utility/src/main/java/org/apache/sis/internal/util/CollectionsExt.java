@@ -49,7 +49,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * bit tedious to explain, which is an other indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -58,6 +58,21 @@ public final class CollectionsExt extends Static {
      * Do not allow instantiation of this class.
      */
     private CollectionsExt() {
+    }
+
+    /**
+     * Returns a queue which is always empty and accepts no element.
+     * This method will be removed if a future JDK version provides such method in {@link Collections}.
+     *
+     * @param  <E>  the type of elements in the empty collection.
+     * @return an empty collection.
+     *
+     * @see Collections#emptyList()
+     * @see Collections#emptySet()
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> Queue<E> emptyQueue() {
+        return EmptyQueue.INSTANCE;
     }
 
     /**
@@ -136,20 +151,6 @@ public final class CollectionsExt extends Static {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns a {@linkplain Queue queue} which is always empty and accepts no element.
-     *
-     * @param  <E>  the type of elements in the empty collection.
-     * @return an empty collection.
-     *
-     * @see Collections#emptyList()
-     * @see Collections#emptySet()
-     */
-    @SuppressWarnings({"unchecked","rawtype"})
-    public static <E> Queue<E> emptyQueue() {
-        return EmptyQueue.INSTANCE;
     }
 
     /**
@@ -364,6 +365,8 @@ public final class CollectionsExt extends Static {
      * @param  <E>  the type of elements in the set.
      * @param  set  the set to make unmodifiable, or {@code null}.
      * @return a unmodifiable version of the given set, or {@code null} if the given set was null.
+     *
+     * @see #compact(Set)
      */
     public static <E> Set<E> unmodifiableOrCopy(Set<E> set) {
         if (set != null) {
@@ -400,6 +403,8 @@ public final class CollectionsExt extends Static {
      * @param  <V>  the type of values in the map.
      * @param  map  the map to make unmodifiable, or {@code null}.
      * @return a unmodifiable version of the given map, or {@code null} if the given map was null.
+     *
+     * @see #compact(Map)
      */
     public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
         if (map != null) {
@@ -593,16 +598,40 @@ public final class CollectionsExt extends Static {
      * @param  <V>  the type of values in the map.
      * @param  map  the map to compact, or {@code null}.
      * @return a potentially compacted map, or {@code null} if the given map was null.
+     *
+     * @see #unmodifiableOrCopy(Map)
      */
     public static <K,V> Map<K,V> compact(final Map<K,V> map) {
         if (map != null) {
             switch (map.size()) {
-                case 0:  return Collections.emptyMap();
-                case 1:  final Map.Entry<K,V> entry = map.entrySet().iterator().next();
-                         return Collections.singletonMap(entry.getKey(), entry.getValue());
+                case 0: return Collections.emptyMap();
+                case 1: final Map.Entry<K,V> entry = map.entrySet().iterator().next();
+                        return Collections.singletonMap(entry.getKey(), entry.getValue());
             }
         }
         return map;
+    }
+
+    /**
+     * Returns a more compact representation of the given set. This method is similar to
+     * {@link #unmodifiableOrCopy(Set)} except that it does not wrap the set in an unmodifiable
+     * view. The intend is to avoid one level of indirection for performance and memory reasons.
+     * This is okay only if the set is kept in a private field and never escape outside that class.
+     *
+     * @param  <E>  the type of elements in the set.
+     * @param  set  the set to compact, or {@code null}.
+     * @return a unmodifiable version of the given set, or {@code null} if the given set was null.
+     *
+     * @see #unmodifiableOrCopy(Set)
+     */
+    public static <E> Set<E> compact(final Set<E> set) {
+        if (set != null) {
+            switch (set.size()) {
+                case 0: return Collections.emptySet();
+                case 1: return Collections.singleton(set.iterator().next());
+            }
+        }
+        return set;
     }
 
     /**
@@ -624,6 +653,18 @@ public final class CollectionsExt extends Static {
             }
         }
         return list;
+    }
+
+    /**
+     * Returns a clone of the given set. This method is only intended to avoid the "unchecked cast" warning.
+     *
+     * @param  <E>  type of elements in the set.
+     * @param  set  the set to clone.
+     * @return a clone of the given set.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> HashSet<E> clone(final HashSet<E> set) {
+        return (HashSet<E>) set.clone();
     }
 
     /**

@@ -40,7 +40,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
