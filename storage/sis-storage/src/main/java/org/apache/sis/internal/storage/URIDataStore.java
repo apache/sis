@@ -18,9 +18,6 @@ package org.apache.sis.internal.storage;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -134,12 +131,6 @@ public abstract class URIDataStore extends DataStore {
         private volatile ParameterDescriptorGroup openDescriptor;
 
         /**
-         * The suffixes that may be used with the name of the "main" file.
-         * This is the collection to be returned by {@link #getSuffix()}.
-         */
-        protected final List<String> suffix = new ArrayList<>();
-
-        /**
          * Creates a new provider.
          */
         protected Provider() {
@@ -159,27 +150,6 @@ public abstract class URIDataStore extends DataStore {
                 openDescriptor = desc = build(new ParameterBuilder().addName(getShortName()));
             }
             return desc;
-        }
-
-        /**
-         * Returns the suffixes that may be used with the name of the "main" file.
-         * The "main" file is the file that users specify when opening the dataset.
-         * The returned collection should <em>not</em> include the suffixes of auxiliary files.
-         *
-         * <div class="note"><b>Example:</b>
-         * GeoTIFF data are contained in files with the {@code ".tif"} or {@code ".tiff"} suffix,
-         * sometime accompanied by auxiliary files with {@code ".prj"} and {@code ".tfw"} suffixes.
-         * This method should return a collection containing only {@code "tif"} or {@code "tiff"}
-         * strings, without the leading dot.</div>
-         *
-         * The suffixes are case-insensitive (no need to declare both lower-case and upper-case variants)
-         * and shall not contain the leading dot. The first element in the list is the preferred suffix
-         * to use for new files.
-         *
-         * @return the filename suffixes, case insensitive. Never null but can be empty.
-         */
-        public final List<String> getSuffix() {
-            return Collections.unmodifiableList(suffix);
         }
 
         /**

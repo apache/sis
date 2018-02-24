@@ -30,7 +30,7 @@ import org.opengis.metadata.citation.Citation;
 
 
 /**
- * One aspect in the set of capabilities of a class annotated by {@link Capabilities}.
+ * Capabilities of a class annotated by {@link StoreMetadata}.
  *
  * <p>This is not a committed API since the way to represent data store capabilities is likely to change.</p>
  *
@@ -83,10 +83,10 @@ public enum Capability {
             /*
              * Build a slash-separated list of capabilities. Example: "Read / write".
              */
-            final Capabilities annotation = provider.getClass().getAnnotation(Capabilities.class);
+            final StoreMetadata metadata = provider.getClass().getAnnotation(StoreMetadata.class);
             String capabilities = null;
-            if (annotation != null) {
-                for (final Capability c : annotation.value()) {
+            if (metadata != null) {
+                for (final Capability c : metadata.capabilities()) {
                     final String e = resources.getString(c.resourceKey);
                     capabilities = (capabilities == null) ? e : resources.getString(
                             Vocabulary.Keys.SlashSeparatedList_2, capabilities, e.toLowerCase(locale));

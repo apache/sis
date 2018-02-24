@@ -29,7 +29,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.Capability;
-import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
 import org.apache.sis.util.ArgumentChecks;
@@ -48,7 +48,9 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   0.8
  * @module
  */
-@Capabilities(Capability.READ)
+@StoreMetadata(formatName   = StoreProvider.NAME,
+               fileSuffixes = "csv",
+               capabilities = Capability.READ)
 public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format names for static features and moving features.
@@ -126,7 +128,6 @@ public final class StoreProvider extends URIDataStore.Provider {
      * Creates a new provider.
      */
     public StoreProvider() {
-        suffix.add("csv");
     }
 
     /**

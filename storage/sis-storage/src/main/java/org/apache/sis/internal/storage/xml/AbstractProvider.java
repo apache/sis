@@ -80,7 +80,6 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
     protected AbstractProvider(final String name, final int initialCapacity) {
         super(name);
         types = new HashMap<>(initialCapacity);
-        suffix.add("xml");
     }
 
     /**

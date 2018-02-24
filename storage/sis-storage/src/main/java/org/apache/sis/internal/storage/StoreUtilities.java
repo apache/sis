@@ -34,6 +34,7 @@ import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
@@ -69,8 +70,15 @@ public final class StoreUtilities extends Static {
      * @param  provider  the provider for which to get an identifier, or {@code null}.
      * @return an identifier for the given data store, or {@code null}.
      */
-    public static String getIdentifier(final DataStoreProvider provider) {
-        return (provider != null) ? provider.getShortName() : null;
+    public static String getFormatName(final DataStoreProvider provider) {
+        if (provider != null) {
+            final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
+            if (md != null) {
+                return md.formatName();
+            }
+            return provider.getShortName();
+        }
+        return null;
     }
 
     /**
@@ -150,6 +158,47 @@ public final class StoreUtilities extends Static {
     }
 
     /**
+     * Returns the possible suffixes of the files written by the data store created by the given provider.
+     * If the file suffixes are unknown, returns an empty array.
+     *
+     * @param  provider  class of the provider for which to determine if it has write capability, or {@code null}.
+     * @return the file suffixes, or an empty array if none or if the suffixes can not be determined.
+     *
+     * @see StoreMetadata#fileSuffixes()
+     */
+    public static String[] getFileSuffixes(final Class<? extends DataStoreProvider> provider) {
+        if (provider != null) {
+            final StoreMetadata md = provider.getAnnotation(StoreMetadata.class);
+            if (md != null) return md.fileSuffixes();
+        }
+        return CharSequences.EMPTY_ARRAY;
+    }
+
+    /**
+     * Returns whether the given store has write capability.
+     * In case of doubt, this method returns {@code null}.
+     *
+     * @param  provider  class of the provider for which to determine if it has write capability, or {@code null}.
+     * @return whether the data store has write capability, or {@code null} if it can not be determined.
+     *
+     * @see StoreMetadata#capabilities()
+     */
+    public static Boolean canWrite(final Class<? extends DataStoreProvider> provider) {
+        if (provider != null) {
+            StoreMetadata md = provider.getAnnotation(StoreMetadata.class);
+            if (md != null) {
+                for (Capability c : md.capabilities()) {
+                    if (Capability.WRITE.equals(c)) {
+                        return Boolean.TRUE;
+                    }
+                }
+                return Boolean.FALSE;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Converts the given sequence of options into a simplified set of standard options.
      * The returned set can contain combinations of
      * {@link StandardOpenOption#WRITE},
@@ -217,36 +266,16 @@ public final class StoreUtilities extends Static {
      * @param  format  name of the format for which to get a provider.
      * @return first provider found for the given format name.
      * @throws UnsupportedStorageException if no provider is found for the specified format.
+     *
+     * @see StoreMetadata#formatName()
      */
     public static DataStoreProvider providerByFormatName(final String format) throws UnsupportedStorageException {
         for (DataStoreProvider provider : DataStores.providers()) {
-            if (format.equalsIgnoreCase(getIdentifier(provider))) {
+            if (format.equalsIgnoreCase(getFormatName(provider))) {
                 return provider;
             }
         }
         throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
-    }
-
-    /**
-     * Returns whether the given store has write capability.
-     * In case of doubt, this method returns {@code null}.
-     *
-     * @param  store  class of the store for which to determine if it has write capability, or {@code null}.
-     * @return whether the data store has write capability, or {@code null} if it can not be determined.
-     */
-    public static Boolean canWrite(final Class<? extends DataStoreProvider> store) {
-        if (store != null) {
-            Capabilities caps = store.getAnnotation(Capabilities.class);
-            if (caps != null) {
-                for (Capability c : caps.value()) {
-                    if (Capability.WRITE.equals(c)) {
-                        return Boolean.TRUE;
-                    }
-                }
-                return Boolean.FALSE;
-            }
-        }
-        return null;
     }
 
     /**
@@ -258,6 +287,8 @@ public final class StoreUtilities extends Static {
      * @param  source  the source set of features.
      * @param  target  where to copy the features.
      * @throws DataStoreException if an error occurred during the copy operation.
+     *
+     * @see #canWrite(Class)
      */
     public static void copy(final FeatureSet source, final WritableFeatureSet target) throws DataStoreException {
         target.updateType(source.getType());
