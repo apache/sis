@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * Tests the internal {@link Citations} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -111,5 +111,23 @@ public final strictfp class CitationsTest extends TestCase {
         citation = citation("Web Map Server", identifier("OGC", "06-042"), identifier("ISO", "19128"));
         assertEquals("OGC:06-042", Citations.getIdentifier(citation, false));
         assertEquals("ISO_19128",  Citations.getIdentifier(citation, true));
+    }
+
+    /**
+     * Tests {@link Citations#identifierMatches(Citation, Identifier, CharSequence)}.
+     */
+    @Test
+    public void testIdentifierMatches() {
+        final Identifier ogc = identifier("OGC", "06-042");
+        final Identifier iso = identifier("ISO", "19128");
+        final Citation citation = citation("Web Map Server", ogc, iso, identifier("Foo", "06-042"));
+        assertTrue ("With full identifier",  Citations.identifierMatches(citation, ogc, ogc.getCode()));
+        assertTrue ("With full identifier",  Citations.identifierMatches(citation, iso, iso.getCode()));
+        assertFalse("With wrong code",       Citations.identifierMatches(citation, identifier("ISO", "19115"), "19115"));
+        assertFalse("With wrong code space", Citations.identifierMatches(citation, identifier("Foo", "19128"), "19128"));
+        assertFalse("With wrong code",       Citations.identifierMatches(citation, null, "Foo"));
+        assertTrue ("Without identifier",    Citations.identifierMatches(citation, null, "19128"));
+        assertTrue ("With parsing",          Citations.identifierMatches(citation, null, "ISO:19128"));
+        assertFalse("With wrong code space", Citations.identifierMatches(citation, null, "Foo:19128"));
     }
 }

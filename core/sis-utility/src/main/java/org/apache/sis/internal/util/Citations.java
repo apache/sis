@@ -247,23 +247,47 @@ public final class Citations extends Static {
      */
     public static boolean identifierMatches(final Citation citation, final Identifier identifier, final CharSequence code) {
         if (citation != null && code != null) {
-            final Iterator<? extends Identifier> identifiers = iterator(citation.getIdentifiers());
-            if (identifiers == null) {
+            final Collection<? extends Identifier> citIds = citation.getIdentifiers();
+            Iterator<? extends Identifier> it = iterator(citIds);
+            if (it == null) {
                 return titleMatches(citation, code);
             }
-            while (identifiers.hasNext()) {
-                final Identifier id = identifiers.next();
-                if (id != null && equalsFiltered(code, id.getCode())) {
+            while (it.hasNext()) {
+                final Identifier citId = it.next();
+                if (citId != null && equalsFiltered(code, citId.getCode())) {
+                    /*
+                     * Found a possible match. We will take the code space in account only if it is defined
+                     * by both identifiers. If a code space is undefined, we consider that we have a match.
+                     */
                     if (identifier != null) {
                         final String codeSpace = identifier.getCodeSpace();
                         if (codeSpace != null) {
-                            final String cs = id.getCodeSpace();
-                            if (cs != null) {
-                                return equalsFiltered(codeSpace, cs);
+                            final String cs = citId.getCodeSpace();
+                            if (cs != null && !equalsFiltered(codeSpace, cs)) {
+                                continue;       // Check other identifiers.
                             }
                         }
                     }
                     return true;
+                }
+            }
+            /*
+             * Before to give up, maybe the given code argument is actually written using a "codeSpace:code" syntax.
+             * Try to parse that syntax only if no Identifier argument were specified (otherwise we require the code
+             * and code space to be splitted as defined in the identifier).
+             */
+            if (identifier == null) {
+                int s = 0;
+                final int length = code.length();
+                while ((s = CharSequences.indexOf(code, DEFAULT_SEPARATOR, s, length)) >= 0) {
+                    final CharSequence codeSpace = code.subSequence(0, s);
+                    final CharSequence localPart = code.subSequence(++s, length);
+                    for (it = citIds.iterator(); it.hasNext();) {
+                        final Identifier id = it.next();
+                        if (equalsFiltered(codeSpace, id.getCodeSpace()) && equalsFiltered(localPart, id.getCode())) {
+                            return true;
+                        }
+                    }
                 }
             }
         }

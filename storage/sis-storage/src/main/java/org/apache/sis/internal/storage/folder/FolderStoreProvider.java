@@ -110,8 +110,6 @@ public final class FolderStoreProvider extends DataStoreProvider {
 
     /**
      * The unique instance of this provider.
-     *
-     * @see #open(Path)
      */
     public static final FolderStoreProvider INSTANCE = new FolderStoreProvider();
 
@@ -205,7 +203,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
             componentProvider = null;
             options.clear();                // Can not write if we don't know the components format.
         }
-        Path path = null;
+        final Path path = connector.getStorageAs(Path.class);
         final Store store;
         try {
             /*
@@ -214,23 +212,23 @@ public final class FolderStoreProvider extends DataStoreProvider {
              * In the particular case of CREATE_NEW, we unconditionally attempt to create the
              * directory in order to rely on the atomic check performed by Files.createDirectory(…).
              */
+            boolean isNew = false;
             if (options.contains(StandardOpenOption.CREATE)) {
-                path = connector.getStorageAs(Path.class);
                 if (options.contains(StandardOpenOption.CREATE_NEW) || Files.notExists(path)) {
                     Files.createDirectory(path);                        // IOException if the directory already exists.
+                    isNew = true;
                 }
             }
-            if (options.contains(StandardOpenOption.WRITE)) {
-                store = new WritableStore(this, connector, componentProvider);    // May throw NoSuchFileException.
+            if (isNew || (options.contains(StandardOpenOption.WRITE) && Files.isWritable(path))) {
+                store = new WritableStore(this, connector, path, componentProvider);  // May throw NoSuchFileException.
             } else {
-                store = new Store(this, connector, componentProvider);            // May throw NoSuchFileException.
+                store = new Store(this, connector, path, componentProvider);          // May throw NoSuchFileException.
             }
             /*
              * If there is a destructive operation to perform (TRUNCATE_EXISTING), do it last only
              * after we have successfully created the data store. The check for directory existence
              * is also done after creation to be sure to check the path used by the store.
              */
-            path = store.location;
             if (!Files.isDirectory(path)) {
                 throw new DataStoreException(Resources.format(Resources.Keys.FileIsNotAResourceDirectory_1, path));
             }
@@ -279,16 +277,5 @@ public final class FolderStoreProvider extends DataStoreProvider {
             options.add(StandardOpenOption.CREATE);
         }
         return open(connector, pg.getValue(FORMAT), options);
-    }
-
-    /**
-     * Returns a folder data store for the given path.
-     *
-     * @param  path  the directory for which to create a data store.
-     * @return a data store for the given directory.
-     * @throws DataStoreException if an error occurred while creating the data store instance.
-     */
-    public static DataStore open(final Path path) throws DataStoreException {
-        return INSTANCE.open(new StorageConnector(path));
     }
 }

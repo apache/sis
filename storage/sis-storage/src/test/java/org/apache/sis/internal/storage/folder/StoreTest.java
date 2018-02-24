@@ -70,7 +70,8 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
         final Set<String> identifiers = new HashSet<>(Arrays.asList("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
-        try (Store store = new Store(null, new StorageConnector(testDirectory()), null)) {
+        final Path path = testDirectory();
+        try (Store store = new Store(null, new StorageConnector(path), path, null)) {
             assertEquals("Wrong number of data stores.", 4, store.components().size());
             verifyContent(store, identifiers);
         }
