@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Collections;
-import java.util.Set;
 import org.opengis.metadata.Metadata;
 
 
@@ -105,20 +103,4 @@ public interface Resource {
      * @see DataStore#getMetadata()
      */
     Metadata getMetadata() throws DataStoreException;
-
-    /**
-     * Indicates which optional behavior or information can be provided by this resource.
-     * Resources may have different capabilites based on the type and context.
-     *
-     * <div class="note"><b>Example:</b>
-     * {@link Capability#WRITABLE} can be found on {@link WritableAggregate} or {@link WritableFeatureSet}
-     * to indicate that the resource supports write operations.</div>
-     *
-     * <p>The default implementation returns an empty Set.</p>
-     *
-     * @return supported capabilities (never null). May be empty.
-     */
-    default Set<Capability> getCapabilities() {
-        return Collections.emptySet();
-    }
 }

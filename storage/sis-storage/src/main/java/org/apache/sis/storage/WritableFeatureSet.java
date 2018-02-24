@@ -61,9 +61,6 @@ public interface WritableFeatureSet extends FeatureSet {
      * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
      * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
      *
-     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
-     * indicates that this method should be implemented.</p>
-     *
      * @param  features features to insert in this {@code FeatureSet}.
      * @throws DataStoreException if another error occurred while storing new features.
      */
@@ -71,9 +68,6 @@ public interface WritableFeatureSet extends FeatureSet {
 
     /**
      * Removes all features from this {@code FeatureSet} which matches the given predicate.
-     *
-     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
-     * indicates that this method should be implemented.</p>
      *
      * @param  filter  a predicate which returns true for resources to be removed.
      * @return {@code true} if any elements were removed.
@@ -92,9 +86,6 @@ public interface WritableFeatureSet extends FeatureSet {
      *       in replacement of the previous feature (not necessarily at the same location).</li>
      *   <li>If the operator returns {@code null}, then the feature will be removed from the {@code FeatureSet}.</li>
      * </ul>
-     *
-     * <p>The {@link Capability#WRITABLE} flag if presents in the {@link #getCapabilities()} set
-     * indicates that this method should be implemented.</p>
      *
      * @param  filter   a predicate which returns true for resources to be updated.
      * @param  updater  operation called for each matching {@link Feature}.
