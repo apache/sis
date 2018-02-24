@@ -134,22 +134,23 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  path       the value of {@code connector.getStorageAs(Path.class)}.
      * @param  format     format to use for reading or writing the directory content, or {@code null}.
      * @throws UnsupportedStorageException if the given format name is unknown.
      * @throws DataStoreException if an error occurred while fetching the directory {@link Path}.
      * @throws IOException if an error occurred while using the directory {@code Path}.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'children' does not escape.
-    Store(final DataStoreProvider provider, final StorageConnector connector, final DataStoreProvider format)
+    Store(final DataStoreProvider provider, final StorageConnector connector, final Path path, final DataStoreProvider format)
             throws DataStoreException, IOException
     {
         super(provider, connector);
-        location = connector.getStorageAs(Path.class);
+        location = path;
         locale   = connector.getOption(OptionKey.LOCALE);
         timezone = connector.getOption(OptionKey.TIMEZONE);
         encoding = connector.getOption(OptionKey.ENCODING);
         children = new ConcurrentHashMap<>();
-        children.put(location.toRealPath(), this);
+        children.put(path.toRealPath(), this);
         componentProvider = format;
     }
 

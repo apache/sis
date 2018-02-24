@@ -16,14 +16,11 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
@@ -31,7 +28,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.util.Citations;
 
 
@@ -312,7 +308,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
             if (metadata != null) {
                 for (final Identification identification : metadata.getIdentificationInfo()) {
                     if (identification != null) {                                                   // Paranoiac check.
-                        if (identifierMatches(identification.getCitation(), identifier)) {
+                        if (Citations.identifierMatches(identification.getCitation(), null, identifier)) {
                             return candidate;
                         }
                     }
@@ -335,26 +331,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
             }
         }
         return null;
-    }
-
-    /**
-     * Search a citation title and identifiers for a possible matches against
-     * an identifier.
-     *
-     * @param citation   identification citation to compare.
-     * @param identifier identifier of the resource to compare.
-     * @return true if identifiers matches
-     */
-    private static boolean identifierMatches(final Citation citation, final String identifier) {
-        if (citation != null && identifier != null) {
-            final Collection<? extends Identifier> identifiers = citation.getIdentifiers();
-            if (identifiers == null || identifiers.isEmpty()) {
-                return Citations.titleMatches(citation, identifier);
-            } else {
-                return NameToIdentifier.isHeuristicMatchForIdentifier(identifiers, identifier);
-            }
-        }
-        return false;
     }
 
     /**

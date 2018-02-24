@@ -65,10 +65,10 @@ final class WritableStore extends Store implements WritableAggregate {
      * Contrarily to the {@link Store} parent class, the {@code format} is mandatory for writable stores.
      * This is not verified by this constructor; it should be verified by {@link FolderStoreProvider} instead.
      */
-    WritableStore(DataStoreProvider provider, StorageConnector connector, DataStoreProvider format)
+    WritableStore(DataStoreProvider provider, StorageConnector connector, Path path, DataStoreProvider format)
             throws DataStoreException, IOException
     {
-        super(provider, connector, format);
+        super(provider, connector, path, format);
     }
 
     /**

@@ -16,9 +16,7 @@
  */
 package org.apache.sis.storage;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -91,45 +89,6 @@ public final class DataStores extends Static {
      */
     public static Collection<DataStoreProvider> providers() {
         return registry().providers();
-    }
-
-    /**
-     * Returns the list of data store providers capable of opening the given input.
-     * Any provider causing an exception while probing the input is considered
-     * as unsupported.
-     *
-     * @param input data input, usually a StorageConnector, Path or URI to test.
-     * @return descriptions of compatible data stores.
-     *
-     * @since 1.0
-     *
-     * @deprecated this method force initialization and probing of all data stores, while maybe only
-     *             the first instance is needed. We could lazily probe the content during the first
-     *             iteration, but this would require an {@link AutoCloseable} iterator for closing
-     *             the {@link StorageConnector}. We could return a {@link java.util.stream.Stream}
-     *             for resolving that issue, but that would be at odd with the {@link #providers()} API.
-     */
-    @Deprecated
-    public static Collection<DataStoreProvider> providers(final Object input) {
-        final StorageConnector connector = (input instanceof StorageConnector) ?
-                (StorageConnector) input : new StorageConnector(input);
-
-        final List<DataStoreProvider> providers = new ArrayList<>();
-        for (DataStoreProvider provider : registry().providers()) {
-            try {
-                final ProbeResult result = provider.probeContent(connector);
-                if (result.isSupported()) {
-                    providers.add(provider);
-                }
-            } catch (DataStoreException ex) {
-                // could be caused for multiple reasons, we assume it does not
-                // support the given input.
-                // TODO: should we? DataStoreException in probeContent are usually caused by IOException,
-                // in which state the stream is probably in an invalid state and likely to cause failure
-                // in next providers too.
-            }
-        }
-        return providers;
     }
 
     /**
