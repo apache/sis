@@ -37,7 +37,7 @@ import org.apache.sis.util.Static;
  * only when first needed, when initializing this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -55,7 +55,7 @@ final class OutputFactory extends Static {
 
     /*
      * Do not provide convenience method for java.io.File, because the caller needs to close the created
-     * output stream himself (this is not done by XMLStreamWriter.close(), despite its method name).
+     * output stream himself (this is not done by XMLEventWriter.close(), despite its method name).
      */
 
     /**
@@ -66,8 +66,8 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(OutputStream out, String encoding) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(out, encoding);
+    public static XMLEventWriter createXMLEventWriter(OutputStream out, String encoding) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(out, encoding);
     }
 
     /**
@@ -77,8 +77,8 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final Writer out) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(out);
+    public static XMLEventWriter createXMLEventWriter(final Writer out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(out);
     }
 
     /**
@@ -89,8 +89,8 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final ContentHandler out) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(new SAXResult(out));
+    public static XMLEventWriter createXMLEventWriter(final ContentHandler out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(new SAXResult(out));
     }
 
     /**
@@ -101,8 +101,8 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final Node out) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(new DOMResult(out));
+    public static XMLEventWriter createXMLEventWriter(final Node out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(new DOMResult(out));
     }
 
     /**
@@ -113,8 +113,8 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final XMLEventWriter out) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(new StAXResult(out));
+    public static XMLEventWriter createXMLEventWriter(final XMLStreamWriter out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(new StAXResult(out));
     }
 
     /**
@@ -125,7 +125,7 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLStreamWriter createXMLStreamWriter(final Result out) throws XMLStreamException {
-        return FACTORY.createXMLStreamWriter(out);
+    public static XMLEventWriter createXMLEventWriter(final Result out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(out);
     }
 }

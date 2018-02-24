@@ -27,7 +27,7 @@ import org.apache.sis.util.Classes;
 /**
  * JAXB adapter for {@link VerticalCRS}, in order to integrate the value in an element
  * complying with OGC/ISO standard. Note that the CRS is formatted using the GML schema,
- * not the ISO 19139 one.
+ * not the ISO 19139:2007 one.
  *
  * <p>This wrapper does not declare directly the XML element, because doing so would require
  * the implementation classes in the {@code sis-referencing} module. Instead, this wrapper

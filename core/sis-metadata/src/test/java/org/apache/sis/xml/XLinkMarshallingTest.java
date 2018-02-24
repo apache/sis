@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the XML marshalling of object having {@code xlink} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
  *
@@ -50,26 +50,27 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
      * A XML with a {@code xlink:href} without element definition.
      */
     private static final String LINK_ONLY_XML =
-            "<gmd:MD_Metadata xmlns:gmd=\""   + Namespaces.GMD + '"' +
+            "<mdb:MD_Metadata xmlns:mdb=\""   + Namespaces.MDB + '"' +
                             " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            "  <gmd:identificationInfo xlink:href=\"http://test.net\"/>\n" +
-            "</gmd:MD_Metadata>";
+            "  <mdb:identificationInfo xlink:href=\"http://test.net\"/>\n" +
+            "</mdb:MD_Metadata>";
 
     /**
      * A XML with a {@code xlink:href} without element definition.
      */
     private static final String LINK_WITH_ELEMENT_XML =
-            "<gmd:MD_Metadata xmlns:gmd=\""   + Namespaces.GMD + '"' +
+            "<mdb:MD_Metadata xmlns:mdb=\""   + Namespaces.MDB + '"' +
+                            " xmlns:mri=\""   + Namespaces.MRI + '"' +
                             " xmlns:gco=\""   + Namespaces.GCO + '"' +
                             " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            "  <gmd:identificationInfo xlink:href=\"http://test.net\">\n" +
-            "    <gmd:MD_DataIdentification>\n" +
-            "      <gmd:abstract>\n" +
+            " <mdb:identificationInfo xlink:href=\"http://test.net\">\n" +
+            "    <mri:MD_DataIdentification>\n" +
+            "      <mri:abstract>\n" +
             "        <gco:CharacterString>This is a test.</gco:CharacterString>\n" +
-            "      </gmd:abstract>\n" +
-            "    </gmd:MD_DataIdentification>\n" +
-            "  </gmd:identificationInfo>\n" +
-            "</gmd:MD_Metadata>";
+            "      </mri:abstract>\n" +
+            "    </mri:MD_DataIdentification>\n" +
+            "  </mdb:identificationInfo>\n" +
+            "</mdb:MD_Metadata>";
 
     /**
      * Verifies if the given metadata contains the expected {@code xlink:href} attribute value.
@@ -90,9 +91,9 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
      * The XML fragment is:
      *
      * {@preformat xml
-     *   <gmd:MD_Metadata>
-     *     <gmd:identificationInfo xlink:href="http://test.net"/>
-     *   </gmd:MD_Metadata>
+     *   <mdb:MD_Metadata>
+     *     <mdb:identificationInfo xlink:href="http://test.net"/>
+     *   </mdb:MD_Metadata>
      * }
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
@@ -107,7 +108,7 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setIdentificationInfo(Collections.singleton(identification));
 
-        assertXmlEquals(LINK_ONLY_XML, XML.marshal(metadata), "xmlns:*");
+        assertXmlEquals(LINK_ONLY_XML, marshal(metadata), "xmlns:*");
         verify(true, unmarshal(DefaultMetadata.class, LINK_ONLY_XML));
     }
 
@@ -116,15 +117,15 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
      * The XML fragment is:
      *
      * {@preformat xml
-     *   <gmd:MD_Metadata>
-     *     <gmd:identificationInfo xlink:href="http://test.net">
-     *       <gmd:MD_DataIdentification>
-     *         <gmd:abstract>
+     *   <mdb:MD_Metadata>
+     *     <mdb:identificationInfo xlink:href="http://test.net">
+     *       <mdb:MD_DataIdentification>
+     *         <mdb:abstract>
      *           <gco:CharacterString>This is a test.</gco:CharacterString>
-     *         </gmd:abstract>
-     *       </gmd:MD_DataIdentification>
-     *     </gmd:identificationInfo>
-     *   </gmd:MD_Metadata>
+     *         </mdb:abstract>
+     *       </mdb:MD_DataIdentification>
+     *     </mdb:identificationInfo>
+     *   </mdb:MD_Metadata>
      * }
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
@@ -140,7 +141,7 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setIdentificationInfo(Collections.singleton(identification));
 
-        assertXmlEquals(LINK_WITH_ELEMENT_XML, XML.marshal(metadata), "xmlns:*");
+        assertXmlEquals(LINK_WITH_ELEMENT_XML, marshal(metadata), "xmlns:*");
         final DefaultMetadata unmarshal = unmarshal(DefaultMetadata.class, LINK_WITH_ELEMENT_XML);
         verify(false, unmarshal);
         assertTrue(metadata.equals(unmarshal, ComparisonMode.DEBUG));

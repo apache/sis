@@ -27,11 +27,11 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {
+public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -46,7 +46,7 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      * @return {@code ReferenceSystem.class}
      */
     @Override
-    protected Class<ReferenceSystem> getBoundType() {
+    protected final Class<ReferenceSystem> getBoundType() {
         return ReferenceSystem.class;
     }
 
@@ -79,7 +79,7 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public ReferenceSystemMetadata getElement() {
+    public final ReferenceSystemMetadata getElement() {
         final ReferenceSystem metadata = this.metadata;
         if (metadata == null) {
             return null;
@@ -95,7 +95,26 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final ReferenceSystemMetadata metadata) {
+    public final void setElement(final ReferenceSystemMetadata metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends RS_ReferenceSystem {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected RS_ReferenceSystem wrap(final ReferenceSystem value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

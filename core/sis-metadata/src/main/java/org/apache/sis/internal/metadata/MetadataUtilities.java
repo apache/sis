@@ -54,7 +54,7 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Returns the given milliseconds time to a date object, or returns null
+     * Converts the given milliseconds time to a date object, or returns null
      * if the given time is {@link Long#MIN_VALUE}.
      *
      * @param  value  the time in milliseconds.

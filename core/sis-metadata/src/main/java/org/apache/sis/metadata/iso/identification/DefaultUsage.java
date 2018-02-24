@@ -25,6 +25,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.identification.Usage;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
@@ -58,7 +59,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -68,7 +70,10 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "specificUsage",
     "usageDate",
     "userDeterminedLimitations",
-    "userContactInfo"
+    "userContactInfo",
+    "response",                     // New in ISO 19115:2014
+    "additionalDocumentations",     // Ibid.
+    "issues"                        // Ibid. Actually "identifiedIssues"
 })
 @XmlRootElement(name = "MD_Usage")
 public class DefaultUsage extends ISOMetadata implements Usage {
@@ -251,7 +256,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @return means of communicating with person(s) and organization(s) using the resource(s).
      */
     @Override
-    @XmlElement(name = "userContactInfo", required = true)
+    @XmlElement(name = "userContactInfo")
     public Collection<Responsibility> getUserContactInfo() {
         return userContactInfo = nonNullCollection(userContactInfo, Responsibility.class);
     }
@@ -273,8 +278,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "response")
-    public Collection<? extends InternationalString> getResponses() {
+    // @XmlElement at the end of this class.
+    public Collection<InternationalString> getResponses() {
         return responses = nonNullCollection(responses, InternationalString.class);
     }
 
@@ -297,7 +302,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "additionalDocumentation")
+    // @XmlElement at the end of this class.
     public Collection<Citation> getAdditionalDocumentation() {
         return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
     }
@@ -322,8 +327,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "identifiedIssues")
-    public Collection<? extends Citation> getIdentifiedIssues() {
+    // @XmlElement at the end of this class.
+    public Collection<Citation> getIdentifiedIssues() {
         return identifiedIssues = nonNullCollection(identifiedIssues, Citation.class);
     }
 
@@ -337,5 +342,39 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     public void setIdentifiedIssues(final Collection<? extends Citation> newValues) {
         identifiedIssues = writeCollection(newValues, identifiedIssues, Citation.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "response")
+    private Collection<InternationalString> getResponse() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResponses() : null;
+    }
+
+    @XmlElement(name = "additionalDocumentation")
+    private Collection<Citation> getAdditionalDocumentations() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAdditionalDocumentation() : null;
+    }
+
+    @XmlElement(name = "identifiedIssues")
+    private Collection<Citation> getIssues() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getIdentifiedIssues() : null;
     }
 }

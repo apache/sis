@@ -24,6 +24,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -82,7 +83,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
@@ -92,11 +94,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "code")
-@XmlType(name = "MD_Identifier_Type", propOrder = {
+@XmlType(name = "MD_Identifier_Type", namespace = Namespaces.MCC, propOrder = {
     "authority",
-    "code"
+    "code",
+    "codeSpace",
+    "version",
+    "description"
 })
-@XmlRootElement(name = "MD_Identifier")
+@XmlRootElement(name = "MD_Identifier", namespace = Namespaces.MCC)
 public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Serial number for inter-operability with different versions.
@@ -290,6 +295,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "codeSpace")
     public String getCodeSpace() {
         return codeSpace;
     }
@@ -316,6 +322,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @return the version identifier for the namespace, or {@code null} if none.
      */
     @Override
+    @XmlElement(name = "version")
     public String getVersion() {
         return version;
     }
@@ -340,6 +347,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "description")
     public InternationalString getDescription() {
         return description;
     }

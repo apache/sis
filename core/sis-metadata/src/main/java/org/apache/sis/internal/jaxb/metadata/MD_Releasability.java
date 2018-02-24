@@ -17,29 +17,26 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.FeatureTypeList;
-import org.apache.sis.metadata.iso.DefaultFeatureTypeList;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.metadata.iso.constraint.DefaultReleasability;
+import org.opengis.metadata.constraint.Releasability;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter mapping implementing class to the GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @since   1.0
+ * @version 1.0
  * @module
- *
- * @deprecated Not anymore part of ISO 19115.
  */
-@Deprecated
-public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, FeatureTypeList> {
+public class MD_Releasability extends PropertyType<MD_Releasability, Releasability> {
     /**
      * Empty constructor for JAXB only.
      */
-    public MD_FeatureTypeList() {
+    public MD_Releasability() {
     }
 
     /**
@@ -47,42 +44,42 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code FeatureTypeList.class}
+     * @return {@code Releasability.class}
      */
     @Override
-    protected Class<FeatureTypeList> getBoundType() {
-        return FeatureTypeList.class;
+    protected final Class<Releasability> getBoundType() {
+        return Releasability.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_FeatureTypeList(final FeatureTypeList metadata) {
+    private MD_Releasability(final Releasability metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:MD_FeatureTypeList>} XML element.
+     * in a {@code <gmd:MD_Releasability>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_FeatureTypeList wrap(final FeatureTypeList metadata) {
-        return new MD_FeatureTypeList(metadata);
+    protected MD_Releasability wrap(final Releasability metadata) {
+        return new MD_Releasability(metadata);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:MD_FeatureTypeList>} XML element.
+     * inside the {@code <gmd:MD_Releasability>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultFeatureTypeList getElement() {
-        return DefaultFeatureTypeList.castOrCopy(metadata);
+    public final DefaultReleasability getElement() {
+        return DefaultReleasability.castOrCopy(metadata);
     }
 
     /**
@@ -90,7 +87,26 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultFeatureTypeList metadata) {
+    public final void setElement(final DefaultReleasability metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends MD_Releasability {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MD_Releasability wrap(final Releasability value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

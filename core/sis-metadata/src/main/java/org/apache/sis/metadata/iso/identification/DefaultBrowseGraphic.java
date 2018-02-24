@@ -28,6 +28,8 @@ import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -50,17 +52,20 @@ import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_BrowseGraphic_Type", propOrder = {
+@XmlType(name = "MD_BrowseGraphic_Type", namespace = Namespaces.MCC, propOrder = {
     "fileName",
     "fileDescription",
-    "fileType"
+    "fileType",
+    "linkage",                  // New in ISO 19115:2014
+    "imageConstraint"           // Ibid.
 })
-@XmlRootElement(name = "MD_BrowseGraphic")
+@XmlRootElement(name = "MD_BrowseGraphic", namespace = Namespaces.MCC)
 public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Serial number for compatibility with different versions.
@@ -231,7 +236,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "imageConstraints")
+    // @XmlElement at the end of this class.
     public Collection<Constraints> getImageConstraints() {
         return imageConstraints = nonNullCollection(imageConstraints, Constraints.class);
     }
@@ -255,7 +260,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "linkage")
+    // @XmlElement at the end of this class.
     public Collection<OnlineResource> getLinkages() {
         return linkages = nonNullCollection(linkages, OnlineResource.class);
     }
@@ -269,5 +274,34 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      */
     public void setLinkages(final Collection<? extends OnlineResource> newValues) {
         linkages = writeCollection(newValues, linkages, OnlineResource.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "imageConstraints")
+    private Collection<Constraints> getImageConstraint() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getImageConstraints() : null;
+    }
+
+    @XmlElement(name = "linkage")
+    private Collection<OnlineResource> getLinkage() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getLinkages() : null;
     }
 }

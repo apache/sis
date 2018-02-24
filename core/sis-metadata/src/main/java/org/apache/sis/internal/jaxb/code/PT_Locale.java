@@ -24,16 +24,18 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.Country;
 import org.apache.sis.internal.jaxb.gmd.LanguageCode;
 import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Locale}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Locale}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * <p>This adapter formats the locale like below:</p>
  *
@@ -57,7 +59,8 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * For an alternative (simpler) format, see {@link org.apache.sis.internal.jaxb.gmd.LocaleAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see LanguageCode
  * @see Country
@@ -70,18 +73,19 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * The attributes wrapped in a {@code "PT_Locale"} element.
      */
-    @XmlElement(name = "PT_Locale")
+    @XmlElement(name = "PT_Locale", namespace = Namespaces.LAN)
     private Wrapper element;
 
     /**
      * Wraps the {@code "locale"} attributes in a {@code "PT_Locale"} element.
      */
-    @XmlType(name = "PT_Locale", propOrder = { "languageCode", "country", "characterEncoding" })
+    @XmlType(name = "PT_Locale_Type", namespace = Namespaces.LAN, propOrder = {
+        "languageCode", "language", "country", "characterEncoding"
+    })
     private static final class Wrapper {
         /**
          * The language code, or {@code null} if none.
          */
-        @XmlElement(required = true)
         LanguageCode languageCode;
 
         /**
@@ -109,6 +113,12 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         Charset characterEncoding;
 
         /**
+         * {@code true} if marshalling an element from the ISO 19115:2003 model,
+         * or {@code false} if marshalling an element from the ISO 19115:2014 model.
+         */
+        private boolean isLegacyMetadata;
+
+        /**
          * Empty constructor for JAXB only.
          */
         public Wrapper() {
@@ -119,9 +129,42 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         Wrapper(final Locale locale) {
             final Context context = Context.current();
-            languageCode = LanguageCode.create(context, locale);
-            country      = Country     .create(context, locale);
+            isLegacyMetadata = Context.isFlagSet(context, Context.LEGACY_METADATA);
+            languageCode     = LanguageCode.create(context, locale);
+            country          = Country     .create(context, locale);
             // The characterEncoding field will be initialized at marshalling time (see method below).
+        }
+
+        /**
+         * Gets the language code for this PT_Locale. Used in ISO 19115:2003 model.
+         */
+        @XmlElement(name = "languageCode", namespace = LegacyNamespaces.GMD)
+        private LanguageCode getLanguageCode() {
+            return isLegacyMetadata ? languageCode : null;
+        }
+
+        /**
+         * Sets the language code for this PT_Locale. Used in ISO 19115:2003 model.
+         */
+        @SuppressWarnings("unused")
+        private void setLanguageCode(LanguageCode newValue) {
+            languageCode = newValue;
+        }
+
+        /**
+         * Gets the language code for this PT_Locale. Used in ISO 19115-3.
+         */
+        @XmlElement(name = "language", required = true)
+        private LanguageCode getLanguage() {
+            return isLegacyMetadata ? null : languageCode;
+        }
+
+        /**
+         * Sets the language code for this PT_Locale. Used in ISO 19115:2003 model.
+         */
+        @SuppressWarnings("unused")
+        private void setLanguage(LanguageCode newValue) {
+            languageCode = newValue;
         }
 
         /**

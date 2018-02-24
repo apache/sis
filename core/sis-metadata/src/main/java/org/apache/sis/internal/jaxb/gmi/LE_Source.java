@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.Source;
 import org.apache.sis.metadata.iso.lineage.DefaultSource;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -27,12 +28,12 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "LE_Source_Type")
-@XmlRootElement(name = "LE_Source")
+@XmlType(name = "LE_Source_Type", namespace = Namespaces.MRL)
+@XmlRootElement(name = "LE_Source", namespace = Namespaces.MRL)
 @SuppressWarnings("CloneableClassWithoutClone")
 public class LE_Source extends DefaultSource {
     /**

@@ -25,7 +25,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stax.StAXSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.util.Static;
@@ -37,7 +36,7 @@ import org.apache.sis.util.Static;
  * only when first needed, when initializing this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -55,7 +54,7 @@ final class InputFactory extends Static {
 
     /*
      * Do not provide convenience method for java.io.File, because the caller needs to close the created
-     * input stream himself (this is not done by XMLStreamReader.close(), despite its method name).
+     * input stream himself (this is not done by XMLEventReader.close(), despite its method name).
      */
 
     /**
@@ -65,8 +64,8 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLStreamReader createXMLStreamReader(final InputStream in) throws XMLStreamException {
-        return FACTORY.createXMLStreamReader(in);
+    public static XMLEventReader createXMLEventReader(final InputStream in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(in);
     }
 
     /**
@@ -76,8 +75,8 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLStreamReader createXMLStreamReader(final Reader in) throws XMLStreamException {
-        return FACTORY.createXMLStreamReader(in);
+    public static XMLEventReader createXMLEventReader(final Reader in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(in);
     }
 
     /**
@@ -87,8 +86,8 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLStreamReader createXMLStreamReader(final InputSource in) throws XMLStreamException {
-        return FACTORY.createXMLStreamReader(new SAXSource(in));
+    public static XMLEventReader createXMLEventReader(final InputSource in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(new SAXSource(in));
     }
 
     /**
@@ -98,8 +97,8 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLStreamReader createXMLStreamReader(final XMLEventReader in) throws XMLStreamException {
-        return FACTORY.createXMLStreamReader(new StAXSource(in));
+    public static XMLEventReader createXMLEventReader(final XMLStreamReader in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(in);
     }
 
     /**
@@ -109,8 +108,8 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLStreamReader createXMLStreamReader(final Node in) throws XMLStreamException {
-        return FACTORY.createXMLStreamReader(new DOMSource(in));
+    public static XMLEventReader createXMLEventReader(final Node in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(new DOMSource(in));
     }
 
     /**
@@ -120,7 +119,7 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLStreamReader createXMLStreamReader(final Source in) throws XMLStreamException {
-        return FACTORY.createXMLStreamReader(in);
+    public static XMLEventReader createXMLEventReader(final Source in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(in);
     }
 }

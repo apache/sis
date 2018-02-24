@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.Usability;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -40,13 +40,16 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
+ *
+ * @deprecated Not found in ISO 19115-3:2016 schemas.
  */
+@Deprecated
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "QE_Usability_Type")
-@XmlRootElement(name = "QE_Usability", namespace = Namespaces.GMI)
+@XmlType(name = "QE_Usability_Type", namespace = LegacyNamespaces.GMI)
+@XmlRootElement(name = "QE_Usability", namespace = LegacyNamespaces.GMI)
 public class DefaultUsability extends AbstractElement implements Usability {
     /**
      * Serial number for inter-operability with different versions.

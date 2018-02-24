@@ -42,13 +42,13 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractEX_GeographicExtent_Type")
-@XmlRootElement(name = "EX_GeographicExtent")
+@XmlRootElement(name = "AbstractEX_GeographicExtent")
 @XmlSeeAlso({
     DefaultGeographicBoundingBox.class,
     DefaultBoundingPolygon.class,

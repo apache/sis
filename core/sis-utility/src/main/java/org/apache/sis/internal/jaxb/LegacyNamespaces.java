@@ -22,8 +22,9 @@ import org.apache.sis.util.Version;
 /**
  * Legacy XML namespaces, and {@link Version} constants for identifying when those namespaces were used.
  *
- * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @author  Guilhem Legal  (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see org.apache.sis.xml.Namespaces
  *
@@ -32,7 +33,14 @@ import org.apache.sis.util.Version;
  */
 public final class LegacyNamespaces {
     /**
-     * Miscellaneous version constants.
+     * Miscellaneous version constants used for ISO standards.
+     */
+    public static final Version VERSION_2007 = new Version("2007"),
+                                VERSION_2014 = new Version("2014"),
+                                VERSION_2016 = new Version("2016");
+
+    /**
+     * Miscellaneous version constants used for GML versions.
      */
     public static final Version VERSION_3_0 = new Version("3.0"),
                                 VERSION_3_2 = new Version("3.2");
@@ -52,24 +60,49 @@ public final class LegacyNamespaces {
     public static final String GML = "http://www.opengis.net/gml";
 
     /**
-     * A non-public (un)marshaller property for controlling usage of {@code org.apache.sis.xml.FilteredNamespaces}.
-     * Values can be:
-     *
-     * <ul>
-     *   <li>{@link Boolean#FALSE} for disabling namespace replacements. XML (un)marshalling will use the namespaces URI
-     *       supported natively by SIS as declared in JAXB annotations. This is sometime useful for debugging purpose.</li>
-     *   <li>{@link Boolean#TRUE} for forcing namespace replacements at unmarshalling time. This is useful for reading a
-     *       XML document of unknown GML version.</li>
-     *   <li>{@code null} or missing for the default behavior, which is apply namespace replacements only if the
-     *       {@link org.apache.sis.xml.XML#GML_VERSION} property is set to an older value than the one supported
-     *       natively by SIS.</li>
-     * </ul>
-     *
-     * This property can be given to {@link org.apache.sis.xml.MarshallerPool} constructor, or set directly on
-     * a {@code Marshaller} or {@code Unmarshaller} instance created by {@code MarshallerPool} by invoking its
-     * {@code setProperty(String, Object)} method.
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
+     * The usual prefix for this namespace is {@code "gmd"}.
      */
-    public static final String APPLY_NAMESPACE_REPLACEMENTS = "org.apache.sis.xml.applyNamespaceReplacements";
+    public static final String GMD = "http://www.isotc211.org/2005/gmd";
+
+    /**
+     * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gmi"}.
+     */
+    public static final String GMI = "http://standards.iso.org/iso/19115/-2/gmi/1.0";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
+     * The usual prefix for this namespace is {@code "gmx"}.
+     */
+    public static final String GMX = "http://www.isotc211.org/2005/gmx";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
+     * The usual prefix for this namespace is {@code "gco"}.
+     * Replaced by {@link org.apache.sis.xml.Namespaces#GCO}.
+     */
+    public static final String GCO = "http://www.isotc211.org/2005/gco";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
+     * The usual prefix for this namespace is {@code "srv"}.
+     * Replaced by {@link org.apache.sis.xml.Namespaces#SRV}.
+     */
+    public static final String SRV = "http://www.isotc211.org/2005/srv";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19110.
+     * The usual prefix for this namespace is {@code "gfc"}.
+     * Replaced by {@link org.apache.sis.xml.Namespaces#GFC}.
+     */
+    public static final String GFC = "http://www.isotc211.org/2005/gfc";
+
+    /**
+     * The <code>{@value}</code> URL, used in ISO 19139:2007.
+     * The usual prefix for this namespace is {@code "gts"}.
+     */
+    public static final String GTS = "http://www.isotc211.org/2005/gts";
 
     /**
      * Do not allow instantiation of this class.

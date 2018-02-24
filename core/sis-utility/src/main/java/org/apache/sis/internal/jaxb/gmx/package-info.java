@@ -16,18 +16,21 @@
  */
 
 /**
- * Miscellaneous objects and adapters defined in the {@code "gmx"} namespace.
+ * Miscellaneous objects and adapters defined in the {@code "gcx"} namespace.
+ * In legacy ISO 19139:2007, this namespace was to {@code "gmx"}.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMX, xmlns = {
-    @XmlNs(prefix = "gmx", namespaceURI = Namespaces.GMX)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCX, xmlns = {
+    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapter(InternationalStringConverter.class)

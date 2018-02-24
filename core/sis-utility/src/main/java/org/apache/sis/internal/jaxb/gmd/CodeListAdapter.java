@@ -20,12 +20,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
- * An adapter for {@link CodeList}, in order to implement the ISO-19139 standard. This object
- * wraps a {@link CodeListUID}, which contain {@link CodeListUID#codeList codeList} and
- * {@link CodeListUID#codeListValue codeListValue} attributes. The result looks like below:
+ * An adapter for {@link CodeList}, in order to implement the ISO 19115-3 standard.
+ * This object wraps a {@link CodeListUID}, which contain {@link CodeListUID#codeList codeList}
+ * and {@link CodeListUID#codeListValue codeListValue} attributes. The result looks like below:
  *
  * {@preformat xml
  *   <dateType>
@@ -40,7 +41,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @param <ValueType> The subclass implementing this adapter.
  * @param <BoundType> The code list being adapted.
@@ -63,7 +64,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     }
 
     /**
-     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
+     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO 19115-3.
      *
      * @param  value  the value of {@link CodeList} to be marshalled.
      */
@@ -94,6 +95,16 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * @return the code list class.
      */
     protected abstract Class<BoundType> getCodeListClass();
+
+    /**
+     * Returns {@code true} if a {@code Since2014} subclasses should return a non-null value.
+     * This is a convenience method for {@code FilterByVersion.CURRENT_METADATA.accept()}.
+     *
+     * @return whether {@code Since2014} subclasses should return a non-null value.
+     */
+    protected final boolean accept2014() {
+        return FilterByVersion.CURRENT_METADATA.accept();
+    }
 
     /**
      * Substitutes the adapter value read from an XML stream by the object which will

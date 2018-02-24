@@ -18,25 +18,29 @@
   under the License.
 -->
 
-<gmi:LE_ProcessStep
-    xmlns:gmd = "http://www.isotc211.org/2005/gmd"
-    xmlns:gco = "http://www.isotc211.org/2005/gco"
-    xmlns:gmi = "http://www.isotc211.org/2005/gmi"
+<mrl:LE_ProcessStep
+    xmlns:mrl = "http://standards.iso.org/iso/19115/-3/mrl/1.0"
+    xmlns:mcc = "http://standards.iso.org/iso/19115/-3/mcc/1.0"
+    xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/mrl/1.0
+                          http://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd">
 
-  <!--
-    As of February 2011, there is not yet any XSD schema for the "gmi" namespace on the
-    OGC web site. Consequently the validation of this file does not work fully yet.
-  -->
-  <gmd:description>
+  <mrl:description>
     <gco:CharacterString>Some process step.</gco:CharacterString>
-  </gmd:description>
-  <gmi:processingInformation>
-    <gmi:LE_Processing>
-      <gmi:procedureDescription>
+  </mrl:description>
+  <mrl:processingInformation>
+    <mrl:LE_Processing>
+      <mrl:identifier>
+        <mcc:MD_Identifier>
+          <mcc:code>
+            <gco:CharacterString>P4</gco:CharacterString>
+          </mcc:code>
+        </mcc:MD_Identifier>
+      </mrl:identifier>
+      <mrl:procedureDescription>
         <gco:CharacterString>Some procedure.</gco:CharacterString>
-      </gmi:procedureDescription>
-    </gmi:LE_Processing>
-  </gmi:processingInformation>
-</gmi:LE_ProcessStep>
+      </mrl:procedureDescription>
+    </mrl:LE_Processing>
+  </mrl:processingInformation>
+</mrl:LE_ProcessStep>

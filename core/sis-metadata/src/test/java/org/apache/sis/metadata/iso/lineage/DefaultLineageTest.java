@@ -16,13 +16,15 @@
  */
 package org.apache.sis.metadata.iso.lineage;
 
-import java.util.Arrays;
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.lineage.Source;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
-import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -33,31 +35,74 @@ import static org.apache.sis.test.Assert.*;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
 public final strictfp class DefaultLineageTest extends XMLTestCase {
     /**
-     * Tests the marshalling of an {@code "gmd:LI_Source"} element, which shall become
-     * {@code "gmi:LE_Source"} when some ISO 19115-2 properties are defined.
+     * Create a lineage to marshal. If {@code extension} is {@code false}, then this method uses
+     * only properties defined in ISO 19115-1. If {@code extension} is {@code true}, then this
+     * method adds an ISO 19115-2 property.
+     */
+    private static DefaultLineage create(final boolean extension) {
+        final DefaultLineage lineage = new DefaultLineage();
+        final DefaultSource source = new DefaultSource();
+        source.setDescription(new SimpleInternationalString("Description of source data level."));
+        lineage.getSources().add(source);
+        if (extension) {
+            source.setProcessedLevel(new DefaultIdentifier("DummyLevel"));
+        }
+        return lineage;
+    }
+
+    /**
+     * Verifies the unmarshalling result.
+     */
+    private static void verify(final DefaultLineage lineage) {
+        final Source source = TestUtilities.getSingleton(lineage.getSources());
+        assertEquals("source.description", "Description of source data level.", String.valueOf(source.getDescription()));
+    }
+
+    /**
+     * Tests the marshalling of a {@code "mrl:LI_Source"} element.
+     * If this case, the test uses only ISO 19115-1 elements (no ISO 19115-2).
+     * Consequently the XML name shall be {@code "mrl:LI_Source"}.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
     public void testSource() throws JAXBException {
-        final DefaultLineage lineage = new DefaultLineage();
-        final DefaultSource source = new DefaultSource();
-        source.setDescription(new SimpleInternationalString("Description of source data level."));
-        lineage.setSources(Arrays.asList(source));
-        /*
-         * If this simpler case, only ISO 19115 elements are defined (no ISO 19115-2).
-         * Consequently the XML name shall be "gmd:LI_Source".
-         */
-        String actual = XML.marshal(lineage);
+        String actual = marshal(create(false));
         assertXmlEquals(
-            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + '"' +
+            "<mrl:LI_Lineage xmlns:mrl=\"" + Namespaces.MRL + '"' +
                            " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <mrl:source>\n" +
+            "    <mrl:LI_Source>\n" +
+            "      <mrl:description>\n" +
+            "        <gco:CharacterString>Description of source data level.</gco:CharacterString>\n" +
+            "      </mrl:description>\n" +
+            "    </mrl:LI_Source>\n" +
+            "  </mrl:source>\n" +
+            "</mrl:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
+    }
+
+    /**
+     * Tests the marshalling of a legacy {@code "gmd:LI_Source"} element.
+     * If this case, the test uses only ISO 19115-1 elements (no ISO 19115-2).
+     * Consequently the legacy XML name shall be {@code "gmd:LI_Source"}.
+     *
+     * @throws JAXBException if an error occurred while marshalling the XML.
+     */
+    @Test
+    @DependsOnMethod("testSource")
+    public void testLegacySource() throws JAXBException {
+        String actual = marshal(create(false), VERSION_2007);
+        assertXmlEquals(
+            "<gmd:LI_Lineage xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
+                           " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
             "  <gmd:source>\n" +
             "    <gmd:LI_Source>\n" +
             "      <gmd:description>\n" +
@@ -66,15 +111,61 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </gmd:LI_Source>\n" +
             "  </gmd:source>\n" +
             "</gmd:LI_Lineage>", actual, "xmlns:*");
-        /*
-         * Now add a ISO 19115-2 specific property. The XML name shall become "gmi:LE_Source".
-         */
-        source.setProcessedLevel(new DefaultIdentifier("DummyLevel"));
-        actual = XML.marshal(lineage);
+
+        verify(unmarshal(DefaultLineage.class, actual));
+    }
+
+    /**
+     * Tests the marshalling of a {@code "mrl:LE_Source"} element.
+     * This test starts with the same metadata than {@link #testSource()} and adds an
+     * ISO 19115-2 specific property. Consequently the XML name, which was originally
+     * {@code "mrl:LI_Source"}, shall become {@code "mrl:LE_Source"}.
+     *
+     * @throws JAXBException if an error occurred while marshalling the XML.
+     */
+    @Test
+    @DependsOnMethod("testSource")
+    public void testSourceImagery() throws JAXBException {
+        String actual = marshal(create(true));
         assertXmlEquals(
-            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                           " xmlns:gmi=\"" + Namespaces.GMI + '"' +
+            "<mrl:LI_Lineage xmlns:mrl=\"" + Namespaces.MRL + '"' +
+                           " xmlns:mcc=\"" + Namespaces.MCC + '"' +
                            " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <mrl:source>\n" +
+            "    <mrl:LE_Source>\n" +
+            "      <mrl:description>\n" +
+            "        <gco:CharacterString>Description of source data level.</gco:CharacterString>\n" +
+            "      </mrl:description>\n" +
+            "      <mrl:processedLevel>\n" +
+            "        <mcc:MD_Identifier>\n" +
+            "          <mcc:code>\n" +
+            "            <gco:CharacterString>DummyLevel</gco:CharacterString>\n" +
+            "          </mcc:code>\n" +
+            "        </mcc:MD_Identifier>\n" +
+            "      </mrl:processedLevel>\n" +
+            "    </mrl:LE_Source>\n" +
+            "  </mrl:source>\n" +
+            "</mrl:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
+    }
+
+    /**
+     * Tests the marshalling of a legacy {@code "gmi:LE_Source"} element.
+     * This test starts with the same metadata than {@link #testLegacySource()} and adds
+     * an ISO 19115-2 specific property. Consequently the XML name, which was originally
+     * {@code "gmd:LI_Source"}, shall become {@code "gmi:LE_Source"}.
+     *
+     * @throws JAXBException if an error occurred while marshalling the XML.
+     */
+    @Test
+    @DependsOnMethod("testLegacySource")
+    public void testLegacySourceImagery() throws JAXBException {
+        String actual = marshal(create(true), VERSION_2007);
+        assertXmlEquals(
+            "<gmd:LI_Lineage xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
+                           " xmlns:gmi=\"" + LegacyNamespaces.GMI + '"' +
+                           " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
             "  <gmd:source>\n" +
             "    <gmi:LE_Source>\n" +
             "      <gmd:description>\n" +
@@ -90,5 +181,7 @@ public final strictfp class DefaultLineageTest extends XMLTestCase {
             "    </gmi:LE_Source>\n" +
             "  </gmd:source>\n" +
             "</gmd:LI_Lineage>", actual, "xmlns:*");
+
+        verify(unmarshal(DefaultLineage.class, actual));
     }
 }

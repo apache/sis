@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.MemberName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -29,6 +30,9 @@ import org.opengis.metadata.content.SampleDimension;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 
 
 /**
@@ -47,7 +51,8 @@ import org.apache.sis.internal.metadata.Dependencies;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -55,8 +60,9 @@ import org.apache.sis.internal.metadata.Dependencies;
 @TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",
-    "descriptor",
-/// "names"
+    "description",          // New in ISO 19115:2014
+    "descriptor",           // Legacy ISO 19115:2003
+    "name"                  // New in ISO 19115:2014
 })
 @XmlRootElement(name = "MD_RangeDimension")
 @XmlSeeAlso(DefaultBand.class)
@@ -166,7 +172,8 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "description")
+    @XmlElement(name = "description")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     public InternationalString getDescription() {
         return description;
     }
@@ -193,10 +200,10 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      */
     @Override
     @Deprecated
-    @XmlElement(name = "descriptor")
     @Dependencies("getDescription")
+    @XmlElement(name = "descriptor", namespace = LegacyNamespaces.GMD)
     public InternationalString getDescriptor() {
-        return getDescription();
+        return FilterByVersion.LEGACY_METADATA.accept() ? getDescription() : null;
     }
 
     /**
@@ -221,7 +228,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @since 0.5
      */
     @Override
-/// @XmlElement(name = "name")
+    // @XmlElement at the end of this class.
     public Collection<Identifier> getNames() {
         return names = nonNullCollection(names, Identifier.class);
     }
@@ -235,5 +242,29 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      */
     public void setNames(final Collection<? extends Identifier> newValues) {
         names = writeCollection(newValues, names, Identifier.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "name")
+    private Collection<Identifier> getName() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getNames() : null;
     }
 }

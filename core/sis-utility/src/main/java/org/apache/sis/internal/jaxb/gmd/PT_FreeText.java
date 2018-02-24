@@ -27,27 +27,28 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArraysExt;
 
 
 /**
- * JAXB wrapper for ISO-19139 {@code <PT_FreeText>} element mapped to {@link InternationalString}.
- * It will be used in order to marshal and unmarshal international strings localized in several
- * language, using the {@link DefaultInternationalString} implementation class. Example:
+ * JAXB wrapper for ISO 19115-3 {@code <PT_FreeText>} element mapped to {@link InternationalString}.
+ * It will be used in order to marshal and unmarshal international strings localized in several language,
+ * using the {@link DefaultInternationalString} implementation class. Example:
  *
  * {@preformat xml
- *   <gmd:title xsi:type="gmd:PT_FreeText_PropertyType">
+ *   <cit:title xsi:type="lan:PT_FreeText_PropertyType">
  *     <gco:CharacterString>Some title in english is present in this node</gco:CharacterString>
- *     <gmd:PT_FreeText>
- *       <gmd:textGroup>
- *         <gmd:LocalisedCharacterString locale="#locale-fra">Un titre en français</gmd:LocalisedCharacterString>
- *       </gmd:textGroup>
- *     </gmd:PT_FreeText>
- *   </gmd:title>
+ *     <lan:PT_FreeText>
+ *       <lan:textGroup>
+ *         <lan:LocalisedCharacterString locale="#locale-fra">Un titre en français</lan:LocalisedCharacterString>
+ *       </lan:textGroup>
+ *     </lan:PT_FreeText>
+ *   </cit:title>
  * }
  *
- * If there is more than one locale, the whole {@code <gmd:textGroup>} block is repeated for each
- * locale, instead than repeating {@code <gmd:LocalisedCharacterString>} inside the same group as
+ * If there is more than one locale, the whole {@code <lan:textGroup>} block is repeated for each
+ * locale, instead than repeating {@code <lan:LocalisedCharacterString>} inside the same group as
  * we could expect. However at unmarshalling time, both forms are accepted. See GEOTK-152 for more
  * information.
  *
@@ -56,23 +57,24 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
  *
  * @since 0.3
  * @module
  */
-@XmlType(name = "PT_FreeText_PropertyType")
+@XmlType(name = "PT_FreeText_PropertyType", namespace = Namespaces.LAN)
 public final class PT_FreeText extends GO_CharacterString {
     /**
-     * A set of {@link LocalisedCharacterString}, representing the {@code <gmd:textGroup>} element.
+     * A set of {@link LocalisedCharacterString}, representing the {@code <lan:textGroup>} element.
      * The array shall contain one element for each locale.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
      */
-    @XmlElementWrapper(name = "PT_FreeText")
-    @XmlElement(required = true)
+    @XmlElementWrapper(name = "PT_FreeText", namespace = Namespaces.LAN)
+    @XmlElement(namespace = Namespaces.LAN, required = true)
     private TextGroup[] textGroup;
 
     /**
@@ -171,11 +173,11 @@ public final class PT_FreeText extends GO_CharacterString {
      */
     @Override
     protected CharSequence toCharSequence() {
-        String defaultValue = toString(); // May be null.
+        String defaultValue = toString();                                       // May be null.
         if (defaultValue != null && contains(defaultValue)) {
             /*
              * If the <gco:CharacterString> value is repeated in one of the
-             * <gmd:LocalisedCharacterString> elements, keep only the localized
+             * <lan:LocalisedCharacterString> elements, keep only the localized
              * version  (because it specifies the locale, while the unlocalized
              * string saids nothing on that matter).
              */

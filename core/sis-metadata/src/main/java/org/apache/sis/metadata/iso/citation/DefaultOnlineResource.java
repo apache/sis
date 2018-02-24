@@ -20,9 +20,12 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.gco.URIAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -46,7 +49,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -57,7 +61,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
     "applicationProfile",
     "name",
     "description",
-    "function"
+    "function",
+    "protocolRequest"
 })
 @XmlRootElement(name = "CI_OnlineResource")
 public class DefaultOnlineResource extends ISOMetadata implements OnlineResource {
@@ -259,6 +264,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "linkage", required = true)
+    @XmlJavaTypeAdapter(URIAdapter.AsURL.class)
     public URI getLinkage() {
         return linkage;
     }
@@ -318,6 +324,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @since 0.5
      */
     @Override
+    @XmlElement(name = "protocolRequest")
+    @XmlJavaTypeAdapter(StringAdapter.Since2014.class)
     public String getProtocolRequest() {
         return protocolRequest;
     }

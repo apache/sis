@@ -50,7 +50,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
  SIS provides data structures for geographic data and associated metadata along with methods
  to manipulate those data structures. The SIS metadata module forms the base of the library
  and enables the creation of metadata objects which comply with the ISO 19115 metadata model
- and which can be read from or written to ISO 19139 compliant XML documents.
+ and which can be read from or written to ISO 19115-3 compliant XML documents.
  The SIS referencing module will enable the construction of geodetic data structures for
  geospatial referencing based on the ISO 19111 model such as axis, projection and coordinate
  reference system definitions, along with the associated operations which enable the mathematical
@@ -323,6 +323,15 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <name>Christina Hough</name>
       <roles>
         <role>translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Cullen Rombach</name>
+      <organization>Image Matters</organization>
+      <organizationUrl>http://www.imagemattersllc.com</organizationUrl>
+      <timezone>-5</timezone>
+      <roles>
+        <role>developer</role>
       </roles>
     </contributor>
     <contributor>

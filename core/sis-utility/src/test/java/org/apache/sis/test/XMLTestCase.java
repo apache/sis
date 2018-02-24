@@ -31,7 +31,11 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Version;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.XML;
 import org.junit.After;
@@ -52,7 +56,8 @@ import static org.apache.sis.test.Assert.*;
  * after each test for clearing the SIS internal {@link ThreadLocal} which was holding that context.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see XMLComparator
  *
@@ -60,6 +65,12 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 public abstract strictfp class XMLTestCase extends TestCase {
+    /**
+     * Miscellaneous version constants used for ISO standards.
+     */
+    protected static final Version VERSION_2007 = LegacyNamespaces.VERSION_2007,
+                                   VERSION_2014 = LegacyNamespaces.VERSION_2014;
+
     /**
      * The timezone used for the tests. We intentionally use a timezone different than UTC in order
      * to have an error of one or two hours if a code fails to take timezone offset in account.
@@ -143,7 +154,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      */
     protected final void createContext(final boolean marshal, final Locale locale, final String timezone) {
         context = new Context(marshal ? Context.MARSHALLING : 0, locale,
-                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null);
+                (timezone != null) ? TimeZone.getTimeZone(timezone) : null, null, null, null, null, null, null);
     }
 
     /**
@@ -198,11 +209,30 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
+     * Marshals the given object and ensure that the result is equals to the content of the given file.
+     *
+     * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
+     * @param  object             the object to marshal.
+     * @param  metadataVersion    whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
+     * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
+     *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
+     * @throws JAXBException if an error occurred during marshalling.
+     *
+     * @since 1.0
+     */
+    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+            final Version metadataVersion, final String... ignoredAttributes) throws JAXBException
+    {
+        assertXmlEquals(getResource(filename), marshal(object, metadataVersion), ignoredAttributes);
+    }
+
+    /**
      * Marshals the given object and ensure that the result is equals to the content of the given file,
      * within a tolerance threshold for numerical values.
      *
      * @param  filename           the name of the XML file in the package of the final subclass of {@code this}.
      * @param  object             the object to marshal.
+     * @param  metadataVersion    whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
      * @param  tolerance          the tolerance threshold for comparison of numerical values.
      * @param  ignoredNodes       the fully-qualified names of the nodes to ignore, or {@code null} if none.
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
@@ -211,16 +241,17 @@ public abstract strictfp class XMLTestCase extends TestCase {
      *
      * @see #unmarshalFile(Class, String)
      *
-     * @since 0.7
+     * @since 1.0
      */
-    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+    protected final void assertMarshalEqualsFile(final String filename, final Object object, final Version metadataVersion,
             final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object), tolerance, ignoredNodes, ignoredAttributes);
+        assertXmlEquals(getResource(filename), marshal(object, metadataVersion), tolerance, ignoredNodes, ignoredAttributes);
     }
 
     /**
      * Marshals the given object using the {@linkplain #getMarshallerPool() test marshaller pool}.
+     * The default XML schema is used (usually the most recent one).
      *
      * @param  object  the object to marshal.
      * @return the marshalled object.
@@ -231,6 +262,26 @@ public abstract strictfp class XMLTestCase extends TestCase {
     protected final String marshal(final Object object) throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
+        final String xml = marshal(marshaller, object);
+        pool.recycle(marshaller);
+        return xml;
+    }
+
+    /**
+     * Marshals the given object using the {@linkplain #getMarshallerPool() test marshaller pool}.
+     * The XML schema identified by the given version is used.
+     *
+     * @param  object           the object to marshal.
+     * @param  metadataVersion  whether to marshal legacy 19139:2007 or newer ISO 19115-3 document. Can be {@code null}.
+     * @return the marshalled object.
+     * @throws JAXBException if an error occurred while marshalling the object.
+     *
+     * @since 1.0
+     */
+    protected final String marshal(final Object object, final Version metadataVersion) throws JAXBException {
+        final MarshallerPool pool = getMarshallerPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.METADATA_VERSION, metadataVersion);
         final String xml = marshal(marshaller, object);
         pool.recycle(marshaller);
         return xml;
@@ -300,7 +351,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
-     * Unmarshals the given XML using the given unmarshaler.
+     * Unmarshals the given XML using the given unmarshaller.
      *
      * @param  unmarshaller  the unmarshaller to use.
      * @param  xml           the XML representation of the object to unmarshal.
@@ -331,5 +382,57 @@ public abstract strictfp class XMLTestCase extends TestCase {
         } catch (ParseException e) {
             throw new AssertionError(e);
         }
+    }
+
+    /**
+     * The string substitutions to perform for downgrading an ISO 19115-3 document to ISO 19139:2007.
+     * Values at even indices are strings to search, and values at odd indices are replacements.
+     */
+    private static final String[] TO_LEGACY_XML = {
+        Namespaces.CIT, LegacyNamespaces.GMD, "cit",  "gmd",
+        Namespaces.MCC, LegacyNamespaces.GMD, "mcc",  "gmd",
+        Namespaces.MRI, LegacyNamespaces.GMD, "mri",  "gmd",
+        Namespaces.GCO, LegacyNamespaces.GCO,      // "gco"
+        Namespaces.GCX, LegacyNamespaces.GMX, "gcx",  "gmx",
+        Schemas.METADATA_ROOT,  Schemas.METADATA_ROOT_LEGACY,           // For code lists
+        Schemas.CODELISTS_PATH, Schemas.CODELISTS_PATH_LEGACY
+    };
+
+    /**
+     * Performs a simple ISO 19115-3 to ISO 19139:2007 translations using only search-and-replaces.
+     * For example this method replaces {@code "cit"} prefix by {@code "gmd"} and the corresponding
+     * {@value Namespaces#CIT} namespace by {@value LegacyNamespaces#GMD}. However this method does
+     * not perform any more complex translations like attributes refactored in other classes.  If a
+     * more complex translation is required, the test case should provide the legacy XML verbatim
+     * in a separated string.
+     *
+     * @param  xml  an XML compliant with ISO 19115-3.
+     * @return an XML compliant with ISO 19139:2007.
+     *
+     * @since 1.0
+     */
+    protected static String toLegacyXML(final String xml) {
+        final StringBuilder buffer = new StringBuilder(xml);
+        for (int c=0; c < TO_LEGACY_XML.length;) {
+            final String toSearch  = TO_LEGACY_XML[c++];
+            final String replaceBy = TO_LEGACY_XML[c++];
+            final int length = toSearch.length();
+            int i = buffer.length();
+            while ((i = buffer.lastIndexOf(toSearch, i)) >= 0) {
+                /*
+                 * Following may throw a StringIndexOutOfBoundsException if 'toSearch' is located at the
+                 * beginning (i == 0) or end (end == buffer.length()) of the buffer. However those cases
+                 * should never happen in Apache SIS test cases since it would be invalid XML.
+                 */
+                if (!Character.isUnicodeIdentifierPart(buffer.codePointBefore(i))) {
+                    final int end = i + length;
+                    if (!Character.isUnicodeIdentifierPart(buffer.codePointAt(end))) {
+                        buffer.replace(i, end, replaceBy);
+                    }
+                }
+                i -= length;
+            }
+        }
+        return buffer.toString();
     }
 }

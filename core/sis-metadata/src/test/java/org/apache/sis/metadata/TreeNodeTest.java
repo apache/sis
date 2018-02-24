@@ -188,8 +188,8 @@ public final strictfp class TreeNodeTest extends TestCase {
     private void assertCitationContentEquals(final int offset, final TableColumn<?> column, final Object... expected) {
         if (valuePolicy == ValueExistencePolicy.COMPACT) {
             assertEquals(19, expected.length);
-            System.arraycopy(expected, 11+offset, expected, 10+offset,  8-offset);    // Compact the "Individual" element.
-            System.arraycopy(expected,  7+offset, expected,  6+offset, 11-offset);    // Compact the "Organisation" element.
+            System.arraycopy(expected, 12+offset, expected, 11+offset,  7-offset);    // Compact the "Individual" element.
+            System.arraycopy(expected,  8+offset, expected,  7+offset, 10-offset);    // Compact the "Organisation" element.
             System.arraycopy(expected,  1+offset, expected,    offset, 16-offset);    // Compact the "Title" element.
             Arrays.fill(expected, 16, 19, null);
         }
@@ -209,16 +209,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Alternate title (2 of 2)",
               "Edition",
               "Cited responsible party (1 of 2)",
+                "Role",
                 "Organisation",                         // A Party subtype
                   "Name",                               // In COMPACT mode, this value is associated to "Organisation" node.
-                "Role",
               "Cited responsible party (2 of 2)",
+                "Role",
                 "Individual",                           // A Party subtype
                   "Name",                               // In COMPACT mode, this value is associated to "Individual" node.
                   "Contact info",
                     "Address",
                       "Electronic mail address",
-                "Role",
               "Presentation form (1 of 2)",
               "Presentation form (2 of 2)",
               "Other citation details");
@@ -240,16 +240,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               "alternateTitle",
               "edition",
               "citedResponsibleParty",
+                "role",
                 "party",
                   "name",                               // In COMPACT mode, this value is associated to "party" node.
-                "role",
               "citedResponsibleParty",
+                "role",
                 "party",
                   "name",                               // In COMPACT mode, this value is associated to "party" node.
                   "contactInfo",
                     "address",
                       "electronicMailAddress",
-                "role",
               "presentationForm",
               "presentationForm",
               "otherCitationDetails");
@@ -270,16 +270,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               ONE,          // alternateTitle
               null,         // edition
               ZERO,         // citedResponsibleParty
+                null,       // role
                 ZERO,       // party (organisation)
                   null,     // name                         — in COMPACT mode, this value is associated to "party" node.
-                null,       // role
               ONE,          // citedResponsibleParty
+                null,       // role
                 ZERO,       // party (individual)
                   null,     // name                         — in COMPACT mode, this value is associated to "party" node.
                   ZERO,     // contactInfo
                     ZERO,   // address
                       ZERO, // electronicMailAddress
-                null,       // role
               ZERO,         // presentationForm
               ONE,          // presentationForm
               ZERO);        // otherCitationDetails
@@ -298,16 +298,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               InternationalString.class,
               InternationalString.class,
               Responsibility.class,
+                Role.class,
                 Party.class,                            // In COMPACT mode, value with be the one of "name" node instead.
                   InternationalString.class,            // Name
-                Role.class,
               Responsibility.class,
+                Role.class,
                 Party.class,                            // In COMPACT mode, value with be the one of "name" node instead.
                   InternationalString.class,            // Name
                   Contact.class,
                     Address.class,
                       String.class,
-                Role.class,
               PresentationForm.class,
               PresentationForm.class,
               InternationalString.class);
@@ -326,16 +326,16 @@ public final strictfp class TreeNodeTest extends TestCase {
               "Second alternate title",
               "Some edition",
               null,                             // ResponsibleParty
+                Role.DISTRIBUTOR,
                 null,                           // Party (organisation)
                   "Some organisation",
-                Role.DISTRIBUTOR,
               null,                             // ResponsibleParty
+                Role.POINT_OF_CONTACT,
                 null,                           // Party (individual)
                   "Some person of contact",
                   null,                         // Contact
                     null,                       // Address
                       "Some email",
-                Role.POINT_OF_CONTACT,
               PresentationForm.MAP_DIGITAL,
               PresentationForm.MAP_HARDCOPY,
               "Some other details");

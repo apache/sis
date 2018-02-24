@@ -38,7 +38,7 @@ import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.CoverageDescription;
-import org.opengis.metadata.identification.*; // Really using almost everything.
+import org.opengis.metadata.identification.*;                       // Really using almost everything.
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
@@ -81,7 +81,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * to be updated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -184,8 +184,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
 //          Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,   -- deprecated as of ISO 19115:2014
             Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
             Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
-            Citation.class, "getGraphics",                "graphics",                "graphic",               "Graphics",                   BrowseGraphic[].class,
-            Citation.class, "getOnlineResources",         "onlineResources",         "onlineResource",        "Online resources",           OnlineResource[].class);
+            Citation.class, "getOnlineResources",         "onlineResources",         "onlineResource",        "Online resources",           OnlineResource[].class,
+            Citation.class, "getGraphics",                "graphics",                "graphic",               "Graphics",                   BrowseGraphic[].class);
     }
 
     /**
@@ -208,24 +208,24 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      InternationalString[].class,
             Identification.class, "getStatus",                     "status",                     "status",                    "Status",                       Progress[].class,
             Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            Responsibility[].class,
+            Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
+            Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
+            Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         Duration[].class,
+            Identification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
+            Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
+            Identification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,
+            Identification.class, "getProcessingLevel",            "processingLevel",            "processingLevel",           "Processing level",             Identifier.class,
             Identification.class, "getResourceMaintenances",       "resourceMaintenances",       "resourceMaintenance",       "Resource maintenances",        MaintenanceInformation[].class,
             Identification.class, "getGraphicOverviews",           "graphicOverviews",           "graphicOverview",           "Graphic overviews",            BrowseGraphic[].class,
             Identification.class, "getResourceFormats",            "resourceFormats",            "resourceFormat",            "Resource formats",             Format[].class,
             Identification.class, "getDescriptiveKeywords",        "descriptiveKeywords",        "descriptiveKeywords",       "Descriptive keywords",         Keywords[].class,
             Identification.class, "getResourceSpecificUsages",     "resourceSpecificUsages",     "resourceSpecificUsage",     "Resource specific usages",     Usage[].class,
             Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
-            Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
-            Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
+            Identification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         AssociatedResource[].class,
         DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
         DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               Charset[].class,
-            Identification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
-            Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
-        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
-            Identification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,
-            Identification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         AssociatedResource[].class,
-            Identification.class, "getProcessingLevel",            "processingLevel",            "processingLevel",           "Processing level",             Identifier.class,
-            Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         Duration[].class);
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class);
     }
 
     /**

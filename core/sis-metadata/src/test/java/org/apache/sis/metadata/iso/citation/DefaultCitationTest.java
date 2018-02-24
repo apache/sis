@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,8 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.OnLineFunction;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.xml.IdentifierMap;
@@ -37,6 +40,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.Version;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -49,7 +54,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultCitation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -58,6 +64,11 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * An XML file in this package containing a citation.
      */
     private static final String XML_FILE = "Citation.xml";
+
+    /**
+     * An XML file in this package containing a citation in the format of legacy ISO 19139:2007 specification.
+     */
+    private static final String XML_FILE_LEGACY = "Citation (legacy).xml";
 
     /**
      * Creates a citation with an arbitrary title, presentation form and other properties.
@@ -174,6 +185,19 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     }
 
     /**
+     * Tests XML marshalling using the format derived form ISO 19115:2014 model.
+     * This method also tests usage of {@code gml:id} and {@code xlink:href}.
+     *
+     * @throws JAXBException if an error occurred during marshalling.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testMarshalling() throws JAXBException {
+        testMarshalling(XML_FILE, VERSION_2014);
+    }
+
+    /**
      * Tests XML marshalling using the format derived form ISO 19115:2003 model.
      * This method also tests usage of {@code gml:id} and {@code xlink:href}.
      *
@@ -182,8 +206,24 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * @since 0.7
      */
     @Test
-    public void testMarshalling() throws JAXBException {
-        final DefaultContact contact = new DefaultContact();
+    @DependsOnMethod("testMarshalling")
+    public void testMarshallingLegacy() throws JAXBException {
+        testMarshalling(XML_FILE_LEGACY, VERSION_2007);
+    }
+
+    /**
+     * Tests XML marshalling for the given metadata version.
+     *
+     * @param  file     file containing the expected metadata.
+     * @param  version  the metadata version to marshal.
+     */
+    private void testMarshalling(final String file, final Version version) throws JAXBException {
+        final DefaultOnlineResource rs = new DefaultOnlineResource(URI.create("https://tools.ietf.org/html/rfc1149"));
+        rs.setName(new SimpleInternationalString("IP over Avian Carriers"));
+        rs.setDescription(new SimpleInternationalString("High delay, low throughput, and low altitude service."));
+        rs.setFunction(OnLineFunction.OFFLINE_ACCESS);
+
+        final DefaultContact contact = new DefaultContact(rs);
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
         final DefaultCitation c = new DefaultCitation("Fight against poverty");
@@ -192,7 +232,24 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
                 new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
         ));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
-        assertMarshalEqualsFile(XML_FILE, c, "xlmns:*", "xsi:schemaLocation");
+        c.getPresentationForms().add(PresentationForm.PHYSICAL_OBJECT);
+        /*
+         * Check that XML file built by the marshaller is the same as the example file.
+         */
+        assertMarshalEqualsFile(file, c, version, "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests XML unmarshalling using the format derived form ISO 19115:2014 model.
+     * This method also tests usage of {@code gml:id} and {@code xlink:href}.
+     *
+     * @throws JAXBException if an error occurred during unmarshalling.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testUnmarshalling() throws JAXBException {
+        testUnmarshalling(XML_FILE);
     }
 
     /**
@@ -204,19 +261,37 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      * @since 0.7
      */
     @Test
-    public void testUnmarshalling() throws JAXBException {
-        final DefaultCitation c = unmarshalFile(DefaultCitation.class, XML_FILE);
+    @DependsOnMethod("testUnmarshalling")
+    public void testUnmarshallingLegacy() throws JAXBException {
+        testUnmarshalling(XML_FILE_LEGACY);
+    }
+
+    /**
+     * Tests XML unmarshalling for a metadata version.
+     * The version is not specified since it should be detected automatically.
+     *
+     * @param  file  file containing the metadata to unmarshal.
+     */
+    private void testUnmarshalling(final String file) throws JAXBException {
+        final DefaultCitation c = unmarshalFile(DefaultCitation.class, file);
         assertTitleEquals("title", "Fight against poverty", c);
 
         final CitationDate date = getSingleton(c.getDates());
         assertEquals("date", date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
-        assertEquals("dateType", date.getDateType(), DateType.ADOPTED);
+        assertEquals("dateType", DateType.ADOPTED, date.getDateType());
+        assertEquals("presentationForm", PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
 
         final Iterator<Responsibility> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
-        assertEquals("Contact instruction", "Send carrier pigeon.", contact.getContactInstructions().toString());
+        assertEquals("Contact instruction", "Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
 
-        // Thanks to xlink:href, the Contact shall be the same instance than above.
+        final OnlineResource resource = TestUtilities.getSingleton(contact.getOnlineResources());
+        assertEquals("Resource name", "IP over Avian Carriers", String.valueOf(resource.getName()));
+        assertEquals("Resource description", "High delay, low throughput, and low altitude service.", String.valueOf(resource.getDescription()));
+        assertEquals("Resource linkage", "https://tools.ietf.org/html/rfc1149", String.valueOf(resource.getLinkage()));
+        assertEquals("Resource function", OnLineFunction.OFFLINE_ACCESS, resource.getFunction());
+
+        // Thanks to xlink:href, the Contact shall be the same instance as above.
         assertSame("contact", contact, assertResponsibilityEquals(Role.FUNDER, "Robin Hood", it.next()));
         assertFalse(it.hasNext());
     }
@@ -227,7 +302,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     private static Contact assertResponsibilityEquals(final Role role, final String name, final Responsibility actual) {
         assertEquals("role", role, actual.getRole());
         final Party p = getSingleton(actual.getParties());
-        assertEquals("name", name, p.getName().toString());
+        assertEquals("name", name, String.valueOf(p.getName()));
         return getSingleton(p.getContactInfo());
     }
 }

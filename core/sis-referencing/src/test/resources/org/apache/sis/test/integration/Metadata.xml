@@ -353,6 +353,9 @@
       <gmd:topicCategory>
         <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>
       </gmd:topicCategory>
+      <gmd:environmentDescription>
+        <gco:CharacterString>Possibly cloudy.</gco:CharacterString>
+      </gmd:environmentDescription>
       <gmd:extent>
         <gmd:EX_Extent>
           <gmd:geographicElement>
@@ -412,6 +415,9 @@
           </gmd:verticalElement>
         </gmd:EX_Extent>
       </gmd:extent>
+      <gmd:supplementalInformation>
+        <gco:CharacterString>This metadata has been modified with dummy values.</gco:CharacterString>
+      </gmd:supplementalInformation>
     </gmd:MD_DataIdentification>
   </gmd:identificationInfo>
   <gmd:contentInfo>

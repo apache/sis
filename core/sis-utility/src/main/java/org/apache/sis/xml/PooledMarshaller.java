@@ -37,6 +37,7 @@ import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.internal.jaxb.UseLegacyMetadata;
 
 
 /**
@@ -48,12 +49,12 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *       when the marshaller is recycled.</li>
  *   <li>Constructs a SIS {@link Context} object on marshalling, in order to give
  *       additional information to the SIS object being marshalled.</li>
- *   <li>Wraps the output stream in a {@link FilteredStreamWriter} if the desired GML version
+ *   <li>Wraps the output stream in a {@link TransformingWriter} if the desired GML version
  *       in not the SIS native GML version.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -62,6 +63,13 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * The wrapper marshaller which does the real work.
      */
     private final Marshaller marshaller;
+
+    /**
+     * Bit masks specific to the object being marshalled. This mask will be combined with the
+     * bit masks managed by the {@link Pooled} base class.  This is used mostly for mandating
+     * legacy metadata format (ISO 19139:2007) for some object to marshal.
+     */
+    private int specificBitMasks;
 
     /**
      * Creates a pooled marshaller wrapping the given one.
@@ -115,11 +123,23 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     }
 
     /**
+     * Returns a non-zero bitmask if the object given in last call to {@link #toImplementation(Object)} should use
+     * legacy metadata. This is a hack for marshalling metadata in GML. May be deleted if we implement SIS-401.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-401">SIS-401</a>
+     */
+    @Override
+    final int specificBitMasks() {
+        return specificBitMasks;
+    }
+
+    /**
      * Converts the given arbitrary object to an implementation having JAXB annotations.
      * If the given object is not recognized or is already an instance of the expected class,
      * then it is returned unchanged.
      */
     private Object toImplementation(final Object value) throws JAXBException {
+        specificBitMasks = value.getClass().isAnnotationPresent(UseLegacyMetadata.class) ? Context.LEGACY_METADATA : 0;
         final TypeRegistration[] converters = getRootAdapters();
         if (converters != null) {
             for (final TypeRegistration t : converters) {
@@ -132,21 +152,20 @@ final class PooledMarshaller extends Pooled implements Marshaller {
 
     /**
      * Marshals to the given output with on-the-fly substitution of namespaces.
-     * This method is invoked only when the user asked to marshal to a different GML version
-     * than the one supported natively by SIS, i.e. when {@link #getFilterVersion()} returns
-     * a non-null value.
+     * This method is invoked when the user asked to marshal to a different GML or metadata version than the
+     * one supported natively by SIS, i.e. when {@link #getTransformVersion()} returns a non-null value.
      *
-     * @param object   the object to marshall.
+     * @param object   the object to marshal.
      * @param output   the writer created by SIS (<b>not</b> the writer given by the user).
      * @param version  identifies the namespace substitutions to perform.
      */
-    private void marshal(final Object object, XMLStreamWriter output, final FilterVersion version)
+    private void marshal(Object object, XMLEventWriter output, final TransformVersion version)
             throws XMLStreamException, JAXBException
     {
-        output = new FilteredStreamWriter(output, version);
+        output = new TransformingWriter(output, version);
         final Context context = begin();
         try {
-            marshaller.marshal(toImplementation(object), output);
+            marshaller.marshal(object, output);
         } finally {
             context.finish();
         }
@@ -157,17 +176,18 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final Result output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final Result output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(toImplementation(object), output);
+                marshaller.marshal(object, output);
             } finally {
                 context.finish();
             }
@@ -178,17 +198,18 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final OutputStream output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final OutputStream output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLStreamWriter(output, getEncoding()), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output, getEncoding()), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(toImplementation(object), output);
+                marshaller.marshal(object, output);
             } finally {
                 context.finish();
             }
@@ -199,11 +220,12 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final File output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final File output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
             try (OutputStream s = new BufferedOutputStream(new FileOutputStream(output))) {
-                marshal(object, OutputFactory.createXMLStreamWriter(s, getEncoding()), version);
+                marshal(object, OutputFactory.createXMLEventWriter(s, getEncoding()), version);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
@@ -211,7 +233,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(toImplementation(object), output);
+                marshaller.marshal(object, output);
             } finally {
                 context.finish();
             }
@@ -222,17 +244,18 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final Writer output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final Writer output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(toImplementation(object), output);
+                marshaller.marshal(object, output);
             } finally {
                 context.finish();
             }
@@ -243,17 +266,18 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final ContentHandler output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final ContentHandler output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(toImplementation(object), output);
+                marshaller.marshal(object, output);
             } finally {
                 context.finish();
             }
@@ -264,17 +288,18 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final Node output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final Node output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) try {
-            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLEventWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(toImplementation(object), output);
+                marshaller.marshal(object, output);
             } finally {
                 context.finish();
             }
@@ -285,14 +310,37 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, XMLStreamWriter output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public void marshal(Object object, final XMLStreamWriter output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
+        if (version != null) try {
+            marshal(object, OutputFactory.createXMLEventWriter(output), version);
+        } catch (XMLStreamException e) {
+            throw new JAXBException(e);
+        } else {
+            // Marshalling to the default GML version.
+            final Context context = begin();
+            try {
+                marshaller.marshal(object, output);
+            } finally {
+                context.finish();
+            }
+        }
+    }
+
+    /**
+     * Delegates the marshalling to the wrapped marshaller.
+     */
+    @Override
+    public void marshal(Object object, XMLEventWriter output) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) {
-            output = new FilteredStreamWriter(output, version);
+            output = new TransformingWriter(output, version);
         }
         final Context context = begin();
         try {
-            marshaller.marshal(toImplementation(object), output);
+            marshaller.marshal(object, output);
         } finally {
             context.finish();
         }
@@ -302,36 +350,16 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates the marshalling to the wrapped marshaller.
      */
     @Override
-    public void marshal(final Object object, final XMLEventWriter output) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
-        if (version != null) try {
-            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
-        } catch (XMLStreamException e) {
-            throw new JAXBException(e);
-        } else {
-            // Marshalling to the default GML version.
-            final Context context = begin();
-            try {
-                marshaller.marshal(toImplementation(object), output);
-            } finally {
-                context.finish();
-            }
-        }
-    }
-
-    /**
-     * Delegates the marshalling to the wrapped marshaller.
-     */
-    @Override
-    public Node getNode(final Object object) throws JAXBException {
-        final FilterVersion version = getFilterVersion();
+    public Node getNode(Object object) throws JAXBException {
+        object = toImplementation(object);                          // Must be call before getTransformVersion()
+        final TransformVersion version = getTransformVersion();
         if (version != null) {
             // This exception is thrown by javax.xml.bind.helpers.AbstractMarshallerImpl anyway.
             throw new UnsupportedOperationException();
         } else {
             final Context context = begin();
             try {
-                return marshaller.getNode(toImplementation(object));
+                return marshaller.getNode(object);
             } finally {
                 context.finish();
             }

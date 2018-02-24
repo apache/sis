@@ -49,7 +49,7 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -177,7 +177,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * @return explanation of the meaning of conformance, or {@code null}.
      */
     @Override
-    @XmlElement(name = "explanation", required = true)
+    @XmlElement(name = "explanation")
     public InternationalString getExplanation() {
         return explanation;
     }

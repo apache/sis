@@ -22,13 +22,16 @@ import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.extent.Extent;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.util.InternationalString;
-
-import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
+import org.apache.sis.internal.metadata.OtherLocales;
+import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -62,18 +65,28 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
-    "languages",
-    "characterSets",
-    "topicCategory",
+    "language",                 // Legacy ISO 19115:2003
+    "characterSets",            // Legacy ISO 19115:2003
+    "defaultLocale",            // New in ISO 19115:2014
+    "otherLocales",             // New in ISO 19115:2014
     "environmentDescription",
-    "extent",
     "supplementalInformation"
+    /*
+     * In ISO 19115:2003, we had an "topicCategory" attribute before "environmentDescription"
+     * and an "extent" attribute before "supplementalInformation". In ISO 19115:2014 revision,
+     * those attributes moved to the parent class. Apache SIS 1.0 aligns itself on the latest
+     * standard, but the consequence is that attribute order is wrong when marshalling an ISO
+     * 19139:2007 document.  We could workaround by defining private methods, but it confuses
+     * PropertyAccessor. We choose to avoid this complication in this class and handle element
+     * reordering in org.apache.sis.xml.TransformingWriter instead.
+     */
 })
 @XmlRootElement(name = "MD_DataIdentification")
 public class DefaultDataIdentification extends AbstractIdentification implements DataIdentification {
@@ -184,7 +197,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @see Locale#getISO3Language()
      */
     @Override
-    @XmlElement(name = "language", required = true)
+    // @XmlElement at the end of this class.
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -204,7 +217,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @return character coding standard(s) used.
      */
     @Override
-    @XmlElement(name = "characterSet")
+    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
     public Collection<Charset> getCharacterSets() {
         return characterSets = nonNullCollection(characterSets, Charset.class);
     }
@@ -276,32 +289,36 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * For JAXB marhalling of ISO 19115:2003 document only.
+     * Gets the default locale for this record (used in ISO 19115-3 format).
      */
-    @XmlElement(name = "topicCategory")
-    private Collection<TopicCategory> getTopicCategory()  {
-        return LEGACY_XML ? getTopicCategories() : null;
+    @XmlElement(name = "defaultLocale")
+    private Locale getDefaultLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
     }
 
     /**
-     * For JAXB unmarhalling of ISO 19115:2003 document only.
+     * Sets the default locale for this record (used in ISO 19115-3 format).
      */
-    private void setTopicCategory(final Collection<? extends TopicCategory> newValues) {
-        setTopicCategories(newValues);
+    @SuppressWarnings("unused")
+    private void setDefaultLocale(final Locale newValue) {
+        setLanguages(OtherLocales.setFirst(languages, newValue));
     }
 
     /**
-     * For JAXB marhalling of ISO 19115:2003 document only.
+     * Gets the other locales for this record (used in ISO 19115-3 format).
      */
-    @XmlElement(name = "extent")
-    private Collection<Extent> getExtent() {
-        return LEGACY_XML ? getExtents() : null;
+    @XmlElement(name = "otherLocale")
+    private Collection<Locale> getOtherLocales() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
     }
 
     /**
-     * For JAXB unmarhalling of ISO 19115:2003 document only.
+     * Returns the locale to marshal if the XML document is to be written
+     * according the legacy ISO 19115:2003 model.
      */
-    private void setExtent(final Collection<? extends Extent> newValues) {
-        setExtents(newValues);
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
+    @XmlJavaTypeAdapter(LocaleAdapter.class)
+    private Collection<Locale> getLanguage() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;
     }
 }
