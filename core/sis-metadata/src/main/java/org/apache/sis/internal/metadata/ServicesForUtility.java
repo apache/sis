@@ -32,6 +32,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -49,7 +50,7 @@ import static java.util.Collections.singleton;
  * Implements the metadata services needed by the {@code "sis-utility"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -58,6 +59,17 @@ public final class ServicesForUtility extends MetadataServices {
      * Creates a new instance. This constructor is invoked by reflection only.
      */
     public ServicesForUtility() {
+    }
+
+    /**
+     * {@code true} if this thread is in the process of reading a XML document with JAXB.
+     *
+     * @return if XML unmarshalling is in progress in current thread.
+     */
+    @Override
+    public boolean isUnmarshalling() {
+        final Context context = Context.current();
+        return (context != null) && !Context.isFlagSet(context, Context.MARSHALLING);
     }
 
     /**
