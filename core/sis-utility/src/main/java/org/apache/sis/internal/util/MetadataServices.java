@@ -31,7 +31,7 @@ import org.apache.sis.internal.system.OptionalDependency;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -89,6 +89,15 @@ public class MetadataServices extends OptionalDependency {
             }
         }
         return c;
+    }
+
+    /**
+     * {@code true} if this thread is in the process of reading a XML document with JAXB.
+     *
+     * @return if XML unmarshalling is in progress in current thread.
+     */
+    public boolean isUnmarshalling() {
+        return false;
     }
 
     /**

@@ -21,18 +21,13 @@ import java.util.Locale;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.logging.LogRecord;
 import java.net.URISyntaxException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -59,7 +54,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
-public final strictfp class DefaultMetadataTest extends XMLTestCase implements WarningListener<Object> {
+public final strictfp class DefaultMetadataTest extends XMLTestCase {
     /**
      * A flag for tracing workarounds for allowing some tests to pass despite regression.
      * This boolean should be set to {@code false} and removed after the following issues has been fixed:
@@ -71,55 +66,6 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     public static final boolean REGRESSION = true;
 
     /**
-     * The resource key for the message of the warning that occurred while unmarshalling a XML fragment,
-     * or {@code null} if none.
-     */
-    private Object resourceKey;
-
-    /**
-     * The parameter of the warning that occurred while unmarshalling a XML fragment, or {@code null} if none.
-     */
-    private Object[] parameters;
-
-    /**
-     * For internal {@code DefaultMetadata} usage.
-     *
-     * @return {@code Object.class}.
-     */
-    @Override
-    public Class<Object> getSourceClass() {
-        return Object.class;
-    }
-
-    /**
-     * Invoked when a warning occurred while unmarshalling a test XML fragment. This method ensures that no other
-     * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
-     * remember the warning parameters for verification by the test method.
-     *
-     * @param source   ignored.
-     * @param warning  the warning.
-     */
-    @Override
-    public void warningOccured(final Object source, final LogRecord warning) {
-        assertNull(resourceKey);
-        assertNull(parameters);
-        assertNotNull(resourceKey = warning.getMessage());
-        assertNotNull(parameters  = warning.getParameters());
-    }
-
-    /**
-     * Unmarshalls the given XML fragment.
-     */
-    private DefaultMetadata unmarshal(final String xml) throws JAXBException {
-        final MarshallerPool pool = getMarshallerPool();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        unmarshaller.setProperty(XML.WARNING_LISTENER, this);
-        final Object c = unmarshal(unmarshaller, xml);
-        pool.recycle(unmarshaller);
-        return (DefaultMetadata) c;
-    }
-
-    /**
      * Tests unmarshalling of a metadata having a collection that contains no element.
      * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
      *
@@ -129,7 +75,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
      */
     @Test
     public void testEmptyCollection() throws JAXBException {
-        final DefaultMetadata metadata = unmarshal(
+        final DefaultMetadata metadata = unmarshal(DefaultMetadata.class,
                 "<mdb:MD_Metadata xmlns:mdb=\"" + Namespaces.MDB + "\">\n" +
                 "  <mdb:contact/>\n" +
                 "</mdb:MD_Metadata>");
@@ -137,11 +83,6 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
          * Verify metadata property.
          */
         assertTrue(metadata.getContacts().isEmpty());
-        /*
-         * Verify warning message emitted during unmarshalling.
-         */
-        assertEquals("warning", "NullCollectionElement_1", resourceKey);
-        assertArrayEquals("warning", new String[] {"CheckedArrayList<Responsibility>"}, parameters);
     }
 
     /**
