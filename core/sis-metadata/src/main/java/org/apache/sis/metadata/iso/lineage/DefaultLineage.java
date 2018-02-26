@@ -17,10 +17,10 @@
 package org.apache.sis.metadata.iso.lineage;
 
 import java.util.Collection;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Scope;
@@ -30,7 +30,11 @@ import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -73,15 +77,16 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",
-/// "scope",
-/// "additionalResource",
+    "scope",                    // New in ISO 19115:2014
+    "documentation",            // New in ISO 19115:2014 (actually "additionalDocumentation")
     "processSteps",
     "sources"
 })
@@ -203,7 +208,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "scope")
+    @XmlElement(name = "scope")
+    @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
     @UML(identifier="scope", obligation=OPTIONAL, specification=ISO_19115)
     public Scope getScope() {
         return scope;
@@ -228,7 +234,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "additionalDocumentation")
+    // @XmlElement at the end of this class.
     @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getAdditionalDocumentation() {
         return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
@@ -283,5 +289,29 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      */
     public void setSources(final Collection<? extends Source> newValues) {
         sources = writeCollection(newValues, sources, Source.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "additionalDocumentation")
+    private Collection<Citation> getDocumentation() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAdditionalDocumentation() : null;
     }
 }

@@ -20,17 +20,18 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link TopicCategory}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information
- * about the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link TopicCategory}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -82,7 +83,7 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
      * @return The value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_TopicCategoryCode")
+    @XmlElement(name = "MD_TopicCategoryCode", namespace = Namespaces.MRI)
     public CodeListUID getElement() {
         return identifier;
     }

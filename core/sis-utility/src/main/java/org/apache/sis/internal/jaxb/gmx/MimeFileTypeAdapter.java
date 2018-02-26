@@ -23,7 +23,7 @@ import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 
 
 /**
- * JAXB adapter wrapping a {@code String} value with a {@code <gmx:MimeFileType>} element.
+ * JAXB adapter wrapping a {@code String} value with a {@code <gcx:MimeFileType>} element.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4

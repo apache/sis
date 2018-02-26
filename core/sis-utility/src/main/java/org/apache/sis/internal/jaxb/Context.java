@@ -50,7 +50,8 @@ import org.apache.sis.xml.ReferenceResolver;
  * if no (un)marshalling is in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -59,40 +60,46 @@ public final class Context extends MarshalContext {
      * The bit flag telling if a marshalling process is under progress.
      * This flag is unset for unmarshalling processes.
      */
-    public static final int MARSHALLING = 1;
+    public static final int MARSHALLING = 0x1;
 
     /**
      * The bit flag for enabling substitution of language codes by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_LANGUAGE = 2;
+    public static final int SUBSTITUTE_LANGUAGE = 0x2;
 
     /**
      * The bit flag for enabling substitution of country codes by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_COUNTRY = 4;
+    public static final int SUBSTITUTE_COUNTRY = 0x4;
 
     /**
      * The bit flag for enabling substitution of filenames by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_FILENAME = 8;
+    public static final int SUBSTITUTE_FILENAME = 0x8;
 
     /**
      * The bit flag for enabling substitution of mime types by character strings.
      *
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
-    public static final int SUBSTITUTE_MIMETYPE = 16;
+    public static final int SUBSTITUTE_MIMETYPE = 0x10;
+
+    /**
+     * Whether we are (un)marshalling legacy metadata as defined in 2003 model (ISO 19139:2007).
+     * If this flag is not set, then we assume latest metadata as defined in 2014 model (ISO 19115-3).
+     */
+    public static final int LEGACY_METADATA = 0x20;
 
     /**
      * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
      */
-    private static final int CLEAR_SEMAPHORE = 32;
+    private static final int CLEAR_SEMAPHORE = 0x40;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a
@@ -109,7 +116,7 @@ public final class Context extends MarshalContext {
     /**
      * Various boolean attributes determines by the above static constants.
      */
-    private int bitMasks;
+    final int bitMasks;
 
     /**
      * The locale to use for marshalling, or an empty queue if no locale were explicitly specified.
@@ -123,7 +130,7 @@ public final class Context extends MarshalContext {
     private final TimeZone timezone;
 
     /**
-     * The base URL of ISO 19139 (or other standards) schemas. The valid values
+     * The base URL of ISO 19115-3 (or other standards) schemas. The valid values
      * are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      */
     private final Map<String,String> schemas;
@@ -203,18 +210,25 @@ public final class Context extends MarshalContext {
      * @param  timezone         the timezone, or {@code null} if unspecified.
      * @param  schemas          the schemas root URL, or {@code null} if none.
      * @param  versionGML       the GML version, or {@code null}.
+     * @param  versionMetadata  the metadata version, or {@code null}.
      * @param  resolver         the resolver in use.
      * @param  converter        the converter in use.
      * @param  warningListener  the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public Context(final int                bitMasks,
-                   final Locale             locale,   final TimeZone       timezone,
-                   final Map<String,String> schemas,  final Version        versionGML,
-                   final ReferenceResolver  resolver, final ValueConverter converter,
+    public Context(int                      bitMasks,
+                   final Locale             locale,
+                   final TimeZone           timezone,
+                   final Map<String,String> schemas,
+                   final Version            versionGML,
+                   final Version            versionMetadata,
+                   final ReferenceResolver  resolver,
+                   final ValueConverter     converter,
                    final WarningListener<?> warningListener)
     {
-        this.bitMasks          = bitMasks;
+        if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
+            bitMasks |= LEGACY_METADATA;
+        }
         this.locales           = new LinkedList<>();
         this.timezone          = timezone;
         this.schemas           = schemas;               // No clone, because this class is internal.
@@ -224,15 +238,21 @@ public final class Context extends MarshalContext {
         this.warningListener   = warningListener;
         this.identifiers       = new HashMap<>();
         this.identifiedObjects = new IdentityHashMap<>();
-        if ((bitMasks & MARSHALLING) != 0) {
-            if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
-                this.bitMasks |= CLEAR_SEMAPHORE;
-            }
-        }
         if (locale != null) {
             locales.add(locale);
         }
         previous = CURRENT.get();
+        if ((bitMasks & MARSHALLING) != 0) {
+            /*
+             * Set global semaphore last after our best effort to ensure that construction
+             * will not fail with an OutOfMemoryError. This is preferable for allowing the
+             * caller to invoke finish() in a finally block.
+             */
+            if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
+                bitMasks |= CLEAR_SEMAPHORE;
+            }
+        }
+        this.bitMasks = bitMasks;
         CURRENT.set(this);
     }
 
@@ -264,10 +284,14 @@ public final class Context extends MarshalContext {
      */
     @Override
     public final Version getVersion(final String prefix) {
-        if (prefix.equals("gml")) {
-            return versionGML;
+        switch (prefix) {
+            case "gml": return versionGML;
+            case "gmd": {
+                if ((bitMasks & MARSHALLING) == 0) break;   // If unmarshalling, we don't know the version.
+                return (bitMasks & LEGACY_METADATA) == 0 ? LegacyNamespaces.VERSION_2016 : LegacyNamespaces.VERSION_2007;
+            }
+            // Future SIS versions may add more cases here.
         }
-        // Future SIS versions may add more cases here.
         return null;
     }
 
@@ -347,7 +371,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Returns {@code true} if the GML version is equals or newer than the specified version.
-     * If no GML version were specified, then this method returns {@code true}, i.e. newest
+     * If no GML version was specified, then this method returns {@code true}, i.e. newest
      * version is assumed.
      *
      * <div class="note"><b>API note:</b>
@@ -370,7 +394,7 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the base URL of ISO 19139 (or other standards) schemas.
+     * Returns the base URL of ISO 19115-3 (or other standards) schemas.
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      * If the returned value is not empty, then this method guarantees it ends with {@code '/'}.
      *

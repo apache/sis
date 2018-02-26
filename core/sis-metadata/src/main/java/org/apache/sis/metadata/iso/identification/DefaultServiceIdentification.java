@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
@@ -30,8 +29,11 @@ import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.opengis.metadata.identification.ServiceIdentification;
 import org.apache.sis.internal.jaxb.code.SV_CouplingType;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.xml.Namespaces;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
@@ -72,23 +74,24 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_ServiceIdentification_Type", propOrder = {  // ISO 19139 still use the old prefix.
+@XmlType(name = "SV_ServiceIdentification_Type", namespace = Namespaces.SRV, propOrder = {
     "serviceType",
     "serviceTypeVersions",
-/// "accessProperties",
+    "accessProperties",
+    "couplingType",             // "couplingType" and "coupledResource" were in reverse order in ISO 19115:2003.
     "coupledResources",
-    "couplingType",
-/// "operatedDatasets",
-/// "profiles",
-/// "serviceStandards",
+    "operatedDataset",
+    "profile",
+    "serviceStandard",
     "containsOperations",
     "operatesOn",
-/// "containsChain"
+    "operationChain"            // Actually "containsChain"
 })
 @XmlRootElement(name = "SV_ServiceIdentification", namespace = Namespaces.SRV)
 public class DefaultServiceIdentification extends AbstractIdentification implements ServiceIdentification {
@@ -232,7 +235,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return a service type name.
      */
-    @XmlElement(name = "serviceType", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "serviceType", required = true)
     @UML(identifier="serviceType", obligation=MANDATORY, specification=ISO_19115)
     public GenericName getServiceType() {
         return serviceType;
@@ -253,7 +256,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return the versions of the service.
      */
-    @XmlElement(name = "serviceTypeVersion", namespace = Namespaces.SRV)
+    @XmlElement(name = "serviceTypeVersion")
     @UML(identifier="serviceTypeVersion", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<String> getServiceTypeVersions() {
         return serviceTypeVersions = nonNullCollection(serviceTypeVersions, String.class);
@@ -275,7 +278,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @since 0.5
      */
-/// @XmlElement(name = "accessProperties", namespace = Namespaces.SRV)
+    @XmlElement(name = "accessProperties")
     @UML(identifier="accessProperties", obligation=OPTIONAL, specification=ISO_19115)
     public StandardOrderProcess getAccessProperties() {
         return accessProperties;
@@ -305,7 +308,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @return type of coupling between service and associated data, or {@code null} if none.
      */
     @XmlJavaTypeAdapter(SV_CouplingType.class)
-    @XmlElement(name = "couplingType", namespace = Namespaces.SRV)
+    @XmlElement(name = "couplingType")
     @UML(identifier="couplingType", obligation=CONDITIONAL, specification=ISO_19115)
     public CodeList<?> getCouplingType() {
         return couplingType;
@@ -360,7 +363,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return further description(s) of the data coupling in the case of tightly coupled services.
      */
-    @XmlElement(name = "coupledResource", namespace = Namespaces.SRV)
+    @XmlElement(name = "coupledResource")
     @UML(identifier="coupledResource", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<DefaultCoupledResource> getCoupledResources() {
         return coupledResources = nonNullCollection(coupledResources, DefaultCoupledResource.class);
@@ -387,7 +390,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @since 0.5
      */
-/// @XmlElement(name = "operatedDataset", namespace = Namespaces.SRV)
+    // @XmlElement at the end of this class.
     @UML(identifier="operatedDataset", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getOperatedDatasets() {
         return operatedDatasets = nonNullCollection(operatedDatasets, Citation.class);
@@ -411,7 +414,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @since 0.5
      */
-/// @XmlElement(name = "profile", namespace = Namespaces.SRV)
+    // @XmlElement at the end of this class.
     @UML(identifier="profile", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getProfiles() {
         return profiles = nonNullCollection(profiles, Citation.class);
@@ -433,7 +436,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @since 0.5
      */
-/// @XmlElement(name = "serviceStandard", namespace = Namespaces.SRV)
+    // @XmlElement at the end of this class.
     @UML(identifier="serviceStandard", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getServiceStandards() {
         return serviceStandards = nonNullCollection(serviceStandards, Citation.class);
@@ -460,7 +463,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return information about the operations that comprise the service.
      */
-    @XmlElement(name = "containsOperations", namespace = Namespaces.SRV)
+    @XmlElement(name = "containsOperations")
     @UML(identifier="containsOperations", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultOperationMetadata> getContainsOperations() {
         return containsOperations = nonNullCollection(containsOperations, DefaultOperationMetadata.class);
@@ -485,7 +488,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @return information on the resources that the service operates on.
      */
-    @XmlElement(name = "operatesOn", namespace = Namespaces.SRV)
+    @XmlElement(name = "operatesOn")
     @UML(identifier="operatesOn", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DataIdentification> getOperatesOn() {
         return operatesOn = nonNullCollection(operatesOn, DataIdentification.class);
@@ -512,7 +515,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * @since 0.5
      */
-/// @XmlElement(name = "containsChain", namespace = Namespaces.SRV)
+    // @XmlElement at the end of this class.
     @UML(identifier="containsChain", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultOperationChainMetadata> getContainsChain() {
         return containsChain = nonNullCollection(containsChain, DefaultOperationChainMetadata.class);
@@ -549,8 +552,34 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "operatedDataset")
+    private Collection<Citation> getOperatedDataset() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getOperatedDatasets() : null;
+    }
+
+    @XmlElement(name = "profile")
+    private Collection<Citation> getProfile() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getProfiles() : null;
+    }
+
+    @XmlElement(name = "serviceStandard")
+    private Collection<Citation> getServiceStandard() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getServiceStandards() : null;
+    }
+
+    @XmlElement(name = "containsChain")
+    private Collection<DefaultOperationChainMetadata> getOperationChain() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getContainsChain() : null;
+    }
+
+    /**
      * Invoked after JAXB has unmarshalled this object.
      */
+    @SuppressWarnings("unused")
     private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         if (containsOperations != null && coupledResources != null) {
             OperationName.resolve(containsOperations, coupledResources);

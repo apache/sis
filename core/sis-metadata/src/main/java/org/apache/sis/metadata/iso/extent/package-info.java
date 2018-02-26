@@ -135,30 +135,31 @@
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GEX,
+           xmlns = {
+                @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX),      // Geospatial Extent
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC)       // Metadata Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(EX_GeographicBoundingBox.class),
     @XmlJavaTypeAdapter(EX_GeographicExtent.class),
     @XmlJavaTypeAdapter(EX_TemporalExtent.class),
     @XmlJavaTypeAdapter(EX_VerticalExtent.class),
     @XmlJavaTypeAdapter(GM_Object.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(SC_VerticalCRS.class),
     @XmlJavaTypeAdapter(TM_Primitive.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Decimal.class), @XmlJavaTypeAdapter(type=double.class,  value=GO_Decimal.class)
+    @XmlJavaTypeAdapter(value=GO_Decimal.class, type=double.class)
 })
 package org.apache.sis.metadata.iso.extent;
 
@@ -171,7 +172,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gml.*;
 import org.apache.sis.internal.jaxb.metadata.*;

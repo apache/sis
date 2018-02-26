@@ -52,7 +52,7 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
     /**
      * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
      *
-     * @param value The value of the {@link CodeList} to be marshalled.
+     * @param  value  the value of the {@link CodeList} to be marshalled.
      */
     protected UnsupportedCodeListAdapter(final CodeListUID value) {
         identifier = value;
@@ -66,15 +66,15 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
      *     return new ValueType(value);
      * }
      *
-     * @param value The value of {@link CodeList} to be marshalled.
-     * @return The wrapper for the code list value.
+     * @param  value  the value of {@link CodeList} to be marshalled.
+     * @return the wrapper for the code list value.
      */
     protected abstract ValueType wrap(CodeListUID value);
 
     /**
      * Returns the name of the code list class.
      *
-     * @return The code list class name.
+     * @return the code list class name.
      */
     protected abstract String getCodeListName();
 
@@ -82,8 +82,8 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
      * Substitutes the adapter value read from an XML stream by the object which will
      * contains the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  adapter The adapter for this metadata value.
-     * @return A code list which represents the metadata value.
+     * @param  adapter  the adapter for this metadata value.
+     * @return a code list which represents the metadata value.
      */
     @Override
     public final CodeList<?> unmarshal(final ValueType adapter) {
@@ -97,8 +97,8 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
      * Substitutes the code list by the adapter to be marshalled into an XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The code list value.
-     * @return The adapter for the given code list.
+     * @param  value  the code list value.
+     * @return the adapter for the given code list.
      */
     @Override
     public final ValueType marshal(final CodeList<?> value) {

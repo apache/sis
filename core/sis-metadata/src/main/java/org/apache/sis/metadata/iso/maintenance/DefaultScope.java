@@ -20,7 +20,6 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -28,7 +27,10 @@ import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.Namespaces;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -59,17 +61,18 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "DQ_Scope_Type", propOrder = {
+@XmlType(name = "MD_Scope_Type", namespace = Namespaces.MCC, propOrder = {
    "level",
    "extents",
    "levelDescription"
 })
-@XmlRootElement(name = "DQ_Scope")
+@XmlRootElement(name = "MD_Scope", namespace = Namespaces.MCC)
 public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Serial number for inter-operability with different versions.

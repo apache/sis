@@ -24,14 +24,17 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link PolarizationOrientation}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link PolarizationOrientation}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @version 1.0
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-398">SIS-398</a>
+ *
+ * @since 0.3
  * @module
  */
 public final class MI_PolarizationOrientationCode
@@ -76,7 +79,7 @@ public final class MI_PolarizationOrientationCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MI_PolarizationOrientationCode", namespace = Namespaces.GMI)
+    @XmlElement(name = "MI_PolarisationOrientationCode", namespace = Namespaces.MRC)
     public CodeListUID getElement() {
         return identifier;
     }

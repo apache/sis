@@ -46,7 +46,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @see MetadataStandardTest#testValueMap()
  *
@@ -173,8 +173,8 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<>("presentationForms",       emptySet()),
             new SimpleEntry<>("ISBN",                    "9782505004509"),
-            new SimpleEntry<>("graphics",                emptyList()),
-            new SimpleEntry<>("onlineResources",         emptyList())
+            new SimpleEntry<>("onlineResources",         emptyList()),
+            new SimpleEntry<>("graphics",                emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -203,8 +203,8 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<>("presentationForms",       emptySet()),
             new SimpleEntry<>("ISBN",                    "9782505004509"),
-            new SimpleEntry<>("graphics",                emptyList()),
-            new SimpleEntry<>("onlineResources",         emptyList())
+            new SimpleEntry<>("onlineResources",         emptyList()),
+            new SimpleEntry<>("graphics",                emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -236,8 +236,8 @@ public final strictfp class ValueMapTest extends TestCase {
 //          new SimpleEntry<>("collectiveTitle",         null),  -- deprecated as of ISO 19115:2014.
             new SimpleEntry<>("ISBN",                    "9782505004509"),
             new SimpleEntry<>("ISSN",                    null),
-            new SimpleEntry<>("graphics",                emptyList()),
-            new SimpleEntry<>("onlineResources",         emptyList())
+            new SimpleEntry<>("onlineResources",         emptyList()),
+            new SimpleEntry<>("graphics",                emptyList())
         }, all.entrySet().toArray());
     }
 

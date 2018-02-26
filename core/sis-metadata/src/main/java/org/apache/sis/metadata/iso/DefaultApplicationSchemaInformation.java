@@ -20,9 +20,11 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -48,12 +50,13 @@ import org.opengis.metadata.citation.OnlineResource;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_ApplicationSchemaInformation_Type", propOrder = {
+@XmlType(name = "MD_ApplicationSchemaInformation_Type", namespace = Namespaces.MAS, propOrder = {
     "name",
     "schemaLanguage",
     "constraintLanguage",
@@ -62,7 +65,7 @@ import org.opengis.metadata.citation.OnlineResource;
     "softwareDevelopmentFile",
     "softwareDevelopmentFileFormat"
 })
-@XmlRootElement(name = "MD_ApplicationSchemaInformation")
+@XmlRootElement(name = "MD_ApplicationSchemaInformation", namespace = Namespaces.MAS)
 public class DefaultApplicationSchemaInformation extends ISOMetadata implements ApplicationSchemaInformation {
     /**
      * Serial number for inter-operability with different versions.
@@ -247,6 +250,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      */
     @Override
     @XmlElement(name = "schemaAscii")
+    @XmlJavaTypeAdapter(URIStringAdapter.class)
     public URI getSchemaAscii()  {
         return schemaAscii;
     }
@@ -277,6 +281,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      */
     @Override
     @XmlElement(name = "graphicsFile")
+    @XmlJavaTypeAdapter(OnlineResourceAdapter.class)
     public URI getGraphicsFile()  {
         return graphicsFile;
     }
@@ -308,6 +313,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFile")
+    @XmlJavaTypeAdapter(OnlineResourceAdapter.class)
     public URI getSoftwareDevelopmentFile()  {
         return softwareDevelopmentFile;
     }

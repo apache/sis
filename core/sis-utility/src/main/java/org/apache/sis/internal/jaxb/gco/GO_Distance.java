@@ -83,7 +83,7 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
-     * ISO-19139 standard and its requirements about {@code measures}.
+     * ISO 19115-3 standard and its requirements about {@code measures}.
      *
      * @param  value  the double value we want to integrate into a {@code <gco:Distance>} element.
      * @return an adaptation of the double value, that is to say a double value surrounded

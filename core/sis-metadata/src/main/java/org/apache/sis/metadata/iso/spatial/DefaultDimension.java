@@ -20,11 +20,11 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.jaxb.gco.GO_Measure;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
@@ -33,6 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -58,7 +59,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -68,8 +70,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "dimensionName",
     "dimensionSize",
     "resolution",
-/// "dimensionTitle",
-/// "dimensionDescription"
+    "dimensionTitle",
+    "dimensionDescription"
 })
 @XmlRootElement(name = "MD_Dimension")
 public class DefaultDimension extends ISOMetadata implements Dimension {
@@ -260,7 +262,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "dimensionTitle")
+    @XmlElement(name = "dimensionTitle")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     @UML(identifier="dimensionTitle", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDimensionTitle() {
         return dimensionTitle;
@@ -285,7 +288,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "dimensionDescription")
+    @XmlElement(name = "dimensionDescription")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     @UML(identifier="dimensionDescription", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDimensionDescription() {
         return dimensionDescription;

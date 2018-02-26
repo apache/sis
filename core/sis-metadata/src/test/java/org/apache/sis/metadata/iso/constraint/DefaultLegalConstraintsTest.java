@@ -24,6 +24,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
@@ -36,7 +37,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link DefaultLegalConstraints}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -79,7 +81,7 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
     }
 
     /**
-     * Unmarshalls the given XML fragment.
+     * Unmarshals the given XML fragment.
      */
     private DefaultLegalConstraints unmarshal(final String xml) throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
@@ -101,14 +103,14 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
     @Test
     public void testUnmarshallEmptyCodeListValue() throws JAXBException {
         final DefaultLegalConstraints c = unmarshal(
-                "<gmd:MD_LegalConstraints xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:accessConstraints>\n" +
-                "    <gmd:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode\"/>\n" +
-                "  </gmd:accessConstraints>\n" +
-                "  <gmd:useConstraints>\n" + // Below is an intentionally empty code list value (SIS-157)
-                "    <gmd:MD_RestrictionCode codeListValue=\"\" codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_RestrictionCode\"/>\n" +
-                "  </gmd:useConstraints>\n" +
-                "</gmd:MD_LegalConstraints>");
+                "<mco:MD_LegalConstraints xmlns:mco=\"" + Namespaces.MCO + "\">\n" +
+                "  <mco:accessConstraints>\n" +
+                "    <mco:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
+                "  </mco:accessConstraints>\n" +
+                "  <mco:useConstraints>\n" +            // Below is an intentionally empty code list value (SIS-157)
+                "    <mco:MD_RestrictionCode codeListValue=\"\" codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
+                "  </mco:useConstraints>\n" +
+                "</mco:MD_LegalConstraints>");
         /*
          * Verify metadata property.
          */
@@ -130,8 +132,27 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
      */
     @Test
     public void testLicenceCode() throws JAXBException {
-        final String xml =
-                "<gmd:MD_LegalConstraints xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+        String xml =
+                "<mco:MD_LegalConstraints xmlns:mco=\"" + Namespaces.MCO + "\">\n" +
+                "  <mco:useConstraints>\n" +
+                "    <mco:MD_RestrictionCode"
+                        + " codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\""
+                        + " codeListValue=\"licence\">License</mco:MD_RestrictionCode>\n" +
+                "  </mco:useConstraints>\n" +
+                "</mco:MD_LegalConstraints>\n";
+
+        final DefaultLegalConstraints c = new DefaultLegalConstraints();
+        c.setUseConstraints(singleton(Restriction.LICENSE));
+        assertXmlEquals(xml, marshal(c), "xmlns:*");
+        DefaultLegalConstraints actual = unmarshal(xml);
+        assertSame(Restriction.LICENSE, getSingleton(actual.getUseConstraints()));
+        assertEquals(c, actual);
+        /*
+         * Above code tested ISO 19115-3 (un)marshalling. Code below test legacy ISO 19139:2007 (un)marshalling.
+         * This is where the spelling difference appears. At unmarshalling, verify that we got back the original
+         * LICENCE code, not a new "LICENSE" code.
+         */
+        xml  =  "<gmd:MD_LegalConstraints xmlns:gmd=\"" + LegacyNamespaces.GMD + "\">\n" +
                 "  <gmd:useConstraints>\n" +
                 "    <gmd:MD_RestrictionCode"
                         + " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode\""
@@ -139,13 +160,8 @@ public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase impl
                 "  </gmd:useConstraints>\n" +
                 "</gmd:MD_LegalConstraints>\n";
 
-        final DefaultLegalConstraints c = new DefaultLegalConstraints();
-        c.setUseConstraints(singleton(Restriction.LICENSE));
-        assertXmlEquals(xml, marshal(c), "xmlns:*");
-        /*
-         * Unmarshall and ensure that we got back the original LICENCE code, not a new "LICENSE" code.
-         */
-        final DefaultLegalConstraints actual = unmarshal(xml);
+        assertXmlEquals(xml, marshal(c, VERSION_2007), "xmlns:*");
+        actual = unmarshal(xml);
         assertSame(Restriction.LICENSE, getSingleton(actual.getUseConstraints()));
         assertEquals(c, actual);
     }

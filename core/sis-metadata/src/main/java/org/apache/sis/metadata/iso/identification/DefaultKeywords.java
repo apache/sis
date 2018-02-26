@@ -20,15 +20,17 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.util.CodeList;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.KeywordType;
+import org.apache.sis.internal.jaxb.metadata.MD_KeywordClass;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -52,7 +54,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -60,7 +63,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
 @XmlType(name = "MD_Keywords_Type", propOrder = {
     "keywords",
     "type",
-    "thesaurusName"
+    "thesaurusName",
+    "keywordClass"
 })
 @XmlRootElement(name = "MD_Keywords")
 public class DefaultKeywords extends ISOMetadata implements Keywords {
@@ -88,7 +92,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * User-defined categorization of groups of keywords that extend or are orthogonal
      * to the standardized {@linkplain #getType() keyword type} codes.
      */
-    private CodeList<?> keywordClass;
+    private DefaultKeywordClass keywordClass;
 
     /**
      * Constructs an initially empty keywords.
@@ -225,8 +229,8 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * Returns the user-defined categorization of groups of keywords that extend or
      * are orthogonal to the standardized {@linkplain #getType() keyword type} codes.
      *
-     * <div class="warning"><b>Upcoming API change — specialization</b><br>
-     * The element type will be changed to the {@code KeywordClass} code list
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code KeywordClass} interface
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
@@ -234,48 +238,25 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @since 0.5
      */
+    @XmlElement(name = "keywordClass")
+    @XmlJavaTypeAdapter(MD_KeywordClass.Since2014.class)
     @UML(identifier="keywordClass", obligation=OPTIONAL, specification=ISO_19115)
-    public CodeList<?> getKeywordClass() {
+    public DefaultKeywordClass getKeywordClass() {
         return keywordClass;
     }
 
     /**
      * Sets the user-defined categorization of groups of keywords.
      *
-     * <div class="warning"><b>Upcoming API change — specialization</b><br>
-     * The argument type will be changed to the {@code KeywordClass} code list when GeoAPI will provide it
-     * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
-     *
-     * {@preformat java
-     *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
-     *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
-     *
-     *       // Need to declare at least one code list element.
-     *       public static final UnsupportedCodeList MY_CODE_LIST = new UnsupportedCodeList("MY_CODE_LIST");
-     *
-     *       private UnsupportedCodeList(String name) {
-     *           super(name, VALUES);
-     *       }
-     *
-     *       public static UnsupportedCodeList valueOf(String code) {
-     *           return valueOf(UnsupportedCodeList.class, code);
-     *       }
-     *
-     *       &#64;Override
-     *       public UnsupportedCodeList[] family() {
-     *           synchronized (VALUES) {
-     *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
-     *           }
-     *       }
-     *   }
-     * }
-     * </div>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The argument type will be changed to the {@code KeywordClass} interface when GeoAPI will provide it
+     * (tentatively in GeoAPI 3.1).</div>
      *
      * @param newValue  new user-defined categorization of groups of keywords.
      *
      * @since 0.5
      */
-    public void setKeywordClass(final CodeList<?> newValue) {
+    public void setKeywordClass(final DefaultKeywordClass newValue) {
         checkWritePermission();
         keywordClass = newValue;
     }

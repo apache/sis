@@ -100,7 +100,7 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     @Test
     public void testMarshalling() throws JAXBException {
         final DefaultTemporalDatum datum = create();
-        assertMarshalEqualsFile(XML_FILE, datum, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, datum, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**

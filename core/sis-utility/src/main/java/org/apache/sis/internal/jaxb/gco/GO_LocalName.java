@@ -20,7 +20,10 @@ import org.opengis.util.LocalName;
 
 
 /**
- * JAXB wrapper in order to map implementing class with the GeoAPI interface.
+ * Same as {@link GO_GenericName}, but for cases where the element type is declared as {@code LocalName}
+ * instead than {@code GenericName}. This adapter does not provide any new functionality;
+ * its sole purpose is to declare types matching JAXB expectation.
+ *
  * This adapter is used for all the following mutually exclusive properties
  * (only one can be defined at time):
  *
@@ -52,8 +55,8 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
     }
 
     /**
-     * Does the link between an {@link org.apache.sis.util.iso.AbstractName} and the adapter associated.
-     * JAXB calls automatically this method at marshalling-time.
+     * Replaces a generic name by its wrapper.
+     * JAXB calls automatically this method at marshalling time.
      *
      * @param  value  the implementing class for this metadata value.
      * @return an wrapper which contains the metadata value.
@@ -64,8 +67,8 @@ public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
     }
 
     /**
-     * Does the link between adapters and the way they will be unmarshalled.
-     * JAXB calls automatically this method at unmarshalling-time.
+     * Unwraps the generic name from the given element.
+     * JAXB calls automatically this method at unmarshalling time.
      *
      * @param  value  the wrapper, or {@code null} if none.
      * @return the implementing class.

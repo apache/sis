@@ -47,7 +47,7 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

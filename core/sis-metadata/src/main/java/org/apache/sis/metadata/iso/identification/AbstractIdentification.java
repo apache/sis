@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -45,9 +45,14 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -82,7 +87,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -94,17 +100,28 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "credits",
     "status",
     "pointOfContacts",
+    "spatialRepresentationTypes",       // Here in ISO 19115:2014 (was after 'aggregationInfo' in ISO 19115:2003)
+    "spatialResolutions",               // Shall be kept next to 'spatialRepresentationTypes'
+    "topicCategories",                  // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
+    "extents",                          // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
+    "additionalDocumentation",          // ISO 19115:2014 only
+    "processingLevel",                  // ISO 19115:2014 only
     "resourceMaintenances",
     "graphicOverviews",
     "resourceFormats",
     "descriptiveKeywords",
     "resourceSpecificUsages",
     "resourceConstraints",
-    "aggregationInfo",
-    "spatialRepresentationTypes", // After 'pointOfContact' according ISO 19115:2014, but here for ISO 19115:2003 compatibility.
-    "spatialResolutions"          // Shall be kept next to 'spatialRepresentationTypes'
+    "associatedResource",
+    "aggregationInfo",                  // Legacy ISO 19115:2003 (replaced by 'associatedResources')
+    /*
+     * NOTE: legacy ISO 19115:2003 specification had 'spatialRepresentationTypes' and 'spatialResolutions'
+     *       elements last. If we wanted to produce strictly compliant legacy XML documents, we would have
+     *       to duplicate those attributes. We avoid this complexity on the assumption that readers are
+     *       tolerant to different order (this relaxation is needed only for legacy XML).
+     */
 })
-@XmlRootElement(name = "MD_Identification")
+@XmlRootElement(name = "AbstractMD_Identification")
 @XmlSeeAlso({
     DefaultDataIdentification.class,
     DefaultServiceIdentification.class
@@ -505,7 +522,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @since 0.5
      */
-/// @XmlElement(name = "topicCategory")
+    @XmlElement(name = "topicCategory")
     @UML(identifier="topicCategory", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<TopicCategory> getTopicCategories()  {
         return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
@@ -529,7 +546,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @since 0.5
      */
-/// @XmlElement(name = "extent")
+    @XmlElement(name = "extent")
     @UML(identifier="extent", obligation=CONDITIONAL, specification=ISO_19115)
     public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
@@ -553,7 +570,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @since 0.5
      */
-/// @XmlElement(name = "additionalDocumentation")
+    // @XmlElement at the end of this class.
     @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getAdditionalDocumentations() {
         return additionalDocumentations = nonNullCollection(additionalDocumentations, Citation.class);
@@ -577,7 +594,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @since 0.5
      */
-/// @XmlElement(name = "processingLevel")
+    @XmlElement(name = "processingLevel")
+    @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     @UML(identifier="processingLevel", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getProcessingLevel() {
         return processingLevel;
@@ -733,7 +751,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @since 0.5
      */
-/// @XmlElement(name = "associatedResource")
+    // @XmlElement at the end of this class.
     @UML(identifier="associatedResource", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultAssociatedResource> getAssociatedResources() {
         return associatedResources = nonNullCollection(associatedResources, DefaultAssociatedResource.class);
@@ -764,9 +782,10 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @Deprecated
-    @XmlElement(name = "aggregationInfo")
     @Dependencies("getAssociatedResources")
+    @XmlElement(name = "aggregationInfo", namespace = LegacyNamespaces.GMD)
     public Collection<AggregateInformation> getAggregationInfo() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<AggregateInformation,DefaultAssociatedResource>(getAssociatedResources()) {
             @Override protected DefaultAssociatedResource wrap(final AggregateInformation value) {
                 return DefaultAssociatedResource.castOrCopy(value);
@@ -809,5 +828,34 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
             }
         }
         setAssociatedResources(r);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "additionalDocumentation")
+    private Collection<Citation> getAdditionalDocumentation() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAdditionalDocumentations() : null;
+    }
+
+    @XmlElement(name = "associatedResource")
+    private Collection<DefaultAssociatedResource> getAssociatedResource() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAssociatedResources() : null;
     }
 }

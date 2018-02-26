@@ -21,15 +21,18 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB wrapper for {@link Locale}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB wrapper for {@link Locale}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * <p>This adapter formats the locale like below:</p>
  *
@@ -43,17 +46,23 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "Country_PropertyType")
+@XmlType(name = "Country_PropertyType", namespace = Namespaces.LAN)
 public final class Country extends GO_CharacterString {
     /**
      * The country using a {@link org.opengis.util.CodeList}-like format.
+     * This was called "Country" in ISO 19139:2007 and has been renamed "CountryCode" in ISO 19115-3
      */
-    @XmlElement(name = "Country")
     private CodeListUID identifier;
+
+    /**
+     * {@code true} if marshalling ISO 19139:2007, or {@code false} if marshalling ISO 19115-3.
+     */
+    private boolean isLegacyMetadata;
 
     /**
      * Empty constructor for JAXB only.
@@ -67,6 +76,7 @@ public final class Country extends GO_CharacterString {
      */
     private Country(final CharSequence code) {
         super(code);
+        detectVersion();
     }
 
     /**
@@ -80,6 +90,46 @@ public final class Country extends GO_CharacterString {
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
         identifier = new CodeListUID(context, "Country", codeListValue, codeSpace, value);
+        detectVersion();
+    }
+
+    /**
+     * Determines if we are marshalling ISO 19139:2007 or ISO 19115-3 documents.
+     */
+    private void detectVersion() {
+        isLegacyMetadata = !FilterByVersion.CURRENT_METADATA.accept();
+    }
+
+    /**
+     * Gets the value of the Country code using ISO 19139:2007 element name.
+     */
+    @XmlElement(name = "Country", namespace = LegacyNamespaces.GMD)
+    private CodeListUID getCountry() {
+        return isLegacyMetadata ? identifier : null;
+    }
+
+    /**
+     * Sets the value of the Country code in ISO 19139:2007 element name.
+     */
+    @SuppressWarnings("unused")
+    private void setCountry(CodeListUID newValue) {
+        identifier = newValue;
+    }
+
+    /**
+     * Gets the value of the Country code using ISO 19115-3 element name.
+     */
+    @XmlElement(name = "CountryCode", namespace = Namespaces.LAN)
+    private CodeListUID getCountryCode() {
+        return isLegacyMetadata ? null : identifier;
+    }
+
+    /**
+     * Sets the value of the Country code in ISO 19115-3 element name.
+     */
+    @SuppressWarnings("unused")
+    private void setCountryCode(CodeListUID newValue) {
+        identifier = newValue;
     }
 
     /**

@@ -58,14 +58,15 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_AttributeGroup_Type", propOrder = {
-    "contentType",
-    "attribute"
+    "contentTypes",
+    "attributes"
 })
 @XmlRootElement(name = "MD_AttributeGroup")
 @UML(identifier="MD_AttributeGroup", specification=ISO_19115)

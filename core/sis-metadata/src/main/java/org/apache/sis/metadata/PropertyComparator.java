@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
+import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**
@@ -43,7 +44,7 @@ import org.opengis.annotation.Obligation;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -128,10 +129,13 @@ final class PropertyComparator implements Comparator<Method> {
                      * the parent class, and we want the properties in the parent class to be sorted first.
                      * If duplicated properties are found, keep the first occurence (i.e. sort the property
                      * with the most specialized child that declared it).
+                     *
+                     * We make an exception for ResponsibleParty.role, which should be replaced by Party.role
+                     * but this replacement is not yet effective in GeoAPI 3.0.
                      */
-                    final Integer old = order.put(propOrder[i], order.size());
-                    if (old != null) {
-                        order.put(propOrder[i], old);
+                    final String prop = propOrder[i];
+                    if (!"role".equals(prop) || !ResponsibleParty.class.isAssignableFrom(implementation)) {
+                        order.putIfAbsent(prop, order.size());
                     }
                 }
             }

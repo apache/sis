@@ -35,11 +35,11 @@ import org.apache.sis.measure.Units;
 
 /**
  * A measurement value together with its unit of measure.
- * This is used for marshalling an element defined by ISO-19103.
+ * This is used for marshalling an element defined by ISO 19103.
  *
  * <p>This class duplicates {@code org.apache.sis.measure.Measure}, but we have to do that way
  * because that {@code Measure} extends {@link Number} and we are not allowed to use the
- * {@code @XmlValue} annotation on a class that extends an other class.</p>
+ * {@code @XmlValue} annotation on a class that extends another class.</p>
  *
  * <div class="section">XML marshalling</div>
  * Measures are used in different ways by the ISO 19115 (Metadata) and GML standards.
@@ -48,7 +48,7 @@ import org.apache.sis.measure.Units;
  *
  * {@preformat xml
  *   <gmd:distance>
- *     <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>
+ *     <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
  *   </gmd:distance>
  * }
  *
@@ -63,7 +63,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
  * @see org.apache.sis.internal.jaxb.gco.UnitAdapter
@@ -121,7 +121,7 @@ public final class Measure {
     }
 
     /**
-     * Constructs a string representation of the units as defined in the ISO-19103 standard.
+     * Constructs a string representation of the units as defined in the ISO 19103 standard.
      * This method is invoked during XML marshalling. For example if the units are "metre",
      * then this method returns one of the following strings, in preference order:
      *
@@ -129,10 +129,11 @@ public final class Measure {
      *     urn:ogc:def:uom:EPSG::9001
      * }
      *
-     * or
+     * or one of the following:
      *
      * {@preformat text
      *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+     *     http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
      * }
      *
      * @return the string representation of the unit of measure.
@@ -165,14 +166,26 @@ public final class Measure {
         if (unit == null || unit.equals(Units.UNITY)) {
             return "";
         }
-        final StringBuilder buffer = Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT)
-                                            .append(Schemas.UOM_PATH).append("#xpointer(//*[@gml:id='");
+        final StringBuilder link;
+        final Context context = Context.current();
+        /*
+         * We have not yet found an ISO 19115-3 URL for units of measurement.
+         * If we find one, we should use a block like below:
+         *
+         * if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
+         *     link = ... new URL ...
+         * } else {
+         *     link = current code
+         * }
+         */
+        link = Context.schema(context, "gmd", Schemas.METADATA_ROOT_LEGACY);
+        link.append(Schemas.UOM_PATH).append("#xpointer(//*[@gml:id='");
         try {
-            UCUM.format(unit, buffer);
+            UCUM.format(unit, link);
         } catch (IOException e) {
             throw new AssertionError(e);        // Should never happen since we wrote to a StringBuilder.
         }
-        return buffer.append("'])").toString();
+        return link.append("'])").toString();
     }
 
     /**

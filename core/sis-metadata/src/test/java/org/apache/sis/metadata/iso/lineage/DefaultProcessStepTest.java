@@ -19,7 +19,9 @@ package org.apache.sis.metadata.iso.lineage;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.util.Version;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -30,16 +32,11 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 public final strictfp class DefaultProcessStepTest extends XMLTestCase {
-    /**
-     * An XML file in this package containing a process step definition.
-     */
-    private static final String XML_FILE = "ProcessStep.xml";
-
     /**
      * Tests the (un)marshalling of a metadata mixing elements from ISO 19115 and ISO 19115-2 standards.
      *
@@ -50,21 +47,40 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
      */
     @Test
     public void testXML() throws JAXBException {
+        roundtrip("ProcessStep.xml", VERSION_2014);
+    }
+
+    /**
+     * Tests the (un)marshalling of a metadata in legacy ISO 19139:2007 document.
+     * This test uses the same metadata than {@link #testXML()}.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
+     */
+    @Test
+    public void testLegacyXML() throws JAXBException {
+        roundtrip("ProcessStep (legacy).xml", VERSION_2007);
+    }
+
+    /**
+     * Tests (un)marshalling in the given version.
+     */
+    private void roundtrip(final String filename, final Version version) throws JAXBException {
         final DefaultProcessing  processing  = new DefaultProcessing();
         final DefaultProcessStep processStep = new DefaultProcessStep("Some process step.");
         processing.setProcedureDescription(new SimpleInternationalString("Some procedure."));
+        processing.setIdentifier(new DefaultIdentifier("P4"));
         processStep.setProcessingInformation(processing);
         /*
          * XML marshalling, and compare with the content of "ProcessStep.xml" file.
          */
-        assertMarshalEqualsFile(XML_FILE, processStep, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(filename, processStep, version, "xmlns:*", "xsi:schemaLocation");
         /*
          * XML unmarshalling: ensure that we didn't lost any information.
          * Note that since the XML uses the <gmi:…> namespace, we got an instance of LE_ProcessStep, which
          * in SIS implementation does not carry any useful information; it is just a consequence of the way
          * namespaces are managed. We will convert to the parent DefaultProcessStep type before comparison.
          */
-        DefaultProcessStep step = unmarshalFile(DefaultProcessStep.class, XML_FILE);
+        DefaultProcessStep step = unmarshalFile(DefaultProcessStep.class, filename);
         assertInstanceOf("The unmarshalled object is expected to be in GMI namespace.", LE_ProcessStep.class, step);
         step = new DefaultProcessStep(step);
         assertEquals(processStep, step);

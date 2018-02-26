@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.lineage.NominalResolution;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
@@ -46,7 +45,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -55,7 +54,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "scanningResolution",
     "groundResolution"
 })
-@XmlRootElement(name = "LE_NominalResolution", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_NominalResolution")
 public class DefaultNominalResolution extends ISOMetadata implements NominalResolution {
     /**
      * Serial number for inter-operability with different versions.
@@ -137,7 +136,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlElement(name = "scanningResolution", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "scanningResolution")
     public Double getScanningResolution() {
         return scanningResolution;
     }
@@ -164,7 +163,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlElement(name = "groundResolution", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "groundResolution")
     public Double getGroundResolution() {
         return groundResolution;
     }

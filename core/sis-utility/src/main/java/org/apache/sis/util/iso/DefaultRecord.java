@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.AbstractMapEntry;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultRecordType
  * @see DefaultRecordSchema
@@ -78,6 +78,14 @@ public class DefaultRecord implements Record, Serializable {
      * which is why the type is not {@code Object[]}.
      */
     private final Object values;
+
+    /**
+     * Constructs an initially empty record. Used by JAXB.
+     */
+    private DefaultRecord() {
+        definition = null;
+        values = null;
+    }
 
     /**
      * Creates a new record for the given record type.
@@ -162,7 +170,8 @@ public class DefaultRecord implements Record, Serializable {
      */
     @Override
     public RecordType getRecordType() {
-        return definition.getRecordType();
+        // Should never be null, unless temporarily during unmarshalling.
+        return (definition != null) ? definition.getRecordType() : null;
     }
 
     /**

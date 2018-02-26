@@ -30,6 +30,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -67,13 +68,14 @@ import org.opengis.feature.type.FeatureType;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_ScopeDescription_Type") // No need for propOrder since this structure is a union (see javadoc).
-@XmlRootElement(name = "MD_ScopeDescription")
+@XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).
+@XmlRootElement(name = "MD_ScopeDescription", namespace = Namespaces.MCC)
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
     /**
      * Serial number for inter-operability with different versions.
@@ -337,6 +339,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return feature types to which the information applies.
      */
     @Override
+    @XmlElement(name = "features")
     public Set<FeatureType> getFeatures() {
         return getProperty(FeatureType.class, FEATURES);
     }
@@ -378,6 +381,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return attribute types to which the information applies.
      */
     @Override
+    @XmlElement(name = "attributes")
     public Set<AttributeType> getAttributes() {
         return getProperty(AttributeType.class, ATTRIBUTES);
     }
@@ -419,6 +423,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return feature instances to which the information applies.
      */
     @Override
+    @XmlElement(name = "featureInstances")
     public Set<FeatureType> getFeatureInstances() {
         return getProperty(FeatureType.class, FEATURE_INSTANCES);
     }
@@ -460,6 +465,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @return attribute instances to which the information applies.
      */
     @Override
+    @XmlElement(name = "attributeInstances")
     public Set<AttributeType> getAttributeInstances() {
         return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
     }

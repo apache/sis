@@ -20,6 +20,7 @@ import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -30,7 +31,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -108,5 +109,24 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     @Override
     public GO_CharacterString marshal(final String value) {
         return CharSequenceAdapter.wrap(Context.current(), value, value);
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends StringAdapter {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_CharacterString marshal(final String value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+        }
     }
 }

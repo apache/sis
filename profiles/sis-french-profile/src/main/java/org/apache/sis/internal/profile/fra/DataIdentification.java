@@ -51,7 +51,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_DataIdentification_Type")
-@XmlRootElement(name ="FRA_DataIdentification")
+@XmlRootElement(name = "FRA_DataIdentification")
 public class DataIdentification extends DefaultDataIdentification {
     /**
      * For serialization purpose.

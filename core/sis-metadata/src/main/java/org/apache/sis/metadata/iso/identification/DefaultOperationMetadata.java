@@ -23,10 +23,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.xml.Namespaces;
 
 // Branch-specific imports
@@ -67,7 +67,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -75,11 +76,11 @@ import static org.opengis.annotation.Specification.ISO_19115;
 @TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
-    "distributedComputingPlatforms",
+    "distributedComputingPlatforms",    // Singular form used in ISO 19115:2014, was "DCP" in ISO 19115:2003.
     "operationDescription",
     "invocationName",
-    "parameters",
-    "connectPoints",
+    "connectPoints",                    // Was after "parameters" in ISO 19115:2003.
+    "parameters",                       // Actually "parameter" in ISO 19115:2014, was "parameters" in ISO 19115:2003.
     "dependsOn"
 })
 @XmlRootElement(name = "SV_OperationMetadata", namespace = Namespaces.SRV)
@@ -138,7 +139,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public DefaultOperationMetadata(final DefaultOperationMetadata object) {
         super(object);
         if (object != null) {
@@ -157,7 +158,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return an unique identifier for this interface.
      */
-    @XmlElement(name = "operationName", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "operationName", required = true)
     @UML(identifier="operationName", obligation=MANDATORY, specification=ISO_19115)
     public String getOperationName() {
         return operationName;
@@ -184,7 +185,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * @return distributed computing platforms on which the operation has been implemented.
      */
     @XmlJavaTypeAdapter(DCPList.class)
-    @XmlElement(name = "DCP", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "distributedComputingPlatform", required = true)
     @UML(identifier="distributedComputingPlatform", obligation=MANDATORY, specification=ISO_19115)
     public Collection<CodeList<?>> getDistributedComputingPlatforms() {
         return distributedComputingPlatforms = nonNullCollection(distributedComputingPlatforms, (Class) CodeList.class);
@@ -233,7 +234,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return free text description of the intent of the operation and the results of the operation, or {@code null} if none.
      */
-    @XmlElement(name = "operationDescription", namespace = Namespaces.SRV)
+    @XmlElement(name = "operationDescription")
     @UML(identifier="operationDescription", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getOperationDescription() {
         return operationDescription;
@@ -255,7 +256,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * @return the name used to invoke this interface within the context of the distributed computing platforms,
      *         or {@code null} if none.
      */
-    @XmlElement(name = "invocationName", namespace = Namespaces.SRV)
+    @XmlElement(name = "invocationName")
     @UML(identifier="invocationName", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getInvocationName() {
         return invocationName;
@@ -276,7 +277,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return handle for accessing the service interface.
      */
-    @XmlElement(name = "connectPoint", namespace = Namespaces.SRV, required = true)
+    @XmlElement(name = "connectPoint", required = true)
     @UML(identifier="connectPoint", obligation=MANDATORY, specification=ISO_19115)
     public Collection<OnlineResource> getConnectPoints() {
         return connectPoints = nonNullCollection(connectPoints, OnlineResource.class);
@@ -296,8 +297,8 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return the parameters that are required for this interface, or an empty collection if none.
      */
-    @SuppressWarnings("unchecked")
-    @XmlElement(name = "parameters", namespace = Namespaces.SRV)
+    @XmlElement(name = "parameter")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @UML(identifier="parameters", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<ParameterDescriptor<?>> getParameters() {
         return parameters = nonNullCollection(parameters, (Class) ParameterDescriptor.class);
@@ -308,7 +309,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @param  newValues  the new set of parameters that are required for this interface.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void setParameters(final Collection<? extends ParameterDescriptor<?>> newValues) {
         parameters = writeCollection(newValues, parameters, (Class) ParameterDescriptor.class);
     }
@@ -323,7 +324,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *
      * @return list of operation that must be completed immediately, or an empty list if none.
      */
-    @XmlElement(name = "dependsOn", namespace = Namespaces.SRV)
+    @XmlElement(name = "dependsOn")
     @UML(identifier="dependsOn", obligation=OPTIONAL, specification=ISO_19115)
     public List<DefaultOperationMetadata> getDependsOn() {
         return dependsOn = nonNullList(dependsOn, DefaultOperationMetadata.class);

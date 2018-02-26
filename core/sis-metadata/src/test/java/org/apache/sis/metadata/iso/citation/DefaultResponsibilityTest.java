@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.citation;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.test.XMLTestCase;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
@@ -30,7 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultResponsibility} and its marshalling as a legacy {@link DefaultResponsibleParty}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -47,9 +48,9 @@ public final strictfp class DefaultResponsibilityTest extends XMLTestCase {
         final DefaultCitation citation = new DefaultCitation();
         r.setParties(singleton(party));
         citation.setCitedResponsibleParties(singleton(r));
-        final String xml = marshal(citation);
-        assertXmlEquals("<gmd:CI_Citation xmlns:gco=\"" + Namespaces.GCO + '"' +
-                                        " xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+        final String xml = marshal(citation, VERSION_2007);
+        assertXmlEquals("<gmd:CI_Citation xmlns:gco=\"" + LegacyNamespaces.GCO + '"' +
+                                        " xmlns:gmd=\"" + LegacyNamespaces.GMD + "\">\n" +
                 "  <gmd:citedResponsibleParty>\n" +
                 "    <gmd:CI_ResponsibleParty>\n" +
                 "      <gmd:individualName>\n" +

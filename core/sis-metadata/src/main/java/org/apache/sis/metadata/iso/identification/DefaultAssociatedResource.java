@@ -19,10 +19,14 @@ package org.apache.sis.metadata.iso.identification;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
+import org.apache.sis.internal.jaxb.code.DS_AssociationTypeCode;
+import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Branch-specific imports.
@@ -59,17 +63,18 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_AssociatedResource_Type" /*, propOrder = {
+@XmlType(name = "MD_AssociatedResource_Type", propOrder = {
     "name",
     "associationType",
     "initiativeType",
     "metadataReference"
-}*/)
+})
 @XmlRootElement(name = "MD_AssociatedResource")
 @UML(identifier="MD_AssociatedResource", specification=ISO_19115)
 public class DefaultAssociatedResource extends ISOMetadata {
@@ -165,7 +170,8 @@ public class DefaultAssociatedResource extends ISOMetadata {
      *
      * @return Citation information about the associated resource, or {@code null} if none.
      */
-/// @XmlElement(name = "name")
+    @XmlElement(name = "name")
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
     @UML(identifier="name", obligation=CONDITIONAL, specification=ISO_19115)
     public Citation getName() {
         return name;
@@ -186,7 +192,8 @@ public class DefaultAssociatedResource extends ISOMetadata {
      *
      * @return type of relation between the resources.
      */
-/// @XmlElement(name = "associationType", required = true)
+    @XmlElement(name = "associationType", required = true)
+    @XmlJavaTypeAdapter(DS_AssociationTypeCode.Since2014.class)
     @UML(identifier="associationType", obligation=MANDATORY, specification=ISO_19115)
     public AssociationType getAssociationType() {
         return associationType;
@@ -207,7 +214,8 @@ public class DefaultAssociatedResource extends ISOMetadata {
      *
      * @return the type of initiative under which the associated resource was produced, or {@code null} if none.
      */
-/// @XmlElement(name = "initiativeType")
+    @XmlElement(name = "initiativeType")
+    @XmlJavaTypeAdapter(DS_InitiativeTypeCode.Since2014.class)
     @UML(identifier="initiativeType", obligation=OPTIONAL, specification=ISO_19115)
     public InitiativeType getInitiativeType() {
         return initiativeType;
@@ -228,7 +236,8 @@ public class DefaultAssociatedResource extends ISOMetadata {
      *
      * @return reference to the metadata of the associated resource, or {@code null} if none.
      */
-/// @XmlElement(name = "metadataReference")
+    @XmlElement(name = "metadataReference")
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
     @UML(identifier="metadataReference", obligation=CONDITIONAL, specification=ISO_19115)
     public Citation getMetadataReference() {
         return metadataReference;

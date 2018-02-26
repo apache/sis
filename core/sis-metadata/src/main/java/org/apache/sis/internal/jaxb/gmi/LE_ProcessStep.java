@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -29,12 +30,12 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "LE_ProcessStep_Type")
-@XmlRootElement(name = "LE_ProcessStep")
+@XmlType(name = "LE_ProcessStep_Type", namespace = Namespaces.MRL)
+@XmlRootElement(name = "LE_ProcessStep", namespace = Namespaces.MRL)
 @SuppressWarnings("CloneableClassWithoutClone")
 public class LE_ProcessStep extends DefaultProcessStep {
     /**

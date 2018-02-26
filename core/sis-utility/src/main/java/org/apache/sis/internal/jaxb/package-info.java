@@ -33,7 +33,8 @@
  * This is used for storing the value in a list of identifiers while preserving the original object.</p>
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */

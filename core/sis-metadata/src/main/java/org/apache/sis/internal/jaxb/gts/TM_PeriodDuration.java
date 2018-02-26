@@ -40,15 +40,16 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
+public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
     /**
      * Empty constructor for JAXB.
      */
-    public TM_PeriodDuration() {
+    TM_PeriodDuration() {
     }
 
     /**
@@ -77,7 +78,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @return {@code PeriodDuration.class}
      */
     @Override
-    protected Class<PeriodDuration> getBoundType() {
+    protected final Class<PeriodDuration> getBoundType() {
         return PeriodDuration.class;
     }
 
@@ -88,16 +89,23 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @return the time period, or {@code null}.
      */
     @XmlElement(name = "TM_PeriodDuration")
-    public Duration getElement() {
-        if (metadata instanceof org.apache.sis.internal.geoapi.temporal.PeriodDuration) try {
+    public final Duration getElement() {
+        return toXML(metadata);
+    }
+
+    /**
+     * Converts the given ISO 19108 duration into a Java XML duration.
+     */
+    static Duration toXML(final PeriodDuration duration) {
+        if (duration instanceof org.apache.sis.internal.geoapi.temporal.PeriodDuration) try {
+            final org.apache.sis.internal.geoapi.temporal.PeriodDuration metadata =
+                    (org.apache.sis.internal.geoapi.temporal.PeriodDuration) duration;
             /*
              * Get the DatatypeFactory first because if not available, then we don't need to parse
              * the calendar fields. This has the side effect of not validating the calendar fields
              * syntax (which should be integer values), but maybe this is what the user wants.
              */
             final DatatypeFactory factory = XmlUtilities.getDatatypeFactory();
-            final org.apache.sis.internal.geoapi.temporal.PeriodDuration metadata =
-                    (org.apache.sis.internal.geoapi.temporal.PeriodDuration) this.metadata;
             InternationalString value;
             BigInteger years = null;
             if ((value = metadata.getYears()) != null) {
@@ -125,7 +133,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
             }
             return factory.newDuration(true, years, months, days, hours, minutes, seconds);
         } catch (DatatypeConfigurationException e) {
-            warningOccured("getElement", e);
+            warningOccured("toXML", e);
         }
         return null;
     }
@@ -136,8 +144,14 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      *
      * @param  duration  the adapter to set.
      */
-    public void setElement(final Duration duration) {
-        metadata = null;                                        // Cleaned first in case of failure.
+    public final void setElement(final Duration duration) {
+        metadata = toISO(duration);
+    }
+
+    /**
+     * Converts the given Java XML duration into an ISO 19108 duration.
+     */
+    static PeriodDuration toISO(final Duration duration) {
         if (duration != null) try {
             final TemporalFactory factory = TemporalUtilities.getTemporalFactory();
             InternationalString years = null;
@@ -166,10 +180,11 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
             if ((value = duration.getSeconds()) != 0) {
                 seconds = new SimpleInternationalString(Integer.toString(value));
             }
-            metadata = factory.createPeriodDuration(years, months, weeks, days, hours, minutes, seconds);
+            return factory.createPeriodDuration(years, months, weeks, days, hours, minutes, seconds);
         } catch (UnsupportedOperationException e) {
-            warningOccured("setElement", e);
+            warningOccured("toISO", e);
         }
+        return null;
     }
 
     /**
@@ -181,6 +196,25 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
     private static void warningOccured(final String methodName, final Exception e) {
         if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {
             Context.warningOccured(Context.current(), TM_PeriodDuration.class, methodName, e, true);
+        }
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends TM_PeriodDuration {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected TM_PeriodDuration wrap(final PeriodDuration value) {
+            return accept2014() ? super.wrap(value) : null;
         }
     }
 }

@@ -20,15 +20,16 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Restriction}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information about
- * the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Restriction}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -58,8 +59,10 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      */
     @Override
     protected MD_RestrictionCode wrap(final CodeListUID value) {
-        if ("licence".equals(value.codeListValue)) {
+        if ("licence".equals(value.codeListValue) && !accept2014()) {
             value.codeListValue = "license";
+        } else if ("license".equals(value.codeListValue) && accept2014()) {
+            value.codeListValue = "licence";
         }
         return new MD_RestrictionCode(value);
     }
@@ -80,7 +83,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "MD_RestrictionCode")
+    @XmlElement(name = "MD_RestrictionCode", namespace = Namespaces.MCO)
     public CodeListUID getElement() {
         return identifier;
     }
@@ -91,6 +94,9 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
+        if (value != null && "licence".equalsIgnoreCase(value.codeListValue)) {
+            value.codeListValue = "license";    // For matching legacy spelling (ISO 19139:2007).
+        }
         identifier = value;
     }
 }

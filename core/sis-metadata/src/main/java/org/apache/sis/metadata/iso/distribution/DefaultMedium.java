@@ -21,7 +21,7 @@ import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.distribution.Medium;
@@ -30,13 +30,18 @@ import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -61,14 +66,17 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
+    "identifier",           // New in ISO 19115-3
     "name",
+    "density",
     "densities",
     "densityUnits",
     "volumes",
@@ -179,6 +187,9 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Returns the name of the medium on which the resource can be received.
      *
      * @return name of the medium, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-389">SIS-389</a>
+     *
      */
     @Override
     @XmlElement(name = "name")
@@ -204,6 +215,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @since 0.5
      */
+    @XmlElement(name = "density")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     @ValueRange(minimum = 0, isMinIncluded = false)
     @UML(identifier="density", obligation=OPTIONAL, specification=ISO_19115)
     public Double getDensity() {
@@ -233,9 +246,10 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "density")
     @Dependencies("getDensity")
+    @XmlElement(name = "density", namespace = LegacyNamespaces.GMD)
     public Collection<Double> getDensities() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return densities = nonNullCollection(densities, Double.class);
     }
 
@@ -343,7 +357,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "identifier")
+    @XmlElement(name = "identifier")
+    @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     @UML(identifier="identifier", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getIdentifier() {
         return NonMarshalledAuthority.getMarshallable(identifiers);

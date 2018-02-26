@@ -23,7 +23,6 @@ import org.opengis.metadata.lineage.ProcessStepReport;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -45,7 +44,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -56,7 +55,7 @@ import org.apache.sis.xml.Namespaces;
     "description",
     "fileType"
 })
-@XmlRootElement(name = "LE_ProcessStepReport", namespace = Namespaces.GMI)
+@XmlRootElement(name = "LE_ProcessStepReport")
 public class DefaultProcessStepReport extends ISOMetadata implements ProcessStepReport {
     /**
      * Serial number for inter-operability with different versions.
@@ -133,7 +132,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @return name of the processing report, or {@code null}.
      */
     @Override
-    @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "name", required = true)
     public InternationalString getName() {
         return name;
     }
@@ -154,7 +153,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @return what occurred during the process step, or {@code null}.
      */
     @Override
-    @XmlElement(name = "description", namespace = Namespaces.GMI)
+    @XmlElement(name = "description")
     public InternationalString getDescription() {
         return description;
     }
@@ -175,7 +174,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @return type of file that contains the processing report, or {@code null}.
      */
     @Override
-    @XmlElement(name = "fileType", namespace = Namespaces.GMI)
+    @XmlElement(name = "fileType")
     public InternationalString getFileType() {
         return fileType;
     }

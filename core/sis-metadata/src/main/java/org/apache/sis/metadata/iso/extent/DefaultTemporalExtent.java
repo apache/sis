@@ -62,7 +62,7 @@ import org.apache.sis.xml.NilReason;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

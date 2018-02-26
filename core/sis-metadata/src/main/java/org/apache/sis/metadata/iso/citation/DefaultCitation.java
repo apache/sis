@@ -21,7 +21,6 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -32,12 +31,16 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
@@ -57,7 +60,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and
  * {@linkplain #getISSN() ISSN} codes. However the SIS library handles those codes like any
  * other identifiers. Consequently the ISBN and ISSN codes are included in the collection
- * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19139 compliance).
+ * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19115-3 compliance).
  *
  * <div class="section">Limitations</div>
  * <ul>
@@ -71,7 +74,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -90,7 +94,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "otherCitationDetails",
     "collectiveTitle",
     "ISBN",
-    "ISSN"
+    "ISSN",
+    "onlineResource",           // New in ISO 19115:2014
+    "graphic"                   // Ibid.
 })
 @XmlRootElement(name = "CI_Citation")
 public class DefaultCitation extends ISOMetadata implements Citation {
@@ -297,7 +303,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @return the reference date.
      */
     @Override
-    @XmlElement(name = "date", required = true)
+    @XmlElement(name = "date")
     public Collection<CitationDate> getDates() {
         return dates = nonNullCollection(dates, CitationDate.class);
     }
@@ -366,7 +372,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * <div class="note"><b>XML note:</b>
      * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
-     * for ISO 19139 compliance. Those identifiers will appear in other XML elements or attributes.</div>
+     * for ISO 19115-3 compliance. Those identifiers will appear in other XML elements or attributes.</div>
      *
      * @return the identifiers, or an empty collection if none.
      *
@@ -511,9 +517,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "collectiveTitle")
+    @XmlElement(name = "collectiveTitle", namespace = LegacyNamespaces.GMD)
     public InternationalString getCollectiveTitle() {
-        return collectiveTitle;
+        return FilterByVersion.LEGACY_METADATA.accept() ? collectiveTitle : null;
     }
 
     /**
@@ -615,7 +621,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "onlineResource")
+    // @XmlElement at the end of this class.
     @UML(identifier="onlineResource", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<OnlineResource> getOnlineResources() {
         return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
@@ -639,7 +645,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "graphic")
+    // @XmlElement at the end of this class.
     @UML(identifier="graphic", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
@@ -654,5 +660,34 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     public void setGraphics(final Collection<? extends BrowseGraphic> newValues) {
         graphics = writeCollection(newValues, graphics, BrowseGraphic.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "onlineResource")
+    private Collection<OnlineResource> getOnlineResource() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getOnlineResources() : null;
+    }
+
+    @XmlElement(name = "graphic")
+    private Collection<BrowseGraphic> getGraphic() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getGraphics() : null;
     }
 }

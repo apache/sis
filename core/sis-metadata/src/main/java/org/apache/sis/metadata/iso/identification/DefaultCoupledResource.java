@@ -19,17 +19,20 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.ScopedName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.metadata.direct.GO_ScopedName;
+import org.apache.sis.internal.jaxb.metadata.SV_OperationMetadata;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
-
-import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -59,18 +62,20 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
-    "operationName",
-    "identifier",
-    "scopedName" /*,
-    "resourceReferences",
-    "resources",
-    "operation" */
+    "scopedName",               // ISO 19115-3:2016 way to write scoped name
+    "resourceReference",        // New in ISO 19115:2014
+    "resource",                 // Ibid.
+    "operation",                // Ibid.
+    "operationName",            // Legacy ISO 19139:2007
+    "identifier",               // Ibid.
+    "legacyName"                // Legacy ISO 19139:2007 way to write scoped name
 })
 @XmlRootElement(name = "SV_CoupledResource", namespace = Namespaces.SRV)
 @UML(identifier="SV_CoupledResource", specification=ISO_19115)
@@ -147,8 +152,8 @@ public class DefaultCoupledResource extends ISOMetadata {
      *
      * @return identifier of the resource, or {@code null} if none.
      */
-    @XmlElementRef
-    @XmlJavaTypeAdapter(GO_ScopedName.class)
+    @XmlElement(name = "scopedName")
+    @XmlJavaTypeAdapter(GO_GenericName.Since2014.class)
     @UML(identifier="scopedName", obligation=OPTIONAL, specification=ISO_19115)
     public ScopedName getScopedName() {
         return scopedName;
@@ -169,7 +174,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      *
      * @return references to the resource on which the services operates.
      */
-/// @XmlElement(name = "resourceReference", namespace = Namespaces.SRV)
+    // @XmlElement at the end of this class.
     @UML(identifier="resourceReference", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getResourceReferences() {
         return resourceReferences = nonNullCollection(resourceReferences, Citation.class);
@@ -189,7 +194,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      *
      * @return tightly coupled resources.
      */
-/// @XmlElement(name = "resource", namespace = Namespaces.SRV)
+    // @XmlElement at the end of this class.
     @UML(identifier="resource", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DataIdentification> getResources() {
         return resources = nonNullCollection(resources, DataIdentification.class);
@@ -214,7 +219,8 @@ public class DefaultCoupledResource extends ISOMetadata {
      *
      * @return the service operation, or {@code null} if none.
      */
-/// @XmlElement(name = "operation", namespace = Namespaces.SRV)
+    @XmlElement(name = "operation")
+    @XmlJavaTypeAdapter(SV_OperationMetadata.Since2014.class)
     @UML(identifier="operation", obligation=OPTIONAL, specification=ISO_19115)
     public DefaultOperationMetadata getOperation() {
         return operation;
@@ -250,11 +256,11 @@ public class DefaultCoupledResource extends ISOMetadata {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * For JAXB marhalling of ISO 19119 document only.
+     * For JAXB marshalling of ISO 19139:2007 document only (XML based on legacy ISO 19115:2003 model).
      */
-    @XmlElement(name = "operationName", namespace = Namespaces.SRV)
+    @XmlElement(name = "operationName", namespace = LegacyNamespaces.SRV)
     private String getOperationName() {
-        if (LEGACY_XML) {
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
             final DefaultOperationMetadata operation = getOperation();
             if (operation != null) {
                 return operation.getOperationName();
@@ -264,10 +270,11 @@ public class DefaultCoupledResource extends ISOMetadata {
     }
 
     /**
-     * For JAXB unmarhalling of ISO 19119 document only. Sets {@link #operation} to a temporary
-     * {@link OperationName} placeholder. That temporary instance will be replaced by the real
-     * one when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
+     * For JAXB unmarhalling of ISO 19139:2007 document only. Sets {@link #operation} to a temporary
+     * {@link OperationName} placeholder. That temporary instance will be replaced by the real one
+     * when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
      */
+    @SuppressWarnings("unused")
     private void setOperationName(final String name) {
         if (operation == null) {
             operation = new OperationName(name);
@@ -276,15 +283,73 @@ public class DefaultCoupledResource extends ISOMetadata {
 
     /**
      * Returns the resource identifier, which is assumed to be the name as a string.
+     * Used in legacy ISO 19139:2007 documents. There is no setter method; we expect
+     * the XML to declare {@code <srv:operationName>} instead.
      */
-    @XmlElement(name = "identifier", namespace = Namespaces.SRV)
+    @XmlElement(name = "identifier", namespace = LegacyNamespaces.SRV)
     private String getIdentifier() {
-        if (LEGACY_XML) {
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
             final ScopedName name = getScopedName();
             if (name != null) {
                 return name.tip().toString();
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the {@code <gco:ScopedName>} element to marshal in legacy ISO 19139:2007 element.
+     * The {@code <srv:scopedName>} element wrapper (note the lower-case "s") was missing in that
+     * legacy specification. This departure from ISO patterns has been fixed in ISO 19115-3:2016.
+     *
+     * <p>Note that the namespace is {@value Namespaces#GCO} rather than {@value LegacyNamespaces#GCO}
+     * because this is the namespace of the {@link ScopedName} type, not the namespace of a property
+     * in {@code SV_CoupledResource}.</p>
+     */
+    @XmlElement(name = "ScopedName", namespace = Namespaces.GCO)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getLegacyName() {
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final ScopedName name = getScopedName();
+            if (name != null) return name.toString();
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB when unmarshalling a legacy ISO 19139:2007 documents.
+     */
+    @SuppressWarnings("unused")
+    private void setLegacyName(String value) {
+        if (value != null && !value.isEmpty()) {
+            /*
+             * If the given name does not have a namespace, add an arbitrary namespace
+             * in order to get an instanceof ScopedName instead of LocalName after parsing.
+             */
+            if (value.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR) < 0) {
+                value = "global" + DefaultNameSpace.DEFAULT_SEPARATOR + value;
+            }
+            setScopedName((ScopedName) Names.parseGenericName(null, null, value));
+        }
+    }
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "resourceReference")
+    private Collection<Citation> getResourceReference() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResourceReferences() : null;
+    }
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "resource")
+    private Collection<DataIdentification> getResource() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResources() : null;
     }
 }

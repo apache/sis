@@ -16,23 +16,30 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
+import java.util.Locale;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.ValueConverter;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
- * JAXB adapter for {@link CharacterSet}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information about
- * the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Charset}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCode, CharacterSet> {
+public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -40,26 +47,44 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * The value of the {@link org.opengis.util.CodeList}.
      */
-    private MD_CharacterSetCode(final CodeListUID value) {
-        super(value);
+    private CodeListUID identifier;
+
+    /**
+     * Substitutes the adapter value read from an XML stream by the object which will
+     * contains the value. JAXB calls automatically this method at unmarshalling time.
+     *
+     * @param  adapter  the adapter for this metadata value.
+     * @return a code list which represents the metadata value.
+     */
+    @Override
+    public final Charset unmarshal(final MD_CharacterSetCode adapter) throws IllegalCharsetNameException {
+        final Context context = Context.current();
+        return Context.converter(context).toCharset(context, adapter.identifier.toString());
     }
 
     /**
-     * {@inheritDoc}
+     * Substitutes the code list by the adapter to be marshalled into an XML file
+     * or stream. JAXB calls automatically this method at marshalling time.
+     *
+     * @param  value  the code list value.
+     * @return the adapter for the given code list.
      */
     @Override
-    protected MD_CharacterSetCode wrap(final CodeListUID value) {
-        return new MD_CharacterSetCode(value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected Class<CharacterSet> getCodeListClass() {
-        return CharacterSet.class;
+    public final MD_CharacterSetCode marshal(final Charset value) {
+        final Context context = Context.current();
+        final ValueConverter converter = Context.converter(context);
+        final String code = converter.toCharsetCode(context, value);
+        if (code != null) {
+            final Locale locale = context.getLocale();
+            final MD_CharacterSetCode c = new MD_CharacterSetCode();
+            c.identifier = new CodeListUID(context, "MD_CharacterSetCode", code,
+                    (locale != null) ? converter.toLanguageCode(context, locale) : null,
+                    (locale != null) ? value.displayName(locale) : value.displayName());
+            return c;
+        }
+        return null;
     }
 
     /**
@@ -67,8 +92,7 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
      *
      * @return the value to be marshalled.
      */
-    @Override
-    @XmlElement(name = "MD_CharacterSetCode")
+    @XmlElement(name = "MD_CharacterSetCode", namespace = Namespaces.LAN)
     public CodeListUID getElement() {
         return identifier;
     }

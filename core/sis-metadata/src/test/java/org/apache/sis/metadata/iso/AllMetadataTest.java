@@ -16,33 +16,28 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
-import org.opengis.annotation.Specification;
+import org.opengis.util.CodeList;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.metadata.MetadataTestCase;
+import org.apache.sis.metadata.PropertyConsistencyCheck;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.xml.Namespaces;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 
 /**
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
-public final strictfp class AllMetadataTest extends MetadataTestCase {
+public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
@@ -53,6 +48,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
      * Creates a new test case with all GeoAPI interfaces and code lists to test.
      */
+    @SuppressWarnings("deprecation")
     public AllMetadataTest() {
         super(MetadataStandard.ISO_19115,
             org.opengis.metadata.ApplicationSchemaInformation.class,
@@ -173,7 +169,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.quality.QuantitativeResult.class,
             org.opengis.metadata.quality.RelativeInternalPositionalAccuracy.class,
             org.opengis.metadata.quality.Result.class,
-            org.opengis.metadata.quality.Scope.class,
             org.opengis.metadata.quality.TemporalAccuracy.class,
             org.opengis.metadata.quality.TemporalConsistency.class,
             org.opengis.metadata.quality.TemporalValidity.class,
@@ -200,7 +195,9 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     }
 
     /**
-     * Performs the test documented in the {@link MetadataTestCase} javadoc.
+     * {@inheritDoc}
+     * Once the test is completed, this method verifies that the expected warnings have been logged,
+     * and no unexpected logging occurred.
      */
     @Test
     @Override
@@ -214,87 +211,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     }
 
     /**
-     * Returns the name of the XML element for the given UML element.
-     * This method checks for the special cases which are known to have different UML and XML names.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
-        String name = super.getExpectedXmlElementName(enclosing, uml);
-        switch (name) {
-            case "MD_Scope": {                  // ISO 19115:2014
-                name = "DQ_Scope";              // ISO 19115:2003
-                break;
-            }
-            case "distributedComputingPlatform": {
-                name = "DCP";
-                break;
-            }
-            case "stepDateTime": {
-                name = "dateTime";
-                break;
-            }
-            case "locale": {
-                if (enclosing == org.opengis.metadata.content.FeatureCatalogueDescription.class) {
-                    name = "language";
-                }
-                break;
-            }
-        }
-        return name;
-    }
-
-    /**
-     * Returns the expected namespace for an element defined by the given specification.
-     * For example the namespace of any type defined by {@link Specification#ISO_19115}
-     * is {@code "http://www.isotc211.org/2005/gmd"}.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
-        if (impl == org.apache.sis.metadata.iso.identification.DefaultCoupledResource.class ||
-            impl == org.apache.sis.metadata.iso.identification.DefaultOperationChainMetadata.class ||
-            impl == org.apache.sis.metadata.iso.identification.DefaultOperationMetadata.class ||
-            impl == org.apache.sis.metadata.iso.identification.DefaultServiceIdentification.class)
-        {
-            assertEquals(Specification.ISO_19115, specification);
-            return Namespaces.SRV;
-        }
-        return super.getExpectedNamespace(impl, specification);
-    }
-
-    /**
-     * Returns the type of the given element, or {@code null} if the type is not yet
-     * determined (the later cases could change in a future version).
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    protected String getExpectedXmlTypeForElement(final Class<?> type, final Class<?> impl) {
-        final String rootName = type.getAnnotation(UML.class).identifier();
-        switch (rootName) {
-            // Following prefix was changed in ISO 19115 corrigendum,
-            // but ISO 19139 still use the old prefix.
-            case "SV_ServiceIdentification": {
-                return "MD_ServiceIdentification_Type";
-            }
-            // Following prefix was changed in ISO 19115:2014,
-            // but ISO 19139 still use the old prefix.
-            case "MD_Scope": {
-                return "DQ_Scope_Type";
-            }
-        }
-        final StringBuilder buffer = new StringBuilder(rootName.length() + 13);
-        if (impl.getSimpleName().startsWith("Abstract")) {
-            buffer.append("Abstract");
-        }
-        return buffer.append(rootName).append("_Type").toString();
-    }
-
-    /**
-     * Returns the ISO 19139 wrapper for the given GeoAPI type,
+     * Returns the ISO 19115-3 wrapper for the given GeoAPI type,
      * or {@code null} if no adapter is expected for the given type.
      *
      * @return {@inheritDoc}
@@ -310,32 +227,20 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
              */
             return null;
         }
-        String identifier = type.getAnnotation(UML.class).identifier();
-        if (identifier.equals("DQ_Scope")) {  // Old name in ISO 19115:2003
-            identifier = "MD_Scope";          // New name in ISO 19115:2014
-        }
         final String classname = "org.apache.sis.internal.jaxb." +
-              (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") + '.' + identifier;
+                (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") +
+                '.' + type.getAnnotation(UML.class).identifier();
         final Class<?> wrapper = Class.forName(classname);
-        assertTrue("Expected a final class for " + wrapper.getName(), Modifier.isFinal(wrapper.getModifiers()));
-        return wrapper;
-    }
-
-    /**
-     * Returns {@code true} if the given method is a non-standard extension.
-     * If {@code true}, then {@code method} does not need to have UML annotation.
-     *
-     * @param  method  the method to verify.
-     * @return {@code true} if the given method is an extension, or {@code false} otherwise.
-     *
-     * @since 0.5
-     */
-    @Override
-    protected boolean isExtension(final Method method) {
-        if (org.opengis.metadata.distribution.StandardOrderProcess.class.isAssignableFrom(method.getDeclaringClass())) {
-            return method.getName().equals("getCurrency");
+        Class<?>[] expectedFinalClasses = wrapper.getClasses();   // "Since2014" internal class.
+        if (expectedFinalClasses.length == 0) {
+            expectedFinalClasses = new Class<?>[] {wrapper};      // If no "Since2014", then wrapper itself should be final.
         }
-        return super.isExtension(method);
+        for (final Class<?> c : expectedFinalClasses) {
+            if (!Modifier.isFinal(c.getModifiers())) {
+                fail("Expected a final class for " + c.getName());
+            }
+        }
+        return wrapper;
     }
 
     /**

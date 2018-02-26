@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -97,9 +97,29 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
             "Metadata\n" +
+            "  ├─Metadata identifier……………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
+            "  │   └─Authority……………………………………………………………………………… edu.ucar.unidata\n" +
             "  ├─Contact\n" +
-            "  │   ├─Individual…………………………………………………………………………… NOAA/NWS/NCEP\n" +     // TODO: actually we can not distinguish individual from organization.
-            "  │   └─Role…………………………………………………………………………………………… Point of contact\n" +
+            "  │   ├─Role…………………………………………………………………………………………… Point of contact\n" +
+            "  │   └─Individual…………………………………………………………………………… NOAA/NWS/NCEP\n" +     // TODO: actually we can not distinguish individual from organization.
+            "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
+            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
+            "  │   ├─Identifier…………………………………………………………………………… 19115-1\n" +
+            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
+            "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
+            "  │   ├─Cited responsible party\n" +
+            "  │   │   ├─Role………………………………………………………………………………… Principal investigator\n" +
+            "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n" +
+            "  │   └─Presentation form………………………………………………………… Document digital\n" +
+            "  ├─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
+            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
+            "  │   ├─Identifier…………………………………………………………………………… 19115-2\n" +
+            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
+            "  │   │   └─Version………………………………………………………………………… 2009(E)\n" +
+            "  │   ├─Cited responsible party\n" +
+            "  │   │   ├─Role………………………………………………………………………………… Principal investigator\n" +
+            "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n" +
+            "  │   └─Presentation form………………………………………………………… Document digital\n" +
             "  ├─Spatial representation info\n" +
             "  │   ├─Number of dimensions………………………………………………… 3\n" +
             "  │   ├─Axis dimension properties (1 of 3)…………… Column\n" +
@@ -117,62 +137,42 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   ├─Identifier………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   │   │   └─Authority………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   └─Cited responsible party\n" +
-            "  │   │       ├─Individual……………………………………………………… NOAA/NWS/NCEP\n" +  // TODO: actually we can not distinguish individual from organization.
-            "  │   │       └─Role……………………………………………………………………… Originator\n" +
+            "  │   │       ├─Role……………………………………………………………………… Originator\n" +
+            "  │   │       └─Individual……………………………………………………… NOAA/NWS/NCEP\n" +  // TODO: actually we can not distinguish individual from organization.
             "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
             "  │   ├─Point of contact\n" +
-            "  │   │   ├─Individual………………………………………………………………… NOAA/NWS/NCEP\n" +
-            "  │   │   └─Role………………………………………………………………………………… Point of contact\n" +
+            "  │   │   ├─Role………………………………………………………………………………… Point of contact\n" +
+            "  │   │   └─Individual………………………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   ├─Spatial representation type……………………………… Grid\n" +
+            "  │   ├─Extent\n" +
+            "  │   │   ├─Geographic element\n" +
+            "  │   │   │   ├─West bound longitude…………………………… 180°W\n" +
+            "  │   │   │   ├─East bound longitude…………………………… 180°E\n" +
+            "  │   │   │   ├─South bound latitude…………………………… 90°S\n" +
+            "  │   │   │   ├─North bound latitude…………………………… 90°N\n" +
+            "  │   │   │   └─Extent type code……………………………………… true\n" +
+            "  │   │   └─Vertical element\n" +
+            "  │   │       ├─Minimum value……………………………………………… 0.0\n" +
+            "  │   │       └─Maximum value……………………………………………… 0.0\n" +
             "  │   ├─Descriptive keywords\n" +
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
             "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
             "  │   │   └─Thesaurus name……………………………………………………… GCMD Science Keywords\n" +
-            "  │   ├─Resource constraints\n" +
-            "  │   │   └─Use limitation……………………………………………………… Freely available\n" +
-            "  │   ├─Spatial representation type……………………………… Grid\n" +
-            "  │   └─Extent\n" +
-            "  │       ├─Geographic element\n" +
-            "  │       │   ├─West bound longitude…………………………… 180°W\n" +
-            "  │       │   ├─East bound longitude…………………………… 180°E\n" +
-            "  │       │   ├─South bound latitude…………………………… 90°S\n" +
-            "  │       │   ├─North bound latitude…………………………… 90°N\n" +
-            "  │       │   └─Extent type code……………………………………… true\n" +
-            "  │       └─Vertical element\n" +
-            "  │           ├─Minimum value……………………………………………… 0.0\n" +
-            "  │           └─Maximum value……………………………………………… 0.0\n" +
+            "  │   └─Resource constraints\n" +
+            "  │       └─Use limitation……………………………………………………… Freely available\n" +
             "  ├─Content info\n" +
             "  │   └─Attribute group\n" +
             "  │       └─Attribute…………………………………………………………………… SST\n" +
-            "  │           ├─Units…………………………………………………………………… K\n" +
             "  │           ├─Description…………………………………………………… Sea temperature\n" +
-            "  │           └─Name……………………………………………………………………… sea_water_temperature\n" +
+            "  │           ├─Name……………………………………………………………………… sea_water_temperature\n" +
+            "  │           └─Units…………………………………………………………………… K\n" +
             "  ├─Data quality info\n" +
             "  │   ├─Scope\n" +
             "  │   │   └─Level……………………………………………………………………………… Dataset\n" +
             "  │   └─Lineage\n" +
             "  │       └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
             "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +
-            "  ├─Metadata scope\n" +
-            "  │   └─Resource scope………………………………………………………………… Dataset\n" +
-            "  ├─Metadata identifier……………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   └─Authority……………………………………………………………………………… edu.ucar.unidata\n" +
-            "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
-            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
-            "  │   ├─Identifier…………………………………………………………………………… 19115-1\n" +
-            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
-            "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
-            "  │   ├─Cited responsible party\n" +
-            "  │   │   ├─Organisation…………………………………………………………… International Organization for Standardization\n" +
-            "  │   │   └─Role………………………………………………………………………………… Principal investigator\n" +
-            "  │   └─Presentation form………………………………………………………… Document digital\n" +
-            "  └─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
-            "      ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
-            "      ├─Identifier…………………………………………………………………………… 19115-2\n" +
-            "      │   ├─Code space………………………………………………………………… ISO\n" +
-            "      │   └─Version………………………………………………………………………… 2009(E)\n" +
-            "      ├─Cited responsible party\n" +
-            "      │   ├─Organisation…………………………………………………………… International Organization for Standardization\n" +
-            "      │   └─Role………………………………………………………………………………… Principal investigator\n" +
-            "      └─Presentation form………………………………………………………… Document digital\n", text);
+            "  └─Metadata scope\n" +
+            "      └─Resource scope………………………………………………………………… Dataset\n", text);
     }
 }

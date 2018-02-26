@@ -17,17 +17,18 @@
 package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB wrapper for {@link Locale}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB wrapper for {@link Locale}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * <p>This adapter formats the locale like below:</p>
  *
@@ -41,16 +42,17 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "LanguageCode_PropertyType")
+@XmlType(name = "LanguageCode_PropertyType", namespace = Namespaces.LAN)
 public final class LanguageCode extends GO_CharacterString {
     /**
      * The language using a {@link org.opengis.util.CodeList}-like format.
      */
-    @XmlElement(name = "LanguageCode")
+    @XmlElement(name = "LanguageCode", namespace = Namespaces.LAN)
     private CodeListUID identifier;
 
     /**

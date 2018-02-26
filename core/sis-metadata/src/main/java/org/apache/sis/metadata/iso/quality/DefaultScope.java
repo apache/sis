@@ -35,7 +35,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  *

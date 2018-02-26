@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.content.CoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -29,12 +30,12 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlType(name = "MI_CoverageDescription_Type")
-@XmlRootElement(name = "MI_CoverageDescription")
+@XmlType(name = "MI_CoverageDescription_Type", namespace = Namespaces.MRC)
+@XmlRootElement(name = "MI_CoverageDescription", namespace = Namespaces.MRC)
 @SuppressWarnings("CloneableClassWithoutClone")
 public class MI_CoverageDescription extends DefaultCoverageDescription {
     /**

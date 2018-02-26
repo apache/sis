@@ -30,9 +30,9 @@
  *
  * <ul class="verbose">
  *   <li><b>JAXB adapters for primitive types.</b><br>
- *   JAXB can write directly Java primitive type at marshalling time "as is". However ISO-19139
- *   requires those values to be surrounded by elements representing the data type. The role of
- *   these adapters is to add these elements around the value.</li>
+ *   JAXB can write directly Java primitive type at marshalling time "as is". However ISO 19115-3
+ *   requires those values to be wrapped by elements representing the data type.  A role of these
+ *   adapters is to add these elements around the value.</li>
  *
  *   <li><b>JAXB adapters for <cite>unit of measure</cite></b> as specified in the ISO-19103 specifications.<br>
  *   For example, a measure marshalled with JAXB will be formatted like {@code <gco:Measure uom="m">220.0</gco:Measure>}.</li>
@@ -51,13 +51,13 @@
  * <ul class="verbose">
  *   <li><code>org.apache.sis.<b>metadata.iso</b></code> public packages:
  *   <ul>
- *     <li>Implement the ISO 19139 {@code Foo_Type}, where <var>Foo</var> is the ISO name of a class.</li>
+ *     <li>Implement the ISO 19115-3 {@code Foo_Type}, where <var>Foo</var> is the ISO name of a class.</li>
  *     <li>Contains the {@code gco:ObjectIdentification} group of attributes ({@code id}, {@code uuid}).</li>
  *     <li>Conceptually could have been subclasses of {@code ObjectIdentification} defined in this package.</li>
  *   </ul></li>
  *   <li><code>org.apache.sis.<b>internal.jaxb</b></code> private packages:
  *   <ul>
- *     <li>Implement the ISO 19139 {@code Foo_PropertyType} as subclasses of the {@link org.apache.sis.internal.jaxb.gco.PropertyType} class.</li>
+ *     <li>Implement the ISO 19115-3 {@code Foo_PropertyType} as subclasses of the {@link org.apache.sis.internal.jaxb.gco.PropertyType} class.</li>
  *     <li>Contains the {@code gco:ObjectReference} group of attributes ({@code xlink}, {@code uuidref}).</li>
  *     <li>Attributes are declared in the {@link org.apache.sis.internal.jaxb.gco.ObjectReference} Java class.</li>
  *    </ul></li>
@@ -77,7 +77,8 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
@@ -86,7 +87,7 @@
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "gmx", namespaceURI = Namespaces.GMX)
+    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 /*

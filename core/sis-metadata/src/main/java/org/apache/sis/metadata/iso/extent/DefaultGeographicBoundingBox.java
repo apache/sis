@@ -107,7 +107,7 @@ import static java.lang.Double.doubleToLongBits;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.geometry.GeneralEnvelope
  *

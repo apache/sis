@@ -27,6 +27,8 @@ import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
@@ -52,7 +54,7 @@ import org.apache.sis.metadata.iso.maintenance.DefaultScope;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -187,7 +189,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @return quantitative quality information for the data.
      */
     @Override
-    @XmlElement(name = "report")
+    @XmlElement(name = "report", required = true)
     public Collection<Element> getReports() {
         return reports = nonNullCollection(reports, Element.class);
     }
@@ -205,11 +207,13 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * Returns non-quantitative quality information about the lineage of the data specified by the scope.
      *
      * @return non-quantitative quality information about the lineage of the data specified, or {@code null}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-394">Issue SIS-394</a>
      */
     @Override
-    @XmlElement(name = "lineage")
+    @XmlElement(name = "lineage", namespace = LegacyNamespaces.GMD)
     public Lineage getLineage() {
-        return lineage;
+        return FilterByVersion.LEGACY_METADATA.accept() ? lineage : null;
     }
 
     /**
