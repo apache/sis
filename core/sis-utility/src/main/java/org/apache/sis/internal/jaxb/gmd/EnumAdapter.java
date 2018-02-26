@@ -17,8 +17,10 @@
 package org.apache.sis.internal.jaxb.gmd;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.iso.Types;
+
+// Branch-dependent imports
+import org.opengis.util.ControlledVocabulary;
 
 
 /**
@@ -32,7 +34,7 @@ import org.apache.sis.util.iso.Types;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  *
  * @param <ValueType>  the subclass implementing this adapter.
  * @param <BoundType>  the enum being adapted.

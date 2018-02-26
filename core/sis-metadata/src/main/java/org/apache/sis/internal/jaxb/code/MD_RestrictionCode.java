@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -60,8 +59,10 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      */
     @Override
     protected MD_RestrictionCode wrap(final CodeListUID value) {
-        if ("licence".equals(value.codeListValue) && Context.isFlagSet(Context.current(), Context.LEGACY_METADATA)) {
+        if ("licence".equals(value.codeListValue) && !accept2014()) {
             value.codeListValue = "license";
+        } else if ("license".equals(value.codeListValue) && accept2014()) {
+            value.codeListValue = "licence";
         }
         return new MD_RestrictionCode(value);
     }
@@ -93,6 +94,9 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
+        if (value != null && "license".equalsIgnoreCase(value.codeListValue)) {
+            value.codeListValue = "licence";    // For matching current spelling (ISO 19115-3:2016).
+        }
         identifier = value;
     }
 }
