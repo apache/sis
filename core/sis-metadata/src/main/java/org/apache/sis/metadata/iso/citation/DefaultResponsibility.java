@@ -22,13 +22,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.metadata.citation.Party;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.code.CI_RoleCode;
+
+// Branch-specific imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

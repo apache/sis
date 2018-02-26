@@ -461,7 +461,7 @@ public final class Types extends Static {
      */
     static String getResources(final String classname) {
         String resources = "org.opengis.metadata.Descriptions";
-        if (classname.regionMatches(0, resources, 0, 21)) { // 21 is the location after the last dot.
+        if (classname.regionMatches(0, resources, 0, 21)) {             // 21 is the location after the last dot.
             return resources;
         }
         // Add more checks here (maybe in a loop) if there is more resource candidates.

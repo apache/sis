@@ -47,9 +47,6 @@ import org.opengis.util.InternationalString;
 public final class EPSGFactoryProxy implements CRSAuthorityFactory {
     private volatile CRSAuthorityFactory factory;
 
-    public EPSGFactoryProxy() {
-    }
-
     private CRSAuthorityFactory factory() throws FactoryException {
         CRSAuthorityFactory f = factory;
         if (f == null) {

@@ -2625,13 +2625,14 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds a URL to a more complete description of the metadata.
+     * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/metadataLinkage/linkage}
      *     with {@code function} set to {@link OnLineFunction#COMPLETE_METADATA}</li>
      * </ul>
      *
-     * @param  link
+     * @param  link  URL to a more complete description of the metadata, or {@code null}.
      */
     public final void addCompleteMetadata(final URI link) {
         if (link != null) {

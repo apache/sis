@@ -89,8 +89,10 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
                 return new DefaultResponsibility(metadata);
             }
             return DefaultResponsibility.castOrCopy(metadata);
-        } else {
+        } else if (FilterByVersion.LEGACY_METADATA.accept()) {
             return DefaultResponsibleParty.castOrCopy(metadata);
+        } else {
+            return null;
         }
     }
 
