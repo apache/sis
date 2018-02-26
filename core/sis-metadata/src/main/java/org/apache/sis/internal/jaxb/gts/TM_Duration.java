@@ -78,7 +78,7 @@ public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
      * Returns the {@link Duration} generated from the metadata value.
      * This method is systematically called at marshalling time by JAXB.
      *
-     * @return The time period, or {@code null}.
+     * @return the time period, or {@code null}.
      */
     @XmlElement(name = "TM_Duration")
     public javax.xml.datatype.Duration getElement() {
@@ -96,7 +96,7 @@ public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
      * Sets the value from the {@link Duration}.
      * This method is called at unmarshalling time by JAXB.
      *
-     * @param duration The adapter to set.
+     * @param  duration  the value to set.
      */
     public void setElement(final javax.xml.datatype.Duration duration) {
         metadata = /*TM_PeriodDuration.toISO*/(duration);

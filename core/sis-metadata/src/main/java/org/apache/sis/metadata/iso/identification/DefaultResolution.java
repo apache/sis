@@ -297,10 +297,10 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
-    @ValueRange(minimum=0, isMinIncluded=false)
     @XmlElement(name = "vertical")
     @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     @UML(identifier="vertical", obligation=CONDITIONAL, specification=ISO_19115)
+    @ValueRange(minimum=0, isMinIncluded=false)
     public Double getVertical() {
         return (property == VERTICAL) ? (Double) value : null;
     }
@@ -330,10 +330,10 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
-    @ValueRange(minimum=0, isMinIncluded=false)
     @XmlElement(name = "angularDistance")
     @XmlJavaTypeAdapter(GO_Real.Since2014.class)
     @UML(identifier="angularDistance", obligation=CONDITIONAL, specification=ISO_19115)
+    @ValueRange(minimum=0, isMinIncluded=false)
     public Double getAngularDistance() {
         return (property == ANGULAR) ? (Double) value : null;
     }
