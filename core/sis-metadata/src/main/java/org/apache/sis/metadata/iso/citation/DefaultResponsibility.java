@@ -21,10 +21,13 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.code.CI_RoleCode;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -62,15 +65,16 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@SuppressWarnings({"CloneableClassWithoutClone", "deprecation"})    // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
-/// "role",
-/// "extents",
-/// "parties"
+    "role",
+    "extent",
+    "party"
 })
 @XmlRootElement(name = "CI_Responsibility")
 @XmlSeeAlso({
@@ -153,7 +157,8 @@ public class DefaultResponsibility extends ISOMetadata {
      *
      * @return function performed by the responsible party.
      */
-/// @XmlElement(name = "role", required = true)
+    @XmlElement(name = "role", required = true)
+    @XmlJavaTypeAdapter(CI_RoleCode.Since2014.class)
     @UML(identifier="role", obligation=MANDATORY, specification=ISO_19115)
     public Role getRole() {
         return role;
@@ -174,7 +179,7 @@ public class DefaultResponsibility extends ISOMetadata {
      *
      * @return the spatial or temporal extents of the role.
      */
-/// @XmlElement(name = "extent")
+    // @XmlElement at the end of this class.
     @UML(identifier="extent", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
@@ -199,7 +204,7 @@ public class DefaultResponsibility extends ISOMetadata {
      *
      * @return information about the parties.
      */
-/// @XmlElement(name = "party", required = true)
+    // @XmlElement at the end of this class.
     @UML(identifier="party", obligation=MANDATORY, specification=ISO_19115)
     public Collection<AbstractParty> getParties() {
         return parties = nonNullCollection(parties, AbstractParty.class);
@@ -217,5 +222,34 @@ public class DefaultResponsibility extends ISOMetadata {
      */
     public void setParties(final Collection<? extends AbstractParty> newValues) {
         parties = writeCollection(newValues, parties, AbstractParty.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "extent")
+    private Collection<Extent> getExtent() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getExtents() : null;
+    }
+
+    @XmlElement(name = "party", required = true)
+    private Collection<AbstractParty> getParty() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getParties() : null;
     }
 }

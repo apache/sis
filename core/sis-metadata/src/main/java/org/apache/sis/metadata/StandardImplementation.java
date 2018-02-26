@@ -157,14 +157,6 @@ final class StandardImplementation extends MetadataStandard {
                             length = p.length();
                             continue;
                         }
-                        if (candidate.isAnnotationPresent(Deprecated.class)) {
-                            // Skip deprecated implementations.
-                            candidate = candidate.getSuperclass();
-                            if (!type.isAssignableFrom(candidate) || candidate.isAnnotationPresent(Deprecated.class)) {
-                                length = p.length();
-                                continue;
-                            }
-                        }
                         implementations.put(type, candidate);
                         return candidate.asSubclass(type);
                     }

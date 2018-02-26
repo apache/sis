@@ -17,28 +17,25 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.metadata.iso.constraint.DefaultReleasability;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter mapping implementing class to the GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @since   1.0
+ * @version 1.0
  * @module
  */
-public final class EX_GeographicBoundingBox extends
-        PropertyType<EX_GeographicBoundingBox, GeographicBoundingBox>
-{
+public class MD_Releasability extends PropertyType<MD_Releasability, DefaultReleasability> {
     /**
      * Empty constructor for JAXB only.
      */
-    public EX_GeographicBoundingBox() {
+    public MD_Releasability() {
     }
 
     /**
@@ -46,42 +43,42 @@ public final class EX_GeographicBoundingBox extends
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code GeographicBoundingBox.class}
+     * @return {@code Releasability.class}
      */
     @Override
-    protected Class<GeographicBoundingBox> getBoundType() {
-        return GeographicBoundingBox.class;
+    protected final Class<DefaultReleasability> getBoundType() {
+        return DefaultReleasability.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private EX_GeographicBoundingBox(final GeographicBoundingBox metadata) {
+    private MD_Releasability(final DefaultReleasability metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:EX_GeographicBoundingBox>} XML element.
+     * in a {@code <gmd:MD_Releasability>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected EX_GeographicBoundingBox wrap(final GeographicBoundingBox metadata) {
-        return new EX_GeographicBoundingBox(metadata);
+    protected MD_Releasability wrap(final DefaultReleasability metadata) {
+        return new MD_Releasability(metadata);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:EX_GeographicBoundingBox>} XML element.
+     * inside the {@code <gmd:MD_Releasability>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultGeographicBoundingBox getElement() {
-        return DefaultGeographicBoundingBox.castOrCopy(metadata);
+    public final DefaultReleasability getElement() {
+        return metadata;
     }
 
     /**
@@ -89,7 +86,26 @@ public final class EX_GeographicBoundingBox extends
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultGeographicBoundingBox metadata) {
+    public final void setElement(final DefaultReleasability metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends MD_Releasability {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MD_Releasability wrap(final DefaultReleasability value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

@@ -20,19 +20,22 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Role}, in order to integrate the value in an element respecting
- * the ISO-19139 standard. See package documentation for more information about the handling
- * of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link Role}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
+public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -62,7 +65,7 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      * @return the code list class.
      */
     @Override
-    protected Class<Role> getCodeListClass() {
+    protected final Class<Role> getCodeListClass() {
         return Role.class;
     }
 
@@ -72,8 +75,8 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "CI_RoleCode")
-    public CodeListUID getElement() {
+    @XmlElement(name = "CI_RoleCode", namespace = Namespaces.CIT)
+    public final CodeListUID getElement() {
         return identifier;
     }
 
@@ -82,7 +85,26 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      *
      * @param  value  the unmarshalled value.
      */
-    public void setElement(final CodeListUID value) {
+    public final void setElement(final CodeListUID value) {
         identifier = value;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends CI_RoleCode {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected CI_RoleCode wrap(final CodeListUID value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

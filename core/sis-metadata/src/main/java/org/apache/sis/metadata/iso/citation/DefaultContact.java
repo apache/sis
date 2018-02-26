@@ -22,8 +22,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.opengis.annotation.UML;
-import org.opengis.util.CodeList;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
@@ -32,10 +31,16 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
+// Branch-specific imports
+import org.opengis.util.CodeList;
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -56,17 +61,22 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",
+    "phoneList",
     "address",
+    "addressList",
     "onlineResource",
+    "onlineResourceList",
     "hoursOfService",
-    "contactInstructions"
+    "contactInstructions",
+    "contactType"
 })
 @XmlRootElement(name = "CI_Contact")
 public class DefaultContact extends ISOMetadata implements Contact {
@@ -181,6 +191,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
+    // @XmlElement at the end of this class.
     @UML(identifier="phone", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Telephone> getPhones() {
         return phones = nonNullCollection(phones, Telephone.class);
@@ -197,9 +208,9 @@ public class DefaultContact extends ISOMetadata implements Contact {
         phones = writeCollection(newValues, phones, Telephone.class);
         /*
          * Code below this point will be deleted after we removed the deprecated methods in DefaultTelephone.
-         * This code notifies all DefaultTelephone instances about the the list of phones in order to allow
-         * the deprecated Telephone.getVoices() and Telephone.getFacsimiles() methods to fetches information
-         * from the phones list.
+         * This code notifies all DefaultTelephone instances about the list of phones in order to allow the
+         * deprecated Telephone.getVoices() and Telephone.getFacsimiles() methods to fetches information from
+         * the phones list.
          */
         if (phones != null) {
             boolean modified = false;
@@ -229,29 +240,31 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "phone")
     @Dependencies("getPhones")
+    @XmlElement(name = "phone", namespace = LegacyNamespaces.GMD)
     public Telephone getPhone() {
         Telephone phone = null;
-        final Collection<Telephone> phones = getPhones();
-        if (phones != null) { // May be null on marshalling.
-            CodeList<?> ignored = null;
-            for (final Telephone c : phones) {
-                if (c instanceof DefaultTelephone) {
-                    String name;
-                    final CodeList<?> type = ((DefaultTelephone) c).numberType;
-                    if (type != null && ("VOICE".equals(name = type.name()) || "FACSIMILE".equals(name))) {
-                        if (phone == null) {
-                            phone = c;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Collection<Telephone> phones = getPhones();
+            if (phones != null) { // May be null on marshalling.
+                CodeList<?> ignored = null;
+                for (final Telephone c : phones) {
+                    if (c instanceof DefaultTelephone) {
+                        String name;
+                        final CodeList<?> type = ((DefaultTelephone) c).numberType;
+                        if (type != null && ("VOICE".equals(name = type.name()) || "FACSIMILE".equals(name))) {
+                            if (phone == null) {
+                                phone = c;
+                            }
+                        } else if (ignored == null) {
+                            ignored = type;
                         }
-                    } else if (ignored == null) {
-                        ignored = type;
                     }
                 }
-            }
-            if (ignored != null) {
-                Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
-                        Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored);
+                if (ignored != null) {
+                    Context.warningOccured(Context.current(), DefaultContact.class, "getPhone",
+                            Messages.class, Messages.Keys.IgnoredPropertyAssociatedTo_1, ignored);
+                }
             }
         }
         return phone;
@@ -291,6 +304,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
+    // @XmlElement at the end of this class.
     @UML(identifier="address", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Address> getAddresses() {
         return addresses = nonNullCollection(addresses, Address.class);
@@ -317,10 +331,13 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "address")
     @Dependencies("getAddresses")
+    @XmlElement(name = "address", namespace = LegacyNamespaces.GMD)
     public Address getAddress() {
-        return LegacyPropertyAdapter.getSingleton(getAddresses(), Address.class, null, DefaultContact.class, "getAddress");
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return LegacyPropertyAdapter.getSingleton(getAddresses(), Address.class, null, DefaultContact.class, "getAddress");
+        }
+        return null;                // Marshalling newer ISO 19115-3
     }
 
     /**
@@ -343,6 +360,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
+    // @XmlElement at the end of this class.
     @UML(identifier="onlineResource", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<OnlineResource> getOnlineResources() {
         return onlineResources = nonNullCollection(onlineResources, OnlineResource.class);
@@ -369,10 +387,13 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "onlineResource")
     @Dependencies("getOnlineResources")
+    @XmlElement(name = "onlineResource", namespace = LegacyNamespaces.GMD)
     public OnlineResource getOnlineResource() {
-        return LegacyPropertyAdapter.getSingleton(getOnlineResources(), OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return LegacyPropertyAdapter.getSingleton(getOnlineResources(), OnlineResource.class, null, DefaultContact.class, "getOnlineResource");
+        }
+        return null;                // Marshalling newer ISO 19115-3
     }
 
     /**
@@ -448,7 +469,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "contactType")
+    @XmlElement(name = "contactType")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     @UML(identifier="contactType", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getContactType() {
         return contactType;
@@ -464,5 +486,39 @@ public class DefaultContact extends ISOMetadata implements Contact {
     public void setContactType(final InternationalString newValue) {
         checkWritePermission();
         contactType = newValue;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "phone")
+    private Collection<Telephone> getPhoneList() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getPhones() : null;
+    }
+
+    @XmlElement(name = "address")
+    private Collection<Address> getAddressList() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getAddresses() : null;
+    }
+
+    @XmlElement(name = "onlineResource")
+    private Collection<OnlineResource> getOnlineResourceList() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getOnlineResources() : null;
     }
 }

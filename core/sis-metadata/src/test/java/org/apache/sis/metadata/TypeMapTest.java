@@ -47,7 +47,7 @@ import static java.util.AbstractMap.SimpleEntry;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -77,8 +77,8 @@ public final strictfp class TypeMapTest extends TestCase {
 //          new SimpleEntry<>("collectiveTitle",       InternationalString.class),  -- deprecated as of ISO 19115:2014
             new SimpleEntry<>("ISBN",                  String.class),
             new SimpleEntry<>("ISSN",                  String.class),
-            new SimpleEntry<>("graphic",               BrowseGraphic.class),
-            new SimpleEntry<>("onlineResource",        OnlineResource.class)
+            new SimpleEntry<>("onlineResource",        OnlineResource.class),
+            new SimpleEntry<>("graphic",               BrowseGraphic.class)
         }, map.entrySet().toArray());
 
         assertEquals(InternationalString.class, map.get("alternateTitle"));

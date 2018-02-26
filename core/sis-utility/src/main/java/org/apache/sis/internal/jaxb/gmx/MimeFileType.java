@@ -23,13 +23,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
- * The {@code <gmx:MimeFileType>} element, which may be used as a substitute of {@code <gco:CharacterString>}.
+ * The {@code <gcx:MimeFileType>} element, which may be used as a substitute of {@code <gco:CharacterString>}.
  * This is used in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic}.
  * Example:
  *
  * {@preformat xml
  *   <fileType>
- *     <gmx:MimeFileType type="image/tiff">Graphic TIFF</gmx:MimeFileType>
+ *     <gcx:MimeFileType type="image/tiff">Graphic TIFF</gcx:MimeFileType>
  *   </fileType>
  * }
  *

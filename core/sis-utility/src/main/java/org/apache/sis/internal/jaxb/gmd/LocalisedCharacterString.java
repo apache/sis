@@ -40,7 +40,7 @@ import org.apache.sis.util.Debug;
 final class LocalisedCharacterString {
     /**
      * A prefix to concatenate with the {@linkplain Locale#getISO3Language() language code}.
-     * This is a hack for a common pattern found in the way locales are specified in ISO 19139 files.
+     * This is a hack for a common pattern found in the way locales are specified in ISO 19139:2007 files.
      * See <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a> for more information.
      */
     private static final String PREFIX = "#locale-";

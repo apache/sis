@@ -25,7 +25,6 @@ import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.distribution.DataFile;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -55,7 +54,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -67,7 +66,7 @@ import org.apache.sis.xml.Namespaces;
     "resultFormat",
     "resultFile"
 })
-@XmlRootElement(name = "QE_CoverageResult", namespace = Namespaces.GMI)
+@XmlRootElement(name = "QE_CoverageResult")
 public class DefaultCoverageResult extends AbstractResult implements CoverageResult {
     /**
      * Serial number for inter-operability with different versions.
@@ -157,7 +156,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return spatial representation of the coverage result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "spatialRepresentationType", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "spatialRepresentationType", required = true)
     public SpatialRepresentationType getSpatialRepresentationType() {
         return spatialRepresentationType;
     }
@@ -178,7 +177,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return digital representation of data quality measures composing the coverage result, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultSpatialRepresentation", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "resultSpatialRepresentation", required = true)
     public SpatialRepresentation getResultSpatialRepresentation() {
         return resultSpatialRepresentation;
     }
@@ -200,7 +199,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return description of the content of the result coverage, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultContentDescription", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "resultContentDescription", required = true)
     public CoverageDescription getResultContentDescription() {
         return resultContentDescription;
     }
@@ -222,7 +221,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return format of the result coverage data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultFormat", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "resultFormat", required = true)
     public Format getResultFormat() {
         return resultFormat;
     }
@@ -243,7 +242,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @return data file containing the result coverage data, or {@code null}.
      */
     @Override
-    @XmlElement(name = "resultFile", namespace = Namespaces.GMX, required = true)
+    @XmlElement(name = "resultFile", required = true)
     public DataFile getResultFile() {
         return resultFile;
     }

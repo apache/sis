@@ -42,13 +42,13 @@ import org.opengis.metadata.quality.CompletenessCommission;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Completeness_Type")
-@XmlRootElement(name = "DQ_Completeness")
+@XmlRootElement(name = "AbstractDQ_Completeness")
 @XmlSeeAlso({
     DefaultCompletenessCommission.class,
     DefaultCompletenessOmission.class

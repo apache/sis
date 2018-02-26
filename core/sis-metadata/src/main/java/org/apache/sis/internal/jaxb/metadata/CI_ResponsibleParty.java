@@ -17,9 +17,16 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.metadata.iso.citation.AbstractParty;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
@@ -28,7 +35,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -79,16 +86,43 @@ public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty,
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultResponsibleParty getElement() {
-        return DefaultResponsibleParty.castOrCopy(metadata);
+    public DefaultResponsibility getElement() {
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return DefaultResponsibleParty.castOrCopy(metadata);
+        } else if (metadata != null) {
+            final DefaultIndividual individual;
+            final String name = metadata.getIndividualName();
+            Contact contact = metadata.getContactInfo();
+            AbstractParty party;
+            if (name != null) {
+                individual = new DefaultIndividual(name, metadata.getPositionName(), contact);
+                party      = individual;
+                contact    = null;
+            } else {
+                individual = null;
+                party      = null;
+            }
+            final InternationalString organisation = metadata.getOrganisationName();
+            if (organisation != null) {
+                party = new DefaultOrganisation(organisation, null, individual, contact);
+            }
+            if (party != null) {
+                return new DefaultResponsibility(metadata.getRole(), null, party);
+            }
+        }
+        return null;
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  metadata  the unmarshalled metadata.
+     * @param  md  the unmarshalled metadata.
      */
-    public void setElement(final DefaultResponsibleParty metadata) {
-        this.metadata = metadata;
+    public void setElement(final DefaultResponsibility md) {
+        if (md instanceof DefaultResponsibleParty) {
+            metadata = (DefaultResponsibleParty) md;
+        } else if (md != null) {
+            metadata = new DefaultResponsibleParty(md);
+        }
     }
 }

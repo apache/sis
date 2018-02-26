@@ -34,7 +34,7 @@ import static org.junit.Assume.assumeTrue;
  *   <li>Invoke every public methods from the {@code NamespacePrefixMapper} class.
  *       If we failed to override an abstract method, we will get an {@link AbstractMethodError}.</li>
  *   <li>For specific methods like {@link OGCNamespacePrefixMapper#getPreferredPrefix(String, String,
- *       boolean)}, use some value which will prove us that the overriden method has been invoked.</li>
+ *       boolean)}, use some value which will prove us that the overridden method has been invoked.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

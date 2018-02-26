@@ -26,16 +26,18 @@ import static org.opengis.annotation.Specification.ISO_19115;
 
 /**
  * Placeholder for code list not yet available in GeoAPI.
- * Currently only for {@code org.opengis.metadata.citation.TelephoneType}, but we use the
- * {@code UnsupportedCodeList} class name for making clear that this class will disappear
- * in a future Apache SIS version.
+ * Currently defines constants mostly for {@code org.opengis.metadata.citation.TelephoneType},
+ * but constants for other code list can be constructed like below:
+ *
+ * {@preformat java
+ *   operation.getDistributedComputingPlatforms().add(UnsupportedCodeList.valueOf("SOAP"));
+ * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
-@UML(identifier="CI_TelephoneTypeCode", specification=ISO_19115)
 public final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
     /**
      * For cross-version compatibility.
@@ -58,6 +60,12 @@ public final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
      */
     @UML(identifier="facsimile", obligation=CONDITIONAL, specification=ISO_19115)
     public static final CodeList<?> FACSIMILE = new UnsupportedCodeList("FACSIMILE");
+
+    /**
+     * A frequently used code list element.
+     */
+    @UML(identifier="WebServices", obligation=CONDITIONAL, specification=ISO_19115)
+    public static final CodeList<?> WEB_SERVICES = new UnsupportedCodeList("WEB_SERVICES");
 
     /**
      * Constructor for new code list element.

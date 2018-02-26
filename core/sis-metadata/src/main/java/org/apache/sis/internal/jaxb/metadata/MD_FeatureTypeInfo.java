@@ -17,29 +17,25 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.metadata.FeatureTypeList;
-import org.apache.sis.metadata.iso.DefaultFeatureTypeList;
+
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 
 
 /**
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
- * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @since   1.0
+ * @version 1.0
  * @module
- *
- * @deprecated Not anymore part of ISO 19115.
  */
-@Deprecated
-public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, FeatureTypeList> {
+public final class MD_FeatureTypeInfo extends PropertyType<MD_FeatureTypeInfo, DefaultFeatureTypeInfo> {
     /**
      * Empty constructor for JAXB only.
      */
-    public MD_FeatureTypeList() {
+    public MD_FeatureTypeInfo() {
     }
 
     /**
@@ -47,42 +43,42 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code FeatureTypeList.class}
+     * @return {@code FeatureTypeInfo.class}
      */
     @Override
-    protected Class<FeatureTypeList> getBoundType() {
-        return FeatureTypeList.class;
+    protected Class<DefaultFeatureTypeInfo> getBoundType() {
+        return DefaultFeatureTypeInfo.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private MD_FeatureTypeList(final FeatureTypeList metadata) {
+    private MD_FeatureTypeInfo(final DefaultFeatureTypeInfo metadata) {
         super(metadata);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:MD_FeatureTypeList>} XML element.
+     * in a {@code <gmd:MD_FeatureTypeInfo>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected MD_FeatureTypeList wrap(final FeatureTypeList metadata) {
-        return new MD_FeatureTypeList(metadata);
+    protected MD_FeatureTypeInfo wrap(final DefaultFeatureTypeInfo metadata) {
+        return new MD_FeatureTypeInfo(metadata);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:MD_FeatureTypeList>} XML element.
+     * inside the {@code <gmd:MD_FeatureTypeInfo>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultFeatureTypeList getElement() {
-        return DefaultFeatureTypeList.castOrCopy(metadata);
+    public DefaultFeatureTypeInfo getElement() {
+        return metadata;
     }
 
     /**
@@ -90,7 +86,7 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultFeatureTypeList metadata) {
+    public void setElement(final DefaultFeatureTypeInfo metadata) {
         this.metadata = metadata;
     }
 }

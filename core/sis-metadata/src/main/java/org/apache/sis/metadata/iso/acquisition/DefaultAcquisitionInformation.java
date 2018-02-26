@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */

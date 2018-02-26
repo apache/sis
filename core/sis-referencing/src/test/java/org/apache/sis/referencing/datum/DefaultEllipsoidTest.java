@@ -232,7 +232,7 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
         /*
          * Marshall and compare to the original file.
          */
-        assertMarshalEqualsFile(ELLIPSOID_FILE, ellipsoid, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(ELLIPSOID_FILE, ellipsoid, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -258,6 +258,6 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
         /*
          * Marshall and compare to the original file.
          */
-        assertMarshalEqualsFile(SPHERE_FILE, ellipsoid, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(SPHERE_FILE, ellipsoid, "xmlns:*", "xsi:schemaLocation");
     }
 }

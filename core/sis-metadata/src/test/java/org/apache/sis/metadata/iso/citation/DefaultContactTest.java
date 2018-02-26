@@ -81,7 +81,7 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
      * Initializes the test for catching warning messages.
      */
     private void init() {
-        context = new Context(0, null, null, null, null, null, null, this);
+        context = new Context(0, null, null, null, null, null, null, null, this);
     }
 
     /**

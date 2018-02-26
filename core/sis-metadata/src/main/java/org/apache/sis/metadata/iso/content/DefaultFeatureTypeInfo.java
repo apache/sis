@@ -55,7 +55,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @see org.apache.sis.storage.FeatureNaming
  * @see org.apache.sis.feature.DefaultFeatureType
@@ -65,7 +65,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "featureTypeName")
-@XmlType(name = "MD_FeatureTypeInfo", propOrder = {
+@XmlType(name = "MD_FeatureTypeInfo_Type", propOrder = {
     "featureTypeName",
     "featureInstanceCount"
 })

@@ -48,7 +48,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -216,7 +216,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @return meteorological conditions in the photo flight area, or {@code null}.
      */
     @Override
-    @XmlElement(name = "meteorologicalConditions", required = true)
+    @XmlElement(name = "meterologicalConditions", required = true)      // Really spelled that way in XSD file.
     public InternationalString getMeteorologicalConditions() {
         return meteorologicalConditions;
     }

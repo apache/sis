@@ -26,11 +26,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
-public final class MD_KeywordClass extends PropertyType<MD_KeywordClass, DefaultKeywordClass> {
+public class MD_KeywordClass extends PropertyType<MD_KeywordClass, DefaultKeywordClass> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -45,7 +45,7 @@ public final class MD_KeywordClass extends PropertyType<MD_KeywordClass, Default
      * @return {@code KeywordClass.class}
      */
     @Override
-    protected Class<DefaultKeywordClass> getBoundType() {
+    protected final Class<DefaultKeywordClass> getBoundType() {
         return DefaultKeywordClass.class;
     }
 
@@ -76,7 +76,7 @@ public final class MD_KeywordClass extends PropertyType<MD_KeywordClass, Default
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultKeywordClass getElement() {
+    public final DefaultKeywordClass getElement() {
         return metadata;
     }
 
@@ -85,7 +85,26 @@ public final class MD_KeywordClass extends PropertyType<MD_KeywordClass, Default
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultKeywordClass metadata) {
+    public final void setElement(final DefaultKeywordClass metadata) {
         this.metadata = metadata;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     */
+    public static final class Since2014 extends MD_KeywordClass {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MD_KeywordClass wrap(final DefaultKeywordClass value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

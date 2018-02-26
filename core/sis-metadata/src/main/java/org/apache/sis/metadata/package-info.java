@@ -103,7 +103,7 @@
  * </ul>
  *
  * <div class="section">How Metadata are marshalled</div>
- * The ISO 19139 standard defines how ISO 19115 metadata shall be represented in XML.
+ * The ISO 19115-3 standard defines how ISO 19115-1 metadata shall be represented in XML.
  * The SIS library supports XML marshalling and unmarshalling with JAXB annotations.
  *
  * <p>Only the implementation classes defined in the {@link org.apache.sis.metadata.iso} packages and sub-packages

@@ -52,12 +52,23 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
 public final strictfp class DefaultMetadataTest extends XMLTestCase implements WarningListener<Object> {
+    /**
+     * A flag for tracing workarounds for allowing some tests to pass despite regression.
+     * This boolean should be set to {@code false} and removed after the following issues has been fixed:
+     *
+     * <ul>
+     *   <li><a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a></li>
+     * </ul>
+     */
+    public static final boolean REGRESSION = true;
+
     /**
      * The resource key for the message of the warning that occurred while unmarshalling a XML fragment,
      * or {@code null} if none.
@@ -118,9 +129,9 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     @Test
     public void testEmptyCollection() throws JAXBException {
         final DefaultMetadata metadata = unmarshal(
-                "<gmd:MD_Metadata xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
-                "  <gmd:contact/>\n" +
-                "</gmd:MD_Metadata>");
+                "<mdb:MD_Metadata xmlns:mdb=\"" + Namespaces.MDB + "\">\n" +
+                "  <mdb:contact/>\n" +
+                "</mdb:MD_Metadata>");
         /*
          * Verify metadata property.
          */

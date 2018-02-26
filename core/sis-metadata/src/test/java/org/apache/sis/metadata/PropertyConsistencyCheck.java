@@ -23,23 +23,20 @@ import java.util.Collection;
 import java.util.Map;
 import java.lang.reflect.Method;
 import org.opengis.util.CodeList;
-import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.test.AnnotationsTestCase;
+import org.apache.sis.test.xml.AnnotationConsistencyCheck;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
-
 
 /**
  * Base class for tests done on metadata objects using reflection. This base class tests JAXB annotations
- * as described in the {@linkplain AnnotationsTestCase parent class}, and tests additional aspects like:
+ * as described in the {@link AnnotationConsistencyCheck parent class}, and tests additional aspects like:
  *
  * <ul>
  *   <li>All {@link AbstractMetadata} instance shall be initially {@linkplain AbstractMetadata#isEmpty() empty}.</li>
@@ -47,13 +44,16 @@ import static org.opengis.test.Assert.*;
  *   <li>After a call to a setter method, the getter method shall return a value equals to the given value.</li>
  * </ul>
  *
+ * This base class is defined in this {@code org.apache.sis.metadata} package because it needs to access
+ * package-private classes.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
+public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.
      */
@@ -70,7 +70,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * @param  standard  the standard implemented by the metadata objects to test.
      * @param  types     the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
-    protected MetadataTestCase(final MetadataStandard standard, final Class<?>... types) {
+    protected PropertyConsistencyCheck(final MetadataStandard standard, final Class<?>... types) {
         super(types);
         this.standard = standard;
     }
@@ -132,15 +132,10 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             return new Date(random.nextInt() * 1000L);
         }
         if (CodeList.class.isAssignableFrom(type)) try {
-            if (type == CharacterSet.class) {
-                // DefaultMetadata convert CharacterSet into Charset,
-                // but not all character sets are supported.
-                return CharacterSet.ISO_8859_1;
-            }
             if (type == CodeList.class) {
                 return null;
             }
-            final CodeList[] codes = (CodeList[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
+            final CodeList<?>[] codes = (CodeList<?>[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (ReflectiveOperationException e) {
             fail(e.toString());
@@ -187,7 +182,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
     /**
      * For every properties in every non-{@code Codelist} types listed in the {@link #types} array,
-     * tests the property values. This method performs the tests documented in class javadoc.
+     * tests the property values. This method verifies that all {@link AbstractMetadata} instances
+     * are initially {@linkplain AbstractMetadata#isEmpty() empty}, all getter methods return a null
+     * singleton or an empty collection, and tests setting a random value.
      */
     @Test
     public void testPropertyValues() {
@@ -196,12 +193,11 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             if (!CodeList.class.isAssignableFrom(type)) {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
-                    assertTrue(type.isAssignableFrom(impl));
+                    assertTrue("Not an implementation of expected interface.", type.isAssignableFrom(impl));
                     testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl, impl));
                 }
             }
         }
-        done();
     }
 
     /**
@@ -256,7 +252,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             if (value == null) {
                 assertFalse("Null values are not allowed to be collections.", isCollection);
             } else {
-                assertInstanceOf("Wrong property type.", propertyType, value);
+                assertTrue("Wrong property type.", propertyType.isInstance(value));
                 if (value instanceof CheckedContainer<?>) {
                     assertTrue("Wrong element type in collection.",
                             elementType.isAssignableFrom(((CheckedContainer<?>) value).getElementType()));
@@ -274,6 +270,10 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 fail("Non writable property: " + accessor + '.' + property);
             }
             if (isWritable) {
+                if (Date.class.isAssignableFrom(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE))) {
+                    // Dates requires sis-temporal module, which is not available for sis-metadata.
+                    continue;
+                }
                 final Object newValue = sampleValueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);
@@ -306,14 +306,6 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     @SuppressWarnings("deprecation")
     private static boolean skipTest(final Class<?> implementation, final String method) {
         return implementation == org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription.class ||
-              (implementation == org.apache.sis.metadata.iso.DefaultMetadata.class &&
-               method.equals("getLocales")) || // Fail when 'locale' value equals 'language'.
-              (implementation == org.apache.sis.metadata.iso.DefaultMetadata.class &&
-               method.equals("getDataSetUri")) ||
-              (implementation == org.apache.sis.metadata.iso.citation.DefaultContact.class &&
-               method.equals("getPhone")) || // Deprecated method replaced by 'getPhones()'.
-              (implementation == org.apache.sis.metadata.iso.lineage.DefaultSource.class &&
-               method.equals("getScaleDenominator")) || // Deprecated method replaced by 'getSourceSpatialResolution()'.
               (implementation == org.apache.sis.metadata.iso.citation.DefaultResponsibleParty.class &&
                method.equals("getParties"));
     }

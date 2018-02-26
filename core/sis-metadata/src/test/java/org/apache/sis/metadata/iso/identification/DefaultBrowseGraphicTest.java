@@ -18,17 +18,19 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.net.URI;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.logging.LogRecord;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.stream.StreamResult;
+import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.util.Version;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
+import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -39,13 +41,39 @@ import static java.util.Collections.singletonMap;
  * Tests {@link DefaultBrowseGraphic}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultBrowseGraphicTest extends TestCase {
+public final strictfp class DefaultBrowseGraphicTest extends XMLTestCase {
     /**
-     * Tests XML marshalling of {@code <gmx:MimeFileType>} inside {@code <gmd:MD_BrowseGraphic>}.
+     * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
+     */
+    private boolean legacy;
+
+    /**
+     * Verifies that marshalling the given metadata produces the expected XML document,
+     * then verifies that unmarshalling that document gives back the original metadata object.
+     * If {@link #legacy} is {@code true}, then this method will use ISO 19139:2007 schema.
+     */
+    private void roundtrip(final BrowseGraphic browse, String expected) throws JAXBException {
+        final String  actual;
+        final Version version;
+        if (legacy) {
+            expected = toLegacyXML(expected);
+            version  = VERSION_2007;
+        } else {
+            version  = VERSION_2014;
+        }
+        actual = marshal(browse, version);
+        assertXmlEquals(expected, actual, "xmlns:*");
+        assertEquals(browse, unmarshal(BrowseGraphic.class, actual));
+    }
+
+    /**
+     * Tests XML marshalling of {@code <gcx:MimeFileType>} inside {@code <mcc:MD_BrowseGraphic>}.
+     * This method uses the XML schema defined by ISO 19115-3.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
@@ -53,124 +81,149 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     public void testMimeFileType() throws JAXBException {
         final DefaultBrowseGraphic browse = new DefaultBrowseGraphic();
         browse.setFileType("image/tiff");
-        final String xml = XML.marshal(browse);
-        assertXmlEquals(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
-                "  <gmd:fileType>\n" +
-                "    <gmx:MimeFileType type=\"image/tiff\">image/tiff</gmx:MimeFileType>\n" +
-                "  </gmd:fileType>\n" +
-                "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
-        /*
-         * Unmarshal the element back to a Java object and compare to the original.
-         */
-        assertEquals(browse, XML.unmarshal(xml));
+        roundtrip(browse,
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
+                "  <mcc:fileType>\n" +
+                "    <gcx:MimeFileType type=\"image/tiff\">image/tiff</gcx:MimeFileType>\n" +
+                "  </mcc:fileType>\n" +
+                "</mcc:MD_BrowseGraphic>");
     }
 
     /**
-     * Tests XML marshalling of {@code <gmx:FileName>} inside {@code <gmd:MD_BrowseGraphic>}.
+     * Tests XML marshalling of {@code <gmx:MimeFileType>} inside {@code <gmd:MD_BrowseGraphic>}.
+     * This method uses the XML schema defined by ISO 19139:2007.
+     *
+     * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
+     */
+    @Test
+    @DependsOnMethod("testMimeFileType")
+    public void testMimeFileType_Legacy() throws JAXBException {
+        legacy = true;
+        testMimeFileType();
+    }
+
+    /**
+     * Tests XML marshalling of {@code <gcx:FileName>} inside {@code <mcc:MD_BrowseGraphic>}.
+     * This method uses the XML schema defined by ISO 19115-3.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
     public void testFileName() throws JAXBException {
-        final URI uri = URI.create("file:/catalog/image.png");
-        final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(uri);
-        final String xml = XML.marshal(browse);
-        assertXmlEquals(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
-                "  <gmd:fileName>\n" +
-                "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
-                "  </gmd:fileName>\n" +
-                "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
-        /*
-         * Unmarshal the element back to a Java object and compare to the original.
-         */
-        assertEquals(browse, XML.unmarshal(xml));
+        roundtrip(new DefaultBrowseGraphic(URI.create("file:/catalog/image.png")),
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
+                "  <mcc:fileName>\n" +
+                "    <gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>\n" +
+                "  </mcc:fileName>\n" +
+                "</mcc:MD_BrowseGraphic>");
     }
 
     /**
-     * Tests unmarshalling of {@code <gmx:FileName>} without {@code src} attribute.
+     * Tests XML marshalling of {@code <gmx:FileName>} inside {@code <gmd:MD_BrowseGraphic>}.
+     * This method uses the XML schema defined by ISO 19139:2007.
+     *
+     * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
+     */
+    @Test
+    @DependsOnMethod("testFileName")
+    public void testFileName_Legacy() throws JAXBException {
+        legacy = true;
+        testFileName();
+    }
+
+    /**
+     * Tests unmarshalling of {@code <gcx:FileName>} without {@code src} attribute.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
     @DependsOnMethod("testFileName")
     public void testFileNameWithoutSrc() throws JAXBException {
-        final DefaultBrowseGraphic browse = (DefaultBrowseGraphic) XML.unmarshal(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
-                "  <gmd:fileName>\n" +
-                "    <gmx:FileName>file:/catalog/image.png</gmx:FileName>\n" +
-                "  </gmd:fileName>\n" +
-                "</gmd:MD_BrowseGraphic>");
+        final DefaultBrowseGraphic browse = unmarshal(DefaultBrowseGraphic.class,
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
+                "  <mcc:fileName>\n" +
+                "    <gcx:FileName>file:/catalog/image.png</gcx:FileName>\n" +
+                "  </mcc:fileName>\n" +
+                "</mcc:MD_BrowseGraphic>");
 
         assertEquals(URI.create("file:/catalog/image.png"), browse.getFileName());
     }
 
     /**
-     * Tests XML marshalling of {@code <gmx:FileName>} and {@code <gmx:MimeFileType>} together.
+     * Tests XML marshalling of {@code <gcx:FileName>} and {@code <gcx:MimeFileType>} together.
+     * This method uses the XML schema defined by ISO 19115-3.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
     @DependsOnMethod({"testFileName", "testMimeFileType"})
     public void testFileNameAndType() throws JAXBException {
-        final URI uri = URI.create("file:/catalog/image.png");
-        final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(uri);
+        final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(URI.create("file:/catalog/image.png"));
         browse.setFileType("image/tiff");
-        final String xml = XML.marshal(browse);
-        assertXmlEquals(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
-                "  <gmd:fileName>\n" +
-                "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
-                "  </gmd:fileName>\n" +
-                "  <gmd:fileType>\n" +
-                "    <gmx:MimeFileType type=\"image/tiff\">image/tiff</gmx:MimeFileType>\n" +
-                "  </gmd:fileType>\n" +
-                "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
-        /*
-         * Unmarshal the element back to a Java object and compare to the original.
-         */
-        assertEquals(browse, XML.unmarshal(xml));
+        roundtrip(browse,
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + "\">\n" +
+                "  <mcc:fileName>\n" +
+                "    <gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>\n" +
+                "  </mcc:fileName>\n" +
+                "  <mcc:fileType>\n" +
+                "    <gcx:MimeFileType type=\"image/tiff\">image/tiff</gcx:MimeFileType>\n" +
+                "  </mcc:fileType>\n" +
+                "</mcc:MD_BrowseGraphic>");
+    }
+
+    /**
+     * Tests XML marshalling of {@code <gmx:FileName>} and {@code <gmx:MimeFileType>} together.
+     * This method uses the XML schema defined by ISO 19139:2007.
+     *
+     * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
+     */
+    @Test
+    @DependsOnMethod({"testFileName_Legacy", "testMimeFileType_Legacy"})
+    public void testFileNameAndType_Legacy() throws JAXBException {
+        legacy = true;
+        testFileNameAndType();
     }
 
     /**
      * Tests XML marshalling of filename substituted by {@code <gco:CharacterString>}
-     * inside {@code <gmd:MD_BrowseGraphic>}.
+     * inside {@code <mcc:MD_BrowseGraphic>}.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
     @DependsOnMethod("testFileNameAndType")
     public void testStringSubstitution() throws JAXBException {
-        final URI uri = URI.create("file:/catalog/image.png");
-        final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(uri);
+        final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(URI.create("file:/catalog/image.png"));
         browse.setFileType("image/tiff");
-        final StringWriter buffer = new StringWriter();
-        XML.marshal(browse, new StreamResult(buffer),
-                singletonMap(XML.STRING_SUBSTITUTES, new String[] {"filename", "mimetype"}));
-        final String xml = buffer.toString();
+
+        final MarshallerPool pool = getMarshallerPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.setProperty(XML.STRING_SUBSTITUTES, new String[] {"filename", "mimetype"});
+        final String xml = marshal(marshaller, browse);
+        pool.recycle(marshaller);
+
         assertXmlEquals(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
                                      " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:fileName>\n" +
+                "  <mcc:fileName>\n" +
                 "    <gco:CharacterString>file:/catalog/image.png</gco:CharacterString>\n" +
-                "  </gmd:fileName>\n" +
-                "  <gmd:fileType>\n" +
+                "  </mcc:fileName>\n" +
+                "  <mcc:fileType>\n" +
                 "    <gco:CharacterString>image/tiff</gco:CharacterString>\n" +
-                "  </gmd:fileType>\n" +
-                "</gmd:MD_BrowseGraphic>", xml, "xmlns:*");
+                "  </mcc:fileType>\n" +
+                "</mcc:MD_BrowseGraphic>", xml, "xmlns:*");
         /*
          * Unmarshal the element back to a Java object and compare to the original.
          */
-        assertEquals(browse, XML.unmarshal(xml));
+        assertEquals(browse, unmarshal(BrowseGraphic.class, xml));
     }
 
     /**
-     * Tests the unmarshaller with the same URI in both {@code <gco:CharacterString>} and {@code <gmx:FileName>}.
+     * Tests the unmarshaller with the same URI in both {@code <gco:CharacterString>} and {@code <gcx:FileName>}.
      * Since the URI is the same, the unmarshaller should not produce any warning since there is no ambiguity.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
@@ -180,14 +233,14 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     public void testDuplicatedValues() throws JAXBException {
         final Warning listener = new Warning();
         final DefaultBrowseGraphic browse = listener.unmarshal(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + '"' +
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + '"' +
                                      " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:fileName>\n" +
-                "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
+                "  <mcc:fileName>\n" +
+                "    <gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>\n" +
                 "    <gco:CharacterString>file:/catalog/image.png</gco:CharacterString>\n" +
-                "  </gmd:fileName>\n" +
-                "</gmd:MD_BrowseGraphic>");
+                "  </mcc:fileName>\n" +
+                "</mcc:MD_BrowseGraphic>");
 
         assertEquals(URI.create("file:/catalog/image.png"), browse.getFileName());
         assertFalse("Expected no warning.", listener.receivedWarning);
@@ -195,21 +248,21 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
 
     /**
      * Ensures that the unmarshaller produces a warning when {@code <gco:CharacterString>} and
-     * {@code <gmx:FileName>} both exist inside the same {@code <gmd:MD_BrowseGraphic>}.
+     * {@code <gcx:FileName>} both exist inside the same {@code <gmd:MD_BrowseGraphic>}.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
     @DependsOnMethod("testStringSubstitution")
     public void testWarnings() throws JAXBException {
-        testWarnings("<gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>",
+        testWarnings("<gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>",
                      "<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>");
         /*
          * Test again with the same element value, but in reverse order.
          * We do that for ensuring that FileName still has precedence.
          */
         testWarnings("<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>",
-                     "<gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>");
+                     "<gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>");
     }
 
     /**
@@ -218,14 +271,14 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     private void testWarnings(final String first, final String second) throws JAXBException {
         final Warning listener = new Warning();
         final DefaultBrowseGraphic browse = listener.unmarshal(
-                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                     " xmlns:gmx=\"" + Namespaces.GMX + '"' +
+                "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
+                                     " xmlns:gcx=\"" + Namespaces.GCX + '"' +
                                      " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-                "  <gmd:fileName>\n" +
+                "  <mcc:fileName>\n" +
                 "    " + first + "\n" +
                 "    " + second + "\n" +
-                "  </gmd:fileName>\n" +
-                "</gmd:MD_BrowseGraphic>");
+                "  </mcc:fileName>\n" +
+                "</mcc:MD_BrowseGraphic>");
 
         assertEquals(URI.create("file:/catalog/image.png"), browse.getFileName());
         assertTrue("Expected a warning.", listener.receivedWarning);

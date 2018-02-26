@@ -65,7 +65,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -350,7 +350,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @return plan that identifies solution to satisfy the requirement.
      */
     @Override
-    @XmlElement(name = "satisfiedPlan")
+    @XmlElement(name = "satisifiedPlan")                // Really spelled that way in XSD file.
     public Collection<Plan> getSatisfiedPlans() {
         return satisfiedPlans = nonNullCollection(satisfiedPlans, Plan.class);
     }

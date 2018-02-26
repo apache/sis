@@ -100,7 +100,6 @@ public class ReferenceResolver {
      * @param  uuid     the {@code uuid} attributes.
      * @return an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      */
-    @SuppressWarnings("unchecked")
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
         ensureNonNull("type", type);
         ensureNonNull("uuid", uuid);
@@ -243,8 +242,8 @@ public class ReferenceResolver {
 
     /**
      * Returns the {@code <gmx:Anchor>} to use for the given text, or {@code null} if none.
-     * Anchors can appear in ISO 19139 documents where we would normally expect a character
-     * sequence. For example:
+     * Anchors can appear in ISO 19115-3 documents where we would normally expect a character sequence.
+     * For example:
      *
      * <table class="sis">
      * <caption>XML representations of string</caption>

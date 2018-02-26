@@ -16,7 +16,7 @@
  */
 
 /**
- * Placeholder for GeoAPI interfaces not present in GeoAPI 3.0.0.
+ * Placeholder for GeoAPI interfaces not present in GeoAPI 3.0.
  *
  * <STRONG>Do not use!</STRONG>
  *

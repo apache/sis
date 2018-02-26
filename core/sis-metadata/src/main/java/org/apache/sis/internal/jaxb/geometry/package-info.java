@@ -25,15 +25,16 @@
  * will be substituted to that interface.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
-    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GEX, xmlns = {
+    @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.geometry;

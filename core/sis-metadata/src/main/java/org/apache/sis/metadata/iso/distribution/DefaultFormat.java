@@ -21,7 +21,7 @@ import java.util.function.BiConsumer;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
@@ -29,10 +29,15 @@ import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.metadata.MD_Medium;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-// Branch-dependent imports
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
@@ -81,17 +86,23 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.8
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
+    // ISO 19115:2003 (legacy)
     "name",
     "version",
     "amendmentNumber",
     "specification",
+
+    // ISO 19115:2014
+    "formatSpecificationCitation",
     "fileDecompressionTechnique",
+    "media",
     "formatDistributors"
 })
 @XmlRootElement(name = "MD_Format")
@@ -191,7 +202,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "formatSpecificationCitation", required = true)
+    @XmlElement(name = "formatSpecificationCitation", required = true)
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
     @UML(identifier="formatSpecificationCitation", obligation=MANDATORY, specification=ISO_19115)
     public Citation getFormatSpecificationCitation() {
         return formatSpecificationCitation;
@@ -240,11 +252,16 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "specification")
     @Dependencies("getFormatSpecificationCitation")
+    @XmlElement(name = "specification", namespace = LegacyNamespaces.GMD)
     public InternationalString getSpecification() {
-        final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getTitle() : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Citation citation = getFormatSpecificationCitation();
+            if (citation != null) {
+                return citation.getTitle();
+            }
+        }
+        return null;
     }
 
     /**
@@ -273,13 +290,15 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "name", required = true)
     @Dependencies("getFormatSpecificationCitation")
+    @XmlElement(name = "name", namespace = LegacyNamespaces.GMD)
     public InternationalString getName() {
-        final Citation citation = getFormatSpecificationCitation();
-        if (citation != null) {
-            return LegacyPropertyAdapter.getSingleton(citation.getAlternateTitles(),
-                    InternationalString.class, null, DefaultFormat.class, "getName");
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Citation citation = getFormatSpecificationCitation();
+            if (citation != null) {
+                return LegacyPropertyAdapter.getSingleton(citation.getAlternateTitles(),
+                        InternationalString.class, null, DefaultFormat.class, "getName");
+            }
         }
         return null;
     }
@@ -311,11 +330,16 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "version", required = true)
     @Dependencies("getFormatSpecificationCitation")
+    @XmlElement(name = "version", namespace = LegacyNamespaces.GMD)
     public InternationalString getVersion() {
-        final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getEdition() : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Citation citation = getFormatSpecificationCitation();
+            if (citation != null) {
+                return citation.getEdition();
+            }
+        }
+        return null;
     }
 
     /**
@@ -385,7 +409,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "medium")
+    @XmlElement(name = "medium")
+    @XmlJavaTypeAdapter(MD_Medium.Since2014.class)
     @UML(identifier="medium", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Medium> getMedia() {
         return media = nonNullCollection(media, Medium.class);

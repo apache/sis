@@ -26,7 +26,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GeolocationInformation;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -60,7 +59,8 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -69,6 +69,7 @@ import org.apache.sis.xml.Namespaces;
     "controlPointAvailable",
     "orientationParameterAvailable",
     "orientationParameterDescription",
+    "georeferencedParameters",
     "parameterCitations",
     "geolocationInformation"
 })
@@ -247,7 +248,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @return terms which support grid data georeferencing, or {@code null}.
      */
     @Override
-/// @XmlElement(name = "georeferencedParameters", required = true)
+    @XmlElement(name = "georeferencedParameters", required = true)
     public Record getGeoreferencedParameters() {
         return georeferencedParameters;
     }
@@ -288,7 +289,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @return a geolocalisation of the data.
      */
     @Override
-    @XmlElement(name = "geolocationInformation", namespace = Namespaces.GMI, required = true)
+    @XmlElement(name = "geolocationInformation", required = true)
     public Collection<GeolocationInformation> getGeolocationInformation() {
         return geolocationInformation = nonNullCollection(geolocationInformation, GeolocationInformation.class);
     }

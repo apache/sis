@@ -32,15 +32,18 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
-import org.apache.sis.internal.jaxb.metadata.direct.GO_MemberName;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;
-import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
-import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
 
 
 /**
@@ -62,15 +65,17 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
 @SuppressWarnings("rawtypes")               // For the omission of <T> in ParameterDescriptor<T> - see javadoc.
 @XmlType(name = "SV_Parameter_Type", namespace = Namespaces.SRV, propOrder = {
-    "memberName",
+    "memberName",           // The  ISO 19115-3:2016 way to marshal name.
+    "legacyName",           // Legacy ISO 19139:2007 way to marshal name.
     "description",
     "optionality",
+    "optionalityLabel",     // Legacy ISO 19139:2007 way to marshal optionality.
     "repeatability",
     "valueType"
 })
@@ -82,12 +87,26 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     private static final long serialVersionUID = -5335736212313243889L;
 
     /**
-     * The name, as used by the service for this parameter.
+     * The name, as used by the service for this parameter. Note that in ISO 19115-3:2016, this element is
+     * inside a {@code <gco:MemberName>} element  (i.e. ISO inserts the same kind of {@code Property_Type}
+     * element as it does for all other attributes) while in ISO 19139:2007 it was not (i.e. name attributes
+     * like {@code <gco:aName>} were marshalled directly, without wrapper). Example:
      *
+     * {@preformat xml
+     *   <srv:name>
+     *     <gco:MemberName>
+     *       <gco:aName>
+     *         <gco:CharacterString>A parameter name</gco:CharacterString>
+     *       </gco:aName>
+     *     </gco:MemberName>
+     *   </srv:name>
+     * }
+     *
+     * @see #getLegacyName()
      * @see #getValueType()
      */
     @XmlElement(required=true, name="name")
-    @XmlJavaTypeAdapter(GO_MemberName.class)
+    @XmlJavaTypeAdapter(GO_GenericName.Since2014.class)
     MemberName memberName;
 
     /**
@@ -100,12 +119,12 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * Indication if the parameter is required.
      *
      * <ul>
-     *   <li>In ISO 19115, this is represented by "{@code true}" or "{@code false}".</li>
-     *   <li>In ISO 19119, this is marshalled as "{@code Optional}" or "{@code Mandatory}".</li>
+     *   <li>In ISO 19115-3:2016, this is represented by "{@code true}" or "{@code false}".</li>
+     *   <li>In ISO 19139:2007, this was marshalled as "{@code Optional}" or "{@code Mandatory}".</li>
      * </ul>
      *
      * @see #getOptionality()
-     * @see #setOptionality(String)
+     * @see #setOptionality(Boolean)
      */
     public boolean optionality;
 
@@ -187,6 +206,48 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
+     * Returns the name to be marshalled in the ISO 19139:2007 way. Example:
+     *
+     * {@preformat xml
+     *   <srv:name>
+     *     <gco:aName>
+     *       <gco:CharacterString>A parameter name</gco:CharacterString>
+     *     </gco:aName>
+     *   </srv:name>
+     * }
+     *
+     * @return the name if marshalling legacy ISO 19139:2007 format, or {@code null} otherwise.
+     */
+    @XmlElement(name = "name", namespace = LegacyNamespaces.SRV)
+    private DefaultMemberName getLegacyName() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? DefaultMemberName.castOrCopy(memberName) : null;
+    }
+
+    /**
+     * Sets the value from the {@code <gco:aName>} (legacy ISO 19139:2007 format).
+     * This method is called at unmarshalling-time by JAXB.
+     *
+     * @param  value  the new name.
+     * @throws IllegalStateException if a name is already defined.
+     */
+    @SuppressWarnings("unused")
+    private void setLegacyName(final DefaultMemberName value) {
+        ensureUndefined();
+        memberName = value;
+    }
+
+    /**
+     * Ensures that the {@linkplain #memberName} is not already defined.
+     *
+     * @throws IllegalStateException if a name is already defined.
+     */
+    private void ensureUndefined() throws IllegalStateException {
+        if (memberName != null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "name"));
+        }
+    }
+
+    /**
      * Returns the name as an {@code Identifier}, which is the type requested by ISO 19111.
      * Note that this is different than the type requested by ISO 19115, which is {@link MemberName}.
      *
@@ -220,13 +281,17 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * For JAXB marhalling of ISO 19119 document only.
+     * For JAXB marshalling of ISO 19139:2007 document only.
      * Note that there is not setter method, since we expect the same information
      * to be provided in the {@link #name} attribute type.
      */
-    @XmlElement(name = "valueType")
+    @XmlElement(name = "valueType", namespace = LegacyNamespaces.SRV)
+    @XmlJavaTypeAdapter(GO_GenericName.class)    // Not in package-info because shall not be applied to getLegacyName().
     final TypeName getValueType() {
-        return (LEGACY_XML && memberName != null) ? memberName.getAttributeType() : null;
+        if (memberName != null && FilterByVersion.LEGACY_METADATA.accept()) {
+            return memberName.getAttributeType();
+        }
+        return null;
     }
 
     /**
@@ -239,18 +304,33 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     }
 
     /**
-     * Returns {@code true} if {@link #optionality} is "{@code true}" or "{@code Optional}",
-     * or {@code false} otherwise.
+     * Returns the optionality as a boolean (ISO 19115-3:2016 way).
      */
     @XmlElement(name = "optionality", required = true)
-    final String getOptionality() {
-        return LEGACY_XML ? (optionality ? "Optional" : "Mandatory") : Boolean.toString(optionality);
+    final Boolean getOptionality() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? optionality : null;
     }
 
     /**
      * Sets whether this parameter is optional.
      */
-    final void setOptionality(final String optional) {
+    final void setOptionality(final Boolean optional) {
+        if (optional != null) optionality = optional;
+    }
+
+    /**
+     * Returns {@code "Optional"} if {@link #optionality} is {@code true} or {@code "Mandatory"} otherwise.
+     * This is the legacy ISO 19139:2007 way to marshal optionality.
+     */
+    @XmlElement(name = "optionality", namespace = LegacyNamespaces.SRV)
+    final String getOptionalityLabel() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? (optionality ? "Optional" : "Mandatory") : null;
+    }
+
+    /**
+     * Sets whether this parameter is optional.
+     */
+    final void setOptionalityLabel(final String optional) {
         if (optional != null) {
             optionality = Boolean.parseBoolean(optional) || optional.equalsIgnoreCase("Optional");
         }

@@ -19,19 +19,20 @@ package org.apache.sis.internal.jaxb.gco;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 
 
 /**
- * JAXB adapter wrapping a URI value with a {@code <gmx:FileName>} element, for ISO-19139 compliance.
+ * JAXB adapter wrapping a URI value with a {@code <gmx:FileName>} element, for ISO 19139:2007 compliance.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
+public class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
     /**
      * Empty constructor for JAXB.
      */
@@ -47,7 +48,7 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
      * @throws URISyntaxException if the string is not a valid URI.
      */
     @Override
-    public URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
+    public final URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
         final String text = StringAdapter.toString(value);
         if (text != null) {
             final Context context = Context.current();
@@ -76,5 +77,27 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
             }
         }
         return null;
+    }
+
+    /**
+     * Replace {@code <gcx:FileName>} by {@code <gmd:URL>} if marshalling legacy ISO 19139:2007 document.
+     */
+    public static final class AsURL extends URIAdapter {
+        /** Empty constructor used only by JAXB. */
+        public AsURL() {
+        }
+
+        /**
+         * Replaces {@code <gcx:FileName>} by {@code <gmd:URL>} if marshalling legacy ISO 19139:2007 document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_CharacterString marshal(final URI value) {
+            final GO_CharacterString wrapper = super.marshal(value);
+            if (wrapper != null && wrapper.type == GO_CharacterString.FILENAME && !FilterByVersion.CURRENT_METADATA.accept()) {
+                wrapper.type = GO_CharacterString.URL;
+            }
+            return wrapper;
+        }
     }
 }

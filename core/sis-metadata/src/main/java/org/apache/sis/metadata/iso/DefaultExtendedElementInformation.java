@@ -20,7 +20,6 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -29,12 +28,16 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -72,13 +75,14 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
-@XmlType(name = "MD_ExtendedElementInformation_Type", propOrder = {
+@XmlType(name = "MD_ExtendedElementInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "name",
     "shortName",
     "domainCode",
@@ -90,10 +94,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "domainValue",
     "parentEntity",
     "rule",
-    "rationales",
+    "rationale",
     "sources"
 })
-@XmlRootElement(name = "MD_ExtendedElementInformation")
+@XmlRootElement(name = "MD_ExtendedElementInformation", namespace = Namespaces.MEX)
 public class DefaultExtendedElementInformation extends ISOMetadata implements ExtendedElementInformation {
     /**
      * Serial number for inter-operability with different versions.
@@ -305,9 +309,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @Deprecated
-    @XmlElement(name = "shortName")
+    @XmlElement(name = "shortName", namespace = LegacyNamespaces.GMD)
     public String getShortName()  {
-        return shortName;
+        return FilterByVersion.LEGACY_METADATA.accept() ? shortName : null;
     }
 
     /**
@@ -334,9 +338,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @Deprecated
-    @XmlElement(name = "domainCode")
+    @XmlElement(name = "domainCode", namespace = LegacyNamespaces.GMD)
     public Integer getDomainCode() {
-        return domainCode;
+        return FilterByVersion.LEGACY_METADATA.accept() ? domainCode : null;
     }
 
     /**
@@ -541,6 +545,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      *
      * @since 0.5
      */
+    @XmlElement(name = "rationale")
     @UML(identifier="rationale", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getRationale() {
         return LegacyPropertyAdapter.getSingleton(rationales, InternationalString.class, null,
@@ -565,7 +570,6 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @Deprecated
-    @XmlElement(name = "rationale")
     @Dependencies("getRationale")
     public Collection<InternationalString> getRationales() {
         return rationales = nonNullCollection(rationales, InternationalString.class);

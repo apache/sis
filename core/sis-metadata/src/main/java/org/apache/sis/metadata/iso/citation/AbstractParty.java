@@ -61,7 +61,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -71,7 +71,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "name",
     "contactInfo"
 })
-@XmlRootElement(name = "CI_Party")
+@XmlRootElement(name = "AbstractCI_Party")
 @XmlSeeAlso({
     DefaultIndividual.class,
     DefaultOrganisation.class

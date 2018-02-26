@@ -21,13 +21,18 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -54,16 +59,19 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
     "compliant",
-    "languages",
+    "locale",                       // New in ISO 19115:2014
+    "language",                     // Legacy ISO 19115:2003
     "includedWithDataset",
-    "featureTypes",
+    "featureTypesInfo",             // New in ISO 19115:2014. Actual name is "featureTypeInfo"
+    "featureTypes",                 // Legacy ISO 19115:2003
     "featureCatalogueCitations"
 })
 @XmlRootElement(name = "MD_FeatureCatalogueDescription")
@@ -186,7 +194,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @return language(s) used within the catalogue.
      */
     @Override
-    @XmlElement(name = "language")
+    // @XmlElement at the end of this class.
     public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
@@ -206,7 +214,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @return whether or not the feature catalogue is included with the resource.
      */
     @Override
-    @XmlElement(name = "includedWithDataset", required = true)
+    @XmlElement(name = "includedWithDataset")
     public boolean isIncludedWithDataset() {
         return includedWithDataset;
     }
@@ -233,6 +241,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @since 0.5
      */
+    // @XmlElement at the end of this class.
     @UML(identifier="featureTypes", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultFeatureTypeInfo> getFeatureTypeInfo() {
         return featureTypes = nonNullCollection(featureTypes, DefaultFeatureTypeInfo.class);
@@ -263,9 +272,10 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @Deprecated
-    @XmlElement(name = "featureTypes")
     @Dependencies("getFeatureTypeInfo")
+    @XmlElement(name = "featureTypes", namespace = LegacyNamespaces.GMD)
     public final Collection<GenericName> getFeatureTypes() {
+        if (!FilterByVersion.LEGACY_METADATA.accept()) return null;
         return new LegacyPropertyAdapter<GenericName,DefaultFeatureTypeInfo>(getFeatureTypeInfo()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected DefaultFeatureTypeInfo wrap(final GenericName value) {
@@ -307,7 +317,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @return bibliographic reference to one or more external feature catalogues.
      */
     @Override
-    @XmlElement(name = "featureCatalogueCitation", required = true)
+    @XmlElement(name = "featureCatalogueCitation")
     public Collection<Citation> getFeatureCatalogueCitations() {
         return featureCatalogueCitations = nonNullCollection(featureCatalogueCitations, Citation.class);
     }
@@ -319,5 +329,48 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public void setFeatureCatalogueCitations(final Collection<? extends Citation> newValues) {
         featureCatalogueCitations = writeCollection(newValues, featureCatalogueCitations, Citation.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "featureTypes")
+    private Collection<DefaultFeatureTypeInfo> getFeatureTypesInfo() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getFeatureTypeInfo() : null;
+    }
+
+    /**
+     * Returns the locale to marshal if the XML document is to be written
+     * according the new ISO 19115:2014 model.
+     */
+    @XmlElement(name = "locale")
+    private Collection<Locale> getLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getLanguages() : null;
+    }
+
+    /**
+     * Returns the locale to marshal if the XML document is to be written
+     * according the legacy ISO 19115:2003 model.
+     */
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
+    @XmlJavaTypeAdapter(LocaleAdapter.class)
+    private Collection<Locale> getLanguage() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;
     }
 }

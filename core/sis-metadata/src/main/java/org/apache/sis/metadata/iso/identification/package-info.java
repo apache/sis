@@ -95,27 +95,34 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "srv", namespaceURI = Namespaces.SRV),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI,
+           xmlns = {
+                @XmlNs(prefix = "mri",  namespaceURI = Namespaces.MRI),        // Metadata for Resource Identification
+                @XmlNs(prefix = "srv",  namespaceURI = Namespaces.SRV),        // Metadata for Services 2.0
+                @XmlNs(prefix = "lan",  namespaceURI = Namespaces.LAN),        // Language localization
+                @XmlNs(prefix = "mcc",  namespaceURI = Namespaces.MCC),        // Metadata Common Classes
+                @XmlNs(prefix = "gco",  namespaceURI = Namespaces.GCO),        // Geographic Common
+                @XmlNs(prefix = "gmd",  namespaceURI = LegacyNamespaces.GMD),  // Metadata ISO 19139:2007
+                @XmlNs(prefix = "srv1", namespaceURI = LegacyNamespaces.SRV)   // Metadata for Services 1.0
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
-    @XmlJavaTypeAdapter(DS_AssociationTypeCode.class),
-    @XmlJavaTypeAdapter(DS_InitiativeTypeCode.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
     @XmlJavaTypeAdapter(MD_AggregateInformation.class),
     @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
+    @XmlJavaTypeAdapter(MD_CharacterSetLegacy.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_DataIdentification.class),
     @XmlJavaTypeAdapter(MD_Format.class),
@@ -130,19 +137,17 @@
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
     @XmlJavaTypeAdapter(MD_TopicCategoryCode.class),
     @XmlJavaTypeAdapter(MD_Usage.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(SV_CoupledResource.class),
     @XmlJavaTypeAdapter(SV_OperationMetadata.class),
     @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
     @XmlJavaTypeAdapter(SV_Parameter.class),
+    @XmlJavaTypeAdapter(TM_Duration.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(URIAdapter.class),
-    @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.identification;
 
@@ -154,8 +159,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
+import org.apache.sis.internal.jaxb.gts.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

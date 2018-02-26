@@ -19,14 +19,16 @@ package org.apache.sis.metadata.iso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.xml.Namespaces;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -87,7 +89,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
@@ -97,11 +100,14 @@ import static org.opengis.annotation.Specification.ISO_19115;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "code")
-@XmlType(name = "MD_Identifier_Type", propOrder = {
+@XmlType(name = "MD_Identifier_Type", namespace = Namespaces.MCC, propOrder = {
     "authority",
-    "code"
+    "code",
+    "codeSpace",
+    "version",
+    "description"
 })
-@XmlRootElement(name = "MD_Identifier")
+@XmlRootElement(name = "MD_Identifier", namespace = Namespaces.MCC)
 public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Serial number for inter-operability with different versions.
@@ -301,6 +307,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @since 0.5
      */
+    @XmlElement(name = "codeSpace")
     @UML(identifier="codeSpace", obligation=OPTIONAL, specification=ISO_19115)
     public String getCodeSpace() {
         return codeSpace;
@@ -327,6 +334,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @return the version identifier for the namespace, or {@code null} if none.
      */
+    @XmlElement(name = "version")
     @UML(identifier="version", obligation=OPTIONAL, specification=ISO_19115)
     public String getVersion() {
         return version;
@@ -351,6 +359,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @since 0.5
      */
+    @XmlElement(name = "description")
     @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
     public InternationalString getDescription() {
         return description;

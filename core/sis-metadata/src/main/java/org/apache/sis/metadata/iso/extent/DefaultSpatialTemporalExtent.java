@@ -20,7 +20,6 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -30,6 +29,8 @@ import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -55,7 +56,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */

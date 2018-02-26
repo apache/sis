@@ -22,13 +22,14 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
 
 
 /**
- * JAXB adapter in order to wrap the string value with a {@code <gco:CharacterString>} element,
- * for ISO-19139 compliance. A {@link CharSequenceAdapter} can handle the following types:
+ * JAXB adapter wrapping the string value in a {@code <gco:CharacterString>} element, for ISO 19115-3 compliance.
+ * A {@link CharSequenceAdapter} can handle the following types:
  *
  * <ul>
  *   <li>{@link InternationalString}, which may be mapped to {@link PT_FreeText} elements.</li>
@@ -40,7 +41,7 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  *
  * @see StringAdapter
  * @see InternationalStringAdapter
@@ -48,11 +49,11 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @since 0.3
  * @module
  */
-public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
+public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
     /**
      * Constructor for JAXB only.
      */
-    private CharSequenceAdapter() {
+    public CharSequenceAdapter() {
     }
 
     /**
@@ -63,7 +64,7 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * @return a {@link CharSequence} which represents the metadata value.
      */
     @Override
-    public CharSequence unmarshal(final GO_CharacterString value) {
+    public final CharSequence unmarshal(final GO_CharacterString value) {
         return (value != null) ? value.toCharSequence() : null;
     }
 
@@ -91,12 +92,12 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
             return wrap(Context.current(), value, (String) value);  // Slightly more efficient variant of this method.
         }
         /*
-         * <gmd:someElement xsi:type="gmd:PT_FreeText_PropertyType">
+         * <mdb:someElement xsi:type="lan:PT_FreeText_PropertyType">
          *   <gco:CharacterString>...</gco:CharacterString>
-         *   <gmd:PT_FreeText>
+         *   <lan:PT_FreeText>
          *     ... see PT_FreeText ...
-         *   </gmd:PT_FreeText>
-         * </gmd:someElement>
+         *   </lan:PT_FreeText>
+         * </mdb:someElement>
          */
         if (value instanceof InternationalString) {
             final PT_FreeText ft = PT_FreeText.create((InternationalString) value);
@@ -135,9 +136,9 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
          * have been replaced by an Anchor. The output will be one of the following:
          *
          * ┌──────────────────────────────────────────────────┬────────────────────────────────┐
-         * │ <gmd:someElement>                                │ <gmd:someElement>              │
+         * │ <mdb:someElement>                                │ <mdb:someElement>              │
          * │   <gco:CharacterString>...</gco:CharacterString> │   <gmx:Anchor>...</gmx:Anchor> │
-         * │ </gmd:someElement>                               │ </gmd:someElement>             │
+         * │ </mdb:someElement>                               │ </mdb:someElement>             │
          * └──────────────────────────────────────────────────┴────────────────────────────────┘
          */
         return new GO_CharacterString(value);
@@ -181,5 +182,24 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
             }
         }
         return string;
+    }
+
+    /**
+     * Wraps the value only if marshalling ISO 19115-3 element.
+     * Otherwise (i.e. if marshalling a legacy ISO 19139:2007 document), omit the element.
+     */
+    public static final class Since2014 extends CharSequenceAdapter {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override public GO_CharacterString marshal(final CharSequence value) {
+            return FilterByVersion.CURRENT_METADATA.accept() ? super.marshal(value) : null;
+        }
     }
 }

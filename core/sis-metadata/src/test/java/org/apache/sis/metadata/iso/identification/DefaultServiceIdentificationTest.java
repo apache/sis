@@ -18,24 +18,27 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singleton;
+import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
  * Tests {@link DefaultServiceIdentification}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -50,11 +53,17 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     private static final String XML_FILE = "ServiceIdentification.xml";
 
     /**
+     * Same as {@link #XML_FILE} but using legacy ISO 19139:2007 schema.
+     */
+    private static final String XML_FILE_LEGACY = "ServiceIdentification (legacy).xml";
+
+    /**
      * Creates the service identification to use for testing purpose.
      */
     private static DefaultServiceIdentification create() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final DefaultCoupledResource resource = DefaultCoupledResourceTest.create();
+        final DefaultCoupledResource resource = DefaultCoupledResourceTest.create(factory);
+        resource.setResourceReferences(singleton(new DefaultCitation("WMS specification")));
         final DefaultServiceIdentification id = new DefaultServiceIdentification(
                 factory.createGenericName(null, "Web Map Server"),      // serviceType
                 NilReason.MISSING.createNilObject(Citation.class),      // citation
@@ -67,13 +76,31 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     }
 
     /**
-     * Tests the marshalling of a service metadata.
-     *
-     * @throws JAXBException if an error occurred during the during marshalling process.
+     * Compare values of the given service identifications against the value expected for the
+     * instance created by {@link #create()} method.
      */
-    @Test
-    public void testMarshal() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, create(), "xlmns:*", "xsi:schemaLocation");
+    private static void verify(final DefaultServiceIdentification id) {
+        assertEquals("serviceTypeVersion", "1.0",                                  getSingleton(id.getServiceTypeVersions()));
+        assertEquals("serviceType",        "Web Map Server",                       String.valueOf(id.getServiceType()));
+        assertEquals("abstract",           "A dummy service for testing purpose.", String.valueOf(id.getAbstract()));
+        assertEquals("citation",           NilReason.MISSING,                      NilReason.forObject(id.getCitation()));
+        assertEquals("couplingType",       UnsupportedCodeList.valueOf("loose"),   id.getCouplingType());
+
+        final DefaultCoupledResource resource = getSingleton(id.getCoupledResources());
+//      assertEquals("scopedName",        "mySpace:ABC-123",   …)  skipped because not present in new ISO 19115-3:2016.
+//      assertEquals("resourceReference", "WMS specification", …)  skipped because not present in legacy ISO 19139:2007.
+
+        final DefaultOperationMetadata op = resource.getOperation();
+        assertNotNull("operation", op);
+        assertEquals("operationName", "Get Map", op.getOperationName());
+        assertEquals("distributedComputingPlatform", UnsupportedCodeList.valueOf("WEB_SERVICES"), getSingleton(op.getDistributedComputingPlatforms()));
+        assertEquals("connectPoints", NilReason.MISSING, NilReason.forObject(getSingleton(op.getConnectPoints())));
+
+        final ParameterDescriptor<?> param = getSingleton(op.getParameters());
+        assertEquals("name",          "Version",             String.valueOf(param.getName()));
+        assertEquals("minimumOccurs", 0,                     param.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,                     param.getMaximumOccurs());
+//      assertEquals("direction",     ParameterDirection.IN, param.getDirection());
     }
 
     /**
@@ -86,6 +113,42 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testUnmarshal() throws JAXBException {
-        assertTrue(create().equals(unmarshalFile(DefaultServiceIdentification.class, XML_FILE), ComparisonMode.DEBUG));
+        final DefaultServiceIdentification id = unmarshalFile(DefaultServiceIdentification.class, XML_FILE);
+        verify(id);
+        final DefaultCoupledResource resource = getSingleton(id.getCoupledResources());
+        assertTitleEquals("resourceReference", "WMS specification", getSingleton(resource.getResourceReferences()));
+    }
+
+    /**
+     * Tests the unmarshalling of a service metadata from legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during unmarshalling process.
+     */
+    @Test
+    public void testUnmarshalLegacy() throws JAXBException {
+        final DefaultServiceIdentification id = unmarshalFile(DefaultServiceIdentification.class, XML_FILE_LEGACY);
+        verify(id);
+        final DefaultCoupledResource resource = getSingleton(id.getCoupledResources());
+        assertEquals("scopedName", "mySpace:ABC-123", String.valueOf(resource.getScopedName()));
+    }
+
+    /**
+     * Tests the marshalling of a service metadata.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling process.
+     */
+    @Test
+    public void testMarshal() throws JAXBException {
+        assertMarshalEqualsFile(XML_FILE, create(), "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests the marshalling of a service metadata to legacy ISO 19139:2007 schema.
+     *
+     * @throws JAXBException if an error occurred during the during marshalling process.
+     */
+    @Test
+    public void testMarshalLegacy() throws JAXBException {
+        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 }

@@ -20,15 +20,17 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
 import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link DateType}, in order to integrate the value in an element
- * complying with ISO-19139 standard. See package documentation for more information
- * about the handling of {@code CodeList} in ISO-19139.
+ * JAXB adapter for {@link DateType}
+ * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -72,7 +74,7 @@ public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, Date
      * @return the value to be marshalled.
      */
     @Override
-    @XmlElement(name = "CI_DateTypeCode")
+    @XmlElement(name = "CI_DateTypeCode", namespace = Namespaces.CIT)
     public CodeListUID getElement() {
         return identifier;
     }

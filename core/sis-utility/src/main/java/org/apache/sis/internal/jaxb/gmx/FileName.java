@@ -23,13 +23,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
- * The {@code <gmx:FileName>} element, which may be used as a substitute of {@code <gco:CharacterString>}.
+ * The {@code <gcx:FileName>} element, which may be used as a substitute of {@code <gco:CharacterString>}.
  * This is used for the URI in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic}.
  * Example:
  *
  * {@preformat xml
  *   <fileName>
- *      <gmx:FileName src="../path/wkj98723.jpg">Overview</gmx:FileName>
+ *      <gcx:FileName src="../path/wkj98723.jpg">Overview</gcx:FileName>
  *   </fileName>
  * }
  *

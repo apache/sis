@@ -22,11 +22,14 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.util.CodeList;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Telephone;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.code.CI_TelephoneTypeCode;
 import org.apache.sis.internal.metadata.Dependencies;
 
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -34,6 +37,8 @@ import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Specification.ISO_19115;
 
 // Branch-specific imports
+import org.opengis.util.CodeList;
+import org.opengis.annotation.UML;
 import org.apache.sis.internal.geoapi.evolution.InterimType;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
@@ -70,7 +75,8 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see DefaultContact#getPhones()
  *
@@ -79,8 +85,10 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Telephone_Type", propOrder = {
-    "voices",
-    "facsimiles"
+    "number",           // New in ISO 19115:2014
+    "numberType",       // Ibid.
+    "voices",           // Legacy ISO 19115:2003
+    "facsimiles"        // Ibid.
 })
 @XmlRootElement(name = "CI_Telephone")
 public class DefaultTelephone extends ISOMetadata implements Telephone {
@@ -172,7 +180,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "number", required = true)
+    @XmlElement(name = "number", required = true)
+    @XmlJavaTypeAdapter(StringAdapter.Since2014.class)
     @UML(identifier="number", obligation=MANDATORY, specification=ISO_19115)
     public String getNumber() {
         return number;
@@ -203,9 +212,10 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "numberType")
-    @UML(identifier="numberType", obligation=OPTIONAL, specification=ISO_19115)
     @InterimType(UnsupportedCodeList.class)
+    @XmlElement(name = "numberType")
+    @XmlJavaTypeAdapter(CI_TelephoneTypeCode.Since2014.class)
+    @UML(identifier="numberType", obligation=OPTIONAL, specification=ISO_19115)
     public CodeList<?> getNumberType() {
         return numberType;
     }
@@ -319,10 +329,13 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "voice")
     @Dependencies({"getNumber", "getNumberType"})
+    @XmlElement(name = "voice", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getVoices() {
-        return new LegacyTelephones(getOwner(), UnsupportedCodeList.VOICE);
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return new LegacyTelephones(getOwner(), UnsupportedCodeList.VOICE);
+        }
+        return null;
     }
 
     /**
@@ -352,10 +365,13 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     @Override
     @Deprecated
-    @XmlElement(name = "facsimile")
     @Dependencies({"getNumber", "getNumberType"})
+    @XmlElement(name = "facsimile", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getFacsimiles() {
-        return new LegacyTelephones(getOwner(), UnsupportedCodeList.FACSIMILE);
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return new LegacyTelephones(getOwner(), UnsupportedCodeList.FACSIMILE);
+        }
+        return null;                    // Marshalling newer ISO 19115-3 document.
     }
 
     /**

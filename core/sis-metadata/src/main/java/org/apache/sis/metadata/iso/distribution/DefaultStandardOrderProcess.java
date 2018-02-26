@@ -16,18 +16,22 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
-import java.util.Currency;
 import java.util.Date;
+import java.util.Currency;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.StandardOrderProcess;
+import org.apache.sis.internal.jaxb.gco.GO_RecordType;
+import org.apache.sis.internal.jaxb.gco.GO_Record;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
@@ -50,7 +54,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -59,7 +64,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "fees",
     "plannedAvailableDateTime",
     "orderingInstructions",
-    "turnaround"
+    "turnaround",
+    "orderOptionType",              // New in ISO 19115-3
+    "orderOptions"                  // New in ISO 19115-3
 })
 @XmlRootElement(name = "MD_StandardOrderProcess")
 public class DefaultStandardOrderProcess extends ISOMetadata implements StandardOrderProcess {
@@ -294,7 +301,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
      */
-/// @XmlElement(name = "orderOptionType")
+    @XmlElement(name = "orderOptionsType")
+    @XmlJavaTypeAdapter(GO_RecordType.Since2014.class)
     @UML(identifier="orderOptionType", obligation=OPTIONAL, specification=ISO_19115)
     public RecordType getOrderOptionType() {
         return orderOptionType;
@@ -323,7 +331,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *       when he ordered the resource. We presume that this is not a record to be filled by the user for new
      *       orders, otherwise this method would need to be a factory rather than a getter.
      */
-/// @XmlElement(name = "orderOptions")
+    @XmlElement(name = "orderOptions")
+    @XmlJavaTypeAdapter(GO_Record.Since2014.class)
     @UML(identifier="orderOptions", obligation=OPTIONAL, specification=ISO_19115)
     public Record getOrderOptions() {
         return orderOptions;

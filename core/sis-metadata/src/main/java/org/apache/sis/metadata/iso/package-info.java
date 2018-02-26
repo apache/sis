@@ -56,7 +56,7 @@
  * </td></tr></table>
  *
  * <div class="section">Localization</div>
- * When a metadata object is marshalled as an ISO 19139 compliant XML document, the marshaller
+ * When a metadata object is marshalled as an ISO 19115-3 compliant XML document, the marshaller
  * {@link org.apache.sis.xml.XML#LOCALE} property will be used for the localization of every
  * {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances,
  * <strong>except</strong> if the object to be marshalled is an instance of
@@ -81,47 +81,55 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDB,
+           xmlns = {
+                @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),      // Metadata Base
+                @XmlNs(prefix = "mpc", namespaceURI = Namespaces.MPC),      // Metadata for Portrayal Catalog
+                @XmlNs(prefix = "mas", namespaceURI = Namespaces.MAS),      // Metadata for Application Schema
+                @XmlNs(prefix = "mex", namespaceURI = Namespaces.MEX),      // Metadata with Schema Extensions
+                @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class),
+    @XmlJavaTypeAdapter(CI_Date.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_Integer.class),
+    @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
-    @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
+    @XmlJavaTypeAdapter(MD_CharacterSetLegacy.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_DatatypeCode.class),
     @XmlJavaTypeAdapter(MD_Distribution.class),
     @XmlJavaTypeAdapter(MD_ExtendedElementInformation.class),
-    @XmlJavaTypeAdapter(MD_FeatureTypeList.class),
     @XmlJavaTypeAdapter(MD_Identification.class),
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
     @XmlJavaTypeAdapter(MD_MetadataExtensionInformation.class),
+    @XmlJavaTypeAdapter(MD_MetadataScope.class),
     @XmlJavaTypeAdapter(MD_ObligationCode.class),
     @XmlJavaTypeAdapter(MD_PortrayalCatalogueReference.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MI_AcquisitionInformation.class),
+    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(RS_ReferenceSystem.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso;
 
@@ -133,8 +141,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

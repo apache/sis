@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -76,7 +76,7 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
      */
     @Test
     public void marshallingTest() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, createMetadata(false), "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML_FILE, createMetadata(false), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**

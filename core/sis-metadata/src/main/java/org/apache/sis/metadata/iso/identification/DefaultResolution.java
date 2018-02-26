@@ -20,12 +20,13 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_Distance;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
+import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
@@ -33,6 +34,7 @@ import org.apache.sis.util.resources.Messages;
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -68,7 +70,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.6
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see AbstractIdentification#getSpatialResolutions()
  *
@@ -294,8 +297,10 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
-    @UML(identifier="vertical", obligation=CONDITIONAL, specification=ISO_19115)
     @ValueRange(minimum=0, isMinIncluded=false)
+    @XmlElement(name = "vertical")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
+    @UML(identifier="vertical", obligation=CONDITIONAL, specification=ISO_19115)
     public Double getVertical() {
         return (property == VERTICAL) ? (Double) value : null;
     }
@@ -325,8 +330,10 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
-    @UML(identifier="angularDistance", obligation=CONDITIONAL, specification=ISO_19115)
     @ValueRange(minimum=0, isMinIncluded=false)
+    @XmlElement(name = "angularDistance")
+    @XmlJavaTypeAdapter(GO_Real.Since2014.class)
+    @UML(identifier="angularDistance", obligation=CONDITIONAL, specification=ISO_19115)
     public Double getAngularDistance() {
         return (property == ANGULAR) ? (Double) value : null;
     }
@@ -356,6 +363,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @since 0.5
      */
+    @XmlElement(name = "levelOfDetail")
+    @XmlJavaTypeAdapter(InternationalStringAdapter.Since2014.class)
     @UML(identifier="levelOfDetail", obligation=CONDITIONAL, specification=ISO_19115)
     public InternationalString getLevelOfDetail() {
         return (property == TEXT) ? (InternationalString) value : null;

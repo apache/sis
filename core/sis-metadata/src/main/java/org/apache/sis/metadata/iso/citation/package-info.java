@@ -66,7 +66,7 @@
  * Apache SIS provides a unified view of all metadata identifiers. This view includes the citation
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} and
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISSN() ISSN} codes,
- * except at XML marshalling time (for ISO 19139 compliance).
+ * except at XML marshalling time (for ISO 19115-3 compliance).
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
  * <div class="section">Null values, nil objects and collections</div>
@@ -86,14 +86,17 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.CIT,
+           xmlns = {
+                @XmlNs(prefix = "cit", namespaceURI = Namespaces.CIT),      // Citation and responsible party information
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -110,11 +113,11 @@
     @XmlJavaTypeAdapter(CI_Series.class),
     @XmlJavaTypeAdapter(CI_Telephone.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling
-    @XmlJavaTypeAdapter(GO_URL.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
@@ -128,8 +131,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.gmd.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

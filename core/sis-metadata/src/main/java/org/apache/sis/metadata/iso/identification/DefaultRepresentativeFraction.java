@@ -69,7 +69,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see DefaultResolution#getEquivalentScale()
  *
@@ -411,6 +411,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      *
      * @see org.apache.sis.metadata.iso.ISOMetadata#setID(String)
      */
+    @SuppressWarnings("unused")
     private void setID(String id) {
         MetadataUtilities.setObjectID(this, id);
     }
@@ -431,6 +432,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      *
      * @see org.apache.sis.metadata.iso.ISOMetadata#setUUID(String)
      */
+    @SuppressWarnings("unused")
     private void setUUID(final String id) {
         getIdentifierMap().put(IdentifierSpace.UUID, id);
     }

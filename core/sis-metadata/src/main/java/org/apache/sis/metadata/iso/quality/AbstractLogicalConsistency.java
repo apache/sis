@@ -45,13 +45,13 @@ import org.opengis.metadata.quality.ConceptualConsistency;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_LogicalConsistency_Type")
-@XmlRootElement(name = "DQ_LogicalConsistency")
+@XmlRootElement(name = "AbstractDQ_LogicalConsistency")
 @XmlSeeAlso({
     DefaultConceptualConsistency.class,
     DefaultDomainConsistency.class,

@@ -14,30 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.metadata.direct;
-
-import org.opengis.metadata.identification.Keywords;
-import org.apache.sis.metadata.iso.identification.DefaultKeywords;
+package org.apache.sis.test.xml;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * Thrown when a {@link SchemaCompliance} failed to load a XSD file because it does not comply
+ * with expected OGC/ISO conventions, or when a JAXB annotation failed a compliance check.
  *
- * @author  Guilhem Legal (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-public final class MD_Keywords extends MetadataAdapter<Keywords, DefaultKeywords> {
+@SuppressWarnings("serial")
+public final class SchemaException extends Exception {
     /**
-     * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
+     * Creates an exception with the specified details message.
      *
-     * @param  value  the bound type value, here the GeoAPI interface.
-     * @return the adapter for the given value, here the SIS implementation.
+     * @param message  the detail message.
      */
-    @Override
-    public DefaultKeywords marshal(final Keywords value) {
-        return DefaultKeywords.castOrCopy(value);
+    public SchemaException(final CharSequence message) {
+        super(message != null ? message.toString() : null);
     }
 }

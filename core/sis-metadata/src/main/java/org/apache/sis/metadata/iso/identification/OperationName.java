@@ -90,7 +90,7 @@ final class OperationName extends DefaultOperationMetadata {
         final boolean exists = byName.containsKey(name);
         final DefaultOperationMetadata previous = byName.put(name, operation);
         if (previous != operation && (previous != null || exists)) {
-            byName.put(name, null); // Mark the entry as duplicated.
+            byName.put(name, null);                                         // Mark the entry as duplicated.
         }
     }
 }

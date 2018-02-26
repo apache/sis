@@ -21,7 +21,7 @@ import org.opengis.temporal.TemporalPrimitive;
 
 
 /**
- * Placeholder for a GeoAPI interfaces not present in GeoAPI 3.0.0.
+ * Placeholder for a GeoAPI interfaces not present in GeoAPI 3.0.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

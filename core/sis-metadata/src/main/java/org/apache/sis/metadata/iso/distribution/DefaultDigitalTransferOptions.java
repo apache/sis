@@ -20,7 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.metadata.citation.OnlineResource;
@@ -31,10 +31,14 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.util.CollectionsExt;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -54,16 +58,19 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DigitalTransferOptions_Type", propOrder = {
     "unitsOfDistribution",
+    "distributionFormat",
     "transferSize",
+    "transferFrequency",
     "onLines",
-    "offLine"
+    "offLines"
 })
 @XmlRootElement(name = "MD_DigitalTransferOptions")
 public class DefaultDigitalTransferOptions extends ISOMetadata implements DigitalTransferOptions {
@@ -242,9 +249,15 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
+    @XmlElement(name = "offLine")
     @UML(identifier="offLine", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Medium> getOffLines() {
-        return offLines = nonNullCollection(offLines, Medium.class);
+        Collection<Medium> c = offLines = nonNullCollection(offLines, Medium.class);
+        if (c != null && c.size() > 1 && FilterByVersion.LEGACY_METADATA.accept()) {
+            c = CollectionsExt.singletonOrEmpty(LegacyPropertyAdapter.getSingleton(c,
+                    Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLines"));
+        }
+        return c;
     }
 
     /**
@@ -267,7 +280,6 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Override
     @Deprecated
-    @XmlElement(name = "offLine")
     @Dependencies("getOffLines")
     public Medium getOffLine() {
         return LegacyPropertyAdapter.getSingleton(getOffLines(), Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
@@ -292,6 +304,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
+    @XmlElement(name = "transferFrequency")
+    @XmlJavaTypeAdapter(TM_PeriodDuration.Since2014.class)
     @UML(identifier="transferFrequency", obligation=OPTIONAL, specification=ISO_19115)
     public PeriodDuration getTransferFrequency() {
         return transferFrequency;
@@ -316,6 +330,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
+    // @XmlElement at the end of this class.
     @UML(identifier="distributionFormat", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Format> getDistributionFormats() {
         return distributionFormats = nonNullCollection(distributionFormats, Format.class);
@@ -330,5 +345,29 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     public void setDistributionFormats(final Collection<? extends Format> newValues) {
         distributionFormats = writeCollection(newValues, distributionFormats, Format.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "distributionFormat")
+    private Collection<Format> getDistributionFormat() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getDistributionFormats() : null;
     }
 }

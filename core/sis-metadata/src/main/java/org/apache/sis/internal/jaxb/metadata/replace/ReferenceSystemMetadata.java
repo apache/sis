@@ -17,18 +17,26 @@
 package org.apache.sis.internal.jaxb.metadata.replace;
 
 import java.util.Objects;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
  * An implementation of {@link ReferenceSystem} marshalled as specified in ISO 19115.
  * This is different than the {@code ReferenceSystem} implementation provided in the
- * referencing module, since the later marshall the CRS as specified in GML (close
+ * referencing module, since the later marshals the CRS as specified in GML (close
  * to ISO 19111 model).
  *
  * <p>Note that this implementation is very simple and serves no other purpose than being
@@ -37,19 +45,26 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
  *
  * @since 0.3
  * @module
  */
-@XmlRootElement(name = "MD_ReferenceSystem")
+@XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
+@XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)
 public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements ReferenceSystem {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2810145397032096087L;
+
+    /**
+     * {@code true} if marshalling ISO 19115:2003 model, or {@code false} if marshalling ISO 19115:2014 model.
+     */
+    private boolean isLegacyMetadata;
 
     /**
      * Creates a reference system without identifier.
@@ -77,14 +92,23 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     }
 
     /**
+     * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
+     */
+    private void beforeMarshal(final Marshaller marshaller) {
+        isLegacyMetadata = !FilterByVersion.CURRENT_METADATA.accept();
+    }
+
+    /**
      * Returns the primary name by which this object is identified.
+     * This method can be invoked during ISO 19115-3 marshalling.
      *
      * @return the identifier given at construction time.
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
-    public final ReferenceIdentifier getName() {
-        return super.getName();
+    @XmlJavaTypeAdapter(MD_Identifier.class)
+    public ReferenceIdentifier getName() {
+        return isLegacyMetadata ? null : super.getName();
     }
 
     /**
@@ -93,6 +117,24 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * @param  name  the new primary name.
      */
     public final void setName(final ReferenceIdentifier name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the name for this reference system metadata (used in ISO 19115:2003 model).
+     * This method can be invoked during marshalling of legacy XML documents.
+     */
+    @XmlElement(name = "referenceSystemIdentifier", namespace = LegacyNamespaces.GMD)
+    @XmlJavaTypeAdapter(RS_Identifier.class)
+    private ReferenceIdentifier getLegacyName() {
+        return isLegacyMetadata ? super.getName() : null;
+    }
+
+    /**
+     * Sets the name for this reference system metadata (used in ISO 19115:2003 model).
+     */
+    @SuppressWarnings("unused")
+    private void setLegacyName(final ReferenceIdentifier name) {
         this.name = name;
     }
 

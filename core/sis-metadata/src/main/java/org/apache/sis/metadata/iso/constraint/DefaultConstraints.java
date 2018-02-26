@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.UML;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.BrowseGraphic;
@@ -30,9 +30,14 @@ import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.SecurityConstraints;
 import org.opengis.metadata.quality.Scope;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.jaxb.metadata.MD_Releasability;
+import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+// Branch-specific imports
+import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 
@@ -53,19 +58,20 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
-@XmlType(name = "MD_Constraints_Type" /*, propOrder = {
-    "useLimitation",
+@XmlType(name = "MD_Constraints_Type", propOrder = {
+    "useLimitations",
     "constraintApplicationScope",
-    "graphic",
-    "reference",
-    "releasability",
-    "responsibleParty"
-} */)
+    "graphic",                      // New in ISO 19115:2014
+    "reference",                    // Ibid.
+    "releasability",                // Ibid.
+    "responsibleParty"              // Ibid.
+})
 @XmlRootElement(name = "MD_Constraints")
 @XmlSeeAlso({
     DefaultLegalConstraints.class,
@@ -214,7 +220,8 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "constraintApplicationScope")
+    @XmlElement(name = "constraintApplicationScope")
+    @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
     @UML(identifier="constraintApplicationScope", obligation=OPTIONAL, specification=ISO_19115)
     public Scope getConstraintApplicationScope() {
         return constraintApplicationScope;
@@ -239,7 +246,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "graphic")
+    // @XmlElement at the end of this class.
     @UML(identifier="graphic", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<BrowseGraphic> getGraphics() {
         return graphics = nonNullCollection(graphics, BrowseGraphic.class);
@@ -264,7 +271,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "reference")
+    // @XmlElement at the end of this class.
     @UML(identifier="reference", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<Citation> getReferences() {
         return references = nonNullCollection(references, Citation.class);
@@ -293,7 +300,8 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "releasability")
+    @XmlElement(name = "releasability")
+    @XmlJavaTypeAdapter(MD_Releasability.Since2014.class)
     @UML(identifier="releasability", obligation=OPTIONAL, specification=ISO_19115)
     public DefaultReleasability getReleasability() {
         return releasability;
@@ -328,7 +336,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @since 0.5
      */
-/// @XmlElement(name = "responsibleParty")
+    // @XmlElement at the end of this class.
     @UML(identifier="responsibleParty", obligation=OPTIONAL, specification=ISO_19115)
     public Collection<DefaultResponsibility> getResponsibleParties() {
         return responsibleParties = nonNullCollection(responsibleParties, DefaultResponsibility.class);
@@ -348,5 +356,39 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      */
     public void setResponsibleParties(final Collection<? extends DefaultResponsibility> newValues) {
         responsibleParties = writeCollection(newValues, responsibleParties, DefaultResponsibility.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Invoked by JAXB at both marshalling and unmarshalling time.
+     * This attribute has been added by ISO 19115:2014 standard.
+     * If (and only if) marshalling an older standard version, we omit this attribute.
+     */
+    @XmlElement(name = "graphic")
+    private Collection<BrowseGraphic> getGraphic() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getGraphics() : null;
+    }
+
+    @XmlElement(name = "reference")
+    private Collection<Citation> getReference() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getReferences() : null;
+    }
+
+    @XmlElement(name = "responsibleParty")
+    private Collection<DefaultResponsibility> getResponsibleParty() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getResponsibleParties() : null;
     }
 }

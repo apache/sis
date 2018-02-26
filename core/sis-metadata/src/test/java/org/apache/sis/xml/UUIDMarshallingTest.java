@@ -32,7 +32,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the XML marshalling of object having {@code uuid} or {@code uuidref} attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
  *
@@ -50,50 +50,50 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * A XML with a {@code uuid} identifier in the {@code <gmd:CI_Series>} element.
      */
     private static final String IDENTIFIED_XML =
-            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                            " xmlns:gco=\""   + Namespaces.GCO + "\">\n" +
-            "  <gmd:title>\n" +
+            "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
+                            " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <cit:title>\n" +
             "    <gco:CharacterString>My data</gco:CharacterString>\n" +
-            "  </gmd:title>\n" +
-            "  <gmd:series>\n" +
-            "    <gmd:CI_Series uuid=\"" + UUID_VALUE + "\">\n" +
-            "      <gmd:name>\n" +
+            "  </cit:title>\n" +
+            "  <cit:series>\n" +
+            "    <cit:CI_Series uuid=\"" + UUID_VALUE + "\">\n" +
+            "      <cit:name>\n" +
             "        <gco:CharacterString>My aggregate dataset</gco:CharacterString>\n" +
-            "      </gmd:name>\n" +
-            "    </gmd:CI_Series>\n" +
-            "  </gmd:series>\n" +
-            "</gmd:CI_Citation>";
+            "      </cit:name>\n" +
+            "    </cit:CI_Series>\n" +
+            "  </cit:series>\n" +
+            "</cit:CI_Citation>";
 
     /**
      * A XML with a {@code uuidref} identifier in the {@code <gmd:series>} element.
      * This XML declares the method body anyway, which is kind of contradictory with usage of reference.
      */
     private static final String REFERENCED_XML_WITH_BODY =
-            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                            " xmlns:gco=\""   + Namespaces.GCO + "\">\n" +
-            "  <gmd:title>\n" +
+            "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
+                            " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <cit:title>\n" +
             "    <gco:CharacterString>My data</gco:CharacterString>\n" +
-            "  </gmd:title>\n" +
-            "  <gmd:series uuidref=\"" + UUID_VALUE + "\">\n" +
-            "    <gmd:CI_Series>\n" +
-            "      <gmd:name>\n" +
+            "  </cit:title>\n" +
+            "  <cit:series uuidref=\"" + UUID_VALUE + "\">\n" +
+            "    <cit:CI_Series>\n" +
+            "      <cit:name>\n" +
             "        <gco:CharacterString>My aggregate dataset</gco:CharacterString>\n" +
-            "      </gmd:name>\n" +
-            "    </gmd:CI_Series>\n" +
-            "  </gmd:series>\n" +
-            "</gmd:CI_Citation>";
+            "      </cit:name>\n" +
+            "    </cit:CI_Series>\n" +
+            "  </cit:series>\n" +
+            "</cit:CI_Citation>";
 
     /**
      * A XML with a {@code uuidref} identifier in the {@code <gmd:series>} element.
      */
     private static final String REFERENCED_XML =
-            "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                            " xmlns:gco=\""   + Namespaces.GCO + "\">\n" +
-            "  <gmd:title>\n" +
+            "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
+                            " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+            "  <cit:title>\n" +
             "    <gco:CharacterString>My data</gco:CharacterString>\n" +
-            "  </gmd:title>\n" +
-            "  <gmd:series uuidref=\"" + UUID_VALUE + "\"/>\n" +
-            "</gmd:CI_Citation>";
+            "  </cit:title>\n" +
+            "  <cit:series uuidref=\"" + UUID_VALUE + "\"/>\n" +
+            "</cit:CI_Citation>";
 
     /**
      * Tests (un)marshalling of an object identified by the {@code uuid} attribute.
@@ -101,18 +101,18 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * in the {@code <gmd:CI_Series>} element of the following XML fragment:
      *
      * {@preformat xml
-     *   <gmd:CI_Citation>
-     *     <gmd:title>
+     *   <cit:CI_Citation>
+     *     <cit:title>
      *       <gco:CharacterString>My data</gco:CharacterString>
-     *     </gmd:title>
-     *     <gmd:series>
-     *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
-     *         <gmd:name>
+     *     </cit:title>
+     *     <cit:series>
+     *       <cit:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *         <cit:name>
      *           <gco:CharacterString>My aggregate dataset</gco:CharacterString>
-     *         </gmd:name>
-     *       </gmd:CI_Series>
-     *     </gmd:series>
-     *   </gmd:CI_Citation>
+     *         </cit:name>
+     *       </cit:CI_Series>
+     *     </cit:series>
+     *   </cit:CI_Citation>
      * }
      *
      * On an implementation note, the {@code uuid} and other attributes of the {@code <gmd:CI_Series>}
@@ -152,18 +152,18 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * in the {@code <gmd:series>} property of the following XML fragment:</p>
      *
      * {@preformat xml
-     *   <gmd:CI_Citation>
-     *     <gmd:title>
+     *   <cit:CI_Citation>
+     *     <cit:title>
      *       <gco:CharacterString>My data</gco:CharacterString>
-     *     </gmd:title>
-     *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
-     *       <gmd:CI_Series>
-     *         <gmd:name>
+     *     </cit:title>
+     *     <cit:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *       <cit:CI_Series>
+     *         <cit:name>
      *           <gco:CharacterString>My aggregate dataset</gco:CharacterString>
-     *         </gmd:name>
-     *       </gmd:CI_Series>
-     *     </gmd:series>
-     *   </gmd:CI_Citation>
+     *         </cit:name>
+     *       </cit:CI_Series>
+     *     </cit:series>
+     *   </cit:CI_Citation>
      * }
      *
      * On an implementation note, the {@code uuidref}, {@code xlink:href} and other attributes of the

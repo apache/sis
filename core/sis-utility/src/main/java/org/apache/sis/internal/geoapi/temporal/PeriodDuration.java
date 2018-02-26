@@ -20,7 +20,7 @@ import org.opengis.util.InternationalString;
 
 
 /**
- * Placeholder for a GeoAPI interfaces which is still incomplete in GeoAPI 3.0.0.
+ * Placeholder for a GeoAPI interfaces which is still incomplete in GeoAPI 3.0.
  * We reproduce here the GeoAPI 3.1-pending API. Note that at the time of writing,
  * this is a bad API (values shall not be instances of {@link InternationalString}).
  * This will be fixed in a future GeoAPI version.

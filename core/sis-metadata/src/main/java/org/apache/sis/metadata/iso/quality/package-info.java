@@ -109,16 +109,23 @@
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
- * @since   0.3
+ * @author  Cullen Rombach (Image Matters)
+ * @version 1.0
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-394">SIS-394</a>
+ *
+ * @since 0.3
  * @module
  */
-@XmlSchema(location=Schemas.METADATA_XSD, elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmx", namespaceURI = Namespaces.GMX),
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+@XmlSchema(location="http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd",
+           elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ,
+           xmlns = {
+                @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
+                @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
+                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+                @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
+                @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+                @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -126,25 +133,22 @@
     @XmlJavaTypeAdapter(DQ_Element.class),
     @XmlJavaTypeAdapter(DQ_EvaluationMethodTypeCode.class),
     @XmlJavaTypeAdapter(DQ_Result.class),
-    @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_Record.class),
+    @XmlJavaTypeAdapter(GO_RecordType.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_Format.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(MD_Scope.class),
-    @XmlJavaTypeAdapter(MD_ScopeCode.class),
-    @XmlJavaTypeAdapter(MD_ScopeDescription.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MD_SpatialRepresentationTypeCode.class),
     @XmlJavaTypeAdapter(MX_DataFile.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(UnitAdapter.class),
-    @XmlJavaTypeAdapter(StringAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_RecordType.class),
-    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.quality;
 
@@ -156,7 +160,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

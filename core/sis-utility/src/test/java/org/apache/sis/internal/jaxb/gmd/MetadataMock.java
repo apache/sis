@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.mock;
+package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
 import java.util.Collection;
@@ -22,28 +22,31 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
- * A dummy implementation of {@link Metadata} with minimal XML (un)marshalling capability.
+ * A dummy implementation of {@link org.opengis.metadata.Metadata} with minimal XML (un)marshalling capability.
+ * Used for testing marshalling of legacy ISO 19139:2007 attributes.
+ * Contrarily to {@link org.apache.sis.metadata.iso.DefaultMetadata}, this mock does not set automatically
+ * the {@link org.apache.sis.xml.XML#LOCALE} attribute according the {@code <mdb:defaultLocale>} element.
+ * So this mock makes easier to test localization aspects without the interference of automatic mechanism.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.4
  * @module
  */
-@XmlRootElement(name = "MD_Metadata", namespace = Namespaces.GMD)
-public final strictfp class MetadataMock extends SimpleMetadata {
+@XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
+final strictfp class MetadataMock extends SimpleMetadata {
     /**
      * The language used for documenting metadata.
      */
-    @XmlElement(namespace = Namespaces.GMD)
+    @XmlElement(namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(LocaleAdapter.class)
-    public Locale language;
+    private Locale language;
 
     /**
      * Creates an initially empty metadata.
