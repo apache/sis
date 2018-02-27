@@ -74,7 +74,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @version 1.0
  *
  * @see XMLTestCase
- * @see Assert#assertXmlEquals(Object, Object, String[])
+ * @see MetadataAssert#assertXmlEquals(Object, Object, String[])
  *
  * @since 0.3
  * @module
@@ -82,7 +82,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
 public strictfp class XMLComparator {
     /**
      * Commonly used prefixes for namespaces. Used as shorthands for calls to
-     * {@link Assert#assertXmlEquals(Object, Object, String[])}.
+     * {@link MetadataAssert#assertXmlEquals(Object, Object, String[])}.
      *
      * @see #substitutePrefix(String)
      */
@@ -158,7 +158,7 @@ public strictfp class XMLComparator {
      *   "http://www.w3.org/2001/XMLSchema-instance:type"
      * }
      *
-     * Note that for convenience, the {@link Assert#assertXmlEquals(Object, Object, String[])} method
+     * Note that for convenience, the {@link MetadataAssert#assertXmlEquals(Object, Object, String[])} method
      * automatically replaces some widely used prefixes by their full URL.
      */
     public final Set<String> ignoredAttributes;

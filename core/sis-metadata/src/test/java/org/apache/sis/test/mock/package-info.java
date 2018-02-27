@@ -33,6 +33,7 @@
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)

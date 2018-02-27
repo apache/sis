@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.cat;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -36,8 +36,8 @@ import org.apache.sis.internal.jaxb.Schemas;
  *
  * <div class="note">"UID" in the class name stands for "Unique Identifier".</div>
  *
- * This object is wrapped by {@link CodeListAdapter} or, in the special case of {@link Locale} type,
- * by {@link LanguageCode} or {@link Country}.
+ * This object is wrapped by {@link CodeListAdapter} or, in the special case of {@link Locale} type, by
+ * {@link org.apache.sis.internal.jaxb.lan.LanguageCode} or {@link org.apache.sis.internal.jaxb.lan.Country}.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

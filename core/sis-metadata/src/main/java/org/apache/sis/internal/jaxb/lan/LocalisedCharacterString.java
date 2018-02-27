@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import java.util.Objects;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -26,9 +26,9 @@ import org.apache.sis.internal.jaxb.Context;
  * mapped to {@link Locale}. This adapter formats the locale like below:
  *
  * {@preformat xml
- *   <gmd:language>
- *     <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
- *   </gmd:language>
+ *   <lan:language>
+ *     <lan:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</lan:LanguageCode>
+ *   </lan:language>
  * }
  *
  * @author  Cédric Briançon (Geomatys)
@@ -36,7 +36,7 @@ import org.apache.sis.internal.jaxb.Context;
  * @version 0.4
  *
  * @see LanguageCode
- * @see org.apache.sis.internal.jaxb.code.PT_Locale
+ * @see PT_Locale
  *
  * @since 0.3
  * @module

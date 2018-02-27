@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -26,7 +27,6 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -37,9 +37,9 @@ import org.apache.sis.xml.Namespaces;
  * <p>This adapter formats the locale like below:</p>
  *
  * {@preformat xml
- *   <gmd:country>
- *     <gmd:Country codeList="http://(...snip...)" codeListValue="FR">France</gmd:Country>
- *   </gmd:country>
+ *   <cit:country>
+ *     <lan:Country codeList="http://(...snip...)" codeListValue="FR">France</lan:Country>
+ *   </cit:country>
  * }
  *
  * Note that {@code <gco:CharacterString>} can be substituted to the country code.
@@ -51,7 +51,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(name = "Country_PropertyType", namespace = Namespaces.LAN)
+@XmlType(name = "Country_PropertyType")
 public final class Country extends GO_CharacterString {
     /**
      * The country using a {@link org.opengis.util.CodeList}-like format.
@@ -119,7 +119,7 @@ public final class Country extends GO_CharacterString {
     /**
      * Gets the value of the Country code using ISO 19115-3 element name.
      */
-    @XmlElement(name = "CountryCode", namespace = Namespaces.LAN)
+    @XmlElement(name = "CountryCode")
     private CodeListUID getCountryCode() {
         return isLegacyMetadata ? null : identifier;
     }

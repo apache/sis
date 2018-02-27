@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.code;
+package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import java.nio.charset.Charset;
@@ -24,12 +24,9 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gmd.Country;
-import org.apache.sis.internal.jaxb.gmd.LanguageCode;
-import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -40,23 +37,23 @@ import org.apache.sis.xml.Namespaces;
  * <p>This adapter formats the locale like below:</p>
  *
  * {@preformat xml
- *   <gmd:locale>
- *     <gmd:PT_Locale id="locale-eng">
- *       <gmd:languageCode>
- *         <gmd:LanguageCode codeList="./resources/Codelists.xml#LanguageCode" codeListValue="eng">eng</gmd:LanguageCode>
- *       </gmd:languageCode>
- *       <gmd:country>
- *         <gmd:Country codeList="./resources/Codelists.xml#Country" codeListValue="GB">GB</gmd:Country>
- *       </gmd:country>
- *       <gmd:characterEncoding>
- *         <gmd:MD_CharacterSetCode codeList="./resources/Codelists.xml#MD_CharacterSetCode"
- *                 codeListValue="8859part15">8859part15</gmd:MD_CharacterSetCode>
- *       </gmd:characterEncoding>
- *     </gmd:PT_Locale>
- *   </gmd:locale>
+ *   <lan:locale>
+ *     <lan:PT_Locale id="locale-eng">
+ *       <lan:languageCode>
+ *         <lan:LanguageCode codeList="./resources/Codelists.xml#LanguageCode" codeListValue="eng">eng</lan:LanguageCode>
+ *       </lan:languageCode>
+ *       <lan:country>
+ *         <lan:Country codeList="./resources/Codelists.xml#Country" codeListValue="GB">GB</lan:Country>
+ *       </lan:country>
+ *       <lan:characterEncoding>
+ *         <lan:MD_CharacterSetCode codeList="./resources/Codelists.xml#MD_CharacterSetCode"
+ *                 codeListValue="8859part15">8859part15</lan:MD_CharacterSetCode>
+ *       </lan:characterEncoding>
+ *     </lan:PT_Locale>
+ *   </lan:locale>
  * }
  *
- * For an alternative (simpler) format, see {@link org.apache.sis.internal.jaxb.gmd.LocaleAdapter}.
+ * For an alternative (simpler) format, see {@link LocaleAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
@@ -64,7 +61,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @see LanguageCode
  * @see Country
- * @see org.apache.sis.internal.jaxb.gmd.LocaleAdapter
+ * @see LocaleAdapter
  *
  * @since 0.3
  * @module
@@ -73,13 +70,13 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * The attributes wrapped in a {@code "PT_Locale"} element.
      */
-    @XmlElement(name = "PT_Locale", namespace = Namespaces.LAN)
+    @XmlElement(name = "PT_Locale")
     private Wrapper element;
 
     /**
      * Wraps the {@code "locale"} attributes in a {@code "PT_Locale"} element.
      */
-    @XmlType(name = "PT_Locale_Type", namespace = Namespaces.LAN, propOrder = {
+    @XmlType(name = "PT_Locale_Type", propOrder = {
         "languageCode", "language", "country", "characterEncoding"
     })
     private static final class Wrapper {
@@ -172,7 +169,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          * This method sets the {@link #characterEncoding} to the XML encoding.
          *
          * <div class="note"><b>Note:</b> This is totally redundant with the encoding declared in the XML header.
-         * Unfortunately, the {@code <gmd:characterEncoding>} element is mandatory according OGC/ISO schemas.</div>
+         * Unfortunately, the {@code <lan:characterEncoding>} element is mandatory according OGC/ISO schemas.</div>
          */
         public void beforeMarshal(final Marshaller marshaller) {
             final String encoding;

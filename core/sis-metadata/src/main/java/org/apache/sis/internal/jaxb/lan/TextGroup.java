@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.Debug;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -88,7 +87,7 @@ final class TextGroup {
      * as in the second example of class javadoc. However SIS allows arbitrary length
      * (as in the first example of class javadoc) for compatibility and convenience reasons.</p>
      */
-    @XmlElement(name = "LocalisedCharacterString", namespace = Namespaces.LAN)
+    @XmlElement(name = "LocalisedCharacterString")
     protected LocalisedCharacterString[] localized;
 
     /**
