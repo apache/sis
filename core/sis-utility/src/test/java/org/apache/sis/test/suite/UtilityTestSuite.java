@@ -33,7 +33,6 @@ import org.junit.BeforeClass;
     // Following are testing the test tools.
     org.apache.sis.internal.test.AssertTest.class,
     org.apache.sis.internal.test.TestUtilitiesTest.class,
-    org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
     org.apache.sis.internal.system.LoggersTest.class,
@@ -88,19 +87,9 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.util.DefinitionURITest.class,
     org.apache.sis.internal.util.XPathsTest.class,
     org.apache.sis.internal.util.CitationsTest.class,
-    org.apache.sis.util.iso.TypesTest.class,
     org.apache.sis.util.iso.SimpleInternationalStringTest.class,
     org.apache.sis.util.iso.DefaultInternationalStringTest.class,
     org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
-    org.apache.sis.util.iso.DefaultLocalNameTest.class,
-    org.apache.sis.util.iso.DefaultScopedNameTest.class,
-    org.apache.sis.util.iso.DefaultNameFactoryTest.class,
-    org.apache.sis.util.iso.NamesTest.class,
-    org.apache.sis.util.iso.TypeNamesTest.class,
-    org.apache.sis.internal.simple.SimpleIdentifierTest.class,
-    org.apache.sis.util.iso.DefaultRecordTypeTest.class,
-    org.apache.sis.util.iso.DefaultRecordSchemaTest.class,
-    org.apache.sis.util.iso.DefaultRecordTest.class,
 
     // Measurements and formatting.
     org.apache.sis.measure.SexagesimalConverterTest.class,
@@ -140,27 +129,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.ArrayConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
-    org.apache.sis.internal.converter.NumberConverterTest.class,        // Shall be after SystemRegistryTest.
-
-    // XML most basic types.
-    org.apache.sis.xml.NamespacesTest.class,
-    org.apache.sis.xml.XLinkTest.class,
-    org.apache.sis.xml.NilReasonTest.class,
-    org.apache.sis.xml.LegacyCodesTest.class,
-    org.apache.sis.xml.ValueConverterTest.class,
-    org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
-    org.apache.sis.xml.MarshallerPoolTest.class,
-    org.apache.sis.xml.TransformingNamespacesTest.class,
-    org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
-    org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
-    org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,
-    org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
-    org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
-    org.apache.sis.internal.jaxb.gmd.EnumAdapterTest.class,
-    org.apache.sis.internal.jaxb.gmd.LanguageCodeTest.class,
-    org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
-    org.apache.sis.internal.jaxb.gml.MeasureTest.class,
-    org.apache.sis.util.iso.NameMarshallingTest.class
+    org.apache.sis.internal.converter.NumberConverterTest.class         // Shall be after SystemRegistryTest.
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
     /**

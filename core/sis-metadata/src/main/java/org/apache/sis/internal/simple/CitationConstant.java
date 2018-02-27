@@ -30,7 +30,8 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.metadata.ServicesForUtility;
 
 
 /**
@@ -40,7 +41,7 @@ import org.apache.sis.internal.util.MetadataServices;
  * is available, then that simple primary key will be used as the citation title.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see IdentifierSpace
  * @see org.apache.sis.metadata.iso.citation.Citations
@@ -136,7 +137,7 @@ public class CitationConstant extends SimpleCitation {
             synchronized (this) {
                 c = delegate;
                 if (c == null) {
-                    c = MetadataServices.getInstance().createCitation(title);
+                    c = ServicesForUtility.createCitation(title);
                     if (c == null) {
                         /*
                          * 'sis-metadata' module not on the classpath (should be very rare)
@@ -179,15 +180,11 @@ public class CitationConstant extends SimpleCitation {
      * @throws ObjectStreamException never thrown.
      */
     protected Object readResolve() throws ObjectStreamException {
-        CitationConstant c = MetadataServices.getInstance().getCitationConstant(title);
-        if (c == null) {
-            /*
-             * Should happen only if the sis-metadata module is not on the classpath (should be rare)
-             * or if the Citation has been serialized on a more recent version of Apache SIS than the
-             * current version.
-             */
-            c = this;
-        }
-        return c;
+        final Citation c = Citations.fromName(title);
+        return (c instanceof CitationConstant) ? c : this;
+        /*
+         * Returns 'this' should happen only if the Citation has been serialized
+         * on a more recent version of Apache SIS than the current version.
+         */
     }
 }

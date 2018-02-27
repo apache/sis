@@ -55,7 +55,7 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @see DefaultNameSpace
  * @see DefaultScopedName

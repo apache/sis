@@ -32,6 +32,7 @@ import java.io.IOException;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.XPaths;
@@ -43,7 +44,6 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.iso.DefaultNameSpace;
 
 
 /**
@@ -966,7 +966,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                     failure = e;
                 }
                 throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
-                        Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code),
+                        Constants.EPSG + Citations.DEFAULT_SEPARATOR + code),
                         symbols, start + Math.max(0, uom.lastIndexOf(code))).initCause(failure);
             }
             /*

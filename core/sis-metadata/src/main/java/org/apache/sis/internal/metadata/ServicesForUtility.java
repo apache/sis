@@ -27,7 +27,7 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Responsibility;
-import org.apache.sis.internal.simple.CitationConstant;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.metadata.sql.Initializer;
@@ -73,15 +73,17 @@ public final class ServicesForUtility extends MetadataServices {
     }
 
     /**
-     * Returns the constant defined in the {@link Citations} class for the given name.
+     * Returns the title of the given enumeration or code list value.
      *
-     * @param  name  the name of one of the citation constants defined in the {@code Citations} class.
-     * @return the requested citation, or {@code null} if there is no constant for the given name.
+     * @param  code    the code for which to get the title.
+     * @param  locale  desired locale for the title.
+     * @return the title.
+     *
+     * @see org.apache.sis.util.iso.Types#getCodeTitle(ControlledVocabulary)
      */
     @Override
-    public CitationConstant getCitationConstant(final String name) {
-        final Citation c = Citations.fromName(name);
-        return (c instanceof CitationConstant) ? (CitationConstant) c : null;
+    public String getCodeTitle(final ControlledVocabulary code, final Locale locale) {
+        return Types.getCodeTitle(code).toString(locale);
     }
 
     /**
@@ -95,8 +97,7 @@ public final class ServicesForUtility extends MetadataServices {
      *       need to make sure that the given key is present in the alternate titles, since we rely on that when
      *       checking for code spaces.
      */
-    @Override
-    public Citation createCitation(final String key) {
+    public static Citation createCitation(final String key) {
         CharSequence     title;
         CharSequence     alternateTitle        = null;
         CharSequence     edition               = null;
@@ -194,7 +195,7 @@ public final class ServicesForUtility extends MetadataServices {
                 title = "S-57";
                 break;
             }
-            default: return super.createCitation(key);
+            default: return null;
         }
         /*
          * Do not use the 'c.getFoo().add(foo)' pattern below. Use the 'c.setFoo(singleton(foo))' pattern instead.

@@ -689,9 +689,9 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    @SuppressWarnings("deprecation")
     public static String getUnicodeIdentifier(final Citation citation) {
-        return org.apache.sis.internal.util.Citations.getUnicodeIdentifier(citation);
+        return org.apache.sis.internal.util.Citations.removeIgnorableCharacters(
+               org.apache.sis.internal.util.Citations.getIdentifier(citation, true));
     }
 
     /**

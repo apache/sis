@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.simple;
 
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -31,7 +30,6 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
-@DependsOn(org.apache.sis.internal.util.CitationsTest.class)
 public final strictfp class SimpleIdentifierTest extends TestCase {
     /**
      * Tests {@link SimpleIdentifier#toString()}.

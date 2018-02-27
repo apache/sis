@@ -24,7 +24,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

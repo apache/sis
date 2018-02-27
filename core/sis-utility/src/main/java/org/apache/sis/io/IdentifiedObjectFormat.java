@@ -24,7 +24,6 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.util.Citations;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -74,7 +73,7 @@ final class IdentifiedObjectFormat extends Format {
             cs = Citations.getIdentifier(identifier.getAuthority(), true);
         }
         if (cs != null) {
-            toAppendTo.append(cs).append(DefaultNameSpace.DEFAULT_SEPARATOR);
+            toAppendTo.append(cs).append(Citations.DEFAULT_SEPARATOR);
         }
         return toAppendTo.append(code);
     }

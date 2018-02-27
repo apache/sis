@@ -31,7 +31,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.util.CodeLists;
 import org.apache.sis.measure.Units;
 
 
@@ -354,7 +354,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** Converts the given string to the target type of this converter. */
         @Override T doConvert(final String source) {
-            final T code = Types.forCodeName(targetClass, source, false);
+            final T code = CodeLists.forName(targetClass, source, false);
             if (code == null) {
                 throw new UnconvertibleObjectException(formatErrorMessage(source));
             }
@@ -386,7 +386,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** Converts the given string to the target type of this converter. */
         @Override T doConvert(final String source) {
-            final T code = Types.forEnumName(targetClass, source);
+            final T code = CodeLists.forName(targetClass, source);
             if (code == null) {
                 throw new UnconvertibleObjectException(formatErrorMessage(source));
             }

@@ -117,6 +117,15 @@ Read and write files in the GPX format.
       <artifactId>esri-geometry-api</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-metadata</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
