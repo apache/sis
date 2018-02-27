@@ -26,6 +26,8 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 // Branch-specific imports
 import org.opengis.metadata.citation.Responsibility;
@@ -183,13 +185,13 @@ public strictfp class MetadataAssert extends Assert {
      *   <caption>Predefined prefix mapping</caption>
      *   <tr><th>Prefix</th> <th>URL</th></tr>
      *   <tr><td>xmlns</td>  <td>{@code "http://www.w3.org/2000/xmlns"}</td></tr>
-     *   <tr><td>xlink</td>  <td>{@value org.apache.sis.xml.Namespaces#XLINK}</td></tr>
-     *   <tr><td>xsi</td>    <td>{@value org.apache.sis.xml.Namespaces#XSI}</td></tr>
-     *   <tr><td>gml</td>    <td>{@value org.apache.sis.xml.Namespaces#GML}</td></tr>
-     *   <tr><td>gmd</td>    <td>{@value org.apache.sis.xml.Namespaces#GMD}</td></tr>
-     *   <tr><td>gmx</td>    <td>{@value org.apache.sis.xml.Namespaces#GMX}</td></tr>
-     *   <tr><td>gmi</td>    <td>{@value org.apache.sis.xml.Namespaces#GMI}</td></tr>
-     *   <tr><td>gco</td>    <td>{@value org.apache.sis.xml.Namespaces#GCO}</td></tr>
+     *   <tr><td>xlink</td>  <td>{@value Namespaces#XLINK}</td></tr>
+     *   <tr><td>xsi</td>    <td>{@value Namespaces#XSI}</td></tr>
+     *   <tr><td>gml</td>    <td>{@value Namespaces#GML}</td></tr>
+     *   <tr><td>gco</td>    <td>{@value Namespaces#GCO}</td></tr>
+     *   <tr><td>gmd</td>    <td>{@value LegacyNamespaces#GMD}</td></tr>
+     *   <tr><td>gmx</td>    <td>{@value LegacyNamespaces#GMX}</td></tr>
+     *   <tr><td>gmi</td>    <td>{@value LegacyNamespaces#GMI}</td></tr>
      * </table>
      *
      * <p>For example in order to ignore the namespace, type and schema location declaration,

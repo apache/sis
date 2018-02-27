@@ -23,7 +23,7 @@ import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.gmx.Anchor;
+import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.jaxb.lan.PT_FreeText;
 
 
@@ -115,7 +115,7 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
             return null;
         }
         /*
-         * Substitute <gco:CharacterString> by <gmx:Anchor> if a linkage is found.
+         * Substitute <gco:CharacterString> by <gcx:Anchor> if a linkage is found.
          */
         if (!(value instanceof Anchor)) {
             final String key = CharSequences.trimWhitespaces(value.toString());
@@ -137,7 +137,7 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
          *
          * ┌──────────────────────────────────────────────────┬────────────────────────────────┐
          * │ <mdb:someElement>                                │ <mdb:someElement>              │
-         * │   <gco:CharacterString>...</gco:CharacterString> │   <gmx:Anchor>...</gmx:Anchor> │
+         * │   <gco:CharacterString>...</gco:CharacterString> │   <gcx:Anchor>...</gcx:Anchor> │
          * │ </mdb:someElement>                               │ </mdb:someElement>             │
          * └──────────────────────────────────────────────────┴────────────────────────────────┘
          */
