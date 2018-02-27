@@ -34,7 +34,7 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapter(InternationalStringConverter.class)
-package org.apache.sis.internal.jaxb.gmx;
+package org.apache.sis.internal.jaxb.gcx;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;

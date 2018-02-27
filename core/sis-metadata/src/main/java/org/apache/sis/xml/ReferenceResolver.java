@@ -23,7 +23,7 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.internal.jaxb.gmx.Anchor;
+import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.jaxb.Context;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -241,7 +241,7 @@ public class ReferenceResolver {
     }
 
     /**
-     * Returns the {@code <gmx:Anchor>} to use for the given text, or {@code null} if none.
+     * Returns the {@code <gcx:Anchor>} to use for the given text, or {@code null} if none.
      * Anchors can appear in ISO 19115-3 documents where we would normally expect a character sequence.
      * For example:
      *
@@ -249,7 +249,7 @@ public class ReferenceResolver {
      * <caption>XML representations of string</caption>
      * <tr>
      *   <th>As {@code <gco:CharacterString>}</th>
-     *   <th>As {@code <gmx:Anchor>}</th>
+     *   <th>As {@code <gcx:Anchor>}</th>
      * </tr><tr>
      * <td>
      *   <pre> &lt;gmd:country&gt;
@@ -257,7 +257,7 @@ public class ReferenceResolver {
      * &lt;/gmd:country&gt;</pre>
      * </td><td>
      *   <pre> &lt;gmd:country&gt;
-     *     &lt;gmx:Anchor xlink:href="SDN:C320:2:FR"&gt;France&lt;/gmx:Anchor&gt;
+     *     &lt;gcx:Anchor xlink:href="SDN:C320:2:FR"&gt;France&lt;/gcx:Anchor&gt;
      * &lt;/gmd:country&gt;</pre>
      * </td></tr>
      * </table>

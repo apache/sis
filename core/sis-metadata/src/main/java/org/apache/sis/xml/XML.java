@@ -311,10 +311,10 @@ public final class XML extends Static {
      * The value for this property shall be a {@code String[]} array of any of the following values:
      *
      * <ul>
-     *   <li>"{@code language}" for substituting {@code <gmd:LanguageCode>} elements</li>
-     *   <li>"{@code country}"  for substituting {@code <gmd:Country>} elements</li>
-     *   <li>"{@code filename}" for substituting {@code <gmx:FileName>} elements</li>
-     *   <li>"{@code mimetype}" for substituting {@code <gmx:MimeFileType>} elements</li>
+     *   <li>"{@code language}" for substituting {@code <lan:LanguageCode>} elements</li>
+     *   <li>"{@code country}"  for substituting {@code <lan:Country>} elements</li>
+     *   <li>"{@code filename}" for substituting {@code <gcx:FileName>} elements</li>
+     *   <li>"{@code mimetype}" for substituting {@code <gcx:MimeFileType>} elements</li>
      * </ul>
      *
      * <div class="note"><b>Example:</b>
@@ -332,9 +332,9 @@ public final class XML extends Static {
      * the language code like below (which is legal according OGC schemas, but is not INSPIRE compliant):
      *
      * {@preformat xml
-     *   <gmd:language>
+     *   <lan:language>
      *     <gco:CharacterString>fra</gco:CharacterString>
-     *   </gmd:language>
+     *   </lan:language>
      * }
      * </div>
      */

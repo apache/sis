@@ -55,7 +55,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.internal.jaxb.gmx.Anchor;
+import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
