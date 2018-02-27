@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.iso.SimpleInternationalString;
 
 
 /**
@@ -92,7 +92,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * The constants defined in this class use a similar approach for providing serialization support.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @param <V>  base type of all values in the column identified by this instance.
  *
@@ -277,7 +277,11 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * @return the text to display as column header.
      */
     public synchronized InternationalString getHeader() {
-        final InternationalString i18n = Types.toInternationalString(header);
+        CharSequence t = header;
+        if (t == null || t instanceof InternationalString) {
+            return (InternationalString) t;
+        }
+        final InternationalString i18n = new SimpleInternationalString(t.toString());
         header = i18n;
         return i18n;
     }

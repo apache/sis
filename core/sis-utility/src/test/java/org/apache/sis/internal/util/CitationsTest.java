@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -41,25 +39,17 @@ public final strictfp class CitationsTest extends TestCase {
     /**
      * Creates a citation with the given title and the given identifiers.
      */
-     @SuppressWarnings("serial")
-     private static SimpleCitation citation(final String title, final Identifier... identifiers) {
-        return new SimpleCitation(title) {
-            @Override public List<Identifier> getIdentifiers() {
-                return Arrays.asList(identifiers);
-            }
-        };
+     private static CitationMock citation(final String title, final Identifier... identifiers) {
+        CitationMock cit =  new CitationMock(title, null, null);
+        cit.identifiers = Arrays.asList(identifiers);
+        return cit;
     }
 
     /**
      * Creates an identifier with a code space.
      */
-     @SuppressWarnings("serial")
      private static Identifier identifier(final String codeSpace, final String code) {
-        return new SimpleIdentifier(null, code, false) {
-            @Override public String getCodeSpace() {
-                return codeSpace;
-            }
-        };
+        return new CitationMock(null, codeSpace, code);
     }
 
     /**
@@ -97,11 +87,11 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testGetIdentifier() {
-        SimpleCitation citation = new SimpleCitation(" Not an identifier ");
+        CitationMock citation = new CitationMock(" Not an identifier ", null, null);
         assertEquals("Not an identifier", Citations.getIdentifier(citation, false));
         assertNull(Citations.getIdentifier(citation, true));
 
-        citation = new SimpleCitation(" ValidIdentifier ");
+        citation = new CitationMock(" ValidIdentifier ", null, null);
         assertEquals("ValidIdentifier", Citations.getIdentifier(citation, false));
         assertEquals("ValidIdentifier", Citations.getIdentifier(citation, true));
         /*

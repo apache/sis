@@ -72,7 +72,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * The default separator, which is {@code ':'}. The separator is inserted between
      * the namespace and any {@linkplain GenericName generic name} in that namespace.
      */
-    public static final char DEFAULT_SEPARATOR = ':';
+    public static final char DEFAULT_SEPARATOR = org.apache.sis.internal.util.Citations.DEFAULT_SEPARATOR;
 
     /**
      * {@link #DEFAULT_SEPARATOR} as a {@link String}.

@@ -32,12 +32,9 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
 /**
  * An implementation of {@link Identifier} as a wrapper around a {@link Citation}.
- * {@code Identifier} is defined by the ISO 19115 standard and is implemented publicly
- * in the {@link org.apache.sis.metadata} package. This class is provided for codes that do
- * not depend on the {@code sis-metadata} module but still need a lightweight implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -108,7 +105,7 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getCodeSpace(authority);
+        return org.apache.sis.metadata.iso.citation.Citations.getCodeSpace(authority);
     }
 
     /**

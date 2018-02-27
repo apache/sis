@@ -25,7 +25,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

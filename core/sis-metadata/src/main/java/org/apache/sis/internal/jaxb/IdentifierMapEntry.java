@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb;
 import java.util.AbstractMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 // Branch-dependent imports
 import org.opengis.util.InternationalString;

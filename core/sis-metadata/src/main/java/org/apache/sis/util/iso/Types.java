@@ -26,9 +26,6 @@ import java.util.MissingResourceException;
 import java.util.IllformedLocaleException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
@@ -40,6 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.util.CodeLists;
 import org.apache.sis.internal.system.Loggers;
 
 
@@ -76,7 +74,7 @@ import org.apache.sis.internal.system.Loggers;
  *   <gmi:MI_Instrument>
  *     <gmi:type>
  *       <gmi:MI_SensorTypeCode
- *           codeList="http://navigator.eumetsat.int/metadata_schema/eum/resources/Codelist/eum_gmxCodelists.xml#CI_SensorTypeCode"
+ *           codeList="http://standards.iso.org/…snip…/codelists.xml#CI_SensorTypeCode"
  *           codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
  *     </gmi:type>
  *   </gmi:MI_Instrument>
@@ -93,7 +91,7 @@ import org.apache.sis.internal.system.Loggers;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -440,7 +438,7 @@ public final class Types extends Static {
          * @param  code  the code list for which to create a title.
          */
         CodeTitle(final ControlledVocabulary code) {
-            super("org.opengis.metadata.CodeLists", resourceKey(code));
+            super(CodeLists.RESOURCES, resourceKey(code));
             this.code = code;
         }
 
@@ -483,24 +481,8 @@ public final class Types extends Static {
      *
      * @see Class#getEnumConstants()
      */
-    @SuppressWarnings("unchecked")
     public static <T extends ControlledVocabulary> T[] getCodeValues(final Class<T> codeType) {
-        Object values;
-        try {
-            values = codeType.getMethod("values", (Class<?>[]) null).invoke(null, (Object[]) null);
-        } catch (InvocationTargetException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            }
-            if (cause instanceof Error) {
-                throw (Error) cause;
-            }
-            throw new UndeclaredThrowableException(cause);
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            values = Array.newInstance(codeType, 0);
-        }
-        return (T[]) values;
+        return CodeLists.values(codeType);
     }
 
     /**
@@ -588,31 +570,7 @@ public final class Types extends Static {
      * @since 0.5
      */
     public static <T extends Enum<T>> T forEnumName(final Class<T> enumType, String name) {
-        name = CharSequences.trimWhitespaces(name);
-        if (name != null && !name.isEmpty()) try {
-            return Enum.valueOf(enumType, name);
-        } catch (IllegalArgumentException e) {
-            final T[] values = enumType.getEnumConstants();
-            if (values == null) {
-                throw e;
-            }
-            if (values instanceof ControlledVocabulary[]) {
-                for (final ControlledVocabulary code : (ControlledVocabulary[]) values) {
-                    for (final String candidate : code.names()) {
-                        if (CodeListFilter.accept(candidate, name)) {
-                            return enumType.cast(code);
-                        }
-                    }
-                }
-            } else {
-                for (final Enum<?> code : values) {
-                    if (CodeListFilter.accept(code.name(), name)) {
-                        return enumType.cast(code);
-                    }
-                }
-            }
-        }
-        return null;
+        return CodeLists.forName(enumType, name);
     }
 
     /**
@@ -640,11 +598,7 @@ public final class Types extends Static {
      * @see CodeList#valueOf(Class, String)
      */
     public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name, final boolean canCreate) {
-        name = CharSequences.trimWhitespaces(name);
-        if (name == null || name.isEmpty()) {
-            return null;
-        }
-        return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
+        return CodeLists.forName(codeType, name, canCreate);
     }
 
     /**

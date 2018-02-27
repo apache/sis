@@ -29,7 +29,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 // Branch-dependent imports
 import org.opengis.metadata.Identifier;
@@ -279,7 +279,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      * Formats the given (authority, code) par value in the given buffer.
      */
     static void format(final StringBuilder buffer, final Citation authority, final String code) {
-        buffer.append(Citations.getIdentifier(authority, false)).append('=');
+        buffer.append(Citations.getIdentifier(authority)).append('=');
         final boolean quote = (code != null) && (code.indexOf('[') < 0);
         if (quote) buffer.append('“');
         buffer.append(code);
