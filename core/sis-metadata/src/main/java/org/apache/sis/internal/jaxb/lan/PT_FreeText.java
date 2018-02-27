@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Set;
 import java.util.Locale;
@@ -27,7 +27,6 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -65,7 +64,7 @@ import org.apache.sis.util.ArraysExt;
  * @since 0.3
  * @module
  */
-@XmlType(name = "PT_FreeText_PropertyType", namespace = Namespaces.LAN)
+@XmlType(name = "PT_FreeText_PropertyType")
 public final class PT_FreeText extends GO_CharacterString {
     /**
      * A set of {@link LocalisedCharacterString}, representing the {@code <lan:textGroup>} element.
@@ -73,8 +72,8 @@ public final class PT_FreeText extends GO_CharacterString {
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
      */
-    @XmlElementWrapper(name = "PT_FreeText", namespace = Namespaces.LAN)
-    @XmlElement(namespace = Namespaces.LAN, required = true)
+    @XmlElementWrapper(name = "PT_FreeText")
+    @XmlElement(required = true)
     private TextGroup[] textGroup;
 
     /**

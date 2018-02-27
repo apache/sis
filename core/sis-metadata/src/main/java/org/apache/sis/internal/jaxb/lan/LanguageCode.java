@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -47,12 +47,12 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@XmlType(name = "LanguageCode_PropertyType", namespace = Namespaces.LAN)
+@XmlType(name = "LanguageCode_PropertyType")
 public final class LanguageCode extends GO_CharacterString {
     /**
      * The language using a {@link org.opengis.util.CodeList}-like format.
      */
-    @XmlElement(name = "LanguageCode", namespace = Namespaces.LAN)
+    @XmlElement(name = "LanguageCode")
     private CodeListUID identifier;
 
     /**

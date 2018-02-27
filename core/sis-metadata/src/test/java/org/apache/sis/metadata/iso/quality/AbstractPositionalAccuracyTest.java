@@ -20,7 +20,7 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.FreeTextMarshallingTest;
+import org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;

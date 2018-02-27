@@ -33,7 +33,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmx.FileName;
 import org.apache.sis.internal.jaxb.gmx.MimeFileType;
-import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
@@ -61,16 +61,16 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  *
- * @see org.apache.sis.internal.jaxb.gmd.PT_FreeText
+ * @see org.apache.sis.internal.jaxb.lan.PT_FreeText
  *
  * @since 0.3
  * @module
  */
 @XmlType(name = "CharacterString_PropertyType")
 @XmlSeeAlso({
-    org.apache.sis.internal.jaxb.gmd.PT_FreeText.class,
-    org.apache.sis.internal.jaxb.gmd.LanguageCode.class,
-    org.apache.sis.internal.jaxb.gmd.Country.class
+    org.apache.sis.internal.jaxb.lan.PT_FreeText.class,
+    org.apache.sis.internal.jaxb.lan.LanguageCode.class,
+    org.apache.sis.internal.jaxb.lan.Country.class
 })
 @XmlRootElement(name = "CharacterString")
 public class GO_CharacterString {

@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
-import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
+import org.apache.sis.internal.jaxb.cat.EnumAdapter;
 import org.apache.sis.xml.Namespaces;
 
 

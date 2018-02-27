@@ -16,9 +16,7 @@
  */
 
 /**
- * Miscellaneous objects and adapters defined in the {@code "gmd"} namespace.
- * This package does not include the adapters for ISO 19115 classes and code
- * lists (except base classes), which are defined in their own package.
+ * Miscellaneous objects and adapters defined in the {@code "lan"} namespace.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -30,12 +28,12 @@
  * @since 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.MDB, xmlns = {
-    @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.LAN, xmlns = {
+    @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)
-package org.apache.sis.internal.jaxb.gmd;
+package org.apache.sis.internal.jaxb.lan;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;

@@ -24,7 +24,7 @@ import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
-import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
+import org.apache.sis.internal.jaxb.lan.PT_FreeText;
 
 
 /**
