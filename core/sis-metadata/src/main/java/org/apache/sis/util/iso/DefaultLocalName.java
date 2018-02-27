@@ -93,7 +93,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * <div class="section">Note on JAXB annotation</div>
      * The {@link XmlElement} annotation applied here is appropriate for {@code TypeName} and {@code MemberName}
      * subtypes only. It is <strong>not</strong> appropriate when (un)marshalling directly a {@code LocalName}.
-     * The distinction between the two cases is done by {@link org.apache.sis.internal.jaxb.gco.GO_LocalName},
+     * The distinction between the two cases is done by {@link org.apache.sis.internal.jaxb.gco.GO_GenericName},
      * which replace the {@code LocalName} instance by an internal {@code NameValue} object (so the XML element
      * declared here is never marshalled). Example:
      *

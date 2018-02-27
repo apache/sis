@@ -127,5 +127,5 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.xml.Namespaces;
