@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.storage.xml.stream;
 
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
@@ -30,7 +30,7 @@ import org.apache.sis.util.Workaround;
  * in standard JDK. For an unknown reason, JDK 8 does not provide a {@code StreamWriterDelegate}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see javax.xml.stream.util.StreamReaderDelegate
  *
@@ -38,7 +38,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @Workaround(library = "JDK", version = "1.8")
-public class StreamWriterDelegate implements XMLStreamWriter {
+class StreamWriterDelegate implements XMLStreamWriter {
     /**
      * Where to write the XML.
      */
