@@ -95,7 +95,7 @@ public enum IterationStrategy {
     DESCENDING(false),
 
     /**
-     * Copies the points to transform in a temporary array before to apply the transform.
+     * Copy the points to transform in a temporary array before to apply the transform.
      * The temporary array will be used for fetching the source ordinates.
      *
      * <p>This algorithm can be used as a fallback for any unknown enumeration.</p>
@@ -103,7 +103,7 @@ public enum IterationStrategy {
     BUFFER_SOURCE(true),
 
     /**
-     * Writes the transformed points in a temporary array and copies them to the
+     * Write the transformed points in a temporary array and copies them to the
      * destination subarray when the transformation is finished.
      *
      * <p>Developers are allowed to ignore this value and fallback on the same algorithm

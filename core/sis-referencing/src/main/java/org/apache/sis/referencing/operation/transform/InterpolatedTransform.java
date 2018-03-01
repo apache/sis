@@ -488,7 +488,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     dstPts[dstOff+1] = yi;
                     if (derivate) {
                         return Matrices.inverse(InterpolatedTransform.this.derivative(
-                                new DirectPositionView(dstPts, dstOff, dimension)));
+                                new DirectPositionView.Double(dstPts, dstOff, dimension)));
                     }
                     return null;
                 }

@@ -318,7 +318,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     {
         Matrix derivative = null;
         if (derivate) {
-            derivative = derivative(new DirectPositionView(srcPts, srcOff, getSourceDimensions()));
+            derivative = derivative(new DirectPositionView.Double(srcPts, srcOff, getSourceDimensions()));
         }
         if (dstPts != null) {
             transform(srcPts, srcOff, dstPts, dstOff, 1);

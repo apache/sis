@@ -32,7 +32,9 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -53,7 +55,7 @@ import org.apache.sis.util.Debug;
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see LocalizationGridBuilder
  * @see LinearTransform
@@ -302,7 +304,7 @@ search: for (int j=0; j<numPoints; j++) {
      * Returns the error message to be given to {@link IllegalStateException} when there is no data.
      */
     private static String noData() {
-        return Errors.format(Errors.Keys.MissingValueForProperty_1, "sourceToTarget");
+        return Resources.format(Resources.Keys.MissingValuesInLocalizationGrid);
     }
 
     /**
@@ -610,7 +612,7 @@ search: for (int j=0; j<numPoints; j++) {
                             c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j], false));
                         } catch (IllegalArgumentException e) {
                             // This may happen if the z vector still contain some "NaN" values.
-                            throw new FactoryException(noData(), e);
+                            throw new InvalidGeodeticParameterException(noData(), e);
                         }
                         break;
                     }

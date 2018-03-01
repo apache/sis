@@ -876,7 +876,7 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff+1] = point[1];
             }
             // We need to keep h during matrix inversion because (λ,φ,h) values are not independent.
-            Matrix matrix = EllipsoidToCentricTransform.this.derivative(new DirectPositionView(point, offset, 3));
+            Matrix matrix = EllipsoidToCentricTransform.this.derivative(new DirectPositionView.Double(point, offset, 3));
             matrix = Matrices.inverse(matrix);
             if (!withHeight) {
                 matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);     // Drop height only after matrix inversion is done.
