@@ -322,6 +322,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingValueForParameter_1 = 44;
 
         /**
+         * The localization grid still have some undefined source or target coordinates.
+         */
+        public static final short MissingValuesInLocalizationGrid = 81;
+
+        /**
          * No vertical dimension found in “{0}”
          */
         public static final short MissingVerticalDimension_1 = 45;

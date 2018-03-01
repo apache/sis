@@ -445,7 +445,8 @@ public final class MathTransforms extends Static {
             return ((AbstractMathTransform) transform).transform(srcPts, srcOff, dstPts, dstOff, true);
         }
         // Must be calculated before to transform the coordinate.
-        final Matrix derivative = transform.derivative(new DirectPositionView(srcPts, srcOff, transform.getSourceDimensions()));
+        final Matrix derivative = transform.derivative(
+                new DirectPositionView.Double(srcPts, srcOff, transform.getSourceDimensions()));
         if (dstPts != null) {
             transform.transform(srcPts, srcOff, dstPts, dstOff, 1);
         }

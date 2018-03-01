@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -131,6 +131,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.PolarToCartesianTest.class,
     org.apache.sis.referencing.operation.transform.CartesianToPolarTest.class,
     org.apache.sis.referencing.operation.transform.CoordinateSystemTransformTest.class,
+    org.apache.sis.referencing.operation.transform.SpecializableTransformTest.class,
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,

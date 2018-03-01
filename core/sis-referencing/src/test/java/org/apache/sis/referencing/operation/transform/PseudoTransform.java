@@ -96,7 +96,7 @@ strictfp class PseudoTransform extends AbstractMathTransform {
                             final boolean derivate) throws TransformException
     {
         final Matrix derivative = derivate ? derivative(
-                new DirectPositionView(srcPts, srcOff, getSourceDimensions())) : null;
+                new DirectPositionView.Double(srcPts, srcOff, getSourceDimensions())) : null;
         System.arraycopy(srcPts, srcOff, buffer, 0, sourceDimension);
         for (int i=0; i<targetDimension; i++) {
             double v = buffer[i % sourceDimension];

@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -58,7 +58,7 @@ import org.apache.sis.math.Vector;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see InterpolatedTransform
  * @see LinearTransform
@@ -128,7 +128,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @throws ArithmeticException if this constructor can not infer a reasonable grid size from the given vectors.
      */
     public LocalizationGridBuilder(final Vector sourceX, final Vector sourceY) {
-        final Matrix fromGrid = Matrices.createDiagonal(3,3);
+        final Matrix fromGrid = new Matrix3();
         linear = new LinearTransformBuilder(infer(sourceX, fromGrid, 0), infer(sourceY, fromGrid, 1));
         try {
             sourceToGrid = MathTransforms.linear(fromGrid).inverse();
@@ -171,10 +171,16 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 }
             }
         }
+        /*
+         * Compute the size from the increment that we found. If the size is larger than the vector length,
+         * consider as too large. The rational is that attempt to create a localization grid with that size
+         * would fail anyway, because it would contain holes where no value is defined. A limit is important
+         * for preventing useless allocation of large arrays - https://issues.apache.org/jira/browse/SIS-407
+         */
         fromGrid.setElement(dim, dim, inc);
         fromGrid.setElement(dim,   2, min);
         final double n = span / inc;
-        if (n > 0.5 && n < 0.5 + Short.MAX_VALUE) {
+        if (n >= 0.5 && n < source.size() - 0.5) {          // Compare as 'double' in case the value is large.
             return ((int) Math.round(n)) + 1;
         }
         throw new ArithmeticException(Resources.format(Resources.Keys.CanNotInferGridSizeFromValues_1, range));
