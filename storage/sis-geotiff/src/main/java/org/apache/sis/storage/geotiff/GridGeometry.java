@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.FactoryException;
@@ -67,7 +70,7 @@ import org.apache.sis.math.Vector;
  * are considered equivalent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -95,29 +98,103 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
 
     /**
      * Builds a localization grid from the given GeoTIFF tie points.
-     * This is a workaround for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * This method may invoke itself recursively.
      */
     private static MathTransform localizationGrid(final Vector modelTiePoints) throws FactoryException, TransformException {
         final int size = modelTiePoints.size();
         final int n = size / RECORD_LENGTH;
-        final LocalizationGridBuilder grid = new LocalizationGridBuilder(
-                modelTiePoints.subSampling(0, RECORD_LENGTH, n),
-                modelTiePoints.subSampling(1, RECORD_LENGTH, n));
-
-        final LinearTransform sourceToGrid = grid.getSourceToGrid();
-        final double[] ordinates = new double[2];
-        for (int i=0; i<size; i += RECORD_LENGTH) {
-            ordinates[0] = modelTiePoints.doubleValue(i);
-            ordinates[1] = modelTiePoints.doubleValue(i+1);
-            sourceToGrid.transform(ordinates, 0, ordinates, 0, 1);
-            grid.setControlPoint((int) Math.round(ordinates[0]),
-                                 (int) Math.round(ordinates[1]),
-                                 modelTiePoints.doubleValue(i+3),
-                                 modelTiePoints.doubleValue(i+4));
+        final Vector x = modelTiePoints.subSampling(0, RECORD_LENGTH, n);
+        final Vector y = modelTiePoints.subSampling(1, RECORD_LENGTH, n);
+        try {
+            final LocalizationGridBuilder grid = new LocalizationGridBuilder(x, y);
+            final LinearTransform sourceToGrid = grid.getSourceToGrid();
+            final double[] ordinates = new double[2];
+            for (int i=0; i<size; i += RECORD_LENGTH) {
+                ordinates[0] = modelTiePoints.doubleValue(i);
+                ordinates[1] = modelTiePoints.doubleValue(i+1);
+                sourceToGrid.transform(ordinates, 0, ordinates, 0, 1);
+                grid.setControlPoint(Math.toIntExact(Math.round(ordinates[0])),
+                                     Math.toIntExact(Math.round(ordinates[1])),
+                                     modelTiePoints.doubleValue(i+3),
+                                     modelTiePoints.doubleValue(i+4));
+            }
+            grid.setDesiredPrecision(PRECISION);
+            return grid.create(null);
+        } catch (ArithmeticException | FactoryException e) {
+            /*
+             * May happen when the model tie points are not distributed on a regular grid.
+             * For example Sentinel 1 images may have tie points spaced by 1320 pixels on the X axis,
+             * except the very last point which is only 1302 pixels after the previous one. We try to
+             * handle such grids by splitting them in two parts: one grid for the columns where points
+             * are spaced by 1320 pixels and one grid for the last column.
+             */
+            final Set<Double> uniques = new HashSet<>(100);
+            final double lastX = threshold(x, uniques);
+            final double lastY = threshold(y, uniques);
+            if (!Double.isNaN(lastX) || !Double.isNaN(lastY)) {
+                int[] indicesGrid1 = new int[size];
+                int[] indicesGrid2 = new int[size];
+                int sizeGrid1 = 0;
+                int sizeGrid2 = 0;
+                for (int i=0; i<size;) {
+                    final int[] indicesGrid;
+                    int sizeGrid;
+                    final int s;
+                    if (modelTiePoints.doubleValue(i) > lastX || modelTiePoints.doubleValue(i+1) > lastY) {
+                        indicesGrid = indicesGrid2;
+                        sizeGrid    = sizeGrid2;
+                        s = sizeGrid2 += RECORD_LENGTH;
+                    } else {
+                        indicesGrid = indicesGrid1;
+                        sizeGrid    = sizeGrid1;
+                        s = sizeGrid1 += RECORD_LENGTH;
+                    }
+                    while (sizeGrid < s) indicesGrid[sizeGrid++] = i++;
+                }
+                if (sizeGrid1 < size && sizeGrid2 < size) {       // Paranoiac check against never-ending recursivity.
+                    indicesGrid1 = Arrays.copyOf(indicesGrid1, sizeGrid1);
+                    indicesGrid2 = Arrays.copyOf(indicesGrid2, sizeGrid2);
+                    final MathTransform grid1 = localizationGrid(modelTiePoints.pick(indicesGrid1));
+                    final MathTransform grid2 = localizationGrid(modelTiePoints.pick(indicesGrid2));
+                    // TODO: pending completing of SIS-408.
+                }
+            }
+            throw e;
         }
-        grid.setDesiredPrecision(PRECISION);
-        return grid.create(null);
+    }
+
+    /**
+     * Finds the value at which the increment in localization grid seems to change.
+     * This is used when not all tie points in a GeoTIFF images are distributed on
+     * a regular grid (e.g. Sentinel 1 image). This method tells where to split in
+     * two grids.
+     *
+     * @param  values   the x or y vector of tie points pixel coordinates.
+     * @param  uniques  an initially empty set to be used for this method internal working.
+     * @return value after which a different step is used, or {@code NaN} if none.
+     *         The value returned by this method should be included in the first grid.
+     */
+    private static double threshold(final Vector values, final Set<Double> uniques) {
+        final int n = values.size();
+        for (int i=0; i<n; i++) {
+            uniques.add(values.doubleValue(i));
+        }
+        final Double[] array = uniques.toArray(new Double[uniques.size()]);
+        uniques.clear();
+        int i = array.length;
+        if (i >= 3) {
+            Arrays.sort(array);
+            double value;
+            final double inc = array[--i] - (value = array[--i]);
+            do {
+                final double lower = array[--i];
+                if (value - lower != inc) {
+                    return value;
+                }
+                value = lower;
+            } while (i > 0);
+        }
+        return Double.NaN;
     }
 
     /**
