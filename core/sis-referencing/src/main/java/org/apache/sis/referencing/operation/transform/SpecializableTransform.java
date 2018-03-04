@@ -174,6 +174,16 @@ class SpecializableTransform extends AbstractMathTransform {
             }
             return false;
         }
+
+        /**
+         * Formats this envelope as a "{@code DOMAIN}" element (non-standard).
+         * This is used by {@link SpecializableTransform#formatTo(Formatter)}.
+         */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            super.formatTo(formatter);
+            return "Domain";
+        }
     }
 
     /**
@@ -485,11 +495,9 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
     @Override
     protected String formatTo(final Formatter formatter) {
         for (final SubArea domain : domains) {
-            formatter.newLine();
-            formatter.append(generic);
-            formatter.newLine();
-            // TODO: format BBOX.
-            formatter.append(domain.transform);
+            formatter.newLine(); formatter.append(generic);
+            formatter.newLine(); formatter.append(domain);
+            formatter.newLine(); formatter.append(domain.transform);
         }
         formatter.setInvalidWKT(SpecializableTransform.class, null);
         return "Specializable_MT";

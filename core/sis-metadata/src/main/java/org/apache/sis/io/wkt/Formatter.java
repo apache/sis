@@ -36,6 +36,7 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 
 import org.opengis.util.InternationalString;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
@@ -53,7 +54,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.util.ControlledVocabulary;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
@@ -68,7 +68,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -97,7 +99,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -146,9 +148,9 @@ public class Formatter implements Localized {
 
     /**
      * The value of {@link Symbols#getSeparator()} without trailing spaces, followed by the system line separator.
-     * Computed by {@link Symbols#lineSeparator()} and stored for reuse.
+     * Computed by {@link Symbols#separatorNewLine()} and stored for reuse.
      */
-    private final String lineSeparator;
+    private final String separatorNewLine;
 
     /**
      * The colors to use for this formatter, or {@code null} for no syntax coloring.
@@ -287,6 +289,14 @@ public class Formatter implements Localized {
     private int margin;
 
     /**
+     * Indices where to insert additional margin, or {@code null} if none. The margin to insert will be
+     * the the width of the keyword (e.g. {@code "BOX"}), which is usually unknown to {@code Formatter}
+     * until {@link FormattableObject} finished to write the element. This field is usually {@code null},
+     * unless formatting geometries.
+     */
+    private IntegerList keywordSpaceAt;
+
+    /**
      * {@code true} if a new line were requested during the execution of {@link #append(FormattableObject)}.
      * This is used to determine if the next {@code UNIT} and {@code ID} elements shall appear on a new line.
      */
@@ -337,16 +347,16 @@ public class Formatter implements Localized {
         ArgumentChecks.ensureNonNull("convention",  convention);
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
-        this.locale        = Locale.getDefault(Locale.Category.DISPLAY);
-        this.convention    = convention;
-        this.authority     = convention.getNameAuthority();
-        this.symbols       = symbols.immutable();
-        this.lineSeparator = this.symbols.lineSeparator();
-        this.indentation   = (byte) indentation;
-        this.numberFormat  = symbols.createNumberFormat();
-        this.dateFormat    = new StandardDateFormat(symbols.getLocale());
-        this.unitFormat    = new UnitFormat(symbols.getLocale());
-        this.buffer        = new StringBuffer();
+        this.locale           = Locale.getDefault(Locale.Category.DISPLAY);
+        this.convention       = convention;
+        this.authority        = convention.getNameAuthority();
+        this.symbols          = symbols.immutable();
+        this.separatorNewLine = this.symbols.separatorNewLine();
+        this.indentation      = (byte) indentation;
+        this.numberFormat     = symbols.createNumberFormat();
+        this.dateFormat       = new StandardDateFormat(symbols.getLocale());
+        this.unitFormat       = new UnitFormat(symbols.getLocale());
+        this.buffer           = new StringBuffer();
         unitFormat.setStyle(UnitFormat.Style.NAME);
         if (convention.usesCommonUnits) {
             unitFormat.setLocale(Locale.US);
@@ -360,15 +370,15 @@ public class Formatter implements Localized {
     Formatter(final Locale locale, final Symbols symbols, final NumberFormat numberFormat,
             final DateFormat dateFormat, final UnitFormat unitFormat)
     {
-        this.locale        = locale;
-        this.convention    = Convention.DEFAULT;
-        this.authority     = Convention.DEFAULT.getNameAuthority();
-        this.symbols       = symbols;
-        this.lineSeparator = this.symbols.lineSeparator();
-        this.indentation   = Constants.DEFAULT_INDENTATION;
-        this.numberFormat  = numberFormat;                      // No clone needed.
-        this.dateFormat    = dateFormat;
-        this.unitFormat    = unitFormat;
+        this.locale           = locale;
+        this.convention       = Convention.DEFAULT;
+        this.authority        = Convention.DEFAULT.getNameAuthority();
+        this.symbols          = symbols;
+        this.separatorNewLine = symbols.separatorNewLine();
+        this.indentation      = Constants.DEFAULT_INDENTATION;
+        this.numberFormat     = numberFormat;                      // No clone needed.
+        this.dateFormat       = dateFormat;
+        this.unitFormat       = unitFormat;
         // Do not set the buffer. It will be set by WKTFormat.format(…).
     }
 
@@ -557,7 +567,7 @@ public class Formatter implements Localized {
     private void appendSeparator() {
         if (buffer.length() != elementStart) {
             if (requestNewLine) {
-                buffer.append(lineSeparator).append(CharSequences.spaces(margin));
+                buffer.append(separatorNewLine).append(CharSequences.spaces(margin));
             } else {
                 buffer.append(symbols.getSeparator());
             }
@@ -638,7 +648,7 @@ public class Formatter implements Localized {
             }
         }
         enclosingElements.add(object);
-        if (hasContextualUnit < 0) { // Test if leftmost bit is set to 1.
+        if (hasContextualUnit < 0) {                            // Test if leftmost bit is set to 1.
             throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.TreeDepthExceedsMaximum));
         }
         hasContextualUnit <<= 1;
@@ -682,6 +692,24 @@ public class Formatter implements Localized {
         highlightError = false;
         buffer.insert(base, keyword);
         /*
+         * When formatting geometry coordinates, we may need to shift all numbers by the width
+         * of the keyword inserted above in order to keep numbers properly aligned. Exemple:
+         *
+         *     BOX[ 4.000 -10.000
+         *         50.000   2.000]
+         */
+        if (keywordSpaceAt != null) {
+            final int length = keyword.length();
+            final CharSequence additionalMargin = CharSequences.spaces(keyword.codePointCount(0, length));
+            final int n = keywordSpaceAt.size();
+            for (int i=0; i<n;) {
+                int p = keywordSpaceAt.getInt(i);
+                p += (++i * length);                    // Take in account spaces added previously.
+                buffer.insert(p, additionalMargin);
+            }
+            keywordSpaceAt.clear();
+        }
+        /*
          * Format the SCOPE["…"], AREA["…"] and other elements. Some of those information
          * are available only for Datum, CoordinateOperation and ReferenceSystem objects.
          */
@@ -692,6 +720,9 @@ public class Formatter implements Localized {
             appendComplement(info, (stackDepth >= 1) ? enclosingElements.get(stackDepth - 1) : null,
                                    (stackDepth >= 2) ? enclosingElements.get(stackDepth - 2) : null);
         }
+        /*
+         * Close the bracket, then update the queue of enclosed elements by removing this element.
+         */
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         indent(-1);
         enclosingElements.remove(stackDepth);
@@ -1170,11 +1201,129 @@ public class Formatter implements Localized {
              * maximum of 8 fraction digits, which is more than enough.
              */
             numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
-            numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
+            numberFormat.setMinimumFractionDigits(1);   // Must be after setMaximumFractionDigits(…).
             numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
             numberFormat.format(number, buffer, dummy);
         }
         resetColor();
+    }
+
+    /**
+     * Appends rows of numbers. Each number is separated by a space, and each row is separated by a comma.
+     * This method is mostly for formatting geometries, but it could be used for other objects like matrix
+     * as well. Each row usually have the same length, but this is not mandatory.
+     *
+     * @param  rows            rows to append, or {@code null} if none.
+     * @param  fractionDigits  the number of fraction digits for each number in a row, or {@code null} for default.
+     *         If a row contains more numbers than {@code fractionDigits.length}, then the last value in this array
+     *         is repeated for all remaining row numbers.
+     *
+     * @since 1.0
+     */
+    public void append(final double[][] rows, int... fractionDigits) {
+        if (rows == null || rows.length == 0) {
+            return;
+        }
+        if (fractionDigits == null || fractionDigits.length == 0) {
+            fractionDigits = Numerics.suggestFractionDigits(rows);
+        }
+        numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
+        /*
+         * If the rows are going to be formatted on many lines, then we will need to put some margin before each row.
+         * If the first row starts on its own line, then the margin will be the usual indentation. But if the first
+         * row starts on the same line than previous elements (or the keyword of this element, e.g. "BOX["), then we
+         * will need a different amount of spaces if we want to have the numbers properly aligned.
+         */
+        final boolean isMultiLines = (indentation > WKTFormat.SINGLE_LINE) && (rows.length > 1);
+        final boolean needsAlignment = !requestNewLine;
+        final CharSequence marginBeforeRow;
+        if (isMultiLines) {
+            int currentLineLength = margin;
+            if (needsAlignment) {
+                final int length = buffer.length();
+                int i = length;
+                while (i > 0) {                                         // Locate beginning of current line.
+                    final int c = buffer.codePointBefore(i);
+                    if (Characters.isLineOrParagraphSeparator(c)) break;
+                    i -= Character.charCount(c);
+                }
+                currentLineLength = buffer.codePointCount(i, length);
+            }
+            marginBeforeRow = CharSequences.spaces(currentLineLength);
+        } else {
+            marginBeforeRow = "";
+        }
+        /*
+         * 'formattedNumberMarks' contains, for each number in each row, positions in the 'buffer' where
+         * the number starts and position where it ends. Those positions are stored as (start,end) pairs.
+         * We compute those marks unconditionally for simplicity, but will ignore them if formatting on
+         * a single line.
+         */
+        final int[][] formattedNumberMarks = new int[rows.length][];
+        int numColumns = 0;
+        for (int j=0; j<rows.length; j++) {
+            if (j == 0) {
+                appendSeparator();      // It is up to the caller to decide if we begin with a new line.
+            } else {
+                buffer.append(separatorNewLine).append(marginBeforeRow);
+            }
+            final double[] numbers = rows[j];
+            numColumns = Math.max(numColumns, numbers.length);      // Store the length of longest row.
+            final int[] marks = new int[numbers.length << 1];       // Positions where numbers are formatted.
+            formattedNumberMarks[j] = marks;
+            for (int i=0; i<numbers.length; i++) {
+                if (i != 0) buffer.append(Symbols.NUMBER_SEPARATOR);
+                if (i < fractionDigits.length) {                    // Otherwise, same than previous number.
+                    final int f = fractionDigits[i];
+                    numberFormat.setMaximumFractionDigits(f);
+                    numberFormat.setMinimumFractionDigits(f);
+                }
+                marks[i << 1] = buffer.length();                    // Store the start position where number is formatted.
+                setColor(ElementKind.NUMBER);
+                numberFormat.format(numbers[i], buffer, dummy);
+                resetColor();
+                marks[(i << 1) | 1] = buffer.length();              // Store the end position where number is formatted.
+            }
+        }
+        /*
+         * If formatting on more than one line, insert the amount of spaces required for aligning numbers.
+         * This is possible because we wrote the coordinate values with fixed number of fraction digits.
+         */
+        if (isMultiLines) {
+            final int base = elementStart;
+            final String toWrite = buffer.substring(base);          // Save what we formatted in above loop.
+            buffer.setLength(base);                                 // Discard what we formatted - we will rewrite.
+            final int[] columnWidths = new int[numColumns];
+            for (final int[] marks : formattedNumberMarks) {        // Compute the maximal width of each column.
+                for (int i=0; i<marks.length; i += 2) {
+                    final int k = i >> 1;
+                    final int w = toWrite.codePointCount(marks[i  ] -= base,
+                                                         marks[i+1] -= base);
+                    if (w > columnWidths[k]) columnWidths[k] = w;
+                }
+            }
+            if (needsAlignment && keywordSpaceAt == null) {
+                keywordSpaceAt = new IntegerList(formattedNumberMarks.length, Integer.MAX_VALUE);
+            }
+            boolean requestAlignment = false;
+            int lastPosition = 0;
+            for (int[] marks : formattedNumberMarks) {              // Recopy the formatted text, with more spaces.
+                for (int i = 0; i<marks.length;) {
+                    final int w = columnWidths[i >> 1];
+                    final int s = marks[i++];
+                    final int e = marks[i++];
+                    buffer.append(toWrite, lastPosition, s)
+                          .append(CharSequences.spaces(w - toWrite.codePointCount(s, e)));
+                    if (requestAlignment) {
+                        requestAlignment = false;
+                        keywordSpaceAt.add(buffer.length());
+                    }
+                    buffer.append(toWrite, s, e);
+                    lastPosition = e;
+                }
+                requestAlignment = needsAlignment;
+            }
+        }
     }
 
     /**
@@ -1693,6 +1842,7 @@ public class Formatter implements Localized {
         elementStart      = 0;
         colorApplied      = 0;
         margin            = 0;
+        keywordSpaceAt    = null;
         requestNewLine    = false;
         isComplement      = false;
         highlightError    = false;
