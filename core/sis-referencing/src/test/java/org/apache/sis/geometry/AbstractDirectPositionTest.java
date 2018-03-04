@@ -26,17 +26,52 @@ import static org.apache.sis.test.Assert.*;
  * Tests the static methods provided in {@link AbstractDirectPosition}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 public final strictfp class AbstractDirectPositionTest extends TestCase {
     /**
-     * Tests {@link AbstractDirectPosition#isSimplePrecision(double[])}.
+     * Tests {@link AbstractDirectPosition#parse(CharSequence)}.
      */
     @Test
-    public void testIsSimplePrecision() {
-        assertTrue (AbstractDirectPosition.isSimplePrecision(2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY));
-        assertFalse(AbstractDirectPosition.isSimplePrecision(2, 0.5, 1.0 / 3));
+    public void testParse() {
+        assertArrayEquals(new double[] {6, 10, 2}, AbstractDirectPosition.parse("POINT(6 10 2)"),       STRICT);
+        assertArrayEquals(new double[] {3, 14, 2}, AbstractDirectPosition.parse("POINT M [ 3 14 2 ] "), STRICT);
+        assertArrayEquals(new double[] {2, 10, 8}, AbstractDirectPosition.parse("POINT Z 2 10 8"),      STRICT);
+        assertArrayEquals(new double[] {},         AbstractDirectPosition.parse("POINT()"),             STRICT);
+        assertArrayEquals(new double[] {},         AbstractDirectPosition.parse("POINT ( ) "),          STRICT);
+    }
+
+    /**
+     * Tests {@link AbstractDirectPosition#parse(CharSequence)} with invalid input strings.
+     */
+    @Test
+    public void testParsingFailures() {
+        try {
+            AbstractDirectPosition.parse("POINT(6 10 2");
+            fail("Parsing should fails because of missing parenthesis.");
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("POINT(6 10 2"));
+            assertTrue(message, message.contains("‘)’"));
+        }
+        try {
+            AbstractDirectPosition.parse("POINT 6 10 2)");
+            fail("Parsing should fails because of missing parenthesis.");
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+        }
+        try {
+            AbstractDirectPosition.parse("POINT(6 10 2) x");
+            fail("Parsing should fails because of extra characters.");
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("POINT(6 10 2) x"));
+            assertTrue(message, message.contains("“x”") ||                  // English locale
+                                message.contains("« x »"));                 // French locale
+        }
     }
 }

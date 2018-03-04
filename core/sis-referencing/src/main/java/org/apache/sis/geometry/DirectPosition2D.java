@@ -292,7 +292,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public String toString() {
-        return AbstractDirectPosition.toString(this, AbstractDirectPosition.isSimplePrecision(x, y));
+        return AbstractDirectPosition.toString(this, Numerics.isSimplePrecision(x, y));
     }
 
     /**

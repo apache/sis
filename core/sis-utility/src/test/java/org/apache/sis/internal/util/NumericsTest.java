@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Numerics} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -66,6 +66,15 @@ public final strictfp class NumericsTest extends TestCase {
         assertEquals(Double.valueOf(value =   10), Numerics.valueOf(value));
         assertEquals(Double.valueOf(value = -150), Numerics.valueOf(value));
         assertEquals(Double.valueOf(value =  NaN), Numerics.valueOf(value));
+    }
+
+    /**
+     * Tests {@link Numerics#isSimplePrecision(double[])}.
+     */
+    @Test
+    public void testIsSimplePrecision() {
+        assertTrue (Numerics.isSimplePrecision(2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY));
+        assertFalse(Numerics.isSimplePrecision(2, 0.5, 1.0 / 3));
     }
 
     /**
@@ -161,5 +170,18 @@ public final strictfp class NumericsTest extends TestCase {
         final int e = StrictMath.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT;
         final float recomposed = StrictMath.scalb((float) expected, e);
         assertEquals(value, StrictMath.copySign(recomposed, value), 0f);
+    }
+
+    /**
+     * Tests {@link Numerics#suggestFractionDigits(double[][])}.
+     */
+    @Test
+    public void testSuggestFractionDigits() {
+        final int[] f = Numerics.suggestFractionDigits(new double[][] {
+            {10, 100,   0.1, 1000.1},
+            {15, 140.1, 0.4, Double.NaN},
+            {20, 400,   0.5, Double.NaN}
+        });
+        assertArrayEquals(new int[] {0, -2, 1, 3}, f);
     }
 }

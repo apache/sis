@@ -49,6 +49,8 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.DecimalFunctions;
 
 
 /**
@@ -60,7 +62,7 @@ import org.apache.sis.internal.util.Constants;
  * We need to be specific in order to select the right "aspect" of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -69,6 +71,39 @@ public final class WKTUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private WKTUtilities() {
+    }
+
+    /**
+     * Returns the WKT type of the given interface.
+     *
+     * For {@link CoordinateSystem} base type, the returned value shall be one of
+     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
+     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
+     *
+     * @param  base  the abstract base interface.
+     * @param  type  the interface or classes for which to get the WKT type.
+     * @return the WKT type for the given class or interface, or {@code null} if none.
+     *
+     * @see ReferencingUtilities#toPropertyName(Class, Class)
+     */
+    public static String toType(final Class<?> base, final Class<?> type) {
+        if (type != base) {
+            final StringBuilder name = ReferencingUtilities.toPropertyName(base, type);
+            if (name != null) {
+                int end = name.length() - 2;
+                if (CharSequences.regionMatches(name, end, "CS")) {
+                    name.setLength(end);
+                    if ("time".contentEquals(name)) {
+                        return "temporal";
+                    }
+                    if (CharSequences.regionMatches(name, 0, "cartesian")) {
+                        name.setCharAt(0, 'C');     // "Cartesian"
+                    }
+                    return name.toString();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -275,35 +310,44 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * Returns the WKT type of the given interface.
+     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given sequence
+     * of points. The number of fraction digits may be negative if we could round the numbers to 10, <i>etc</i>.
      *
-     * For {@link CoordinateSystem} base type, the returned value shall be one of
-     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
-     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
-     *
-     * @param  base  the abstract base interface.
-     * @param  type  the interface or classes for which to get the WKT type.
-     * @return the WKT type for the given class or interface, or {@code null} if none.
-     *
-     * @see ReferencingUtilities#toPropertyName(Class, Class)
+     * @param  crs     the coordinate reference system for each points, or {@code null} if unknown.
+     * @param  points  the sequence of points. It is not required that each point has the same dimension.
+     * @return suggested amount of fraction digits as an array as long as the longest row.
      */
-    public static String toType(final Class<?> base, final Class<?> type) {
-        if (type != base) {
-            final StringBuilder name = ReferencingUtilities.toPropertyName(base, type);
-            if (name != null) {
-                int end = name.length() - 2;
-                if (CharSequences.regionMatches(name, end, "CS")) {
-                    name.setLength(end);
-                    if ("time".contentEquals(name)) {
-                        return "temporal";
-                    }
-                    if (CharSequences.regionMatches(name, 0, "cartesian")) {
-                        name.setCharAt(0, 'C');     // "Cartesian"
-                    }
-                    return name.toString();
+    public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final double[]... points) {
+        final int[] fractionDigits = Numerics.suggestFractionDigits(points);
+        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+        if (ellipsoid != null) {
+            /*
+             * Use heuristic precisions for geodetic or projected CRS. We do not apply those heuristics
+             * for other kind of CRS (e.g. engineering) because we do not know what could be the size
+             * of the object attached to the CRS.
+             */
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            final int dimension = Math.min(cs.getDimension(), fractionDigits.length);
+            final double scale = Formulas.scaleComparedToEarth(ellipsoid);
+            for (int i=0; i<dimension; i++) {
+                final Unit<?> unit = cs.getAxis(i).getUnit();
+                double precision;
+                if (Units.isLinear(unit)) {
+                    precision = Formulas.LINEAR_TOLERANCE * scale;                          // In metres
+                } else if (Units.isAngular(unit)) {
+                    precision = Formulas.ANGULAR_TOLERANCE * (Math.PI / 180) * scale;       // In radians
+                } else if (Units.isTemporal(unit)) {
+                    precision = Formulas.TEMPORAL_TOLERANCE;                                // In seconds
+                } else {
+                    continue;
+                }
+                precision /= Units.toStandardUnit(unit);                // In units used by the coordinates.
+                final int f = DecimalFunctions.fractionDigitsForDelta(precision, false);
+                if (f > fractionDigits[i]) {
+                    fractionDigits[i] = f;                              // Use at least the heuristic precision.
                 }
             }
         }
-        return null;
+        return fractionDigits;
     }
 }

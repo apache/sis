@@ -31,8 +31,10 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -60,7 +62,7 @@ import static java.util.Collections.singletonMap;
  * <p><strong>Do not rely on this API!</strong> It may change in incompatible way in any future release.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -110,7 +112,7 @@ public final class ReferencingUtilities extends Static {
         if (cs != null) {
             for (int i=cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                if (axis != null) {  // Paranoiac check.
+                if (axis != null) {                                         // Paranoiac check.
                     final Unit<?> candidate = axis.getUnit();
                     if (candidate != null) {
                         if (unit == null) {
@@ -136,7 +138,7 @@ public final class ReferencingUtilities extends Static {
     public static int getDimension(final CoordinateReferenceSystem crs) {
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) {  // Paranoiac check.
+            if (cs != null) {                                               // Paranoiac check.
                 return cs.getDimension();
             }
         }
@@ -196,6 +198,31 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the ellipsoid used by the given coordinate reference system, or {@code null} if none.
+     *
+     * @param  crs  the coordinate reference system for which to get the ellipsoid.
+     * @return the ellipsoid, or {@code null} if none.
+     */
+    public static Ellipsoid getEllipsoid(final CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            if (crs instanceof SingleCRS) {
+                final Datum datum = ((SingleCRS) crs).getDatum();
+                if (datum instanceof GeodeticDatum) {
+                    final Ellipsoid e = ((GeodeticDatum) datum).getEllipsoid();
+                    if (e != null) return e;
+                }
+            }
+            if (crs instanceof CompoundCRS) {
+                for (final CoordinateReferenceSystem c : ((CompoundCRS) crs).getComponents()) {
+                    final Ellipsoid e = getEllipsoid(c);
+                    if (e != null) return e;
+                }
+            }
+        }
+        return null;
     }
 
     /**

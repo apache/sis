@@ -79,7 +79,8 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * The GRS80 {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius},
-     * which is {@value} metres.
+     * which is {@value} metres. This is close to the WGS84 authalic radius, which is about 6371007.180918474 when
+     * computed with {@code double} precision.
      */
     public static final double AUTHALIC_RADIUS = 6371007;
 

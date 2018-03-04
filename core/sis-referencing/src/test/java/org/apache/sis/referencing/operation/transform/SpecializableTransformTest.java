@@ -71,4 +71,27 @@ public final strictfp class SpecializableTransformTest extends MathTransformTest
         isInverseTransformSupported = false;
         verifyInDomain(CoordinateDomain.RANGE_10, -672445632505596619L);
     }
+
+    /**
+     * Tests the pseudo Well-Known Text formatting.
+     * The format used by this transform is non-standard and may change in any future Apache SIS version.
+     *
+     * @throws InvalidGeodeticParameterException if {@link SpecializableTransform} constructor reject a parameter.
+     */
+    @Test
+    public void testWKT() throws InvalidGeodeticParameterException {
+        transform = create();
+        assertWktEquals(
+                "SPECIALIZABLE_MT[\n" +
+                "  PARAM_MT[“Affine”,\n" +
+                "    PARAMETER[“elt_0_0”, 10.0],\n" +
+                "    PARAMETER[“elt_1_1”, 10.0]],\n" +
+                "  DOMAIN[-5 -4,\n" +
+                "          5  3],\n" +
+                "  PARAM_MT[“Affine”,\n" +
+                "    PARAMETER[“elt_0_0”, 10.0],\n" +
+                "    PARAMETER[“elt_0_2”, 0.1],\n" +
+                "    PARAMETER[“elt_1_1”, 10.0],\n" +
+                "    PARAMETER[“elt_1_2”, 0.1]]]");
+    }
 }

@@ -21,6 +21,8 @@ import java.util.HashMap;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.math.DecimalFunctions;
+import org.opengis.referencing.operation.Matrix;    // For javadoc
 
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
@@ -30,7 +32,7 @@ import static java.lang.Math.abs;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -153,6 +155,22 @@ public final class Numerics extends Static {
         final Double boxed = value;
         final Object candidate = CACHE.get(boxed);
         return (candidate != null) ? (Double) candidate : boxed;
+    }
+
+    /**
+     * Returns {@code true} if every values in the given {@code double} array could be casted to the
+     * {@code float} type without precision lost. This method treats all {@code NaN} values as equal.
+     *
+     * @param  values  the value to test for their precision.
+     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
+     */
+    public static boolean isSimplePrecision(final double... values) {
+        for (final double value : values) {
+            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -427,5 +445,52 @@ public final class Numerics extends Static {
             bits <<= 1;
         }
         return bits;
+    }
+
+    /**
+     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
+     * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
+     *
+     * @param  rows  the matrix rows. It is not required that each row has the same length.
+     * @return suggested amount of fraction digits as an array as long as the longest row.
+     *
+     * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
+     */
+    public static int[] suggestFractionDigits(final double[][] rows) {
+        int length = 0;
+        final int n = rows.length - 1;
+        for (int j=0; j <= n; j++) {
+            final int rl = rows[j].length;
+            if (rl > length) length = rl;
+        }
+        final int[] fractionDigits = new int[length];
+        for (int i=0; i<length; i++) {
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+            boolean isInteger = true;
+            for (final double[] row : rows) {
+                if (row.length > i) {
+                    final double value = row[i];
+                    if (value < min) min = value;
+                    if (value > max) max = value;
+                    if (isInteger && Math.floor(value) != value && !Double.isNaN(value)) {
+                        isInteger = false;
+                    }
+                }
+            }
+            if (!isInteger) {
+                final double  delta;
+                final boolean strict;
+                if (min < max) {
+                    delta  = (max - min) / n;
+                    strict = (n == 1);
+                } else {
+                    delta  = Math.max(Math.abs(min), Math.abs(max)) * 1E-6;     // The 1E-6 factor is arbitrary.
+                    strict = false;
+                }
+                fractionDigits[i] = DecimalFunctions.fractionDigitsForDelta(delta, strict);
+            }
+        }
+        return fractionDigits;
     }
 }

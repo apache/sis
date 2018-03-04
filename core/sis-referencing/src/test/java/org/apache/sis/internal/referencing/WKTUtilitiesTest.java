@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.cs.*;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -30,7 +31,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.*;
  * Tests {@link WKTUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -49,10 +50,21 @@ public final strictfp class WKTUtilitiesTest extends TestCase {
         assertEquals(WKTKeywords.cylindrical, toType(CoordinateSystem.class, CylindricalCS   .class));
         assertEquals(WKTKeywords.ellipsoidal, toType(CoordinateSystem.class, EllipsoidalCS   .class));
         assertEquals(WKTKeywords.linear,      toType(CoordinateSystem.class, LinearCS        .class));
-//      assertEquals(WKTKeywords.parametric,  toType(CoordinateSystem.class, ParametricCS    .class));
+        assertEquals(WKTKeywords.parametric,  toType(CoordinateSystem.class, ParametricCS    .class));
         assertEquals(WKTKeywords.polar,       toType(CoordinateSystem.class, PolarCS         .class));
         assertEquals(WKTKeywords.spherical,   toType(CoordinateSystem.class, SphericalCS     .class));
         assertEquals(WKTKeywords.temporal,    toType(CoordinateSystem.class, TimeCS          .class));
         assertEquals(WKTKeywords.vertical,    toType(CoordinateSystem.class, VerticalCS      .class));
+    }
+
+    /**
+     * Tests {@link WKTUtilities#suggestFractionDigits(CoordinateReferenceSystem, double[]...)}.
+     */
+    @Test
+    public void testSuggestFractionDigits() {
+        assertArrayEquals(new int[] {8, 9}, WKTUtilities.suggestFractionDigits(HardCodedCRS.WGS84, new double[][] {
+            {40, -10},
+            {50, -10.000000001}
+        }));
     }
 }
