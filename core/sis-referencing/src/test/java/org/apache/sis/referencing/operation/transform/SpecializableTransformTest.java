@@ -59,17 +59,76 @@ public final strictfp class SpecializableTransformTest extends MathTransformTest
     }
 
     /**
-     * Tests consistency between different {@code transform(…)} methods.
+     * Invokes {@link #verifyDerivative(double...)} for all points in the given array.
+     */
+    private void verifyDerivatives(final double[] coordinates) throws TransformException {
+        tolerance = 1E-10;
+        derivativeDeltas = new double[] {0.001};
+        final double[] point = new double[2];
+        for (int i=0; i < coordinates.length; i += 2) {
+            System.arraycopy(coordinates, i, point, 0, 2);
+            verifyDerivative(point);
+        }
+    }
+
+    /**
+     * Verifies the transform with a few hard-coded points. The point are selected in order to avoid
+     * situations where two transforms could calculate the same point (because of the way we created
+     * our test transform).
      *
      * @throws InvalidGeodeticParameterException if {@link SpecializableTransform} constructor reject a parameter.
      * @throws TransformException if a transformation failed.
      */
     @Test
-    public void testConsistency() throws InvalidGeodeticParameterException, TransformException {
+    public void testTransform() throws InvalidGeodeticParameterException, TransformException {
+        //                      ┌─── generic ───┐┌───── Special. 1 ──────┐┌──── Special. 2 ─────┐
+        final double[] source = {8,  2,  4,  5,   3,    2,    2,    -2,    -2,    0,   1,    0,   8,  3};
+        final double[] target = {80, 20, 40, 50,  30.1, 20.1, 20.1, -19.9, -19.8, 0.2, 10.2, 0.2, 80, 30};
+
+        tolerance = 1E-14;
         transform = create();
+        verifyTransform(source, target);
+        verifyDerivatives(source);
+
+        tolerance = 1E-14;
+        transform = transform.inverse();
+        verifyTransform(target, source);
+        verifyDerivatives(target);
+    }
+
+    /**
+     * Tests consistency between different {@code transform(…)} methods in forward transforms.
+     * This test uses a fixed sequence of random numbers. We fix the sequence because the transform
+     * used in this test is {@linkplain org.apache.sis.math.FunctionProperty#SURJECTIVE surjective}:
+     * some target coordinates can be created from more than one source coordinates. We need to be
+     * "lucky" enough for not testing a point in this case, otherwise the result is undetermined.
+     *
+     * @throws InvalidGeodeticParameterException if {@link SpecializableTransform} constructor reject a parameter.
+     * @throws TransformException if a transformation failed.
+     */
+    @Test
+    public void testForwardConsistency() throws InvalidGeodeticParameterException, TransformException {
+        transform = create();
+        tolerance = 1E-14;
         isDerivativeSupported = false;          // Actually supported, but our test transform has discontinuities.
-        isInverseTransformSupported = false;
         verifyInDomain(CoordinateDomain.RANGE_10, -672445632505596619L);
+    }
+
+    /**
+     * Tests consistency between different {@code transform(…)} methods in inverse transforms.
+     * This test uses a fixed sequence of random numbers. We fix the sequence because the transform
+     * used in this test is {@linkplain org.apache.sis.math.FunctionProperty#SURJECTIVE surjective}.
+     * See {@link #testForwardConsistency()}.
+     *
+     * @throws InvalidGeodeticParameterException if {@link SpecializableTransform} constructor reject a parameter.
+     * @throws TransformException if a transformation failed.
+     */
+    @Test
+    public void testInverseConsistency() throws InvalidGeodeticParameterException, TransformException {
+        transform = create().inverse();
+        tolerance = 1E-12;
+        isDerivativeSupported = false;          // Actually supported, but our test transform has discontinuities.
+        verifyInDomain(CoordinateDomain.RANGE_100, 4308397764777385180L);
     }
 
     /**
@@ -92,6 +151,13 @@ public final strictfp class SpecializableTransformTest extends MathTransformTest
                 "    PARAMETER[“elt_0_0”, 10.0],\n" +
                 "    PARAMETER[“elt_0_2”, 0.1],\n" +
                 "    PARAMETER[“elt_1_1”, 10.0],\n" +
-                "    PARAMETER[“elt_1_2”, 0.1]]]");
+                "    PARAMETER[“elt_1_2”, 0.1]],\n" +
+                "  DOMAIN[-3 -1,\n" +
+                "          2  1],\n" +
+                "  PARAM_MT[“Affine”,\n" +
+                "    PARAMETER[“elt_0_0”, 10.0],\n" +
+                "    PARAMETER[“elt_0_2”, 0.2],\n" +
+                "    PARAMETER[“elt_1_1”, 10.0],\n" +
+                "    PARAMETER[“elt_1_2”, 0.2]]]");
     }
 }

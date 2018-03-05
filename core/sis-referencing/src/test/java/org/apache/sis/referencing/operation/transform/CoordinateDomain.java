@@ -32,7 +32,7 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
  * This class can generate random number suitable for their domain.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -213,6 +213,14 @@ public strictfp class CoordinateDomain {
             -10, 10,
             -10, 10,
             -10, 10);
+
+    /**
+     * Values in the -100 to 100 range in all dimensions.
+     */
+    public static final CoordinateDomain RANGE_100 = new CoordinateDomain(
+            -100, 100,
+            -100, 100,
+            -100, 100);
 
     /**
      * The domain of the coordinates to test.
