@@ -22,12 +22,13 @@ import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -40,18 +41,26 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * A transform having sub-areas where more accurate transforms can be used.
- * The general transform must be a reasonable approximation of the specialized transforms.
+ * The global transform must be a reasonable approximation of the specialized transforms.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see MathTransforms#specialize(MathTransform, Map)
+ *
+ * @since 1.0
  * @module
  */
 class SpecializableTransform extends AbstractMathTransform implements Serializable {
     /**
-     * The generic transform to use if there is no suitable specialization.
+     * For cross-version compatibility.
      */
-    private final MathTransform generic;
+    private static final long serialVersionUID = -7379277748632094312L;
+
+    /**
+     * The global transform to use if there is no suitable specialization.
+     */
+    private final MathTransform global;
 
     /**
      * The region where a transform is valid, together with the transform.
@@ -118,7 +127,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
          * Sets the CRS of all given ares to a common value. An exception is thrown if incompatible CRS are found.
          * This method does not verify the number of dimensions; this check should have been done by the caller.
          */
-        static void uniformize(final SubArea[] domains) throws InvalidGeodeticParameterException {
+        static void uniformize(final SubArea[] domains) {
             CoordinateReferenceSystem common = null;
             for (SubArea area : domains) {
                 do {
@@ -126,7 +135,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
                     if (common == null) {
                         common = crs;
                     } else if (crs != null && !Utilities.equalsIgnoreMetadata(common, crs)) {
-                        throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.MismatchedCRS));
+                        throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
                     }
                 } while ((area = area.specialization) != null);
             }
@@ -242,17 +251,15 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     private MathTransform inverse;
 
     /**
-     * Creates a new transform with the given generic transform and some amount of specializations.
+     * Creates a new transform with the given global transform and some amount of specializations.
      *
-     * @param  generic  the generic transform to use if there is no suitable specialization.
+     * @param  global  the transform to use globally where there is no suitable specialization.
      * @param  specializations  more accurate transforms available in sub-areas.
      */
-    SpecializableTransform(final MathTransform generic, final Map<Envelope,MathTransform> specializations)
-            throws InvalidGeodeticParameterException
-    {
-        this.generic = generic;
-        final int sourceDim = generic.getSourceDimensions();
-        final int targetDim = generic.getTargetDimensions();
+    SpecializableTransform(final MathTransform global, final Map<Envelope,MathTransform> specializations) {
+        this.global = global;
+        final int sourceDim = global.getSourceDimensions();
+        final int targetDim = global.getTargetDimensions();
         int n = 0;
         final SubArea[] areas = new SubArea[specializations.size()];
 next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySet()) {
@@ -261,7 +268,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
             ensureDimensionMatches(1, targetDim, tr.getTargetDimensions());
             final SubArea area = new SubArea(e.getKey(), tr);
             if (area.getDimension() != sourceDim) {
-                throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
                             "envelope", sourceDim, area.getDimension()));
             }
             for (int i=0; i<n; i++) {
@@ -272,7 +279,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
             for (int i=0; i<n; i++) {
                 if (area.intersects(areas[n])) {
                     // Pending implementation of R-Tree in Apache SIS.
-                    throw new InvalidGeodeticParameterException("Current implementation does not accept overlapping envelopes.");
+                    throw new IllegalArgumentException("Current implementation does not accept overlapping envelopes.");
                 }
             }
             areas[n++] = area;
@@ -286,11 +293,9 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      *
      * @param  type  0 if verifying source dimension, or 1 if verifying target dimension.
      */
-    private static void ensureDimensionMatches(final int type, final int expected, final int actual)
-            throws InvalidGeodeticParameterException
-    {
+    private static void ensureDimensionMatches(final int type, final int expected, final int actual) {
         if (expected != actual) {
-            throw new InvalidGeodeticParameterException(Resources.format(
+            throw new MismatchedDimensionException(Resources.format(
                     Resources.Keys.MismatchedTransformDimension_3, type, expected, actual));
         }
     }
@@ -300,7 +305,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      */
     @Override
     public final int getSourceDimensions() {
-        return generic.getSourceDimensions();
+        return global.getSourceDimensions();
     }
 
     /**
@@ -308,14 +313,14 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      */
     @Override
     public final int getTargetDimensions() {
-        return generic.getTargetDimensions();
+        return global.getTargetDimensions();
     }
 
     /**
      * Returns the transform to use for the given domain.
      */
     private MathTransform forDomain(final SubArea domain) {
-        return (domain != null) ? domain.transform : generic;
+        return (domain != null) ? domain.transform : global;
     }
 
     /**
@@ -345,13 +350,15 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                                   final double[] dstPts, final int dstOff,
                                   boolean derivate) throws TransformException
     {
-        final DirectPositionView pos = new DirectPositionView.Double(srcPts, srcOff, generic.getSourceDimensions());
+        final DirectPositionView pos = new DirectPositionView.Double(srcPts, srcOff, global.getSourceDimensions());
         final MathTransform tr = forDomain(SubArea.find(domains, pos));
         if (tr instanceof AbstractMathTransform) {
             return ((AbstractMathTransform) tr).transform(srcPts, srcOff, dstPts, dstOff, derivate);
         } else {
             Matrix derivative = derivate ? tr.derivative(pos) : null;       // Must be before transform(srcPts, …).
-            tr.transform(srcPts, srcOff, dstPts, dstOff, 1);
+            if (dstPts != null) {
+                tr.transform(srcPts, srcOff, dstPts, dstOff, 1);
+            }
             return derivative;
         }
     }
@@ -387,7 +394,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
             int srcOff = src.offset;
             final MathTransform tr;
             if (domain == null) {
-                tr = generic;                               // The transform to apply when no specialization is found.
+                tr = global;                               // The transform to apply when no specialization is found.
                 do {                                        // Count how many points will use that transform.
                     src.offset += srcInc;
                     if (--numPts <= 0) break;
@@ -520,7 +527,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      */
     @Override
     protected final int computeHashCode() {
-        return super.computeHashCode() + 7*generic.hashCode() ^ Arrays.hashCode(domains);
+        return super.computeHashCode() + 7*global.hashCode() ^ Arrays.hashCode(domains);
     }
 
     /**
@@ -530,7 +537,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
     public final boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
             final SpecializableTransform other = (SpecializableTransform) object;
-            return Utilities.deepEquals(generic, other.generic, mode) &&
+            return Utilities.deepEquals(global, other.global, mode) &&
                    Utilities.deepEquals(domains, other.domains, mode);
         }
         return false;
@@ -548,7 +555,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
     @Override
     protected final String formatTo(final Formatter formatter) {
         formatter.newLine();
-        formatter.append(generic);
+        formatter.append(global);
         for (SubArea domain : domains) {
             SubArea.format(domain, formatter);
         }
@@ -560,17 +567,25 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * Returns the inverse of this transform.
      */
     @Override
-    public final synchronized MathTransform inverse() throws NoninvertibleTransformException {
+    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            inverse = new Inverse(this);
+            inverse = createInverse();
         }
         return inverse;
     }
 
     /**
+     * Invoked at construction time for creating the inverse transform.
+     * Overridden by {@link SpecializableTransform2D} for the two-dimensional variant.
+     */
+    Inverse createInverse() throws NoninvertibleTransformException {
+        return new Inverse(this);
+    }
+
+    /**
      * The inverse of {@link SpecializableTransform}.
      */
-    private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
+    static class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**
          * For cross-version compatibility.
          */
@@ -582,16 +597,16 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         private final SpecializableTransform forward;
 
         /**
-         * The inverse of {@link SpecializableTransform#generic}.
+         * The inverse of {@link SpecializableTransform#global}.
          */
-        private final MathTransform generic;
+        private final MathTransform global;
 
         /**
          * Creates the inverse of a specialized transform having the given properties.
          */
         Inverse(final SpecializableTransform forward) throws NoninvertibleTransformException {
             this.forward = forward;
-            this.generic = forward.generic.inverse();
+            this.global = forward.global.inverse();
             for (final SubArea domain : forward.domains) {
                 SubArea.createInverse(domain);
             }
@@ -611,7 +626,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         @Override
         public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
             final double[] source = ptSrc.getCoordinate();      // Needs to be first in case ptDst overwrites ptSrc.
-            ptDst = generic.transform(ptSrc, ptDst);
+            ptDst = global.transform(ptSrc, ptDst);
             final SubArea domain = SubArea.find(forward.domains, ptDst);
             if (domain != null) {
                 ptDst = domain.inverse.transform(new DirectPositionView.Double(source, 0, source.length), ptDst);
@@ -636,8 +651,8 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         public final Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, final boolean derivate)
                 throws TransformException
         {
-            final int srcInc = generic.getSourceDimensions();
-            final int dstInc = generic.getTargetDimensions();
+            final int srcInc = global.getSourceDimensions();
+            final int dstInc = global.getTargetDimensions();
             if (dstPts == null) {
                 dstPts = new double[dstInc];                    // Needed for checking if inside a sub-area.
                 dstOff = 0;
@@ -650,7 +665,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
              * given in arguments overlap.  We need this stability because the source coordinates may be used
              * twice, if 'secondTry' become true.
              */
-            MathTransform tr = generic;
+            MathTransform tr = global;
             boolean secondTry = false;
             Matrix derivative;
             do {
@@ -679,7 +694,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                 int srcOff, int dstOff, int srcInc, int dstInc, int numPts) throws TransformException
         {
             final SubArea[] domains = forward.domains;
-            transform.apply(generic, srcOff, dstOff, numPts);
+            transform.apply(global, srcOff, dstOff, numPts);
             final DirectPositionView dst = new DirectPositionView.Double(dstPts, dstOff, dstInc);
             while (numPts > 0) {
                 SubArea domain = SubArea.find(domains, dst);
@@ -718,8 +733,8 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                 throws TransformException
         {
             if (numPts <= 0) return;
-            final int srcInc = generic.getSourceDimensions();
-            final int dstInc = generic.getTargetDimensions();
+            final int srcInc = global.getSourceDimensions();
+            final int dstInc = global.getTargetDimensions();
             if (srcPts == dstPts) {
                 final int srcEnd = srcOff + numPts*srcInc;
                 if (srcEnd > dstOff || dstOff + numPts*dstInc > srcOff) {
@@ -742,8 +757,8 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                 throws TransformException
         {
             if (numPts <= 0) return;
-            final int srcInc = generic.getSourceDimensions();
-            final int dstInc = generic.getTargetDimensions();
+            final int srcInc = global.getSourceDimensions();
+            final int dstInc = global.getTargetDimensions();
             final double[] buffer = new double[numPts * dstInc];
             transform((tr, src, dst, num) -> tr.transform(srcPts, src, buffer, dst, num),
                       buffer, srcOff, 0, srcInc, dstInc, numPts);
@@ -763,8 +778,8 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                               final float [] dstPts, int dstOff, int numPts) throws TransformException
         {
             if (numPts <= 0) return;
-            final int srcInc = generic.getSourceDimensions();
-            final int dstInc = generic.getTargetDimensions();
+            final int srcInc = global.getSourceDimensions();
+            final int dstInc = global.getTargetDimensions();
             final double[] buffer = new double[numPts * dstInc];
             transform((tr, src, dst, num) -> tr.transform(srcPts, src, buffer, dst, num),
                       buffer, srcOff, 0, srcInc, dstInc, numPts);
@@ -784,8 +799,8 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                               final double[] dstPts, int dstOff, int numPts) throws TransformException
         {
             if (numPts <= 0) return;
-            final int srcInc = generic.getSourceDimensions();
-            final int dstInc = generic.getTargetDimensions();
+            final int srcInc = global.getSourceDimensions();
+            final int dstInc = global.getTargetDimensions();
             transform((tr, src, dst, num) -> tr.transform(srcPts, src, dstPts, dst, num),
                       dstPts, srcOff, dstOff, srcInc, dstInc, numPts);
         }
