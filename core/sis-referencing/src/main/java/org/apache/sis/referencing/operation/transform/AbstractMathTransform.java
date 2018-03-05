@@ -1003,11 +1003,14 @@ public abstract class AbstractMathTransform extends FormattableObject
      */
     protected abstract class Inverse extends AbstractMathTransform implements Serializable {
         /**
-         * Serial number for inter-operability with different versions. This serial number is
-         * especially important for inner classes, since the default {@code serialVersionUID}
-         * computation will not produce consistent results across implementations of different
-         * Java compiler. This is because different compilers may generate different names for
-         * synthetic members used in the implementation of inner classes. See:
+         * Serial number for inter-operability with different versions.
+         *
+         * Note: the default {@code serialVersionUID} computation does not produce consistent results
+         * across implementation of different Java compilers because different compilers may generate
+         * different names for synthetic members used in the implementation of inner classes.  Fixing
+         * the serial number here avoid this issue, but may create new problems since reading a class
+         * serialized with an Apache SIS library compiled with a different compiler may not recognize
+         * the fields that are named differently. See:
          *
          * http://developer.java.sun.com/developer/bugParade/bugs/4211550.html
          */

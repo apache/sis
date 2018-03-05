@@ -19,12 +19,14 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Objects;
+import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Resources;
@@ -45,7 +47,7 @@ import org.apache.sis.util.ArraysExt;
  * @since   1.0
  * @module
  */
-class SpecializableTransform extends AbstractMathTransform {
+class SpecializableTransform extends AbstractMathTransform implements Serializable {
     /**
      * The generic transform to use if there is no suitable specialization.
      */
@@ -56,11 +58,25 @@ class SpecializableTransform extends AbstractMathTransform {
      * Contains also a chain of {@code SubArea}s fully included in this area.
      * Shall be unmodified after {@link SpecializableTransform} construction.
      */
+    @SuppressWarnings("CloneableClassWithoutClone")                             // We will not use clone().
     private static final class SubArea extends GeneralEnvelope {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 4197316795428796526L;
+
         /**
          * The transform to apply in this area.
          */
         final MathTransform transform;
+
+        /**
+         * The inverse of the transform, computed when first needed.
+         * Synchronization for multi-threading is done (indirectly) in {@link SpecializableTransform#inverse()}.
+         *
+         * @see #createInverse(SubArea)
+         */
+        MathTransform inverse;
 
         /**
          * Specialization, or {@code null} if none. If non-null, that sub-area shall be fully included
@@ -121,6 +137,17 @@ class SpecializableTransform extends AbstractMathTransform {
         }
 
         /**
+         * Creates the inverse transforms. This method should be invoked only once when first needed
+         * in a block synchronized (indirectly) by {@link SpecializableTransform#inverse()}.
+         */
+        static void createInverse(SubArea area) throws NoninvertibleTransformException {
+            do {
+                area.inverse = area.transform.inverse();
+                area = area.specialization;
+            } while (area != null);
+        }
+
+        /**
          * Returns the area that contains the given position, or {@code null} if none.
          * This method may be replaced by an R-Tree in a future Apache SIS version.
          */
@@ -147,8 +174,21 @@ class SpecializableTransform extends AbstractMathTransform {
             while (area.contains(pos)) {
                 found = area;
                 area = area.specialization;
+                if (area == null) break;
             }
             return found;
+        }
+
+        /**
+         * Formats the given area and its transform as a pseudo-WKT.
+         * For {@link SpecializableTransform#formatTo(Formatter)} implementation only.
+         */
+        static void format(SubArea area, final Formatter formatter) {
+            while (area != null) {
+                formatter.newLine(); formatter.append(area);
+                formatter.newLine(); formatter.append(area.transform);
+                area = area.specialization;
+            }
         }
 
         /**
@@ -194,7 +234,18 @@ class SpecializableTransform extends AbstractMathTransform {
     private final SubArea[] domains;
 
     /**
+     * The inverse of this transform, computed when first needed.
+     * Part of serialization for avoiding rounding error issues.
+     *
+     * @see #inverse()
+     */
+    private MathTransform inverse;
+
+    /**
      * Creates a new transform with the given generic transform and some amount of specializations.
+     *
+     * @param  generic  the generic transform to use if there is no suitable specialization.
+     * @param  specializations  more accurate transforms available in sub-areas.
      */
     SpecializableTransform(final MathTransform generic, final Map<Envelope,MathTransform> specializations)
             throws InvalidGeodeticParameterException
@@ -299,8 +350,9 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         if (tr instanceof AbstractMathTransform) {
             return ((AbstractMathTransform) tr).transform(srcPts, srcOff, dstPts, dstOff, derivate);
         } else {
+            Matrix derivative = derivate ? tr.derivative(pos) : null;       // Must be before transform(srcPts, …).
             tr.transform(srcPts, srcOff, dstPts, dstOff, 1);
-            return derivate ? tr.derivative(pos) : null;
+            return derivative;
         }
     }
 
@@ -369,7 +421,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * This method delegates to the most specialized transform.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)
+    public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, final int numPts)
             throws TransformException
     {
         int srcInc = getSourceDimensions();
@@ -402,7 +454,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * This method delegates to the most specialized transform.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts)
+    public final void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, final int numPts)
             throws TransformException
     {
         int srcInc = getSourceDimensions();
@@ -435,8 +487,9 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * with single {@code transform(…)} calls for coordinate sequences as long as possible.
      */
     @Override
-    public void transform(final double[] srcPts, int srcOff,
-                          final float [] dstPts, int dstOff, int numPts) throws TransformException
+    public final void transform(final double[] srcPts, final int srcOff,
+                                final float [] dstPts, final int dstOff,
+                                final int numPts) throws TransformException
     {
         final int srcDim = getSourceDimensions();
         final int dstDim = getTargetDimensions();
@@ -450,9 +503,9 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * with single {@code transform(…)} calls for coordinate sequences as long as possible.
      */
     @Override
-    public void transform(final float [] srcPts, int srcOff,
-                          final double[] dstPts, int dstOff, int numPts)
-            throws TransformException
+    public final void transform(final float [] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final int numPts) throws TransformException
     {
         final int srcDim = getSourceDimensions();
         final int dstDim = getTargetDimensions();
@@ -466,7 +519,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * This method is invoked by {@link #hashCode()} when first needed.
      */
     @Override
-    protected int computeHashCode() {
+    protected final int computeHashCode() {
         return super.computeHashCode() + 7*generic.hashCode() ^ Arrays.hashCode(domains);
     }
 
@@ -474,7 +527,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * Compares the specified object with this math transform for equality.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
+    public final boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
             final SpecializableTransform other = (SpecializableTransform) object;
             return Utilities.deepEquals(generic, other.generic, mode) &&
@@ -493,13 +546,229 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
      * @return the WKT element name, which is {@code "Specializable_MT"}.
      */
     @Override
-    protected String formatTo(final Formatter formatter) {
-        for (final SubArea domain : domains) {
-            formatter.newLine(); formatter.append(generic);
-            formatter.newLine(); formatter.append(domain);
-            formatter.newLine(); formatter.append(domain.transform);
+    protected final String formatTo(final Formatter formatter) {
+        formatter.newLine();
+        formatter.append(generic);
+        for (SubArea domain : domains) {
+            SubArea.format(domain, formatter);
         }
         formatter.setInvalidWKT(SpecializableTransform.class, null);
         return "Specializable_MT";
+    }
+
+    /**
+     * Returns the inverse of this transform.
+     */
+    @Override
+    public final synchronized MathTransform inverse() throws NoninvertibleTransformException {
+        if (inverse == null) {
+            inverse = new Inverse(generic);
+        }
+        return inverse;
+    }
+
+    /**
+     * The inverse of {@link SpecializableTransform}.
+     */
+    private final class Inverse extends AbstractMathTransform.Inverse {
+        /**
+         * The inverse of {@link SpecializableTransform#generic}.
+         */
+        private final MathTransform generic;
+
+        /**
+         * Creates the inverse of a specialized transform having the given properties.
+         */
+        Inverse(final MathTransform generic) throws NoninvertibleTransformException {
+            this.generic = generic.inverse();
+            for (final SubArea domain : domains) {
+                SubArea.createInverse(domain);
+            }
+        }
+
+        /**
+         * Inverse transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
+         */
+        @Override
+        public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
+            final double[] source = ptSrc.getCoordinate();      // Needs to be first in case ptDst overwrites ptSrc.
+            ptDst = generic.transform(ptSrc, ptDst);
+            final SubArea domain = SubArea.find(domains, ptDst);
+            if (domain != null) {
+                ptDst = domain.inverse.transform(new DirectPositionView.Double(source, 0, source.length), ptDst);
+            }
+            return ptDst;
+        }
+
+        /**
+         * Gets the inverse derivative of this transform at a point.
+         * This method is overridden for consistency.
+         */
+        @Override
+        public final Matrix derivative(final DirectPosition point) throws TransformException {
+            return transform(point.getCoordinate(), 0, null, 0, true);
+        }
+
+        /**
+         * Inverse transforms a single coordinate point in an array, and optionally computes the transform
+         * derivative at that location.
+         */
+        @Override
+        public final Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, final boolean derivate)
+                throws TransformException
+        {
+            final int srcInc = generic.getSourceDimensions();
+            final int dstInc = generic.getTargetDimensions();
+            if (dstPts == null) {
+                dstPts = new double[dstInc];                    // Needed for checking if inside a sub-area.
+                dstOff = 0;
+            } else if (srcPts == dstPts && srcOff + srcInc > dstOff && srcOff < dstOff + dstInc) {
+                srcPts = Arrays.copyOfRange(srcPts, srcOff, srcInc);
+                srcOff = 0;
+            }
+            /*
+             * Above 'srcPts' dhould keep the source coordinates unchanged even if the source and destination
+             * given in arguments overlap.  We need this stability because the source coordinates may be used
+             * twice, if 'secondTry' become true.
+             */
+            MathTransform tr = generic;
+            boolean secondTry = false;
+            Matrix derivative;
+            do {
+                if (tr instanceof AbstractMathTransform) {
+                    derivative = ((AbstractMathTransform) tr).transform(srcPts, srcOff, dstPts, dstOff, derivate);
+                } else {
+                    tr.transform(srcPts, srcOff, dstPts, dstOff, 1);
+                    derivative = derivate ? tr.derivative(new DirectPositionView.Double(srcPts, srcOff, srcInc)) : null;
+                }
+                if (secondTry) break;
+                final SubArea domain = SubArea.find(domains, new DirectPositionView.Double(dstPts, dstOff, dstInc));
+                if (domain != null) {
+                    tr = domain.inverse;
+                    secondTry = true;
+                }
+            } while (secondTry);
+            return derivative;
+        }
+
+        /**
+         * Invoked for transforming, then verifying if more appropriate transform exists for the result.
+         * This implementation is similar to the algorithm applied by {@link SpecializableTransform} parent
+         * class, except that {@link SubArea} is verified <em>after</em> transformations instead than before.
+         */
+        private void transform(final TransformCall transform, final double[] dstPts,
+                int srcOff, int dstOff, int srcInc, int dstInc, int numPts) throws TransformException
+        {
+            final SubArea[] domains = SpecializableTransform.this.domains;
+            transform.apply(generic, srcOff, dstOff, numPts);
+            final DirectPositionView dst = new DirectPositionView.Double(dstPts, dstOff, dstInc);
+            while (numPts > 0) {
+                SubArea domain = SubArea.find(domains, dst);
+                if (domain == null) {
+                    dst.offset += dstInc;
+                    numPts--;
+                    continue;
+                }
+                do {
+                    final SubArea specialized = domain;             // Contains the specialized transform to use.
+                    int num = (dst.offset - dstOff) / dstInc;       // Number of points that are not retransformeD.
+                    srcOff += num * srcInc;                         // Skip the source coordinates that are not retransformed.
+                    dstOff = dst.offset;                            // Destination index of the first coordinate to retransform.
+                    do {
+                        dst.offset += dstInc;                       // Destination index after the last coordinate to transform.
+                        if (--numPts <= 0) {
+                            domain = null;
+                            break;
+                        }
+                        domain = SubArea.find(domain, dst);
+                    } while (domain == specialized);
+                    num = (dst.offset - dstOff) / dstInc;           // Number of points to retransform.
+                    transform.apply(specialized.inverse, srcOff, dstOff, num);
+                    srcOff += srcInc * num;
+                    dstOff = dst.offset;
+                } while (domain != null);
+            }
+        }
+
+        /**
+         * Inverse transforms a list of coordinate points.
+         * The transformed points are written directly in the destination array.
+         */
+        @Override
+        public void transform(double[] srcPts, int srcOff, final double[] dstPts, final int dstOff, final int numPts)
+                throws TransformException
+        {
+            if (numPts <= 0) return;
+            final int srcInc = generic.getSourceDimensions();
+            final int dstInc = generic.getTargetDimensions();
+            if (srcPts == dstPts) {
+                final int srcEnd = srcOff + numPts*srcInc;
+                if (srcEnd > dstOff || dstOff + numPts*dstInc > srcOff) {
+                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcEnd);
+                    srcOff = 0;
+                }
+            }
+            final double[] refPts = srcPts;
+            transform((tr, src, dst, num) -> tr.transform(refPts, src, dstPts, dst, num),
+                      dstPts, srcOff, dstOff, srcInc, dstInc, numPts);
+        }
+
+        /**
+         * Inverse transforms a list of coordinate points. This method uses an temporary {@code double[]} buffer
+         * for testing {@code SubArea} inclusion with full precision before to cast to {@code float} values.
+         */
+        @Override
+        public void transform(final float[] srcPts, int srcOff,
+                              final float[] dstPts, int dstOff, int numPts)
+                throws TransformException
+        {
+            if (numPts <= 0) return;
+            final int srcInc = generic.getSourceDimensions();
+            final int dstInc = generic.getTargetDimensions();
+            final double[] buffer = new double[numPts * dstInc];
+            transform((tr, src, dst, num) -> tr.transform(srcPts, src, buffer, dst, num),
+                      buffer, srcOff, 0, srcInc, dstInc, numPts);
+
+            numPts *= dstInc;
+            for (int i=0; i<numPts; i++) {
+                dstPts[dstOff++] = (float) buffer[i];
+            }
+        }
+
+        /**
+         * Inverse transforms a list of coordinate points. This method uses an temporary {@code double[]} buffer
+         * for testing {@code SubArea} inclusion with full precision before to cast to {@code float} values.
+         */
+        @Override
+        public void transform(final double[] srcPts, int srcOff,
+                              final float [] dstPts, int dstOff, int numPts) throws TransformException
+        {
+            if (numPts <= 0) return;
+            final int srcInc = generic.getSourceDimensions();
+            final int dstInc = generic.getTargetDimensions();
+            final double[] buffer = new double[numPts * dstInc];
+            transform((tr, src, dst, num) -> tr.transform(srcPts, src, buffer, dst, num),
+                      buffer, srcOff, 0, srcInc, dstInc, numPts);
+
+            numPts *= dstInc;
+            for (int i=0; i<numPts; i++) {
+                dstPts[dstOff++] = (float) buffer[i];
+            }
+        }
+
+        /**
+         * Inverse transforms a list of coordinate points.
+         * The transformed points are written directly in the destination array.
+         */
+        @Override
+        public void transform(final float [] srcPts, int srcOff,
+                              final double[] dstPts, int dstOff, int numPts) throws TransformException
+        {
+            if (numPts <= 0) return;
+            final int srcInc = generic.getSourceDimensions();
+            final int dstInc = generic.getTargetDimensions();
+            transform((tr, src, dst, num) -> tr.transform(srcPts, src, dstPts, dst, num),
+                      dstPts, srcOff, dstOff, srcInc, dstInc, numPts);
+        }
     }
 }
