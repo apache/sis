@@ -131,7 +131,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
         final MatrixSIS normalize = initializer.context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         normalize.convertBefore(0, null, zoneWidth / -2);
         projection = (AbstractMathTransform) new TransverseMercator(initializer).createMapProjection(factory);
-        inverse    = new Inverse();
+        inverse    = new Inverse(this);
     }
 
 
@@ -185,15 +185,20 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * Inverse of a zoned grid system.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.0
      * @since   0.8
      * @module
      */
-    private final class Inverse extends AbstractMathTransform2D.Inverse {
+    private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 1900563285661407519L;
+        private static final long serialVersionUID = -4417726238412154175L;
+
+        /**
+         * The enclosing transform.
+         */
+        private final ZonedGridSystem forward;
 
         /**
          * The projection that performs the actual work after we removed the zone number.
@@ -203,12 +208,21 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
         /**
          * Default constructor.
          */
-        Inverse() throws FactoryException {
+        Inverse(final ZonedGridSystem forward) throws FactoryException {
+            this.forward = forward;
             try {
-                inverseProjection = (AbstractMathTransform) projection.inverse();
+                inverseProjection = (AbstractMathTransform) forward.projection.inverse();
             } catch (NoninvertibleTransformException e) {
                 throw new FactoryException(e);                  // Should not happen.
             }
+        }
+
+        /**
+         * Returns the inverse of this math transform.
+         */
+        @Override
+        public MathTransform2D inverse() {
+            return forward;
         }
 
         /**
@@ -228,7 +242,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;
             final Matrix derivative = inverseProjection.transform(dstPts, dstOff, dstPts, dstOff, derivate);
-            dstPts[dstOff] += zone * zoneWidth + initialLongitude;
+            dstPts[dstOff] += zone * forward.zoneWidth + forward.initialLongitude;
             return derivative;
         }
     }

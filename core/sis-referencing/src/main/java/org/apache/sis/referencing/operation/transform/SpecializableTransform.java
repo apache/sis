@@ -562,7 +562,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
     @Override
     public final synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            inverse = new Inverse(generic);
+            inverse = new Inverse(this);
         }
         return inverse;
     }
@@ -570,7 +570,17 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
     /**
      * The inverse of {@link SpecializableTransform}.
      */
-    private final class Inverse extends AbstractMathTransform.Inverse {
+    private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 1060617594604917167L;
+
+        /**
+         * The enclosing transform.
+         */
+        private final SpecializableTransform forward;
+
         /**
          * The inverse of {@link SpecializableTransform#generic}.
          */
@@ -579,11 +589,20 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         /**
          * Creates the inverse of a specialized transform having the given properties.
          */
-        Inverse(final MathTransform generic) throws NoninvertibleTransformException {
-            this.generic = generic.inverse();
-            for (final SubArea domain : domains) {
+        Inverse(final SpecializableTransform forward) throws NoninvertibleTransformException {
+            this.forward = forward;
+            this.generic = forward.generic.inverse();
+            for (final SubArea domain : forward.domains) {
                 SubArea.createInverse(domain);
             }
+        }
+
+        /**
+         * Returns the inverse of this math transform.
+         */
+        @Override
+        public MathTransform inverse() {
+            return forward;
         }
 
         /**
@@ -593,7 +612,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
             final double[] source = ptSrc.getCoordinate();      // Needs to be first in case ptDst overwrites ptSrc.
             ptDst = generic.transform(ptSrc, ptDst);
-            final SubArea domain = SubArea.find(domains, ptDst);
+            final SubArea domain = SubArea.find(forward.domains, ptDst);
             if (domain != null) {
                 ptDst = domain.inverse.transform(new DirectPositionView.Double(source, 0, source.length), ptDst);
             }
@@ -642,7 +661,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                     derivative = derivate ? tr.derivative(new DirectPositionView.Double(srcPts, srcOff, srcInc)) : null;
                 }
                 if (secondTry) break;
-                final SubArea domain = SubArea.find(domains, new DirectPositionView.Double(dstPts, dstOff, dstInc));
+                final SubArea domain = SubArea.find(forward.domains, new DirectPositionView.Double(dstPts, dstOff, dstInc));
                 if (domain != null) {
                     tr = domain.inverse;
                     secondTry = true;
@@ -659,7 +678,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         private void transform(final TransformCall transform, final double[] dstPts,
                 int srcOff, int dstOff, int srcInc, int dstInc, int numPts) throws TransformException
         {
-            final SubArea[] domains = SpecializableTransform.this.domains;
+            final SubArea[] domains = forward.domains;
             transform.apply(generic, srcOff, dstOff, numPts);
             final DirectPositionView dst = new DirectPositionView.Double(dstPts, dstOff, dstInc);
             while (numPts > 0) {

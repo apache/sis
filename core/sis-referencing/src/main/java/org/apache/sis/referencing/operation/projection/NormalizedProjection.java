@@ -437,7 +437,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         context             = initializer.context;
         eccentricitySquared = initializer.eccentricitySquared.value;
         eccentricity        = sqrt(eccentricitySquared);    // DoubleDouble.sqrt() does not make any difference here.
-        inverse             = new Inverse();
+        inverse             = new Inverse(this);
     }
 
     /**
@@ -450,7 +450,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         context             = other.context;
         eccentricity        = other.eccentricity;
         eccentricitySquared = other.eccentricitySquared;
-        inverse             = new Inverse();
+        inverse             = new Inverse(this);
     }
 
     /**
@@ -725,20 +725,34 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Inverse of a normalized map projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.0
      * @since   0.6
      * @module
      */
-    private final class Inverse extends AbstractMathTransform2D.Inverse {
+    private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -9138242780765956870L;
+        private static final long serialVersionUID = 6014176098150309651L;
+
+        /**
+         * The enclosing transform.
+         */
+        private final NormalizedProjection forward;
 
         /**
          * Default constructor.
          */
-        Inverse() {
+        Inverse(final NormalizedProjection forward) {
+            this.forward = forward;
+        }
+
+        /**
+         * Returns the inverse of this math transform.
+         */
+        @Override
+        public MathTransform2D inverse() {
+            return forward;
         }
 
         /**
@@ -752,15 +766,15 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                                 final boolean derivate) throws TransformException
         {
             if (!derivate) {
-                inverseTransform(srcPts, srcOff, dstPts, dstOff);
+                forward.inverseTransform(srcPts, srcOff, dstPts, dstOff);
                 return null;
             } else {
                 if (dstPts == null) {
                     dstPts = new double[DIMENSION];
                     dstOff = 0;
                 }
-                inverseTransform(srcPts, srcOff, dstPts, dstOff);
-                return Matrices.inverse(NormalizedProjection.this.transform(dstPts, dstOff, null, 0, true));
+                forward.inverseTransform(srcPts, srcOff, dstPts, dstOff);
+                return Matrices.inverse(forward.transform(dstPts, dstOff, null, 0, true));
             }
         }
 
@@ -775,7 +789,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             if (srcPts == dstPts && srcOff < dstOff) {
                 super.transform(srcPts, srcOff, dstPts, dstOff, numPts);
             } else while (--numPts >= 0) {
-                inverseTransform(srcPts, srcOff, dstPts, dstOff);
+                forward.inverseTransform(srcPts, srcOff, dstPts, dstOff);
                 srcOff += DIMENSION;
                 dstOff += DIMENSION;
             }
@@ -796,7 +810,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                  *   - false if applyOtherFirst == false since we have (inverse projection) → (affine) → (projection).
                  *   - true  if applyOtherFirst == true  since we have (projection) → (affine) → (inverse projection).
                  */
-                return NormalizedProjection.this.tryConcatenate(applyOtherFirst, m, factory);
+                return forward.tryConcatenate(applyOtherFirst, m, factory);
             }
             return super.tryConcatenate(applyOtherFirst, other, factory);
         }
