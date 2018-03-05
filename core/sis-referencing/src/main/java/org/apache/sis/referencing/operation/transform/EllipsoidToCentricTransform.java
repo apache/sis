@@ -299,7 +299,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
             normalize.convertBefore(2, a, null);    // Divide ellipsoidal height by a.
         }
-        inverse = new Inverse();
+        inverse = new Inverse(this);
     }
 
     /**
@@ -779,20 +779,34 @@ next:   while (--numPts >= 0) {
      * to ellipsoidal coordinates (λ,φ) or (λ,φ,<var>h</var>).
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.7
+     * @version 1.0
      * @since   0.7
      * @module
      */
-    private final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
+    private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = 6942084702259211803L;
+        private static final long serialVersionUID = 33004303758761821L;
+
+        /**
+         * The enclosing transform.
+         */
+        private final EllipsoidToCentricTransform forward;
 
         /**
          * Creates the inverse of the enclosing transform.
          */
-        Inverse() {
+        Inverse(final EllipsoidToCentricTransform forward) {
+            this.forward = forward;
+        }
+
+        /**
+         * Returns the inverse of this math transform.
+         */
+        @Override
+        public MathTransform inverse() {
+            return forward;
         }
 
         /**
@@ -801,7 +815,7 @@ next:   while (--numPts >= 0) {
          */
         @Override
         protected ContextualParameters getContextualParameters() {
-            return context.inverse(GeocentricToGeographic.PARAMETERS);
+            return forward.context.inverse(GeocentricToGeographic.PARAMETERS);
         }
 
         /**
@@ -812,7 +826,7 @@ next:   while (--numPts >= 0) {
         @Override
         public ParameterValueGroup getParameterValues() {
             final ParameterValueGroup pg = getParameterDescriptors().createValue();
-            pg.values().addAll(EllipsoidToCentricTransform.this.getParameterValues().values());
+            pg.values().addAll(forward.getParameterValues().values());
             return pg;
         }
 
@@ -830,7 +844,7 @@ next:   while (--numPts >= 0) {
         public ParameterDescriptorGroup getParameterDescriptors() {
             return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY,
                             new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)")),
-                    EllipsoidToCentricTransform.this.getParameterDescriptors());
+                    forward.getParameterDescriptors());
         }
 
         /**
@@ -860,14 +874,14 @@ next:   while (--numPts >= 0) {
         {
             final double[] point;
             final int offset;
-            if (derivate && (dstPts == null || !withHeight)) {
+            if (derivate && (dstPts == null || !forward.withHeight)) {
                 point  = new double[3];
                 offset = 0;
             } else {
                 point  = dstPts;
                 offset = dstOff;
             }
-            inverseTransform(srcPts, srcOff, point, offset, 1);
+            forward.inverseTransform(srcPts, srcOff, point, offset, 1);
             if (!derivate) {
                 return null;
             }
@@ -876,9 +890,9 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff+1] = point[1];
             }
             // We need to keep h during matrix inversion because (λ,φ,h) values are not independent.
-            Matrix matrix = EllipsoidToCentricTransform.this.derivative(new DirectPositionView.Double(point, offset, 3));
+            Matrix matrix = forward.derivative(new DirectPositionView.Double(point, offset, 3));
             matrix = Matrices.inverse(matrix);
-            if (!withHeight) {
+            if (!forward.withHeight) {
                 matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);     // Drop height only after matrix inversion is done.
             }
             return matrix;
@@ -892,7 +906,7 @@ next:   while (--numPts >= 0) {
         public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
-            inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
+            forward.inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
         }
 
         /**
@@ -918,7 +932,7 @@ next:   while (--numPts >= 0) {
         protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other,
                 final MathTransformFactory factory) throws FactoryException
         {
-            if (!applyOtherFirst && withHeight && other instanceof LinearTransform && other.getTargetDimensions() == 2) {
+            if (!applyOtherFirst && forward.withHeight && other instanceof LinearTransform && other.getTargetDimensions() == 2) {
                 /*
                  * Found a 3×4 matrix after this transform. We can reduce to a 3×3 matrix only if no dimension
                  * use the column that we are about to drop (i.e. all coefficients in that column are zero).
@@ -929,7 +943,7 @@ next:   while (--numPts >= 0) {
                     matrix.getElement(2,2) == 0)
                 {
                     matrix = MatrixSIS.castOrCopy(matrix).removeColumns(2, 3);
-                    final MathTransform tr2D = create2D().inverse();
+                    final MathTransform tr2D = forward.create2D().inverse();
                     if (factory != null) {
                         return factory.createConcatenatedTransform(tr2D, factory.createAffineTransform(matrix));
                     } else {
@@ -951,7 +965,7 @@ next:   while (--numPts >= 0) {
         @Override
         final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
             index = super.beforeFormat(transforms, index, inverse);
-            if (!withHeight) {
+            if (!forward.withHeight) {
                 transforms.add(++index, new Geographic3Dto2D.WKT(false));
             }
             return index;
