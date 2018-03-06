@@ -42,6 +42,7 @@ import org.apache.sis.util.ArraysExt;
 /**
  * A transform having sub-areas where more accurate transforms can be used.
  * The global transform must be a reasonable approximation of the specialized transforms.
+ * The lower and upper values of given envelopes are inclusive.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -277,7 +278,7 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
                 }
             }
             for (int i=0; i<n; i++) {
-                if (area.intersects(areas[n])) {
+                if (area.intersects(areas[i])) {
                     // Pending implementation of R-Tree in Apache SIS.
                     throw new IllegalArgumentException("Current implementation does not accept overlapping envelopes.");
                 }

@@ -20,11 +20,13 @@ import java.util.Map;
 import java.util.Arrays;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
@@ -339,6 +341,64 @@ search: for (int j=0; j<numPoints; j++) {
     }
 
     /**
+     * Returns the envelope of source points. The lower and upper values are inclusive.
+     *
+     * @return the envelope of source points.
+     * @throws IllegalStateException if the source points are not yet known.
+     *
+     * @since 1.0
+     */
+    public Envelope getSourceEnvelope() {
+        if (gridSize != null) {
+            final int dim = gridSize.length;
+            final GeneralEnvelope envelope = new GeneralEnvelope(dim);
+            for (int i=0; i <dim; i++) {
+                envelope.setRange(i, 0, gridSize[i] - 1);
+            }
+            return envelope;
+        } else {
+            return envelope(sources);
+        }
+    }
+
+    /**
+     * Returns the envelope of target points. The lower and upper values are inclusive.
+     *
+     * @return the envelope of target points.
+     * @throws IllegalStateException if the target points are not yet known.
+     *
+     * @since 1.0
+     */
+    public Envelope getTargetEnvelope() {
+        return envelope(targets);
+    }
+
+    /**
+     * Implementation of {@link #getSourceEnvelope()} and {@link #getTargetEnvelope()}.
+     */
+    private static Envelope envelope(final double[][] points) {
+        if (points == null) {
+            throw new IllegalStateException(noData());
+        }
+        final int dim = points.length;
+        final GeneralEnvelope envelope = new GeneralEnvelope(dim);
+        for (int i=0; i <dim; i++) {
+            final double[] data = points[i];
+            double lower = Double.POSITIVE_INFINITY;
+            double upper = Double.NEGATIVE_INFINITY;
+            for (final double value : data) {
+                if (value < lower) lower = value;
+                if (value > upper) upper = value;
+            }
+            if (lower > upper) {
+                lower = upper = Double.NaN;
+            }
+            envelope.setRange(i, lower, upper);
+        }
+        return envelope;
+    }
+
+    /**
      * Returns the direct position of the given position, or {@code null} if none.
      */
     private static DirectPosition position(final Position p) {
@@ -569,7 +629,7 @@ search: for (int j=0; j<numPoints; j++) {
             final double[][] sources = this.sources;                    // Protect from changes.
             final double[][] targets = this.targets;
             if (targets == null) {
-                throw new FactoryException(noData());
+                throw new InvalidGeodeticParameterException(noData());
             }
             final int sourceDim = (sources != null) ? sources.length : gridSize.length;
             final int targetDim = targets.length;

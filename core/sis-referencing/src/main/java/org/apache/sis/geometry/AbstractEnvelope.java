@@ -695,6 +695,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Tests if a specified coordinate is inside the boundary of this envelope.
+     * Both lower and upper values of this envelope are considered inclusive.
      * If it least one ordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
@@ -710,7 +711,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  position  the point to text.
      * @return {@code true} if the specified coordinate is inside the boundary of this envelope; {@code false} otherwise.
-     * @throws MismatchedDimensionException if the specified point doesn't have the expected dimension.
+     * @throws MismatchedDimensionException if the specified point does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {

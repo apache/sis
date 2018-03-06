@@ -184,9 +184,9 @@ public final class MathTransforms extends Static {
      * Creates a transform defined as one transform applied globally except in sub-areas where more accurate
      * transforms are available. Such constructs appear in some datum shift files. The result of transforming
      * a point by the returned {@code MathTransform} is as if iterating over all given {@link Envelope}s in
-     * no particular order, find the smallest one containing the point to transform, then use the associated
-     * {@link MathTransform} for transforming the point. If the point is not found in any envelope,
-     * then the global transform is applied.
+     * no particular order, find the smallest one containing the point to transform (envelope border considered
+     * inclusive), then use the associated {@link MathTransform} for transforming the point.
+     * If the point is not found in any envelope, then the global transform is applied.
      *
      * <p>The following constraints apply:</p>
      * <ul>

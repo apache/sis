@@ -18,9 +18,12 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.Map;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Collections;
+import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.GeolocationInformation;
@@ -28,6 +31,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
@@ -93,16 +97,22 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
     GridGeometry(final String name, final CoordinateReferenceSystem crs, final Vector modelTiePoints)
             throws FactoryException, TransformException
     {
-        super(Collections.singletonMap(NAME_KEY, name), null, crs, null, localizationGrid(modelTiePoints));
+        super(Collections.singletonMap(NAME_KEY, name), null, crs, null, localizationGrid(modelTiePoints, null));
     }
 
     /**
      * Builds a localization grid from the given GeoTIFF tie points.
      * This method may invoke itself recursively.
+     *
+     * @param  modelTiePoints  the model tie points read from GeoTIFF file.
+     * @param  addTo           if non-null, add the transform result to this map.
      */
-    private static MathTransform localizationGrid(final Vector modelTiePoints) throws FactoryException, TransformException {
+    private static MathTransform localizationGrid(final Vector modelTiePoints, final Map<Envelope,MathTransform> addTo)
+            throws FactoryException, TransformException
+    {
         final int size = modelTiePoints.size();
         final int n = size / RECORD_LENGTH;
+        if (n == 0) return null;
         final Vector x = modelTiePoints.subSampling(0, RECORD_LENGTH, n);
         final Vector y = modelTiePoints.subSampling(1, RECORD_LENGTH, n);
         try {
@@ -119,47 +129,94 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
                                      modelTiePoints.doubleValue(i+4));
             }
             grid.setDesiredPrecision(PRECISION);
-            return grid.create(null);
+            final MathTransform tr = grid.create(null);
+            if (addTo != null && addTo.put(grid.getSourceEnvelope(), tr) != null) {
+                throw new FactoryException();       // Should never happen. If it does, we have a bug in our algorithm.
+            }
+            return tr;
         } catch (ArithmeticException | FactoryException e) {
             /*
              * May happen when the model tie points are not distributed on a regular grid.
              * For example Sentinel 1 images may have tie points spaced by 1320 pixels on the X axis,
              * except the very last point which is only 1302 pixels after the previous one. We try to
              * handle such grids by splitting them in two parts: one grid for the columns where points
-             * are spaced by 1320 pixels and one grid for the last column.
+             * are spaced by 1320 pixels and one grid for the last column. Such splitting needs to be
+             * done horizontally and vertically, which result in four grids:
+             *
+             *    ┌──────────────────┬───┐
+             *    │                  │   │
+             *    │         0        │ 1 │
+             *    │                  │   │
+             *    ├──────────────────┼───┤ splitY
+             *    │         2        │ 3 │
+             *    └──────────────────┴───┘
+             *                    splitX
              */
             final Set<Double> uniques = new HashSet<>(100);
-            final double lastX = threshold(x, uniques);
-            final double lastY = threshold(y, uniques);
-            if (!Double.isNaN(lastX) || !Double.isNaN(lastY)) {
-                int[] indicesGrid1 = new int[size];
-                int[] indicesGrid2 = new int[size];
-                int sizeGrid1 = 0;
-                int sizeGrid2 = 0;
-                for (int i=0; i<size;) {
-                    final int[] indicesGrid;
-                    int sizeGrid;
-                    final int s;
-                    if (modelTiePoints.doubleValue(i) > lastX || modelTiePoints.doubleValue(i+1) > lastY) {
-                        indicesGrid = indicesGrid2;
-                        sizeGrid    = sizeGrid2;
-                        s = sizeGrid2 += RECORD_LENGTH;
-                    } else {
-                        indicesGrid = indicesGrid1;
-                        sizeGrid    = sizeGrid1;
-                        s = sizeGrid1 += RECORD_LENGTH;
-                    }
-                    while (sizeGrid < s) indicesGrid[sizeGrid++] = i++;
+            final double splitX = threshold(x, uniques);
+            final double splitY = threshold(y, uniques);
+            if (Double.isNaN(splitX) && Double.isNaN(splitY)) {
+                throw e;                                            // Can not do better. Report the failure.
+            }
+            final int[][] indices = new int[4][size];
+            final int[]   lengths = new int[4];
+            for (int i=0; i<size;) {
+                final double px = modelTiePoints.doubleValue(i  );
+                final double py = modelTiePoints.doubleValue(i+1);
+                int part = 0;                                       // Number of the part where to add current point.
+                if (px > splitX) part  = 1;                         // Point will be added to part #1 or #3.
+                if (py > splitY) part |= 2;                         // Point will be added to part #2 or #3.
+                int parts = 1 << part;                              // Bitmask of the parts where to add the point.
+                if (px == splitX) parts |= 1 << (part | 1);         // Add also the point to part #1 or #3.
+                if (py == splitY) parts |= 1 << (part | 2);         // Add also the point to part #2 or #3.
+                if (parts == 0b0111) {
+                    parts = 0b1111;                                 // Add also the point to part #3.
+                    assert px == splitX && py == splitY;
                 }
-                if (sizeGrid1 < size && sizeGrid2 < size) {       // Paranoiac check against never-ending recursivity.
-                    indicesGrid1 = Arrays.copyOf(indicesGrid1, sizeGrid1);
-                    indicesGrid2 = Arrays.copyOf(indicesGrid2, sizeGrid2);
-                    final MathTransform grid1 = localizationGrid(modelTiePoints.pick(indicesGrid1));
-                    final MathTransform grid2 = localizationGrid(modelTiePoints.pick(indicesGrid2));
-                    // TODO: pending completing of SIS-408.
+                final int upper = i + RECORD_LENGTH;
+                do {
+                    part = Integer.numberOfTrailingZeros(parts);
+                    @SuppressWarnings("MismatchedReadAndWriteOfArray")
+                    final int[] tileIndices = indices[part];
+                    int k = lengths[part];
+                    for (int j=i; j<upper; j++) {
+                        tileIndices[k++] = j;
+                    }
+                    lengths[part] = k;
+                } while ((parts &= ~(1 << part)) != 0);            // Clear the bit of the part we processed.
+                i = upper;
+            }
+            /*
+             * At this point, we finished to collect indices of the points to use for parts #0, 1, 2 and 3.
+             * Verify that each part has less points than the initial vector (otherwise it would be a bug),
+             * and identify which part is the biggest one. This is usually part #0.
+             */
+            int maxLength   = 0;
+            int largestPart = 0;
+            for (int i=0; i<indices.length; i++) {
+                final int length = lengths[i];
+                if (length >= size) throw e;                        // Safety against infinite recursivity.
+                indices[i] = Arrays.copyOf(indices[i], length);
+                if (length > maxLength) {
+                    maxLength = length;
+                    largestPart = i;
                 }
             }
-            throw e;
+            /*
+             * The biggest part will define the global transform. All other parts will define a specialization
+             * valid only in a sub-area. Put those information in a map for MathTransforms.specialize(…).
+             */
+            MathTransform global = null;
+            final Map<Envelope,MathTransform> specialization = new LinkedHashMap<>(4);
+            for (int i=0; i<indices.length; i++) {
+                final Vector sub = modelTiePoints.pick(indices[i]);
+                if (i == largestPart) {
+                    global = localizationGrid(sub, null);
+                } else {
+                    localizationGrid(sub, specialization);
+                }
+            }
+            return MathTransforms.specialize(global, specialization);
         }
     }
 
