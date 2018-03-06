@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.builder;
 
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -31,6 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
@@ -311,6 +313,25 @@ public class LocalizationGridBuilder extends TransformBuilder {
         tmp[0] = gridX;
         tmp[1] = gridY;
         return linear.getControlPoint(tmp);
+    }
+
+    /**
+     * Returns the envelope of source coordinates. This is the envelope of the grid domain
+     * (i.e. the ranges of valid {@code gridX} and {@code gridY} argument values in calls
+     * to {@code get/setControlPoint(…)} methods) transformed by the inverse of
+     * {@linkplain #getSourceToGrid() source to grid} transform.
+     * The lower and upper values are inclusive.
+     *
+     * @return the envelope of grid points.
+     * @throws IllegalStateException if the grid points are not yet known.
+     * @throws TransformException if the envelope can not be calculated.
+     *
+     * @see LinearTransformBuilder#getSourceEnvelope()
+     *
+     * @since 1.0
+     */
+    public Envelope getSourceEnvelope() throws TransformException {
+        return Envelopes.transform(sourceToGrid.inverse(), linear.getSourceEnvelope());
     }
 
     /**
