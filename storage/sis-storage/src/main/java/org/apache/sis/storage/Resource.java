@@ -41,7 +41,7 @@ import org.opengis.metadata.Metadata;
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Aggregate#components()
  *
@@ -103,4 +103,45 @@ public interface Resource {
      * @see DataStore#getMetadata()
      */
     Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Attaches a ChangeListener on the resource.
+     * The resource will call the {@link ChangeListener#changeOccured(org.apache.sis.storage.ChangeEvent) }
+     * method when a new event matching the predicate is produced.
+     *
+     * <p>
+     * The sample listener may be added multiple times with different predicates.
+     * Adding multiple times the same listener with the same predicate has no effect,
+     * The listener will only be called once per event.
+     * </p>
+     *
+     * <p>
+     * The resource is not required to keep a reference to the listener.
+     * For example the resource might discard a listener if the given predicate
+     * will never happen on this resource.
+     * </p>
+     *
+     * @param <T> type of {@linkplain ChangeEvent}
+     * @param listener listener to notify
+     * @param predicate class of {@linkplain ChangeEvent} to listen to, or null for all.
+     */
+    //TODO : remove comment when implementated on all resources.
+    //<T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> predicate);
+
+    /**
+     * Removes an attached ChangeListener from the resource.
+     *
+     * <p>
+     * Calling multiple times this method with the same listener or a listener
+     * which is unknown to this resource will have no effect and won't raise an
+     * exception.
+     * </p>
+     *
+     * @param <T> type of {@linkplain ChangeEvent}
+     * @param listener listener to remove
+     * @param predicate class of {@linkplain ChangeEvent} to listen to, or null for all.
+     */
+    //TODO : remove comment when implementated on all resources.
+    //<T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> predicate);
+
 }
