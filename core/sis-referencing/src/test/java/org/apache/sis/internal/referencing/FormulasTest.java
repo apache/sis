@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ import static org.junit.Assert.*;
  * Tests {@link Formulas}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -87,6 +88,14 @@ public final strictfp class FormulasTest extends TestCase {
     @Test
     public void testGetAuthalicRadius() {
         assertEquals(ReferencingServices.AUTHALIC_RADIUS, Formulas.getAuthalicRadius(6378137, 6356752), 0.5);
+    }
+
+    /**
+     * Tests {@link Formulas#scaleComparedToEarth(Ellipsoid)}.
+     */
+    @Test
+    public void testScaleComparedToEarth() {
+        assertEquals(1, Formulas.scaleComparedToEarth(HardCodedDatum.WGS84.getEllipsoid()), 1E-14);
     }
 
     /**

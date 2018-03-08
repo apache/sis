@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Arrays;
-import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -988,31 +987,20 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Base class for implementations of inverse math transforms.
-     * This inner class is the inverse of the enclosing {@link AbstractMathTransform}.
+     * Subclasses need to implement the {@link #inverse()} method.
      *
      * <div class="section">Serialization</div>
-     * Instances of this class are serializable only if the enclosing math transform is also serializable.
-     * Serialized math transforms are not guaranteed to be compatible with future SIS versions.
-     * Serialization, if allowed, should be used only for short term storage or RMI between applications
+     * This object may or may not be serializable, at implementation choices.
+     * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
+     * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.6
+     * @version 1.0
      * @since   0.5
      * @module
      */
-    protected abstract class Inverse extends AbstractMathTransform implements Serializable {
-        /**
-         * Serial number for inter-operability with different versions. This serial number is
-         * especially important for inner classes, since the default {@code serialVersionUID}
-         * computation will not produce consistent results across implementations of different
-         * Java compiler. This is because different compilers may generate different names for
-         * synthetic members used in the implementation of inner classes. See:
-         *
-         * http://developer.java.sun.com/developer/bugParade/bugs/4211550.html
-         */
-        private static final long serialVersionUID = 3528274816628012283L;
-
+    protected abstract static class Inverse extends AbstractMathTransform {
         /**
          * Constructs an inverse math transform.
          */
@@ -1021,29 +1009,32 @@ public abstract class AbstractMathTransform extends FormattableObject
 
         /**
          * Gets the dimension of input points.
-         * The implementation returns the dimension of output points of the enclosing math transform.
+         * The default implementation returns the dimension of output points
+         * of the {@linkplain #inverse() inverse} math transform.
          *
          * @return {@inheritDoc}
          */
         @Override
-        public final int getSourceDimensions() {
-            return AbstractMathTransform.this.getTargetDimensions();
+        public int getSourceDimensions() {
+            return inverse().getTargetDimensions();
         }
 
         /**
          * Gets the dimension of output points.
-         * The implementation returns the dimension of input points of the enclosing math transform.
+         * The default implementation returns the dimension of input points
+         * of the {@linkplain #inverse() inverse} math transform.
          *
          * @return {@inheritDoc}
          */
         @Override
-        public final int getTargetDimensions() {
-            return AbstractMathTransform.this.getSourceDimensions();
+        public int getTargetDimensions() {
+            return inverse().getSourceDimensions();
         }
 
         /**
          * Gets the derivative of this transform at a point.
-         * The default implementation computes the inverse of the matrix returned by the enclosing math transform.
+         * The default implementation computes the inverse of the matrix
+         * returned by the {@linkplain #inverse() inverse} math transform.
          *
          * @return {@inheritDoc}
          * @throws NullPointerException if the derivative depends on coordinate and {@code point} is {@code null}.
@@ -1055,28 +1046,27 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (point != null) {
                 point = this.transform(point, null);
             }
-            return Matrices.inverse(AbstractMathTransform.this.derivative(point));
+            return Matrices.inverse(inverse().derivative(point));
         }
 
         /**
-         * Returns the inverse of this math transform, which is the enclosing math transform.
+         * Returns the inverse of this math transform.
+         * The returned transform should be the enclosing math transform.
          *
-         * @return the enclosing math transform.
+         * @return the inverse of this transform.
          */
         @Override
-        public MathTransform inverse() {
-            return AbstractMathTransform.this;
-        }
+        public abstract MathTransform inverse();
 
         /**
          * Tests whether this transform does not move any points.
-         * The default implementation delegates this tests to the enclosing math transform.
+         * The default implementation delegates this tests to the {@linkplain #inverse() inverse} math transform.
          *
          * @return {@inheritDoc}
          */
         @Override
         public boolean isIdentity() {
-            return AbstractMathTransform.this.isIdentity();
+            return inverse().isIdentity();
         }
 
         /**
@@ -1086,13 +1076,13 @@ public abstract class AbstractMathTransform extends FormattableObject
          */
         @Override
         protected int computeHashCode() {
-            return super.computeHashCode() + 31*AbstractMathTransform.this.hashCode();
+            return super.computeHashCode() + 31 * inverse().hashCode();
         }
 
         /**
          * Compares the specified object with this inverse math transform for equality.
-         * The default implementation tests if {@code object} in an instance of the same class
-         * than {@code this}, and if so compares their enclosing {@code AbstractMathTransform}.
+         * The default implementation tests if {@code object} in an instance of the same class than {@code this},
+         * and if so compares their {@linkplain #inverse() inverse} {@code MathTransform}.
          *
          * @return {@inheritDoc}
          */
@@ -1102,7 +1092,13 @@ public abstract class AbstractMathTransform extends FormattableObject
                 return true;                                            // Slight optimization
             }
             if (object != null && object.getClass() == getClass()) {
-                return AbstractMathTransform.this.equals(((Inverse) object).inverse(), mode);
+                final MathTransform other = ((Inverse) object).inverse();
+                final MathTransform inverse = inverse();
+                if (inverse instanceof LenientComparable) {
+                    return ((LenientComparable) inverse).equals(other, mode);
+                } else {
+                    return inverse.equals(other);
+                }
             } else {
                 return false;
             }
@@ -1118,7 +1114,12 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (parameters != null) {
                 return parameters.beforeFormat(transforms, index, inverse);
             } else {
-                return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+                final MathTransform inv = inverse();
+                if (inv instanceof AbstractMathTransform) {
+                    return ((AbstractMathTransform) inv).beforeFormat(transforms, index, !inverse);
+                } else {
+                    return index;
+                }
             }
         }
 
@@ -1143,7 +1144,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 return WKTKeywords.Param_MT;
             } else {
                 formatter.newLine();
-                formatter.append((FormattableObject) AbstractMathTransform.this);
+                formatter.append((FormattableObject) inverse());
                 return WKTKeywords.Inverse_MT;
             }
         }

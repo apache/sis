@@ -17,8 +17,8 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Arrays;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometry.AbstractDirectPosition;
 
 // Branch-dependent imports
 import org.apache.sis.geometry.UnmodifiableGeometryException;
@@ -29,19 +29,13 @@ import org.apache.sis.geometry.UnmodifiableGeometryException;
  * This class shall be used for temporary objects only (it is not serializable for this reason).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
-public final class DirectPositionView implements DirectPosition {
+public abstract class DirectPositionView extends AbstractDirectPosition {
     /**
-     * The ordinate values. This is a direct reference to the array given to the constructor.
-     * The length of this array may be greater then the number of dimensions.
-     */
-    private final double[] ordinates;
-
-    /**
-     * The index of the first value in the {@linkplain #ordinates} array.
+     * The index of the first value in the ordinates array.
      * This field is non-final in order to allow the caller to move the view over an array of coordinates.
      */
     public int offset;
@@ -49,70 +43,129 @@ public final class DirectPositionView implements DirectPosition {
     /**
      * The number of valid ordinate values.
      */
-    private final int dimension;
+    final int dimension;
 
     /**
      * Creates a new direct position wrapping the given array.
      *
-     * @param  ordinates  the ordinate values.
      * @param  offset     the first value index in the ordinates array.
      * @param  dimension  the number of valid ordinate values.
      */
-    public DirectPositionView(final double[] ordinates, final int offset, final int dimension) {
-        this.ordinates = ordinates;
+    DirectPositionView(final int offset, final int dimension) {
         this.offset    = offset;
         this.dimension = dimension;
     }
 
     /**
      * Returns {@code null} since there is no CRS associated with this position.
+     *
+     * @return {@code null}.
      */
     @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+    public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return null;
     }
 
     /**
      * Returns the dimension given at construction time.
+     *
+     * @return number of dimensions.
      */
     @Override
-    public int getDimension() {
+    public final int getDimension() {
         return dimension;
     }
 
     /**
-     * Returns all ordinate values.
-     */
-    @Override
-    public double[] getCoordinate() {
-        return Arrays.copyOfRange(ordinates, offset, offset + dimension);
-    }
-
-    /**
-     * Returns the ordinate at the given index.
-     * <strong>This implementation does not check index validity</strong>, unless assertions are enabled.
-     *
-     * @param  dim  the dimension of the ordinate to get fetch.
-     */
-    @Override
-    public double getOrdinate(final int dim) {
-        assert dim >= 0 && dim < dimension : dim;
-        return ordinates[offset + dim];
-    }
-
-    /**
      * Do not allow any change.
+     *
+     * @param  dimension  ignored.
+     * @param  value      ignored.
      */
     @Override
-    public void setOrdinate(final int dimension, final double value) {
+    public final void setOrdinate(final int dimension, final double value) {
         throw new UnmodifiableGeometryException();
     }
 
     /**
-     * Returns the direct position, which is {@code this}.
+     * The double-precision version of {@link DirectPositionView}.
      */
-    @Override
-    public DirectPosition getDirectPosition() {
-        return this;
+    public static final class Double extends DirectPositionView {
+        /**
+         * The ordinate values. This is a direct reference to the array given to the constructor.
+         * The length of this array may be greater then the number of dimensions.
+         */
+        private final double[] ordinates;
+
+        /**
+         * Creates a new direct position wrapping the given array.
+         *
+         * @param  ordinates  the ordinate values.
+         * @param  offset     the first value index in the ordinates array.
+         * @param  dimension  the number of valid ordinate values.
+         */
+        public Double(final double[] ordinates, final int offset, final int dimension) {
+            super(offset, dimension);
+            this.ordinates = ordinates;
+        }
+
+        /**
+         * Returns the ordinate at the given index.
+         * <strong>This implementation does not check index validity</strong>, unless assertions are enabled.
+         *
+         * @param  dim  the dimension of the ordinate to get fetch.
+         * @return the coordinate value at the given dimension.
+         */
+        @Override
+        public double getOrdinate(final int dim) {
+            assert dim >= 0 && dim < dimension : dim;
+            return ordinates[offset + dim];
+        }
+
+        /**
+         * Returns all ordinate values.
+         *
+         * @return all coordinate values.
+         */
+        @Override
+        public double[] getCoordinate() {
+            return Arrays.copyOfRange(ordinates, offset, offset + dimension);
+        }
+    }
+
+    /**
+     * The single-precision version of {@link DirectPositionView}.
+     */
+    public static final class Float extends DirectPositionView {
+        /**
+         * The ordinate values. This is a direct reference to the array given to the constructor.
+         * The length of this array may be greater then the number of dimensions.
+         */
+        private final float[] ordinates;
+
+        /**
+         * Creates a new direct position wrapping the given array.
+         *
+         * @param  ordinates  the ordinate values.
+         * @param  offset     the first value index in the ordinates array.
+         * @param  dimension  the number of valid ordinate values.
+         */
+        public Float(final float[] ordinates, final int offset, final int dimension) {
+            super(offset, dimension);
+            this.ordinates = ordinates;
+        }
+
+        /**
+         * Returns the ordinate at the given index.
+         * <strong>This implementation does not check index validity</strong>, unless assertions are enabled.
+         *
+         * @param  dim  the dimension of the ordinate to get fetch.
+         * @return the coordinate value at the given dimension.
+         */
+        @Override
+        public double getOrdinate(final int dim) {
+            assert dim >= 0 && dim < dimension : dim;
+            return ordinates[offset + dim];
+        }
     }
 }

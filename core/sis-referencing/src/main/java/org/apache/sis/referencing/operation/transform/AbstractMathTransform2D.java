@@ -319,22 +319,17 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * This inner class is the inverse of the enclosing {@link AbstractMathTransform2D}.
      *
      * <div class="section">Serialization</div>
-     * Instances of this class are serializable only if the enclosing math transform is also serializable.
-     * Serialized math transforms are not guaranteed to be compatible with future SIS versions.
-     * Serialization, if allowed, should be used only for short term storage or RMI between applications
+     * This object may or may not be serializable, at implementation choices.
+     * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
+     * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.5
+     * @version 1.0
      * @since   0.5
      * @module
      */
-    protected abstract class Inverse extends AbstractMathTransform.Inverse implements MathTransform2D {
-        /**
-         * Serial number for inter-operability with different versions.
-         */
-        private static final long serialVersionUID = 5751908928042026412L;
-
+    protected abstract static class Inverse extends AbstractMathTransform.Inverse implements MathTransform2D {
         /**
          * Constructs an inverse math transform.
          */
@@ -342,12 +337,11 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         }
 
         /**
-         * Returns the enclosing math transform.
+         * Returns the inverse of this math transform.
+         * The returned transform should be the enclosing math transform.
          */
         @Override
-        public MathTransform2D inverse() {
-            return (MathTransform2D) super.inverse();
-        }
+        public abstract MathTransform2D inverse();
 
         /**
          * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.

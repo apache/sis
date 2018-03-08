@@ -30,6 +30,7 @@ import java.security.PrivilegedAction;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
@@ -51,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @see DirectPosition1D
  * @see DirectPosition2D
@@ -282,7 +283,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     @Override
     public String toString() {
-        return toString(this, isSimplePrecision(ordinates));
+        return toString(this, Numerics.isSimplePrecision(ordinates));
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
@@ -382,7 +383,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * To overridden by the two-dimensional transform case.
      */
     InterpolatedTransform.Inverse createInverse() {
-        return new Inverse();
+        return new Inverse(this);
     }
 
     /**
@@ -416,15 +417,20 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @author  Rueben Schulz (UBC)
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.7
+     * @version 1.0
      * @since   0.7
      * @module
      */
-    class Inverse extends AbstractMathTransform.Inverse {
+    static class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = -6779719408779847014L;
+        private static final long serialVersionUID = 4335801994727826360L;
+
+        /**
+         * The enclosing transform.
+         */
+        private final InterpolatedTransform forward;
 
         /**
          * Difference allowed in iterative computations, in units of grid cell size.
@@ -434,12 +440,21 @@ public class InterpolatedTransform extends DatumShiftTransform {
         /**
          * Creates an inverse transform.
          */
-        Inverse() {
-            tolerance = grid.getCellPrecision();
-            if (!(tolerance > 0)) {         // Use ! for catching NaN.
+        Inverse(final InterpolatedTransform forward) {
+            this.forward = forward;
+            tolerance = forward.grid.getCellPrecision();
+            if (!(tolerance > 0)) {                                     // Use ! for catching NaN.
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.ValueNotGreaterThanZero_2, "grid.cellPrecision", tolerance));
             }
+        }
+
+        /**
+         * Returns the inverse of this math transform.
+         */
+        @Override
+        public MathTransform inverse() {
+            return forward;
         }
 
         /**
@@ -452,6 +467,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         public final Matrix transform(final double[] srcPts, final int srcOff, double[] dstPts, int dstOff,
                                       final boolean derivate) throws TransformException
         {
+            final int dimension = forward.dimension;
             if (dstPts == null) {
                 dstPts = new double[dimension];
                 dstOff = 0;
@@ -462,7 +478,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
             final double[] vector = new double[dimension];
             int it = Formulas.MAXIMUM_ITERATIONS;
             do {
-                grid.interpolateInCell(xi, yi, vector);
+                forward.grid.interpolateInCell(xi, yi, vector);
                 final double ox = xi;
                 final double oy = yi;
                 xi = x - vector[0];
@@ -487,8 +503,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     dstPts[dstOff  ] = xi;      // Shall not be done before above loop.
                     dstPts[dstOff+1] = yi;
                     if (derivate) {
-                        return Matrices.inverse(InterpolatedTransform.this.derivative(
-                                new DirectPositionView(dstPts, dstOff, dimension)));
+                        return Matrices.inverse(forward.derivative(
+                                new DirectPositionView.Double(dstPts, dstOff, dimension)));
                     }
                     return null;
                 }
@@ -505,6 +521,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
+            final int dimension = forward.dimension;
             int inc = dimension;
             if (srcPts == dstPts) {
                 switch (IterationStrategy.suggest(srcOff, inc, dstOff, inc, numPts)) {
@@ -531,7 +548,7 @@ nextPoint:  while (--numPts >= 0) {
                 final double y = yi = srcPts[srcOff+1];
                 int it = Formulas.MAXIMUM_ITERATIONS;
                 do {
-                    grid.interpolateInCell(xi, yi, vector);
+                    forward.grid.interpolateInCell(xi, yi, vector);
                     final double ox = xi;
                     final double oy = yi;
                     xi = x - vector[0];

@@ -82,7 +82,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Eve (IRD)
  * @author  Rueben Schulz (UBC)
- * @version 0.6
+ * @version 1.0
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
