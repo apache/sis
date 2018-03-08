@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
@@ -36,7 +38,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -261,31 +262,33 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         this.global = global;
         final int sourceDim = global.getSourceDimensions();
         final int targetDim = global.getTargetDimensions();
-        int n = 0;
-        final SubArea[] areas = new SubArea[specializations.size()];
-next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySet()) {
-            final MathTransform tr = e.getValue();
+        final List<SubArea> areas = new ArrayList<>(specializations.size());
+        for (final Map.Entry<Envelope,MathTransform> entry : specializations.entrySet()) {
+            MathTransform tr = entry.getValue();
             ensureDimensionMatches(0, sourceDim, tr.getSourceDimensions());
             ensureDimensionMatches(1, targetDim, tr.getTargetDimensions());
-            final SubArea area = new SubArea(e.getKey(), tr);
-            if (area.getDimension() != sourceDim) {
-                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                            "envelope", sourceDim, area.getDimension()));
+            SubArea[] inherited = null;
+            if (tr instanceof SpecializableTransform) {
+                inherited = ((SpecializableTransform) tr).domains;
+                tr = ((SpecializableTransform) tr).global;
             }
-            for (int i=0; i<n; i++) {
-                if (areas[i].addSpecialization(area)) {
-                    continue next;
+            final SubArea area = new SubArea(entry.getKey(), tr);
+            addSpecialization(area, areas, sourceDim);
+            /*
+             * At this point we are usually done for the current SubArea. But if the given MathTransform
+             * is another SpecializableTransform, then instead of storing nested SpecializableTransforms
+             * we will store directly the specializations that it contains.  This will reduce the amount
+             * of steps when transforming coordinates.
+             */
+            if (inherited != null) {
+                for (final SubArea other : inherited) {
+                    final SubArea e = new SubArea(other, other.transform);
+                    e.intersect(area);
+                    addSpecialization(e, areas, sourceDim);
                 }
             }
-            for (int i=0; i<n; i++) {
-                if (area.intersects(areas[i])) {
-                    // Pending implementation of R-Tree in Apache SIS.
-                    throw new IllegalArgumentException("Current implementation does not accept overlapping envelopes.");
-                }
-            }
-            areas[n++] = area;
         }
-        domains = ArraysExt.resize(areas, n);
+        domains = areas.toArray(new SubArea[areas.size()]);
         SubArea.uniformize(domains);
     }
 
@@ -298,6 +301,35 @@ next:   for (final Map.Entry<Envelope,MathTransform> e : specializations.entrySe
         if (expected != actual) {
             throw new MismatchedDimensionException(Resources.format(
                     Resources.Keys.MismatchedTransformDimension_3, type, expected, actual));
+        }
+    }
+
+    /**
+     * Verifies if the given {@code area} has the expected number of dimensions,
+     * then adds it to {@code domains} list (eventually as a child of an existing node).
+     *
+     * @param  area     the new sub-area to add.
+     * @param  domains  where to add the sub-area (not necessarily directly; maybe as a child of an existing node).
+     * @param  dim      expected number of dimensions, for verification purpose.
+     */
+    private static void addSpecialization(final SubArea area, final List<SubArea> domains, final int dim) {
+        if (!area.isEmpty()) {
+            if (area.getDimension() != dim) {
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                            "envelope", dim, area.getDimension()));
+            }
+            for (final SubArea previous : domains) {
+                if (previous.addSpecialization(area)) {
+                    return;
+                }
+            }
+            for (final SubArea previous : domains) {
+                if (area.intersects(previous)) {
+                    // Pending implementation of R-Tree in Apache SIS.
+                    throw new IllegalArgumentException("Current implementation does not accept overlapping envelopes.");
+                }
+            }
+            domains.add(area);
         }
     }
 
