@@ -14,23 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage;
+
 
 /**
- * Intercept event from a Resource.
+ * Provides interfaces and classes for dealing with different types of events fired by resources.
+ * The different types of events are differentiated by the {@link ChangeEvent} subclasses.
+ * There is different subclasses for structural changes or changes in resource content.
+ * It is possible to register a listener for only some specific types of events.
  *
- * @author Johann Sorel (Geomatys)
- * @param <T>
- * @since 1.0
+ * <p>Note that warnings that may occur during exploitation of a resource are handled by an interface
+ * defined in another package, {@link org.apache.sis.util.logging.WarningListener}.</p>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @since   1.0
+ * @version 1.0
  * @module
  */
-public interface ChangeListener<T extends ChangeEvent> {
-
-    /**
-     * Method called when an ChangeEvent is produce by a Resource.
-     *
-     * @param event resource event, never null
-     */
-    void changeOccured(T event);
-
-}
+package org.apache.sis.storage.event;
