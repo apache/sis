@@ -701,7 +701,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Sets this envelope to the intersection if this envelope with the specified one.
+     * Sets this envelope to the intersection of this envelope with the specified one.
      *
      * <div class="section">Pre-conditions</div>
      * This method assumes that the specified envelope uses the same CRS than this envelope.

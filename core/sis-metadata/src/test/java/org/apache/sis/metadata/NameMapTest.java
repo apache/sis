@@ -117,7 +117,7 @@ public final strictfp class NameMapTest extends TestCase {
         assertEquals("getAverageAirTemperature", name);
         assertSame  ("getAverageAirTemperature", name);
         /*
-         * Tests an other intern.
+         * Tests another intern.
          */
         map = MetadataStandard.ISO_19115.asNameMap(EnvironmentalRecord.class, SENTENCE, UML_IDENTIFIER);
         name = map.get("Average air temperature");
