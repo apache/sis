@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-utility} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

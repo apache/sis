@@ -20,9 +20,11 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.util.CodeList;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
+
+// Branch-dependent imports
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

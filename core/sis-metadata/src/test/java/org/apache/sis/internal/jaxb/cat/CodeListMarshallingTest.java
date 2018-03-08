@@ -105,7 +105,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     @Test
     public void testDefaultURL() throws JAXBException {
         final String expected = getResponsiblePartyXML(Schemas.METADATA_ROOT_LEGACY);
-        final Responsibility rp = (Responsibility) XML.unmarshal(expected);
+        final Responsibility rp = unmarshal(Responsibility.class, expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
         /*
          * Use the convenience method in order to avoid the effort of creating
@@ -123,7 +123,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     @Test
     public void testISO_URL() throws JAXBException {
         final String expected = getResponsiblePartyXML("http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/");
-        final Responsibility rp = (Responsibility) XML.unmarshal(expected);
+        final Responsibility rp = unmarshal(Responsibility.class, expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
 
         final MarshallerPool pool = getMarshallerPool();
@@ -173,7 +173,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
          */
         marshaller.setProperty(XML.LOCALE, Locale.FRENCH);
         String expected = getCitationXML("fra", "Création", legacy);
-        CitationDate ci = (CitationDate) XML.unmarshal(expected);
+        CitationDate ci = unmarshal(CitationDate.class, expected);
         assertEquals(DateType.CREATION, ci.getDateType());
         String actual = marshal(marshaller, ci);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -182,7 +182,7 @@ public final strictfp class CodeListMarshallingTest extends XMLTestCase {
          */
         marshaller.setProperty(XML.LOCALE, Locale.ENGLISH);
         expected = getCitationXML("eng", "Creation", legacy);
-        ci = (CitationDate) XML.unmarshal(expected);
+        ci = unmarshal(CitationDate.class, expected);
         assertEquals(DateType.CREATION, ci.getDateType());
         actual = marshal(marshaller, ci);
         assertXmlEquals(expected, actual, "xmlns:*");
