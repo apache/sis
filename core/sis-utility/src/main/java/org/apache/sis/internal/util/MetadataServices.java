@@ -22,10 +22,12 @@ import java.util.TimeZone;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import org.opengis.annotation.UML;
-import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.util.CharSequences;
+
+// Branch-dependent imports
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

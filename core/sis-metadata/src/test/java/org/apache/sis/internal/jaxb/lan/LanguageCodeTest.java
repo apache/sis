@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.lan;
 
-import org.apache.sis.test.mock.MetadataMock;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
@@ -29,8 +28,9 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
