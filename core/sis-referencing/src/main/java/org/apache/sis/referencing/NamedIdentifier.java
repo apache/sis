@@ -281,7 +281,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
             return c;
         }
         /*
-         * May happen if the user gave us an instance of 'org.apache.sis.internal.jaxb.gmx.Anchor' class
+         * May happen if the user gave us an instance of 'org.apache.sis.internal.jaxb.gcx.Anchor' class
          * (maybe he got the instance indirectly) and the construction of that instance is not completed.
          */
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "code", code.getClass()));

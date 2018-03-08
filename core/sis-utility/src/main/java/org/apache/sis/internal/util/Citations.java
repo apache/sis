@@ -23,13 +23,10 @@ import java.util.Objects;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
-
-import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
 // Branch-dependent imports
 import org.opengis.referencing.ReferenceIdentifier;
@@ -51,6 +48,14 @@ public final class Citations extends Static {
      */
     private Citations() {
     }
+
+    /**
+     * The default separator, which is {@code ':'}. The separator is inserted between
+     * the code space and the code in identifiers.
+     *
+     * @see org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR
+     */
+    public static final char DEFAULT_SEPARATOR = ':';
 
     /**
      * Returns {@code true} if the given code is {@code "EPSG"} while the codespace is {@code "IOGP"} or {@code "OGP"}
@@ -378,6 +383,13 @@ public final class Citations extends Static {
      *       {@link org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)}.</li>
      * </ul>
      *
+     * Use {@code getUnicodeIdentifier(…)} method when assigning values to be returned by methods like
+     * {@link ReferenceIdentifier#getCodeSpace()}, since those values are likely to be compared without special
+     * care about ignorable identifier characters. But if the intent is to format a more complex string
+     * like WKT or {@code toString()}, then we suggest to use {@code getIdentifier(citation, true)} instead,
+     * which will produce the same result but preserving the ignorable characters, which can be useful
+     * for formatting purpose.
+     *
      * @param  citation  the citation for which to get the identifier, or {@code null}.
      * @param  strict    {@code true} for returning a non-null value only if the identifier is a valid Unicode identifier.
      * @return a non-empty identifier for the given citation without leading or trailing whitespaces,
@@ -481,32 +493,6 @@ public final class Citations extends Static {
     }
 
     /**
-     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
-     * This method removes {@linkplain Character#isIdentifierIgnorable(int) ignorable characters}.
-     * See {@link org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)}
-     * for the public documentation of this method.
-     *
-     * <div class="section">When to use</div>
-     * Use this method when assigning values to be returned by methods like {@code Identifier.getCodeSpace()},
-     * since those values are likely to be compared without special care about ignorable identifier characters.
-     * But if the intent is to format a more complex string like WKT or {@code toString()}, then we suggest to
-     * use {@code getIdentifier(citation, true)} instead, which will produce the same result but preserving the
-     * ignorable characters, which can be useful for formatting purpose.
-     *
-     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
-     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
-     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
-     *
-     * @since 0.6
-     *
-     * @deprecated Implementation will be moved to {@link org.apache.sis.metadata.iso.citation.Citations}
-     *             after we moved the {@code sis-utility} code that use this method.
-     */
-    public static String getUnicodeIdentifier(final Citation citation) {
-        return removeIgnorableCharacters(getIdentifier(citation, true));
-    }
-
-    /**
      * Removes characters that are ignorable according Unicode specification.
      *
      * @param  identifier  the character sequence from which to remove ignorable characters, or {@code null}.
@@ -552,35 +538,5 @@ public final class Citations extends Static {
             }
         }
         return identifier;
-    }
-
-    /**
-     * Infers a code space from the given citation, or returns {@code null} if none.
-     * This method is very close to {@link #getUnicodeIdentifier(Citation)}, except that it looks for
-     * {@link IdentifierSpace#getName()} before to scan the identifiers and titles. The result should
-     * be the same in most cases, except some cases like the {@link org.apache.sis.metadata.iso.citation.Citations}
-     * constant for {@code "Proj.4"} in which case this method returns {@code "Proj4"} instead of {@code null}.
-     * As a side effect, using this method also avoid constructing {@code DefaultCitation} objects which were deferred.
-     *
-     * <p>We do not put this method in public API for now because the actions performed by this method could be
-     * revisited in any future SIS version depending on the experience gained. However we should try to keep the
-     * behavior of this method close to the behavior of {@link #getUnicodeIdentifier(Citation)}, which is the
-     * method having a public facade.</p>
-     *
-     * @param  citation  the citation for which to infer the code space, or {@code null}.
-     * @return a non-empty code space for the given citation without leading or trailing whitespaces,
-     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
-     *
-     * @since 0.6
-     *
-     * @deprecated Implementation will be moved to {@link org.apache.sis.metadata.iso.citation.Citations}
-     *             after we moved the {@code sis-utility} code that use this method.
-     */
-    public static String getCodeSpace(final Citation citation) {
-        if (citation instanceof IdentifierSpace<?>) {
-            return ((IdentifierSpace<?>) citation).getName();
-        } else {
-            return getUnicodeIdentifier(citation);
-        }
     }
 }

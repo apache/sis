@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeListAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 

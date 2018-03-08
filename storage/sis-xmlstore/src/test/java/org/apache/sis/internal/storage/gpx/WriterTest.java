@@ -36,7 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;

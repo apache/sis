@@ -89,7 +89,7 @@
     @XmlJavaTypeAdapter(CI_Responsibility.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_LocalName.class),
+    @XmlJavaTypeAdapter(GO_GenericName.class),
     @XmlJavaTypeAdapter(GO_Real.class),
     @XmlJavaTypeAdapter(MD_DigitalTransferOptions.class),
     @XmlJavaTypeAdapter(MD_Distributor.class),

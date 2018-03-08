@@ -22,10 +22,10 @@
  *
  * <ul>
  *   <li>
- *     {@linkplain org.opengis.metadata.identification.CharacterSet character set}:
- *     {@code <gmd:MD_CharacterSetCode
- *       codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
- *       codeListValue="utf8"/>}
+ *     {@linkplain org.opengis.metadata.citation.Role Role}:
+ *     {@code <cit:CI_RoleCode
+ *       codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode"
+         codeListValue="originator">Originator</cit:CI_RoleCode>}
  *   </li>
  * </ul>
  *

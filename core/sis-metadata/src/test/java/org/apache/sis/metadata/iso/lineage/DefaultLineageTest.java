@@ -27,7 +27,7 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**

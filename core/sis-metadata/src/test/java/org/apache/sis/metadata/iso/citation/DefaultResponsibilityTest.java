@@ -23,7 +23,7 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.util;
 
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -76,14 +75,18 @@ public final strictfp class VersionTest extends TestCase {
      */
     @Test
     public void testGML() {
-        assertTrue(LegacyNamespaces.VERSION_3_2.compareTo(LegacyNamespaces.VERSION_3_2_1, 2) == 0);
-        assertTrue(LegacyNamespaces.VERSION_3_2.compareTo(LegacyNamespaces.VERSION_3_2_1   )  < 0);
-        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2_1   )  < 0);
-        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2_1, 2)  < 0);
-        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2_1, 1) == 0);
-        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2     )  < 0);
-        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2,   2)  < 0);
-        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2,   1) == 0);
+        final Version V3_0   = new Version("3.0"),
+                      V3_2   = new Version("3.2"),
+                      V3_2_1 = new Version("3.2.1");
+
+        assertTrue(V3_2.compareTo(V3_2_1, 2) == 0);
+        assertTrue(V3_2.compareTo(V3_2_1   )  < 0);
+        assertTrue(V3_0.compareTo(V3_2_1   )  < 0);
+        assertTrue(V3_0.compareTo(V3_2_1, 2)  < 0);
+        assertTrue(V3_0.compareTo(V3_2_1, 1) == 0);
+        assertTrue(V3_0.compareTo(V3_2     )  < 0);
+        assertTrue(V3_0.compareTo(V3_2,   2)  < 0);
+        assertTrue(V3_0.compareTo(V3_2,   1) == 0);
     }
 
     /**
