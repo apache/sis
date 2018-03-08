@@ -84,14 +84,14 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
      */
     @Override
     InterpolatedTransform.Inverse createInverse() {
-        return new Inverse();
+        return new Inverse(this);
     }
 
     /**
      * The inverse of the enclosing {@link InterpolatedTransform2D}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
+     * @version 1.0
      * @since   0.7
      * @module
      */
@@ -99,12 +99,13 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = 5739665311481484972L;
+        private static final long serialVersionUID = 4802773675799229357L;
 
         /**
          * Constructs the inverse of an interpolated transform.
          */
-        Inverse() {
+        Inverse(final InterpolatedTransform2D forward) {
+            super(forward);
         }
 
         /**

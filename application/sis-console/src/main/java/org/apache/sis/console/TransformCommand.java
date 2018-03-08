@@ -586,7 +586,7 @@ final class TransformCommand extends FormattedOutputCommand {
         if (toDomainOfValidity != null && (bbox = CRS.getGeographicBoundingBox(operation)) != null) {
             domainOfValidity = new ImmutableEnvelope(bbox);
             domainCoordinate = new double[toDomainOfValidity.getTargetDimensions()];
-            positionInDomain = new DirectPositionView(domainCoordinate, 0, domainCoordinate.length);
+            positionInDomain = new DirectPositionView.Double(domainCoordinate, 0, domainCoordinate.length);
         } else {
             domainOfValidity = null;
             domainCoordinate = null;

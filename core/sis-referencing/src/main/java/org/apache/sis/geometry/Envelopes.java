@@ -131,7 +131,8 @@ public final class Envelopes extends Static {
             return ((AbstractMathTransform) transform).transform(srcPts, 0, dstPts, dstOff, derivate);
         }
         // Derivative must be calculated before to transform the coordinate.
-        final Matrix derivative = derivate ? transform.derivative(new DirectPositionView(srcPts, 0, transform.getSourceDimensions())) : null;
+        final Matrix derivative = derivate ? transform.derivative(
+                new DirectPositionView.Double(srcPts, 0, transform.getSourceDimensions())) : null;
         transform.transform(srcPts, 0, dstPts, dstOff, 1);
         return derivative;
     }
@@ -265,7 +266,7 @@ public final class Envelopes extends Static {
             sourcePt[i] = envelope.getMinimum(i);
         }
         // A window over a single coordinate in the 'ordinates' array.
-        final DirectPositionView ordinatesView = new DirectPositionView(ordinates, 0, targetDim);
+        final DirectPositionView ordinatesView = new DirectPositionView.Double(ordinates, 0, targetDim);
         /*
          * Iterates over every minimal, maximal and median ordinate values (3 points) along each
          * dimension. The total number of iterations is 3 ^ (number of source dimensions).
@@ -339,7 +340,7 @@ public final class Envelopes extends Static {
          * to avoid the need for storage.
          */
         DirectPosition temporary = null;
-        final DirectPositionView sourceView = new DirectPositionView(sourcePt, 0, sourceDim);
+        final DirectPositionView sourceView = new DirectPositionView.Double(sourcePt, 0, sourceDim);
         final CurveExtremum extremum = new CurveExtremum();
         for (pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
             final Matrix D1 = derivatives[pointIndex];

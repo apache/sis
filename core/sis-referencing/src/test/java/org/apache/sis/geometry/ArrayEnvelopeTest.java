@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometry;
 
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -28,7 +29,7 @@ import static org.junit.Assert.*;
  * This is the base class of {@link GeneralEnvelope} and {@link ImmutableEnvelope}.
  *
  * @author  Michael Hausegger
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -61,6 +62,21 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
         envelope.ordinates[0] = -1800;
         assertEquals(-1800, envelope.getMinimum(0), STRICT);
         assertEquals(-1728, envelope.getMaximum(0), STRICT);
+    }
+
+    /**
+     * Tests the {@link ArrayEnvelope#formatTo(Formatter)} method.
+     * Contrarily to {@code toString()}, the precision depends on the CRS.
+     */
+    @Test
+    public void testFormatWKT() {
+        ArrayEnvelope envelope = new ArrayEnvelope(new double[] {4, -10, 50, 2});
+        assertMultilinesEquals("BOX[ 4 -10,\n" +
+                               "    50   2]", envelope.toWKT());
+        envelope.crs = AbstractEnvelopeTest.WGS84;
+        assertMultilinesEquals("BOX[ 4.00000000 -10.00000000,\n" +
+                               "    50.00000000   2.00000000]", envelope.toWKT());
+
     }
 
     /**

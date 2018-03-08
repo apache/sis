@@ -36,6 +36,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
@@ -55,7 +56,7 @@ import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
  * in {@link SubEnvelope}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -592,6 +593,6 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public String toString() {
-        return toString(this, AbstractDirectPosition.isSimplePrecision(ordinates));
+        return toString(this, Numerics.isSimplePrecision(ordinates));
     }
 }

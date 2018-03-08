@@ -84,7 +84,7 @@
  * @see org.apache.sis.setup.GeometryLibrary
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
