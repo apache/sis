@@ -26,7 +26,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.util.iso.LargeCodeList;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

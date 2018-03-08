@@ -29,7 +29,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -44,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since 0.4
  * @module
  */
-@DependsOn(NilReasonMarshallingTest.class)
+@DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
 public final strictfp class XLinkMarshallingTest extends XMLTestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.

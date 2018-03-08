@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.xml.stream;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
-import org.apache.sis.internal.util.StreamWriterDelegate;
 
 
 /**

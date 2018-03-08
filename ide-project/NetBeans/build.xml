@@ -33,7 +33,7 @@
   -->
   <target name="-post-compile">
     <copy todir="${build.classes.dir}/org/apache/sis/util/iso">
-      <fileset dir="${project.root}/core/sis-utility/src/main/resources/org/apache/sis/util/iso">
+      <fileset dir="${project.root}/core/sis-metadata/src/main/resources/org/apache/sis/util/iso">
         <include name="class-index.properties"/>
       </fileset>
     </copy>
@@ -71,10 +71,10 @@
       <!-- Other resources (properties files, SQL scripts, native libraries). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
-        <include name="**/*.lst"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
         <include name="**/*.sql"/>
+        <include name="**/*.lst"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
         <include name="**/*.sql"/>

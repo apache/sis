@@ -22,7 +22,6 @@ import java.text.ParsePosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,7 +36,6 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
-@DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
 public final strictfp class LocalizedParseExceptionTest extends TestCase {
     /**
      * Tests the {@link LocalizedParseException} constructor using the default string.
