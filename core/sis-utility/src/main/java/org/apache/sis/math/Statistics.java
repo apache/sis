@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.util.function.LongConsumer;
 import java.util.function.DoubleConsumer;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.iso.Types;
 
 import static java.lang.Math.*;
 import static java.lang.Double.NaN;
@@ -84,7 +84,7 @@ import static java.lang.Double.doubleToLongBits;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -160,7 +160,11 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *               formatted by {@link StatisticsFormat}.
      */
     public Statistics(final CharSequence name) {
-        this.name = Types.toInternationalString(name);
+        if (name == null || name instanceof InternationalString) {
+            this.name = (InternationalString) name;
+        } else {
+            this.name = new SimpleInternationalString(name.toString());
+        }
     }
 
     /**
@@ -191,8 +195,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *       above.</li>
      *   <li><i>etc</i>.</li>
      * </ul>
-     *
-     *
      *
      * @param  name  the phenomenon for which this object is collecting statistics, or {@code null}
      *               if none. If non-null, then this name will be shown as column header in the table
@@ -548,12 +550,12 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     public boolean equals(final Object object) {
         if (object != null && getClass() == object.getClass()) {
             final Statistics cast = (Statistics) object;
-            return Objects.equals(name, cast.name)
-                    && count == cast.count && countNaN == cast.countNaN
+            return count == cast.count && countNaN == cast.countNaN
                     && doubleToLongBits(minimum)   == doubleToLongBits(cast.minimum)
                     && doubleToLongBits(maximum)   == doubleToLongBits(cast.maximum)
                     && doubleToLongBits(sum)       == doubleToLongBits(cast.sum)
-                    && doubleToLongBits(squareSum) == doubleToLongBits(cast.squareSum);
+                    && doubleToLongBits(squareSum) == doubleToLongBits(cast.squareSum)
+                    && Objects.equals(name, cast.name);
         }
         return false;
     }

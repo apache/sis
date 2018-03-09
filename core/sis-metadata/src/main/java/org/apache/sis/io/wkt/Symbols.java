@@ -67,7 +67,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.0
  *
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
@@ -90,6 +90,12 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     @Workaround(library = "JDK", version = "1.8")
     static final boolean SCIENTIFIC_NOTATION = true;
+
+    /**
+     * Separator between numbers in a sequence of numbers.
+     * This is used for example between the coordinates of a point.
+     */
+    static final char NUMBER_SEPARATOR = ' ';
 
     /**
      * The prefix character for the value of a WKT fragment.
@@ -541,7 +547,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the value of {@link #getSeparator()} without trailing spaces,
      * followed by the system line separator.
      */
-    final String lineSeparator() {
+    final String separatorNewLine() {
         final String separator = getSeparator();
         return separator.substring(0, CharSequences.skipTrailingWhitespaces(separator, 0, separator.length()))
                 .concat(System.lineSeparator());

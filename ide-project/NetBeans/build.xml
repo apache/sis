@@ -69,10 +69,10 @@
       <!-- Other resources (properties files, SQL scripts, native libraries). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
-        <include name="**/*.lst"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
         <include name="**/*.sql"/>
+        <include name="**/*.lst"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
         <include name="**/*.sql"/>

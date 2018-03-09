@@ -24,6 +24,7 @@ import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -49,8 +50,8 @@ public final strictfp class StoreTest extends TestCase {
     public static final String XML =
             "<?xml version=\"1.0\" standalone=\"yes\"?>\n" +
             "<gmd:MD_Metadata\n" +
-            "  xmlns:gmd = \"" + Namespaces.GMD + "\"\n"  +
-            "  xmlns:gco = \"" + Namespaces.GCO + "\"\n"  +
+            "  xmlns:gmd = \"" + LegacyNamespaces.GMD + "\"\n"  +
+            "  xmlns:gco = \"" + LegacyNamespaces.GCO + "\"\n"  +
             "  xmlns:xsi = \"" + Namespaces.XSI + "\"\n>" +
             "  <gmd:language>\n" +
             "    <gmd:LanguageCode codeListValue=\"eng\">English</gmd:LanguageCode>\n" +

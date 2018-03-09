@@ -40,6 +40,9 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.referencing.WKTUtilities;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
@@ -109,12 +112,12 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @XmlTransient
-public abstract class AbstractEnvelope implements Envelope, Emptiable {
+public abstract class AbstractEnvelope extends FormattableObject implements Envelope, Emptiable {
     /**
      * An empty array of envelopes, to be returned by {@link #toSimpleEnvelopes()}
      * when en envelope is empty.
@@ -692,6 +695,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
 
     /**
      * Tests if a specified coordinate is inside the boundary of this envelope.
+     * Both lower and upper values of this envelope are considered inclusive.
      * If it least one ordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
@@ -707,7 +711,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * @param  position  the point to text.
      * @return {@code true} if the specified coordinate is inside the boundary of this envelope; {@code false} otherwise.
-     * @throws MismatchedDimensionException if the specified point doesn't have the expected dimension.
+     * @throws MismatchedDimensionException if the specified point does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
@@ -1133,6 +1137,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
      * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
+     * This method formats the numbers as with {@link Double#toString(double)} (i.e. without fixed number of fraction digits).
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
      *
@@ -1182,6 +1187,41 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
             } while ((isUpper = !isUpper) == true);
         }
         return buffer.toString();
+    }
+
+    /**
+     * Formats this envelope as a "{@code BOX}" element.
+     * The output is of the form "{@code BOX}<var>n</var>{@code D[}{@linkplain #getLowerCorner()
+     * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code ]}"
+     * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
+     * The number of dimension is written only if different than 2.
+     *
+     * <div class="note"><b>Note:</b>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
+     *
+     * If the coordinate reference system is geodetic or projected, then coordinate values are formatted
+     * with a precision equivalent to one centimetre on Earth (the actual number of fraction digits is
+     * adjusted for the axis unit of measurement and the planet size if different than Earth).
+     *
+     * @param  formatter  the formatter where to format the inner content of this envelope.
+     * @return the pseudo-WKT keyword, which is {@code "Box"} for this element.
+     *
+     * @since 1.0
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        final double[][] points = new double[][] {
+            getLowerCorner().getCoordinate(),
+            getUpperCorner().getCoordinate()
+        };
+        formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
+        final int dimension = getDimension();
+        String keyword = "Box";
+        if (dimension != 2) {
+            keyword = new StringBuilder(keyword).append(dimension).append('D').toString();
+        }
+        return keyword;
     }
 
     /**

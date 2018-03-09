@@ -18,8 +18,8 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.quality.EvaluationMethodType;
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListUID;
+import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 

@@ -41,13 +41,13 @@ import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Acyclic;
+import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
@@ -680,7 +680,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             } else if (value instanceof CharSequence) {
                 text = value.toString();
             } else if (value instanceof ControlledVocabulary) {
-                text = Types.getCodeTitle((ControlledVocabulary) value).toString(getDisplayLocale());
+                text = MetadataServices.getInstance().getCodeTitle((ControlledVocabulary) value, getDisplayLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else if (value instanceof Type) {

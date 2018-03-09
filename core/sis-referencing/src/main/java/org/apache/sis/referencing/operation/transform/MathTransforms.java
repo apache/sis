@@ -16,10 +16,12 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -51,7 +53,7 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see MathTransformFactory
  *
@@ -176,6 +178,45 @@ public final class MathTransforms extends Static {
      */
     public static MathTransform1D interpolate(final double[] preimage, final double[] values) {
         return LinearInterpolator1D.create(preimage, values);
+    }
+
+    /**
+     * Creates a transform defined as one transform applied globally except in sub-areas where more accurate
+     * transforms are available. Such constructs appear in some datum shift files. The result of transforming
+     * a point by the returned {@code MathTransform} is as if iterating over all given {@link Envelope}s in
+     * no particular order, find the smallest one containing the point to transform (envelope border considered
+     * inclusive), then use the associated {@link MathTransform} for transforming the point.
+     * If the point is not found in any envelope, then the global transform is applied.
+     *
+     * <p>The following constraints apply:</p>
+     * <ul>
+     *   <li>The global transform must be a reasonable approximation of the specialized transforms
+     *       (this is required for calculating the inverse transform).</li>
+     *   <li>All transforms in the {@code specializations} map must have the same number of source and target
+     *       dimensions than the {@code global} transform.</li>
+     *   <li>All envelopes in the {@code specializations} map must have the same number of dimensions
+     *       than the global transform <em>source</em> dimensions.</li>
+     *   <li>In current implementation, each envelope must either be fully included in another envelope,
+     *       or not overlap any other envelope.</li>
+     * </ul>
+     *
+     * @param  global  the transform to use globally where there is no suitable specialization.
+     * @param  specializations  more accurate transforms available in some sub-areas.
+     * @return a transform applying the given global transform except in sub-areas where specializations are available.
+     * @throws IllegalArgumentException if a constraint is not meet.
+     *
+     * @since 1.0
+     */
+    public static MathTransform specialize(final MathTransform global, final Map<Envelope,MathTransform> specializations) {
+        ArgumentChecks.ensureNonNull("generic", global);
+        ArgumentChecks.ensureNonNull("specializations", specializations);
+        if (specializations.isEmpty()) {
+            return global;
+        } else if (global.getSourceDimensions() == 2 && global.getTargetDimensions() == 2) {
+            return new SpecializableTransform2D(global, specializations);
+        } else {
+            return new SpecializableTransform(global, specializations);
+        }
     }
 
     /**
@@ -445,7 +486,8 @@ public final class MathTransforms extends Static {
             return ((AbstractMathTransform) transform).transform(srcPts, srcOff, dstPts, dstOff, true);
         }
         // Must be calculated before to transform the coordinate.
-        final Matrix derivative = transform.derivative(new DirectPositionView(srcPts, srcOff, transform.getSourceDimensions()));
+        final Matrix derivative = transform.derivative(
+                new DirectPositionView.Double(srcPts, srcOff, transform.getSourceDimensions()));
         if (dstPts != null) {
             transform.transform(srcPts, srcOff, dstPts, dstOff, 1);
         }

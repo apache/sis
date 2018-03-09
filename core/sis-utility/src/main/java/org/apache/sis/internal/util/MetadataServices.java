@@ -19,10 +19,15 @@ package org.apache.sis.internal.util;
 import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.CitationConstant;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
+import org.opengis.annotation.UML;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OptionalDependency;
+import org.apache.sis.util.CharSequences;
+
+// Branch-dependent imports
+import org.opengis.util.ControlledVocabulary;
 
 
 /**
@@ -31,7 +36,7 @@ import org.apache.sis.internal.system.OptionalDependency;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -92,28 +97,41 @@ public class MetadataServices extends OptionalDependency {
     }
 
     /**
-     * Returns the constant defined in the {@link org.apache.sis.metadata.iso.citation.Citations} class for the
-     * given name. This is used at {@link org.apache.sis.internal.simple.CitationConstant} deserialization time,
-     * for which the two citations of interest are {@code "ISBN"} (International Standard Book Number) and
-     * {@code "ISSN"} (International Standard Serial Number) citation.
+     * {@code true} if this thread is in the process of reading a XML document with JAXB.
      *
-     * @param  name  the name of one of the citation constants defined in the {@code Citations} class.
-     * @return the requested citation, or {@code null} if the {@code sis-metadata} module is not available.
+     * @return if XML unmarshalling is in progress in current thread.
      */
-    public CitationConstant getCitationConstant(final String name) {
-        return null;
+    public boolean isUnmarshalling() {
+        return false;
     }
 
     /**
-     * Returns the build-in citation for the given primary key, or {@code null} if none.
-     * The metadata module will search in a database for information like a descriptive
-     * title, abbreviations, identifiers, URL to a web site, <i>etc</i>.
+     * Returns the title of the given enumeration or code list value.
      *
-     * @param  key  the primary key of the desired citation.
-     * @return the requested citation, or {@code null} if the {@code sis-metadata} module is not available.
+     * @param  code    the code for which to get the title.
+     * @param  locale  desired locale for the title.
+     * @return the title.
+     *
+     * @see org.apache.sis.util.iso.Types#getCodeTitle(ControlledVocabulary)
      */
-    public Citation createCitation(final String key) {
-        return null;
+    public String getCodeTitle(final ControlledVocabulary code, final Locale locale) {
+        /*
+         * Following code reproduces the work done by org.apache.sis.util.iso.Types.getCodeList(…)
+         * with less handling of special cases. It is executed only if the sis-metadata module is
+         * not on the classpath, otherwise the sis-metadata implementation will be used.
+         */
+        final UML uml = code.getClass().getAnnotation(UML.class);
+        if (uml != null) try {
+            return ResourceBundle.getBundle(CodeLists.RESOURCES, locale, UML.class.getClassLoader())
+                                 .getString(uml.identifier() + '.' + code.identifier());
+        } catch (MissingResourceException e) {
+            /*
+             * Ignore. The reason for not finding the resource may because of above code not covering enough cases.
+             * Usually the sis-metadata module will be present on the classpath, in which case this implementation
+             * will not be used. We need just enough code for allowing sis-utility tests to pass.
+             */
+        }
+        return CharSequences.camelCaseToSentence(code.identifier()).toString();
     }
 
     /**
@@ -142,8 +160,6 @@ public class MetadataServices extends OptionalDependency {
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param  timezone  the timezone, or {@code null} for UTC.
      * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
-     *
-     * @since 0.8
      */
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
         throw moduleNotFound();

@@ -21,7 +21,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.NullArgumentException;
@@ -47,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @param <E>  the type of elements in the list.
  *
@@ -149,6 +148,14 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @see <a href="https://issues.apache.org/jira/browse/SIS-157">SIS-157</a>
      */
     public static String illegalElement(final Collection<?> collection, final Object element, final Class<?> expectedType) {
+        /*
+         * Ignore if the current thread is in process of unmarshalling a XML document.
+         * This happen when an XML element is empty (e.g. "<cit:contact/>"), in which
+         * case JAXB tries to add a null element.
+         */
+        if (MetadataServices.getInstance().isUnmarshalling()) {
+            return null;
+        }
         final short key;
         final Object[] arguments;
         if (element == null) {
@@ -160,13 +167,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
             key = Errors.Keys.IllegalArgumentClass_3;
             arguments = new Object[] {"element", expectedType, element.getClass()};
         }
-        final Context context = Context.current();
-        if (context != null) {
-            Context.warningOccured(context, collection.getClass(), "add", Errors.class, key, arguments);
-            return null;
-        } else {
-            return Errors.format(key, arguments);
-        }
+        return Errors.format(key, arguments);
     }
 
     /**

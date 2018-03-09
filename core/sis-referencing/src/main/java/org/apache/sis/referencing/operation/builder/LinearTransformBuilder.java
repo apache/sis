@@ -20,11 +20,13 @@ import java.util.Map;
 import java.util.Arrays;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
@@ -32,7 +34,9 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -53,7 +57,7 @@ import org.apache.sis.util.Debug;
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see LocalizationGridBuilder
  * @see LinearTransform
@@ -302,7 +306,7 @@ search: for (int j=0; j<numPoints; j++) {
      * Returns the error message to be given to {@link IllegalStateException} when there is no data.
      */
     private static String noData() {
-        return Errors.format(Errors.Keys.MissingValueForProperty_1, "sourceToTarget");
+        return Resources.format(Resources.Keys.MissingValuesInLocalizationGrid);
     }
 
     /**
@@ -334,6 +338,64 @@ search: for (int j=0; j<numPoints; j++) {
     public int getTargetDimensions() {
         if (targets != null) return targets.length;
         throw new IllegalStateException(noData());
+    }
+
+    /**
+     * Returns the envelope of source points. The lower and upper values are inclusive.
+     *
+     * @return the envelope of source points.
+     * @throws IllegalStateException if the source points are not yet known.
+     *
+     * @since 1.0
+     */
+    public Envelope getSourceEnvelope() {
+        if (gridSize != null) {
+            final int dim = gridSize.length;
+            final GeneralEnvelope envelope = new GeneralEnvelope(dim);
+            for (int i=0; i <dim; i++) {
+                envelope.setRange(i, 0, gridSize[i] - 1);
+            }
+            return envelope;
+        } else {
+            return envelope(sources);
+        }
+    }
+
+    /**
+     * Returns the envelope of target points. The lower and upper values are inclusive.
+     *
+     * @return the envelope of target points.
+     * @throws IllegalStateException if the target points are not yet known.
+     *
+     * @since 1.0
+     */
+    public Envelope getTargetEnvelope() {
+        return envelope(targets);
+    }
+
+    /**
+     * Implementation of {@link #getSourceEnvelope()} and {@link #getTargetEnvelope()}.
+     */
+    private static Envelope envelope(final double[][] points) {
+        if (points == null) {
+            throw new IllegalStateException(noData());
+        }
+        final int dim = points.length;
+        final GeneralEnvelope envelope = new GeneralEnvelope(dim);
+        for (int i=0; i <dim; i++) {
+            final double[] data = points[i];
+            double lower = Double.POSITIVE_INFINITY;
+            double upper = Double.NEGATIVE_INFINITY;
+            for (final double value : data) {
+                if (value < lower) lower = value;
+                if (value > upper) upper = value;
+            }
+            if (lower > upper) {
+                lower = upper = Double.NaN;
+            }
+            envelope.setRange(i, lower, upper);
+        }
+        return envelope;
     }
 
     /**
@@ -567,7 +629,7 @@ search: for (int j=0; j<numPoints; j++) {
             final double[][] sources = this.sources;                    // Protect from changes.
             final double[][] targets = this.targets;
             if (targets == null) {
-                throw new FactoryException(noData());
+                throw new InvalidGeodeticParameterException(noData());
             }
             final int sourceDim = (sources != null) ? sources.length : gridSize.length;
             final int targetDim = targets.length;
@@ -610,7 +672,7 @@ search: for (int j=0; j<numPoints; j++) {
                             c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j], false));
                         } catch (IllegalArgumentException e) {
                             // This may happen if the z vector still contain some "NaN" values.
-                            throw new FactoryException(noData(), e);
+                            throw new InvalidGeodeticParameterException(noData(), e);
                         }
                         break;
                     }

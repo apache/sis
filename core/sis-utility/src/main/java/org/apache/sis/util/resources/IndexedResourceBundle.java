@@ -38,9 +38,11 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.measure.RangeFormat;
+import org.apache.sis.measure.Range;
 
 
 /**
@@ -69,7 +71,7 @@ import org.apache.sis.internal.system.Loggers;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -418,7 +420,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof ControlledVocabulary) {
-                replacement = Types.getCodeTitle((ControlledVocabulary) element).toString(getLocale());
+                replacement = MetadataServices.getInstance().getCodeTitle((ControlledVocabulary) element, getLocale());
+            } else if (element instanceof Range<?>) {
+                final Range<?> range = (Range<?>) element;
+                replacement = new RangeFormat(getLocale(), range.getElementType()).format(range);
             }
             /*
              * No need to check for Numbers or Dates instances, since they are

@@ -35,6 +35,10 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -53,15 +57,33 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public abstract class AbstractDirectPosition implements DirectPosition {
+public abstract class AbstractDirectPosition extends FormattableObject implements DirectPosition {
     /**
      * Constructs a direct position.
      */
     protected AbstractDirectPosition() {
+    }
+
+    /**
+     * Returns the given position as an {@code AbstractDirectPosition} instance.
+     * If the given position is already an instance of {@code AbstractDirectPosition},
+     * then it is returned unchanged. Otherwise the coordinate values and the CRS
+     * of the given position are copied in a new position.
+     *
+     * @param  position  the position to cast, or {@code null}.
+     * @return the values of the given position as an {@code AbstractDirectPosition} instance.
+     *
+     * @since 1.0
+     */
+    public static AbstractDirectPosition castOrCopy(final DirectPosition position) {
+        if (position == null || position instanceof AbstractDirectPosition) {
+            return (AbstractDirectPosition) position;
+        }
+        return new GeneralDirectPosition(position);
     }
 
     /**
@@ -181,22 +203,28 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
-     * Returns {@code true} if every values in the given {@code double} array could be casted
-     * to the {@code float} type without precision lost. This method treats all {@code NaN} values
-     * as equal.
+     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * The format is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
+     * are the ordinate values at index 0, 1, 2, <i>etc.</i>:
      *
-     * @param  values  the value to test for their precision.
-     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
+     * {@preformat wkt
+     *   POINT[x₀ x₁ x₂ …]
+     * }
      *
-     * @see #toString(DirectPosition, boolean)
+     * If the coordinate reference system is geodetic or projected, then coordinate values are formatted
+     * with a precision equivalent to one centimetre on Earth (the actual number of fraction digits is
+     * adjusted for the axis unit of measurement and the planet size if different than Earth).
+     *
+     * @param  formatter  the formatter where to format the inner content of this point.
+     * @return the WKT keyword, which is {@code "Point"} for this element.
+     *
+     * @since 1.0
      */
-    static boolean isSimplePrecision(final double... values) {
-        for (final double value : values) {
-            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
-                return false;
-            }
-        }
-        return true;
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        final double[][] points = new double[][] {getCoordinate()};
+        formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
+        return WKTKeywords.Point;
     }
 
     /**
@@ -208,10 +236,11 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      *   POINT(x₀ x₁ x₂ …)
      * }
      *
+     * This method formats the numbers as with {@link Double#toString(double)} (i.e. without fixed number of fraction digits).
      * The string returned by this method can be {@linkplain GeneralDirectPosition#GeneralDirectPosition(CharSequence) parsed}
      * by the {@code GeneralDirectPosition} constructor.
      *
-     * @return This position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.
+     * @return this position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.
      */
     @Override
     public String toString() {
@@ -227,7 +256,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * @param  isSimplePrecision  {@code true} if every ordinate values can be casted to {@code float}.
      * @return the point as a {@code POINT} in WKT format.
      *
-     * @see #isSimplePrecision(double[])
+     * @see Numerics#isSimplePrecision(double[])
      */
     static String toString(final DirectPosition position, final boolean isSimplePrecision) {
         final StringBuilder buffer = new StringBuilder(32).append("POINT");

@@ -97,7 +97,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
                 return;
             }
         }
-        inverse = new Inverse();
+        inverse = new Inverse(this);
     }
 
     /**
@@ -303,16 +303,30 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      * a bilinear search for locating the lower and upper <var>x</var> values as integers, then interpolates the
      * <var>x</var> real value.
      */
-    private final class Inverse extends AbstractMathTransform1D.Inverse implements MathTransform1D {
+    private static final class Inverse extends AbstractMathTransform1D.Inverse implements MathTransform1D, Serializable {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 3179638888992528901L;
+        private static final long serialVersionUID = -5112948223332095009L;
+
+        /**
+         * The enclosing transform.
+         */
+        private final LinearInterpolator1D forward;
 
         /**
          * Creates a new inverse transform.
          */
-        Inverse() {
+        Inverse(final LinearInterpolator1D forward) {
+            this.forward = forward;
+        }
+
+        /**
+         * Returns the inverse of this math transform.
+         */
+        @Override
+        public MathTransform1D inverse() {
+            return forward;
         }
 
         /**
@@ -326,7 +340,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
                                 final boolean derivate) throws TransformException
         {
             final double d, x, y = srcPts[srcOff];
-            final double[] values = LinearInterpolator1D.this.values;
+            final double[] values = forward.values;
             int i = Arrays.binarySearch(values, y);
             if (i >= 0) {
                 x = i;
@@ -361,7 +375,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
          */
         @Override
         public double transform(final double y) {
-            final double[] values = LinearInterpolator1D.this.values;
+            final double[] values = forward.values;
             int i = Arrays.binarySearch(values, y);
             if (i >= 0) {
                 return i;
@@ -390,7 +404,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
          */
         @Override
         public double derivative(final double y) {
-            final double[] values = LinearInterpolator1D.this.values;
+            final double[] values = forward.values;
             int i = Arrays.binarySearch(values, y);
             if (i < 0) {
                 i = ~i;

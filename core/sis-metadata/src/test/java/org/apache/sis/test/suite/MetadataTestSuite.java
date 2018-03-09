@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-metadata} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -56,14 +56,45 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.MergerTest.class,
 
     // XML marshalling.
-    org.apache.sis.internal.jaxb.code.EnumMarshallingTest.class,
-    org.apache.sis.internal.jaxb.code.CodeListMarshallingTest.class,
-    org.apache.sis.internal.jaxb.code.PT_LocaleTest.class,
-    org.apache.sis.xml.FreeTextMarshallingTest.class,
+    org.apache.sis.internal.test.XMLComparatorTest.class,
+    org.apache.sis.xml.NamespacesTest.class,
+    org.apache.sis.xml.XLinkTest.class,
+    org.apache.sis.xml.NilReasonTest.class,
+    org.apache.sis.xml.LegacyCodesTest.class,
+    org.apache.sis.xml.ValueConverterTest.class,
+    org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
+    org.apache.sis.xml.MarshallerPoolTest.class,
+    org.apache.sis.xml.TransformingNamespacesTest.class,
+    org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
+    org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
+    org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,
+    org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
+    org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.internal.jaxb.lan.PT_LocaleTest.class,
+    org.apache.sis.internal.jaxb.lan.LanguageCodeTest.class,
+    org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest.class,
+    org.apache.sis.internal.jaxb.cat.EnumAdapterTest.class,
+    org.apache.sis.internal.jaxb.cat.EnumMarshallingTest.class,
+    org.apache.sis.internal.jaxb.cat.CodeListMarshallingTest.class,
+    org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
+    org.apache.sis.internal.jaxb.gml.MeasureTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
     org.apache.sis.xml.CharSequenceSubstitutionTest.class,
     org.apache.sis.xml.UUIDMarshallingTest.class,
     org.apache.sis.xml.XLinkMarshallingTest.class,
+
+    // GeoAPI most basic types.
+    org.apache.sis.internal.simple.SimpleIdentifierTest.class,
+    org.apache.sis.util.iso.TypesTest.class,
+    org.apache.sis.util.iso.DefaultLocalNameTest.class,
+    org.apache.sis.util.iso.DefaultScopedNameTest.class,
+    org.apache.sis.util.iso.DefaultNameFactoryTest.class,
+    org.apache.sis.util.iso.NamesTest.class,
+    org.apache.sis.util.iso.TypeNamesTest.class,
+    org.apache.sis.util.iso.DefaultRecordTypeTest.class,
+    org.apache.sis.util.iso.DefaultRecordSchemaTest.class,
+    org.apache.sis.util.iso.DefaultRecordTest.class,
+    org.apache.sis.util.iso.NameMarshallingTest.class,
 
     // ISO implementations.
     org.apache.sis.metadata.iso.citation.DefaultContactTest.class,

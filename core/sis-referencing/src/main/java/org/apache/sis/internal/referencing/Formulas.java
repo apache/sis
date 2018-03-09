@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.internal.util.Numerics;
+import org.opengis.referencing.datum.Ellipsoid;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -31,7 +32,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -59,6 +60,13 @@ public final class Formulas extends Static {
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);
 
     /**
+     * Default tolerance threshold for comparing ordinate values in temporal CRS,
+     * assuming that the unit of measurement is second. Current value is arbitrary
+     * and may change in any future Apache SIS version.
+     */
+    public static final double TEMPORAL_TOLERANCE = 60;             // One minute.
+
+    /**
      * The maximal longitude value before normalization if a centimetric precision is desired.
      * This is about 4×10⁸ degrees.
      *
@@ -84,6 +92,19 @@ public final class Formulas extends Static {
      * Do not allow instantiation of this class.
      */
     private Formulas() {
+    }
+
+    /**
+     * Returns the size of a planet described by the given ellipsoid compared to earth.
+     * This method returns a ratio of given planet authalic radius compared to WGS84.
+     * This can be used for adjusting {@link #LINEAR_TOLERANCE} and {@link #ANGULAR_TOLERANCE} to another planet.
+     *
+     * @param  planet  ellipsoid of the other planet to compare to Earth.
+     * @return ratio of planet authalic radius on WGS84 authalic radius.
+     */
+    public static double scaleComparedToEarth(final Ellipsoid planet) {
+        return getAuthalicRadius(planet.getSemiMajorAxis(),
+                                 planet.getSemiMinorAxis()) / 6371007.180918474;
     }
 
     /**
