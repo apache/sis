@@ -34,7 +34,7 @@ import org.apache.sis.internal.util.Citations;
 /**
  * Manages a series of features, coverages or sensor data.
  * Different {@code DataStore} subclasses exist for different formats (netCDF, GeoTIFF, <i>etc.</i>).
- * The supported format can be identifier by the {@linkplain #getProvider() provider}.
+ * The supported format can be identified by the {@linkplain #getProvider() provider}.
  *
  * <p>Each data store is itself a {@link Resource}. The data store subclasses should implement
  * a more specialized {@code Resource} interface depending on the format characteristics.
