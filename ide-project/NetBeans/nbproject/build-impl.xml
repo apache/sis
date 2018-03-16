@@ -90,7 +90,7 @@ is divided into following sections:
                 </not>
             </condition>
         </fail>
-        <j2seproject3:modulename property="module.name" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}"/>
+        <j2seproject3:modulename property="module.name" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}"/>
         <condition property="named.module.internal">
             <and>
                 <isset property="module.name"/>
@@ -203,6 +203,7 @@ is divided into following sections:
                 <available file="${test.storage.dir}"/>
                 <available file="${test.feature.dir}"/>
                 <available file="${test.raster.dir}"/>
+                <available file="${test.portrayal.dir}"/>
                 <available file="${test.referencing.dir}"/>
                 <available file="${test.ref-by-id.dir}"/>
                 <available file="${test.metadata.dir}"/>
@@ -225,6 +226,7 @@ is divided into following sections:
                 <available file="${src.storage.dir}"/>
                 <available file="${src.feature.dir}"/>
                 <available file="${src.raster.dir}"/>
+                <available file="${src.portrayal.dir}"/>
                 <available file="${src.referencing.dir}"/>
                 <available file="${src.ref-by-id.dir}"/>
                 <available file="${src.metadata.dir}"/>
@@ -346,6 +348,7 @@ is divided into following sections:
         <fail unless="src.storage.dir">Must set src.storage.dir</fail>
         <fail unless="src.feature.dir">Must set src.feature.dir</fail>
         <fail unless="src.raster.dir">Must set src.raster.dir</fail>
+        <fail unless="src.portrayal.dir">Must set src.portrayal.dir</fail>
         <fail unless="src.referencing.dir">Must set src.referencing.dir</fail>
         <fail unless="src.ref-by-id.dir">Must set src.ref-by-id.dir</fail>
         <fail unless="src.metadata.dir">Must set src.metadata.dir</fail>
@@ -364,6 +367,7 @@ is divided into following sections:
         <fail unless="test.storage.dir">Must set test.storage.dir</fail>
         <fail unless="test.feature.dir">Must set test.feature.dir</fail>
         <fail unless="test.raster.dir">Must set test.raster.dir</fail>
+        <fail unless="test.portrayal.dir">Must set test.portrayal.dir</fail>
         <fail unless="test.referencing.dir">Must set test.referencing.dir</fail>
         <fail unless="test.ref-by-id.dir">Must set test.ref-by-id.dir</fail>
         <fail unless="test.metadata.dir">Must set test.metadata.dir</fail>
@@ -390,7 +394,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties,-init-source-module-properties" if="modules.supported.internal" name="-init-macrodef-javac-with-module">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.modulepath}" name="modulepath"/>
@@ -402,7 +406,7 @@ is divided into following sections:
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="${javac.debug}" name="debug"/>
             <attribute default="${empty.dir}" name="sourcepath" unless:set="named.module.internal"/>
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" if:set="named.module.internal" name="sourcepath"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" if:set="named.module.internal" name="sourcepath"/>
             <attribute default="${empty.dir}" name="gensrcdir"/>
             <element name="customize" optional="true"/>
             <sequential>
@@ -457,7 +461,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties,-init-source-module-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors" unless="modules.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.modulepath}" name="modulepath"/>
@@ -500,7 +504,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties,-init-source-module-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.modulepath}" name="modulepath"/>
@@ -535,7 +539,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-module,-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -701,6 +705,9 @@ is divided into following sections:
                             <fileset dir="${test.raster.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                                 <filename name="@{testincludes}"/>
                             </fileset>
+                            <fileset dir="${test.portrayal.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
+                                <filename name="@{testincludes}"/>
+                            </fileset>
                             <fileset dir="${test.referencing.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                                 <filename name="@{testincludes}"/>
                             </fileset>
@@ -773,6 +780,9 @@ is divided into following sections:
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${test.raster.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
+                        <filename name="@{testincludes}"/>
+                    </fileset>
+                    <fileset dir="${test.portrayal.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${test.referencing.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
@@ -1275,7 +1285,7 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
@@ -1292,6 +1302,7 @@ is divided into following sections:
             <fileset dir="${src.storage.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.feature.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.raster.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.portrayal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.ref-by-id.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.metadata.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1319,7 +1330,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}, module-info.java" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}, module-info.java" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.javafx.dir}:${src.console.dir}:${src.earth-obs.dir}:${src.geotiff.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.xmlstore.dir}:${src.storage.dir}:${src.feature.dir}:${src.raster.dir}:${src.portrayal.dir}:${src.referencing.dir}:${src.ref-by-id.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${src.gdal.dir}:${src.c.gdal.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -1733,6 +1744,9 @@ is divided into following sections:
             <fileset dir="${src.raster.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
+            <fileset dir="${src.portrayal.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
             <fileset dir="${src.referencing.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
@@ -1798,6 +1812,9 @@ is divided into following sections:
             <fileset dir="${src.raster.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
+            <fileset dir="${src.portrayal.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/doc-files/**"/>
+            </fileset>
             <fileset dir="${src.referencing.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
@@ -1841,14 +1858,14 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target depends="-init-source-module-properties" if="named.module.internal" name="-init-test-javac-module-properties-with-module">
-        <j2seproject3:modulename property="test.module.name" sourcepath="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}"/>
-        <condition else="${empty.dir}" property="javac.test.sourcepath" value="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}">
+        <j2seproject3:modulename property="test.module.name" sourcepath="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}"/>
+        <condition else="${empty.dir}" property="javac.test.sourcepath" value="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}">
             <and>
                 <isset property="test.module.name"/>
                 <length length="0" string="${test.module.name}" when="greater"/>
             </and>
         </condition>
-        <condition else="--patch-module ${module.name}=${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir} --add-reads ${module.name}=ALL-UNNAMED" property="javac.test.compilerargs" value="--add-reads ${test.module.name}=ALL-UNNAMED">
+        <condition else="--patch-module ${module.name}=${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir} --add-reads ${module.name}=ALL-UNNAMED" property="javac.test.compilerargs" value="--add-reads ${test.module.name}=ALL-UNNAMED">
             <and>
                 <isset property="test.module.name"/>
                 <length length="0" string="${test.module.name}" when="greater"/>
@@ -1889,10 +1906,10 @@ is divided into following sections:
     </target>
     <target depends="-init-test-javac-module-properties-with-module,-init-test-module-properties-without-module" name="-init-test-module-properties"/>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}"/>
+        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}"/>
     </target>
     <target depends="init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${javac.test.sourcepath}" srcdir="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}">
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${javac.test.sourcepath}" srcdir="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}">
             <customize>
                 <compilerarg line="${javac.test.compilerargs}"/>
             </customize>
@@ -1909,6 +1926,7 @@ is divided into following sections:
             <fileset dir="${test.storage.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.feature.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.raster.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.portrayal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.ref-by-id.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.metadata.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1929,7 +1947,7 @@ is divided into following sections:
     <target depends="init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}, module-info.java" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}" srcdir="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}">
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}, module-info.java" modulepath="${javac.test.modulepath}" processorpath="${javac.test.processorpath}" sourcepath="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}" srcdir="${test.webapp.dir}:${test.javafx.dir}:${test.console.dir}:${test.earth-obs.dir}:${test.geotiff.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.xmlstore.dir}:${test.storage.dir}:${test.feature.dir}:${test.raster.dir}:${test.portrayal.dir}:${test.referencing.dir}:${test.ref-by-id.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}:${test.gdal.dir}">
             <customize>
                 <compilerarg line="${javac.test.compilerargs}"/>
             </customize>
@@ -1946,6 +1964,7 @@ is divided into following sections:
             <fileset dir="${test.storage.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.feature.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.raster.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.portrayal.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.ref-by-id.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.metadata.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
