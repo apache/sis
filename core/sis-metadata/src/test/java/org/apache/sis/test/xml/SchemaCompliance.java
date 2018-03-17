@@ -169,8 +169,8 @@ public final strictfp class SchemaCompliance {
         }
 
         boolean equal(final Info other) {
-            return Objects.equals(typeName,     other.typeName)
-                && Objects.equals(namespace,    other.namespace)
+            return Objects.equals(typeName,  other.typeName)
+                && Objects.equals(namespace, other.namespace)
                 && isRequired   == other.isRequired
                 && isCollection == other.isCollection;
         }

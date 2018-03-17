@@ -48,9 +48,11 @@
       <fileset dir="${project.root}/core/sis-raster/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <!-- Not yet available.
       <fileset dir="${project.root}/core/sis-portrayal/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      -->
       <fileset dir="${project.root}/storage/sis-storage/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
