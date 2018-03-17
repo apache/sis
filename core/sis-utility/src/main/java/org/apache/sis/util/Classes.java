@@ -714,7 +714,7 @@ cmp:    for (final Class<?> c : c1) {
      */
     public static boolean isPossibleGetter(final Method method) {
         return method.getReturnType() != Void.TYPE &&
-               method.getParameterTypes().length == 0 &&
+               method.getParameterCount() == 0 &&
               !method.isSynthetic() &&
               !ArraysExt.contains(EXCLUDES, method.getName());
     }
