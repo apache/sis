@@ -23,7 +23,7 @@ package org.apache.sis.internal.map;
  * <p>
  * NOTE : this class is a first draft subject to modifications.
  * </p>
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @since 1.0
  * @module
