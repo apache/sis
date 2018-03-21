@@ -29,7 +29,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * <p>
  * NOTE : this class is a first draft subject to modifications.
  * </p>
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @since 1.0
  * @module
