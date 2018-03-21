@@ -109,8 +109,8 @@ Symbology, map and rendering engine representation.
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-feature</artifactId>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
       <version>${project.version}</version>
     </dependency>
 
