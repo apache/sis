@@ -38,7 +38,7 @@ import org.apache.sis.math.FunctionProperty;
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @param <S>  the source type.
  *
@@ -91,11 +91,20 @@ class ObjectToString<S> extends SystemConverter<S,String> {
 
     /**
      * Returns the singleton instance on deserialization, if any.
+     *
+     * @see StringConverter#unique()
      */
     @Override
     public final ObjectConverter<S, String> unique() {
+        /*
+         * The checks against null references are needed because on deserialization,
+         * the inverse of this inverse converter may not be assigned a value yet.
+         */
         if (inverse != null) {
-            return inverse.unique().inverse();              // Will typically delegate to StringConverter.
+            ObjectConverter<S, String> singleton = inverse.unique().inverse();      // Will typically delegate to StringConverter.
+            if (singleton != null) {
+                return singleton;
+            }
         }
         return this;
     }
