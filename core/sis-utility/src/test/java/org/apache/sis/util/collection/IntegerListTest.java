@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -291,6 +291,6 @@ public final strictfp class IntegerListTest extends TestCase {
         final Random random = TestUtilities.createRandomNumberGenerator();
         return IntStream.generate(() -> random.nextInt(maxValue))
                 .limit(size)
-                .collect(() -> new IntegerList(size, maxValue), IntegerList::addInt, null);
+                .collect(() -> new IntegerList(size, maxValue), IntegerList::addInt, (l1, l2) -> l1.addAll(l2));
     }
 }
