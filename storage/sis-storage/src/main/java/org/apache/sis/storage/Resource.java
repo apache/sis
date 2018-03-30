@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage;
 
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 import org.opengis.metadata.Metadata;
 
 
@@ -124,8 +126,7 @@ public interface Resource {
      * @param  listener   listener to notify about changes.
      * @param  eventType  type of {@linkplain ChangeEvent} to listen (can not be {@code null}).
      */
-    //TODO: remove comment when implemented on all resources.
-    //<T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType);
+    <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType);
 
     /**
      * Unregisters a listener previously added to this resource for the given type of events.
@@ -143,6 +144,5 @@ public interface Resource {
      * @param  listener   listener to stop notifying about changes.
      * @param  eventType  type of {@linkplain ChangeEvent} which were listened (can not be {@code null}).
      */
-    //TODO: remove comment when implemented on all resources.
-    //<T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType);
+    <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType);
 }

@@ -34,6 +34,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
@@ -174,6 +176,24 @@ public class NetcdfStore extends DataStore implements Aggregate {
             throw new DataStoreException(e);
         }
         return components;
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
