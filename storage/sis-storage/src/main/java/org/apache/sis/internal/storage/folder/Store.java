@@ -48,6 +48,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 
 
 /**
@@ -337,6 +339,24 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
      */
     final String message(final short key, final Object value) {
         return messages().getString(key, value);
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**

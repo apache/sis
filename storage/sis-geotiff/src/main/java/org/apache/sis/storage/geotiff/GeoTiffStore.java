@@ -40,6 +40,8 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -175,6 +177,24 @@ public class GeoTiffStore extends DataStore {
             throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
         }
         return r;
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**

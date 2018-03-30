@@ -29,6 +29,8 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 
 
 /**
@@ -226,5 +228,23 @@ public abstract class URIDataStore extends DataStore {
              */
             builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(super.getDisplayName()), MetadataBuilder.Scope.ALL);
         }
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    }
+
+    /**
+     * This resource produces no events.
+     *
+     * {@inheritDoc }
+     */
+    @Override
+    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 }
