@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -94,7 +94,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *       That approach is used only as a fallback when the late-binding approach gave no result.</li>
  * </ul>
  *
- * When <code>{@linkplain #createOperation createOperation}(sourceCRS, targetCRS)</code> is invoked,
+ * When <code>{@linkplain #createOperations createOperations}(sourceCRS, targetCRS)</code> is invoked,
  * this class fetches the authority codes for source and target CRS and submits them to the authority factory
  * through a call to its <code>{@linkplain GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes
  * createFromCoordinateReferenceSystemCodes}(sourceCode, targetCode)</code> method.
@@ -102,7 +102,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -193,6 +193,13 @@ class CoordinateOperationRegistry {
     protected double desiredAccuracy;
 
     /**
+     * {@code true} if {@link #search(CoordinateReferenceSystem, CoordinateReferenceSystem)}
+     * should stop after the first coordinate operation found. This field is set to {@code true}
+     * when the caller is interested only in the "best" operation instead of all of possibilities.
+     */
+    boolean stopAtFirst;
+
+    /**
      * A filter that can be used for applying additional restrictions on the coordinate operation,
      * or {@code null} if none.
      */
@@ -279,29 +286,26 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * Finds or infers an operation for conversion or transformation between two coordinate reference systems.
+     * Finds or infers operations for conversions or transformations between two coordinate reference systems.
      * {@code CoordinateOperationRegistry} implements the <cite>late-binding</cite> approach (see definition
      * of terms in class javadoc) by extracting the authority codes from the supplied {@code sourceCRS} and
      * {@code targetCRS}, then by submitting those codes to the
      * <code>{@linkplain CoordinateOperationAuthorityFactory#createFromCoordinateReferenceSystemCodes
      * createFromCoordinateReferenceSystemCodes}(sourceCode, targetCode)</code> method.
-     * If no operation is found for those codes, then this method returns {@code null}.
-     * Note that it does not mean that no path exist;
-     * it only means that it was not defined explicitely in the registry.
      *
-     * <p>If the subclass implements the <cite>early-binding</cite> approach (which is the fallback if late-binding
-     * gave no result), then this method should never return {@code null} since there is no other fallback.
-     * Instead, this method may throw an {@link OperationNotFoundException}.</p>
+     * <p>Operations in the returned list are ordered in preference order (preferred operation first).
+     * If no operation is found for those codes, then this method returns an empty list.
+     * Note that it does not mean that no path exist;
+     * it only means that it was not defined explicitely in the registry.</p>
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS},
-     *         or {@code null} if no such operation is explicitly defined in the underlying database.
-     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation creation failed for some other reason.
+     * @return coordinate operations from {@code sourceCRS} to {@code targetCRS},
+     *         or an empty list if no such operation is explicitly defined in the underlying database.
+     * @throws FactoryException if the operation creation failed.
      */
-    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS)
+    public List<CoordinateOperation> createOperations(final CoordinateReferenceSystem sourceCRS,
+                                                      final CoordinateReferenceSystem targetCRS)
             throws FactoryException
     {
         CoordinateReferenceSystem source = sourceCRS;
@@ -324,24 +328,31 @@ class CoordinateOperationRegistry {
                 case 3:  if (source == sourceCRS || target == targetCRS) continue;
                          target = targetCRS;                                            // 2D → 3D
                          break;
-                default: return null;
+                default: return Collections.emptyList();
             }
             if (source != null && target != null) try {
-                CoordinateOperation operation = search(source, target);
-                if (operation != null) {
+                final List<CoordinateOperation> operations = search(source, target);
+                if (operations != null) {
                     /*
                      * Found an operation. If we had to extract the horizontal part of some 3D CRS, then we
                      * need to modify the coordinate operation in order to match the new number of dimensions.
                      */
                     if (combine != 0) {
-                        operation = propagateVertical(sourceCRS, source != sourceCRS,
-                                                      targetCRS, target != targetCRS, operation);
-                        if (operation == null) {
-                            continue;
+                        for (int i=operations.size(); --i >= 0;) {
+                            CoordinateOperation operation = operations.get(i);
+                            operation = propagateVertical(sourceCRS, source != sourceCRS,
+                                                          targetCRS, target != targetCRS, operation);
+                            if (operation != null) {
+                                operation = complete(operation, sourceCRS, targetCRS);
+                                operations.set(i, operation);
+                            } else {
+                                operations.remove(i);
+                            }
                         }
-                        operation = complete(operation, sourceCRS, targetCRS);
                     }
-                    return operation;
+                    if (!operations.isEmpty()) {
+                        return operations;
+                    }
                 }
             } catch (IllegalArgumentException | IncommensurableException e) {
                 String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS));
@@ -355,7 +366,7 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * Returns an operation for conversion or transformation between two coordinate reference systems.
+     * Returns operations for conversions or transformations between two coordinate reference systems.
      * This method extracts the authority code from the supplied {@code sourceCRS} and {@code targetCRS},
      * and submit them to the {@link #registry}. If no operation is found for those codes, then this method
      * returns {@code null}.
@@ -368,14 +379,15 @@ class CoordinateOperationRegistry {
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if an error occurred while creating the operation.
      */
-    private CoordinateOperation search(final CoordinateReferenceSystem sourceCRS,
-                                       final CoordinateReferenceSystem targetCRS)
+    private List<CoordinateOperation> search(final CoordinateReferenceSystem sourceCRS,
+                                             final CoordinateReferenceSystem targetCRS)
             throws IllegalArgumentException, IncommensurableException, FactoryException
     {
         final List<String> sources = findCode(sourceCRS); if (sources.isEmpty()) return null;
         final List<String> targets = findCode(targetCRS); if (targets.isEmpty()) return null;
-        Collection<CoordinateOperation> operations = null;
-        boolean inverse = false;
+        final List<CoordinateOperation> operations = new ArrayList<>();
+        boolean foundDirectOperations = false;
+        boolean useDeprecatedOperations = false;
         for (final String sourceID : sources) {
             for (final String targetID : targets) {
                 if (sourceID.equals(targetID)) {
@@ -390,105 +402,82 @@ class CoordinateOperationRegistry {
                      */
                     return null;
                 }
-                final boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
-                try {
-                    try {
-                        operations = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
-                        inverse = Containers.isNullOrEmpty(operations);
-                        if (inverse) {
-                            /*
-                             * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
-                             * This is typically the case when the user wants to convert from a projected to a geographic CRS.
-                             * The EPSG database usually contains transformation paths for geographic to projected CRS only.
-                             */
-                            operations = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
-                            if (Containers.isNullOrEmpty(operations)) {
-                                continue;
-                            }
-                        }
-                    } finally {
-                        if (!mdOnly) {
-                            Semaphores.clear(Semaphores.METADATA_ONLY);
-                        }
-                    }
-                } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException e) {
-                    /*
-                     * sourceCode or targetCode is unknown to the underlying authority factory.
-                     * Ignores the exception and fallback on the generic algorithm provided by
-                     * CoordinateOperationFinder.
-                     */
-                    log(null, e);
-                    continue;
-                }
-                break;          // Stop on the first non-empty set of operations that we find.
-            }
-        }
-        if (operations == null) {
-            return null;
-        }
-        /*
-         * This outer loop is executed exactly once in most case. It may be executed more than once if an
-         * ignoreable error occurred while creating the CoordinateOperation, in which case we will fallback
-         * on the next best choice until we succeed.
-         */
-        CoordinateOperation bestChoice;
-        while (true) {
-            /*
-             * We will loop over all coordinate operations and select the one having the largest intersection
-             * with the area of interest. Note that if the user did not specified an area of interest himself,
-             * then we need to get one from the CRS. This is necessary for preventing the transformation from
-             * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the later has a larger area).
-             */
-            bestChoice = null;
-            double largestArea = 0;
-            double finestAccuracy = Double.POSITIVE_INFINITY;
-            boolean stopAtFirstDeprecated = false;
-            for (final Iterator<CoordinateOperation> it=operations.iterator();;) {
-                CoordinateOperation candidate;
                 /*
-                 * Some pair of CRS have a lot of coordinate operations backed by datum shift grids.
+                 * Some pairs of CRS have a lot of coordinate operations backed by datum shift grids.
                  * We do not want to load all of them until we found the right coordinate operation.
                  * The non-public Semaphores.METADATA_ONLY mechanism instructs EPSGDataAccess to
                  * instantiate DeferredCoordinateOperation instead of full coordinate operations.
                  */
                 final boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
                 try {
+                    Collection<CoordinateOperation> authoritatives;
                     try {
-                        if (!it.hasNext()) break;
-                        candidate = it.next();
-                    } finally {
-                        if (!mdOnly) {
-                            Semaphores.clear(Semaphores.METADATA_ONLY);
+                        authoritatives = registry.createFromCoordinateReferenceSystemCodes(sourceID, targetID);
+                        final boolean inverse = Containers.isNullOrEmpty(authoritatives);
+                        if (inverse) {
+                            /*
+                             * No operation from 'source' to 'target' available. But maybe there is an inverse operation.
+                             * This is typically the case when the user wants to convert from a projected to a geographic CRS.
+                             * The EPSG database usually contains transformation paths for geographic to projected CRS only.
+                             */
+                            if (foundDirectOperations) {
+                                continue;                       // Ignore inverse operations if we already have direct ones.
+                            }
+                            authoritatives = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
+                            if (Containers.isNullOrEmpty(authoritatives)) {
+                                continue;
+                            }
+                        } else if (!foundDirectOperations) {
+                            foundDirectOperations = true;
+                            operations.clear();                 // Keep only direct operations.
                         }
+                    } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException e) {
+                        /*
+                         * sourceCode or targetCode is unknown to the underlying authority factory.
+                         * Ignores the exception and fallback on the generic algorithm provided by
+                         * CoordinateOperationFinder.
+                         */
+                        log(null, e);
+                        continue;
                     }
-                } catch (BackingStoreException exception) {
-                    throw exception.unwrapOrRethrow(FactoryException.class);
-                }
-                if (candidate != null) {
                     /*
                      * If we found at least one non-deprecated operation, we will stop the search at
                      * the first deprecated one (assuming that deprecated operations are sorted last).
+                     * Deprecated operations are kept only if there is no non-deprecated operations.
                      */
-                    final boolean isDeprecated = (candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated();
-                    if (isDeprecated && stopAtFirstDeprecated) {
-                        break;
-                    }
-                    final double area = Extents.area(Extents.intersection(
-                            Extents.getGeographicBoundingBox(areaOfInterest),
-                            Extents.getGeographicBoundingBox(candidate.getDomainOfValidity())));
-                    if (bestChoice == null || area >= largestArea) {
-                        final double accuracy = CRS.getLinearAccuracy(candidate);
-                        if (bestChoice == null || area != largestArea || accuracy < finestAccuracy) {
-                            bestChoice = candidate;
-                            if (!Double.isNaN(area)) {
-                                largestArea = area;
+                    try {
+                        for (final CoordinateOperation candidate : authoritatives) {
+                            if (candidate != null) {                                    // Paranoiac check.
+                                if ((candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated()) {
+                                    if (!useDeprecatedOperations && !operations.isEmpty()) break;
+                                    useDeprecatedOperations = true;
+                                } else if (useDeprecatedOperations) {
+                                    useDeprecatedOperations = false;
+                                    operations.clear();              // Replace deprecated operations by non-deprecated ones.
+                                }
+                                operations.add(candidate);
                             }
-                            finestAccuracy = Double.isNaN(accuracy) ? Double.POSITIVE_INFINITY : accuracy;
-                            stopAtFirstDeprecated = !isDeprecated;
                         }
+                    } catch (BackingStoreException exception) {
+                        throw exception.unwrapOrRethrow(FactoryException.class);
+                    }
+                } finally {
+                    if (!mdOnly) {
+                        Semaphores.clear(Semaphores.METADATA_ONLY);
                     }
                 }
             }
+        }
+        /*
+         * At this point we got the list of coordinate operations. Now, sort them in preference order.
+         * We will loop over all coordinate operations and select the one having the largest intersection
+         * with the area of interest. Note that if the user did not specified an area of interest himself,
+         * then we need to get one from the CRS. This is necessary for preventing the transformation from
+         * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the later has a larger area).
+         */
+        CoordinateOperationSorter.sort(operations, Extents.getGeographicBoundingBox(areaOfInterest));
+        final ListIterator<CoordinateOperation> it = operations.listIterator();
+        while (it.hasNext()) {
             /*
              * At this point we filtered a CoordinateOperation by looking only at its metadata.
              * Code following this point will need the full coordinate operation, including its
@@ -496,45 +485,31 @@ class CoordinateOperationRegistry {
              * Conversely, we should not use metadata below this point because the call to
              * inverse(CoordinateOperation) is not guaranteed to preserve all metadata.
              */
-            if (bestChoice == null) break;
-            final CoordinateOperation deferred = bestChoice;
+            CoordinateOperation operation = it.next();
             try {
-                if (bestChoice instanceof DeferredCoordinateOperation) {
-                    bestChoice = ((DeferredCoordinateOperation) bestChoice).create();
+                if (operation instanceof DeferredCoordinateOperation) {
+                    operation = ((DeferredCoordinateOperation) operation).create();
                 }
-                if (bestChoice instanceof SingleOperation && bestChoice.getMathTransform() == null) {
-                    bestChoice = fromDefiningConversion((SingleOperation) bestChoice,
-                                                        inverse ? targetCRS : sourceCRS,
-                                                        inverse ? sourceCRS : targetCRS);
-                    if (bestChoice == null) {
-                        return null;
+                if (operation instanceof SingleOperation && operation.getMathTransform() == null) {
+                    operation = fromDefiningConversion((SingleOperation) operation,
+                                    foundDirectOperations ? sourceCRS : targetCRS,
+                                    foundDirectOperations ? targetCRS : sourceCRS);
+                    if (operation == null) {
+                        it.remove();
+                        continue;
                     }
                 }
-                if (inverse) {
-                    bestChoice = inverse(bestChoice);
+                if (!foundDirectOperations) {
+                    operation = inverse(operation);
                 }
             } catch (NoninvertibleTransformException | MissingFactoryResourceException e) {
                 /*
-                 * If we failed to get the real CoordinateOperation instance, remove it from the collection
-                 * and try again in order to get the next best choice. The Apache SIS implementation allows
-                 * to remove directly from the Set<CoordinateOperation>, but that removal may fail with non-SIS
-                 * implementations, in which case we copy the CoordinateOperation in a temporary list before
-                 * removal. We do not perform that copy unconditionally in order to avoid lazy initialization
-                 * of unneeded CoordinateOperations like the deprecated ones.
+                 * If we failed to get the real CoordinateOperation instance, remove it from
+                 * the collection and try again in order to get the next best choices.
                  */
-                boolean removed;
-                try {
-                    removed = operations.remove(deferred);
-                } catch (UnsupportedOperationException ignored) {
-                    operations = new ArrayList<>(operations);
-                    removed = operations.remove(deferred);
-                }
-                if (removed) {
-                    log(null, e);
-                    continue;                                   // Try again with the next best case.
-                }
-                // Should never happen, but if happen anyway we should fail for avoiding never-ending loop.
-                throw (e instanceof FactoryException) ? (FactoryException) e : new FactoryException(e);
+                log(null, e);
+                it.remove();
+                continue;                                   // Try again with the next best case.
             }
             /*
              * It is possible that the CRS given to this method were not quite right.  For example the user
@@ -548,10 +523,19 @@ class CoordinateOperationRegistry {
              * If we fail here, we are likely to fail for all other transforms. So we are better to let the
              * FactoryException propagate.
              */
-            bestChoice = complete(bestChoice, sourceCRS, targetCRS);
-            if (filter(bestChoice)) break;
+            operation = complete(operation, sourceCRS, targetCRS);
+            if (filter(operation)) {
+                if (stopAtFirst) {
+                    operations.clear();
+                    operations.add(operation);
+                    break;
+                }
+                it.set(operation);
+            } else {
+                it.remove();
+            }
         }
-        return bestChoice;
+        return operations;
     }
 
     /**
@@ -1204,6 +1188,6 @@ class CoordinateOperationRegistry {
         if (exception instanceof NoninvertibleTransformException) {
             record.setThrown(exception);
         }
-        Logging.log(CoordinateOperationFinder.class, "createOperation", record);
+        Logging.log(CoordinateOperationFinder.class, "createOperations", record);
     }
 }
