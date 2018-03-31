@@ -342,18 +342,22 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {

@@ -46,7 +46,7 @@ import ucar.nc2.constants.CDM;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see NetcdfStoreProvider
  *
@@ -179,18 +179,22 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {

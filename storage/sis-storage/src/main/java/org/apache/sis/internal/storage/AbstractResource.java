@@ -37,7 +37,7 @@ import org.apache.sis.storage.event.ChangeListener;
  * Base implementation of resources contained in data stores.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -125,18 +125,22 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, on the assumption that most resources produce no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, on the assumption that most resources produce no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {

@@ -33,15 +33,15 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -180,18 +180,22 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {

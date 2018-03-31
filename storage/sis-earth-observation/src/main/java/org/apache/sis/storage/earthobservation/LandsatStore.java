@@ -29,10 +29,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Debug;
 
 
@@ -65,7 +65,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -147,18 +147,22 @@ public class LandsatStore extends DataStore {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
-     * This resource produces no events.
+     * Ignored in current implementation, since this resource produces no events.
      *
-     * {@inheritDoc }
+     * @param  <T>        {@inheritDoc}
+     * @param  listener   {@inheritDoc}
+     * @param  eventType  {@inheritDoc}
      */
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
