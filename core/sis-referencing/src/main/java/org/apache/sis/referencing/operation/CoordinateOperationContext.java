@@ -21,10 +21,12 @@ import java.util.function.Predicate;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -52,7 +54,7 @@ import org.apache.sis.util.ArgumentChecks;
  * late binding implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  *
@@ -93,6 +95,27 @@ public class CoordinateOperationContext implements Serializable {
         ArgumentChecks.ensurePositive("accuracy", accuracy);
         areaOfInterest  = area;
         desiredAccuracy = accuracy;
+    }
+
+    /**
+     * Creates an operation context for the given area of interest, which may be null.
+     * This is a convenience method for a frequently-used operation.
+     *
+     * @param  areaOfInterest  the area of interest, or {@code null} if none.
+     * @return the operation context, or {@code null} if the given bounding box was null.
+     *
+     * @since 1.0
+     */
+    public static CoordinateOperationContext fromBoundingBox(final GeographicBoundingBox areaOfInterest) {
+        if (areaOfInterest != null) {
+            if (areaOfInterest instanceof DefaultGeographicBoundingBox && ((DefaultGeographicBoundingBox) areaOfInterest).isEmpty()) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
+            }
+            final CoordinateOperationContext context = new CoordinateOperationContext();
+            context.setAreaOfInterest(areaOfInterest);
+            return context;
+        }
+        return null;
     }
 
     /**

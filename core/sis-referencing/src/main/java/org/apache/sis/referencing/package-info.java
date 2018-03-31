@@ -94,7 +94,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */

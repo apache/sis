@@ -66,7 +66,7 @@ import static org.junit.Assume.assumeTrue;
  * The operations are tested with various axis order and dimension in source and target CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -150,6 +150,18 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     }
 
     /**
+     * Gets exactly one coordinate operation from the registry to test.
+     */
+    private CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                                final CoordinateReferenceSystem targetCRS) throws FactoryException
+    {
+        registry.stopAtFirst = true;
+        final List<CoordinateOperation> operations = registry.createOperations(sourceCRS, targetCRS);
+        assertEquals("Invalid number of operations.", 1, operations.size());
+        return operations.get(0);
+    }
+
+    /**
      * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with source and target CRS conform to EPSG definitions.
      *
      * @throws ParseException if a CRS used in this test can not be parsed.
@@ -169,7 +181,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 // Intentionally omit Id[“EPSG”, 4807] for testing capability to find it back.
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
-        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
         verifyNTF(operation, "geog2D domain", true);
         /*
          * Same test point than the one used in FranceGeocentricInterpolationTest:
@@ -207,7 +219,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 "    Unit[“degree”, 0.017453292519943295]]");
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.normalizedGeographic();
-        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
         verifyNTF(operation, "geog2D domain", false);
 
         transform  = operation.getMathTransform();
@@ -238,7 +250,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 "    Unit[“grad”, 0.015707963267948967]]");
 
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.normalizedGeographic();
-        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
 
         transform  = operation.getMathTransform();
         tolerance  = Formulas.ANGULAR_TOLERANCE;
@@ -270,7 +282,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 "    Axis[“Height (h)”, UP, Unit[“m”, 1]]]");
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic3D();
-        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
         verifyNTF(operation, "geog3D domain", false);
 
         transform  = operation.getMathTransform();
@@ -306,7 +318,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
 
         final CoordinateReferenceSystem targetCRS =
                 DefaultGeographicCRS.castOrCopy(CommonCRS.WGS84.geographic3D()).forConvention(AxesConvention.NORMALIZED);
-        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
         verifyNTF(operation, "geog3D domain", false);
 
         transform  = operation.getMathTransform();
@@ -386,14 +398,14 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     public void testFindDespiteDifferentAxisOrder() throws FactoryException {
         CoordinateReferenceSystem sourceCRS = crsFactory.createGeographicCRS("EPSG:4625");
         CoordinateReferenceSystem targetCRS = crsFactory.createGeographicCRS("EPSG:5489");
-        CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        CoordinateOperation operation = createOperation(sourceCRS, targetCRS);
         assertEpsgNameAndIdentifierEqual("Martinique 1938 to RGAF09 (1)", 5491, operation);
         /*
          * Above was only a verification using the source and target CRS expected by EPSG dataset.
          * Now the interesting test: use a target CRS with different axis order.
          */
         targetCRS = crsFactory.createGeographicCRS("EPSG:7086");
-        operation = registry.createOperation(sourceCRS, targetCRS);
+        operation = createOperation(sourceCRS, targetCRS);
         assertEpsgNameWithoutIdentifierEqual("Martinique 1938 to RGAF09 (1)", operation);
         final ParameterValueGroup p = ((SingleOperation) operation).getParameterValues();
         /*
