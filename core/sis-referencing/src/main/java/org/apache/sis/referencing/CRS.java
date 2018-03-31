@@ -136,7 +136,7 @@ import org.opengis.geometry.Geometry;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -626,14 +626,7 @@ public final class CRS extends Static {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        CoordinateOperationContext context = null;
-        if (areaOfInterest != null) {
-            if (areaOfInterest instanceof DefaultGeographicBoundingBox && ((DefaultGeographicBoundingBox) areaOfInterest).isEmpty()) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
-            }
-            context = new CoordinateOperationContext();
-            context.setAreaOfInterest(areaOfInterest);
-        }
+        final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
         /*
          * In principle we should just delegate to factory.createOperation(…). However this operation may fail
          * if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in that
@@ -645,9 +638,50 @@ public final class CRS extends Static {
         } catch (UnavailableFactoryException e) {
             if (AuthorityFactories.failure(e)) {
                 throw e;
-            } try {
+            } else try {
                 // Above method call replaced the EPSG factory by a fallback. Try again.
                 return factory.createOperation(sourceCRS, targetCRS, context);
+            } catch (FactoryException ex) {
+                ex.addSuppressed(e);
+                throw ex;
+            }
+        }
+    }
+
+    /**
+     * Finds mathematical operations that transform or convert coordinates from the given source to the
+     * given target coordinate reference system. If at least one operation exists, they are returned in
+     * preference order: the operation having the widest intersection between its
+     * {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
+     * and the given area of interest are returned first.
+     *
+     * @param  sourceCRS       the CRS of source coordinates.
+     * @param  targetCRS       the CRS of target coordinates.
+     * @param  areaOfInterest  the area of interest, or {@code null} if none.
+     * @return mathematical operations from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
+     * @throws FactoryException if the operation can not be created for another reason.
+     *
+     * @see DefaultCoordinateOperationFactory#createOperations(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+     *
+     * @since 1.0
+     */
+    public static List<CoordinateOperation> findOperations(final CoordinateReferenceSystem sourceCRS,
+                                                           final CoordinateReferenceSystem targetCRS,
+                                                           final GeographicBoundingBox areaOfInterest)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
+        final DefaultCoordinateOperationFactory factory = CoordinateOperations.factory();
+        try {
+            return factory.createOperations(sourceCRS, targetCRS, context);
+        } catch (UnavailableFactoryException e) {
+            if (AuthorityFactories.failure(e)) {
+                throw e;
+            } else try {
+                return Collections.singletonList(factory.createOperation(sourceCRS, targetCRS, context));
             } catch (FactoryException ex) {
                 ex.addSuppressed(e);
                 throw ex;
