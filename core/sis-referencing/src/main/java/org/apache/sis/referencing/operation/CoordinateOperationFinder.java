@@ -19,7 +19,9 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ListIterator;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.IncommensurableException;
@@ -108,7 +110,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  *
@@ -165,7 +167,39 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * Infers an operation for conversion or transformation between two coordinate reference systems.
      * If a non-null authority factory – the <cite>registry</cite> – has been specified at construction time,
-     * this method will first query that factory (<cite>late-binding</cite> approach – see class javadoc).
+     * then this method will first query that factory (<cite>late-binding</cite> approach – see class javadoc).
+     * If no operation has been found in the registry or if no registry has been specified to the constructor,
+     * this method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)}
+     * methods (<cite>early-binding</cite> approach).
+     *
+     * <p>The default implementation invokes <code>{@linkplain #createOperations createOperations}(sourceCRS,
+     * targetCRS)</code>, then returns the first operation in the returned list or throws an exception if the
+     * list is empty.</p>
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     */
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS)
+            throws OperationNotFoundException, FactoryException
+    {
+        final boolean oldState = stopAtFirst;
+        stopAtFirst = true;
+        final List<CoordinateOperation> operations = createOperations(sourceCRS, targetCRS);
+        stopAtFirst = oldState;
+        if (!operations.isEmpty()) {
+            return operations.get(0);
+        }
+        throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
+    }
+
+    /**
+     * Infers operations for conversions or transformations between two coordinate reference systems.
+     * If a non-null authority factory – the <cite>registry</cite> – has been specified at construction time,
+     * then this method will first query that factory (<cite>late-binding</cite> approach – see class javadoc).
      * If no operation has been found in the registry or if no registry has been specified to the constructor,
      * this method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)}
      * methods (<cite>early-binding</cite> approach).
@@ -177,22 +211,29 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * for example in order to process the {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS#getBaseCRS()
      * base geographic CRS} of a projected CRS.</p>
      *
+     * <p>Coordinate operations are returned in preference order: best operations for the area of interest should be first.
+     * The returned list is modifiable: callers can add, remove or set elements without impact on this
+     * {@code CoordinateOperationFinder} instance.</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @return coordinate operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @since 1.0
      */
     @Override
-    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS)
-            throws OperationNotFoundException, FactoryException
+    public List<CoordinateOperation> createOperations(final CoordinateReferenceSystem sourceCRS,
+                                                      final CoordinateReferenceSystem targetCRS)
+            throws FactoryException
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         if (equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
-            return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
-                    CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem()));
+            return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
+                            CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
+                                                               targetCRS.getCoordinateSystem())));
         } catch (IllegalArgumentException | IncommensurableException e) {
             throw new FactoryException(Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS)), e);
         }
@@ -204,27 +245,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * is not in the cache, store the key in our internal map for preventing infinite recursivity.
          */
         final CRSPair key = new CRSPair(sourceCRS, targetCRS);
-        if (useCache && !previousSearches.isEmpty()) {
+        if (useCache && stopAtFirst && !previousSearches.isEmpty()) {
             final CoordinateOperation op = factorySIS.cache.peek(key);
-            if (op != null) return op;
+            if (op != null) return asList(op);      // Must be a modifiable list as per this method contract.
         }
         if (previousSearches.put(key, Boolean.TRUE) != null) {
             throw new FactoryException(Resources.format(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
         /*
-         * Verify if some extension module handles this pair of CRS in a special way. For example it may
-         * be the "sis-gdal" module checking if the given CRS are wrappers around Proj.4 data structure.
-         */
-        for (final SpecializedOperationFactory sp : factorySIS.getSpecializedFactories()) {
-            for (final CoordinateOperation op : sp.findOperations(sourceCRS, targetCRS)) {
-                if (filter(op)) {
-                    return op;
-                }
-            }
-        }
-        /*
          * If the user did not specified an area of interest, use the domain of validity of the CRS.
-         * Then verify in the EPSG dataset if the operation is explicitely defined by an authority.
          */
         GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(areaOfInterest);
         if (bbox == null) {
@@ -232,9 +261,30 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                         CRS.getGeographicBoundingBox(targetCRS));
             areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(areaOfInterest, bbox);
         }
+        /*
+         * Verify if some extension module handles this pair of CRS in a special way. For example it may
+         * be the "sis-gdal" module checking if the given CRS are wrappers around Proj.4 data structure.
+         */
+        {   // For keeping 'operations' list locale.
+            final List<CoordinateOperation> operations = new ArrayList<>();
+            for (final SpecializedOperationFactory sp : factorySIS.getSpecializedFactories()) {
+                for (final CoordinateOperation op : sp.findOperations(sourceCRS, targetCRS)) {
+                    if (filter(op)) {
+                        operations.add(op);
+                    }
+                }
+            }
+            if (!operations.isEmpty()) {
+                CoordinateOperationSorter.sort(operations, bbox);
+                return operations;
+            }
+        }
+        /*
+         * Verify in the EPSG dataset if the operation is explicitely defined by an authority.
+         */
         if (registry != null) {
-            final CoordinateOperation op = super.createOperation(sourceCRS, targetCRS);
-            if (op != null) return op;
+            final List<CoordinateOperation> authoritatives = super.createOperations(sourceCRS, targetCRS);
+            if (!authoritatives.isEmpty()) return authoritatives;
         }
         ////////////////////////////////////////////////////////////////////////////////
         ////                                                                        ////
@@ -310,7 +360,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     }
 
     /**
-     * Creates an operation from an arbitrary single CRS to a derived coordinate reference system.
+     * Creates operations from an arbitrary single CRS to a derived coordinate reference system.
      * Conversions from {@code GeographicCRS} to {@code ProjectedCRS} are also handled by this method,
      * since projected CRS are a special kind of {@code GeneralDerivedCRS}.
      *
@@ -320,18 +370,29 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * where the conversion from {@code baseCRS} to {@code targetCRS} is obtained from
      * <code>targetCRS.{@linkplain GeneralDerivedCRS#getConversionFromBase() getConversionFromBase()}</code>.
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @return coordinate operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation createOperationStep(final SingleCRS sourceCRS,
-                                                      final GeneralDerivedCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final SingleCRS sourceCRS,
+                                                            final GeneralDerivedCRS targetCRS)
             throws FactoryException
     {
-        final CoordinateOperation step1 = createOperation(sourceCRS, targetCRS.getBaseCRS());
-        final CoordinateOperation step2 = targetCRS.getConversionFromBase();
-        return concatenate(step1, step2);
+        final List<CoordinateOperation> operations = createOperations(sourceCRS, targetCRS.getBaseCRS());
+        final ListIterator<CoordinateOperation> it = operations.listIterator();
+        if (it.hasNext()) {
+            final CoordinateOperation step2 = targetCRS.getConversionFromBase();
+            do {
+                final CoordinateOperation step1 = it.next();
+                it.set(concatenate(step1, step2));
+            } while (it.hasNext());
+        }
+        return operations;
     }
 
     /**
@@ -345,26 +406,36 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * where the conversion from {@code sourceCRS} to {@code baseCRS} is obtained from the inverse of
      * <code>sourceCRS.{@linkplain GeneralDerivedCRS#getConversionFromBase() getConversionFromBase()}</code>.
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation createOperationStep(final GeneralDerivedCRS sourceCRS,
-                                                      final SingleCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final GeneralDerivedCRS sourceCRS,
+                                                            final SingleCRS targetCRS)
             throws FactoryException
     {
-        // Create first the operation that is more at risk to fail.
-        final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS);
-        final CoordinateOperation step1;
-        try {
-            step1 = inverse(sourceCRS.getConversionFromBase());
-        } catch (OperationNotFoundException exception) {
-            throw exception;
-        } catch (FactoryException | NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
+        final List<CoordinateOperation> operations = createOperations(sourceCRS.getBaseCRS(), targetCRS);
+        final ListIterator<CoordinateOperation> it = operations.listIterator();
+        if (it.hasNext()) {
+            final CoordinateOperation step1;
+            try {
+                step1 = inverse(sourceCRS.getConversionFromBase());
+            } catch (OperationNotFoundException exception) {
+                throw exception;
+            } catch (FactoryException | NoninvertibleTransformException exception) {
+                throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
+            }
+            do {
+                final CoordinateOperation step2 = it.next();
+                it.set(concatenate(step1, step2));
+            } while (it.hasNext());
         }
-        return concatenate(step1, step2);
+        return operations;
     }
 
     /**
@@ -377,27 +448,37 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *   <li>Convert from the target base CRS to the {@code targetCRS}.</li>
      * </ol>
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation createOperationStep(final GeneralDerivedCRS sourceCRS,
-                                                      final GeneralDerivedCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final GeneralDerivedCRS sourceCRS,
+                                                            final GeneralDerivedCRS targetCRS)
             throws FactoryException
     {
-        // Create first the operations that are more at risk to fail.
-        final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS.getBaseCRS());
-        final CoordinateOperation step3 = targetCRS.getConversionFromBase();
-        final CoordinateOperation step1;
-        try {
-            step1 = inverse(sourceCRS.getConversionFromBase());
-        } catch (OperationNotFoundException exception) {
-            throw exception;
-        } catch (FactoryException | NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
+        final List<CoordinateOperation> operations = createOperations(sourceCRS.getBaseCRS(), targetCRS.getBaseCRS());
+        final ListIterator<CoordinateOperation> it = operations.listIterator();
+        if (it.hasNext()) {
+            final CoordinateOperation step3 = targetCRS.getConversionFromBase();
+            final CoordinateOperation step1;
+            try {
+                step1 = inverse(sourceCRS.getConversionFromBase());
+            } catch (OperationNotFoundException exception) {
+                throw exception;
+            } catch (FactoryException | NoninvertibleTransformException exception) {
+                throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
+            }
+            do {
+                final CoordinateOperation step2 = it.next();
+                it.set(concatenate(step1, step2, step3));
+            } while (it.hasNext());
         }
-        return concatenate(step1, step2, step3);
+        return operations;
     }
 
     /**
@@ -413,14 +494,18 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *       for the area of interest.</li>
      * </ul>
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
     @SuppressWarnings("null")
-    protected CoordinateOperation createOperationStep(final GeodeticCRS sourceCRS,
-                                                      final GeodeticCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final GeodeticCRS sourceCRS,
+                                                            final GeodeticCRS targetCRS)
             throws FactoryException
     {
         final GeodeticDatum sourceDatum = sourceCRS.getDatum();
@@ -577,7 +662,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 transform = mtFactory.createConcatenatedTransform(transform, after);
             }
         }
-        return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, parameters, null);
+        return asList(createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, parameters, null));
     }
 
     /**
@@ -585,13 +670,17 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * The height returned by this method will usually be part of a
      * {@linkplain DefaultPassThroughOperation pass-through operation}.
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation createOperationStep(final GeodeticCRS sourceCRS,
-                                                      final VerticalCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final GeodeticCRS sourceCRS,
+                                                            final VerticalCRS targetCRS)
             throws FactoryException
     {
         /*
@@ -676,13 +765,17 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         matrix.setElement(0,      i,      1);                                       // Scale factor for height.
         matrix.setElement(tgtDim, srcDim, 1);                                       // Always 1 for affine transform.
         step2 = createFromAffineTransform(AXIS_CHANGES, interpolationCRS, heightCRS, matrix);
-        return concatenate(step1, step2, step3);
+        return asList(concatenate(step1, step2, step3));
     }
 
     /**
      * Creates an operation between two vertical coordinate reference systems.
      * The default implementation checks if both CRS use the same datum, then
      * adjusts for axis direction and units.
+     *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -691,8 +784,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *
      * @todo Needs to implement vertical datum shift.
      */
-    protected CoordinateOperation createOperationStep(final VerticalCRS sourceCRS,
-                                                      final VerticalCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final VerticalCRS sourceCRS,
+                                                            final VerticalCRS targetCRS)
             throws FactoryException
     {
         final VerticalDatum sourceDatum = sourceCRS.getDatum();
@@ -708,7 +801,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
-        return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
+        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
     }
 
     /**
@@ -716,13 +809,17 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * The default implementation checks if both CRS use the same datum, then
      * adjusts for axis direction, units and epoch.
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation createOperationStep(final TemporalCRS sourceCRS,
-                                                      final TemporalCRS targetCRS)
+    protected List<CoordinateOperation> createOperationStep(final TemporalCRS sourceCRS,
+                                                            final TemporalCRS targetCRS)
             throws FactoryException
     {
         final TemporalDatum sourceDatum = sourceCRS.getDatum();
@@ -757,7 +854,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
         final double translation = matrix.getElement(0, translationColumn);
         matrix.setElement(0, translationColumn, translation + epochShift);
-        return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
+        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
     }
 
     /**
@@ -766,6 +863,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * various combinations of source and target components. A preference is given for components of the same
      * type (e.g. source {@link GeodeticCRS} with target {@code GeodeticCRS}, <i>etc.</i>).
      *
+     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * But a list is returned because the same step may be implemented by different operation methods. Only one element
+     * in the returned list should be selected (usually the first one).</p>
+     *
      * @param  sourceCRS         input coordinate reference system.
      * @param  sourceComponents  components of the source CRS.
      * @param  targetCRS         output coordinate reference system.
@@ -773,7 +874,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation createOperationStep(
+    protected List<CoordinateOperation> createOperationStep(
             final CoordinateReferenceSystem sourceCRS, final List<? extends SingleCRS> sourceComponents,
             final CoordinateReferenceSystem targetCRS, final List<? extends SingleCRS> targetComponents)
             throws FactoryException
@@ -893,7 +994,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             endAtDimension -= delta;
             remainingSourceDimensions -= delta;
         }
-        return operation;
+        return asList(operation);
     }
 
 
@@ -1100,6 +1201,17 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      */
     private static Map<String,?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
         return properties(new CRSPair(source, target).toString());
+    }
+
+    /**
+     * Returns the given operation as a list of one element. We can not use {@link Collections#singletonList(Object)}
+     * because the list needs to be modifiable, as required by {@link #createOperations(CoordinateReferenceSystem,
+     * CoordinateReferenceSystem)} method contract.
+     */
+    private static List<CoordinateOperation> asList(final CoordinateOperation operation) {
+        final List<CoordinateOperation> operations = new ArrayList<>(1);
+        operations.add(operation);
+        return operations;
     }
 
     /**
