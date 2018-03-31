@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterValueGroup;
  * A dummy data store
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
