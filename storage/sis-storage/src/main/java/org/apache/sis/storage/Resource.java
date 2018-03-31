@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage;
 
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 import org.opengis.metadata.Metadata;
 
 
@@ -41,7 +43,7 @@ import org.opengis.metadata.Metadata;
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Aggregate#components()
  *
@@ -103,4 +105,44 @@ public interface Resource {
      * @see DataStore#getMetadata()
      */
     Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Registers a listener that is notified each time a change occurs in the resource content or structure.
+     * The resource will call the {@link ChangeListener#changeOccured(ChangeEvent)}
+     * method when a new event matching the {@code eventType} is produced.
+     *
+     * <p>Registering a listener for a given {@code eventType} also register the listener for all sub-types.
+     * The same listener can be added multiple times for different even type.
+     * Adding many times the same listener with the same even type has no effect:
+     * the listener will only be called once per event.</p>
+     *
+     * @todo When adding a listener to an aggregate, should the listener be added to all components?
+     *       In other words, should listeners in a tree node also listen to events from all children?
+     *
+     * <p>The resource is not required to keep a reference to the listener.
+     * For example the resource may discard a listener if no event of the given type happen on this resource.</p>
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to notify about changes.
+     * @param  eventType  type of {@linkplain ChangeEvent} to listen (can not be {@code null}).
+     */
+    <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType);
+
+    /**
+     * Unregisters a listener previously added to this resource for the given type of events.
+     * The {@code eventType} must be the exact same class than the one given to the {@code addListener(…)} method.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the same listener has been added for {@code ChangeEvent} and {@code StructuralChangeEvent}, that listener
+     * will be notified only once for all {@code ChangeEvent}s. If that listener is removed for {@code ChangeEvent},
+     * then the listener will still receive {@code StructuralChangeEvent}s.</div>
+     *
+     * <p>Calling multiple times this method with the same listener and event type or a listener
+     * which is unknown to this resource will have no effect and will not raise an exception.</p>
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to stop notifying about changes.
+     * @param  eventType  type of {@linkplain ChangeEvent} which were listened (can not be {@code null}).
+     */
+    <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType);
 }

@@ -194,7 +194,7 @@ public final class Classes extends Static {
     }
 
     /**
-     * Delegates to {@link ParameterizedType#getActualTypeArguments} and returns the result as a
+     * Delegates to {@link ParameterizedType#getActualTypeArguments()} and returns the result as a
      * {@link Class}, provided that every objects are of the expected classes and the result was
      * an array of length 1 (so there is no ambiguity). Otherwise returns {@code null}.
      */
@@ -714,7 +714,7 @@ cmp:    for (final Class<?> c : c1) {
      */
     public static boolean isPossibleGetter(final Method method) {
         return method.getReturnType() != Void.TYPE &&
-               method.getParameterTypes().length == 0 &&
+               method.getParameterCount() == 0 &&
               !method.isSynthetic() &&
               !ArraysExt.contains(EXCLUDES, method.getName());
     }

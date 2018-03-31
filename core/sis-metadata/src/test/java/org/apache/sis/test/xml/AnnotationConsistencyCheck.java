@@ -399,13 +399,13 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             }
             case "satisfiedPlan": {
                 if (org.opengis.metadata.acquisition.Requirement.class.isAssignableFrom(enclosing)) {
-                    name = "satisifiedPlan";                // Mispelling in ISO 19115-3:2016
+                    name = "satisifiedPlan";                // Misspelling in ISO 19115-3:2016
                 }
                 break;
             }
             case "meteorologicalConditions": {
                 if (org.opengis.metadata.acquisition.EnvironmentalRecord.class.isAssignableFrom(enclosing)) {
-                    name = "meterologicalConditions";       // Mispelling in ISO 19115-3:2016
+                    name = "meterologicalConditions";       // Misspelling in ISO 19115-3:2016
                 }
                 break;
             }

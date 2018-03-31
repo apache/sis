@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @param <S>  the base type of source objects.
  * @param <T>  the base type of converted objects.
@@ -141,10 +141,23 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * Otherwise this converter is returned <strong>without</strong> being cached.
      *
      * @return the unique instance, or {@code this} if no unique instance can be found.
+     *
+     * @see ObjectToString#unique()
      */
     public ObjectConverter<S,T> unique() {
-        final ObjectConverter<S,T> existing = SystemRegistry.INSTANCE.findEquals(this);
-        return (existing != null) ? existing : this;
+        /*
+         * On deserialization, some fields are not yet assigned a value at the moment of this call.
+         * This happen when this unique() method is invoked by inverse().readResolve() — not by the
+         * readResolve() method of this class — in which case the deserialization process is not yet
+         * fully completed. In such cases, we can not determine if an existing instance is available.
+         * We return the current instance as a fallback, leaving to inverse().readResolve() the task
+         * of returning a unique instance after it finished its own deserialization process.
+         */
+        if (sourceClass != null && targetClass != null) {
+            final ObjectConverter<S,T> existing = SystemRegistry.INSTANCE.findEquals(this);
+            if (existing != null) return existing;
+        }
+        return this;
     }
 
     /**
