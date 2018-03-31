@@ -42,7 +42,7 @@ import org.apache.sis.util.StringBuilders;
 
 
 /**
- * Compares JAXB annotations against the ISO 19115 schema. This test requires a connection to
+ * Compares JAXB annotations against the ISO 19115 schemas. This test requires a connection to
  * <a href="http://standards.iso.org/iso/19115/-3/">http://standards.iso.org/iso/19115/-3/</a>.
  * All classes in a given directory are scanned.
  *
@@ -169,8 +169,8 @@ public final strictfp class SchemaCompliance {
         }
 
         boolean equal(final Info other) {
-            return Objects.equals(typeName,     other.typeName)
-                && Objects.equals(namespace,    other.namespace)
+            return Objects.equals(typeName,  other.typeName)
+                && Objects.equals(namespace, other.namespace)
                 && isRequired   == other.isRequired
                 && isCollection == other.isCollection;
         }
@@ -476,7 +476,7 @@ public final strictfp class SchemaCompliance {
 
     /**
      * Verifies that the relationship between the name of the given entity and its type are consistent with
-     * OGC/ISO conventions. This method ignore the prefix (e.g. {@code "mdb:"} in {@code "mdb:MD_Metadata"}).
+     * OGC/ISO conventions. This method ignores the prefix (e.g. {@code "mdb:"} in {@code "mdb:MD_Metadata"}).
      *
      * @param  enclosing  schema or other container where the error happened.
      * @param  name       the class or property name. Example: {@code "MD_Metadata"}, {@code "citation"}.

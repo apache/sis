@@ -26,6 +26,7 @@
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
                 <root id="src.webapp.dir" name="Web application"/>
                 <root id="src.console.dir" name="Console"/>
+                <root id="src.portrayal.dir" name="Portrayal"/>
                 <root id="src.earth-obs.dir" name="Earth observation"/>
                 <root id="src.geotiff.dir" name="GeoTIFF"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
@@ -45,6 +46,7 @@
             <test-roots>
                 <root id="test.webapp.dir" name="Test web application"/>
                 <root id="test.console.dir" name="Test Console"/>
+                <root id="test.portrayal.dir" name="Test Portrayal"/>
                 <root id="test.earth-obs.dir" name="Test Earth observation"/>
                 <root id="test.geotiff.dir" name="Test GeoTIFF"/>
                 <root id="test.netcdf.dir" name="Test NetCDF"/>

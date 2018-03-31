@@ -193,6 +193,7 @@
     <module>sis-referencing-by-identifiers</module>
     <module>sis-feature</module>
     <module>sis-raster</module>
+    <module>sis-portrayal</module>
   </modules>
 
 </project>

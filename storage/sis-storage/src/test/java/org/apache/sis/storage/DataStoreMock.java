@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage;
 
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 
@@ -24,7 +26,7 @@ import org.opengis.parameter.ParameterValueGroup;
  * A dummy data store
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -57,6 +59,14 @@ final strictfp class DataStoreMock extends DataStore {
     @Override
     public Metadata getMetadata() {
         return null;
+    }
+
+    @Override
+    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    }
+
+    @Override
+    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
 
     @Override
