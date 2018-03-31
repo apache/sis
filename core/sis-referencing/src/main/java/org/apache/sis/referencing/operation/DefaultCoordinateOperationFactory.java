@@ -85,7 +85,7 @@ import org.apache.sis.util.Utilities;
  * The second approach is the most frequently used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -819,6 +819,43 @@ next:   for (int i=components.size(); --i >= 0;) {
             }
         }
         return op;
+    }
+
+    /**
+     * Finds or creates operations for conversions or transformations between two coordinate reference systems.
+     * If at least one operation exists, they are returned in preference order: the operation having the widest
+     * intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
+     * and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
+     *
+     * <p>The default implementation performs the following steps:</p>
+     * <ul>
+     *   <li>Invoke {@link #createOperationFinder(CoordinateOperationAuthorityFactory, CoordinateOperationContext)}.</li>
+     *   <li>Invoke {@link CoordinateOperationFinder#createOperations(CoordinateReferenceSystem, CoordinateReferenceSystem)}
+     *       on the object returned by the previous step.</li>
+     * </ul>
+     *
+     * Subclasses can override {@link #createOperationFinder createOperationFinder(…)} if they need more control on
+     * the way coordinate operations are inferred.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @param  context    area of interest and desired accuracy, or {@code null}.
+     * @return coordinate operations from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @see CoordinateOperationFinder
+     *
+     * @since 1.0
+     */
+    public List<CoordinateOperation> createOperations(final CoordinateReferenceSystem sourceCRS,
+                                                      final CoordinateReferenceSystem targetCRS,
+                                                      final CoordinateOperationContext context)
+            throws OperationNotFoundException, FactoryException
+    {
+        final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
+        return createOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
+                (CoordinateOperationAuthorityFactory) registry : null, context).createOperations(sourceCRS, targetCRS);
     }
 
     /**
