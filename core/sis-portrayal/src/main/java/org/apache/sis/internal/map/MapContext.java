@@ -19,47 +19,61 @@ package org.apache.sis.internal.map;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+
 /**
- * A map context is the root node of a map.
+ * Root node of a map.
  *
- * The map context contains all displayed layers like a MapGroup and
- * defines the area of interest which should be focused by default when
- * displayed.
+ * The map context contains all layers to display (given by the {@link #getComponents() group components})
+ * and defines the {@linkplain #getAreaOfInterest() area of interest} which should be zoomed by default
+ * when the map is rendered.
  *
  * <p>
- * NOTE : this class is a first draft subject to modifications.
+ * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
- * @author Johann Sorel (Geomatys)
- * @since 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public class MapContext extends MapGroup {
-
-    private Envelope aoi;
+    /**
+     * The area of interest.
+     */
+    private Envelope areaOfInterest;
 
     /**
-     * Returns the map default area of interest.
+     * Creates an initially empty map context.
+     */
+    public MapContext() {
+    }
+
+    /**
+     * Returns the map area to show by default. This is not necessarily the
+     * {@linkplain org.apache.sis.storage.DataSet#getEnvelope() envelope of data}
+     * since one may want to zoom in a different spatio-temporal area.
      *
-     * If the returned envelope is empty, at least the {@link CoordinateReferenceSystem}
-     * defined should be used for displaying the map.
+     * <p>The {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
+     * defines the map projection to use for rendering the map. It may be different than the CRS of the data.
+     * The returned envelope may have {@linkplain org.apache.sis.geometry.GeneralEnvelope#isAllNaN() all its
+     * coordinates set to NaN} if only the {@link CoordinateReferenceSystem} is specified.</p>
      *
-     * @return map area of interest, may be null
+     * @return map area to show by default, or {@code null} is unspecified.
+     *
+     * @see org.apache.sis.storage.DataSet#getEnvelope()
      */
     public Envelope getAreaOfInterest() {
-        return aoi;
+        return areaOfInterest;
     }
 
     /**
-     * Set map default area of interest.
-     *
-     * The given envelope is unrelated to the data contained in the map context.
+     * Sets the map area to show by default.
+     * The given envelope is not necessarily related to the data contained in the map context.
      * It may be wider, small and in a different {@link CoordinateReferenceSystem}.
      *
-     * @param aoi map area of interest, may be null
+     * @param  aoi  new map area to show by default, or {@code null} is unspecified.
      */
     public void setAreaOfInterest(Envelope aoi) {
-        this.aoi = aoi;
+        areaOfInterest = aoi;
     }
-
 }
