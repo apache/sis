@@ -19,43 +19,48 @@ package org.apache.sis.internal.map;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * A map group is collection of layers.
- *
- * <p>
+ * A collection of layers.
  * Groups are used in map contexts to regroup similar layers under a same node.
- * This allows global actions, like hiding background layers in one call.
- * </p>
+ * This allows global actions, like {@linkplain #setVisible(boolean) hiding}
+ * background layers in one call.
  *
  * <p>
- * NOTE : this class is a first draft subject to modifications.
+ * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
- * @author Johann Sorel (Geomatys)
- * @since 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public class MapGroup extends MapItem {
-
-    private final List<MapItem> components = new ArrayList<>();
+    /**
+     * The components in this group.
+     */
+    private final List<MapItem> components;
 
     /**
-     * Get the list of layers contained in this group.
-     *
-     * <p>
-     * The layers in the list are presented in rendering order.
-     * This means the first rendered layer which will be under all others on the
-     * result map is at index zero.
-     * </p>
-     *
-     * <p>
-     * The returned list is modifiable.
-     * </p>
-     *
-     * @return List of layers, never null
+     * Creates an initially empty group.
      */
+    public MapGroup() {
+        components = new ArrayList<>();
+    }
+
+    /**
+     * Gets the modifiable list of components contained in this group.
+     * The components in the list are presented in rendering order.
+     * This means that the first rendered component, which will be below
+     * all other components on the rendered map, is located at index zero.
+     *
+     * <p>The returned list is modifiable: changes in the returned list will
+     * be immediately reflected in this {@code MapGroup}, and conversely.</p>
+     *
+     * @return modifiable list of components in this group.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<MapItem> getComponents() {
         return components;
     }
-
 }

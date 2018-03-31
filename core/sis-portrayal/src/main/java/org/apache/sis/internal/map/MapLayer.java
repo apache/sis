@@ -19,80 +19,86 @@ package org.apache.sis.internal.map;
 import org.apache.sis.storage.Resource;
 import org.opengis.style.Style;
 
+
 /**
- * A map layer is an association of a {@link Resource} and a {@link Style}.
+ * Data (resource) associated to visual representation (symbology).
+ * Layers are the key elements of a map: they link datas (given by a {@link Resource})
+ * to their visual representation (defined by a {@link Style}).
+ * The visual appearance of a layer should be similar with any rendering engine.
+ * Some details may very because of different rendering strategies for label placements, 2D or 3D,
+ * but the fundamentals aspect of each {@link org.opengis.feature.Feature} or
+ * {@link org.opengis.coverage.Coverage} should be unchanged.
  *
  * <p>
- * Map layers are the key elements of a map, they defined the relationship
- * between datas and a symbology. The visual result of a layer should be similar
- * for any rendering engine. The result may be different because of different
- * rendering strategies for label placements, 2D or 3D but the fundamentals
- * representation of each Feature or Coverage should be unchanged.
+ * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
- * <p>
- * NOTE : this class is a first draft subject to modifications.
- * </p>
- *
- * @author Johann Sorel (Geomatys)
- * @since 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public final class MapLayer {
-
+    /**
+     * Data to be rendered.
+     */
     private Resource resource;
+
+    /**
+     * Visual representation of data.
+     */
     private Style style;
 
     /**
-     * Returns layer base resource.
+     * Constructs an initially empty map layer.
      *
-     * <p>
-     * The resource should be a DataSet but may still be a Aggregate.
+     * @todo Expect {@code Resource} and {@code Style} in argument, for discouraging
+     *       the use of {@code MapLayer} with null resource and null style?
+     */
+    public MapLayer() {
+    }
+
+    /**
+     * Returns the data (resource) represented by this layer.
+     * The resource should be a {@link org.apache.sis.storage.DataSet},
+     * but {@link org.apache.sis.storage.Aggregate} are also accepted.
      * The behavior in such case depends on the rendering engine.
-     * </p>
      *
-     * @return rendered resource
+     * @return data to be rendered, or {@code null} is unavailable.
      */
     public Resource getResource() {
         return resource;
     }
 
     /**
-     * Set layer resource.
+     * Sets the data (resource) to be rendered.
+     * The resource should never be null, still the null case is tolerated to indicate
+     * that the layer should have existed but is unavailable for an unspecified reason.
+     * This case may happen with processing or distant services resources.
      *
-     * <p>
-     * The resource should never be null, still the null case is tolerate
-     * to indicate the layer should have exist but is unavailable for an indeterminate
-     * reason. This case may happen for processed or distant services resources.
-     * </p>
-     *
-     * @param resource , may be null
+     * @param  resource  the new data, or {@code null} if unavailable.
      */
     public void setResource(Resource resource) {
         this.resource = resource;
     }
 
     /**
-     * Returns the layer style.
-     *
-     * <p>
+     * Returns the visual appearance of the data.
      * If the style is undefined, the behavior is left to the rendering engine.
      * It is expected that a default style should be used.
-     * </p>
      *
-     * @return layer style, may be null
+     * @return description of data visual appearance, or {@code null} if unspecified.
      */
     public Style getStyle() {
         return style;
     }
 
     /**
-     * Set layer style.
+     * Sets the visual appearance of the data.
      *
-     * @param style layer style, can be null
+     * @param  style  description of data visual appearance, or {@code null} if unspecified.
      */
     public void setStyle(Style style) {
         this.style = style;
     }
-
 }

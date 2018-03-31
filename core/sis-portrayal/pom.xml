@@ -42,7 +42,7 @@
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Symbology, map and rendering engine representation.
+Symbology and map representations, together with a rendering engine for display.
   </description>
 
 
