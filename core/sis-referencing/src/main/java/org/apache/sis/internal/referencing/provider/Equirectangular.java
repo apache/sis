@@ -95,7 +95,7 @@ public final class Equirectangular extends AbstractProvider {
      * Valid values range is (-90 … 90)° and default value is 0°.
      *
      * <p>In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included for completeness in CRS labelling only, and is declared optional.</p>
+     * This parameter is included for completeness in CRS labeling only, and is declared optional.</p>
      */
     static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 

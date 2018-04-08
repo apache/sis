@@ -114,7 +114,7 @@ final class Initializer {
      * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
      *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
      * @param variant     convenience field left at the discretion of {@link NormalizedProjection} subclasses.
-     *                    Values equal to greater than 128 are special values recognized by this constructor
+     *                    Values equal or greater than 128 are special values recognized by this constructor
      *                    (see {@link #AUTHALIC_RADIUS}).
      */
     Initializer(final OperationMethod method, final Parameters parameters,
@@ -246,7 +246,7 @@ final class Initializer {
      */
     final double getAndStore(final ParameterDescriptor<? extends Number> descriptor) {
         if (descriptor == null) {
-            return 0;                           // Default value for all parameters except scale factor.
+            return 0;                           // Default value for most parameters except scale factor.
         }
         /*
          * Get the parameter value, or its default value if the parameter was not set. That default value
@@ -314,7 +314,7 @@ final class Initializer {
      * @return reciprocal squared of the radius of curvature of the ellipsoid
      *         perpendicular to the meridian at latitude φ.
      */
-    private DoubleDouble rν2(final double sinφ) {
+    final DoubleDouble rν2(final double sinφ) {
         if (DoubleDouble.DISABLED) {
             return verbatim(1 - eccentricitySquared.value * (sinφ*sinφ));
         }

@@ -47,7 +47,7 @@ public final class Mercator1SP extends AbstractMercator {
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.
+     * This parameter is included in the EPSG dataset for completeness in CRS labeling only.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
