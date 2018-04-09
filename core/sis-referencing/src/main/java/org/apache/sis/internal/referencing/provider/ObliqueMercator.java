@@ -34,7 +34,10 @@ import org.apache.sis.measure.Units;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see <a href="http://geotiff.maptools.org/proj_list/hotine_oblique_mercator.html">GeoTIFF parameters for Hotine Oblique Mercator</a>
+ *
+ * @since 1.0
  * @module
  */
 @XmlTransient

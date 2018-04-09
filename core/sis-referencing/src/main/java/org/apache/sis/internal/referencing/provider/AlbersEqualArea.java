@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/albers_equal_area_conic.html">Albers Equal-Area Conic on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/albers_equal_area_conic.html">GeoTIFF parameters for Albers Equal-Area Conic</a>
  *
  * @since 0.8
  * @module

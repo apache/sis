@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Rueben Schulz (UBC)
  * @version 0.6
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/mercator_1sp.html">GeoTIFF parameters for Mercator 1SP</a>
  *
  * @since 0.6
  * @module

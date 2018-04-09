@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/oblique_stereographic.html">Oblique Stereographic on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/oblique_stereographic.html">GeoTIFF parameters for Oblique Stereographic</a>
  *
  * @since 0.6
  * @module

@@ -24,13 +24,14 @@
  *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf">TIFF Tecnical Notes</a>: add new compressions</li>
  *   <li><a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a></li>
  *   <li><a href="http://download.osgeo.org/geotiff/spec/geotiff.rtf">GeoTIFF specification</a></li>
+ *   <li><a href="http://geotiff.maptools.org/proj_list">GeoTIFF projections list</a></li>
  * </ul>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
