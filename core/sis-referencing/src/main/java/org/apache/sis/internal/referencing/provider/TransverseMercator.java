@@ -39,7 +39,7 @@ import org.apache.sis.measure.Units;
  * @author  Rueben Schulz (UBC)
  * @version 0.8
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator.html">GeoTIFF parameters for Transverse Mercator</a>
  *
  * @since 0.6
  * @module
