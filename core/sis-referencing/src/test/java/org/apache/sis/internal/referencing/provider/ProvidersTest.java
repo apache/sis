@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Tests {@link Providers} and some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -98,6 +98,10 @@ public final strictfp class ProvidersTest extends TestCase {
             PolarStereographicNorth.class,
             PolarStereographicSouth.class,
             ObliqueStereographic.class,
+            ObliqueMercator.class,
+            ObliqueMercatorCenter.class,
+            ObliqueMercatorTwoPoints.class,
+            ObliqueMercatorTwoPointsCenter.class,
             ZonedTransverseMercator.class,
             NTv2.class,
             NADCON.class,

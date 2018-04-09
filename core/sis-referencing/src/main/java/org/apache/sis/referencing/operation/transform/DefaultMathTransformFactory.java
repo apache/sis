@@ -411,8 +411,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Returns the default parameter values for a math transform using the given operation method.
      * The {@code method} argument is the name of any {@code OperationMethod} instance returned by
      * <code>{@link #getAvailableMethods(Class) getAvailableMethods}({@linkplain SingleOperation}.class)</code>.
-     * A typical example is
-     * "<a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator</a>").
+     * Valid names are <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
      *
      * <p>This function creates new parameter instances at every call.
      * Parameters are intended to be modified by the user before to be given to the

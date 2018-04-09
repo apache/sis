@@ -192,7 +192,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
      * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
-     * the super-class, we report only χ₀ is a representative of the internal parameters.</p>
+     * the super-class, we report only χ₀ as a representative of the internal parameters.</p>
      */
     @Override
     final String[] getInternalParameterNames() {

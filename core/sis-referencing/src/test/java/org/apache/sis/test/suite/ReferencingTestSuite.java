@@ -168,6 +168,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.ZonedGridSystemTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
+    org.apache.sis.referencing.operation.projection.ObliqueMercatorTest.class,
     org.apache.sis.referencing.operation.projection.CylindricalEqualAreaTest.class,
     org.apache.sis.referencing.operation.projection.AlbersEqualAreaTest.class,
 

@@ -26,8 +26,8 @@ import org.apache.sis.storage.Resource;
  * to their visual representation (defined by a {@code Style}).
  * The visual appearance of a layer should be similar with any rendering engine.
  * Some details may very because of different rendering strategies for label placements, 2D or 3D,
- * but the fundamentals aspect of each {@link org.opengis.feature.Feature} or
- * {@link org.opengis.coverage.Coverage} should be unchanged.
+ * but the fundamentals aspect of each {@code org.opengis.feature.Feature} or
+ * {@code org.opengis.coverage.Coverage} should be unchanged.
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
