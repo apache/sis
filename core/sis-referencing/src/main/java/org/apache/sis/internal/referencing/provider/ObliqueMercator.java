@@ -97,9 +97,10 @@ public class ObliqueMercator extends AbstractMercator {
                 .rename    (Citations.NETCDF), false);                  // Remove the netCDF name.
 
         LONGITUDE_OF_CENTRE = createLongitude(builder.addNamesAndIdentifiers(AlbersEqualArea.LONGITUDE_OF_FALSE_ORIGIN)
-                .reidentify(Citations.EPSG, "8812")
-                .rename    (Citations.EPSG, "Longitude of projection centre")
-                .addName   (Citations.ESRI, "Longitude_Of_Center")
+                .reidentify(Citations.EPSG,  "8812")
+                .rename    (Citations.EPSG,  "Longitude of projection centre")
+                .addName   (Citations.ESRI,  "Longitude_Of_Center")
+                .rename    (Citations.PROJ4, "lonc")
                 .rename    (Citations.NETCDF));                         // Remove the netCDF name.
 
         AZIMUTH = builder
@@ -119,6 +120,7 @@ public class ObliqueMercator extends AbstractMercator {
                 .addName(Citations.OGC,     "rectified_grid_angle")
                 .addName(Citations.ESRI,    "XY_Plane_Rotation")
                 .addName(Citations.GEOTIFF, "RectifiedGridAngle")
+                .addName(Citations.PROJ4,   "gamma")
                 .createBounded(-360, 360, Double.NaN, Units.DEGREE);
 
         SCALE_FACTOR = createScale(builder

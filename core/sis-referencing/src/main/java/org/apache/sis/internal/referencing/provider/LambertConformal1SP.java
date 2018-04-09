@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.6
+ * @version 1.0
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/lambert_conic_conformal_1sp.html">GeoTIFF parameters for Lambert Conic Conformal 1SP</a>
  *
@@ -68,7 +68,7 @@ public final class LambertConformal1SP extends AbstractLambert {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
 
@@ -80,6 +80,7 @@ public final class LambertConformal1SP extends AbstractLambert {
                 .addName(                    "Lambert Conic Conformal (1SP)")
                 .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
                 .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
+                .addName(Citations.PROJ4,    "lcc")
                 .addIdentifier(Citations.GEOTIFF, "9")
                 .createGroupForMapProjection(
                         LATITUDE_OF_ORIGIN,
