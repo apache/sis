@@ -84,7 +84,8 @@ final class GeoKeys {
     /** A ratio.               */ public static final short ScaleAtNatOrigin     = 3092;
     /** A ratio.               */ public static final short ScaleAtCenter        = 3093;
     /** In AzimuthUnit.        */ public static final short AzimuthAngle         = 3094;
-    /** In AngularUnit.        */ public static final short StraightVertPoleLong = 3095;    // Last projection parameter (for now)
+    /** In AngularUnit.        */ public static final short StraightVertPoleLong = 3095;
+    /** In AzimuthUnit.        */ public static final short RectifiedGridAngle   = 3096;    // Last projection parameter (for now)
 
     // 6.2.4 Vertical CS Keys
     /** Section 6.3.4.1 codes. */ public static final short VerticalCSType       = 4096;
@@ -105,7 +106,7 @@ final class GeoKeys {
      *         or -1 if the given key is not for a map projection parameter.
      */
     static int unitOf(final short key) {
-        if (key < StdParallel1 || key > StraightVertPoleLong) {
+        if (key < StdParallel1 || key > RectifiedGridAngle) {
             return -1;
         }
         switch (key) {
@@ -114,11 +115,12 @@ final class GeoKeys {
             case FalseOriginEasting:
             case FalseOriginNorthing:
             case CenterEasting:
-            case CenterNorthing:    return LINEAR;
+            case CenterNorthing:     return LINEAR;
             case ScaleAtNatOrigin:
-            case ScaleAtCenter:     return RATIO;
-            case AzimuthAngle:      return AZIMUTH;
-            default:                return ANGULAR;
+            case ScaleAtCenter:      return RATIO;
+            case RectifiedGridAngle: // Note: GDAL seems to use angular unit here.
+            case AzimuthAngle:       return AZIMUTH;
+            default:                 return ANGULAR;
         }
     }
 

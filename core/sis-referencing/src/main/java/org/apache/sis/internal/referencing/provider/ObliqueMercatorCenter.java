@@ -22,6 +22,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
+import static org.apache.sis.referencing.IdentifiedObjects.getIdentifier;
+
 
 /**
  * The provider for <cite>"Hotine Oblique Mercator (variant B)"</cite> projection (EPSG:9815).
@@ -69,7 +71,7 @@ public final class ObliqueMercatorCenter extends ObliqueMercator {
                 .reidentify(Citations.EPSG,    "8816")
                 .reidentify(Citations.GEOTIFF, "3090")
                 .rename(Citations.EPSG, "Easting at projection centre")
-                .rename(Citations.GEOTIFF, "ProjCenterEastingGeoKey")
+                .rename(Citations.GEOTIFF, "CenterEasting")
                 .rename(Citations.NETCDF));                                 // Delete the netCDF name.
 
         NORTHING_AT_CENTRE = createShift(builder
@@ -77,7 +79,7 @@ public final class ObliqueMercatorCenter extends ObliqueMercator {
                 .reidentify(Citations.EPSG,    "8817")
                 .reidentify(Citations.GEOTIFF, "3091")
                 .rename(Citations.EPSG, "Northing at projection centre")
-                .rename(Citations.GEOTIFF, "ProjCenterNorthingGeoKey")
+                .rename(Citations.GEOTIFF, "CenterNorthing")
                 .rename(Citations.NETCDF));                                 // Delete the netCDF name.
 
         PARAMETERS = builder
@@ -92,7 +94,7 @@ public final class ObliqueMercatorCenter extends ObliqueMercator {
                 .addName      (Citations.S57,     "OME")
                 .addIdentifier(Citations.S57,     "9")
                 .addName      (Citations.GEOTIFF, "CT_ObliqueMercator")
-                .addIdentifier(Citations.GEOTIFF, "3")
+                .addIdentifier(getIdentifier(PARAMETERS_A, Citations.GEOTIFF))      // Same GeoTIFF identifier.
                 .addName      (Citations.PROJ4,   "omerc")
                 .createGroupForMapProjection(
                         LATITUDE_OF_CENTRE,

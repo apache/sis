@@ -20,6 +20,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -48,10 +52,17 @@ public class ObliqueMercatorTwoPoints extends ObliqueMercator {
 
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.ESRI, "ESRI");
-        LAT_OF_1ST_POINT  = createLatitude (builder.addName("Latitude_Of_1st_Point"), false);
-        LAT_OF_2ND_POINT  = createLatitude (builder.addName("Latitude_Of_2nd_Point"), false);
-        LONG_OF_1ST_POINT = createLongitude(builder.addName("Longitude_Of_1st_Point"));
-        LONG_OF_2ND_POINT = createLongitude(builder.addName("Longitude_Of_2nd_Point"));
+        LAT_OF_1ST_POINT  = create(builder.addName("Latitude_Of_1st_Point"),   Latitude.MIN_VALUE,  Latitude.MAX_VALUE);
+        LAT_OF_2ND_POINT  = create(builder.addName("Latitude_Of_2nd_Point"),   Latitude.MIN_VALUE,  Latitude.MAX_VALUE);
+        LONG_OF_1ST_POINT = create(builder.addName("Longitude_Of_1st_Point"), Longitude.MIN_VALUE, Longitude.MAX_VALUE);
+        LONG_OF_2ND_POINT = create(builder.addName("Longitude_Of_2nd_Point"), Longitude.MIN_VALUE, Longitude.MAX_VALUE);
+    }
+
+    /**
+     * Creates a descriptor for a latitude or longitude parameter in degrees with no default value.
+     */
+    private static ParameterDescriptor<Double> create(final ParameterBuilder builder, final double min, final double max) {
+        return builder.createBounded(MeasurementRange.create(min, false, max, false, Units.DEGREE), null);
     }
 
     /**

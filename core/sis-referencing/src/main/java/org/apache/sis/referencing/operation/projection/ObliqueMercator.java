@@ -172,7 +172,8 @@ public class ObliqueMercator extends ConformalProjection {
         final double rν2 = initializer.rν2(sinφ).value;                                 // rν² = (1 - ℯ²⋅sin²φc)
         final double A   = Br / rν2;                                                    // a and kc handled later.
         final double D   = Br / (cosφ * sqrt(rν2));
-        final double F   = D + copySign(sqrt(Math.max(D*D - 1, 0)), φc);
+        final double sD1 = sqrt(Math.max(D*D - 1, 0));
+        final double F   = D + copySign(sD1, φc);
         H = F * pow(expOfNorthing(φc, eccentricity*sinφ), -B);                          // expOfNorthing(…) = 1/t
         /*
          * Next coefficients depend on whether the user specified azimuth or two points.
@@ -271,7 +272,7 @@ public class ObliqueMercator extends ConformalProjection {
             if (abs(abs(αc) - PI/2) < ANGULAR_TOLERANCE) {
                 uc = A * (λc - λ0);
             } else {
-                uc = ArB * atan2(sqrt(D*D - 1), cos(αc));
+                uc = ArB * atan2(sD1, cos(αc));
             }
             denormalize.convertBefore(1, null, -copySign(uc, φc));
         }
