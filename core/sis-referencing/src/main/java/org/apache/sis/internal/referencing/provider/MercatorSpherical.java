@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 
 
@@ -29,7 +30,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -66,6 +67,7 @@ public final class MercatorSpherical extends AbstractMercator {
 
         PARAMETERS = addNameAndLegacy(addIdentifierAndLegacy(builder, IDENTIFIER, "9841"),
                 "Mercator (Spherical)", "Mercator (1SP) (Spherical)")   // "Mercator (Spherical)" starting from EPSG version 7.6
+                .addName(sameNameAs(Citations.PROJ4, Mercator1SP.PARAMETERS))
                 .createGroupForMapProjection(
                         Mercator1SP.LATITUDE_OF_ORIGIN,
                         Mercator1SP.LONGITUDE_OF_ORIGIN,

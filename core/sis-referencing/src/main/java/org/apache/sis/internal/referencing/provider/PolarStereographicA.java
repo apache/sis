@@ -35,7 +35,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
  *
@@ -80,7 +80,7 @@ public final class PolarStereographicA extends AbstractStereographic {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         LONGITUDE_OF_ORIGIN = createLongitude(builder

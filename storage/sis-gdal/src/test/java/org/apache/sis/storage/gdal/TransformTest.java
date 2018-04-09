@@ -89,16 +89,12 @@ public class TransformTest extends ParameterizedTransformTest {
             assertSetEquals(Arrays.asList(
                     "Abridged Molodensky",
                     "Cassini-Soldner",                          // No OperationMethod in SIS yet.
-                    "Hotine Oblique Mercator (variant B)",
                     "Krovak",                                   // No OperationMethod in SIS yet.
                     "Lambert Azimuthal Equal Area",             // No OperationMethod in SIS yet.
-                    "Lambert Conic Conformal (1SP)",
                     "Lambert Conic Conformal (2SP Belgium)",
                     "Lambert Conic Conformal (2SP Michigan)",
-                    "Mercator (Spherical)",
-                    "Mercator (variant C)",
-                    "Polar Stereographic (variant B)",
-                    "Polar Stereographic (variant C)",
+                    "Mercator (variant C)",                     // Need to verify if Proj4 handles easting/northing correctly.
+                    "Polar Stereographic (variant C)",          // Need to verify if Proj4 handles northing correctly.
                     "Popular Visualisation Pseudo Mercator",
                     "Polyconic",                                // No OperationMethod in SIS yet.
                     "Transverse Mercator (South Orientated)"), FAILURES);
