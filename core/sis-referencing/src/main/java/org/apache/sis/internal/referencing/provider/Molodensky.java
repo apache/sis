@@ -61,7 +61,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -212,12 +212,12 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
          *   3) OGC 01-009 explicitly said that angles are in degrees and heights in metres.
          *   4) The above is consistent with what we do for map projections.
          */
-        double sa = values.doubleValue(SRC_SEMI_MAJOR);
-        double sb = values.doubleValue(SRC_SEMI_MINOR);
-        double ta = optional(values,   TGT_SEMI_MAJOR);
-        double tb = optional(values,   TGT_SEMI_MINOR);
-        double Δa = optional(values, AXIS_LENGTH_DIFFERENCE);
-        double Δf = optional(values, FLATTENING_DIFFERENCE);
+        double sa = values.doubleValue( SRC_SEMI_MAJOR);
+        double sb = values.doubleValue( SRC_SEMI_MINOR);
+        double ta = optional   (values, TGT_SEMI_MAJOR);
+        double tb = optional   (values, TGT_SEMI_MINOR);
+        double Δa = conditional(values, AXIS_LENGTH_DIFFERENCE, ta);
+        double Δf = conditional(values, FLATTENING_DIFFERENCE,  tb);
         if (Double.isNaN(ta)) {
             ta = sa + Δa;
         }
@@ -243,15 +243,16 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * Returns the value of the given parameter, or NaN if undefined.
      */
     private static double optional(final Parameters values, final ParameterDescriptor<Double> parameter) {
-        try {
-            final Double value = values.getValue(parameter);
-            if (value != null) {
-                return value;
-            }
-        } catch (ParameterNotFoundException | IllegalStateException e) {
-            // Ignore - this is okay for this method contract.
-        }
-        return Double.NaN;
+        final Double value = values.getValue(parameter);
+        return (value != null) ? value : Double.NaN;
+    }
+
+    /**
+     * Returns the value of the given parameter as a mandatory parameter if {@code condition} is NaN,
+     * or an optional parameter otherwise.
+     */
+    private static double conditional(Parameters values, ParameterDescriptor<Double> parameter, double condition) {
+        return Double.isNaN(condition) ? values.doubleValue(parameter) : optional(values, parameter);
     }
 
     /**

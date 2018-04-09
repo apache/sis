@@ -55,14 +55,10 @@ public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
         values.parameter("semi_major")         .setValue(ellipsoid.getSemiMajorAxis());
         values.parameter("semi_minor")         .setValue(ellipsoid.getSemiMinorAxis());
         values.parameter("azimuth")            .setValue(azimuth);
-        values.parameter("rectified_grid_angle").setValue(azimuth);
         values.parameter("longitude_of_center").setValue(cx);
         values.parameter("latitude_of_center") .setValue(cy);
         return new ObliqueMercator(method, Parameters.castOrWrap(values));
     }
-
-    // TODO: supprimer rectified_grid_angle. Nécessite de modifier Parameters.getValue(),
-    // ce qui peut rendre inutile Molodensky.optional(…).
 
     /**
      * Creates a projection and derivates a few points.
@@ -72,7 +68,7 @@ public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
     @Test
     public void testEllipsoidalDerivative() throws TransformException {
         tolerance = 1E-9;
-        transform = create(0, 0, 0);
+        transform = create(5, 10, 20);
         validate();
 
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
@@ -96,7 +92,7 @@ public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
 
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
-        verifyInverse(0.15, 0.2);
+        verifyInverse(toRadians(15), toRadians(25));
     }
 
     /**
