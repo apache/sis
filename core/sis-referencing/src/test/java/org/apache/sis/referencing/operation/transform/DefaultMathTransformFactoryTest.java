@@ -39,7 +39,6 @@ import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.util.CharSequences;
 
 // Test dependencies
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -57,7 +56,7 @@ import static org.apache.sis.test.Assert.*;
  * files found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -178,13 +177,15 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
 
     /**
      * Tests the creation of all registered map projections.
-     * Only the semi-axis lengths are specified. For the rest, we rely on default values.
+     * This test sets the semi-axis lengths and a few other mandatory parameter values.
+     * For remaining parameters, we rely on default values.
      *
      * @throws FactoryException if the construction of a map projection failed.
      *
      * @since 0.7
      */
     @Test
+    @SuppressWarnings("fallthrough")
     public void testAllMapProjections() throws FactoryException {
         /*
          * Gets all map projections and creates a projection using the WGS84 ellipsoid
@@ -195,24 +196,50 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
         final Collection<OperationMethod> methods = mtFactory.getAvailableMethods(Projection.class);
         for (final OperationMethod method : methods) {
             final String classification = method.getName().getCode();
-            ParameterValueGroup param = mtFactory.getDefaultParameters(classification);
-            param.parameter("semi_major").setValue(6377563.396);
-            param.parameter("semi_minor").setValue(6356256.909237285);
+            ParameterValueGroup pg = mtFactory.getDefaultParameters(classification);
+            pg.parameter("semi_major").setValue(6377563.396);
+            pg.parameter("semi_minor").setValue(6356256.909237285);
+            /*
+             * Most parameters have default values, typically 0° or 0 metre, so we don't need to specify them for
+             * the purpose of this test. But some map projections have mandatory parameters without default value.
+             * In those cases, we must specify an arbitrary value otherwise the instantiation will fail.  When we
+             * need to specify only one value, that value is remembered for opportunist verification.
+             */
+            String param = null;
+            double value = Double.NaN;
+            switch (classification) {
+                case "Polar Stereographic (variant A)":           param = "Latitude of natural origin"; value = 90; break;
+                case "Polar Stereographic (variant B)":
+                case "Polar Stereographic (variant C)":           param = "Latitude of standard parallel"; value = 80; break;
+                case "Hotine Oblique Mercator (variant A)":
+                case "Hotine Oblique Mercator (variant B)":       param = "Azimuth of initial line"; value = 30; break;
+                case "Lambert Conic Conformal (1SP)":
+                case "Lambert Conic Conformal (West Orientated)": param = "Latitude of natural origin"; value = 45; break;
+                case "Lambert Conic Conformal (2SP Michigan)":    param = "Ellipsoid scaling factor"; value = 1;  // Fall through for defining standard parallels too.
+                case "Lambert Conic Conformal (2SP Belgium)":
+                case "Lambert Conic Conformal (2SP)":
+                case "Albers Equal Area": {
+                    pg.parameter("Latitude of 1st standard parallel").setValue(30);
+                    pg.parameter("Latitude of 2nd standard parallel").setValue(50);
+                    break;
+                }
+                case "Hotine_Oblique_Mercator_Two_Point_Center":
+                case "Hotine_Oblique_Mercator_Two_Point_Natural_Origin": {
+                    pg.parameter( "Latitude_Of_1st_Point").setValue(30);
+                    pg.parameter( "Latitude_Of_2nd_Point").setValue(50);
+                    pg.parameter("Longitude_Of_1st_Point").setValue(10);
+                    pg.parameter("Longitude_Of_2nd_Point").setValue(20);
+                    break;
+                }
+            }
+            if (param != null) {
+                pg.parameter(param).setValue(value);
+            }
             final MathTransform mt;
             try {
-                mt = mtFactory.createParameterizedTransform(param);
+                mt = mtFactory.createParameterizedTransform(pg);
             } catch (InvalidGeodeticParameterException e) {
-                /*
-                 * Some map projections have mandatory parameters which we ignore for now
-                 * except for a few well-known projection that we know should not fail.
-                 */
-                if (classification.contains("Mercator")) {
-                    throw e;
-                }
-                out.print(classification);
-                out.print(CharSequences.spaces(42 - classification.length()));
-                out.print(": ");
-                out.println(e.getLocalizedMessage());
+                fail(classification + ": " + e.getLocalizedMessage());
                 continue;
             }
             /*
@@ -223,10 +250,14 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
                 continue;
             }
             assertInstanceOf(classification, Parameterized.class, mt);
-            param = ((Parameterized) mt).getParameterValues();
-            assertEquals(classification, param.getDescriptor().getName().getCode());
-            assertEquals(classification, 6377563.396,       param.parameter("semi_major").doubleValue(), 1E-4);
-            assertEquals(classification, 6356256.909237285, param.parameter("semi_minor").doubleValue(), 1E-4);
+            pg = ((Parameterized) mt).getParameterValues();
+            assertNotNull(classification, pg);
+            assertEquals(classification, pg.getDescriptor().getName().getCode());
+            assertEquals(classification, 6377563.396,       pg.parameter("semi_major").doubleValue(), 1E-4);
+            assertEquals(classification, 6356256.909237285, pg.parameter("semi_minor").doubleValue(), 1E-4);
+            if (param != null) {
+                assertEquals(classification, value, pg.parameter(param).doubleValue(), 1E-4);
+            }
             /*
              * Creates a ProjectedCRS from the map projection. This part is more an integration test than
              * a DefaultMathTransformFactory test. Again, the intent is to verify that the properties are

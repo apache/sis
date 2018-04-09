@@ -35,7 +35,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.6
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator_south_oriented.html">Transverse Mercator (South Oriented) on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator_south_oriented.html">GeoTIFF parameters for Transverse Mercator (South Oriented)</a>
  *
  * @since 0.6
  * @module

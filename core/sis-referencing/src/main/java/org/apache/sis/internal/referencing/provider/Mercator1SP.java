@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Rueben Schulz (UBC)
  * @version 0.6
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/mercator_1sp.html">GeoTIFF parameters for Mercator 1SP</a>
  *
  * @since 0.6
  * @module
@@ -47,7 +47,7 @@ public final class Mercator1SP extends AbstractMercator {
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.
+     * This parameter is included in the EPSG dataset for completeness in CRS labeling only.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 

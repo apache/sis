@@ -144,8 +144,8 @@
  * above-cited normalization and denormalization affine transforms.</p>
  *
  * <div class="note"><b>Note:</b>
- * In <a href="http://www.remotesensing.org/proj/">Proj.4</a>, the same standardization is handled by {@code pj_fwd.c}
- * and {@code pj_inv.c}. This normalization makes the equations closer to the ones published in Snyder's book, where the
+ * In <a href="http://proj4.org/">Proj.4</a>, the same standardization is handled by {@code pj_fwd.c} and {@code pj_inv.c}.
+ * This normalization makes the equations closer to the ones published in Snyder's book, where the
  * <cite>false easting</cite>, <cite>false northing</cite> and <cite>scale factor</cite> are usually not given.</div>
  *
  * <div class="section">References</div>
@@ -161,7 +161,6 @@
  * @author  Adrian Custer (Geomatys)
  * @version 1.0
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list">Projections list on RemoteSensing.org</a>
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6

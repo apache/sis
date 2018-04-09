@@ -48,7 +48,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/miller_cylindrical.html">Miller Cylindrical on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/miller_cylindrical.html">GeoTIFF parameters for Miller Cylindrical</a>
  *
  * @since 0.6
  * @module

@@ -62,6 +62,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * @version 0.8
  *
  * @see Mercator
+ * @see ObliqueMercator
  *
  * @since 0.6
  * @module

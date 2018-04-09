@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/cylindrical_equal_area.html">Cylindrical Equal Area on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
  *
  * @since 0.8
  * @module

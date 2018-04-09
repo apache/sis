@@ -67,7 +67,7 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/equirectangular.html">Equirectangular on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
  *
  * @since 0.6
  * @module
@@ -95,7 +95,7 @@ public final class Equirectangular extends AbstractProvider {
      * Valid values range is (-90 … 90)° and default value is 0°.
      *
      * <p>In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included for completeness in CRS labelling only, and is declared optional.</p>
+     * This parameter is included for completeness in CRS labeling only, and is declared optional.</p>
      */
     static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 

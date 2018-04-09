@@ -35,7 +35,7 @@ import org.apache.sis.util.ArgumentChecks;
  * (<var>x</var>,<var>y</var>).
  *
  * <p>An unofficial list of projections and their parameters can be found
- * <a href="http://www.remotesensing.org/geotiff/proj_list/">there</a>.
+ * <a href="http://geotiff.maptools.org/proj_list/">there</a>.
  * Most projections expect the following parameters:</p>
  *
  * <ul>

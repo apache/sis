@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Rueben Schulz (UBC)
  * @version 0.8
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_2sp.html">Lambert Conic Conformal 2SP on RemoteSensing.org</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/lambert_conic_conformal_2sp.html">GeoTIFF parameters for Lambert Conic Conformal 2SP</a>
  *
  * @since 0.6
  * @module
