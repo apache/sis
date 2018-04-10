@@ -22,8 +22,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 import java.util.logging.Logger;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.sql.dialect.SQLDialect;
 import org.apache.sis.storage.DataStoreException;
+import org.opengis.feature.AttributeType;
 
 /**
  * Description of a table column.
@@ -34,6 +36,24 @@ import org.apache.sis.storage.DataStoreException;
  * @module
  */
 public class ColumnMetaModel {
+
+    /**
+     * Property information, The native SRID associated to a certain descriptor.
+     * Value is an Integer.
+     */
+    public static final AttributeType<Integer> JDBC_PROPERTY_SRID = new FeatureTypeBuilder().addAttribute(Integer.class).setName("nativeSRID").build();
+
+    /**
+     * Property information, if the field is unique in the database.
+     * Value is a Boolean.
+     */
+    public static final AttributeType<Boolean> JDBC_PROPERTY_UNIQUE = new FeatureTypeBuilder().addAttribute(Boolean.class).setName("unique").build();
+
+    /**
+     * Property information, if the field is a relation.
+     * Value is a RelationMetaModel.
+     */
+    public static final AttributeType<RelationMetaModel> JDBC_PROPERTY_RELATION = new FeatureTypeBuilder().addAttribute(RelationMetaModel.class).setName("relation").build();
 
     public enum Type {
         /**

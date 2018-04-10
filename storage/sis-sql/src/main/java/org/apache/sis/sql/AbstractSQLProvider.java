@@ -16,37 +16,13 @@
  */
 package org.apache.sis.sql;
 
-import java.util.logging.Logger;
-import javax.sql.DataSource;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.sql.reverse.RelationMetaModel;
-import org.apache.sis.sql.dialect.SQLDialect;
-import org.apache.sis.storage.DataStore;
-import org.opengis.feature.AttributeType;
-
 /**
- * Parent store class for DataStore implementation using java JDBC backend.
  *
  * @author Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public abstract class AbstractSQLStore extends DataStore {
-
-    /**
-     * Returns the dialect configuration used by this store.
-     *
-     * @return dialect used by the store, never null
-     */
-    public abstract SQLDialect getDialect();
-
-    public abstract Logger getLogger();
-
-    public abstract DataSource getDataSource();
-
-    public abstract String getDatabaseSchema();
-
-    public abstract String getDatabaseTable();
+public interface AbstractSQLProvider {
 
 }
