@@ -21,7 +21,7 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -36,7 +36,12 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.4
  * @module
  */
-public final strictfp class PT_LocaleTest extends XMLTestCase {
+public final strictfp class PT_LocaleTest extends TestUsingFile {
+    /**
+     * An XML file containing localized strings.
+     */
+    private static final String FILENAME = "Locales.xml";
+
     /**
      * The locales to use for the tests. For better test coverage we need at least:
      *
@@ -71,7 +76,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        marshalAndCompare("Locales.xml", VERSION_2014,
+        marshalAndCompare(XML2016+FILENAME, VERSION_2014,
                           "mdb:contact", "mdb:dateInfo", "mdb:identificationInfo");
     }
 
@@ -82,7 +87,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testMarshallingLegacy() throws JAXBException {
-        marshalAndCompare("Locales (legacy).xml", VERSION_2007,
+        marshalAndCompare(XML2007+FILENAME, VERSION_2007,
                           "gmd:contact", "gmd:dateStamp", "gmd:identificationInfo");
     }
 
@@ -93,7 +98,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, "Locales.xml");
+        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, XML2016+FILENAME);
         assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
     }
 
@@ -104,7 +109,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
      */
     @Test
     public void testUnmarshallingLegacy() throws JAXBException {
-        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, "Locales (legacy).xml");
+        final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, XML2007+FILENAME);
         assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
     }
 }

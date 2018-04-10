@@ -14,31 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.cat;
+package org.apache.sis.metadata.xml;
 
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
-
-import static org.apache.sis.test.Assert.*;
+import org.apache.sis.test.XMLTestCase;
 
 
 /**
- * Tests the {@link EnumAdapter} class.
+ * Base class of tests which contain some XML (un)marshalling of metadata as ISO 19115-3 compliant documents.
+ * Tests use the the files provided in the {@code "2007/"} or {@code "2016/"} sub-directories, depending on
+ * whether ISO 19139:2007 or ISO 19115-3:2016 schema is used.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.6
+ * @since   1.0
  * @module
  */
-public final strictfp class EnumAdapterTest extends TestCase {
+public abstract strictfp class TestUsingFile extends XMLTestCase {
     /**
-     * Tests the {@link EnumAdapter#name(String)} method.
+     * The sub-directory of XML files encoded according the ISO 19115-3:2016 schema.
      */
-    @Test
-    public void testEnumAdapterName() {
-        assertEquals("IN_OUT",                        EnumAdapter.name("in/out"));
-        assertEquals("OCEANS",                        EnumAdapter.name("oceans"));
-        assertEquals("ENVIRONMENT",                   EnumAdapter.name("environment"));
-        assertEquals("IMAGERY_BASE_MAPS_EARTH_COVER", EnumAdapter.name("imageryBaseMapsEarthCover"));
+    protected static final String XML2016 = "2016/";
+
+    /**
+     * The sub-directory of XML files encoded according the ISO 19139:2007 schema.
+     */
+    protected static final String XML2007 = "2007/";
+
+    /**
+     * For sub-class constructors only.
+     */
+    protected TestUsingFile() {
     }
 }

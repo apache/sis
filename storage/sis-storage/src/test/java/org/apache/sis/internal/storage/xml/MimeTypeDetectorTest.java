@@ -20,24 +20,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.*;
+import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
 
 
 /**
  * Tests {@link MimeTypeDetector}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
-public final strictfp class MimeTypeDetectorTest extends TestCase {
+public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
     /**
      * Tests a pseudo-XML file in the default namespace, read from a hard-coded string.
      *
@@ -87,7 +87,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
     @DependsOnMethod("testGMDFromString")
     public void testGMDFromInputStream() throws IOException {
         final String type;
-        try (InputStream in = DefaultExtentTest.getTestFile(true).openStream()) {
+        try (InputStream in = TestUsingFile.class.getResourceAsStream(XML2007+FILENAME)) {
             assertEquals('<', in.read());
             assertEquals('?', in.read());
             final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(Namespaces.GMD, "application/vnd.iso.19139+xml")) {

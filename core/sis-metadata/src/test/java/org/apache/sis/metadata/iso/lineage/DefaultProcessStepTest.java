@@ -20,7 +20,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.Version;
 import org.junit.Test;
 
@@ -36,18 +36,20 @@ import static org.opengis.test.Assert.*;
  * @since   0.3
  * @module
  */
-public final strictfp class DefaultProcessStepTest extends XMLTestCase {
+public final strictfp class DefaultProcessStepTest extends TestUsingFile {
+    /**
+     * An XML file containing process step information.
+     */
+    private static final String FILENAME = "ProcessStep.xml";
+
     /**
      * Tests the (un)marshalling of a metadata mixing elements from ISO 19115 and ISO 19115-2 standards.
-     *
-     * <p><b>XML test file:</b>
-     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/lineage/ProcessStep.xml"}</p>
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testXML() throws JAXBException {
-        roundtrip("ProcessStep.xml", VERSION_2014);
+        roundtrip(XML2016+FILENAME, VERSION_2014);
     }
 
     /**
@@ -58,7 +60,7 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip("ProcessStep (legacy).xml", VERSION_2007);
+        roundtrip(XML2007+FILENAME, VERSION_2007);
     }
 
     /**

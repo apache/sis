@@ -22,7 +22,7 @@ import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest;
 import org.apache.sis.util.Version;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,14 +42,16 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(FreeTextMarshallingTest.class)
-public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
+public final strictfp class AbstractPositionalAccuracyTest extends TestUsingFile {
+    /**
+     * An XML file containing quality information.
+     */
+    private static final String FILENAME = "PositionalAccuracy.xml";
+
     /**
      * Tests the (un)marshalling of a text group with a default {@code <gco:CharacterString>} element.
      * This test is somewhat a duplicate of {@link FreeTextMarshallingTest}, but the context is more
      * elaborated.
-     *
-     * <p><b>XML test file:</b>
-     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/quality/PositionalAccuracy.xml"}</p>
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      *
@@ -59,7 +61,7 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
     @Test
     @Ignore("Depends on SIS-394")
     public void testXML() throws JAXBException {
-        roundtrip("PositionalAccuracy.xml", VERSION_2014);
+        roundtrip(XML2016+FILENAME, VERSION_2014);
     }
 
     /**
@@ -72,7 +74,7 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip("PositionalAccuracy (legacy).xml", VERSION_2007);
+        roundtrip(XML2007+FILENAME, VERSION_2007);
     }
 
     /**
