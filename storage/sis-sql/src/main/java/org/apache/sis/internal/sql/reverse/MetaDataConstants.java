@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.sql.reverse;
+package org.apache.sis.internal.sql.reverse;
 
 /**
  * Constants defined by JDBC to retrieve a database meta-model.

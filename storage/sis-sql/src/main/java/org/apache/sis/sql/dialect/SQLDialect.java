@@ -16,6 +16,11 @@
  */
 package org.apache.sis.sql.dialect;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import org.apache.sis.internal.sql.reverse.ColumnMetaModel;
+import org.apache.sis.storage.DataStoreException;
+
 /**
  * Each database has specific syntax elements.
  *
@@ -28,5 +33,33 @@ package org.apache.sis.sql.dialect;
  * @module
  */
 public interface SQLDialect {
+
+    /**
+     * Encode column name.
+     *
+     * @param sql StringBuilder to write into
+     * @param name column name, not null
+     */
+    void encodeColumnName(StringBuilder sql, String name);
+
+    /**
+     * Encode schema and table name portion of an sql query.
+     *
+     * @param sql StringBuilder to write into
+     * @param databaseSchema database schema, can be null
+     * @param tableName database table, not null
+     */
+    void encodeSchemaAndTableName(StringBuilder sql, String databaseSchema, String tableName);
+
+    /**
+     * If a column is an Auto-increment or has a sequence, try to extract next value.
+     *
+     * @param column database column description
+     * @param cx database connection
+     * @return column value or null
+     * @throws SQLException
+     * @throws DataStoreException
+     */
+    Object nextValue(ColumnMetaModel column, Connection cx) throws SQLException, DataStoreException;
 
 }
