@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class CachedResultSet {
 
-    private final List<Map> records = new ArrayList<>();
+    private final List<Map<String,Object>> records = new ArrayList<>();
 
     public CachedResultSet() {
     }
@@ -45,7 +45,7 @@ public class CachedResultSet {
 
     public void append(ResultSet rs, String... columns) throws SQLException {
         while (rs.next()) {
-            final Map record = new HashMap();
+            final Map<String,Object> record = new HashMap<>();
             for (String col : columns) {
                 record.put(col, rs.getObject(col));
             }
@@ -54,7 +54,7 @@ public class CachedResultSet {
         rs.close();
     }
 
-    public Collection<Map> records() {
+    public Collection<Map<String,Object>> records() {
         return records;
     }
 
