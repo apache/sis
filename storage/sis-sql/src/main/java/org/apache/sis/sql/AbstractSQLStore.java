@@ -16,13 +16,11 @@
  */
 package org.apache.sis.sql;
 
-import java.util.logging.Logger;
 import javax.sql.DataSource;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.sql.reverse.RelationMetaModel;
+import org.apache.sis.internal.sql.reverse.DataBaseModel;
 import org.apache.sis.sql.dialect.SQLDialect;
 import org.apache.sis.storage.DataStore;
-import org.opengis.feature.AttributeType;
+import org.apache.sis.storage.FeatureSet;
 
 /**
  * Parent store class for DataStore implementation using java JDBC backend.
@@ -41,12 +39,18 @@ public abstract class AbstractSQLStore extends DataStore {
      */
     public abstract SQLDialect getDialect();
 
-    public abstract Logger getLogger();
-
     public abstract DataSource getDataSource();
 
-    public abstract String getDatabaseSchema();
+    public abstract DataBaseModel getDatabaseModel();
 
-    public abstract String getDatabaseTable();
+    /**
+     * Execute a query directly on the database.
+     *
+     * @param query , not null
+     * @return resulting features from given query.
+     */
+    public FeatureSet query(SQLQuery query) {
+        return new SQLQueryFeatureSet(this, query);
+    }
 
 }

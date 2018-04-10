@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -86,12 +87,15 @@ public final class DataBaseModel {
     }
 
     private final AbstractSQLStore store;
+    private final Logger logger;
+    private final String databaseSchema;
+    private final String databaseTable;
+
     private FeatureNaming<PrimaryKey> pkIndex = new FeatureNaming<>();
     private Set<GenericName> typeNames = new HashSet<>();
     private FeatureNaming<FeatureType> typeIndex = new FeatureNaming<>();
     private Map<String,SchemaMetaModel> schemas;
     private Set<GenericName> nameCache;
-    private final boolean simpleTypes;
 
     //various cache while analyzing model
     private DatabaseMetaData metadata;
@@ -107,13 +111,11 @@ public final class DataBaseModel {
     private Set<String> requieredSchemas;
 
 
-    public DataBaseModel(final AbstractSQLStore store, final boolean simpleTypes){
+    public DataBaseModel(final AbstractSQLStore store, Logger logger, String schema, String table){
         this.store = store;
-        this.simpleTypes = simpleTypes;
-    }
-
-    public boolean isSimpleTypes() {
-        return simpleTypes;
+        this.logger = logger;
+        this.databaseSchema = schema;
+        this.databaseTable = table;
     }
 
     public Collection<SchemaMetaModel> getSchemaMetaModels() throws DataStoreException {
@@ -186,7 +188,6 @@ public final class DataBaseModel {
         clearCache();
         schemas = new HashMap<>();
         final SQLDialect dialect = store.getDialect();
-        final String databaseSchema = store.getDatabaseSchema();
 
         visitedSchemas = new HashSet<>();
         requieredSchemas = new HashSet<>();
@@ -313,7 +314,7 @@ public final class DataBaseModel {
 
 
         //build indexes---------------------------------------------------------
-        final String baseSchemaName = store.getDatabaseSchema();
+        final String baseSchemaName = databaseSchema;
 
         final Collection<SchemaMetaModel> candidates;
         if (baseSchemaName == null) {
@@ -327,12 +328,7 @@ public final class DataBaseModel {
            if (schema != null) {
                 for (TableMetaModel table : schema.tables.values()) {
 
-                    final FeatureTypeBuilder ft;
-                    if (simpleTypes) {
-                        ft = table.getType(TableMetaModel.View.SIMPLE_FEATURE_TYPE);
-                    } else {
-                        ft = table.getType(TableMetaModel.View.COMPLEX_FEATURE_TYPE);
-                    }
+                    final FeatureTypeBuilder ft = table.getType(TableMetaModel.View.SIMPLE_FEATURE_TYPE);
                     final GenericName name = ft.getName();
                     pkIndex.add(store, name, table.key);
                     if (table.isSubType()) {
@@ -352,7 +348,6 @@ public final class DataBaseModel {
     private SchemaMetaModel analyzeSchema(final String schemaName, final Connection cx) throws DataStoreException {
 
         final SchemaMetaModel schema = new SchemaMetaModel(schemaName);
-        final String databaseTable = store.getDatabaseTable();
 
         try {
             for (Map<String,Object> info : cacheTables.records()) {
@@ -409,7 +404,7 @@ public final class DataBaseModel {
                 Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
 
                 if (columnType == null) {
-                    store.getLogger().log(Level.WARNING, "No class for sql type {0}", sqlType);
+                    logger.log(Level.WARNING, "No class for sql type {0}", sqlType);
                     columnType = Object.class;
                 }
 
@@ -515,7 +510,7 @@ public final class DataBaseModel {
 
             if (cols.isEmpty()) {
                 if (Table.VALUE_TYPE_TABLE.equals(tableType)) {
-                    store.getLogger().log(Level.INFO, "No primary key found for {0}.", tableName);
+                    logger.log(Level.INFO, "No primary key found for {0}.", tableName);
                 }
             }
             table.key = new PrimaryKey(tableName, cols);
@@ -691,7 +686,7 @@ public final class DataBaseModel {
                 atb.setMaximumOccurs(1);
                 atb.setName(columnLabel);
 
-                try (Connection  cx = store.getDataSource().getConnection()) {
+                try (Connection cx = store.getDataSource().getConnection()) {
                     final Class<?> type = dialect.getJavaType(sqlType, sqlTypeName);
                     //TODO : avoid jts, global geometry interface common to all ?
 //                    if (type.equals(Geometry.class)) {
@@ -750,13 +745,13 @@ public final class DataBaseModel {
                         Integer srid = null;
                         CoordinateReferenceSystem crs = null;
                         try {
-                            srid = dialect.getGeometrySRID(store.getDatabaseSchema(), tableName, name, metas, cx);
+                            srid = dialect.getGeometrySRID(databaseSchema, tableName, name, metas, cx);
                             if (srid != null) {
                                 crs = dialect.createCRS(srid, cx);
                             }
                         } catch (SQLException e) {
                             String msg = "Error occured determing srid for " + tableName + "."+ name;
-                            store.getLogger().log(Level.WARNING, msg, e);
+                            logger.log(Level.WARNING, msg, e);
                         }
 
                         atb.setCRS(crs);
@@ -781,13 +776,13 @@ public final class DataBaseModel {
                         Integer srid = null;
                         CoordinateReferenceSystem crs = null;
                         try {
-                            srid = dialect.getGeometrySRID(store.getDatabaseSchema(), tableName, name, metas, cx);
+                            srid = dialect.getGeometrySRID(databaseSchema, tableName, name, metas, cx);
                             if (srid != null) {
                                 crs = dialect.createCRS(srid, cx);
                             }
                         } catch (SQLException e) {
                             String msg = "Error occured determing srid for " + tableName + "."+ name;
-                            store.getLogger().log(Level.WARNING, msg, e);
+                            logger.log(Level.WARNING, msg, e);
                         }
 
                         atb.setCRS(crs);
