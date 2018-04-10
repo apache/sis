@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
-import java.net.URL;
 import java.util.Arrays;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
@@ -25,7 +24,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilObject;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -44,20 +43,11 @@ import static org.apache.sis.test.TestUtilities.date;
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
-public final strictfp class DefaultExtentTest extends XMLTestCase {
+public final strictfp class DefaultExtentTest extends TestUsingFile {
     /**
-     * Returns the URL to a test file in XML.
-     * This is used for test methods outside this {@code DefaultExtentTest} file.
-     *
-     * @param  legacy  {@code true} for legacy ISO 19139:2007 format, or {@code false} for ISO 19115-3 format.
-     * @return URL to a test file in XML.
+     * An XML file containing extent information.
      */
-    public static URL getTestFile(final boolean legacy) {
-        final String filename = legacy ? "Extent (legacy).xml" : "Extent.xml";
-        final URL resource = DefaultExtentTest.class.getResource(filename);
-        assertNotNull(filename, resource);
-        return resource;
-    }
+    public static final String FILENAME = "Extent.xml";
 
     /**
      * Tests {@link DefaultExtent#intersect(Extent)}.
@@ -97,14 +87,11 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      * Tests the (un)marshalling of a {@code <gmd:EX_Extent>} object.
      * This test opportunistically tests setting {@code "gml:id"} value.
      *
-     * <p><b>XML test file:</b>
-     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent/Extent.xml"}</p>
-     *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testXML() throws JAXBException {
-        roundtrip("Extent.xml", VERSION_2014);
+        roundtrip(XML2016+FILENAME, VERSION_2014);
     }
 
     /**
@@ -114,7 +101,7 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        roundtrip("Extent (legacy).xml", VERSION_2007);
+        roundtrip(XML2007+FILENAME, VERSION_2007);
     }
 
     /**

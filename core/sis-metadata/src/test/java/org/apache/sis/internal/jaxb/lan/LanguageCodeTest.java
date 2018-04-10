@@ -80,8 +80,8 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      * Creates the XML (un)marshaller pool to be shared by all test methods.
      * The (un)marshallers locale and timezone will be set to fixed values.
      *
-     * <p>This test uses its own pool instead of {@link XMLTestCase#getMarshallerPool()} because it
-     * uses {@link MetadataMock} instead of {@link org.apache.sis.metadata.iso.DefaultMetadata}.</p>
+     * <p>This test uses its own pool instead of {@link #getMarshallerPool()} because it uses
+     * {@link MetadataMock} instead of {@link org.apache.sis.metadata.iso.DefaultMetadata}.</p>
      *
      * @throws JAXBException if an error occurred while creating the pool.
      *
