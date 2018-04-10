@@ -243,12 +243,10 @@ public class ObliqueMercator extends ConformalProjection {
          */
         getContextualParameters().getMatrix(MatrixRole.NORMALIZATION).convertAfter(0, null, -λ0);
         final MatrixSIS denormalize = getContextualParameters().getMatrix(MatrixRole.DENORMALIZATION);
-        if (γc != 0) {
-            final Matrix3 rotation = new Matrix3();
-            rotation.m00 =   rotation.m11 = cos(γc);
-            rotation.m10 = -(rotation.m01 = sin(γc));
-            denormalize.setMatrix(denormalize.multiply(rotation));
-        }
+        final Matrix3 rotation = new Matrix3();
+        rotation.m00 =   rotation.m11 = cos(γc);
+        rotation.m10 = -(rotation.m01 = sin(γc));
+        denormalize.setMatrix(denormalize.multiply(rotation));
         /*
          * For variant B only, an additional (uc, vc) translation is applied here.
          * Note that the general form of uc works even in  αc = 90°  special case,
