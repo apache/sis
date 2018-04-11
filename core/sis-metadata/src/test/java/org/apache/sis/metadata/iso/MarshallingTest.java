@@ -57,9 +57,10 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
@@ -79,7 +80,13 @@ import static org.junit.Assert.*;
  * @since 1.0
  * @module
  */
-public final class MarshallingTest extends XMLTestCase implements WarningListener<Object> {
+public final class MarshallingTest extends TestUsingFile implements WarningListener<Object> {
+    /**
+     * An XML file containing a metadata.
+     * This is mostly an anti-regression test.
+     */
+    private static final String FILENAME = "Metadata.xml";
+
     /**
      * The marshaller used to handle marshalling the created DefaultMetadata object.
      */
@@ -216,10 +223,12 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
                 onlineResource.setProtocol("Submarine HTTP");
                 onlineResource.setApplicationProfile("Imaginary work");
                 onlineResource.setFunction(OnLineFunction.SEARCH);
+                onlineResource.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "timaeus");    // For enabling references
                 contact.getOnlineResources().add(onlineResource);
                 contact.setHoursOfService(Collections.singleton(new SimpleInternationalString("Weekdays 9:00 AM - 5:00 PM")));
                 contact.setContactInstructions(new SimpleInternationalString("Through thought"));
                 contact.setContactType(new SimpleInternationalString("Virtual"));
+                contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "thought");           // For enabling references
             }
             // Create some individuals
             final DefaultIndividual individual  = new DefaultIndividual("Socrates", "Philosopher", null);
@@ -352,6 +361,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             }
             final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
             extent.getTemporalElements().add(temporal);
+            extent.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "azores");     // For enabling references
             extents = Collections.singleton(extent);
             dataId.setExtents(extents);
         }
@@ -385,6 +395,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             releasability.setStatement(new SimpleInternationalString("Public domain"));
             constraint.setReleasability(releasability);
             constraint.setConstraintApplicationScope(new DefaultScope(ScopeCode.DOCUMENT));
+            constraint.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "public");         // For enabling references
             resourceConstraints = Collections.singleton(constraint);
             dataId.setResourceConstraints(resourceConstraints);
         }
@@ -414,6 +425,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
         cit.setAlternateTitles(Arrays.asList(new SimpleInternationalString("Island lost again"),
                                              new Anchor(new URI("http://map-example.com"), "Map example")));
         cit.getDates().add(new DefaultCitationDate(new Date(1523224800000L), DateType.CREATION));
+        cit.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "lost-island");
         dataId.setCitation(cit);
         dataId.setTemporalResolutions(Collections.emptySet());              // TODO: depends on sis-temporal
         final Collection<MaintenanceInformation> resourceMaintenances;
@@ -439,6 +451,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
                 scopeDescription.setDataset("Imaginary map");
                 maintenanceScope.getLevelDescription().add(scopeDescription);
             }
+            maintenanceInfo.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "not-planned");
             maintenanceInfo.getMaintenanceScopes().add(maintenanceScope);
             resourceMaintenances = Collections.singleton(maintenanceInfo);
             dataId.setResourceMaintenances(resourceMaintenances);
@@ -478,6 +491,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             keywords.setKeywordClass(keywordClass);
             keywords.setKeywords(Arrays.asList(new SimpleInternationalString("Water"),
                                                new SimpleInternationalString("Aether")));
+            keywords.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "greek-elements");
             descriptiveKeywords = Collections.singleton(keywords);
             dataId.setDescriptiveKeywords(descriptiveKeywords);
         }
@@ -501,6 +515,7 @@ public final class MarshallingTest extends XMLTestCase implements WarningListene
             final DefaultAssociatedResource associatedResource = new DefaultAssociatedResource();
             associatedResource.setAssociationType(AssociationType.DEPENDENCY);
             associatedResource.setInitiativeType(InitiativeType.EXPERIMENT);
+            associatedResource.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "dependency");
             associatedResources = Collections.singleton(associatedResource);
             dataId.setAssociatedResources(associatedResources);
         }
