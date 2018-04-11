@@ -29,6 +29,10 @@
     xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd
                           http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd">
 
+  <!--
+    WARNING: this file is not yet compliant with ISO schema.
+  -->
+
   <gmd:fileIdentifier>
     <gco:CharacterString>a-metadata-identifier</gco:CharacterString>
   </gmd:fileIdentifier>

@@ -40,6 +40,10 @@
     xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/mdb/1.0
                           http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd">
 
+  <!--
+    WARNING: this file is not yet compliant with ISO schema.
+  -->
+
   <mdb:metadataIdentifier>
     <mcc:MD_Identifier>
       <mcc:code>
