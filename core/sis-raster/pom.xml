@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-raster</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS rasters</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Access to raster data.
+    Access to raster data.
   </description>
 
 
@@ -80,15 +77,18 @@ Access to raster data.
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Package as OSGi bundle -->
+      <!-- Anticipation for Java 9 -->
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.raster</Bundle-SymbolicName>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.raster
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

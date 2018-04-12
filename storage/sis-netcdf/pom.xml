@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-netcdf</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS netCDF storage</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
+    Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
   </description>
 
 
@@ -92,13 +89,16 @@ Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadat
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage.netcdf</Bundle-SymbolicName>
-            <Import-Package>!ucar.*, *</Import-Package>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.storage.netcdf
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>
