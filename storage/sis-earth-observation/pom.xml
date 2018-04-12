@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-earth-observation</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS Earth Observation storage</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Landsat and MODIS metadata files to ISO 19115 metadata.
+    Landsat and MODIS metadata files to ISO 19115 metadata.
   </description>
 
 
@@ -103,12 +100,16 @@ Landsat and MODIS metadata files to ISO 19115 metadata.
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage.earthobservation</Bundle-SymbolicName>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.storage.earthobservation
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>
