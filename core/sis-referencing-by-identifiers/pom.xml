@@ -83,7 +83,7 @@
           <archive>
             <manifestEntries>
               <Automatic-Module-Name>
-                org.apache.sis.gazetter
+                org.apache.sis.referencing.gazetteer
               </Automatic-Module-Name>
             </manifestEntries>
           </archive>
