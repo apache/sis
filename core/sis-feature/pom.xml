@@ -124,6 +124,11 @@
       <artifactId>esri-geometry-api</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.locationtech.jts</groupId>
+      <artifactId>jts-core</artifactId>
+      <optional>true</optional>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>

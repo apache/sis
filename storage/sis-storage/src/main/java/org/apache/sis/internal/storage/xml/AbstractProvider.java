@@ -67,6 +67,8 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
      *     mimeForNameSpaces.put("http://www.isotc211.org/2005/gmd",      "application/vnd.iso.19139+xml");
      *     mimeForNameSpaces.put("http://www.opengis.net/cat/csw/2.0.2",  "application/vnd.ogc.csw_xml");
      * }</div>
+     *
+     * @todo replace by {@code Map.of(…)} on JDK9 branch.
      */
     protected final Map<String,String> mimeForNameSpaces;
 
@@ -78,6 +80,8 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
      * public MyDataStore() {
      *     mimeForRootElements.put("MD_Metadata", "application/vnd.iso.19139+xml");
      * }</div>
+     *
+     * @todo replace by {@code Map.of(…)} on JDK9 branch.
      */
     protected final Map<String,String> mimeForRootElements;
 

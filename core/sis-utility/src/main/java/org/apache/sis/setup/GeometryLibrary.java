@@ -28,7 +28,7 @@ import org.opengis.metadata.acquisition.GeometryType;
  * All those libraries are optional.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
@@ -53,7 +53,7 @@ public enum GeometryLibrary {
      *
      * @see <a href="http://locationtech.github.io/jts/">JTS home page</a>
      */
-//  JTS,
+    JTS,
 
     /**
      * The ESRI geometry API library. This library can be used for spatial vector data processing.

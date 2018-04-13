@@ -17,9 +17,13 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Iterator;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Envelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 
@@ -31,35 +35,16 @@ import org.apache.sis.util.Classes;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
- *
- * @todo avoid use of reflection and use JTS API directly after JTS released
- *       a new version of the library under BSD-like license.
  */
-final class JTS extends Geometries<Object> {
-    /**
-     * Getter methods on JTS envelopes.
-     * Each methods take no argument and return a {@code double} value.
-     */
-    private final Method getEnvelopeInternal, getMinX, getMinY, getMaxX, getMaxY;
-
+final class JTS extends Geometries<Geometry> {
     /**
      * Creates the singleton instance.
      */
     JTS() throws ClassNotFoundException, NoSuchMethodException {
-        super(/*GeometryLibrary.JTS, */ null,                               // TODO
-              (Class) Class.forName("com.vividsolutions.jts.geom.Geometry"),    // TODO
-              Class.forName("com.vividsolutions.jts.geom.Point"),
-              Class.forName("com.vividsolutions.jts.geom.LineString"),
-              Class.forName("com.vividsolutions.jts.geom.Polygon"));
-        getEnvelopeInternal = rootClass.getMethod("getEnvelopeInternal", (Class[]) null);
-        final Class<?> envt = getEnvelopeInternal.getReturnType();
-        getMinX = envt.getMethod("getMinX", (Class[]) null);
-        getMinY = envt.getMethod("getMinY", (Class[]) null);
-        getMaxX = envt.getMethod("getMaxX", (Class[]) null);
-        getMaxY = envt.getMethod("getMaxY", (Class[]) null);
+        super(GeometryLibrary.JTS, Geometry.class, Point.class, LineString.class, Polygon.class);
     }
 
     /**
@@ -67,7 +52,7 @@ final class JTS extends Geometries<Object> {
      */
     @Override
     final String tryGetLabel(Object geometry) {
-        return (rootClass.isInstance(geometry)) ? Classes.getShortClassName(geometry) : null;
+        return (geometry instanceof Geometry) ? Classes.getShortClassName(geometry) : null;
     }
 
     /**
@@ -80,31 +65,14 @@ final class JTS extends Geometries<Object> {
      */
     @Override
     final GeneralEnvelope tryGetEnvelope(final Object geometry) {
-        final double xmin, ymin, xmax, ymax;
-        if (rootClass.isInstance(geometry)) {
-            try {
-                final Object env = getEnvelopeInternal.invoke(geometry, (Object[]) null);
-                xmin = (Double) getMinX.invoke(env, (Object[]) null);
-                ymin = (Double) getMinY.invoke(env, (Object[]) null);
-                xmax = (Double) getMaxX.invoke(env, (Object[]) null);
-                ymax = (Double) getMaxY.invoke(env, (Object[]) null);
-            } catch (ReflectiveOperationException e) {
-                if (e instanceof InvocationTargetException) {
-                    final Throwable cause = e.getCause();
-                    if (cause instanceof RuntimeException) {
-                        throw (RuntimeException) cause;
-                    }
-                    if (cause instanceof Error) {
-                        throw (Error) cause;
-                    }
-                }
-                // Should never happen unless JTS's API changed.
-                throw (Error) new IncompatibleClassChangeError(e.toString()).initCause(e);
-            }
+        if (geometry instanceof Geometry) {
+            final Envelope bounds = ((Geometry) geometry).getEnvelopeInternal();
             final GeneralEnvelope env = new GeneralEnvelope(2);
-            env.setRange(0, xmin, xmax);
-            env.setRange(1, ymin, ymax);
-            return env;
+            env.setRange(0, bounds.getMinX(), bounds.getMaxX());
+            env.setRange(1, bounds.getMinY(), bounds.getMaxY());
+            if (!env.isEmpty()) {
+                return env;
+            }
         }
         return null;
     }
@@ -132,7 +100,7 @@ final class JTS extends Geometries<Object> {
      * The implementation returned by this method must be an instance of {@link #rootClass}.
      */
     @Override
-    public Object createPolyline(final int dimension, final Vector... ordinates) {
+    public Geometry createPolyline(final int dimension, final Vector... ordinates) {
         // TODO - see class javadoc
         throw unsupported(dimension);
     }
@@ -143,7 +111,7 @@ final class JTS extends Geometries<Object> {
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.
      */
     @Override
-    final Object tryMergePolylines(final Object first, final Iterator<?> polylines) {
+    final Geometry tryMergePolylines(final Object first, final Iterator<?> polylines) {
         throw unsupported(2);   // TODO - see class javadoc
     }
 

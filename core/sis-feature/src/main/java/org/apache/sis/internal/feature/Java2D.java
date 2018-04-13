@@ -31,8 +31,7 @@ import org.apache.sis.util.Classes;
 
 /**
  * Centralizes usages of some (not all) Java2D geometry API by Apache SIS.
- * We use this class for isolating dependencies from the {@code org.apache.feature} package
- * to ESRI's API or to Java Topology Suite (JTS) API.
+ * We use this class for isolating dependencies from the {@code org.apache.feature} package to Java2D API.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

@@ -33,8 +33,7 @@ import org.apache.sis.util.Classes;
 
 /**
  * Centralizes some usages of ESRI geometry API by Apache SIS.
- * We use this class for isolating dependencies from the {@code org.apache.feature} package
- * to ESRI's API or to Java Topology Suite (JTS) API.
+ * We use this class for isolating dependencies from the {@code org.apache.feature} package to ESRI's API.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -51,7 +50,7 @@ final class ESRI extends Geometries<Geometry> {
     }
 
     /**
-     * If the given object is a JTS geometry, returns a short string representation the class name.
+     * If the given object is an ESRI geometry, returns a short string representation the class name.
      */
     @Override
     final String tryGetLabel(Object geometry) {
@@ -147,7 +146,7 @@ final class ESRI extends Geometries<Geometry> {
     /**
      * Merges a sequence of points or paths if the first instance is an implementation of this library.
      *
-     * @throws ClassCastException if an element in the iterator is not a JTS geometry.
+     * @throws ClassCastException if an element in the iterator is not an ESRI geometry.
      */
     @Override
     final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
