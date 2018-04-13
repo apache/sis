@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.xml;
 import java.util.Map;
 import java.util.Arrays;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
 
@@ -35,16 +36,22 @@ import org.apache.sis.storage.ProbeResult;
  * it would be way too heavy.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
 abstract class MimeTypeDetector {
     /**
-     * The mapping from XML namespace to MIME type.
+     * The mapping from XML namespaces to MIME types.
      * This map shall be read-only, since we do not synchronize it.
      */
-    private final Map<String,String> types;
+    private final Map<String,String> mimeForNameSpaces;
+
+    /**
+     * The mapping from root elements to MIME types. Used only if the root element is in
+     * the default namespace and contains no {@code xmlns} attributes for that namespace.
+     */
+    private final Map<String,String> mimeForRootElements;
 
     /**
      * The {@code "xmlns"} string as a sequence of bytes.
@@ -79,17 +86,26 @@ abstract class MimeTypeDetector {
     /**
      * Creates a new instance.
      *
-     * @param  types  the mapping from XML namespaces to MIME type.
+     * @param  mimeForNameSpaces    the mapping from XML namespaces to MIME type.
+     * @param  mimeForRootElements  the mapping from root elements to MIME types, used only as a fallback.
      */
-    MimeTypeDetector(final Map<String,String> types) {
-        this.types = types;
+    MimeTypeDetector(final Map<String,String> mimeForNameSpaces, final Map<String,String> mimeForRootElements) {
+        this.mimeForNameSpaces   = mimeForNameSpaces;
+        this.mimeForRootElements = mimeForRootElements;
+    }
+
+    /**
+     * Returns the current {@link #buffer} content as a US-ASCII string.
+     */
+    private String current() throws UnsupportedEncodingException {
+        return new String(buffer, 0, length, "US-ASCII");
     }
 
     /**
      * Adds the given byte in the {@link #buffer}, increasing its capacity if needed.
      */
     private void remember(final int c) {
-        if (length == buffer.length) {
+        if (length >= buffer.length) {
             buffer = Arrays.copyOf(buffer, length*2);
         }
         buffer[length++] = (byte) c;
@@ -100,7 +116,7 @@ abstract class MimeTypeDetector {
      * to read. We are typically not allowed to read the full stream because only a limited amount of bytes is
      * cached. This method may return a Unicode code point (i.e. the returned value may not fit in {@code char}).
      *
-     * @return the character, or -1 on EOF.
+     * @return the character, or -1 on end of stream window.
      * @throws IOException if an error occurred while reading the byte or character.
      */
     abstract int read() throws IOException;
@@ -110,7 +126,7 @@ abstract class MimeTypeDetector {
      * Characters inside quotes will be ignored.
      *
      * @param  search  the byte or character to skip.
-     * @return the byte or character after {@code search}, or -1 on EOF.
+     * @return the byte or character after {@code search}, or -1 on end of stream window.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int readAfter(final int search) throws IOException {
@@ -127,14 +143,14 @@ abstract class MimeTypeDetector {
     }
 
     /**
-     * If the given character is a space, skip it and all following spaces.
+     * If the given character is a space, skips it and all following spaces.
      * Returns the first non-space character.
      *
      * <p>For the purpose of this method, a "space" is considered to be the {@code ' '} character
      * and all control characters (character below 32, which include tabulations and line feeds).
      * This is the same criterion than {@link String#trim()}, but does not include Unicode spaces.</p>
      *
-     * @return the first non-space character, or -1 on EOF.
+     * @return the first non-space character, or -1 on end of stream window.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int afterSpaces(int c) throws IOException {
@@ -153,7 +169,7 @@ abstract class MimeTypeDetector {
      * @param  n          number of valid characters in {@code word}.
      * @param  c          value of {@code afterSpaces(read())}.
      * @param  separator  the {@code ':'} or {@code '='} character.
-     * @return 1 if a match is found, 0 if no match, or -1 on EOF.
+     * @return 1 if a match is found, 0 if no match, or -1 on end of stream window.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int matches(final byte[] word, final int n, int c, final char separator) throws IOException {
@@ -174,6 +190,7 @@ abstract class MimeTypeDetector {
 
     /**
      * Returns the MIME type, or {@code null} if unknown.
+     * The call shall have already skipped the {@code "<?xml "} characters before to invoke this method.
      *
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
@@ -221,34 +238,42 @@ abstract class MimeTypeDetector {
          * find the ':' character, then we will consider that the element is in the default namespace, in which
          * case there is no prefix (length == 0). Exemple: "<MD_Metadata xmlns = … >"
          */
+        final String rootElement;
         c = afterSpaces(c);
         if (c != ':') {
-            length = 0;         // XML element in the default namespace: it has no prefix.
+            rootElement = current();
+            length = 0;                             // XML element in the default namespace: it has no prefix.
         } else {
+            rootElement = null;                     // Current buffer content is the prefix, not the name.
             c = afterSpaces(read());
         }
         /*
          * Search for "xmlns" keyword, ignoring anything before it. If we find a prefix in the previous step,
          * we will require that "xmlns" is followed by ":prefix" where "prefix" is the prefix that we found.
          */
-        while (true) {
+        for (;;) {
             int m = matches(XMLNS, XMLNS.length, c, (length == 0) ? '=' : ':');
             if (m != 0) {
                 if (m < 0) {
-                    return null;                            // End of file.
+                    return null;                                        // End of stream window.
                 }
-                if (length == 0) break;                     // Found match for default namespace.
+                if (length == 0) break;                                 // Found match for default namespace.
                 m = matches(buffer, length, afterSpaces(read()), '=');
                 if (m != 0) {
                     if (m < 0) {
-                        return null;                        // End of file.
+                        return null;                                    // End of stream window.
                     }
-                    break;                                  // Found match for prefix.
+                    break;                                              // Found match for prefix.
                 }
             }
             // Skip everything up to the next space, and check again.
             c = afterSpaces(read());
-            if (c < 0) return null;
+            if (c < 0 || c == '>') {
+                if (c >= 0 && rootElement != null) {
+                    return mimeForRootElements.get(rootElement);
+                }
+                return null;                                // End of stream window or end of start element.
+            }
         }
         /*
          * At this point, we found the "xmlns" attribute for the prefix of the root element.
@@ -270,7 +295,7 @@ abstract class MimeTypeDetector {
         /*
          * Done reading the "xmlns" attribute value.
          */
-        return types.get(new String(buffer, 0, length, "US-ASCII"));
+        return mimeForNameSpaces.get(current());
     }
 
     /**

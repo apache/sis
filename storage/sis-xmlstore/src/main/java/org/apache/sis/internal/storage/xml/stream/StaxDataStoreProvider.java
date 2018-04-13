@@ -40,14 +40,13 @@ public abstract class StaxDataStoreProvider extends AbstractProvider {
     private volatile MarshallerPool jaxb;
 
     /**
-     * Creates a new provider. Subclasses shall populate the {@link #types} map with a mapping
-     * from their namespace to the MIME type to declare.
+     * Creates a new provider. Subclasses shall populate the {@link #mimeForNameSpaces}
+     * map with a mapping from their namespace to the MIME type to declare.
      *
      * @param  name  the primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
-     * @param  initialCapacity  initial capacity of the hash map to create.
      */
-    protected StaxDataStoreProvider(final String name, final int initialCapacity) {
-        super(name, initialCapacity);
+    protected StaxDataStoreProvider(final String name) {
+        super(name);
     }
 
     /**
