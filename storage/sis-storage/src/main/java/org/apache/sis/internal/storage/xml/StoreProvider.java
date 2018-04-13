@@ -20,6 +20,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.Capability;
 
@@ -45,11 +46,12 @@ public final class StoreProvider extends AbstractProvider {
      * Creates a new provider.
      */
     public StoreProvider() {
-        super(null, 8);
-        types.put(Namespaces.GML, "application/gml+xml");
-        types.put(Namespaces.GMD, "application/vnd.iso.19139+xml");
-        types.put(Namespaces.CSW, "application/vnd.ogc.csw_xml");
+        super(null);
+        mimeForNameSpaces.put(Namespaces.GML, "application/gml+xml");
+        mimeForNameSpaces.put(Namespaces.CSW, "application/vnd.ogc.csw_xml");
+        mimeForNameSpaces.put(LegacyNamespaces.GMD, "application/vnd.iso.19139+xml");
         // More types to be added in future versions.
+        mimeForRootElements.put("MD_Metadata", "application/vnd.iso.19139+xml");
     }
 
     /**

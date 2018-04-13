@@ -35,7 +35,7 @@ import org.apache.sis.internal.storage.DocumentedStoreProvider;
  * (JAXB, StAX, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -58,28 +58,39 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
     private static final byte[] HEADER = {'<','?','x','m','l',' '};
 
     /**
-     * The mapping from XML namespace to MIME type. This map shall be populated by subclasses
+     * The mapping from XML namespaces to MIME types. This map shall be populated by subclasses
      * at construction time, then never modified anymore since we do not synchronize it.
      *
      * <div class="note"><b>Example</b>
      * public MyDataStore() {
-     *     types.put("http://www.opengis.net/gml/3.2",        "application/gml+xml");
-     *     types.put("http://www.isotc211.org/2005/gmd",      "application/vnd.iso.19139+xml");
-     *     types.put("http://www.opengis.net/cat/csw/2.0.2",  "application/vnd.ogc.csw_xml");
+     *     mimeForNameSpaces.put("http://www.opengis.net/gml/3.2",        "application/gml+xml");
+     *     mimeForNameSpaces.put("http://www.isotc211.org/2005/gmd",      "application/vnd.iso.19139+xml");
+     *     mimeForNameSpaces.put("http://www.opengis.net/cat/csw/2.0.2",  "application/vnd.ogc.csw_xml");
      * }</div>
      */
-    protected final Map<String,String> types;
+    protected final Map<String,String> mimeForNameSpaces;
 
     /**
-     * Creates a new provider. Subclasses shall populate the {@link #types} map with a mapping
+     * The mapping from root elements to MIME types. Used only if the root element is in
+     * the default namespace and contains no {@code xmlns} attributes for that namespace.
+     *
+     * <div class="note"><b>Example</b>
+     * public MyDataStore() {
+     *     mimeForRootElements.put("MD_Metadata", "application/vnd.iso.19139+xml");
+     * }</div>
+     */
+    protected final Map<String,String> mimeForRootElements;
+
+    /**
+     * Creates a new provider. Subclasses shall populate the {@link #mimeForNameSpaces} map with a mapping
      * from their namespace to the MIME type to declare.
      *
      * @param  name  the primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
-     * @param  initialCapacity  initial capacity of the hash map to create.
      */
-    protected AbstractProvider(final String name, final int initialCapacity) {
+    protected AbstractProvider(final String name) {
         super(name);
-        types = new HashMap<>(initialCapacity);
+        mimeForNameSpaces   = new HashMap<>();
+        mimeForRootElements = new HashMap<>();
     }
 
     /**
@@ -109,7 +120,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
             }
             // Now check for a more accurate MIME type.
             buffer.position(HEADER.length);
-            final ProbeResult result = new MimeTypeDetector(types) {
+            final ProbeResult result = new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
                 @Override int read() {
                     if (buffer.hasRemaining()) {
                         return buffer.get();
@@ -136,7 +147,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
                 }
             }
             // Now check for a more accurate MIME type.
-            final ProbeResult result = new MimeTypeDetector(types) {
+            final ProbeResult result = new MimeTypeDetector(mimeForNameSpaces, mimeForRootElements) {
                 private int remaining = READ_AHEAD_LIMIT;
                 @Override int read() throws IOException {
                     return (--remaining >= 0) ? IOUtilities.readCodePoint(reader) : -1;
