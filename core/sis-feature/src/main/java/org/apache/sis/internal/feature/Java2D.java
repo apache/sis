@@ -48,7 +48,7 @@ final class Java2D extends Geometries<Shape> {
     }
 
     /**
-     * If the given geometry is a Java2D geometry, returns a short string representation the class name,
+     * If the given geometry is a Java2D geometry, returns a short string representation of the class name,
      * ignoring the primitive type specialization. For example if the class is {@code Rectangle2D.Float},
      * then this method returns {@code "Rectangle2D"}.
      */
