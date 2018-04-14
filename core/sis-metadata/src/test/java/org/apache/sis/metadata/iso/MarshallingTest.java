@@ -42,6 +42,7 @@ import org.opengis.metadata.extent.*;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.maintenance.*;
 import org.opengis.metadata.spatial.*;
+import org.opengis.geometry.primitive.Point;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.constraint.*;
 import org.apache.sis.metadata.iso.content.*;
@@ -56,6 +57,7 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
@@ -270,6 +272,7 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
             georectified.setAxisDimensionProperties(Arrays.asList(rows, cols));
             georectified.setCellGeometry(CellGeometry.AREA);
             georectified.setPointInPixel(PixelOrientation.UPPER_RIGHT);
+            georectified.getCornerPoints().add(NilReason.MISSING.createNilObject(Point.class));
             md.getSpatialRepresentationInfo().add(georectified);
         }
         {
@@ -320,6 +323,7 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
             elementInfo.setParentEntity(Collections.singleton("VirtualObject"));
             elementInfo.setRule(new SimpleInternationalString("Element exists in cited resource."));
             elementInfo.setRationale(new SimpleInternationalString("For testing extended elements."));
+            elementInfo.getSources().add(NilReason.valueOf("other:test").createNilObject(Responsibility.class));
             extension.getExtendedElementInformation().add(elementInfo);
             md.getMetadataExtensionInfo().add(extension);
         }

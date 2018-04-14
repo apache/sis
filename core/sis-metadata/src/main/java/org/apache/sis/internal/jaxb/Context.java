@@ -33,6 +33,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
@@ -508,8 +509,8 @@ public final class Context extends MarshalContext {
     /**
      * Returns {@code true} if the given identifier is available, or {@code false} if it is used by another object.
      * If this method returns {@code true}, then the given identifier is associated to the given object for future
-     * invocation of {@code Context} method.  If this method returns {@code false}, then the caller is responsible
-     * for computing an other identifier candidate.
+     * invocation of {@code Context} methods. If this method returns {@code false}, then the caller is responsible
+     * for computing another identifier candidate.
      *
      * @param  context  the current context, or {@code null} if none.
      * @param  object   the object for which to assign the {@code gml:id}.
@@ -521,12 +522,11 @@ public final class Context extends MarshalContext {
     public static boolean setObjectForID(final Context context, final Object object, final String id) {
         if (context != null) {
             final Object existing = context.identifiers.putIfAbsent(id, object);
-            if (existing == null) {
-                if (context.identifiedObjects.put(object, id) != null) {
-                    throw new AssertionError(id);   // Caller forgot to invoke getExistingID(context, object).
-                }
-            } else if (existing != object) {
-                return false;
+            if (existing != null) {
+                return existing == object;
+            }
+            if (context.identifiedObjects.put(object, id) != null) {
+                throw new CorruptedObjectException(id);    // Should never happen since all put calls are in this method.
             }
         }
         return true;
