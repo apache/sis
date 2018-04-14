@@ -89,7 +89,7 @@
                 <gco:CharacterString>A1A 2C2</gco:CharacterString>
               </gmd:postalCode>
               <gmd:country>
-                <gco:CharacterString>Atgmdtis isgmdd</gco:CharacterString>
+                <gco:CharacterString>Atlantis island</gco:CharacterString>
               </gmd:country>
               <gmd:electronicMailAddress>
                 <gco:CharacterString>test@example.com</gco:CharacterString>
@@ -227,7 +227,7 @@
           <gmd:authority>
             <gmd:CI_Citation>
               <gmd:title>
-                <gco:CharacterString>Atgmdtis grid</gco:CharacterString>
+                <gco:CharacterString>Atlantis grid</gco:CharacterString>
               </gmd:title>
               <gmd:date>
                 <gmd:CI_Date>
@@ -242,7 +242,7 @@
               <gmd:citedResponsibleParty>
                 <gmd:CI_ResponsibleParty>
                   <gmd:organisationName>
-                    <gco:CharacterString>Atgmdtis national mapping agency</gco:CharacterString>
+                    <gco:CharacterString>Atlantis national mapping agency</gco:CharacterString>
                   </gmd:organisationName>
                   <gmd:role>
                     <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher" codeSpace="eng">Publisher</gmd:CI_RoleCode>
@@ -291,7 +291,7 @@
             <gmd:MD_DatatypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="metaClass">Meta class</gmd:MD_DatatypeCode>
           </gmd:dataType>
           <gmd:maximumOccurrence>
-            <gco:Integer>3</gco:Integer>
+            <gco:CharacterString>3</gco:CharacterString>
           </gmd:maximumOccurrence>
           <gmd:domainValue>
             <gco:CharacterString>Alpha, beta or gamma.</gco:CharacterString>
@@ -305,6 +305,7 @@
           <gmd:rationale>
             <gco:CharacterString>For testing extended elements.</gco:CharacterString>
           </gmd:rationale>
+          <gmd:source gco:nilReason="other:test"></gmd:source>
         </gmd:MD_ExtendedElementInformation>
       </gmd:extendedElementInformation>
     </gmd:MD_MetadataExtensionInformation>
@@ -312,12 +313,12 @@
   <gmd:identificationInfo>
     <gmd:MD_DataIdentification>
       <gmd:citation>
-        <gmd:CI_Citation id="lost-isgmdd">
+        <gmd:CI_Citation id="lost-island">
           <gmd:title>
-            <gco:CharacterString>A lost isgmdd</gco:CharacterString>
+            <gco:CharacterString>A lost island</gco:CharacterString>
           </gmd:title>
           <gmd:alternateTitle>
-            <gco:CharacterString>Isgmdd lost again</gco:CharacterString>
+            <gco:CharacterString>Island lost again</gco:CharacterString>
           </gmd:alternateTitle>
           <gmd:alternateTitle>
             <gmx:Anchor xlink:href="http://map-example.com">Map example</gmx:Anchor>
@@ -377,9 +378,9 @@
         <gmd:MD_TopicCategoryCode>society</gmd:MD_TopicCategoryCode>
       </gmd:topicCategory>
       <gmd:resourceMaintenance>
-        <gmd:MD_MaintenanceInformation id="not-pgmdned">
+        <gmd:MD_MaintenanceInformation id="not-planned">
           <gmd:maintenanceAndUpdateFrequency>
-            <gmd:MD_MaintenanceFrequencyCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPgmdned" codeSpace="eng">Not pgmdned</gmd:MD_MaintenanceFrequencyCode>
+            <gmd:MD_MaintenanceFrequencyCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPlanned" codeSpace="eng">Not planned</gmd:MD_MaintenanceFrequencyCode>
           </gmd:maintenanceAndUpdateFrequency>
           <gmd:updateScope>
             <gmd:MD_ScopeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="model" codeSpace="eng">Model</gmd:MD_ScopeCode>
@@ -510,11 +511,11 @@
   </gmd:identificationInfo>
   <gmd:identificationInfo>
     <srv:SV_ServiceIdentification>
-      <gmd:citation xlink:href="#lost-isgmdd"></gmd:citation>
+      <gmd:citation xlink:href="#lost-island"></gmd:citation>
       <gmd:abstract>
         <gco:CharacterString>An inspiration for story tellers.</gco:CharacterString>
       </gmd:abstract>
-      <gmd:resourceMaintenance xlink:href="#not-pgmdned"></gmd:resourceMaintenance>
+      <gmd:resourceMaintenance xlink:href="#not-planned"></gmd:resourceMaintenance>
       <gmd:descriptiveKeywords xlink:href="#greek-elements"></gmd:descriptiveKeywords>
       <gmd:resourceConstraints xlink:href="#public"></gmd:resourceConstraints>
       <gmd:aggregationInfo>
@@ -555,7 +556,7 @@
       </srv:containsOperations>
       <srv:operatesOn>
         <gmd:MD_DataIdentification>
-          <gmd:citation xlink:href="#lost-isgmdd"></gmd:citation>
+          <gmd:citation xlink:href="#lost-island"></gmd:citation>
           <gmd:abstract xsi:type="gmd:PT_FreeText_PropertyType">
             <gco:CharacterString>Metadata for an imaginary map.</gco:CharacterString>
             <gmd:PT_FreeText>
@@ -589,7 +590,7 @@
           <gmd:topicCategory>
             <gmd:MD_TopicCategoryCode>society</gmd:MD_TopicCategoryCode>
           </gmd:topicCategory>
-          <gmd:resourceMaintenance xlink:href="#not-pgmdned"></gmd:resourceMaintenance>
+          <gmd:resourceMaintenance xlink:href="#not-planned"></gmd:resourceMaintenance>
           <gmd:resourceFormat>
             <gmd:MD_Format>
               <gmd:name>

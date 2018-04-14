@@ -367,7 +367,7 @@
             <mex:MD_DatatypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DatatypeCode" codeListValue="metaClass">Meta class</mex:MD_DatatypeCode>
           </mex:dataType>
           <mex:maximumOccurrence>
-            <gco:Integer>3</gco:Integer>
+            <gco:CharacterString>3</gco:CharacterString>
           </mex:maximumOccurrence>
           <mex:domainValue>
             <gco:CharacterString>Alpha, beta or gamma.</gco:CharacterString>
@@ -381,6 +381,7 @@
           <mex:rationale>
             <gco:CharacterString>For testing extended elements.</gco:CharacterString>
           </mex:rationale>
+          <mex:source gco:nilReason="other:test"/>
         </mex:MD_ExtendedElementInformation>
       </mex:extendedElementInformation>
     </mex:MD_MetadataExtensionInformation>
@@ -401,7 +402,7 @@
           <cit:date>
             <cit:CI_Date>
               <cit:date>
-                <gco:Date>2018-04-09</gco:Date>
+                <gco:DateTime>2018-04-09T00:00:00.000+02:00</gco:DateTime>
               </cit:date>
               <cit:dateType>
                 <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</cit:CI_DateTypeCode>
@@ -412,7 +413,7 @@
             <gco:CharacterString>First edition</gco:CharacterString>
           </cit:edition>
           <cit:editionDate>
-            <gco:Date>2018-04-10</gco:Date>
+            <gco:DateTime>2018-04-10T00:00:00.000+02:00</gco:DateTime>
           </cit:editionDate>
         </cit:CI_Citation>
       </mri:citation>
@@ -486,7 +487,7 @@
           <mmi:maintenanceDate>
             <cit:CI_Date>
               <cit:date>
-                <gco:Date>3000-01-01</gco:Date>
+                <gco:DateTime>3000-01-01T00:00:00.000+01:00</gco:DateTime>
               </cit:date>
               <cit:dateType>
                 <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="revision" codeSpace="eng">Revision</cit:CI_DateTypeCode>
@@ -565,7 +566,7 @@
             <gco:CharacterString>For testing purpose only.</gco:CharacterString>
           </mri:specificUsage>
           <mri:usageDateTime>
-            <gco:DateTime>2018-04-10T14:00:00+02:00</gco:DateTime>
+            <gco:DateTime>2018-04-10T14:00:00.000+02:00</gco:DateTime>
           </mri:usageDateTime>
           <mri:userDeterminedLimitations>
             <gco:CharacterString>Not to be used outside MarshallingTest.java test file.</gco:CharacterString>
@@ -760,7 +761,7 @@
                 <gco:CharacterString>For testing purpose only.</gco:CharacterString>
               </mri:specificUsage>
               <mri:usageDateTime>
-                <gco:DateTime>2018-04-10T14:00:00+02:00</gco:DateTime>
+                <gco:DateTime>2018-04-10T14:00:00.000+02:00</gco:DateTime>
               </mri:usageDateTime>
               <mri:userDeterminedLimitations>
                 <gco:CharacterString>Not to be used outside MarshallingTest.java test file.</gco:CharacterString>

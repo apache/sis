@@ -34,6 +34,9 @@ import org.apache.sis.internal.util.Utilities;
  * @version 0.8
  * @since   0.3
  * @module
+ *
+ * @todo Most methods in this class are related to (un)marshalling. We should rename as {@code MarshallingUtilities}
+ *       and move to a JAXB package after we removed the {@code toMilliseconds(…)} and {@code toDate(…)} methods.
  */
 public final class MetadataUtilities extends Static {
     /**
@@ -135,7 +138,7 @@ public final class MetadataUtilities extends Static {
      *
      * @param  classe     the caller class, used only in case of warning message to log.
      * @param  property   the property name. Method name will be inferred by the usual Java bean convention.
-     * @param  key        a {@code Errors.Keys} value.
+     * @param  key        an {@code Errors.Keys} value.
      * @param  arguments  the argument to use for formatting the error message.
      * @return {@code null} if the message has been logged, or the message to put in an exception otherwise.
      */

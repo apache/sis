@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.DatatypeConstants;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.XmlUtilities;
 
@@ -33,9 +34,21 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * At marshalling time, the choice is performed depending on whatever the given date contains
  * hour, minute or seconds information different than zero.
  *
+ * <div class="section">Difference between ISO 19139:2007 and ISO 19115-3:2016</div>
+ * The ISO {@code baseTypes.xsd} files define two kinds of date property:
+ * <ul>
+ *   <li>{@code gco:Date_PropertyType} accepts either {@code gco:Date} or {@code gco:DateTime}.</li>
+ *   <li>{@code gco:DateTime_PropertyType} accepts only {@code gco:DateTime}.</li>
+ * </ul>
+ *
+ * In the legacy standard (ISO 19139:2007), date properties (in particular in citations) were of type
+ * {@code Date_PropertyType}. But in the new standard (ISO 19115-3:2016), most date properties are of
+ * type {@code DateTime_PropertyType}, i.e. {@code gco:Date} is not legal anymore. The only exception
+ * is {@code versionDate} in {@code cat:AbstractCT_Catalogue}.
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see org.apache.sis.internal.jaxb.gml.DateAdapter
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
@@ -76,9 +89,16 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
         final Context context = Context.current();
         try {
             final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
-            if (XmlUtilities.trimTime(gc, false)) {
-                this.date = gc;
+            if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
+                if (XmlUtilities.trimTime(gc, false)) {
+                    this.date = gc;
+                } else {
+                    dateTime = gc;
+                }
             } else {
+                if (gc.getMillisecond() == 0) {
+                    gc.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
+                }
                 dateTime = gc;
             }
         } catch (DatatypeConfigurationException e) {

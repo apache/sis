@@ -31,6 +31,8 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.xml.NilReason;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.metadata.Dependencies;
@@ -87,7 +89,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "obligation",
     "condition",
     "dataType",
-    "maximumOccurrence",
+    "maxOccurs",
     "domainValue",
     "parentEntity",
     "rule",
@@ -441,7 +443,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
 
     /**
      * Maximum occurrence of the extended element.
-     * Returns {@code null} if it doesn't apply, for example if the
+     * Returns {@code null} if it does not apply, for example if the
      * {@linkplain #getDataType() data type} is {@linkplain Datatype#ENUMERATION enumeration},
      * {@linkplain Datatype#CODE_LIST code list} or {@linkplain Datatype#CODE_LIST_ELEMENT
      * code list element}.
@@ -450,7 +452,6 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Override
     @ValueRange(minimum = 0)
-    @XmlElement(name = "maximumOccurrence")
     public Integer getMaximumOccurrence() {
         return maximumOccurrence;
     }
@@ -623,5 +624,57 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     public void setSources(final Collection<? extends Responsibility> newValues) {
         sources = writeCollection(newValues, sources, Responsibility.class);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the maximum occurrence as a string, since it is the way that ISO 19115 represents
+     * this information. This method is invoked by JAXB at marshalling time.
+     */
+    @XmlElement(name = "maximumOccurrence")
+    private String getMaxOccurs() {
+        final Integer value = getMaximumOccurrence();
+        if (value == null) {
+            return null;
+        }
+        final NilReason nil = NilReason.forObject(value);
+        if (nil != null) {
+            return nil.createNilObject(String.class);
+        }
+        return value.toString();
+    }
+
+    /**
+     * Sets the maximum occurrence from a string.
+     * This method is invoked by JAXB at unmarshalling time.
+     */
+    @SuppressWarnings("unused")
+    private void setMaxOccurs(final String value) {
+        if (value != null) {
+            final Integer n;
+            final NilReason nil = NilReason.forObject(value);
+            if (nil != null) {
+                n = nil.createNilObject(Integer.class);
+            } else try {
+                n = Integer.valueOf(value);
+            } catch (NumberFormatException e) {
+                Context.warningOccured(Context.current(), DefaultExtendedElementInformation.class, "setMaximumOccurrence", e, true);
+                return;
+            }
+            setMaximumOccurrence(n);
+        }
     }
 }
