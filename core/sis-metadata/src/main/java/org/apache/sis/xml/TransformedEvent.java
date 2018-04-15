@@ -61,8 +61,8 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
      * @param  name   the exported name of the attribute or element.
      */
     TransformedEvent(final E event, final QName name) {
-        this.event  = event;
-        this.name   = name;
+        this.event = event;
+        this.name  = name;
     }
 
     @Override public boolean      isStartElement()          {return false;}
@@ -128,14 +128,16 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
 
     /**
      * Wrapper over a namespace emitted during the reading or writing of an XML document.
-     * This wrapper is used for changing the namespace URI.
+     * This wrapper is used for changing the namespace URI. The wrapped {@link #event}
+     * should be a {@link Namespace}, but this class accepts also the {@link Attribute}
+     * super-type for allowing the {@link Type} attribute to create synthetic namespaces.
      */
-    static final class NS extends TransformedEvent<Namespace> implements Namespace {
+    static final class NS extends TransformedEvent<Attribute> implements Namespace {
         /** The URI of the namespace. */
         private final String namespaceURI;
 
         /** Wraps the given event with a different prefix and URI. */
-        NS(final Namespace event, final String prefix, final String namespaceURI) {
+        NS(final Attribute event, final String prefix, final String namespaceURI) {
             super(event, new QName(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, prefix, XMLConstants.XMLNS_ATTRIBUTE));
             this.namespaceURI = namespaceURI;
         }
@@ -145,7 +147,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
         @Override public String    getNamespaceURI()               {return namespaceURI;}
         @Override public String    getValue()                      {return namespaceURI;}
         @Override public String    getDTDType()                    {return event.getDTDType();}
-        @Override public boolean   isSpecified()                   {return event.isSpecified();}
+        @Override public boolean   isSpecified()                   {return event instanceof Namespace && event.isSpecified();}
         @Override public String    getPrefix()                     {return (name != null) ?  name.getLocalPart() : null;}
         @Override public boolean   isDefaultNamespaceDeclaration() {return (name != null) && name.getLocalPart().isEmpty();}
         @Override void write(final Appendable out) throws IOException {
@@ -175,23 +177,29 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
         @Override public String    getDTDType()      {return event.getDTDType();}
         @Override public boolean   isSpecified()     {return event.isSpecified();}
         @Override void write(final Appendable out) throws IOException {
-            name(out).append("=\"").append(event.getValue()).append('"');
+            name(out).append("=\"").append(getValue()).append('"');
         }
     }
 
     /**
-     * The attribute for {@code "xsi:type"}.
+     * The {@code "xsi:type"} attribute. Contrarily to other attributes, the name is unchanged compared
+     * to the original attribute; instead the value is different. Even in unchanged, the {@link QName}
+     * is specified at construction time because it is required by the parent class.
      */
-    static final class TypeAttr extends Attr {
+    static final class Type extends Attr {
         /** The attribute value. */
         private final String value;
 
-        /** Wraps the given event with a different name. */
-        TypeAttr(final Attribute event, final QName name, final String value) {
+        /** If the value requires a new prefix to be bound, the namespace declaration for it. */
+        Namespace namespace;
+
+        /** Wraps the given event with a different value. */
+        Type(final Attribute event, final QName name, final String value) {
             super(event, name);
             this.value = value;
         }
 
+        /** Returns the {@code "xsi:type"} attribute value. */
         @Override public String getValue() {return value;}
     }
 

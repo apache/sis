@@ -222,21 +222,43 @@ final class TransformingReader extends Transformer implements XMLEventReader {
             case START_ELEMENT: {
                 final StartElement e = event.asStartElement();
                 final QName originalName = e.getName();
-                open(originalName);                         // Must be invoked before 'convert(QName)'.
-                final QName name = convert(originalName);
-                boolean changed = name != originalName;
+                open(originalName);                             // Must be invoked before 'convert(QName)'.
+                final QName name  = convert(originalName);      // Name in the transformed XML document.
+                boolean changed   = name != originalName;       // Whether the name or an attribute changed.
+                Namespace localNS = null;                       // Additional namespace required by "xsi:type".
                 for (final Iterator<Attribute> it = e.getAttributes(); it.hasNext();) {
                     final Attribute a = it.next();
                     final Attribute ae = convert(a);
-                    changed |= (a != ae);
                     renamedAttributes.add(ae);
+                    if (a != ae) {
+                        changed = true;
+                        if (localNS == null && ae instanceof TransformedEvent.Type) {
+                            localNS = ((TransformedEvent.Type) ae).namespace;
+                        }
+                    }
                 }
-                final List<Namespace> namespaces = importNS(e.getNamespaces(),
+                /*
+                 * The list of namespaces is determined by the "xmlns:foo" attributes, which are handled in a
+                 * special way. This list is typically non-empty only in the root element, but it is legal to
+                 * have namespace declaration in non-root elements as well.
+                 *
+                 * Special case: if this element contains a "xsi:type" attribute and if we changed its value
+                 * (for example from "gmd:PT_FreeText_PropertyType" to "lan:PT_FreeText_PropertyType"), then
+                 * we may need to add an extra namespace declaration (e.g. for the "lan" prefix).
+                 */
+                List<Namespace> namespaces = importNS(e.getNamespaces(),
                         originalName.getNamespaceURI(), name.getNamespaceURI(), changed);
                 if (namespaces != null) {
+                    if (localNS != null) {
+                        if (namespaces.isEmpty()) {
+                            namespaces = Collections.singletonList(localNS);
+                        } else {
+                            namespaces.add(localNS);
+                        }
+                    }
                     event = new TransformedEvent.Start(e, name, namespaces, attributes(), version);
                 } else {
-                    renamedAttributes.clear();
+                    renamedAttributes.clear();          // Note: above call to attributes() also cleared that list.
                 }
                 break;
             }

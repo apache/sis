@@ -310,7 +310,7 @@ abstract class Transformer {
     }
 
     /**
-     * Imports or exports an attribute read or write from/to the XML document.
+     * Imports or exports an attribute read or written from/to the XML document.
      * If there is no name change, then this method returns the given instance as-is.
      * This method performs a special check for the {@code "xsi:type"} attribute:
      * its value is parsed as a name and converted.
@@ -320,29 +320,40 @@ abstract class Transformer {
         if ("type".equals(originalName.getLocalPart()) && Namespaces.XSI.equals(originalName.getNamespaceURI())) {
             /*
              * In the special case of "xsi:type", do not convert the attribute name.
-             * Instead, parse and convert the attribute value.
+             * Instead, parse and convert the attribute value. For example in the following:
+             *
+             *    <cit:title xsi:type="lan:PT_FreeText_PropertyType">
+             *
+             * The "lan" prefix needs to be changed to "gmd" if exporting to legacy ISO 19139:2007.
              */
             final String value = attribute.getValue();
             if (value != null) {
                 final int s = value.indexOf(':');
                 if (s >= 0) {
-                    String prefix = value.substring(0, s);
-                    String ns = namespaces.get(prefix);
-                    if (ns != null) {
-                        String localPart = value.substring(s+1);
-                        final Map<String,String> renaming = renamingMap().get(localPart);
-                        if (renaming != null) {
-                            QName name = new QName(ns, localPart, prefix);
-                            final Map<String,String> currentMap = outerElementProperties;
-                            outerElementProperties = renaming;
-                            name = convert(name);
-                            outerElementProperties = currentMap;
+                    String prefix = value.substring(0, s).trim();
+                    String namespace = namespaces.get(prefix);
+                    if (namespace != null) {
+                        String localPart = value.substring(s+1).trim();
+                        QName name = new QName(namespace, localPart, prefix);
+                        final Map<String,String> currentMap = outerElementProperties;
+                        outerElementProperties = renamingMap().getOrDefault(localPart, Collections.emptyMap());
+                        final boolean changed = (name != (name = convert(name)));
+                        outerElementProperties = currentMap;
+                        if (changed) {
                             prefix    = name.getPrefix();
                             localPart = name.getLocalPart();
-                            final String exported = prefix + ':' + localPart;
-                            if (!exported.equals(value)) {
-                                return new TransformedEvent.TypeAttr(attribute, originalName, exported);
+                            namespace = name.getNamespaceURI();
+                            TransformedEvent.Type rt = new TransformedEvent.Type(
+                                    attribute, originalName, prefix + ':' + localPart);
+                            /*
+                             * At this point we got the new value. For example "gmd:PT_FreeText_PropertyType" may
+                             * have been replaced by "lan:PT_FreeText_PropertyType". However we need to verify if
+                             * the "lan" prefix has been bound to a namespace, otherwise the parsing will fail.
+                             */
+                            if (!namespace.equals(namespaces.get(prefix))) {
+                                rt.namespace = new TransformedEvent.NS(attribute, prefix, namespace);
                             }
+                            return rt;
                         }
                     }
                 }
