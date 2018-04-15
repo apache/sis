@@ -379,7 +379,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
                 if (namespaces != null) {
                     event = new Event(e, name, namespaces, attributes(), version);
                 } else {
-                    renamedAttributes.clear();
+                    renamedAttributes.clear();          // Note: above call to attributes() also cleared that list.
                 }
                 /*
                  * At this point, we finished to export the event (i.e. to convert namespaces to the URI
