@@ -521,7 +521,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return language used for documenting metadata, or {@code null}.
      *
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
+     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
      */
     @Override
     @Deprecated
@@ -547,7 +547,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new language.
      *
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
+     * @deprecated As of SIS 0.5, replaced by {@link #setLanguages(Collection)}.
      */
     @Deprecated
     public void setLanguage(final Locale newValue) {
@@ -560,7 +560,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return alternatively used localized character string for a linguistic extension.
      *
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
+     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
      */
     @Override
     @Deprecated
@@ -575,7 +575,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new locales.
      *
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
+     * @deprecated As of SIS 0.5, replaced by {@link #setLanguages(Collection)}.
      */
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
@@ -621,7 +621,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
-    public void setCharacterSets(final Collection<Charset> newValues) {
+    public void setCharacterSets(final Collection<? extends Charset> newValues) {
         characterSets = writeCollection(newValues, characterSets, Charset.class);
     }
 
@@ -630,7 +630,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return character coding standard used for the metadata, or {@code null}.
      *
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #getCharacterSets()}.
+     * @deprecated As of SIS 0.5, replaced by {@link #getCharacterSets()}.
      */
     @Override
     @Deprecated
@@ -660,7 +660,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new character set.
      *
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #setCharacterSets(Collection)}.
+     * @deprecated As of SIS 0.5, replaced by {@link #setCharacterSets(Collection)}.
      */
     @Deprecated
     public void setCharacterSet(final CharacterSet newValue) {

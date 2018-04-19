@@ -118,7 +118,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
+     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
      */
     @Override
     @Deprecated
@@ -127,7 +127,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
+     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
      */
     @Override
     @Deprecated
@@ -145,7 +145,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * @deprecated As of GeoAPI 3.1, replaced by {@link #getCharacterSets()}.
+     * @deprecated As of SIS 0.5, replaced by {@link #getCharacterSets()}.
      */
     @Override
     @Deprecated
