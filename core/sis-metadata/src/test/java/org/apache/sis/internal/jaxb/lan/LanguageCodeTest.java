@@ -42,8 +42,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 /**
  * Tests the XML marshaling of {@code Locale} when used for a language.
- * The locale is marshalled as a character string. This format was used by ISO 19139:2007
- * but is not used anymore in ISO 19115-3 (the newer version use {@code PT_Locale} instead).
+ * The locale is marshalled as a character string. This format was used directly by ISO 19139:2007
+ * but only indirectly by ISO 19115-3 (the newer version wraps the language in {@code PT_Locale}).
  *
  * <p>This class also test indirectly the {@link org.apache.sis.xml} capability to map the legacy
  * {@code "http://www.isotc211.org/2005/gmd"} namespace to {@code "http://standards.iso.org/…"}.</p>

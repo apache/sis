@@ -30,12 +30,22 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
- * <p>This adapter formats the locale like below:</p>
+ * <p>This adapter formats the locale like below (by {@link LocaleAdapter}):</p>
  *
  * {@preformat xml
  *   <gmd:language>
  *     <gmd:LanguageCode codeList="http://(...snip...)" codeListValue="eng">English</gmd:LanguageCode>
  *   </gmd:language>
+ * }
+ *
+ * or (when using {@link PT_Locale} adapter):
+ *
+ * {@preformat xml
+ *   <lan:PT_Locale>
+ *     <lan:language>
+ *       <lan:LanguageCode codeList="http://(...snip...)" codeListValue="eng">English</lan:LanguageCode>
+ *     </lan:language>
+ *   </lan:PT_Locale>
  * }
  *
  * Note that {@code <gco:CharacterString>} can be substituted to the language code.

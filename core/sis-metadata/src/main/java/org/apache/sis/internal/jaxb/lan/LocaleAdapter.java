@@ -26,10 +26,13 @@ import org.apache.sis.internal.jaxb.Context;
  * mapped to {@link Locale}. This adapter formats the locale like below:
  *
  * {@preformat xml
- *   <lan:language>
- *     <lan:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</lan:LanguageCode>
- *   </lan:language>
+ *   <gmd:language>
+ *     <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
+ *   </gmd:language>
  * }
+ *
+ * This adapter is used for legacy locales in {@code gmd} namespace.
+ * For locales in the newer {@code lan} namespace, see {@link PT_Locale}.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

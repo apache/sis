@@ -53,7 +53,7 @@ import org.apache.sis.internal.jaxb.Context;
  *   </lan:locale>
  * }
  *
- * For an alternative (simpler) format, see {@link LocaleAdapter}.
+ * For an alternative (simpler) format used in the legacy {@code gmd} namespace, see {@link LocaleAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
