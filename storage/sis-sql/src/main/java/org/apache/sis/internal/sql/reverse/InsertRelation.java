@@ -23,15 +23,13 @@ import org.opengis.feature.Feature;
  * When inserting a complex feature in base. it must be divided in smaller elements.
  * Those flat insertions and relations are represented by this class.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final class InsertRelation {
-
-    public Feature parent;
-    public Feature child;
-    public RelationMetaModel relation;
-
+final class InsertRelation {
+    Feature parent;
+    Feature child;
+    RelationMetaModel relation;
 }

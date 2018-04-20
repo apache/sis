@@ -22,73 +22,61 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
-import org.apache.sis.sql.dialect.SQLDialect;
+import org.apache.sis.internal.sql.Dialect;
 import org.apache.sis.storage.DataStoreException;
 
+
 /**
- * Describe a table primary key.
+ * Description of a table primary key.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class PrimaryKey {
+final class PrimaryKey {
 
-    private final String tableName;
-    private final List<ColumnMetaModel> columns;
+    final String table;
+    final List<ColumnMetaModel> columns;
 
-    public PrimaryKey(String tableName) {
-        this(tableName,null);
-    }
-
-    public PrimaryKey(String tableName, List<ColumnMetaModel> columns) {
-        this.tableName = tableName;
-        if (columns == null) columns = Collections.emptyList();
+    PrimaryKey(final String table, List<ColumnMetaModel> columns) {
+        this.table = table;
+        if (columns == null) {
+            columns = Collections.emptyList();
+        }
         this.columns = columns;
     }
 
-    public String getTableName() {
-        return tableName;
-    }
-
-    public List<ColumnMetaModel> getColumns() {
-        return columns;
-    }
-
-    public boolean isNull(){
-        return columns.isEmpty();
-    }
-
     /**
-     * Create a feature identifier from primary key column values.
+     * Creates a feature identifier from primary key column values.
+     * This method uses only the current row of the given result set.
      *
-     * @param rs ResultSet on a row
-     * @return feature identifier
-     * @throws SQLException
+     * @param  rs  the result set positioned on a row.
+     * @return the feature identifier for current row of the given result set.
      */
-    public String buildIdentifier(final ResultSet rs) throws SQLException {
-
+    String buildIdentifier(final ResultSet rs) throws SQLException {
         final int size = columns.size();
-
-        if (size == 0) {
-            // no primary key columns, generate a random id
-            return UUID.randomUUID().toString();
-        } else if (size == 1) {
-            // unique column value
-            return rs.getString(columns.get(0).getName());
-        } else {
-            // aggregate column values
-            final Object[] values = new Object[size];
-            for (int i=0; i<size; i++) {
-                values[i] = rs.getString(columns.get(i).getName());
+        switch (size) {
+            case 0: {
+                // No primary key columns, generate a random id
+                return UUID.randomUUID().toString();
             }
-            return buildIdentifier(values);
+            case 1: {
+                // Unique column value
+                return rs.getString(columns.get(0).name);
+            }
+            default: {
+                // Aggregate column values
+                final Object[] values = new Object[size];
+                for (int i=0; i<size; i++) {
+                    values[i] = rs.getString(columns.get(i).name);
+                }
+                return buildIdentifier(values);
+            }
         }
     }
 
-    public static String buildIdentifier(final Object[] values) {
+    private static String buildIdentifier(final Object[] values) {
         final StringBuilder sb = new StringBuilder();
         for (int i=0; i<values.length; i++) {
             if (i > 0) sb.append('.');
@@ -98,22 +86,19 @@ public class PrimaryKey {
     }
 
     /**
-     * Create primary key column field values.
+     * Creates the field values for all columns of a the primary key.
      *
-     * @param dialect database dialect
-     * @param logger database logger
-     * @param cx database connection
-     * @return primary key values
-     * @throws SQLException
-     * @throws DataStoreException
+     * @param  dialect  handler for syntax elements specific to the database.
+     * @param  cx       connection to the database.
+     * @return primary key values.
+     * @throws SQLException if a JDBC error occurred while executing a statement.
+     * @throws DataStoreException if another error occurred while fetching the next value.
      */
-    public Object[] nextValues(final SQLDialect dialect, Logger logger, final Connection cx)
-            throws SQLException, DataStoreException {
+    Object[] nextValues(final Dialect dialect, final Connection cx) throws SQLException, DataStoreException {
         final Object[] parts = new Object[columns.size()];
         for (int i=0; i<parts.length; i++) {
-            parts[i] = columns.get(i).nextValue(dialect, logger, cx);
+            parts[i] = columns.get(i).nextValue(dialect, cx);
         }
         return parts;
     }
-
 }

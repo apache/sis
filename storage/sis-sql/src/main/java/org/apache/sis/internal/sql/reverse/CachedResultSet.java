@@ -19,43 +19,55 @@ package org.apache.sis.internal.sql.reverse;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
- * Cached a ResultSet content.
+ * A cache of {@link ResultSet} content.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
+ *
+ * @todo Current implementation consumes more memory than needed, with the construction of a hash map for each record.
+ *       The construction of {@code DenseFeature} instances would be more efficient. Furthermore this construct reads
+ *       all records at construction time. We should consider lazy population instead.
  */
-public class CachedResultSet {
+final class CachedResultSet {
+    /**
+     * All records read by the SQL query, as (column, value) pairs.
+     */
+    final List<Map<String,Object>> records;
 
-    private final List<Map<String,Object>> records = new ArrayList<>();
-
-    public CachedResultSet() {
+    /**
+     * Creates an initially empty set.
+     */
+    CachedResultSet() {
+        records = new ArrayList<>();
     }
 
-    public CachedResultSet(ResultSet rs, String... columns) throws SQLException {
+    /**
+     * Creates a set initialized with the given content.
+     */
+    CachedResultSet(final ResultSet rs, final String... columns) throws SQLException {
+        records = new ArrayList<>(columns.length);
         append(rs, columns);
     }
 
-    public void append(ResultSet rs, String... columns) throws SQLException {
+    /**
+     * Appends the given content to this set.
+     */
+    void append(final ResultSet rs, final String... columns) throws SQLException {
         while (rs.next()) {
             final Map<String,Object> record = new HashMap<>();
-            for (String col : columns) {
+            for (final String col : columns) {
                 record.put(col, rs.getObject(col));
             }
             records.add(record);
         }
         rs.close();
     }
-
-    public Collection<Map<String,Object>> records() {
-        return records;
-    }
-
 }

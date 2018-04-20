@@ -16,57 +16,42 @@
  */
 package org.apache.sis.sql.postgres;
 
-import java.util.logging.Logger;
-import javax.sql.DataSource;
-import org.apache.sis.internal.sql.reverse.DataBaseModel;
-import org.apache.sis.sql.AbstractSQLStore;
-import org.apache.sis.sql.dialect.SQLDialect;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.sql.SQLStore;
+import org.apache.sis.sql.SQLQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.util.logging.Logging;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.internal.sql.reverse.DataBaseModel;
+import org.apache.sis.internal.sql.reverse.QueryFeatureSet;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.StorageConnector;
+
 
 /**
+ * A data store backed by a PostgreSQL database.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-class PostgresStore extends AbstractSQLStore {
-
-    private static final Logger LOGGER = Logging.getLogger("org.apache.sis.sql");
-
+final class PostgresStore extends SQLStore {
     private final PostgresDialect dialect = new PostgresDialect();
 
-    private final DataSource source;
     private final String schema;
     private final String table;
 
     private final DataBaseModel model;
 
-    public PostgresStore(DataSource source, String schema, String table) {
-        this.source = source;
+    public PostgresStore(final PostgresStoreProvider provider, final StorageConnector connector,
+            final String schema, final String table) throws DataStoreException
+    {
+        super(provider, connector);
         this.schema = schema;
-        this.table = table;
-        this.model = new DataBaseModel(this, LOGGER, schema, table);
-    }
-
-    @Override
-    public SQLDialect getDialect() {
-        return dialect;
-    }
-
-    @Override
-    public DataSource getDataSource() {
-        return source;
-    }
-
-    @Override
-    public DataBaseModel getDatabaseModel() {
-        return model;
+        this.table  = table;
+        this.model  = new DataBaseModel(this, dialect, schema, table, listeners);
     }
 
     @Override
@@ -77,6 +62,16 @@ class PostgresStore extends AbstractSQLStore {
     @Override
     public Metadata getMetadata() throws DataStoreException {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Executes a query directly on the database.
+     *
+     * @param  query the query to execute (can not be null).
+     * @return the features obtained by the given given query.
+     */
+    public FeatureSet query(SQLQuery query) {
+        return new QueryFeatureSet(this, model, query);
     }
 
     @Override
@@ -90,5 +85,4 @@ class PostgresStore extends AbstractSQLStore {
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
-
 }

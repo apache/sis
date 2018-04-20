@@ -83,6 +83,11 @@ public final class Modules {
     public static final String GDAL = "org.apache.sis.storage.gdal";
 
     /**
+     * The {@value} module name.
+     */
+    public static final String SQL = "org.apache.sis.sql";
+
+    /**
      * The major version number of all Apache SIS modules.
      *
      * @see org.apache.sis.util.Version

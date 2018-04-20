@@ -33,61 +33,63 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.sis.feature.builder.AttributeRole;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.sql.SingleAttributeTypeBuilder;
-import org.apache.sis.internal.sql.reverse.ColumnMetaModel.Type;
-import org.apache.sis.internal.sql.reverse.MetaDataConstants.*;
-import org.apache.sis.sql.AbstractSQLStore;
-import org.apache.sis.sql.dialect.SQLDialect;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureNaming;
+import org.opengis.util.GenericName;
 import org.opengis.coverage.Coverage;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.GenericName;
+import org.apache.sis.feature.builder.AttributeRole;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.sql.Dialect;
+import org.apache.sis.internal.sql.SingleAttributeTypeBuilder;
+import org.apache.sis.internal.sql.reverse.MetaDataConstants.*;
+import org.apache.sis.sql.SQLStore;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureNaming;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * Represent the structure of the database. The work done here is similar to
- * reverse engineering.
+ * Represent the structure of the database.
+ * The work done here is similar to reverse engineering.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public final class DataBaseModel {
-
-    public static final String ASSOCIATION_SEPARATOR = "→";
+    /**
+     * @todo Does not seem to be used yet.
+     */
+    private static final String ASSOCIATION_SEPARATOR = "→";
 
     /**
      * The native SRID associated to a certain descriptor
+     *
+     * @todo Does not seem to be used yet.
      */
-    public static final String JDBC_NATIVE_SRID = "nativeSRID";
-
+    private static final String JDBC_NATIVE_SRID = "nativeSRID";
 
     /**
-     * Feature type used to mark types which are sub types of others.
+     * Feature type used to mark types which are sub-types of others.
      */
     private static final FeatureType SUBTYPE;
     static {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("SubType");
-        ftb.setAbstract(true);
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder()
+                .setName("SubType")
+                .setAbstract(true);
         SUBTYPE = ftb.build();
     }
 
-    private final AbstractSQLStore store;
-    private final Logger logger;
+    private final SQLStore store;
+    private final Dialect dialect;
     private final String databaseSchema;
     private final String databaseTable;
 
@@ -110,22 +112,24 @@ public final class DataBaseModel {
     private Set<String> visitedSchemas;
     private Set<String> requieredSchemas;
 
+    private final WarningListeners<DataStore> listeners;
 
-    public DataBaseModel(final AbstractSQLStore store, Logger logger, String schema, String table){
-        this.store = store;
-        this.logger = logger;
+    public DataBaseModel(final SQLStore store, final Dialect dialect, final String schema, final String table, final WarningListeners<DataStore> listeners) {
+        this.store          = store;
+        this.dialect        = dialect;
         this.databaseSchema = schema;
-        this.databaseTable = table;
+        this.databaseTable  = table;
+        this.listeners      = listeners;
     }
 
-    public Collection<SchemaMetaModel> getSchemaMetaModels() throws DataStoreException {
+    private Collection<SchemaMetaModel> getSchemaMetaModels() throws DataStoreException {
         if (schemas == null) {
             analyze();
         }
         return schemas.values();
     }
 
-    public SchemaMetaModel getSchemaMetaModel(String name) throws DataStoreException{
+    private SchemaMetaModel getSchemaMetaModel(String name) throws DataStoreException{
         if (schemas == null) {
             analyze();
         }
@@ -136,22 +140,22 @@ public final class DataBaseModel {
      * Clear the model cache. A new database analyze will be made the next time
      * it is needed.
      */
-    public synchronized void clearCache() {
-        pkIndex = new FeatureNaming<>();
+    private synchronized void clearCache() {
+        pkIndex   = new FeatureNaming<>();
         typeIndex = new FeatureNaming<>();
         typeNames = new HashSet<>();
         nameCache = null;
-        schemas = null;
+        schemas   = null;
     }
 
-    public PrimaryKey getPrimaryKey(final String featureTypeName) throws DataStoreException{
+    private PrimaryKey getPrimaryKey(final String featureTypeName) throws DataStoreException{
         if (schemas == null) {
             analyze();
         }
         return pkIndex.get(store, featureTypeName);
     }
 
-    public synchronized Set<GenericName> getNames() throws DataStoreException {
+    private synchronized Set<GenericName> getNames() throws DataStoreException {
         Set<GenericName> ref = nameCache;
         if (ref == null) {
             analyze();
@@ -159,7 +163,7 @@ public final class DataBaseModel {
             for (GenericName name : typeNames) {
                 final FeatureType type = typeIndex.get(store, name.toString());
                 if (SUBTYPE.isAssignableFrom(type)) continue;
-                if (store.getDialect().ignoreTable(name.tip().toString())) continue;
+                if (dialect.isTableIgnored(name.tip().toString())) continue;
                 names.add(name);
             }
             ref = Collections.unmodifiableSet(names);
@@ -176,19 +180,15 @@ public final class DataBaseModel {
     }
 
     /**
-     * Explore all tables and views then recreate a complex feature model from
-     * relations.
+     * Explores all tables and views then recreate a complex feature model from relations.
      */
     private synchronized void analyze() throws DataStoreException{
         if (schemas != null) {
-            //already analyzed
+            // Already analyzed
             return;
         }
-
         clearCache();
         schemas = new HashMap<>();
-        final SQLDialect dialect = store.getDialect();
-
         visitedSchemas = new HashSet<>();
         requieredSchemas = new HashSet<>();
 
@@ -245,10 +245,10 @@ public final class DataBaseModel {
                 cacheImportedKeys = new CachedResultSet();
                 cacheExportedKeys = new CachedResultSet();
 
-                final Iterator<Map<String,Object>> ite = cacheSchemas.records().iterator();
+                final Iterator<Map<String,Object>> ite = cacheSchemas.records.iterator();
                 while (ite.hasNext()) {
                     final String schemaName = (String) ite.next().get(Schema.TABLE_SCHEM);
-                    for (Map<String,Object> info : cacheTables.records()) {
+                    for (Map<String,Object> info : cacheTables.records) {
                         if (!Objects.equals(info.get(Table.TABLE_SCHEM),schemaName)) continue;
                         cachePrimaryKeys.append(metadata.getPrimaryKeys(null, schemaName, (String) info.get(Table.TABLE_NAME)),
                             Column.TABLE_SCHEM,
@@ -280,13 +280,13 @@ public final class DataBaseModel {
             if (databaseSchema != null) {
                 requieredSchemas.add(databaseSchema);
             } else {
-                final Iterator<Map<String,Object>> ite = cacheSchemas.records().iterator();
+                final Iterator<Map<String,Object>> ite = cacheSchemas.records.iterator();
                 while (ite.hasNext()) {
                     requieredSchemas.add((String) ite.next().get(Schema.TABLE_SCHEM));
                 }
             }
 
-            //we need to analyze requiered schema references
+            // We need to analyze requiered schema references
             while (!requieredSchemas.isEmpty()) {
                 final String sn = requieredSchemas.iterator().next();
                 visitedSchemas.add(sn);
@@ -298,7 +298,7 @@ public final class DataBaseModel {
             reverseSimpleFeatureTypes(cx);
 
         } catch (SQLException e) {
-            throw new DataStoreException("Error occurred analyzing database model.\n"+e.getMessage(), e);
+            throw new DataStoreException("Error occurred analyzing database model.\n" + e.getMessage(), e);
         } finally {
             cacheSchemas = null;
             cacheTables = null;
@@ -313,7 +313,7 @@ public final class DataBaseModel {
         }
 
 
-        //build indexes---------------------------------------------------------
+        // Build indexes---------------------------------------------------------
         final String baseSchemaName = databaseSchema;
 
         final Collection<SchemaMetaModel> candidates;
@@ -326,13 +326,13 @@ public final class DataBaseModel {
 
         for (SchemaMetaModel schema : candidates) {
            if (schema != null) {
-                for (TableMetaModel table : schema.tables.values()) {
+                for (TableMetaModel table : schema.getTables()) {
 
                     final FeatureTypeBuilder ft = table.getType(TableMetaModel.View.SIMPLE_FEATURE_TYPE);
                     final GenericName name = ft.getName();
                     pkIndex.add(store, name, table.key);
                     if (table.isSubType()) {
-                        //we don't show subtype, they are part of other feature types, add a flag to identify then
+                        // We don't show subtype, they are part of other feature types, add a flag to identify then
                         ft.setSuperTypes(SUBTYPE);
                     }
                     typeNames.add(name);
@@ -346,11 +346,9 @@ public final class DataBaseModel {
     }
 
     private SchemaMetaModel analyzeSchema(final String schemaName, final Connection cx) throws DataStoreException {
-
         final SchemaMetaModel schema = new SchemaMetaModel(schemaName);
-
         try {
-            for (Map<String,Object> info : cacheTables.records()) {
+            for (Map<String,Object> info : cacheTables.records) {
                 if (!Objects.equals(info.get(Table.TABLE_SCHEM), schemaName)) continue;
                 if (databaseTable != null && !databaseTable.isEmpty() && !Objects.equals(info.get(Table.TABLE_NAME),databaseTable)) continue;
                 final TableMetaModel table = analyzeTable(info,cx);
@@ -359,36 +357,33 @@ public final class DataBaseModel {
         } catch (SQLException e) {
             throw new DataStoreException("Error occurred analyzing database model.", e);
         }
-
         return schema;
     }
 
     private TableMetaModel analyzeTable(final Map tableSet, final Connection cx) throws DataStoreException, SQLException {
-        final SQLDialect dialect = store.getDialect();
-
         final String schemaName = (String) tableSet.get(Table.TABLE_SCHEM);
-        final String tableName = (String) tableSet.get(Table.TABLE_NAME);
-        final String tableType = (String) tableSet.get(Table.TABLE_TYPE);
+        final String tableName  = (String) tableSet.get(Table.TABLE_NAME);
+        final String tableType  = (String) tableSet.get(Table.TABLE_TYPE);
 
         final TableMetaModel table = new TableMetaModel(tableName,tableType);
 
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         try {
 
-            //explore all columns ----------------------------------------------
+            // Explore all columns ----------------------------------------------
             final Predicate<Map<String,Object>> tableFilter = (Map<String,Object> info) -> {
                 return Objects.equals(info.get(Table.TABLE_SCHEM), schemaName)
                     && Objects.equals(info.get(Table.TABLE_NAME), tableName);
             };
 
-            final Iterator<Map<String,Object>> ite1 = cacheColumns.records().stream().filter(tableFilter).iterator();
+            final Iterator<Map<String,Object>> ite1 = cacheColumns.records.stream().filter(tableFilter).iterator();
             while (ite1.hasNext()) {
                 ftb.addAttribute(analyzeColumn(ite1.next(),cx));
             }
 
-            //find primary key -------------------------------------------------
+            // Find primary key -------------------------------------------------
             final List<ColumnMetaModel> cols = new ArrayList<>();
-            final Iterator<Map<String,Object>> pkIte = cachePrimaryKeys.records().stream().filter(tableFilter).iterator();
+            final Iterator<Map<String,Object>> pkIte = cachePrimaryKeys.records.stream().filter(tableFilter).iterator();
             while (pkIte.hasNext()) {
                 final Map<String,Object> result = pkIte.next();
                 final String columnName = (String) result.get(Column.COLUMN_NAME);
@@ -396,7 +391,7 @@ public final class DataBaseModel {
                 final Predicate<Map<String,Object>> colFilter = (Map<String,Object> info) -> {
                     return Objects.equals(info.get(Column.COLUMN_NAME), columnName);
                 };
-                final Iterator<Map<String,Object>> cite = cacheColumns.records().stream().filter(tableFilter.and(colFilter)).iterator();
+                final Iterator<Map<String,Object>> cite = cacheColumns.records.stream().filter(tableFilter.and(colFilter)).iterator();
                 final Map<String,Object> column = cite.next();
 
                 final int sqlType = ((Number) column.get(Column.DATA_TYPE)).intValue();
@@ -404,7 +399,7 @@ public final class DataBaseModel {
                 Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
 
                 if (columnType == null) {
-                    logger.log(Level.WARNING, "No class for sql type {0}", sqlType);
+                    listeners.warning("No class for SQL type " + sqlType, null);
                     columnType = Object.class;
                 }
 
@@ -412,35 +407,35 @@ public final class DataBaseModel {
 
                 final String str = (String) column.get(Column.IS_AUTOINCREMENT);
                 if (Column.VALUE_YES.equalsIgnoreCase(str)) {
-                    col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType, sqlTypeName, columnType, Type.AUTO, null);
+                    col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.AUTO, null);
                 } else {
                     final String sequenceName = dialect.getColumnSequence(cx,schemaName, tableName, columnName);
                     if (sequenceName != null) {
                         col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType,
-                                sqlTypeName, columnType, Type.SEQUENCED,sequenceName);
+                                sqlTypeName, columnType, ColumnMetaModel.Type.SEQUENCED,sequenceName);
                     } else {
                         col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType,
-                                sqlTypeName, columnType, Type.PROVIDED, null);
+                                sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
                     }
                 }
-
                 cols.add(col);
             }
-
-            //Search indexes, they provide informations such as :
-            // - Unique indexes may indicate 1:1 relations in complexe features
-            // - Unique indexes can be used as primary key if no primary key are defined
+            /*
+             * Search indexes, they provide informations such as:
+             * - Unique indexes may indicate 1:1 relations in complexe features
+             * - Unique indexes can be used as primary key if no primary key are defined
+             */
             final boolean pkEmpty = cols.isEmpty();
             final List<String> names = new ArrayList<>();
             final Map<String,List<String>> uniqueIndexes = new HashMap<>();
             String indexname = null;
-            //we can't cache this one, seems to be a bug in the driver, it won't find anything for table name like '%'
+            // We can't cache this one, seems to be a bug in the driver, it won't find anything for table name like '%'
             cacheIndexInfos = new CachedResultSet(metadata.getIndexInfo(null, schemaName, tableName, true, false),
                     Index.TABLE_SCHEM,
                     Index.TABLE_NAME,
                     Index.COLUMN_NAME,
                     Index.INDEX_NAME);
-            final Iterator<Map<String,Object>> indexIte = cacheIndexInfos.records().stream().filter(tableFilter).iterator();
+            final Iterator<Map<String,Object>> indexIte = cacheIndexInfos.records.stream().filter(tableFilter).iterator();
             while (indexIte.hasNext()) {
                 final Map<String,Object> result = indexIte.next();
                 final String columnName = (String) result.get(Index.COLUMN_NAME);
@@ -454,8 +449,8 @@ public final class DataBaseModel {
                 lst.add(columnName);
 
                 if (pkEmpty) {
-                    //we use a single index columns set as primary key
-                    //we must not mix with other potential indexes.
+                    // We use a single index columns set as primary key
+                    // We must not mix with other potential indexes.
                     if (indexname == null) {
                         indexname = idxName;
                     } else if (!indexname.equals(idxName)) {
@@ -465,7 +460,7 @@ public final class DataBaseModel {
                 }
             }
 
-            //for each unique index composed of one column add a flag on the property descriptor
+            // For each unique index composed of one column add a flag on the property descriptor
             for (Entry<String,List<String>> entry : uniqueIndexes.entrySet()) {
                 final List<String> columns = entry.getValue();
                 if (columns.size() == 1) {
@@ -480,8 +475,8 @@ public final class DataBaseModel {
             }
 
             if (pkEmpty && !names.isEmpty()) {
-                //build a primary key from unique index
-                final Iterator<Map<String,Object>> ite = cacheColumns.records().stream().filter(tableFilter).iterator();
+                // Build a primary key from unique index
+                final Iterator<Map<String,Object>> ite = cacheColumns.records.stream().filter(tableFilter).iterator();
                 while (ite.hasNext()) {
                     final Map<String,Object> result = ite.next();
                     final String columnName = (String) result.get(Column.COLUMN_NAME);
@@ -493,10 +488,10 @@ public final class DataBaseModel {
                     final String sqlTypeName = (String) result.get(Column.TYPE_NAME);
                     final Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
                     final ColumnMetaModel col = new ColumnMetaModel(schemaName, tableName, columnName,
-                            sqlType, sqlTypeName, columnType, Type.PROVIDED, null);
+                            sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
                     cols.add(col);
 
-                    //set as identifier
+                    // Set as identifier
                     for (PropertyTypeBuilder desc : ftb.properties()) {
                         if (desc.getName().tip().toString().equals(columnName)) {
                             final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
@@ -510,15 +505,15 @@ public final class DataBaseModel {
 
             if (cols.isEmpty()) {
                 if (Table.VALUE_TYPE_TABLE.equals(tableType)) {
-                    logger.log(Level.INFO, "No primary key found for {0}.", tableName);
+                    listeners.warning("No primary key found for " + tableName, null);
                 }
             }
             table.key = new PrimaryKey(tableName, cols);
 
-            //mark primary key columns
+            // Mark primary key columns
             for (PropertyTypeBuilder desc : ftb.properties()) {
                 for (ColumnMetaModel col : cols) {
-                    if (desc.getName().tip().toString().equals(col.getName())) {
+                    if (desc.getName().tip().toString().equals(col.name)) {
                         final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
                         atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
                         break;
@@ -527,12 +522,12 @@ public final class DataBaseModel {
             }
 
 
-            //find imported keys -----------------------------------------------
+            // Find imported keys -----------------------------------------------
             final Predicate<Map<String,Object>> fkFilter = (Map<String,Object> info) -> {
                 return Objects.equals(info.get(ImportedKey.FKTABLE_SCHEM), schemaName)
                     && Objects.equals(info.get(ImportedKey.FKTABLE_NAME), tableName);
             };
-            Iterator<Map<String,Object>> ite = cacheImportedKeys.records().stream().filter(fkFilter).iterator();
+            Iterator<Map<String,Object>> ite = cacheImportedKeys.records.stream().filter(fkFilter).iterator();
             while (ite.hasNext()) {
                 final Map<String,Object> result = ite.next();
                 String relationName = (String) result.get(ImportedKey.PK_NAME);
@@ -549,7 +544,7 @@ public final class DataBaseModel {
 
                 if (refSchemaName!=null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
 
-                //set the information
+                // Set the information
                 for (PropertyTypeBuilder desc : ftb.properties()) {
                     if (desc.getName().tip().toString().equals(localColumn)) {
                         final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
@@ -559,12 +554,12 @@ public final class DataBaseModel {
                 }
             }
 
-            //find exported keys -----------------------------------------------
+            // Find exported keys -----------------------------------------------
             final Predicate<Map<String,Object>> ekFilter = (Map<String,Object> info) -> {
                 return Objects.equals(info.get(ImportedKey.PKTABLE_SCHEM), schemaName)
                     && Objects.equals(info.get(ImportedKey.PKTABLE_NAME), tableName);
             };
-            ite = cacheExportedKeys.records().stream().filter(ekFilter).iterator();
+            ite = cacheExportedKeys.records.stream().filter(ekFilter).iterator();
             while (ite.hasNext()) {
                 final Map<String,Object> result = ite.next();
                 String relationName = (String) result.get(ExportedKey.FKCOLUMN_NAME);
@@ -581,7 +576,7 @@ public final class DataBaseModel {
                 if (refSchemaName != null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
             }
 
-            //find parent table if any -----------------------------------------
+            // Find parent table if any -----------------------------------------
 //            if(handleSuperTableMetadata == null || handleSuperTableMetadata){
 //                try{
 //                    result = metadata.getSuperTables(null, schemaName, tableName);
@@ -599,53 +594,38 @@ public final class DataBaseModel {
 //            }
 
         } catch (SQLException e) {
-            throw new DataStoreException("Error occurred analyzing table : " + tableName, e);
+            throw new DataStoreException("Error occurred analyzing table: " + tableName, e);
         }
-
         ftb.setName(tableName);
         table.tableType = ftb;
         return table;
     }
 
     private AttributeType<?> analyzeColumn(final Map<String,Object> columnSet, final Connection cx) throws SQLException, DataStoreException{
-        final SQLDialect dialect = store.getDialect();
-        final SingleAttributeTypeBuilder atb = new SingleAttributeTypeBuilder();
-
-        final String schemaName     = (String) columnSet.get(Column.TABLE_SCHEM);
-        final String tableName      = (String) columnSet.get(Column.TABLE_NAME);
-        final String columnName     = (String) columnSet.get(Column.COLUMN_NAME);
+        final String schemaName     = (String)  columnSet.get(Column.TABLE_SCHEM);
+        final String tableName      = (String)  columnSet.get(Column.TABLE_NAME);
+        final String columnName     = (String)  columnSet.get(Column.COLUMN_NAME);
         final int columnSize        = ((Number) columnSet.get(Column.COLUMN_SIZE)).intValue();
         final int columnDataType    = ((Number) columnSet.get(Column.DATA_TYPE)).intValue();
-        final String columnTypeName = (String) columnSet.get(Column.TYPE_NAME);
-        final String columnNullable = (String) columnSet.get(Column.IS_NULLABLE);
-
+        final String columnTypeName = (String)  columnSet.get(Column.TYPE_NAME);
+        final String columnNullable = (String)  columnSet.get(Column.IS_NULLABLE);
+        final SingleAttributeTypeBuilder atb = new SingleAttributeTypeBuilder();
         atb.setName(columnName);
         atb.setLength(columnSize);
-
         try {
             dialect.decodeColumnType(atb, cx, columnTypeName, columnDataType, schemaName, tableName, columnName);
         } catch (SQLException e) {
-            throw new DataStoreException("Error occurred analyzing column : " + columnName, e);
+            throw new DataStoreException("Error occurred analyzing column: " + columnName, e);
         }
-
         atb.setMinimumOccurs(Column.VALUE_NO.equalsIgnoreCase(columnNullable) ? 1 : 0);
         atb.setMaximumOccurs(1);
-
         return atb.build();
     }
 
     /**
      * Analyze the metadata of the ResultSet to rebuild a feature type.
-     *
-     * @param result
-     * @param name
-     * @return FeatureType
-     * @throws SQLException
-     * @throws org.apache.sis.storage.DataStoreException
      */
     public FeatureType analyzeResult(final ResultSet result, final String name) throws SQLException, DataStoreException{
-        final SQLDialect dialect = store.getDialect();
-
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName(name);
 
@@ -661,7 +641,7 @@ public final class DataBaseModel {
             final int sqlType = metadata.getColumnType(i);
             final String sqlTypeName = metadata.getColumnTypeName(i);
 
-            //search if we already have this property
+            // Search if we already have this property
             PropertyType desc = null;
             final SchemaMetaModel schema = getSchemaMetaModel(schemaName);
             if (schema != null) {
@@ -698,24 +678,19 @@ public final class DataBaseModel {
                 } catch (SQLException e) {
                     throw new DataStoreException("Error occurred analyzing column : " + columnName, e);
                 }
-
                 desc = atb.build();
             }
-
             ftb.addProperty(desc);
         }
-
         return ftb.build();
     }
 
     /**
      * Rebuild simple feature types for each table.
      */
-    private void reverseSimpleFeatureTypes(final Connection cx){
-        final SQLDialect dialect = store.getDialect();
-
+    private void reverseSimpleFeatureTypes(final Connection cx) throws SQLException {
         for (final SchemaMetaModel schema : schemas.values()) {
-            for (final TableMetaModel table : schema.tables.values()) {
+            for (final TableMetaModel table : schema.getTables()) {
                 final String tableName = table.name;
 
                 final FeatureTypeBuilder ftb = new FeatureTypeBuilder(table.tableType.build());
@@ -732,28 +707,21 @@ public final class DataBaseModel {
                     atb.setName(name);
 
                     //Configure CRS if it is a geometry
-                    final Class binding = atb.getValueClass();
+                    final Class<?> binding = atb.getValueClass();
                     if (Geometries.isKnownType(binding)) {
 
-                        final Predicate<Map> colFilter = (Map info) -> {
+                        final Predicate<Map<?,?>> colFilter = (Map<?,?> info) -> {
                             return Objects.equals(info.get(Table.TABLE_SCHEM), schema.name)
                                 && Objects.equals(info.get(Table.TABLE_NAME), tableName)
                                 && Objects.equals(info.get(Column.COLUMN_NAME), name);
                         };
-                        final Map metas = cacheColumns.records().stream().filter(colFilter).findFirst().get();
+                        final Map<String,Object> metas = cacheColumns.records.stream().filter(colFilter).findFirst().get();
 
-                        Integer srid = null;
                         CoordinateReferenceSystem crs = null;
-                        try {
-                            srid = dialect.getGeometrySRID(databaseSchema, tableName, name, metas, cx);
-                            if (srid != null) {
-                                crs = dialect.createCRS(srid, cx);
-                            }
-                        } catch (SQLException e) {
-                            String msg = "Error occured determing srid for " + tableName + "."+ name;
-                            logger.log(Level.WARNING, msg, e);
+                        Integer srid = dialect.getGeometrySRID(databaseSchema, tableName, name, metas, cx);
+                        if (srid != null) {
+                            crs = dialect.createCRS(srid, cx);
                         }
-
                         atb.setCRS(crs);
                         if (srid != null) {
                             atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_SRID).setDefaultValue(srid);
@@ -763,28 +731,19 @@ public final class DataBaseModel {
                             }
                         }
                     } else if (Coverage.class.isAssignableFrom(binding)) {
-
                         final Predicate<Map<String,Object>> colFilter = (Map<String,Object> info) -> {
                             return Objects.equals(info.get(Table.TABLE_SCHEM), schema.name)
                                 && Objects.equals(info.get(Table.TABLE_NAME), tableName)
                                 && Objects.equals(info.get(Column.COLUMN_NAME), name);
                         };
-                        final Map<String,Object> metas = cacheColumns.records().stream().filter(colFilter).findFirst().get();
+                        final Map<String,Object> metas = cacheColumns.records.stream().filter(colFilter).findFirst().get();
 
-                        //add the attribute as a geometry, try to figure out
-                        // its srid first
-                        Integer srid = null;
+                        // Add the attribute as a geometry, try to figure out its srid first
                         CoordinateReferenceSystem crs = null;
-                        try {
-                            srid = dialect.getGeometrySRID(databaseSchema, tableName, name, metas, cx);
-                            if (srid != null) {
-                                crs = dialect.createCRS(srid, cx);
-                            }
-                        } catch (SQLException e) {
-                            String msg = "Error occured determing srid for " + tableName + "."+ name;
-                            logger.log(Level.WARNING, msg, e);
+                        Integer srid = dialect.getGeometrySRID(databaseSchema, tableName, name, metas, cx);
+                        if (srid != null) {
+                            crs = dialect.createCRS(srid, cx);
                         }
-
                         atb.setCRS(crs);
                         if (srid != null) {
                             atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_SRID).setDefaultValue(srid);
@@ -803,11 +762,8 @@ public final class DataBaseModel {
                         }
                     }
                 }
-
                 table.simpleFeatureType = ftb;
             }
         }
-
     }
-
 }

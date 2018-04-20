@@ -18,6 +18,7 @@ package org.apache.sis.internal.sql.reverse;
 
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * Description of a relation between two tables.
  *
@@ -26,73 +27,39 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.0
  * @module
  */
-public class RelationMetaModel {
+final class RelationMetaModel {
 
-    private final String relationName;
-    private final String currentColumn;
-    private final String foreignSchema;
-    private final String foreignTable;
-    private final String foreignColumn;
-    private final boolean imported;
-    private final boolean deleteCascade;
+    final String  relationName;
+    final String  currentColumn;
+    final String  foreignSchema;
+    final String  foreignTable;
+    final String  foreignColumn;
+    final boolean isImported;
+    final boolean cascadeOnDelete;
 
-    public RelationMetaModel(final String relationName,final String currentColumn, final String foreignSchema,
+    RelationMetaModel(final String relationName, final String currentColumn, final String foreignSchema,
             final String foreignTable, final String foreignColumn,
-            boolean imported, boolean deleteCascade) {
-        ArgumentChecks.ensureNonNull("relation name", relationName);
-        ArgumentChecks.ensureNonNull("current column", currentColumn);
-        ArgumentChecks.ensureNonNull("foreign table", foreignTable);
-        ArgumentChecks.ensureNonNull("foreign column", foreignColumn);
-        this.relationName = relationName;
-        this.currentColumn = currentColumn;
-        this.foreignSchema = foreignSchema;
-        this.foreignTable = foreignTable;
-        this.foreignColumn = foreignColumn;
-        this.imported = imported;
-        this.deleteCascade = deleteCascade;
-    }
-
-    public String getRelationName() {
-        return relationName;
-    }
-
-    public String getCurrentColumn() {
-        return currentColumn;
-    }
-
-    public String getForeignColumn() {
-        return foreignColumn;
-    }
-
-    public String getForeignSchema() {
-        return foreignSchema;
-    }
-
-    public String getForeignTable() {
-        return foreignTable;
-    }
-
-    /**
-     * Indicate if this key is imported.
-     * @return
-     */
-    public boolean isImported() {
-        return imported;
-    }
-
-    /**
-     * @return true if relation implies a delete on cascade.
-     */
-    public boolean isDeleteCascade(){
-        return deleteCascade;
+            final boolean isImported, final boolean cascadeOnDelete)
+    {
+        ArgumentChecks.ensureNonNull("relationName",  relationName);
+        ArgumentChecks.ensureNonNull("currentColumn", currentColumn);
+        ArgumentChecks.ensureNonNull("foreignTable",  foreignTable);
+        ArgumentChecks.ensureNonNull("foreignColumn", foreignColumn);
+        this.relationName    = relationName;
+        this.currentColumn   = currentColumn;
+        this.foreignSchema   = foreignSchema;
+        this.foreignTable    = foreignTable;
+        this.foreignColumn   = foreignColumn;
+        this.isImported      = isImported;
+        this.cascadeOnDelete = cascadeOnDelete;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(currentColumn);
-        sb.append((imported) ? " → " : " ← ");
-        sb.append(foreignSchema).append('.');
-        sb.append(foreignTable).append('.').append(foreignColumn);
-        return sb.toString();
+        return new StringBuilder(currentColumn)
+                .append((isImported) ? " → " : " ← ")
+                .append(foreignSchema).append('.')
+                .append(foreignTable).append('.').append(foreignColumn)
+                .toString();
     }
 }
