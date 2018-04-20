@@ -23,6 +23,8 @@ import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Point;
+import com.esri.core.geometry.Point2D;
+import com.esri.core.geometry.Point3D;
 import com.esri.core.geometry.WktImportFlags;
 import com.esri.core.geometry.OperatorImportFromWkt;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -33,12 +35,11 @@ import org.apache.sis.util.Classes;
 
 /**
  * Centralizes some usages of ESRI geometry API by Apache SIS.
- * We use this class for isolating dependencies from the {@code org.apache.feature} package
- * to ESRI's API or to Java Topology Suite (JTS) API.
+ * We use this class for isolating dependencies from the {@code org.apache.feature} package to ESRI's API.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -51,7 +52,7 @@ final class ESRI extends Geometries<Geometry> {
     }
 
     /**
-     * If the given object is a JTS geometry, returns a short string representation the class name.
+     * If the given object is an ESRI geometry, returns a short string representation of the class name.
      */
     @Override
     final String tryGetLabel(Object geometry) {
@@ -100,6 +101,12 @@ final class ESRI extends Geometries<Geometry> {
             coord[1] = pt.getY();
             coord[0] = pt.getX();
             return coord;
+        } else if (point instanceof Point2D) {
+            final Point2D pt = (Point2D) point;
+            return new double[] {pt.x, pt.y};
+        } else if (point instanceof Point3D) {
+            final Point3D pt = (Point3D) point;
+            return new double[] {pt.x, pt.y, pt.z};
         }
         return null;
     }
@@ -108,7 +115,8 @@ final class ESRI extends Geometries<Geometry> {
      * Creates a two-dimensional point from the given coordinate.
      */
     @Override
-    public Object createPoint(double x, double y) {
+    public Object createPoint(final double x, final double y) {
+        // Need to explicitely set z to NaN because default value is 0.
         return new Point(x, y, Double.NaN);
     }
 
@@ -147,7 +155,7 @@ final class ESRI extends Geometries<Geometry> {
     /**
      * Merges a sequence of points or paths if the first instance is an implementation of this library.
      *
-     * @throws ClassCastException if an element in the iterator is not a JTS geometry.
+     * @throws ClassCastException if an element in the iterator is not an ESRI geometry.
      */
     @Override
     final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
@@ -159,15 +167,18 @@ final class ESRI extends Geometries<Geometry> {
         for (;; next = polylines.next()) {
             if (next != null) {
                 if (next instanceof Point) {
-                    final double x = ((Point) next).getX();
-                    final double y = ((Point) next).getY();
-                    if (Double.isNaN(x) || Double.isNaN(y)) {
+                    final Point pt = (Point) next;
+                    if (pt.isEmpty()) {
                         lineTo = false;
-                    } else if (lineTo) {
-                        path.lineTo(x, y);
                     } else {
-                        path.startPath(x, y);
-                        lineTo = true;
+                        final double x = ((Point) next).getX();
+                        final double y = ((Point) next).getY();
+                        if (lineTo) {
+                            path.lineTo(x, y);
+                        } else {
+                            path.startPath(x, y);
+                            lineTo = true;
+                        }
                     }
                 } else {
                     path.add((MultiPath) next, false);

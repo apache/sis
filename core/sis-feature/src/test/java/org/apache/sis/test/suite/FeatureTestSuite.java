@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -50,6 +50,9 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
+    org.apache.sis.internal.feature.Java2DTest.class,
+    org.apache.sis.internal.feature.ESRITest.class,
+    org.apache.sis.internal.feature.JTSTest.class,
     org.apache.sis.feature.builder.CharacteristicTypeBuilderTest.class,
     org.apache.sis.feature.builder.AttributeTypeBuilderTest.class,
     org.apache.sis.feature.builder.AssociationRoleBuilderTest.class,

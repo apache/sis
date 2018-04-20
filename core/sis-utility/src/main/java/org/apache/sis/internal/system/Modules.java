@@ -22,8 +22,8 @@ package org.apache.sis.internal.system;
  * The constants in this class are used for two purposes:
  *
  * <ul>
- *   <li>OSGi module symbolic names, as declared in the {@code Bundle-SymbolicName} entry of the
- *       {@code META-INF/MANIFEST.MF} file in each JAR files.</li>
+ *   <li>Module symbolic names, as declared in {@code module-info.java} files. In an OSGi context, this would be
+ *       the {@code Bundle-SymbolicName} entry of the {@code META-INF/MANIFEST.MF} file in each JAR files.</li>
  *
  *   <li>Logger names for "module-wide" messages, or when the message to log does not fit in a more
  *       accurate category. Note that other logger names are listed in the {@link Loggers} class.</li>
@@ -32,7 +32,7 @@ package org.apache.sis.internal.system;
  * Each constant should be the name of the main package of its corresponding module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -81,6 +81,11 @@ public final class Modules {
      * The {@value} module name.
      */
     public static final String GDAL = "org.apache.sis.storage.gdal";
+
+    /**
+     * The {@value} module name.
+     */
+    public static final String SQL = "org.apache.sis.sql";
 
     /**
      * The major version number of all Apache SIS modules.

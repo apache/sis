@@ -33,13 +33,10 @@
 
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS referencing</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Implementations of Coordinate Reference Systems (CRS),
- conversion and transformation services derived from ISO 19111.
+    Implementations of Coordinate Reference Systems (CRS),
+    conversion and transformation services derived from ISO 19111.
   </description>
 
 
@@ -89,20 +86,18 @@ Implementations of Coordinate Reference Systems (CRS),
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Package as OSGi bundle -->
+      <!-- Anticipation for Java 9 -->
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.referencing</Bundle-SymbolicName>
-            <Export-Package>org.apache.sis.internal.referencing, *</Export-Package>
-            <Require-Capability>osgi.extender;
-            filter:="(osgi.extender=osgi.serviceloader.registrar)"</Require-Capability>
-            <Provide-Capability>osgi.serviceloader;
-            osgi.serviceloader=org.apache.sis.internal.jaxb.TypeRegistration; osgi.serviceloader=org.apache.sis.internal.jaxb.AdapterReplacement,org.opengis.referencing.operation.MathTransformFactory,org.opengis.referencing.operation.OperationMethod,org.opengis.temporal.TemporalFactory</Provide-Capability>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.referencing
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

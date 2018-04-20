@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -26,11 +26,11 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link EnumAdapter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
-public final strictfp class EnumAdapterTest extends XMLTestCase {
+public final strictfp class EnumAdapterTest extends TestCase {
     /**
      * Tests the {@link EnumAdapter#name(String)} method.
      */

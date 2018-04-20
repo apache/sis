@@ -3,6 +3,7 @@
 # Lines with zero-space indentation are namespace URIs.
 # Lines with one-space  indentation are XML types.
 # Lines with two-spaces indentation are properties.
+# actual/exported means that a property needs to be renamed.
 #
 http://www.isotc211.org/2005/gmd
  MD_Georectified

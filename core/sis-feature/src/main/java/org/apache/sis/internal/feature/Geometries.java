@@ -37,7 +37,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -195,7 +195,7 @@ public abstract class Geometries<G> {
 
     /**
      * If the given geometry is the type supported by this {@code Geometries} instance,
-     * returns a short string representation the class name. Otherwise returns {@code null}.
+     * returns a short string representation of the class name. Otherwise returns {@code null}.
      */
     abstract String tryGetLabel(Object geometry);
 
@@ -288,8 +288,9 @@ public abstract class Geometries<G> {
      *
      * @param  wkt  the WKT to parse.
      * @return the geometry object for the given WKT.
+     * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
      */
-    public abstract Object parseWKT(String wkt);
+    public abstract Object parseWKT(String wkt) throws Exception;
 
     /**
      * Returns an error message for an unsupported geometry object.

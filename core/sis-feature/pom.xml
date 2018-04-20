@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-feature</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS features</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Representations of geographic features.
+    Representations of geographic features.
   </description>
 
 
@@ -85,15 +82,18 @@ Representations of geographic features.
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Package as OSGi bundle -->
+      <!-- Anticipation for Java 9 -->
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.feature</Bundle-SymbolicName>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.feature
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>
@@ -122,6 +122,11 @@ Representations of geographic features.
     <dependency>
       <groupId>com.esri.geometry</groupId>
       <artifactId>esri-geometry-api</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.jts</groupId>
+      <artifactId>jts-core</artifactId>
       <optional>true</optional>
     </dependency>
 

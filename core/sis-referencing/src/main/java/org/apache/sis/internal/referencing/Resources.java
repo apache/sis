@@ -171,8 +171,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short EllipsoidalHeightNotAllowed_1 = 77;
 
         /**
-         * There is no factory for version {1} of “{0}” authority. Fallback on default version for
-         * objects creation.
+         * There is no local registry for version {1} of “{0}” authority. Fallback on default version
+         * for objects creation.
          */
         public static final short FallbackDefaultFactoryVersion_2 = 17;
 

@@ -37,12 +37,12 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -58,16 +58,11 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.3
  * @module
  */
-public final strictfp class DefaultCitationTest extends XMLTestCase {
+public final strictfp class DefaultCitationTest extends TestUsingFile {
     /**
-     * An XML file in this package containing a citation.
+     * An XML file containing a citation.
      */
-    private static final String XML_FILE = "Citation.xml";
-
-    /**
-     * An XML file in this package containing a citation in the format of legacy ISO 19139:2007 specification.
-     */
-    private static final String XML_FILE_LEGACY = "Citation (legacy).xml";
+    private static final String FILENAME = "Citation.xml";
 
     /**
      * Creates a citation with an arbitrary title, presentation form and other properties.
@@ -199,7 +194,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        testMarshalling(XML_FILE, VERSION_2014);
+        testMarshalling(XML2016+FILENAME, VERSION_2014);
     }
 
     /**
@@ -213,7 +208,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testMarshalling")
     public void testMarshallingLegacy() throws JAXBException {
-        testMarshalling(XML_FILE_LEGACY, VERSION_2007);
+        testMarshalling(XML2007+FILENAME, VERSION_2007);
     }
 
     /**
@@ -255,7 +250,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        testUnmarshalling(XML_FILE);
+        testUnmarshalling(XML2016+FILENAME);
     }
 
     /**
@@ -269,7 +264,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testUnmarshalling")
     public void testUnmarshallingLegacy() throws JAXBException {
-        testUnmarshalling(XML_FILE_LEGACY);
+        testUnmarshalling(XML2007+FILENAME);
     }
 
     /**

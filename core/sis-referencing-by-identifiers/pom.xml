@@ -33,13 +33,10 @@
 
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing-by-identifiers</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS referencing by geographic identifiers</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Implementations of Spatial Reference Systems using Geographic Identifiers
- gazetteer services derived from ISO 19112.
+    Implementations of Spatial Reference Systems using Geographic Identifiers
+    gazetteer services derived from ISO 19112.
   </description>
 
 
@@ -78,15 +75,18 @@ Implementations of Spatial Reference Systems using Geographic Identifiers
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Package as OSGi bundle -->
+      <!-- Anticipation for Java 9 -->
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.referencing.gazetteer</Bundle-SymbolicName>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.referencing.gazetteer
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

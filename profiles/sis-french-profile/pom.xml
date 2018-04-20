@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.profiles</groupId>
   <artifactId>sis-french-profile</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS French profiles</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Extensions to ISO-19115 metadata mandated by the French government.
+    Extensions to ISO-19115 metadata mandated by the French government.
   </description>
 
 
@@ -92,13 +89,16 @@ Extensions to ISO-19115 metadata mandated by the French government.
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.metadata.fra</Bundle-SymbolicName>
-            <Export-Package>*</Export-Package>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.metadata.fra
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

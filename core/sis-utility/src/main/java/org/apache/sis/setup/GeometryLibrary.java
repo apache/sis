@@ -28,7 +28,7 @@ import org.opengis.metadata.acquisition.GeometryType;
  * All those libraries are optional.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
@@ -38,22 +38,24 @@ import org.opengis.metadata.acquisition.GeometryType;
  */
 public enum GeometryLibrary {
     /**
-     * The Java Topology Suite (JTS) library. This open source library provides an object model
-     * for Euclidean planar geometry together with a set of fundamental geometric functions.
-     * The library is licensed under Eclipse Distribution License.
+     * The Java 2D Graphics and Imaging library. This library does not provide as many topological operations
+     * than other libraries, but is available on most standard Java environments and constitute a reliable
+     * fallback when no other library is available.
      *
      * <table class="sis">
      *   <caption>Implementation classes</caption>
      *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
-     *   <tr><td>Root geometry class</td>         <td>{@code org.locationtech.jts.geom.Geometry}</td></tr>
-     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code org.locationtech.jts.geom.Point}</td></tr>
-     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code org.locationtech.jts.geom.LineString}</td></tr>
-     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.locationtech.jts.geom.Polygon}</td></tr>
+     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code java.awt.geom.Point2D}</td></tr>
+     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code java.awt.Shape}</td></tr>
+     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code java.awt.Shape}</td></tr>
      * </table>
      *
-     * @see <a href="http://locationtech.github.io/jts/">JTS home page</a>
+     * Note that contrarily to JTS and ESRI libraries,
+     * a point does not extend any root geometry class in Java2D.
+     *
+     * @see <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/2d/index.html">Java2D home page</a>
      */
-//  JTS,
+    JAVA2D,
 
     /**
      * The ESRI geometry API library. This library can be used for spatial vector data processing.
@@ -74,22 +76,22 @@ public enum GeometryLibrary {
     ESRI,
 
     /**
-     * The Java 2D Graphics and Imaging library. This library does not provide as many topological operations
-     * than other libraries, but is available on most standard Java environments and constitute a reliable
-     * fallback when no other library is available.
+     * The Java Topology Suite (JTS) library. This open source library provides an object model
+     * for Euclidean planar geometry together with a set of fundamental geometric functions.
+     * The library is licensed under Eclipse Distribution License.
      *
      * <table class="sis">
      *   <caption>Implementation classes</caption>
      *   <tr><th>Geometry type</th>               <th>Class name</th></tr>
-     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code java.awt.geom.Point2D}</td></tr>
-     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code java.awt.Shape}</td></tr>
-     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code java.awt.Shape}</td></tr>
+     *   <tr><td>Root geometry class</td>         <td>{@code org.locationtech.jts.geom.Geometry}</td></tr>
+     *   <tr><td>{@link GeometryType#POINT}</td>  <td>{@code org.locationtech.jts.geom.Point}</td></tr>
+     *   <tr><td>{@link GeometryType#LINEAR}</td> <td>{@code org.locationtech.jts.geom.LineString}</td></tr>
+     *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code org.locationtech.jts.geom.Polygon}</td></tr>
      * </table>
      *
-     * Note that contrarily to JTS and ESRI libraries,
-     * a point does not extend any root geometry class in Java2D.
+     * @see <a href="http://locationtech.github.io/jts/">JTS home page</a>
      *
-     * @see <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/2d/index.html">Java2D home page</a>
+     * @since 1.0
      */
-    JAVA2D
+    JTS
 }

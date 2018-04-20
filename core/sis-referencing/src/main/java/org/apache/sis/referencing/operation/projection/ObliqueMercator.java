@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
-import java.awt.geom.AffineTransform;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.OperationMethod;
@@ -25,8 +24,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole;
 import org.apache.sis.internal.referencing.provider.ObliqueMercatorTwoPoints;
 import org.apache.sis.internal.referencing.Resources;
@@ -244,18 +243,10 @@ public class ObliqueMercator extends ConformalProjection {
          */
         getContextualParameters().getMatrix(MatrixRole.NORMALIZATION).convertAfter(0, null, -λ0);
         final MatrixSIS denormalize = getContextualParameters().getMatrix(MatrixRole.DENORMALIZATION);
-        if (γc != 0) {
-            // TODO: This complicated code is only a workaround for the absence of "rotate" method in MatrixSIS.
-            // We should provide a "rotate" method in a future SIS version instead.
-            final AffineTransform tmp = AffineTransforms2D.castOrCopy(denormalize);
-            tmp.rotate(-γc);
-            final Matrix m = AffineTransforms2D.toMatrix(tmp);
-            for (int i=0; i<3; i++) {
-                for (int j=0; j<3; j++) {
-                    denormalize.setElement(j, i, m.getElement(j, i));
-                }
-            }
-        }
+        final Matrix3 rotation = new Matrix3();
+        rotation.m00 =   rotation.m11 = cos(γc);
+        rotation.m10 = -(rotation.m01 = sin(γc));
+        denormalize.setMatrix(denormalize.multiply(rotation));
         /*
          * For variant B only, an additional (uc, vc) translation is applied here.
          * Note that the general form of uc works even in  αc = 90°  special case,
