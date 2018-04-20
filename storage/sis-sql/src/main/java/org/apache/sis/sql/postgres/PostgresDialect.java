@@ -22,32 +22,33 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.sql.SingleAttributeTypeBuilder;
 import org.apache.sis.internal.sql.reverse.ColumnMetaModel;
-import org.apache.sis.sql.dialect.SQLDialect;
 import org.apache.sis.storage.DataStoreException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.sql.Dialect;
+
 
 /**
+ * Implements PostgreSQL-specific functionalities.
  *
  * @author Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-class PostgresDialect implements SQLDialect {
+final class PostgresDialect extends Dialect {
 
-    private static final Set<String> IGNORE_TABLES = new HashSet<>();
+    private static final Set<String> IGNORE_TABLES = new HashSet<>(8);
     static {
-        //postgis 1+ geometry and referencing
+        // Postgis 1+ geometry and referencing
         IGNORE_TABLES.add("spatial_ref_sys");
         IGNORE_TABLES.add("geometry_columns");
         IGNORE_TABLES.add("geography_columns");
-        //postgis 2 raster
+        // Postgis 2 raster
         IGNORE_TABLES.add("raster_columns");
         IGNORE_TABLES.add("raster_overviews");
     }
-
 
     @Override
     public boolean supportGlobalMetadata() {
@@ -55,53 +56,52 @@ class PostgresDialect implements SQLDialect {
     }
 
     @Override
-    public boolean ignoreTable(String name) {
+    public boolean isTableIgnored(String name) {
         return IGNORE_TABLES.contains(name.toLowerCase());
     }
 
     @Override
     public Class<?> getJavaType(int sqlType, String sqlTypeName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void encodeColumnName(StringBuilder sql, String name) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void encodeSchemaAndTableName(StringBuilder sql, String databaseSchema, String tableName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Object nextValue(ColumnMetaModel column, Connection cx) throws SQLException, DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public String getColumnSequence(Connection cx, String schemaName, String tableName, String columnName) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void decodeColumnType(SingleAttributeTypeBuilder atb, Connection cx, String typeName, int datatype, String schemaName, String tableName, String columnName) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void decodeGeometryColumnType(SingleAttributeTypeBuilder atb, Connection cx, ResultSet rs, int columnIndex, boolean customquery) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Integer getGeometrySRID(String schemaName, String tableName, String columnName, Map<String, Object> metas, Connection cx) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public CoordinateReferenceSystem createCRS(int srid, Connection cx) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

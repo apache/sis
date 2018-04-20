@@ -17,54 +17,58 @@
 package org.apache.sis.internal.sql;
 
 import java.util.Iterator;
+import org.apache.sis.util.CharSequences;
+
 
 /**
- * For internal use of SQL store.
+ * Miscellaneous utility methods.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public final class SQLUtilities {
-
+    /**
+     * Do not allow instantiation of this class.
+     */
     private SQLUtilities(){
     }
 
     /**
      * Returns a graphical representation of the specified objects. This representation can be
      * printed to the {@linkplain System#out standard output stream} (for example) if it uses
-     * a monospaced font and supports unicode.
+     * a monospaced font and supports Unicode.
      *
-     * @param  root  The root name of the tree to format.
-     * @param  objects The objects to format as root children.
-     * @return A string representation of the tree.
+     * @param  root     the root name of the tree to format, or {@code null} if none.
+     * @param  objects  the objects to format as root children, or {@code null} if none.
+     * @return a string representation of the tree.
      */
-    public static String toStringTree(String root, final Iterable<?> objects) {
-        final StringBuilder sb = new StringBuilder();
+    public static String toTreeString(String root, final Iterable<?> objects) {
+        final StringBuilder sb = new StringBuilder(100);
         if (root != null) {
             sb.append(root);
         }
         if (objects != null) {
-            final Iterator<?> ite = objects.iterator();
-            while (ite.hasNext()) {
-                sb.append('\n');
-                final Object next = ite.next();
-                final boolean last = !ite.hasNext();
-                sb.append(last ? "└─ " : "├─ ");
+            final String lineSeparator = System.lineSeparator();
+            final Iterator<?> it = objects.iterator();
+            boolean hasNext;
+            if (it.hasNext()) do {
+                sb.append(lineSeparator);
+                final Object next = it.next();
+                hasNext = it.hasNext();
+                sb.append(hasNext ? "├─ " : "└─ ");
 
-                final String[] parts = String.valueOf(next).split("\n");
+                final CharSequence[] parts = CharSequences.splitOnEOL(String.valueOf(next));
                 sb.append(parts[0]);
-                for (int k=1;k<parts.length;k++) {
-                    sb.append('\n');
-                    sb.append(last ? ' ' : '│');
-                    sb.append("  ");
-                    sb.append(parts[k]);
+                for (int k=1; k < parts.length; k++) {
+                    sb.append(lineSeparator)
+                      .append(hasNext ? '│' : ' ')
+                      .append("  ")
+                      .append(parts[k]);
                 }
-            }
+            } while (hasNext);
         }
-
         return sb.toString();
     }
-
 }

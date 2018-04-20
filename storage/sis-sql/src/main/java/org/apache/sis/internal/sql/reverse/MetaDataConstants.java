@@ -14,51 +14,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.internal.sql.reverse;
+
 
 /**
  * Constants defined by JDBC to retrieve a database meta-model.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final class MetaDataConstants {
+final class MetaDataConstants {
 
-    public static final class Schema{
-        /** schema name */
+    static final class Schema {
+        /** schema name. */
         public static final String TABLE_SCHEM = "TABLE_SCHEM";
-        /** catalog name (may be null) */
+
+        /** catalog name (values in this column may be null). */
         public static final String TABLE_CATALOG = "TABLE_CATALOG";
 
-        private Schema(){}
+        private Schema() {
+        }
     }
 
-    public static final class Table{
-        /** table catalog (may be null) */
+    static final class Table {
+        /** Table catalog (values in this column may be null). */
         public static final String TABLE_CAT = "TABLE_CAT";
-        /** table schema (may be null) */
+
+        /** Table schema (values in this column may be null). */
+
         public static final String TABLE_SCHEM = "TABLE_SCHEM";
-        /** table name */
+
+        /** Table name. */
         public static final String TABLE_NAME = "TABLE_NAME";
-        /** table type. Typical types are : <br>
+
+        /**
+         * Table type. Typical types are:
          * "TABLE", "VIEW", "SYSTEM TABLE",
-         * "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM". */
+         * "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+         */
         public static final String TABLE_TYPE = "TABLE_TYPE";
-        /** explanatory comment on the table */
+
+        /** Explanatory comment on the table. */
         public static final String REMARKS = "REMARKS";
-        /** the types catalog (may be null) */
+
+        /** The types catalog (values in this column may be null). */
         public static final String TYPE_CAT = "TYPE_CAT";
-        /** the types schema (may be null) */
+
+        /** The types schema (values in this column may be null). */
         public static final String TYPE_SCHEM = "TYPE_SCHEM";
-        /** type name (may be null) */
+
+        /** Type name (values in this column may be null). */
         public static final String TYPE_NAME = "TYPE_NAME";
-        /** name of the designated "identifier" column of a typed table (may be null) */
+
+        /** Name of the designated "identifier" column of a typed table (values in this column may be null). */
         public static final String SELF_REFERENCING_COL_NAME = "SELF_REFERENCING_COL_NAME";
-        /** specifies how values in SELF_REFERENCING_COL_NAME are created.<br>
-         * Values are "SYSTEM", "USER", "DERIVED". (may be null) */
+
+        /**
+         * Specifies how values in SELF_REFERENCING_COL_NAME are created.
+         * Values are "SYSTEM", "USER", "DERIVED". values in this column may be null.
+         */
         public static final String REF_GENERATION =  "REF_GENERATION";
 
         public static final String VALUE_TYPE_TABLE             = "TABLE";
@@ -73,285 +89,427 @@ public final class MetaDataConstants {
         public static final String VALUE_REFGEN_USER            = "USER";
         public static final String VALUE_REFGEN_DERIVED         = "DERIVED";
 
-        private Table(){}
+        private Table() {
+        }
     }
 
-    public static final class SuperTable{
-        /** the type's catalog (may be null) */
+    public static final class SuperTable {
+        /** The type's catalog (values in this column may be null). */
         public static final String TABLE_CAT = "TABLE_CAT";
-        /** type's schema (may be null) */
+
+        /** Type's schema (values in this column may be null). */
         public static final String TABLE_SCHEM = "TABLE_SCHEM";
-        /** type name */
+
+        /** Type name. */
         public static final String TABLE_NAME = "TABLE_NAME";
-        /** the direct super type's name */
+
+        /** The direct super type's name. */
         public static final String SUPERTABLE_NAME =  "SUPERTABLE_NAME";
 
-        private SuperTable(){}
+        private SuperTable() {
+        }
     }
 
-    public static final class Column{
-
-        /** table catalog (may be null) */
+    public static final class Column {
+        /** Table catalog (values in this column may be null). */
         public static final String TABLE_CAT = "TABLE_CAT";
-        /** table schema (may be null) */
+
+        /** Table schema (values in this column may be null). */
         public static final String TABLE_SCHEM = "TABLE_SCHEM";
-        /** table name */
+
+        /** Table name. */
         public static final String TABLE_NAME = "TABLE_NAME";
-        /** column name */
+
+        /** Column name. */
         public static final String COLUMN_NAME = "COLUMN_NAME";
-        /** int : SQL type from java.sql.Types */
+
+        /** SQL type from {@link java.sql.Types}. */
         public static final String DATA_TYPE = "DATA_TYPE";
-        /** Data source dependent type name, for a UDT the type name is fully qualified */
+
+        /** Data source dependent type name, for a UDT the type name is fully qualified. */
         public static final String TYPE_NAME = "TYPE_NAME";
-        /** int : column size. */
+
+        /** Column size ({@code int} values). */
         public static final String COLUMN_SIZE = "COLUMN_SIZE";
-        /** not used. */
+
+        /** Not used. */
         public static final String BUFFER_LENGTH = "BUFFER_LENGTH";
-        /** int : the number of fractional digits. Null is returned for
-         * data types where DECIMAL_DIGITS is not applicable. */
+
+        /**
+         * The number of fractional digits as {@code int} values.
+         * Null is returned for data types where DECIMAL_DIGITS is not applicable.
+         */
         public static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
-        /** int : Radix (typically either 10 or 2) */
+
+        /** Radix (typically either 10 or 2) as {@code int} values. */
         public static final String NUM_PREC_RADIX = "NUM_PREC_RADIX";
-        /** int : is NULL allowed. <br>
-         * columnNoNulls - might not allow NULL values <br>
-         * columnNullable - definitely allows NULL values<br>
-         * columnNullableUnknown - nullability unknown */
+
+        /**
+         * Whether NULL allowed as a {@code int} code.
+         * <ul>
+         *   <li>{@code columnNoNulls} - might not allow NULL values</li>
+         *   <li>{@code columnNullable} - definitely allows NULL values</li>
+         *   <li>{@code columnNullableUnknown} - nullability unknown</li>
+         * </ul>
+         */
         public static final String NULLABLE = "NULLABLE";
-        /** comment describing column (may be null) */
+
+        /** Comment describing column (values in this column may be null). */
         public static final String REMARKS = "REMARKS";
-        /** default value for the column, which should be interpreted as a
-         * string when the value is enclosed in single quotes (may be null) */
+
+        /**
+         * Default value for the column, which should be interpreted as a
+         * string when the value is enclosed in single quotes (values in this column may be null)
+         */
         public static final String COLUMN_DEF = "COLUMN_DEF";
-        /** int : unused */
+
+        /** Unused {@code int} values. */
         public static final String SQL_DATA_TYPE = "SQL_DATA_TYPE";
-        /** int : unused */
+
+        /** Unused {@code int} values. */
         public static final String SQL_DATETIME_SUB = "SQL_DATETIME_SUB";
-        /** int : for char types the maximum number of bytes in the column */
+
+        /** Maximum number (as a {@code int}) of bytes in the column of type {@code char}. */
         public static final String CHAR_OCTET_LENGTH = "CHAR_OCTET_LENGTH";
-        /** int : index of column in table (starting at 1) */
+
+        /** Index of column in table (starting at 1). */
         public static final String ORDINAL_POSITION = "ORDINAL_POSITION";
-        /** ISO rules are used to determine the nullability for a column.<br>
-         * YES --- if the parameter can include NULLs<br>
-         * NO --- if the parameter cannot include NULLs<br>
-         * empty string --- if the nullability for the parameter is unknown */
+
+        /**
+         * ISO rules are used to determine the nullability for a column.
+         * YES if the parameter can include NULLs,
+         * NO if the parameter cannot include NULLs,
+         * empty string if the nullability for the parameter is unknown.
+         */
         public static final String IS_NULLABLE = "IS_NULLABLE";
-        /** catalog of table that is the scope of a reference attribute
-         * (null if DATA_TYPE isn't REF) */
+
+        /**
+         * Catalog of table that is the scope of a reference attribute
+         * (null if DATA_TYPE isn't REF).
+         */
         public static final String SCOPE_CATLOG = "SCOPE_CATLOG";
-        /** schema of table that is the scope of a reference attribute
-         * (null if the DATA_TYPE isn't REF) */
+
+        /**
+         * Schema of table that is the scope of a reference attribute
+         * (null if the DATA_TYPE isn't REF).
+         */
         public static final String SCOPE_SCHEMA = "SCOPE_SCHEMA";
-        /** table name that this the scope of a reference attribute
-         * (null if the DATA_TYPE isn't REF) */
+
+        /**
+         * Table name that this the scope of a reference attribute
+         * (null if the DATA_TYPE isn't REF).
+         */
         public static final String SCOPE_TABLE = "SCOPE_TABLE";
-        /** short : source type of a distinct type or user-generated Ref type, SQL type
-         * from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF) */
+
+        /**
+         * Source type of a distinct type or user-generated Ref type.
+         * This is a SQL type from {@link java.sql.Types}
+         * (null if DATA_TYPE isn't DISTINCT or user-generated REF).
+         */
         public static final String SOURCE_DATA_TYPE = "SOURCE_DATA_TYPE";
-        /** Indicates whether this column is auto incremented<br>
-         * YES --- if the column is auto incremented<br>
-         * NO --- if the column is not auto incremented<br>
-         * empty string --- if it cannot be determined whether<br>
-         * the column is auto incremented parameter is unknown
+
+        /**
+         * Indicates whether this column is auto incremented.
+         * YES if the column is auto incremented,
+         * NO if the column is not auto incremented,
+         * empty string if whether the column is auto incremented is unknown.
          */
         public static final String IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
 
         public static final String VALUE_YES = "YES";
         public static final String VALUE_NO = "NO";
 
-        private Column(){}
+        private Column() {
+        }
     }
 
     public static final class PrimaryKey{
-        /** table catalog (may be null) */
+        /** Table catalog (values in this column may be null). */
         public static final String TABLE_CAT = "TABLE_CAT";
-        /** table schema (may be null) */
+
+        /** Table schema (values in this column may be null). */
         public static final String TABLE_SCHEM = "TABLE_SCHEM";
-        /** table name */
+
+        /** Table name. */
         public static final String TABLE_NAME = "TABLE_NAME";
-        /** column name */
+
+        /** Column name. */
         public static final String COLUMN_NAME = "COLUMN_NAME";
-        /** short : sequence number within primary key.<br>
-         * - a value of 1 represents the first column of the primary key<br>
-         * - a value of 2 would represent the second column within the primary key */
+
+        /**
+         * Sequence number within primary key as a {@code short} code.
+         * A value of 1 represents the first column of the primary key;
+         * a value of 2 would represent the second column within the primary key.
+         */
         public static final String KEY_SEQ = "KEY_SEQ";
-        /** primary key name (may be null) */
+
+        /** Primary key name (values in this column may be null). */
         public static final String PK_NAME = "PK_NAME";
 
-        private PrimaryKey(){}
+        private PrimaryKey() {
+        }
     }
 
     public static final class ImportedKey{
-        /** primary key table catalog being imported (may be null) */
+        /** Primary key table catalog being imported (values in this column may be null). */
         public static final String PKTABLE_CAT = "PKTABLE_CAT";
-        /** primary key table schema being imported (may be null) */
+
+        /** Primary key table schema being imported (values in this column may be null). */
         public static final String PKTABLE_SCHEM = "PKTABLE_SCHEM";
-        /** primary key table name being imported */
+
+        /** Primary key table name being imported. */
         public static final String PKTABLE_NAME = "PKTABLE_NAME";
-        /** primary key column name being imported */
+
+        /** Primary key column name being imported. */
         public static final String PKCOLUMN_NAME = "PKCOLUMN_NAME";
-        /** foreign key table catalog (may be null) */
+
+        /** Foreign key table catalog (may be null). */
         public static final String FKTABLE_CAT = "FKTABLE_CAT";
-        /** foreign key table schema (may be null) */
+
+        /** Foreign key table schema (may be null). */
         public static final String FKTABLE_SCHEM = "FKTABLE_SCHEM";
-        /** foreign key table name */
+
+        /** Foreign key table name. */
         public static final String FKTABLE_NAME = "FKTABLE_NAME";
-        /** foreign key column name */
+
+        /** Foreign key column name. */
         public static final String FKCOLUMN_NAME = "FKCOLUMN_NAME";
-        /** short : sequence number within a foreign key <br>
-         * - a value of 1 represents the first column of the foreign key<br>
-         * - a value of 2 would represent the second column within the foreign key */
+
+        /**
+         * Sequence number within a foreign key as a {@code short} code.
+         * A value of 1 represents the first column of the foreign key;
+         * a value of 2 would represent the second column within the foreign key.
+         */
         public static final String KEY_SEQ = "KEY_SEQ";
-        /** short : What happens to a foreign key when the primary key is updated:<br>
-         * importedNoAction - do not allow update of primary key if it has been imported<br>
-         * importedKeyCascade - change imported key to agree with primary key update<br>
-         * importedKeySetNull - change imported key to NULL if its primary key has been updated<br>
-         * importedKeySetDefault - change imported key to default values if its primary key has been updated<br>
-         * importedKeyRestrict - same as importedKeyNoAction (for ODBC 2.x compatibility) */
+
+        /**
+         * What happens to a foreign key when the primary key is updated, as a {@code short} code.
+         * <ul>
+         *   <li>{@code importedNoAction} - do not allow update of primary key if it has been imported</li>
+         *   <li>{@code importedKeyCascade} - change imported key to agree with primary key update</li>
+         *   <li>{@code importedKeySetNull} - change imported key to NULL if its primary key has been updated</li>
+         *   <li>{@code importedKeySetDefault} - change imported key to default values if its primary key has been updated</li>
+         *   <li>{@code importedKeyRestrict} - same as importedKeyNoAction (for ODBC 2.x compatibility).</li>
+         * </ul>
+         */
         public static final String UPDATE_RULE = "UPDATE_RULE";
-        /** short : What happens to the foreign key when primary is deleted.<br>
-         * importedKeyNoAction - do not allow delete of primary key if it has been imported<br>
-         * importedKeyCascade - delete rows that import a deleted key<br>
-         * importedKeySetNull - change imported key to NULL if its primary key has been deleted<br>
-         * importedKeyRestrict - same as importedKeyNoAction (for ODBC 2.x compatibility)<br>
-         * importedKeySetDefault - change imported key to default if its primary key has been deleted */
+
+        /**
+         * What happens to the foreign key when primary is deleted, as a {@code short} code.
+         * <ul>
+         *   <li>{@code importedKeyNoAction} - do not allow delete of primary key if it has been imported</li>
+         *   <li>{@code importedKeyCascade} - delete rows that import a deleted key</li>
+         *   <li>{@code importedKeySetNull} - change imported key to NULL if its primary key has been deleted</li>
+         *   <li>{@code importedKeyRestrict} - same as importedKeyNoAction (for ODBC 2.x compatibility)</li>
+         *   <li>{@code importedKeySetDefault} - change imported key to default if its primary key has been deleted.</li>
+         * </ul>
+         */
         public static final String DELETE_RULE = "DELETE_RULE";
-        /** foreign key name (may be null) */
+
+        /** Foreign key name (values in this column may be null). */
         public static final String FK_NAME = "FK_NAME";
-        /** primary key name (may be null) */
+
+        /** Primary key name (values in this column may be null). */
         public static final String PK_NAME = "PK_NAME";
-        /** short : can the evaluation of foreign key constraints be deferred until commit<br>
-         * importedKeyInitiallyDeferred - see SQL92 for definition<br>
-         * importedKeyInitiallyImmediate - see SQL92 for definition<br>
-         * importedKeyNotDeferrable - see SQL92 for definition */
+
+        /**
+         * Whether the evaluation of foreign key constraints can be deferred until commit (as a {@code short} code).
+         * <ul>
+         *   <li>{@code importedKeyInitiallyDeferred} - see SQL92 for definition</li>
+         *   <li>{@code importedKeyInitiallyImmediate} - see SQL92 for definition</li>
+         *   <li>{@code importedKeyNotDeferrable} - see SQL92 for definition</li>
+         * </ul>
+         */
         public static final String DEFERRABILITY = "DEFERRABILITY";
 
-        private ImportedKey(){}
+        private ImportedKey() {
+        }
     }
 
     public static final class ExportedKey{
-        /** primary key table catalog (may be null) */
+        /** Primary key table catalog (values in this column may be null). */
         public static final String PKTABLE_CAT = "PKTABLE_CAT";
-        /** primary key table schema (may be null) */
+
+        /** Primary key table schema (values in this column may be null). */
         public static final String PKTABLE_SCHEM = "PKTABLE_SCHEM";
-        /** primary key table name */
+
+        /** Primary key table name. */
         public static final String PKTABLE_NAME = "PKTABLE_NAME";
-        /** primary key column name */
+
+        /** Primary key column name. */
         public static final String PKCOLUMN_NAME = "PKCOLUMN_NAME";
-        /** foreign key table catalog (may be null) being exported (may be null) */
+
+        /** Foreign key table catalog (may be null) being exported (values in this column may be null). */
         public static final String FKTABLE_CAT = "FKTABLE_CAT";
-        /** foreign key table schema (may be null) being exported (may be null) */
+
+        /** Foreign key table schema (may be null) being exported (values in this column may be null). */
         public static final String FKTABLE_SCHEM = "FKTABLE_SCHEM";
-        /** foreign key table name being exported */
+
+        /** Foreign key table name being exported. */
         public static final String FKTABLE_NAME = "FKTABLE_NAME";
-        /** foreign key column name being exported */
+
+        /** Foreign key column name being exported. */
         public static final String FKCOLUMN_NAME = "FKCOLUMN_NAME";
-        /** short : sequence number within foreign key :<br>
-         * a value of 1 represents the first column of the foreign key<br>
-         * a value of 2 would represent the second column within the foreign key */
+
+        /**
+         * Sequence number within foreign key as a {@code short} code.
+         * a value of 1 represents the first column of the foreign key;
+         * a value of 2 would represent the second column within the foreign key.
+         */
         public static final String KEY_SEQ = "KEY_SEQ";
-        /** short : What happens to foreign key when primary is updated:<br>
-         * importedNoAction - do not allow update of primary key if it has been imported<br>
-         * importedKeyCascade - change imported key to agree with primary key update<br>
-         * importedKeySetNull - change imported key to NULL if its primary key has been updated<br>
-         * importedKeySetDefault - change imported key to default values if its primary key has been updated<br>
-         * importedKeyRestrict - same as importedKeyNoAction (for ODBC 2.x compatibility) */
+
+        /**
+         * What happens to foreign key when primary is updated, as a {@code short} code.
+         * <ul>
+         *   <li>{@code importedNoAction} - do not allow update of primary key if it has been imported</li>
+         *   <li>{@code importedKeyCascade} - change imported key to agree with primary key update</li>
+         *   <li>{@code importedKeySetNull} - change imported key to NULL if its primary key has been updated</li>
+         *   <li>{@code importedKeySetDefault} - change imported key to default values if its primary key has been updated</li>
+         *   <li>{@code importedKeyRestrict} - same as importedKeyNoAction (for ODBC 2.x compatibility)</li>
+         * </ul>
+         */
         public static final String UPDATE_RULE = "UPDATE_RULE";
-        /** short : What happens to the foreign key when primary is deleted. <br>
-         * importedKeyNoAction - do not allow delete of primary key if it has been imported<br>
-         * importedKeyCascade - delete rows that import a deleted key<br>
-         * importedKeySetNull - change imported key to NULL if its primary key has been deleted<br>
-         * importedKeyRestrict - same as importedKeyNoAction (for ODBC 2.x compatibility)<br>
-         * importedKeySetDefault - change imported key to default if its primary key has been deleted */
+
+        /**
+         * What happens to the foreign key when primary is deleted, as a {@code short} code.
+         * <ul>
+         *   <li>{@code importedKeyNoAction} - do not allow delete of primary key if it has been imported</li>
+         *   <li>{@code importedKeyCascade} - delete rows that import a deleted key</li>
+         *   <li>{@code importedKeySetNull} - change imported key to NULL if its primary key has been deleted</li>
+         *   <li>{@code importedKeyRestrict} - same as importedKeyNoAction (for ODBC 2.x compatibility)</li>
+         *   <li>{@code importedKeySetDefault} - change imported key to default if its primary key has been deleted</li>
+         * </ul>
+         */
         public static final String DELETE_RULE = "DELETE_RULE";
-        /** foreign key name (may be null) */
+
+        /** Foreign key name (values in this column may be null). */
         public static final String FK_NAME = "FK_NAME";
-        /** primary key name (may be null) */
+
+        /** Primary key name (values in this column may be null). */
         public static final String PK_NAME = "PK_NAME";
-        /** short : can the evaluation of foreign key constraints be deferred until commit<br>
-         * importedKeyInitiallyDeferred - see SQL92 for definition<br>
-         * importedKeyInitiallyImmediate - see SQL92 for definition<br>
-         * importedKeyNotDeferrable - see SQL92 for definition */
+
+        /**
+         * Whether the evaluation of foreign key constraints can be deferred until commit, as a {@code short} code.
+         * <ul>
+         *   <li>{@code importedKeyInitiallyDeferred} - see SQL92 for definition</li>
+         *   <li>{@code importedKeyInitiallyImmediate} - see SQL92 for definition</li>
+         *   <li>{@code importedKeyNotDeferrable} - see SQL92 for definition</li>
+         * </ul>
+         */
         public static final String DEFERRABILITY = "DEFERRABILITY";
 
-        private ExportedKey(){}
+        private ExportedKey() {
+        }
     }
 
     public static final class BestRow{
-
-        /** short =&gt; actual scope of result
+        /**
+         * Actual scope of result as a {@code short} code.
          *  bestRowTemporary - very temporary, while using row
          *  bestRowTransaction - valid for remainder of current transaction
-         *  bestRowSession - valid for remainder of current session */
+         *  bestRowSession - valid for remainder of current session.
+         */
         public static final String SCOPE = "SCOPE";
-        /** String =&gt; column name */
+
+        /** Column name. */
         public static final String COLUMN_NAME = "COLUMN_NAME";
-        /** int =&gt; SQL data type from java.sql.Types */
+
+        /** SQL data type from {@link java.sql.Types}. */
         public static final String DATA_TYPE = "DATA_TYPE";
-        /** String =&gt; Data source dependent type name,
-         * for a UDT the type name is fully qualified */
+
+        /** Data source dependent type name. For a UDT the type name is fully qualified. */
         public static final String TYPE_NAME = "TYPE_NAME";
-        /** int =&gt; precision  */
+
+        /** Precision as an {@code int}. */
         public static final String COLUMN_SIZE = "COLUMN_SIZE";
-        /** int =&gt; not used  */
+
+        /** Not used. */
         public static final String BUFFER_LENGTH = "BUFFER_LENGTH";
-        /** short =&gt; scale - Null is returned for data types where DECIMAL_DIGITS is not applicable. */
+
+        /** Scale - Null is returned for data types where DECIMAL_DIGITS is not applicable. */
         public static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
-        /** short =&gt; is this a pseudo column like an Oracle ROWID
-            bestRowUnknown - may or may not be pseudo column
-            bestRowNotPseudo - is NOT a pseudo column
-            bestRowPseudo - is a pseudo column */
+
+        /**
+         * Whether this a pseudo column like an Oracle ROWID, as a {@code short} code.
+         * bestRowUnknown - may or may not be pseudo column
+         * bestRowNotPseudo - is NOT a pseudo column
+         * bestRowPseudo - is a pseudo column.
+         */
         public static final String PSEUDO_COLUMN = "PSEUDO_COLUMN";
 
-        private BestRow(){}
+        private BestRow() {
+        }
     }
 
-    public static final class Index{
-
-        /** String =&gt; table catalog (may be null) */
+    public static final class Index {
+        /** Table catalog (values in this column may be null). */
         public static final String TABLE_CAT = "TABLE_CAT";
-        /** String =&gt; table schema (may be null)  */
+
+        /** Table schema (values in this column may be null). */
         public static final String TABLE_SCHEM = "TABLE_SCHEM";
-        /** String =&gt; table name  */
+
+        /** Table name. */
         public static final String TABLE_NAME = "TABLE_NAME";
-        /** boolean =&gt; Can index values be non-unique.
+
+        /** Whether index values can be non-unique.
          * false when TYPE is tableIndexStatistic  */
         public static final String NON_UNIQUE = "NON_UNIQUE";
-        /** String =&gt; index catalog (may be null);
-         * null when TYPE is tableIndexStatistic  */
+
+        /**
+         * Index catalog (values in this column may be null).
+         * Values are null when TYPE is tableIndexStatistic.
+         */
         public static final String INDEX_QUALIFIER = "INDEX_QUALIFIER";
-        /** String =&gt; index name;
-         * null when TYPE is tableIndexStatistic  */
+
+        /** Index name; null when TYPE is tableIndexStatistic. */
         public static final String INDEX_NAME = "INDEX_NAME";
-        /** short =&gt; index type:
+
+        /**
+         * Index type as a {@code short} code.
          *   tableIndexStatistic - this identifies table statistics that are
          *       returned in conjuction with a table's index descriptions
          *   tableIndexClustered - this is a clustered index
          *   tableIndexHashed - this is a hashed index
-         *   tableIndexOther - this is some other style of index  */
+         *   tableIndexOther - this is some other style of index.
+         */
         public static final String TYPE = "TYPE";
-        /** short =&gt; column sequence number within index;
-         * zero when TYPE is tableIndexStatistic  */
+
+        /**
+         * Column sequence number within index as a {@code short}.
+         * Zero when TYPE is tableIndexStatistic.
+         */
         public static final String ORDINAL_POSITION = "ORDINAL_POSITION";
-        /** String =&gt; column name;
-         * null when TYPE is tableIndexStatistic  */
+
+        /** Column name. Values are null when TYPE is tableIndexStatistic. */
         public static final String COLUMN_NAME = "COLUMN_NAME";
-        /** String =&gt; column sort sequence,
-         * "A" =&gt; ascending,
-         * "D" =&gt; descending, may be null if sort sequence is not supported;
-         * null when TYPE is tableIndexStatistic  */
+
+        /**
+         * Column sort sequence.
+         * "A" for ascending,
+         * "D" for descending, may be null if sort sequence is not supported;
+         * null when TYPE is tableIndexStatistic.
+         */
         public static final String ASC_OR_DESC = "ASC_OR_DESC";
-        /** int =&gt; When TYPE is tableIndexStatistic, then this is the number of rows in the table;
-         * otherwise, it is the number of unique values in the index.  */
+
+        /**
+         * When TYPE is tableIndexStatistic, then this is the number of rows in the table as an {@code int}.
+         * Otherwise, it is the number of unique values in the index.
+         */
         public static final String CARDINALITY = "CARDINALITY";
-        /** int =&gt; When TYPE is tableIndexStatisic then this is the number of pages used for the table,
-         * otherwise it is the number of pages used for the current index.  */
+
+        /**
+         * When TYPE is tableIndexStatisic then this is the number of pages used for the table as an {@code int}.
+         * Otherwise it is the number of pages used for the current index.
+         */
         public static final String PAGES = "PAGES";
-        /** String =&gt; Filter condition, if any. (may be null) */
+
+        /** Filter condition, if any. Values in this column may be null. */
         public static final String FILTER_CONDITION = "FILTER_CONDITION";
 
-        private Index(){}
+        private Index() {
+        }
     }
 
-    private MetaDataConstants(){}
-
+    private MetaDataConstants() {
+    }
 }

@@ -14,43 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.reverse;
+package org.apache.sis.sql;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.sis.internal.sql.SQLUtilities;
+import org.apache.sis.storage.DataStoreProvider;
 
 
 /**
- * Description of a database schema.
+ * Provider of {@code SQLStore} instances.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class SchemaMetaModel {
-
-    final String name;
-
-    final Map<String,TableMetaModel> tables;
-
-    SchemaMetaModel(final String name) {
-        this.name = name;
-        tables = new HashMap<>();
-    }
-
-    Collection<TableMetaModel> getTables() {
-        return tables.values();
-    }
-
-    TableMetaModel getTable(final String name){
-        return tables.get(name);
-    }
-
-    @Override
-    public String toString() {
-        return SQLUtilities.toTreeString(name, getTables());
+public abstract class SQLStoreProvider extends DataStoreProvider {
+    /**
+     * Creates a new provider.
+     */
+    protected SQLStoreProvider() {
     }
 }

@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql;
+package org.apache.sis.internal.sql.reverse;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.stream.Stream;
+import org.apache.sis.sql.SQLQuery;
+import org.apache.sis.sql.SQLStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.event.ChangeEvent;
@@ -30,22 +32,25 @@ import org.opengis.feature.FeatureType;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 
+
 /**
  * A FeatureSet above a custom SQL query.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class SQLQueryFeatureSet implements FeatureSet {
+public final class QueryFeatureSet implements FeatureSet {
 
-    private final AbstractSQLStore store;
+    private final DataBaseModel model;
+    private final SQLStore store;
     private final SQLQuery query;
     private FeatureType type;
 
-    public SQLQueryFeatureSet(AbstractSQLStore store, SQLQuery query) {
+    public QueryFeatureSet(final SQLStore store, final DataBaseModel model, final SQLQuery query) {
         this.store = store;
+        this.model = model;
         this.query = query;
     }
 
@@ -56,7 +61,7 @@ final class SQLQueryFeatureSet implements FeatureSet {
             try (Connection cnx = store.getDataSource().getConnection();
                  Statement stmt = cnx.createStatement();
                  ResultSet rs = stmt.executeQuery(sql)) {
-                type = store.getDatabaseModel().analyzeResult(rs, query.getName());
+                type = model.analyzeResult(rs, query.getName());
             } catch (SQLException ex) {
                 throw new DataStoreException(ex);
             }
@@ -86,5 +91,4 @@ final class SQLQueryFeatureSet implements FeatureSet {
     @Override
     public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
     }
-
 }

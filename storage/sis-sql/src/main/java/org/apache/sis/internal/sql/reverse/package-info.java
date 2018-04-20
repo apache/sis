@@ -14,15 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql;
+
 
 /**
+ * Inspect a database schema.
  *
- * @author Johann Sorel (Geomatys)
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public interface AbstractSQLProvider {
-
-}
+package org.apache.sis.internal.sql.reverse;

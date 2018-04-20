@@ -14,43 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.reverse;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.sis.internal.sql.SQLUtilities;
 
 
 /**
- * Description of a database schema.
+ * A set of helper classes for the SIS implementation of SQL data stores.
  *
- * @author Johann Sorel (Geomatys)
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class SchemaMetaModel {
-
-    final String name;
-
-    final Map<String,TableMetaModel> tables;
-
-    SchemaMetaModel(final String name) {
-        this.name = name;
-        tables = new HashMap<>();
-    }
-
-    Collection<TableMetaModel> getTables() {
-        return tables.values();
-    }
-
-    TableMetaModel getTable(final String name){
-        return tables.get(name);
-    }
-
-    @Override
-    public String toString() {
-        return SQLUtilities.toTreeString(name, getTables());
-    }
-}
+package org.apache.sis.internal.sql;
