@@ -37,7 +37,6 @@
        =========================================================== -->
   <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-openoffice</artifactId>
-  <packaging>jar</packaging>
   <name>Bridges to Apache OpenOffice or LibreOffice</name>
 
   <description>

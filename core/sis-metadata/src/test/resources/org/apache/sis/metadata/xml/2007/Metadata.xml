@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<gmd:MD_Metadata
+    xmlns:gml   = "http://www.opengis.net/gml/3.2"
+    xmlns:gmd   = "http://www.isotc211.org/2005/gmd"
+    xmlns:gmx   = "http://www.isotc211.org/2005/gmx"
+    xmlns:gco   = "http://www.isotc211.org/2005/gco"
+    xmlns:srv   = "http://www.isotc211.org/2005/srv"
+    xmlns:xsi   = "http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xlink = "http://www.w3.org/1999/xlink"
+    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd
+                          http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd">
+
+  <!--
+    WARNING: this file is not yet compliant with ISO schema.
+  -->
+
+  <gmd:fileIdentifier>
+    <gco:CharacterString>a-metadata-identifier</gco:CharacterString>
+  </gmd:fileIdentifier>
+  <gmd:language>
+    <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
+  </gmd:language>
+  <gmd:characterSet>
+    <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1">ISO-8859-1</gmd:MD_CharacterSetCode>
+  </gmd:characterSet>
+  <gmd:parentIdentifier>
+    <gco:CharacterString>A parent metadata</gco:CharacterString>
+  </gmd:parentIdentifier>
+  <gmd:hierarchyLevel>
+    <gmd:MD_ScopeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="eng">Dataset</gmd:MD_ScopeCode>
+  </gmd:hierarchyLevel>
+  <gmd:hierarchyLevelName>
+    <gco:CharacterString>Metadata for an imaginary data set</gco:CharacterString>
+  </gmd:hierarchyLevelName>
+  <gmd:contact>
+    <gmd:CI_ResponsibleParty>
+      <gmd:individualName>
+        <gco:CharacterString>Socrates</gco:CharacterString>
+      </gmd:individualName>
+      <gmd:organisationName>
+        <gco:CharacterString>Plato Republic</gco:CharacterString>
+      </gmd:organisationName>
+      <gmd:positionName>
+        <gco:CharacterString>Philosopher</gco:CharacterString>
+      </gmd:positionName>
+      <gmd:contactInfo>
+        <gmd:CI_Contact id="thought">
+          <gmd:phone>
+            <gmd:CI_Telephone>
+              <gmd:voice>
+                <gco:CharacterString>555-444-3333</gco:CharacterString>
+              </gmd:voice>
+              <gmd:facsimile>
+                <gco:CharacterString>555-555-5555</gco:CharacterString>
+              </gmd:facsimile>
+            </gmd:CI_Telephone>
+          </gmd:phone>
+          <gmd:address>
+            <gmd:CI_Address>
+              <gmd:deliveryPoint>
+                <gco:CharacterString>123 Main Street</gco:CharacterString>
+              </gmd:deliveryPoint>
+              <gmd:city>
+                <gco:CharacterString>Metropolis city</gco:CharacterString>
+              </gmd:city>
+              <gmd:administrativeArea>
+                <gco:CharacterString>Utopia province</gco:CharacterString>
+              </gmd:administrativeArea>
+              <gmd:postalCode>
+                <gco:CharacterString>A1A 2C2</gco:CharacterString>
+              </gmd:postalCode>
+              <gmd:country>
+                <gco:CharacterString>Atlantis island</gco:CharacterString>
+              </gmd:country>
+              <gmd:electronicMailAddress>
+                <gco:CharacterString>test@example.com</gco:CharacterString>
+              </gmd:electronicMailAddress>
+            </gmd:CI_Address>
+          </gmd:address>
+          <gmd:onlineResource>
+            <gmd:CI_OnlineResource id="timaeus">
+              <gmd:linkage>
+                <gmd:URL>http://example.com</gmd:URL>
+              </gmd:linkage>
+              <gmd:protocol>
+                <gco:CharacterString>Submarine HTTP</gco:CharacterString>
+              </gmd:protocol>
+              <gmd:applicationProfile>
+                <gco:CharacterString>Imaginary work</gco:CharacterString>
+              </gmd:applicationProfile>
+              <gmd:name>
+                <gco:CharacterString>Timaeus &amp; Critias</gco:CharacterString>
+              </gmd:name>
+              <gmd:description xsi:type="gmd:PT_FreeText_PropertyType">
+                <gco:CharacterString>A dialog between philosophers.</gco:CharacterString>
+                <gmd:PT_FreeText>
+                  <gmd:textGroup>
+                    <gmd:LocalisedCharacterString locale="#locale-eng">A dialog between philosophers.</gmd:LocalisedCharacterString>
+                  </gmd:textGroup>
+                  <gmd:textGroup>
+                    <gmd:LocalisedCharacterString locale="#locale-fra">Un dialogue entre philosophes.</gmd:LocalisedCharacterString>
+                  </gmd:textGroup>
+                </gmd:PT_FreeText>
+              </gmd:description>
+              <gmd:function>
+                <gmd:CI_OnLineFunctionCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="search" codeSpace="eng">Search</gmd:CI_OnLineFunctionCode>
+              </gmd:function>
+            </gmd:CI_OnlineResource>
+          </gmd:onlineResource>
+          <gmd:hoursOfService>
+            <gco:CharacterString>Weekdays 9:00 AM - 5:00 PM</gco:CharacterString>
+          </gmd:hoursOfService>
+          <gmd:contactInstructions>
+            <gco:CharacterString>Through thought</gco:CharacterString>
+          </gmd:contactInstructions>
+        </gmd:CI_Contact>
+      </gmd:contactInfo>
+      <gmd:role>
+        <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</gmd:CI_RoleCode>
+      </gmd:role>
+    </gmd:CI_ResponsibleParty>
+  </gmd:contact>
+  <gmd:contact>
+    <gmd:CI_ResponsibleParty>
+      <gmd:individualName>
+        <gco:CharacterString>Hermocrates</gco:CharacterString>
+      </gmd:individualName>
+      <gmd:positionName>
+        <gco:CharacterString>Politician</gco:CharacterString>
+      </gmd:positionName>
+      <gmd:contactInfo xlink:href="#thought"></gmd:contactInfo>
+      <gmd:role>
+        <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</gmd:CI_RoleCode>
+      </gmd:role>
+    </gmd:CI_ResponsibleParty>
+  </gmd:contact>
+  <gmd:dateStamp>
+    <gco:DateTime>2009-12-16T12:00:29.580+01:00</gco:DateTime>
+  </gmd:dateStamp>
+  <gmd:metadataStandardName>
+    <gco:CharacterString>ISO 19115-1</gco:CharacterString>
+  </gmd:metadataStandardName>
+  <gmd:metadataStandardVersion>
+    <gco:CharacterString>2014</gco:CharacterString>
+  </gmd:metadataStandardVersion>
+  <gmd:locale>
+    <gmd:PT_Locale>
+      <gmd:languageCode>
+        <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
+      </gmd:languageCode>
+      <gmd:country>
+        <gmd:Country codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</gmd:Country>
+      </gmd:country>
+      <gmd:characterEncoding>
+        <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</gmd:MD_CharacterSetCode>
+      </gmd:characterEncoding>
+    </gmd:PT_Locale>
+  </gmd:locale>
+  <gmd:spatialRepresentationInfo>
+    <gmd:MD_Georectified>
+      <gmd:numberOfDimensions>
+        <gco:Integer>2</gco:Integer>
+      </gmd:numberOfDimensions>
+      <gmd:axisDimensionProperties>
+        <gmd:MD_Dimension>
+          <gmd:dimensionName>
+            <gmd:MD_DimensionNameTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="row">Row</gmd:MD_DimensionNameTypeCode>
+          </gmd:dimensionName>
+          <gmd:dimensionSize>
+            <gco:Integer>7777</gco:Integer>
+          </gmd:dimensionSize>
+          <gmd:resolution>
+            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">10.0</gco:Measure>
+          </gmd:resolution>
+        </gmd:MD_Dimension>
+      </gmd:axisDimensionProperties>
+      <gmd:axisDimensionProperties>
+        <gmd:MD_Dimension>
+          <gmd:dimensionName>
+            <gmd:MD_DimensionNameTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="column">Column</gmd:MD_DimensionNameTypeCode>
+          </gmd:dimensionName>
+          <gmd:dimensionSize>
+            <gco:Integer>2233</gco:Integer>
+          </gmd:dimensionSize>
+          <gmd:resolution>
+            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">5.0</gco:Measure>
+          </gmd:resolution>
+        </gmd:MD_Dimension>
+      </gmd:axisDimensionProperties>
+      <gmd:cellGeometry>
+        <gmd:MD_CellGeometryCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CellGeometryCode" codeListValue="area" codeSpace="eng">Area</gmd:MD_CellGeometryCode>
+      </gmd:cellGeometry>
+      <gmd:transformationParameterAvailability>
+        <gco:Boolean>false</gco:Boolean>
+      </gmd:transformationParameterAvailability>
+      <gmd:checkPointAvailability>
+        <gco:Boolean>false</gco:Boolean>
+      </gmd:checkPointAvailability>
+      <gmd:pointInPixel>
+        <gmd:MD_PixelOrientationCode>upperRight</gmd:MD_PixelOrientationCode>
+      </gmd:pointInPixel>
+    </gmd:MD_Georectified>
+  </gmd:spatialRepresentationInfo>
+  <gmd:referenceSystemInfo>
+    <gmd:MD_ReferenceSystem>
+      <gmd:referenceSystemIdentifier>
+        <gmd:RS_Identifier>
+          <gmd:authority>
+            <gmd:CI_Citation>
+              <gmd:title>
+                <gco:CharacterString>Atlantis grid</gco:CharacterString>
+              </gmd:title>
+              <gmd:date>
+                <gmd:CI_Date>
+                  <gmd:date>
+                    <gco:DateTime>2009-12-16T12:00:29.580+01:00</gco:DateTime>
+                  </gmd:date>
+                  <gmd:dateType>
+                    <gmd:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</gmd:CI_DateTypeCode>
+                  </gmd:dateType>
+                </gmd:CI_Date>
+              </gmd:date>
+              <gmd:citedResponsibleParty>
+                <gmd:CI_ResponsibleParty>
+                  <gmd:organisationName>
+                    <gco:CharacterString>Atlantis national mapping agency</gco:CharacterString>
+                  </gmd:organisationName>
+                  <gmd:role>
+                    <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher" codeSpace="eng">Publisher</gmd:CI_RoleCode>
+                  </gmd:role>
+                </gmd:CI_ResponsibleParty>
+              </gmd:citedResponsibleParty>
+            </gmd:CI_Citation>
+          </gmd:authority>
+          <gmd:code>
+            <gco:CharacterString>AG9000</gco:CharacterString>
+          </gmd:code>
+          <gmd:codeSpace>
+            <gco:CharacterString>rs.id.ns</gco:CharacterString>
+          </gmd:codeSpace>
+          <gmd:version>
+            <gco:CharacterString>1.0</gco:CharacterString>
+          </gmd:version>
+        </gmd:RS_Identifier>
+      </gmd:referenceSystemIdentifier>
+    </gmd:MD_ReferenceSystem>
+  </gmd:referenceSystemInfo>
+  <gmd:metadataExtensionInfo>
+    <gmd:MD_MetadataExtensionInformation>
+      <gmd:extensionOnLineResource xlink:href="#timaeus"></gmd:extensionOnLineResource>
+      <gmd:extendedElementInformation>
+        <gmd:MD_ExtendedElementInformation>
+          <gmd:name>
+            <gco:CharacterString>ExtendedElementName</gco:CharacterString>
+          </gmd:name>
+          <gmd:shortName>
+            <gco:CharacterString>ExtEltName</gco:CharacterString>
+          </gmd:shortName>
+          <gmd:domainCode>
+            <gco:Integer>1234</gco:Integer>
+          </gmd:domainCode>
+          <gmd:definition>
+            <gco:CharacterString>An extended element not included in the standard.</gco:CharacterString>
+          </gmd:definition>
+          <gmd:obligation>
+            <gmd:MD_ObligationCode>conditional</gmd:MD_ObligationCode>
+          </gmd:obligation>
+          <gmd:condition>
+            <gco:CharacterString>Presents in “Imaginary work” profile.</gco:CharacterString>
+          </gmd:condition>
+          <gmd:dataType>
+            <gmd:MD_DatatypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="metaClass">Meta class</gmd:MD_DatatypeCode>
+          </gmd:dataType>
+          <gmd:maximumOccurrence>
+            <gco:CharacterString>3</gco:CharacterString>
+          </gmd:maximumOccurrence>
+          <gmd:domainValue>
+            <gco:CharacterString>Alpha, beta or gamma.</gco:CharacterString>
+          </gmd:domainValue>
+          <gmd:parentEntity>
+            <gco:CharacterString>VirtualObject</gco:CharacterString>
+          </gmd:parentEntity>
+          <gmd:rule>
+            <gco:CharacterString>Element exists in cited resource.</gco:CharacterString>
+          </gmd:rule>
+          <gmd:rationale>
+            <gco:CharacterString>For testing extended elements.</gco:CharacterString>
+          </gmd:rationale>
+          <gmd:source gco:nilReason="other:test"></gmd:source>
+        </gmd:MD_ExtendedElementInformation>
+      </gmd:extendedElementInformation>
+    </gmd:MD_MetadataExtensionInformation>
+  </gmd:metadataExtensionInfo>
+  <gmd:identificationInfo>
+    <gmd:MD_DataIdentification>
+      <gmd:citation>
+        <gmd:CI_Citation id="lost-island">
+          <gmd:title>
+            <gco:CharacterString>A lost island</gco:CharacterString>
+          </gmd:title>
+          <gmd:alternateTitle>
+            <gco:CharacterString>Island lost again</gco:CharacterString>
+          </gmd:alternateTitle>
+          <gmd:alternateTitle>
+            <gmx:Anchor xlink:href="http://map-example.com">Map example</gmx:Anchor>
+          </gmd:alternateTitle>
+          <gmd:date>
+            <gmd:CI_Date>
+              <gmd:date>
+                <gco:Date>2018-04-09</gco:Date>
+              </gmd:date>
+              <gmd:dateType>
+                <gmd:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</gmd:CI_DateTypeCode>
+              </gmd:dateType>
+            </gmd:CI_Date>
+          </gmd:date>
+          <gmd:edition>
+            <gco:CharacterString>First edition</gco:CharacterString>
+          </gmd:edition>
+          <gmd:editionDate>
+            <gco:Date>2018-04-10</gco:Date>
+          </gmd:editionDate>
+          <gmd:collectiveTitle>
+            <gco:CharacterString>Popular legends</gco:CharacterString>
+          </gmd:collectiveTitle>
+        </gmd:CI_Citation>
+      </gmd:citation>
+      <gmd:abstract xsi:type="gmd:PT_FreeText_PropertyType">
+        <gco:CharacterString>Metadata for an imaginary map.</gco:CharacterString>
+        <gmd:PT_FreeText>
+          <gmd:textGroup>
+            <gmd:LocalisedCharacterString locale="#locale-eng">Metadata for an imaginary map.</gmd:LocalisedCharacterString>
+          </gmd:textGroup>
+          <gmd:textGroup>
+            <gmd:LocalisedCharacterString locale="#locale-fra">Méta-données pour une carte imaginaire.</gmd:LocalisedCharacterString>
+          </gmd:textGroup>
+        </gmd:PT_FreeText>
+      </gmd:abstract>
+      <gmd:purpose>
+        <gco:CharacterString>For XML (un)marshalling tests.</gco:CharacterString>
+      </gmd:purpose>
+      <gmd:status>
+        <gmd:MD_ProgressCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</gmd:MD_ProgressCode>
+      </gmd:status>
+      <gmd:spatialRepresentationType>
+        <gmd:MD_SpatialRepresentationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</gmd:MD_SpatialRepresentationTypeCode>
+      </gmd:spatialRepresentationType>
+      <gmd:spatialResolution>
+        <gmd:MD_Resolution>
+          <gmd:distance>
+            <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+          </gmd:distance>
+        </gmd:MD_Resolution>
+      </gmd:spatialResolution>
+      <gmd:topicCategory>
+        <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>
+      </gmd:topicCategory>
+      <gmd:topicCategory>
+        <gmd:MD_TopicCategoryCode>society</gmd:MD_TopicCategoryCode>
+      </gmd:topicCategory>
+      <gmd:resourceMaintenance>
+        <gmd:MD_MaintenanceInformation id="not-planned">
+          <gmd:maintenanceAndUpdateFrequency>
+            <gmd:MD_MaintenanceFrequencyCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPlanned" codeSpace="eng">Not planned</gmd:MD_MaintenanceFrequencyCode>
+          </gmd:maintenanceAndUpdateFrequency>
+          <gmd:updateScope>
+            <gmd:MD_ScopeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="model" codeSpace="eng">Model</gmd:MD_ScopeCode>
+          </gmd:updateScope>
+          <gmd:updateScopeDescription>
+            <gmd:MD_ScopeDescription>
+              <gmd:dataset>
+                <gco:CharacterString>Imaginary map</gco:CharacterString>
+              </gmd:dataset>
+            </gmd:MD_ScopeDescription>
+          </gmd:updateScopeDescription>
+        </gmd:MD_MaintenanceInformation>
+      </gmd:resourceMaintenance>
+      <gmd:resourceFormat>
+        <gmd:MD_Format>
+          <gmd:name>
+            <gco:CharacterString>PNG</gco:CharacterString>
+          </gmd:name>
+          <gmd:version>
+            <gco:CharacterString>November 2003</gco:CharacterString>
+          </gmd:version>
+          <gmd:amendmentNumber>
+            <gco:CharacterString>Second edition</gco:CharacterString>
+          </gmd:amendmentNumber>
+          <gmd:specification>
+            <gco:CharacterString>Portable Network Graphics</gco:CharacterString>
+          </gmd:specification>
+          <gmd:fileDecompressionTechnique>
+            <gco:CharacterString>L77 / Huffman coding</gco:CharacterString>
+          </gmd:fileDecompressionTechnique>
+        </gmd:MD_Format>
+      </gmd:resourceFormat>
+      <gmd:descriptiveKeywords>
+        <gmd:MD_Keywords id="greek-elements">
+          <gmd:keyword>
+            <gco:CharacterString>Water</gco:CharacterString>
+          </gmd:keyword>
+          <gmd:keyword>
+            <gco:CharacterString>Aether</gco:CharacterString>
+          </gmd:keyword>
+          <gmd:type>
+            <gmd:MD_KeywordTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" codeSpace="eng">Theme</gmd:MD_KeywordTypeCode>
+          </gmd:type>
+          <gmd:thesaurusName>
+            <gmd:CI_Citation>
+              <gmd:title>
+                <gco:CharacterString>Plato's dialogues</gco:CharacterString>
+              </gmd:title>
+            </gmd:CI_Citation>
+          </gmd:thesaurusName>
+        </gmd:MD_Keywords>
+      </gmd:descriptiveKeywords>
+      <gmd:resourceSpecificUsage>
+        <gmd:MD_Usage>
+          <gmd:specificUsage>
+            <gco:CharacterString>For testing purpose only.</gco:CharacterString>
+          </gmd:specificUsage>
+          <gmd:usageDateTime>
+            <gco:DateTime>2018-04-10T14:00:00+02:00</gco:DateTime>
+          </gmd:usageDateTime>
+          <gmd:userDeterminedLimitations>
+            <gco:CharacterString>Not to be used outside MarshallingTest.java test file.</gco:CharacterString>
+          </gmd:userDeterminedLimitations>
+        </gmd:MD_Usage>
+      </gmd:resourceSpecificUsage>
+      <gmd:resourceConstraints>
+        <gmd:MD_Constraints id="public">
+          <gmd:useLimitation>
+            <gco:CharacterString>Not for navigation.</gco:CharacterString>
+          </gmd:useLimitation>
+        </gmd:MD_Constraints>
+      </gmd:resourceConstraints>
+      <gmd:aggregationInfo>
+        <gmd:MD_AggregateInformation>
+          <gmd:associationType>
+            <gmd:DS_AssociationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
+          </gmd:associationType>
+          <gmd:initiativeType>
+            <gmd:DS_InitiativeTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
+          </gmd:initiativeType>
+        </gmd:MD_AggregateInformation>
+      </gmd:aggregationInfo>
+      <gmd:language>
+        <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
+      </gmd:language>
+      <gmd:language>
+        <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
+      </gmd:language>
+      <gmd:characterSet>
+        <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1" codeSpace="eng">ISO-8859-1</gmd:MD_CharacterSetCode>
+      </gmd:characterSet>
+      <gmd:environmentDescription>
+        <gco:CharacterString>High humidity.</gco:CharacterString>
+      </gmd:environmentDescription>
+      <gmd:extent>
+        <gmd:EX_Extent id="azores">
+          <gmd:description>
+            <gco:CharacterString>Azores</gco:CharacterString>
+          </gmd:description>
+          <gmd:geographicElement>
+            <gmd:EX_GeographicBoundingBox>
+              <gmd:extentTypeCode>
+                <gco:Boolean>true</gco:Boolean>
+              </gmd:extentTypeCode>
+              <gmd:westBoundLongitude>
+                <gco:Decimal>-24.5</gco:Decimal>
+              </gmd:westBoundLongitude>
+              <gmd:eastBoundLongitude>
+                <gco:Decimal>-32.0</gco:Decimal>
+              </gmd:eastBoundLongitude>
+              <gmd:southBoundLatitude>
+                <gco:Decimal>36.75</gco:Decimal>
+              </gmd:southBoundLatitude>
+              <gmd:northBoundLatitude>
+                <gco:Decimal>40.0</gco:Decimal>
+              </gmd:northBoundLatitude>
+            </gmd:EX_GeographicBoundingBox>
+          </gmd:geographicElement>
+          <gmd:temporalElement>
+            <gmd:EX_TemporalExtent></gmd:EX_TemporalExtent>
+          </gmd:temporalElement>
+        </gmd:EX_Extent>
+      </gmd:extent>
+      <gmd:supplementalInformation>
+        <gco:CharacterString>High water pressure.</gco:CharacterString>
+      </gmd:supplementalInformation>
+    </gmd:MD_DataIdentification>
+  </gmd:identificationInfo>
+  <gmd:identificationInfo>
+    <srv:SV_ServiceIdentification>
+      <gmd:citation xlink:href="#lost-island"></gmd:citation>
+      <gmd:abstract>
+        <gco:CharacterString>An inspiration for story tellers.</gco:CharacterString>
+      </gmd:abstract>
+      <gmd:resourceMaintenance xlink:href="#not-planned"></gmd:resourceMaintenance>
+      <gmd:descriptiveKeywords xlink:href="#greek-elements"></gmd:descriptiveKeywords>
+      <gmd:resourceConstraints xlink:href="#public"></gmd:resourceConstraints>
+      <gmd:aggregationInfo>
+        <gmd:MD_AggregateInformation>
+          <gmd:associationType>
+            <gmd:DS_AssociationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
+          </gmd:associationType>
+          <gmd:initiativeType>
+            <gmd:DS_InitiativeTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
+          </gmd:initiativeType>
+        </gmd:MD_AggregateInformation>
+      </gmd:aggregationInfo>
+      <gmd:extent xlink:href="#azores"></gmd:extent>
+      <srv:serviceTypeVersion>
+        <gco:CharacterString>Version 1000+</gco:CharacterString>
+      </srv:serviceTypeVersion>
+      <srv:coupledResource>
+        <srv:SV_CoupledResource></srv:SV_CoupledResource>
+      </srv:coupledResource>
+      <srv:couplingType>
+        <srv:SV_CouplingType codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose" codeSpace="eng">Loose</srv:SV_CouplingType>
+      </srv:couplingType>
+      <srv:containsOperations>
+        <srv:SV_OperationMetadata>
+          <srv:operationName>
+            <gco:CharacterString>Authoring</gco:CharacterString>
+          </srv:operationName>
+          <srv:DCP>
+            <srv:DCPList codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="JAVA" codeSpace="eng">Java</srv:DCPList>
+          </srv:DCP>
+          <srv:operationDescription>
+            <gco:CharacterString>Write a book.</gco:CharacterString>
+          </srv:operationDescription>
+          <srv:invocationName>
+            <gco:CharacterString>someMethodName</gco:CharacterString>
+          </srv:invocationName>
+        </srv:SV_OperationMetadata>
+      </srv:containsOperations>
+      <srv:operatesOn>
+        <gmd:MD_DataIdentification>
+          <gmd:citation xlink:href="#lost-island"></gmd:citation>
+          <gmd:abstract xsi:type="gmd:PT_FreeText_PropertyType">
+            <gco:CharacterString>Metadata for an imaginary map.</gco:CharacterString>
+            <gmd:PT_FreeText>
+              <gmd:textGroup>
+                <gmd:LocalisedCharacterString locale="#locale-eng">Metadata for an imaginary map.</gmd:LocalisedCharacterString>
+              </gmd:textGroup>
+              <gmd:textGroup>
+                <gmd:LocalisedCharacterString locale="#locale-fra">Méta-données pour une carte imaginaire.</gmd:LocalisedCharacterString>
+              </gmd:textGroup>
+            </gmd:PT_FreeText>
+          </gmd:abstract>
+          <gmd:purpose>
+            <gco:CharacterString>For XML (un)marshalling tests.</gco:CharacterString>
+          </gmd:purpose>
+          <gmd:status>
+            <gmd:MD_ProgressCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</gmd:MD_ProgressCode>
+          </gmd:status>
+          <gmd:spatialRepresentationType>
+            <gmd:MD_SpatialRepresentationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</gmd:MD_SpatialRepresentationTypeCode>
+          </gmd:spatialRepresentationType>
+          <gmd:spatialResolution>
+            <gmd:MD_Resolution>
+              <gmd:distance>
+                <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+              </gmd:distance>
+            </gmd:MD_Resolution>
+          </gmd:spatialResolution>
+          <gmd:topicCategory>
+            <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>
+          </gmd:topicCategory>
+          <gmd:topicCategory>
+            <gmd:MD_TopicCategoryCode>society</gmd:MD_TopicCategoryCode>
+          </gmd:topicCategory>
+          <gmd:resourceMaintenance xlink:href="#not-planned"></gmd:resourceMaintenance>
+          <gmd:resourceFormat>
+            <gmd:MD_Format>
+              <gmd:name>
+                <gco:CharacterString>PNG</gco:CharacterString>
+              </gmd:name>
+              <gmd:version>
+                <gco:CharacterString>November 2003</gco:CharacterString>
+              </gmd:version>
+              <gmd:amendmentNumber>
+                <gco:CharacterString>Second edition</gco:CharacterString>
+              </gmd:amendmentNumber>
+              <gmd:specification>
+                <gco:CharacterString>Portable Network Graphics</gco:CharacterString>
+              </gmd:specification>
+              <gmd:fileDecompressionTechnique>
+                <gco:CharacterString>L77 / Huffman coding</gco:CharacterString>
+              </gmd:fileDecompressionTechnique>
+            </gmd:MD_Format>
+          </gmd:resourceFormat>
+          <gmd:descriptiveKeywords xlink:href="#greek-elements"></gmd:descriptiveKeywords>
+          <gmd:resourceSpecificUsage>
+            <gmd:MD_Usage>
+              <gmd:specificUsage>
+                <gco:CharacterString>For testing purpose only.</gco:CharacterString>
+              </gmd:specificUsage>
+              <gmd:usageDateTime>
+                <gco:DateTime>2018-04-10T14:00:00+02:00</gco:DateTime>
+              </gmd:usageDateTime>
+              <gmd:userDeterminedLimitations>
+                <gco:CharacterString>Not to be used outside MarshallingTest.java test file.</gco:CharacterString>
+              </gmd:userDeterminedLimitations>
+            </gmd:MD_Usage>
+          </gmd:resourceSpecificUsage>
+          <gmd:resourceConstraints xlink:href="#public"></gmd:resourceConstraints>
+          <gmd:aggregationInfo>
+            <gmd:MD_AggregateInformation>
+              <gmd:associationType>
+                <gmd:DS_AssociationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
+              </gmd:associationType>
+              <gmd:initiativeType>
+                <gmd:DS_InitiativeTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
+              </gmd:initiativeType>
+            </gmd:MD_AggregateInformation>
+          </gmd:aggregationInfo>
+          <gmd:language>
+            <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
+          </gmd:language>
+          <gmd:language>
+            <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
+          </gmd:language>
+          <gmd:characterSet>
+            <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1" codeSpace="eng">ISO-8859-1</gmd:MD_CharacterSetCode>
+          </gmd:characterSet>
+          <gmd:environmentDescription>
+            <gco:CharacterString>High humidity.</gco:CharacterString>
+          </gmd:environmentDescription>
+          <gmd:extent xlink:href="#azores"></gmd:extent>
+          <gmd:supplementalInformation>
+            <gco:CharacterString>High water pressure.</gco:CharacterString>
+          </gmd:supplementalInformation>
+        </gmd:MD_DataIdentification>
+      </srv:operatesOn>
+    </srv:SV_ServiceIdentification>
+  </gmd:identificationInfo>
+  <gmd:contentInfo>
+    <gmd:MD_CoverageDescription>
+      <gmd:attributeDescription>
+        <gco:RecordType></gco:RecordType>
+      </gmd:attributeDescription>
+      <gmd:contentType>
+        <gmd:MD_CoverageContentTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="auxillaryInformation" codeSpace="eng">Auxilliary information</gmd:MD_CoverageContentTypeCode>
+      </gmd:contentType>
+      <gmd:dimension>
+        <gmd:MD_RangeDimension>
+          <gmd:sequenceIdentifier>
+            <gco:MemberName>
+              <gco:aName>
+                <gco:CharacterString>42</gco:CharacterString>
+              </gco:aName>
+              <gco:attributeType>
+                <gco:TypeName>
+                  <gco:aName>
+                    <gco:CharacterString>Integer</gco:CharacterString>
+                  </gco:aName>
+                </gco:TypeName>
+              </gco:attributeType>
+            </gco:MemberName>
+          </gmd:sequenceIdentifier>
+          <gmd:descriptor>
+            <gco:CharacterString>Population density</gco:CharacterString>
+          </gmd:descriptor>
+        </gmd:MD_RangeDimension>
+      </gmd:dimension>
+    </gmd:MD_CoverageDescription>
+  </gmd:contentInfo>
+  <gmd:contentInfo>
+    <gmd:MD_FeatureCatalogueDescription>
+      <gmd:complianceCode>
+        <gco:Boolean>true</gco:Boolean>
+      </gmd:complianceCode>
+      <gmd:includedWithDataset>
+        <gco:Boolean>true</gco:Boolean>
+      </gmd:includedWithDataset>
+    </gmd:MD_FeatureCatalogueDescription>
+  </gmd:contentInfo>
+</gmd:MD_Metadata>

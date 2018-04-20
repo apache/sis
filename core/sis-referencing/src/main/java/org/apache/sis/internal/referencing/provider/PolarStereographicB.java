@@ -30,7 +30,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -80,10 +80,9 @@ public final class PolarStereographicB extends AbstractStereographic {
                 .rename(Citations.EPSG, "Longitude of origin")
                 .reidentify(Citations.EPSG, "8833"));
 
-        STANDARD_PARALLEL = createMandatoryLatitude(builder
-                .addIdentifier("8832").addName("Latitude of standard parallel")
-                .addName(sameNameAs(Citations.OGC,  Mercator2SP.STANDARD_PARALLEL))
-                .addName(sameNameAs(Citations.ESRI, Mercator2SP.STANDARD_PARALLEL)));
+        STANDARD_PARALLEL = createMandatoryLatitude(builder.addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL)
+                .rename(Citations.EPSG, "Latitude of standard parallel")
+                .reidentify(Citations.EPSG, "8832"));
 
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
@@ -95,6 +94,7 @@ public final class PolarStereographicB extends AbstractStereographic {
                 .addName(Citations.S57,  "Polar stereographic")
                 .addName(Citations.S57,  "PST")
                 .addIdentifier(Citations.S57, "11")
+                .addName(sameNameAs(Citations.PROJ4, PolarStereographicA.PARAMETERS))
                 .createGroupForMapProjection(
                         STANDARD_PARALLEL,
                         LONGITUDE_OF_ORIGIN,

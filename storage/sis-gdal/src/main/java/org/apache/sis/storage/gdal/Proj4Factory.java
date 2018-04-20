@@ -60,6 +60,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 
 
@@ -77,7 +78,7 @@ import org.apache.sis.measure.Units;
  * Other methods delegate to one of above-cited methods if possible, or throw a {@link FactoryException} otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -439,6 +440,15 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters) throws FactoryException {
         final String proj = name(parameters.getDescriptor(), Errors.Keys.UnsupportedOperation_1);
         final StringBuilder buffer = new StringBuilder(100).append(PROJ_PARAM).append(proj).append(STANDARD_OPTIONS);
+        /*
+         * Proj.4 requires some parameters that are not defined in the EPSG geodetic dataset for some projections.
+         * Those parameters are unnecessary since their values are implied by the other parameters. However Proj.4
+         * does not seem to have any "intelligence" for such inference; we have to specify explicitely those values
+         * in the 'switch' statements below. The Objects listed below are parameters needed for those special cases.
+         */
+        Object latitudeOfOrigin  = null;
+        Object latitudeTrueScale = null;
+        Object standardParallel1 = null;
         for (final GeneralParameterValue p : parameters.values()) {
             /*
              * Unconditionally ask the parameter name in order to throw an exception
@@ -448,8 +458,42 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             if (p instanceof ParameterValue) {
                 final Object value = ((ParameterValue) p).getValue();
                 if (value != null) {
-                    buffer.append(" +").append(name).append('=').append(value);
+                    append(buffer, name, value);
+                    switch (name) {
+                        case "lat_0":  latitudeOfOrigin  = value; break;
+                        case "lat_1":  standardParallel1 = value; break;
+                        case "lat_ts": latitudeTrueScale = value; break;
+                    }
                 }
+            }
+        }
+        /*
+         * See above comment about parameter inference in Proj4. To verify if those special cases
+         * are still necessary, one can try to disable them and run TransformTest. If those tests
+         * work with a future Proj4 version, then the special cases below should be deleted.
+         */
+        switch (proj) {
+            /*
+             * In "Lambert Conic Conformal (1SP)" case, there is no standard parallel (lat_1) since a scale factor (k_0)
+             * is used instead. That scale is defined as the "Scale factor at natural origin", i.e. at lat_0. But Proj4
+             * does not seem to know that definition, so we have to explicitely tell it that lat_0 is the latitude of
+             * true scale.
+             */
+            case "lcc": {
+                if (standardParallel1 == null && latitudeOfOrigin != null) {
+                    append(buffer, "lat_1", latitudeOfOrigin);
+                }
+                break;
+            }
+            /*
+             * In "Polar Stereographic (variant B)", the latitude of natural origin is always a pole (90°N or S).
+             * Whether it is the North or South pole is determined by the sign of the latitude of true scale.
+             */
+            case "stere": {
+                if (latitudeOfOrigin == null && latitudeTrueScale instanceof Number) {
+                    append(buffer, "lat_0", ((Number) latitudeTrueScale).doubleValue() < 0 ? Latitude.MIN_VALUE : Latitude.MAX_VALUE);
+                }
+                break;
             }
         }
         final String definition = buffer.toString();
@@ -460,6 +504,13 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
             throw new UnavailableFactoryException(Proj4.unavailable(e), e);
         }
+    }
+
+    /**
+     * Appends a Proj4 parameter in the given string buffer.
+     */
+    private static void append(final StringBuilder buffer, final String param, final Object value) {
+        buffer.append(" +").append(param).append('=').append(value);
     }
 
     /**

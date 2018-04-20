@@ -16,10 +16,22 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.ParseException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 
@@ -31,43 +43,31 @@ import org.apache.sis.util.Classes;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
- *
- * @todo avoid use of reflection and use JTS API directly after JTS released
- *       a new version of the library under BSD-like license.
  */
-final class JTS extends Geometries<Object> {
+final class JTS extends Geometries<Geometry> {
     /**
-     * Getter methods on JTS envelopes.
-     * Each methods take no argument and return a {@code double} value.
+     * The factory to use for creating JTS geometries. Currently set to a factory using
+     * double-precision floating point numbers and a spatial-reference ID of 0.
      */
-    private final Method getEnvelopeInternal, getMinX, getMinY, getMaxX, getMaxY;
+    private final GeometryFactory factory;
 
     /**
      * Creates the singleton instance.
      */
-    JTS() throws ClassNotFoundException, NoSuchMethodException {
-        super(/*GeometryLibrary.JTS, */ null,                               // TODO
-              (Class) Class.forName("com.vividsolutions.jts.geom.Geometry"),    // TODO
-              Class.forName("com.vividsolutions.jts.geom.Point"),
-              Class.forName("com.vividsolutions.jts.geom.LineString"),
-              Class.forName("com.vividsolutions.jts.geom.Polygon"));
-        getEnvelopeInternal = rootClass.getMethod("getEnvelopeInternal", (Class[]) null);
-        final Class<?> envt = getEnvelopeInternal.getReturnType();
-        getMinX = envt.getMethod("getMinX", (Class[]) null);
-        getMinY = envt.getMethod("getMinY", (Class[]) null);
-        getMaxX = envt.getMethod("getMaxX", (Class[]) null);
-        getMaxY = envt.getMethod("getMaxY", (Class[]) null);
+    JTS() {
+        super(GeometryLibrary.JTS, Geometry.class, Point.class, LineString.class, Polygon.class);
+        factory = new GeometryFactory();            // Default to double precision and SRID of 0.
     }
 
     /**
-     * If the given object is a JTS geometry, returns a short string representation the class name.
+     * If the given object is a JTS geometry, returns a short string representation of the class name.
      */
     @Override
     final String tryGetLabel(Object geometry) {
-        return (rootClass.isInstance(geometry)) ? Classes.getShortClassName(geometry) : null;
+        return (geometry instanceof Geometry) ? Classes.getShortClassName(geometry) : null;
     }
 
     /**
@@ -80,31 +80,14 @@ final class JTS extends Geometries<Object> {
      */
     @Override
     final GeneralEnvelope tryGetEnvelope(final Object geometry) {
-        final double xmin, ymin, xmax, ymax;
-        if (rootClass.isInstance(geometry)) {
-            try {
-                final Object env = getEnvelopeInternal.invoke(geometry, (Object[]) null);
-                xmin = (Double) getMinX.invoke(env, (Object[]) null);
-                ymin = (Double) getMinY.invoke(env, (Object[]) null);
-                xmax = (Double) getMaxX.invoke(env, (Object[]) null);
-                ymax = (Double) getMaxY.invoke(env, (Object[]) null);
-            } catch (ReflectiveOperationException e) {
-                if (e instanceof InvocationTargetException) {
-                    final Throwable cause = e.getCause();
-                    if (cause instanceof RuntimeException) {
-                        throw (RuntimeException) cause;
-                    }
-                    if (cause instanceof Error) {
-                        throw (Error) cause;
-                    }
-                }
-                // Should never happen unless JTS's API changed.
-                throw (Error) new IncompatibleClassChangeError(e.toString()).initCause(e);
-            }
+        if (geometry instanceof Geometry) {
+            final Envelope bounds = ((Geometry) geometry).getEnvelopeInternal();
             final GeneralEnvelope env = new GeneralEnvelope(2);
-            env.setRange(0, xmin, xmax);
-            env.setRange(1, ymin, ymax);
-            return env;
+            env.setRange(0, bounds.getMinX(), bounds.getMaxX());
+            env.setRange(1, bounds.getMinY(), bounds.getMaxY());
+            if (!env.isEmpty()) {
+                return env;
+            }
         }
         return null;
     }
@@ -115,15 +98,33 @@ final class JTS extends Geometries<Object> {
      */
     @Override
     final double[] tryGetCoordinate(final Object point) {
-        return null;   // TODO - see class javadoc
+        final Coordinate pt;
+        if (point instanceof Point) {
+            pt = ((Point) point).getCoordinate();
+        } else if (point instanceof Coordinate) {
+            pt = (Coordinate) point;
+        } else {
+            return null;
+        }
+        final double z = pt.z;
+        final double[] coord;
+        if (Double.isNaN(z)) {
+            coord = new double[2];
+        } else {
+            coord = new double[3];
+            coord[2] = z;
+        }
+        coord[1] = pt.y;
+        coord[0] = pt.x;
+        return coord;
     }
 
     /**
      * Creates a two-dimensional point from the given coordinate.
      */
     @Override
-    public Object createPoint(double x, double y) {
-        throw unsupported(2);   // TODO - see class javadoc
+    public Object createPoint(final double x, final double y) {
+        return factory.createPoint(new Coordinate(x, y));
     }
 
     /**
@@ -132,9 +133,68 @@ final class JTS extends Geometries<Object> {
      * The implementation returned by this method must be an instance of {@link #rootClass}.
      */
     @Override
-    public Object createPolyline(final int dimension, final Vector... ordinates) {
-        // TODO - see class javadoc
-        throw unsupported(dimension);
+    public Geometry createPolyline(final int dimension, final Vector... ordinates) {
+        final boolean is3D = (dimension == 3);
+        if (!is3D && dimension != 2) {
+            throw unsupported(dimension);
+        }
+        final List<Coordinate> coordinates = new ArrayList<>(32);
+        final List<LineString> lines = new ArrayList<>();
+        for (final Vector v : ordinates) {
+            if (v != null) {
+                final int size = v.size();
+                for (int i=0; i<size;) {
+                    final double x = v.doubleValue(i++);
+                    final double y = v.doubleValue(i++);
+                    if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                        final Coordinate c;
+                        if (is3D) {
+                            c = new Coordinate(x, y, v.doubleValue(i++));
+                        } else {
+                            c = new Coordinate(x, y);
+                        }
+                        coordinates.add(c);
+                    } else {
+                        if (is3D) i++;
+                        toLineString(coordinates, lines);
+                        coordinates.clear();
+                    }
+                }
+            }
+        }
+        toLineString(coordinates, lines);
+        return toGeometry(lines);
+    }
+
+    /**
+     * Makes a line string or linear ring from the given coordinates, and add the line string to the given list.
+     * If the given coordinates array is empty, then this method does nothing.
+     * This method does not modify the given coordinates list.
+     */
+    private void toLineString(final List<Coordinate> coordinates, final List<LineString> addTo) {
+        final int s = coordinates.size();
+        if (s >= 2) {
+            final LineString line;
+            final Coordinate[] ca = coordinates.toArray(new Coordinate[s]);
+            if (ca[0].equals2D(ca[s-1])) {
+                line = factory.createLinearRing(ca);        // Throws an exception if s < 4.
+            } else {
+                line = factory.createLineString(ca);        // Throws an exception if contains duplicated point.
+            }
+            addTo.add(line);
+        }
+    }
+
+    /**
+     * Returns the given list of line string as a single geometry.
+     */
+    private Geometry toGeometry(final List<LineString> lines) {
+        final int s = lines.size();
+        switch (s) {
+            case 0:  return factory.createLinearRing((Coordinate[]) null);      // Creates an empty linear ring.
+            case 1:  return lines.get(0);
+            default: return factory.createMultiLineString(lines.toArray(new LineString[s]));
+        }
     }
 
     /**
@@ -143,15 +203,50 @@ final class JTS extends Geometries<Object> {
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.
      */
     @Override
-    final Object tryMergePolylines(final Object first, final Iterator<?> polylines) {
-        throw unsupported(2);   // TODO - see class javadoc
+    final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
+        if (!(next instanceof MultiLineString || next instanceof LineString || next instanceof Point)) {
+            return null;
+        }
+        final List<Coordinate> coordinates = new ArrayList<>();
+        final List<LineString> lines = new ArrayList<>();
+        for (;; next = polylines.next()) {
+            if (next != null) {
+                if (next instanceof Point) {
+                    final Coordinate pt = ((Point) next).getCoordinate();
+                    if (!Double.isNaN(pt.x) && !Double.isNaN(pt.y)) {
+                        coordinates.add(pt);
+                    } else {
+                        toLineString(coordinates, lines);
+                        coordinates.clear();
+                    }
+                } else {
+                    final Geometry g = (Geometry) next;
+                    final int n = g.getNumGeometries();
+                    for (int i=0; i<n; i++) {
+                        final LineString ls = (LineString) g.getGeometryN(i);
+                        if (coordinates.isEmpty()) {
+                            lines.add(ls);
+                        } else {
+                            coordinates.addAll(Arrays.asList(ls.getCoordinates()));
+                            toLineString(coordinates, lines);
+                            coordinates.clear();
+                        }
+                    }
+                }
+            }
+            if (!polylines.hasNext()) {         // Should be part of the 'for' instruction, but we need
+                break;                          // to skip this condition during the first iteration.
+            }
+        }
+        toLineString(coordinates, lines);
+        return toGeometry(lines);
     }
 
     /**
      * Parses the given WKT.
      */
     @Override
-    public Object parseWKT(final String wkt) {
-        throw unsupported(2);
+    public Object parseWKT(final String wkt) throws ParseException {
+        return new WKTReader(factory).read(wkt);
     }
 }

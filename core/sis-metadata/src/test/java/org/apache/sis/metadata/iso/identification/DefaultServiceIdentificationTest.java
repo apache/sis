@@ -23,9 +23,9 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
@@ -46,16 +46,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class
 })
-public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase {
+public final strictfp class DefaultServiceIdentificationTest extends TestUsingFile {
     /**
-     * An XML file in this package containing a service identification.
+     * An XML file containing a service identification.
      */
-    private static final String XML_FILE = "ServiceIdentification.xml";
-
-    /**
-     * Same as {@link #XML_FILE} but using legacy ISO 19139:2007 schema.
-     */
-    private static final String XML_FILE_LEGACY = "ServiceIdentification (legacy).xml";
+    private static final String FILENAME = "ServiceIdentification.xml";
 
     /**
      * Creates the service identification to use for testing purpose.
@@ -106,14 +101,11 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     /**
      * Tests the unmarshalling of a service metadata.
      *
-     * <p><b>XML test file:</b>
-     * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/service/ServiceIdentification.xml"}</p>
-     *
      * @throws JAXBException if an error occurred during the during unmarshalling process.
      */
     @Test
     public void testUnmarshal() throws JAXBException {
-        final DefaultServiceIdentification id = unmarshalFile(DefaultServiceIdentification.class, XML_FILE);
+        final DefaultServiceIdentification id = unmarshalFile(DefaultServiceIdentification.class, XML2016+FILENAME);
         verify(id);
         final DefaultCoupledResource resource = getSingleton(id.getCoupledResources());
         assertTitleEquals("resourceReference", "WMS specification", getSingleton(resource.getResourceReferences()));
@@ -126,7 +118,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testUnmarshalLegacy() throws JAXBException {
-        final DefaultServiceIdentification id = unmarshalFile(DefaultServiceIdentification.class, XML_FILE_LEGACY);
+        final DefaultServiceIdentification id = unmarshalFile(DefaultServiceIdentification.class, XML2007+FILENAME);
         verify(id);
         final DefaultCoupledResource resource = getSingleton(id.getCoupledResources());
         assertEquals("scopedName", "mySpace:ABC-123", String.valueOf(resource.getScopedName()));
@@ -139,7 +131,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testMarshal() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE, create(), "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML2016+FILENAME, create(), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -149,6 +141,6 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      */
     @Test
     public void testMarshalLegacy() throws JAXBException {
-        assertMarshalEqualsFile(XML_FILE_LEGACY, create(), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(XML2007+FILENAME, create(), VERSION_2007, "xmlns:*", "xsi:schemaLocation");
     }
 }

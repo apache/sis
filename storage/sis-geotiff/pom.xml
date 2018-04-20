@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-geotiff</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS GeoTIFF storage</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Bridge between GeoTIFF convention and ISO 19115 metadata.
+    Bridge between GeoTIFF convention and ISO 19115 metadata.
   </description>
 
 
@@ -103,12 +100,16 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage.geotiff</Bundle-SymbolicName>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.storage.geotiff
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

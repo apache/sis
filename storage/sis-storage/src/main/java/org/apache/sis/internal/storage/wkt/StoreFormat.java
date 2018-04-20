@@ -87,7 +87,7 @@ public final class StoreFormat extends WKTFormat {
                 envelope.setCoordinateReferenceSystem(parseCRS(crs, additionalCRS));
                 return new GeometryWrapper(obj, envelope);
             }
-        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+        } catch (Exception e) {     // Implementation-specific exception (e.g. JTS has its own exception class).
             log(e);
         }
         return null;

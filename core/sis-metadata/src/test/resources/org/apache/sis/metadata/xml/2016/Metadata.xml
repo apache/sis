@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<mdb:MD_Metadata
+    xmlns:mdb = "http://standards.iso.org/iso/19115/-3/mdb/1.0"
+    xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:lan = "http://standards.iso.org/iso/19115/-3/lan/1.0"
+    xmlns:cit = "http://standards.iso.org/iso/19115/-3/cit/1.0"
+    xmlns:gex = "http://standards.iso.org/iso/19115/-3/gex/1.0"
+    xmlns:mrs = "http://standards.iso.org/iso/19115/-3/mrs/1.0"
+    xmlns:msr = "http://standards.iso.org/iso/19115/-3/msr/1.0"
+    xmlns:mrc = "http://standards.iso.org/iso/19115/-3/mrc/1.0"
+    xmlns:mri = "http://standards.iso.org/iso/19115/-3/mri/1.0"
+    xmlns:mrd = "http://standards.iso.org/iso/19115/-3/mrd/1.0"
+    xmlns:mco = "http://standards.iso.org/iso/19115/-3/mco/1.0"
+    xmlns:mmi = "http://standards.iso.org/iso/19115/-3/mmi/1.0"
+    xmlns:mcc = "http://standards.iso.org/iso/19115/-3/mcc/1.0"
+    xmlns:mex = "http://standards.iso.org/iso/19115/-3/mex/1.0"
+    xmlns:gcx = "http://standards.iso.org/iso/19115/-3/gcx/1.0"
+    xmlns:srv = "http://standards.iso.org/iso/19115/-3/srv/2.0"
+    xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xlink = "http://www.w3.org/1999/xlink"
+    xsi:schemaLocation =
+        "http://standards.iso.org/iso/19115/-3/mdb/1.0 http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd
+         http://standards.iso.org/iso/19115/-3/mrs/1.0 http://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd
+         http://standards.iso.org/iso/19115/-3/msr/1.0 http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd
+         http://standards.iso.org/iso/19115/-3/mrc/1.0 http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd
+         http://standards.iso.org/iso/19115/-3/mrd/1.0 http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd
+         http://standards.iso.org/iso/19115/-3/mco/1.0 http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd
+         http://standards.iso.org/iso/19115/-3/mmi/1.0 http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd
+         http://standards.iso.org/iso/19115/-3/mex/1.0 http://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd
+         http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd
+         http://standards.iso.org/iso/19115/-3/srv/2.0 http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd">
+
+  <!--
+    WARNING: this file is not yet compliant with ISO schema.
+  -->
+
+  <mdb:metadataIdentifier>
+    <mcc:MD_Identifier>
+      <mcc:code>
+        <gco:CharacterString>a-metadata-identifier</gco:CharacterString>
+      </mcc:code>
+      <mcc:codeSpace>
+        <gco:CharacterString>md.id.ns</gco:CharacterString>
+      </mcc:codeSpace>
+    </mcc:MD_Identifier>
+  </mdb:metadataIdentifier>
+  <mdb:defaultLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</lan:LanguageCode>
+      </lan:language>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:defaultLocale>
+  <mdb:parentMetadata>
+    <cit:CI_Citation>
+      <cit:title>
+        <gco:CharacterString>A parent metadata</gco:CharacterString>
+      </cit:title>
+      <cit:identifier>
+        <mcc:MD_Identifier>
+          <mcc:code>
+            <gco:CharacterString>a-parent-identifier</gco:CharacterString>
+          </mcc:code>
+          <mcc:codeSpace>
+            <gco:CharacterString>pmd.id.ns</gco:CharacterString>
+          </mcc:codeSpace>
+        </mcc:MD_Identifier>
+      </cit:identifier>
+    </cit:CI_Citation>
+  </mdb:parentMetadata>
+  <mdb:contact>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</cit:CI_RoleCode>
+      </cit:role>
+      <cit:party>
+        <cit:CI_Organisation>
+          <cit:name>
+            <gco:CharacterString>Plato Republic</gco:CharacterString>
+          </cit:name>
+          <cit:contactInfo>
+            <cit:CI_Contact id="thought">
+              <cit:phone>
+                <cit:CI_Telephone>
+                  <cit:number>
+                    <gco:CharacterString>555-444-3333</gco:CharacterString>
+                  </cit:number>
+                  <cit:numberType>
+                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="voice" codeSpace="eng">Voice</cit:CI_TelephoneTypeCode>
+                  </cit:numberType>
+                </cit:CI_Telephone>
+              </cit:phone>
+              <cit:phone>
+                <cit:CI_Telephone>
+                  <cit:number>
+                    <gco:CharacterString>555-555-5555</gco:CharacterString>
+                  </cit:number>
+                  <cit:numberType>
+                    <cit:CI_TelephoneTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_TelephoneTypeCode" codeListValue="facsimile" codeSpace="eng">Facsimile</cit:CI_TelephoneTypeCode>
+                  </cit:numberType>
+                </cit:CI_Telephone>
+              </cit:phone>
+              <cit:address>
+                <cit:CI_Address>
+                  <cit:deliveryPoint>
+                    <gco:CharacterString>123 Main Street</gco:CharacterString>
+                  </cit:deliveryPoint>
+                  <cit:city>
+                    <gco:CharacterString>Metropolis city</gco:CharacterString>
+                  </cit:city>
+                  <cit:administrativeArea>
+                    <gco:CharacterString>Utopia province</gco:CharacterString>
+                  </cit:administrativeArea>
+                  <cit:postalCode>
+                    <gco:CharacterString>A1A 2C2</gco:CharacterString>
+                  </cit:postalCode>
+                  <cit:country>
+                    <gco:CharacterString>Atlantis island</gco:CharacterString>
+                  </cit:country>
+                  <cit:electronicMailAddress>
+                    <gco:CharacterString>test@example.com</gco:CharacterString>
+                  </cit:electronicMailAddress>
+                </cit:CI_Address>
+              </cit:address>
+              <cit:onlineResource>
+                <cit:CI_OnlineResource id="timaeus">
+                  <cit:linkage>
+                    <gcx:FileName src="http://example.com">example.com</gcx:FileName>
+                  </cit:linkage>
+                  <cit:protocol>
+                    <gco:CharacterString>Submarine HTTP</gco:CharacterString>
+                  </cit:protocol>
+                  <cit:applicationProfile>
+                    <gco:CharacterString>Imaginary work</gco:CharacterString>
+                  </cit:applicationProfile>
+                  <cit:name>
+                    <gco:CharacterString>Timaeus &amp; Critias</gco:CharacterString>
+                  </cit:name>
+                  <cit:description xsi:type="lan:PT_FreeText_PropertyType">
+                    <gco:CharacterString>A dialog between philosophers.</gco:CharacterString>
+                    <lan:PT_FreeText>
+                      <lan:textGroup>
+                        <lan:LocalisedCharacterString locale="#locale-eng">A dialog between philosophers.</lan:LocalisedCharacterString>
+                      </lan:textGroup>
+                      <lan:textGroup>
+                        <lan:LocalisedCharacterString locale="#locale-fra">Un dialogue entre philosophes.</lan:LocalisedCharacterString>
+                      </lan:textGroup>
+                    </lan:PT_FreeText>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode" codeListValue="search" codeSpace="eng">Search</cit:CI_OnLineFunctionCode>
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </cit:onlineResource>
+              <cit:hoursOfService>
+                <gco:CharacterString>Weekdays 9:00 AM - 5:00 PM</gco:CharacterString>
+              </cit:hoursOfService>
+              <cit:contactInstructions>
+                <gco:CharacterString>Through thought</gco:CharacterString>
+              </cit:contactInstructions>
+              <cit:contactType>
+                <gco:CharacterString>Virtual</gco:CharacterString>
+              </cit:contactType>
+            </cit:CI_Contact>
+          </cit:contactInfo>
+          <cit:individual>
+            <cit:CI_Individual>
+              <cit:name>
+                <gco:CharacterString>Socrates</gco:CharacterString>
+              </cit:name>
+              <cit:positionName>
+                <gco:CharacterString>Philosopher</gco:CharacterString>
+              </cit:positionName>
+            </cit:CI_Individual>
+          </cit:individual>
+        </cit:CI_Organisation>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mdb:contact>
+  <mdb:contact>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</cit:CI_RoleCode>
+      </cit:role>
+      <cit:party>
+        <cit:CI_Individual>
+          <cit:name>
+            <gco:CharacterString>Hermocrates</gco:CharacterString>
+          </cit:name>
+          <cit:contactInfo xlink:href="#thought"/>
+          <cit:positionName>
+            <gco:CharacterString>Politician</gco:CharacterString>
+          </cit:positionName>
+        </cit:CI_Individual>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </mdb:contact>
+  <mdb:dateInfo>
+    <cit:CI_Date>
+      <cit:date>
+        <gco:DateTime>2009-12-16T12:00:29.580+01:00</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</cit:CI_DateTypeCode>
+      </cit:dateType>
+    </cit:CI_Date>
+  </mdb:dateInfo>
+  <mdb:metadataStandard>
+    <cit:CI_Citation>
+      <cit:title>
+        <gco:CharacterString>ISO 19115-1</gco:CharacterString>
+      </cit:title>
+      <cit:edition>
+        <gco:CharacterString>2014</gco:CharacterString>
+      </cit:edition>
+    </cit:CI_Citation>
+  </mdb:metadataStandard>
+  <mdb:otherLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</lan:LanguageCode>
+      </lan:language>
+      <lan:country>
+        <lan:CountryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</lan:CountryCode>
+      </lan:country>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:otherLocale>
+  <mdb:spatialRepresentationInfo>
+    <msr:MD_Georectified>
+      <msr:numberOfDimensions>
+        <gco:Integer>2</gco:Integer>
+      </msr:numberOfDimensions>
+      <msr:axisDimensionProperties>
+        <msr:MD_Dimension>
+          <msr:dimensionName>
+            <msr:MD_DimensionNameTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode" codeListValue="row">Row</msr:MD_DimensionNameTypeCode>
+          </msr:dimensionName>
+          <msr:dimensionSize>
+            <gco:Integer>7777</gco:Integer>
+          </msr:dimensionSize>
+          <msr:resolution>
+            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">10.0</gco:Measure>
+          </msr:resolution>
+        </msr:MD_Dimension>
+      </msr:axisDimensionProperties>
+      <msr:axisDimensionProperties>
+        <msr:MD_Dimension>
+          <msr:dimensionName>
+            <msr:MD_DimensionNameTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DimensionNameTypeCode" codeListValue="column">Column</msr:MD_DimensionNameTypeCode>
+          </msr:dimensionName>
+          <msr:dimensionSize>
+            <gco:Integer>2233</gco:Integer>
+          </msr:dimensionSize>
+          <msr:resolution>
+            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">5.0</gco:Measure>
+          </msr:resolution>
+        </msr:MD_Dimension>
+      </msr:axisDimensionProperties>
+      <msr:cellGeometry>
+        <msr:MD_CellGeometryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CellGeometryCode" codeListValue="area" codeSpace="eng">Area</msr:MD_CellGeometryCode>
+      </msr:cellGeometry>
+      <msr:transformationParameterAvailability>
+        <gco:Boolean>false</gco:Boolean>
+      </msr:transformationParameterAvailability>
+      <msr:checkPointAvailability>
+        <gco:Boolean>false</gco:Boolean>
+      </msr:checkPointAvailability>
+      <msr:pointInPixel>
+        <msr:MD_PixelOrientationCode>upperRight</msr:MD_PixelOrientationCode>
+      </msr:pointInPixel>
+    </msr:MD_Georectified>
+  </mdb:spatialRepresentationInfo>
+  <mdb:referenceSystemInfo>
+    <mrs:MD_ReferenceSystem>
+      <mrs:referenceSystemIdentifier>
+        <mcc:MD_Identifier>
+          <mcc:authority>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Atlantis grid</gco:CharacterString>
+              </cit:title>
+              <cit:date>
+                <cit:CI_Date>
+                  <cit:date>
+                    <gco:DateTime>2009-12-16T12:00:29.580+01:00</gco:DateTime>
+                  </cit:date>
+                  <cit:dateType>
+                    <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</cit:CI_DateTypeCode>
+                  </cit:dateType>
+                </cit:CI_Date>
+              </cit:date>
+              <cit:citedResponsibleParty>
+                <cit:CI_Responsibility>
+                  <cit:role>
+                    <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode" codeListValue="publisher" codeSpace="eng">Publisher</cit:CI_RoleCode>
+                  </cit:role>
+                  <cit:party>
+                    <cit:CI_Organisation>
+                      <cit:name>
+                        <gco:CharacterString>Atlantis national mapping agency</gco:CharacterString>
+                      </cit:name>
+                    </cit:CI_Organisation>
+                  </cit:party>
+                </cit:CI_Responsibility>
+              </cit:citedResponsibleParty>
+            </cit:CI_Citation>
+          </mcc:authority>
+          <mcc:code>
+            <gco:CharacterString>AG9000</gco:CharacterString>
+          </mcc:code>
+          <mcc:codeSpace>
+            <gco:CharacterString>rs.id.ns</gco:CharacterString>
+          </mcc:codeSpace>
+          <mcc:version>
+            <gco:CharacterString>1.0</gco:CharacterString>
+          </mcc:version>
+          <mcc:description>
+            <gco:CharacterString>An imaginary reference system.</gco:CharacterString>
+          </mcc:description>
+        </mcc:MD_Identifier>
+      </mrs:referenceSystemIdentifier>
+    </mrs:MD_ReferenceSystem>
+  </mdb:referenceSystemInfo>
+  <mdb:metadataExtensionInfo>
+    <mex:MD_MetadataExtensionInformation>
+      <mex:extensionOnLineResource xlink:href="#timaeus"/>
+      <mex:extendedElementInformation>
+        <mex:MD_ExtendedElementInformation>
+          <mex:name>
+            <gco:CharacterString>ExtendedElementName</gco:CharacterString>
+          </mex:name>
+          <mex:definition>
+            <gco:CharacterString>An extended element not included in the standard.</gco:CharacterString>
+          </mex:definition>
+          <mex:obligation>
+            <mex:MD_ObligationCode>conditional</mex:MD_ObligationCode>
+          </mex:obligation>
+          <mex:condition>
+            <gco:CharacterString>Presents in “Imaginary work” profile.</gco:CharacterString>
+          </mex:condition>
+          <mex:dataType>
+            <mex:MD_DatatypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_DatatypeCode" codeListValue="metaClass">Meta class</mex:MD_DatatypeCode>
+          </mex:dataType>
+          <mex:maximumOccurrence>
+            <gco:CharacterString>3</gco:CharacterString>
+          </mex:maximumOccurrence>
+          <mex:domainValue>
+            <gco:CharacterString>Alpha, beta or gamma.</gco:CharacterString>
+          </mex:domainValue>
+          <mex:parentEntity>
+            <gco:CharacterString>VirtualObject</gco:CharacterString>
+          </mex:parentEntity>
+          <mex:rule>
+            <gco:CharacterString>Element exists in cited resource.</gco:CharacterString>
+          </mex:rule>
+          <mex:rationale>
+            <gco:CharacterString>For testing extended elements.</gco:CharacterString>
+          </mex:rationale>
+          <mex:source gco:nilReason="other:test"/>
+        </mex:MD_ExtendedElementInformation>
+      </mex:extendedElementInformation>
+    </mex:MD_MetadataExtensionInformation>
+  </mdb:metadataExtensionInfo>
+  <mdb:identificationInfo>
+    <mri:MD_DataIdentification>
+      <mri:citation>
+        <cit:CI_Citation id="lost-island">
+          <cit:title>
+            <gco:CharacterString>A lost island</gco:CharacterString>
+          </cit:title>
+          <cit:alternateTitle>
+            <gco:CharacterString>Island lost again</gco:CharacterString>
+          </cit:alternateTitle>
+          <cit:alternateTitle>
+            <gcx:Anchor xlink:href="http://map-example.com">Map example</gcx:Anchor>
+          </cit:alternateTitle>
+          <cit:date>
+            <cit:CI_Date>
+              <cit:date>
+                <gco:DateTime>2018-04-09T00:00:00.000+02:00</gco:DateTime>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</cit:CI_DateTypeCode>
+              </cit:dateType>
+            </cit:CI_Date>
+          </cit:date>
+          <cit:edition>
+            <gco:CharacterString>First edition</gco:CharacterString>
+          </cit:edition>
+          <cit:editionDate>
+            <gco:DateTime>2018-04-10T00:00:00.000+02:00</gco:DateTime>
+          </cit:editionDate>
+        </cit:CI_Citation>
+      </mri:citation>
+      <mri:abstract xsi:type="lan:PT_FreeText_PropertyType">
+        <gco:CharacterString>Metadata for an imaginary map.</gco:CharacterString>
+        <lan:PT_FreeText>
+          <lan:textGroup>
+            <lan:LocalisedCharacterString locale="#locale-eng">Metadata for an imaginary map.</lan:LocalisedCharacterString>
+          </lan:textGroup>
+          <lan:textGroup>
+            <lan:LocalisedCharacterString locale="#locale-fra">Méta-données pour une carte imaginaire.</lan:LocalisedCharacterString>
+          </lan:textGroup>
+        </lan:PT_FreeText>
+      </mri:abstract>
+      <mri:purpose>
+        <gco:CharacterString>For XML (un)marshalling tests.</gco:CharacterString>
+      </mri:purpose>
+      <mri:status>
+        <mcc:MD_ProgressCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</mcc:MD_ProgressCode>
+      </mri:status>
+      <mri:spatialRepresentationType>
+        <mcc:MD_SpatialRepresentationTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</mcc:MD_SpatialRepresentationTypeCode>
+      </mri:spatialRepresentationType>
+      <mri:spatialResolution>
+        <mri:MD_Resolution>
+          <mri:distance>
+            <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+          </mri:distance>
+        </mri:MD_Resolution>
+      </mri:spatialResolution>
+      <mri:topicCategory>
+        <mri:MD_TopicCategoryCode>oceans</mri:MD_TopicCategoryCode>
+      </mri:topicCategory>
+      <mri:topicCategory>
+        <mri:MD_TopicCategoryCode>society</mri:MD_TopicCategoryCode>
+      </mri:topicCategory>
+      <mri:extent>
+        <gex:EX_Extent id="azores">
+          <gex:description>
+            <gco:CharacterString>Azores</gco:CharacterString>
+          </gex:description>
+          <gex:geographicElement>
+            <gex:EX_GeographicBoundingBox>
+              <gex:extentTypeCode>
+                <gco:Boolean>true</gco:Boolean>
+              </gex:extentTypeCode>
+              <gex:westBoundLongitude>
+                <gco:Decimal>-24.5</gco:Decimal>
+              </gex:westBoundLongitude>
+              <gex:eastBoundLongitude>
+                <gco:Decimal>-32.0</gco:Decimal>
+              </gex:eastBoundLongitude>
+              <gex:southBoundLatitude>
+                <gco:Decimal>36.75</gco:Decimal>
+              </gex:southBoundLatitude>
+              <gex:northBoundLatitude>
+                <gco:Decimal>40.0</gco:Decimal>
+              </gex:northBoundLatitude>
+            </gex:EX_GeographicBoundingBox>
+          </gex:geographicElement>
+          <gex:temporalElement>
+            <gex:EX_TemporalExtent/>
+          </gex:temporalElement>
+        </gex:EX_Extent>
+      </mri:extent>
+      <mri:resourceMaintenance>
+        <mmi:MD_MaintenanceInformation id="not-planned">
+          <mmi:maintenanceAndUpdateFrequency>
+            <mmi:MD_MaintenanceFrequencyCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPlanned" codeSpace="eng">Not planned</mmi:MD_MaintenanceFrequencyCode>
+          </mmi:maintenanceAndUpdateFrequency>
+          <mmi:maintenanceDate>
+            <cit:CI_Date>
+              <cit:date>
+                <gco:DateTime>3000-01-01T00:00:00.000+01:00</gco:DateTime>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode" codeListValue="revision" codeSpace="eng">Revision</cit:CI_DateTypeCode>
+              </cit:dateType>
+            </cit:CI_Date>
+          </mmi:maintenanceDate>
+          <mmi:maintenanceScope>
+            <mcc:MD_Scope>
+              <mcc:level>
+                <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ScopeCode" codeListValue="model" codeSpace="eng">Model</mcc:MD_ScopeCode>
+              </mcc:level>
+              <mcc:levelDescription>
+                <mcc:MD_ScopeDescription>
+                  <mcc:dataset>
+                    <gco:CharacterString>Imaginary map</gco:CharacterString>
+                  </mcc:dataset>
+                </mcc:MD_ScopeDescription>
+              </mcc:levelDescription>
+            </mcc:MD_Scope>
+          </mmi:maintenanceScope>
+        </mmi:MD_MaintenanceInformation>
+      </mri:resourceMaintenance>
+      <mri:resourceFormat>
+        <mrd:MD_Format>
+          <mrd:amendmentNumber>
+            <gco:CharacterString>Second edition</gco:CharacterString>
+          </mrd:amendmentNumber>
+          <mrd:formatSpecificationCitation>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Portable Network Graphics</gco:CharacterString>
+              </cit:title>
+              <cit:alternateTitle>
+                <gco:CharacterString>PNG</gco:CharacterString>
+              </cit:alternateTitle>
+              <cit:edition>
+                <gco:CharacterString>November 2003</gco:CharacterString>
+              </cit:edition>
+            </cit:CI_Citation>
+          </mrd:formatSpecificationCitation>
+          <mrd:fileDecompressionTechnique>
+            <gco:CharacterString>L77 / Huffman coding</gco:CharacterString>
+          </mrd:fileDecompressionTechnique>
+        </mrd:MD_Format>
+      </mri:resourceFormat>
+      <mri:descriptiveKeywords>
+        <mri:MD_Keywords id="greek-elements">
+          <mri:keyword>
+            <gco:CharacterString>Water</gco:CharacterString>
+          </mri:keyword>
+          <mri:keyword>
+            <gco:CharacterString>Aether</gco:CharacterString>
+          </mri:keyword>
+          <mri:type>
+            <mri:MD_KeywordTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_KeywordTypeCode" codeListValue="theme" codeSpace="eng">Theme</mri:MD_KeywordTypeCode>
+          </mri:type>
+          <mri:thesaurusName>
+            <cit:CI_Citation>
+              <cit:title>
+                <gco:CharacterString>Plato's dialogues</gco:CharacterString>
+              </cit:title>
+            </cit:CI_Citation>
+          </mri:thesaurusName>
+          <mri:keywordClass>
+            <mri:MD_KeywordClass>
+              <mri:className>
+                <gco:CharacterString>Greek elements</gco:CharacterString>
+              </mri:className>
+            </mri:MD_KeywordClass>
+          </mri:keywordClass>
+        </mri:MD_Keywords>
+      </mri:descriptiveKeywords>
+      <mri:resourceSpecificUsage>
+        <mri:MD_Usage>
+          <mri:specificUsage>
+            <gco:CharacterString>For testing purpose only.</gco:CharacterString>
+          </mri:specificUsage>
+          <mri:usageDateTime>
+            <gco:DateTime>2018-04-10T14:00:00.000+02:00</gco:DateTime>
+          </mri:usageDateTime>
+          <mri:userDeterminedLimitations>
+            <gco:CharacterString>Not to be used outside MarshallingTest.java test file.</gco:CharacterString>
+          </mri:userDeterminedLimitations>
+          <mri:response>
+            <gco:CharacterString>Random elements</gco:CharacterString>
+          </mri:response>
+        </mri:MD_Usage>
+      </mri:resourceSpecificUsage>
+      <mri:resourceConstraints>
+        <mco:MD_Constraints id="public">
+          <mco:useLimitation>
+            <gco:CharacterString>Not for navigation.</gco:CharacterString>
+          </mco:useLimitation>
+          <mco:constraintApplicationScope>
+            <mcc:MD_Scope>
+              <mcc:level>
+                <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ScopeCode" codeListValue="document" codeSpace="eng">Document</mcc:MD_ScopeCode>
+              </mcc:level>
+            </mcc:MD_Scope>
+          </mco:constraintApplicationScope>
+          <mco:graphic>
+            <mcc:MD_BrowseGraphic>
+              <mcc:fileName>
+                <gcx:FileName src="ocean.png">ocean.png</gcx:FileName>
+              </mcc:fileName>
+              <mcc:fileDescription>
+                <gco:CharacterString>Somewhere in the Atlantic ocean</gco:CharacterString>
+              </mcc:fileDescription>
+              <mcc:fileType>
+                <gcx:MimeFileType type="PNG image">PNG image</gcx:MimeFileType>
+              </mcc:fileType>
+              <mcc:linkage>
+                <cit:CI_OnlineResource/>
+              </mcc:linkage>
+              <mcc:imageConstraints>
+                <mco:MD_Constraints/>
+              </mcc:imageConstraints>
+            </mcc:MD_BrowseGraphic>
+          </mco:graphic>
+          <mco:releasability>
+            <mco:MD_Releasability>
+              <mco:statement>
+                <gco:CharacterString>Public domain</gco:CharacterString>
+              </mco:statement>
+            </mco:MD_Releasability>
+          </mco:releasability>
+        </mco:MD_Constraints>
+      </mri:resourceConstraints>
+      <mri:associatedResource>
+        <mri:MD_AssociatedResource id="dependency">
+          <mri:associationType>
+            <mri:DS_AssociationTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</mri:DS_AssociationTypeCode>
+          </mri:associationType>
+          <mri:initiativeType>
+            <mri:DS_InitiativeTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</mri:DS_InitiativeTypeCode>
+          </mri:initiativeType>
+        </mri:MD_AssociatedResource>
+      </mri:associatedResource>
+      <mri:defaultLocale>
+        <lan:PT_Locale>
+          <lan:language>
+            <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</lan:LanguageCode>
+          </lan:language>
+          <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+          </lan:characterEncoding>
+        </lan:PT_Locale>
+      </mri:defaultLocale>
+      <mri:otherLocale>
+        <lan:PT_Locale>
+          <lan:language>
+            <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</lan:LanguageCode>
+          </lan:language>
+          <lan:country>
+            <lan:CountryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</lan:CountryCode>
+          </lan:country>
+          <lan:characterEncoding>
+            <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+          </lan:characterEncoding>
+        </lan:PT_Locale>
+      </mri:otherLocale>
+      <mri:environmentDescription>
+        <gco:CharacterString>High humidity.</gco:CharacterString>
+      </mri:environmentDescription>
+      <mri:supplementalInformation>
+        <gco:CharacterString>High water pressure.</gco:CharacterString>
+      </mri:supplementalInformation>
+    </mri:MD_DataIdentification>
+  </mdb:identificationInfo>
+  <mdb:identificationInfo>
+    <srv:SV_ServiceIdentification>
+      <mri:citation xlink:href="#lost-island"/>
+      <mri:abstract>
+        <gco:CharacterString>An inspiration for story tellers.</gco:CharacterString>
+      </mri:abstract>
+      <mri:extent xlink:href="#azores"/>
+      <mri:resourceMaintenance xlink:href="#not-planned"/>
+      <mri:descriptiveKeywords xlink:href="#greek-elements"/>
+      <mri:resourceConstraints xlink:href="#public"/>
+      <mri:associatedResource xlink:href="#dependency"/>
+      <srv:serviceTypeVersion>
+        <gco:CharacterString>Version 1000+</gco:CharacterString>
+      </srv:serviceTypeVersion>
+      <srv:couplingType>
+        <srv:SV_CouplingType codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#SV_CouplingType" codeListValue="loose" codeSpace="eng">Loose</srv:SV_CouplingType>
+      </srv:couplingType>
+      <srv:coupledResource>
+        <srv:SV_CoupledResource/>
+      </srv:coupledResource>
+      <srv:containsOperations>
+        <srv:SV_OperationMetadata>
+          <srv:operationName>
+            <gco:CharacterString>Authoring</gco:CharacterString>
+          </srv:operationName>
+          <srv:distributedComputingPlatform>
+            <srv:DCPList codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DCPList" codeListValue="JAVA" codeSpace="eng">Java</srv:DCPList>
+          </srv:distributedComputingPlatform>
+          <srv:operationDescription>
+            <gco:CharacterString>Write a book.</gco:CharacterString>
+          </srv:operationDescription>
+          <srv:invocationName>
+            <gco:CharacterString>someMethodName</gco:CharacterString>
+          </srv:invocationName>
+        </srv:SV_OperationMetadata>
+      </srv:containsOperations>
+      <srv:operatesOn>
+        <mri:MD_DataIdentification>
+          <mri:citation xlink:href="#lost-island"/>
+          <mri:abstract xsi:type="lan:PT_FreeText_PropertyType">
+            <gco:CharacterString>Metadata for an imaginary map.</gco:CharacterString>
+            <lan:PT_FreeText>
+              <lan:textGroup>
+                <lan:LocalisedCharacterString locale="#locale-eng">Metadata for an imaginary map.</lan:LocalisedCharacterString>
+              </lan:textGroup>
+              <lan:textGroup>
+                <lan:LocalisedCharacterString locale="#locale-fra">Méta-données pour une carte imaginaire.</lan:LocalisedCharacterString>
+              </lan:textGroup>
+            </lan:PT_FreeText>
+          </mri:abstract>
+          <mri:purpose>
+            <gco:CharacterString>For XML (un)marshalling tests.</gco:CharacterString>
+          </mri:purpose>
+          <mri:status>
+            <mcc:MD_ProgressCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</mcc:MD_ProgressCode>
+          </mri:status>
+          <mri:spatialRepresentationType>
+            <mcc:MD_SpatialRepresentationTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</mcc:MD_SpatialRepresentationTypeCode>
+          </mri:spatialRepresentationType>
+          <mri:spatialResolution>
+            <mri:MD_Resolution>
+              <mri:distance>
+                <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+              </mri:distance>
+            </mri:MD_Resolution>
+          </mri:spatialResolution>
+          <mri:topicCategory>
+            <mri:MD_TopicCategoryCode>oceans</mri:MD_TopicCategoryCode>
+          </mri:topicCategory>
+          <mri:topicCategory>
+            <mri:MD_TopicCategoryCode>society</mri:MD_TopicCategoryCode>
+          </mri:topicCategory>
+          <mri:extent xlink:href="#azores"/>
+          <mri:resourceMaintenance xlink:href="#not-planned"/>
+          <mri:resourceFormat>
+            <mrd:MD_Format>
+              <mrd:amendmentNumber>
+                <gco:CharacterString>Second edition</gco:CharacterString>
+              </mrd:amendmentNumber>
+              <mrd:formatSpecificationCitation>
+                <cit:CI_Citation>
+                  <cit:title>
+                    <gco:CharacterString>Portable Network Graphics</gco:CharacterString>
+                  </cit:title>
+                  <cit:alternateTitle>
+                    <gco:CharacterString>PNG</gco:CharacterString>
+                  </cit:alternateTitle>
+                  <cit:edition>
+                    <gco:CharacterString>November 2003</gco:CharacterString>
+                  </cit:edition>
+                </cit:CI_Citation>
+              </mrd:formatSpecificationCitation>
+              <mrd:fileDecompressionTechnique>
+                <gco:CharacterString>L77 / Huffman coding</gco:CharacterString>
+              </mrd:fileDecompressionTechnique>
+            </mrd:MD_Format>
+          </mri:resourceFormat>
+          <mri:descriptiveKeywords xlink:href="#greek-elements"/>
+          <mri:resourceSpecificUsage>
+            <mri:MD_Usage>
+              <mri:specificUsage>
+                <gco:CharacterString>For testing purpose only.</gco:CharacterString>
+              </mri:specificUsage>
+              <mri:usageDateTime>
+                <gco:DateTime>2018-04-10T14:00:00.000+02:00</gco:DateTime>
+              </mri:usageDateTime>
+              <mri:userDeterminedLimitations>
+                <gco:CharacterString>Not to be used outside MarshallingTest.java test file.</gco:CharacterString>
+              </mri:userDeterminedLimitations>
+              <mri:response>
+                <gco:CharacterString>Random elements</gco:CharacterString>
+              </mri:response>
+            </mri:MD_Usage>
+          </mri:resourceSpecificUsage>
+          <mri:resourceConstraints xlink:href="#public"/>
+          <mri:associatedResource xlink:href="#dependency"/>
+          <mri:defaultLocale>
+            <lan:PT_Locale>
+              <lan:language>
+                <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</lan:LanguageCode>
+              </lan:language>
+              <lan:characterEncoding>
+                <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+              </lan:characterEncoding>
+            </lan:PT_Locale>
+          </mri:defaultLocale>
+          <mri:otherLocale>
+            <lan:PT_Locale>
+              <lan:language>
+                <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</lan:LanguageCode>
+              </lan:language>
+              <lan:country>
+                <lan:CountryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</lan:CountryCode>
+              </lan:country>
+              <lan:characterEncoding>
+                <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+              </lan:characterEncoding>
+            </lan:PT_Locale>
+          </mri:otherLocale>
+          <mri:environmentDescription>
+            <gco:CharacterString>High humidity.</gco:CharacterString>
+          </mri:environmentDescription>
+          <mri:supplementalInformation>
+            <gco:CharacterString>High water pressure.</gco:CharacterString>
+          </mri:supplementalInformation>
+        </mri:MD_DataIdentification>
+      </srv:operatesOn>
+    </srv:SV_ServiceIdentification>
+  </mdb:identificationInfo>
+  <mdb:contentInfo>
+    <mrc:MD_CoverageDescription>
+      <mrc:attributeDescription>
+        <gco:RecordType/>
+      </mrc:attributeDescription>
+      <mrc:attributeGroup>
+        <mrc:MD_AttributeGroup>
+          <mrc:contentType>
+            <mrc:MD_CoverageContentTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CoverageContentTypeCode" codeListValue="auxillaryInformation" codeSpace="eng">Auxilliary information</mrc:MD_CoverageContentTypeCode>
+          </mrc:contentType>
+          <mrc:attribute>
+            <mrc:MD_RangeDimension>
+              <mrc:sequenceIdentifier>
+                <gco:MemberName>
+                  <gco:aName>
+                    <gco:CharacterString>42</gco:CharacterString>
+                  </gco:aName>
+                  <gco:attributeType>
+                    <gco:TypeName>
+                      <gco:aName>
+                        <gco:CharacterString>Integer</gco:CharacterString>
+                      </gco:aName>
+                    </gco:TypeName>
+                  </gco:attributeType>
+                </gco:MemberName>
+              </mrc:sequenceIdentifier>
+              <mrc:description>
+                <gco:CharacterString>Population density</gco:CharacterString>
+              </mrc:description>
+              <mrc:name>
+                <mcc:MD_Identifier/>
+              </mrc:name>
+            </mrc:MD_RangeDimension>
+          </mrc:attribute>
+          <mrc:attribute>
+            <mrc:MD_SampleDimension>
+              <mrc:description>
+                <gco:CharacterString>Temperature</gco:CharacterString>
+              </mrc:description>
+              <mrc:maxValue>
+                <gco:Real>22.22</gco:Real>
+              </mrc:maxValue>
+              <mrc:minValue>
+                <gco:Real>11.11</gco:Real>
+              </mrc:minValue>
+              <mrc:units>°C</mrc:units>
+              <mrc:scaleFactor>
+                <gco:Real>1.5</gco:Real>
+              </mrc:scaleFactor>
+            </mrc:MD_SampleDimension>
+          </mrc:attribute>
+        </mrc:MD_AttributeGroup>
+      </mrc:attributeGroup>
+    </mrc:MD_CoverageDescription>
+  </mdb:contentInfo>
+  <mdb:contentInfo>
+    <mrc:MD_FeatureCatalogueDescription>
+      <mrc:complianceCode>
+        <gco:Boolean>true</gco:Boolean>
+      </mrc:complianceCode>
+      <mrc:includedWithDataset>
+        <gco:Boolean>true</gco:Boolean>
+      </mrc:includedWithDataset>
+    </mrc:MD_FeatureCatalogueDescription>
+  </mdb:contentInfo>
+  <mdb:metadataScope>
+    <mdb:MD_MetadataScope>
+      <mdb:resourceScope>
+        <mcc:MD_ScopeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="eng">Dataset</mcc:MD_ScopeCode>
+      </mdb:resourceScope>
+      <mdb:name>
+        <gco:CharacterString>Metadata for an imaginary data set</gco:CharacterString>
+      </mdb:name>
+    </mdb:MD_MetadataScope>
+  </mdb:metadataScope>
+</mdb:MD_Metadata>

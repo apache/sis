@@ -1,7 +1,7 @@
 #
 # Namespaces in which attribute are defined.
 # Lines with zero-space indentation are namespace URIs.
-# Lines with one-space indentation are XML types.
+# Lines with one-space  indentation are XML types.
 # Lines with two-spaces indentation are properties.
 # old/new means that a property needs to be renamed.
 #

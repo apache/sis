@@ -20,8 +20,9 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -52,7 +53,42 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests parsing of a free text in an ISO 19139-compliant way.
+     * Tests parsing of a free text in an ISO 19139 compliant way.
+     * The free text is wrapped inside a citation for marshalling
+     * purpose, but only the free text is actually tested.
+     *
+     * @throws JAXBException if the XML in this test can not be parsed by JAXB.
+     */
+    @Test
+    public void testLegacy() throws JAXBException {
+        final String expected =
+                "<gmd:CI_Citation xmlns:gmd=\"" + LegacyNamespaces.GMD + '"'
+                              + " xmlns:gco=\"" + LegacyNamespaces.GCO + '"'
+                              + " xmlns:xsi=\"" + Namespaces.XSI + "\">\n" +
+                "  <gmd:title xsi:type=\"gmd:PT_FreeText_PropertyType\">\n" +
+                "    <gco:CharacterString>OpenSource Project</gco:CharacterString>\n" +
+                "    <gmd:PT_FreeText>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-eng\">OpenSource Project</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-ita\">Progetto OpenSource</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-fra\">Projet OpenSource</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "    </gmd:PT_FreeText>\n" +
+                "  </gmd:title>\n" +
+                "</gmd:CI_Citation>\n";
+
+        final Citation citation = unmarshal(Citation.class, expected);
+        assertEquals(getExpectedI18N(), citation.getTitle());
+        final String actual = marshal(citation, VERSION_2007);
+        assertXmlEquals(expected, actual, "xmlns:*");
+    }
+
+    /**
+     * Tests parsing of a free text in an ISO 19115-3 compliant way.
      * The free text is wrapped inside a citation for marshalling
      * purpose, but only the free text is actually tested.
      *
@@ -88,7 +124,7 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests parsing of a free text in the legacy (pre-Geotk 3.17) format.
+     * Tests parsing of a free text in a non-standard variant.
      * We continue to support this format for compatibility reason, but
      * also because it is more compact and closer to what we would expect
      * inside a {@code <textGroup>} node.
@@ -96,7 +132,7 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
      * @throws JAXBException if the XML in this test can not be parsed by JAXB.
      */
     @Test
-    public void testLegacy() throws JAXBException {
+    public void testNonStandard() throws JAXBException {
         final String legacy =
                 "<cit:CI_Citation xmlns:lan=\"" + Namespaces.LAN + '"'
                               + " xmlns:cit=\"" + Namespaces.CIT + '"'

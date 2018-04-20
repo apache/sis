@@ -37,12 +37,9 @@
        =========================================================== -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-utility</artifactId>
-  <packaging>bundle</packaging>
   <name>Apache SIS utilities</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Miscellaneous utilities.
+    Miscellaneous utilities.
   </description>
 
 
@@ -122,25 +119,18 @@ Miscellaneous utilities.
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Package as OSGi bundle -->
+      <!-- Anticipation for Java 9 -->
       <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.apache.sis.util</Bundle-SymbolicName>
-            <Bundle-Activator>org.apache.sis.internal.system.OSGiActivator</Bundle-Activator>
-            <Export-Package>*</Export-Package>
-            <Require-Capability>
-              osgi.extender;
-              filter:="(osgi.extender=osgi.serviceloader.registrar)",
-              osgi.serviceloader;
-              ;cardinality:=multiple,osgi.extender;
-              filter:="(osgi.extender=osgi.serviceloader.processor)"
-            </Require-Capability>
-            <SPI-Producer>*</SPI-Producer>
-          </instructions>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.util
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

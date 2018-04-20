@@ -18,24 +18,24 @@ package org.apache.sis.console;
 
 import java.net.URL;
 import org.apache.sis.internal.storage.gpx.MetadataTest;
-import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
 
 
 /**
  * Tests the {@link MimeTypeCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class MimeTypeCommandTest extends TestCase {
+public final strictfp class MimeTypeCommandTest extends TestUsingFile {
     /**
      * Tests the sub-command on a metadata file.
      *
@@ -43,7 +43,7 @@ public final strictfp class MimeTypeCommandTest extends TestCase {
      */
     @Test
     public void testWithMetadataXML() throws Exception {
-        final URL url = DefaultExtentTest.getTestFile(true);
+        final URL url = TestUsingFile.class.getResource(XML2007+FILENAME);
         final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();
