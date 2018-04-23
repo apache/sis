@@ -1312,13 +1312,13 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     public String toString() {
         final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
                 .append("[“").append(Citations.getIdentifier(getAuthority(), false)).append('”');
-        toString(buffer);
+        appendStringTo(buffer);
         return buffer.append(']').toString();
     }
 
     /**
      * Hook for subclasses.
      */
-    void toString(final StringBuilder buffer) {
+    void appendStringTo(final StringBuilder buffer) {
     }
 }

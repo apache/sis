@@ -2157,7 +2157,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      */
     @Debug
     @Override
-    final void toString(final StringBuilder buffer) {
+    final void appendStringTo(final StringBuilder buffer) {
         buffer.append(", cache=").append(cache.size()).append(", DAO=");
         synchronized (availableDAOs) {
             buffer.append(availableDAOs.size());

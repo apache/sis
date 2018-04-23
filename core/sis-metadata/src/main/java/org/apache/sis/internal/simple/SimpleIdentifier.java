@@ -222,7 +222,7 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
         if (open) {
             buffer.append('”');
         }
-        appendToString(buffer);
+        appendStringTo(buffer);
         return buffer.append(']').toString();
     }
 
@@ -232,7 +232,7 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
      *
      * @param  buffer  a buffer filled with the {@link #toString()} characters, that subclasses can update.
      */
-    protected void appendToString(final StringBuilder buffer) {
+    protected void appendStringTo(final StringBuilder buffer) {
     }
 
     /**
