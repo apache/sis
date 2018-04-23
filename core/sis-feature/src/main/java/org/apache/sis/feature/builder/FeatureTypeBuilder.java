@@ -1016,7 +1016,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
         buffer.append(" {");
         separator = System.lineSeparator();
         for (final PropertyTypeBuilder p : properties) {
-            p.toString(buffer.append(separator).append("    ").append(p.getClass().getSimpleName()));
+            p.appendStringTo(buffer.append(separator).append("    ").append(p.getClass().getSimpleName()));
         }
         buffer.append(separator).append('}');
     }

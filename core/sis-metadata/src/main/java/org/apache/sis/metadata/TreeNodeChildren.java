@@ -614,11 +614,11 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     public String toString() {
         final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(512);
-        parent.toString(buffer);
+        parent.appendStringTo(buffer);
         buffer.append(lineSeparator);
         for (final TreeTable.Node node : this) {
             buffer.append("  ");
-            ((TreeNode) node).toString(buffer);
+            ((TreeNode) node).appendStringTo(buffer);
             buffer.append(lineSeparator);
         }
         return buffer.toString();

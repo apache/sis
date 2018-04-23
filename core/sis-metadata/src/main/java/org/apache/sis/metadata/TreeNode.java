@@ -897,14 +897,14 @@ class TreeNode implements Node {
     @Override
     public final String toString() {
         final StringBuilder buffer = new StringBuilder(60);
-        toString(buffer);
+        appendStringTo(buffer);
         return buffer.toString();
     }
 
     /**
      * Implementation of {@link #toString()} appending the string representation in the given buffer.
      */
-    final void toString(final StringBuilder buffer) {
+    final void appendStringTo(final StringBuilder buffer) {
         appendIdentifier(buffer.append("Node["));
         buffer.append(" : ").append(Classes.getShortName(baseType)).append(']');
     }

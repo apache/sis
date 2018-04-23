@@ -702,7 +702,7 @@ public final class DefinitionURI {
         if (!isHTTP) {
             buffer.append(PREFIX);
         }
-        toString(buffer, SEPARATOR);
+        appendStringTo(buffer, SEPARATOR);
         return buffer.toString();
     }
 
@@ -713,7 +713,7 @@ public final class DefinitionURI {
      * @param  buffer     where to format the string representation.
      * @param  separator  first separator to append. Ignored if the URI is actually a URL.
      */
-    private void toString(final StringBuilder buffer, char separator) {
+    private void appendStringTo(final StringBuilder buffer, char separator) {
         if (isHTTP) {
             buffer.append("http://").append(DOMAIN).append("/def");
             separator = '/';
@@ -768,7 +768,7 @@ public final class DefinitionURI {
                                          : COMPONENT_SEPARATOR_2)
                           .append(i).append(KEY_VALUE_SEPARATOR);
                 }
-                c.toString(buffer, COMPONENT_SEPARATOR);
+                c.appendStringTo(buffer, COMPONENT_SEPARATOR);
             }
         }
     }
