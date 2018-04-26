@@ -18,11 +18,17 @@ package org.apache.sis.filter;
 
 import java.util.Map;
 import java.util.Objects;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyNotFoundException;
+import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.PropertyName;
 
@@ -75,6 +81,25 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
             return ((Map<?,?>) candidate).get(property);
         }
         return null;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyType expectedType(FeatureType type) {
+        PropertyType propertyType = type.getProperty(property);
+        while (propertyType instanceof Operation) {
+            IdentifiedType it = ((Operation) propertyType).getResult();
+            if (it instanceof FeatureType) {
+                propertyType = new FeatureTypeBuilder().addAssociation(type).setName(property).build();
+            } else if (it instanceof PropertyType) {
+                propertyType = (PropertyType) it;
+            } else {
+                throw new BackingStoreException("Unexpected operation result type "+it);
+            }
+        }
+        return propertyType;
     }
 
     /**

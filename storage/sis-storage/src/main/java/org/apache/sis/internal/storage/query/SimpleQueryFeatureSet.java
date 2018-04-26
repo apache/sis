@@ -108,7 +108,7 @@ final class SimpleQueryFeatureSet implements FeatureSet {
         //apply filter
         final Filter filter = query.getFilter();
         if (!Filter.INCLUDE.equals(filter)) {
-            stream.filter(filter::evaluate);
+            stream = stream.filter(filter::evaluate);
         }
 
         //apply sort by
@@ -141,7 +141,7 @@ final class SimpleQueryFeatureSet implements FeatureSet {
                     .collect(Collectors.toList())
                     .toArray(new String[0]);
 
-            stream.map(new Function<Feature, Feature>() {
+            stream = stream.map(new Function<Feature, Feature>() {
                 @Override
                 public Feature apply(Feature t) {
                     final Feature f = type.newInstance();

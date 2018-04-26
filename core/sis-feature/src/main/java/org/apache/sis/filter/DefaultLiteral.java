@@ -17,6 +17,9 @@
 package org.apache.sis.filter;
 
 import java.util.Objects;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.Literal;
 
@@ -37,6 +40,7 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
     private static final long serialVersionUID = 3240145927452086297L;
 
     private final T value;
+    private final AttributeType<T> resultType;
 
     /**
      *
@@ -44,6 +48,7 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
      */
     public DefaultLiteral(final T value) {
         this.value = value;
+        resultType = (AttributeType<T>) new FeatureTypeBuilder().addAttribute(value.getClass()).setName("Literal").build();
     }
 
     /**
@@ -52,6 +57,14 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
     @Override
     public T evaluate(final Object candidate) {
         return value;
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public AttributeType<T> expectedType(FeatureType type) {
+        return resultType;
     }
 
     /**

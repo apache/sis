@@ -22,11 +22,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.filter.AbstractExpression;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.Names;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.sort.SortBy;
@@ -234,8 +240,35 @@ public class SimpleQuery implements Query {
 
         public Column(Expression expression, String alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
-            this.alias = Names.createLocalName(null, null, alias);
+            this.alias = alias == null ? null : Names.createLocalName(null, null, alias);
             this.expression = expression;
+        }
+
+        /**
+         * Returns the column expected property type.
+         * @param type
+         * @return
+         */
+        public PropertyType expectedType(FeatureType type) {
+            PropertyType resultType;
+            if (expression instanceof AbstractExpression) {
+                resultType = ((AbstractExpression) expression).expectedType(type);
+            } else {
+                resultType = expression.evaluate(type, PropertyType.class);
+            }
+
+            if (alias != null) {
+                //rename result type
+                if (resultType instanceof AttributeType) {
+                    resultType = new FeatureTypeBuilder().addAttribute((AttributeType<?>) resultType).setName(alias).build();
+                } else if (resultType instanceof FeatureAssociationRole) {
+                    resultType = new FeatureTypeBuilder().addAssociation((FeatureAssociationRole) resultType).setName(alias).build();
+                } else {
+                    throw new BackingStoreException("Expression "+expression+" returned an unexpected property type result "+resultType);
+                }
+            }
+
+            return resultType;
         }
 
         @Override
@@ -302,7 +335,10 @@ public class SimpleQuery implements Query {
         if (columns == null) return source;
 
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-
+        ftb.setName(source.getName());
+        for (Column col : columns) {
+            ftb.addProperty(col.expectedType(source));
+        }
 
         return ftb.build();
     }
