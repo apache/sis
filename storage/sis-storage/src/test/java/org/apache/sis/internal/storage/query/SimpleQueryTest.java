@@ -19,6 +19,8 @@ package org.apache.sis.internal.storage.query;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.filter.DefaultLiteral;
+import org.apache.sis.filter.DefaultPropertyIsEqualTo;
 import org.apache.sis.filter.DefaultPropertyName;
 import org.apache.sis.filter.DefaultSortBy;
 import org.apache.sis.internal.storage.ArrayFeatureSet;
@@ -27,8 +29,11 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.TestCase;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.filter.MatchAction;
 import org.opengis.filter.sort.SortOrder;
 
 /**
@@ -132,4 +137,65 @@ public class SimpleQueryTest extends TestCase {
         assertEquals(FEATURES[4], result[4]);
     }
 
+    /**
+     * Verify query filter.
+     *
+     * @throws DataStoreException
+     */
+    @Test
+    public void testFilter() throws DataStoreException {
+
+        final SimpleQuery query = new SimpleQuery();
+        query.setFilter(new DefaultPropertyIsEqualTo(new DefaultPropertyName("value1"), new DefaultLiteral(2), true, MatchAction.ALL));
+
+        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
+
+        assertEquals(FEATURES[1], result[0]);
+        assertEquals(FEATURES[2], result[1]);
+    }
+
+    /**
+     * Verify query columns.
+     *
+     * @throws DataStoreException
+     */
+    @Test
+    public void testColumns() throws DataStoreException {
+
+        final SimpleQuery query = new SimpleQuery();
+        query.setColumns(Arrays.asList(
+                new SimpleQuery.Column(new DefaultPropertyName("value1"), (String)null),
+                new SimpleQuery.Column(new DefaultPropertyName("value1"), "renamed1"),
+                new SimpleQuery.Column(new DefaultLiteral<>("a literal"), "computed")
+            ));
+        query.setLimit(1);
+
+        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final Feature[] results = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
+        assertEquals(1, results.length);
+
+        final Feature result = results[0];
+
+        //check result type
+        final FeatureType resultType = result.getType();
+        assertEquals("Test", resultType.getName().toString());
+        assertEquals(3, resultType.getProperties(true).size());
+        final PropertyType pt1 = resultType.getProperty("value1");
+        final PropertyType pt2 = resultType.getProperty("renamed1");
+        final PropertyType pt3 = resultType.getProperty("computed");
+        assertTrue(pt1 instanceof AttributeType);
+        assertTrue(pt2 instanceof AttributeType);
+        assertTrue(pt3 instanceof AttributeType);
+        assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
+        assertEquals(Integer.class, ((AttributeType) pt2).getValueClass());
+        assertEquals(String.class, ((AttributeType) pt3).getValueClass());
+
+        //check feature
+        assertEquals(3, result.getPropertyValue("value1"));
+        assertEquals(3, result.getPropertyValue("renamed1"));
+        assertEquals("a literal", result.getPropertyValue("computed"));
+
+
+    }
 }

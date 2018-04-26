@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Objects;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
@@ -57,6 +58,32 @@ public class DefaultSortBy implements SortBy {
     @Override
     public SortOrder getSortOrder() {
         return order;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + Objects.hashCode(this.property);
+        hash = 41 * hash + Objects.hashCode(this.order);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DefaultSortBy other = (DefaultSortBy) obj;
+        if (!Objects.equals(this.property, other.property)) {
+            return false;
+        }
+        return Objects.equals(this.order, other.order);
     }
 
 }

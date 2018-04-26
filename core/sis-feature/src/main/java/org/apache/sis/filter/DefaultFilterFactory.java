@@ -426,7 +426,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsEqualTo equal(final Expression expr1,
             final Expression expr2, final boolean matchCase, MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsEqualTo(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -795,7 +795,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public SortBy sort(final String propertyName, final SortOrder order) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultSortBy(property(propertyName), order);
     }
 
     // CAPABILITIES ////////////////////////////////////////////////////////////

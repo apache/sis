@@ -21,6 +21,9 @@ import org.opengis.filter.expression.Expression;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -49,4 +52,18 @@ public abstract class AbstractExpression implements Expression,Serializable {
             return null;
         }
     }
+
+    /**
+     * Estimate the produced type of this expression when a feature will
+     * be evaluated.
+     * <p>
+     * The resulting type must be static, an AttributeType or FeatureAssociationRole
+     * but not an Operation.
+     * </p>
+     *
+     * @param type expected evaluated feature type
+     * @return expected expression result type
+     */
+    public abstract PropertyType expectedType(FeatureType type);
+
 }
