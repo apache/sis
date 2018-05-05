@@ -411,7 +411,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
-     *      ├─ Description ……………………………… EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      ├─ Description ……………………………… EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
      *      └─ Function ……………………………………… Connection
      * }
      */
@@ -450,7 +450,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              *
              *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
-             *    Description:  EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
+             *    Description:  EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
              *
              * TODO: A future version should use Citations.EPSG as a template.
              *       See the "EPSG" case in ServiceForUtility.createCitation(String).

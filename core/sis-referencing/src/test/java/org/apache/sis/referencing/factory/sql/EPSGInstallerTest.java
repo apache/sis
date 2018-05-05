@@ -124,7 +124,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
 
     /**
      * Tests the creation of an EPSG database on Derby.
-     * This test is skipped if Derby/JavaDB is not found, or if the SQL scripts are not found.
+     * This test is skipped if Derby is not found, or if the SQL scripts are not found.
      *
      * @throws Exception if an error occurred while creating the database.
      */
