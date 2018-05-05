@@ -56,7 +56,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  * Tests the {@link Classes} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -122,6 +122,18 @@ public final strictfp class ClassesTest extends TestCase {
     private abstract static class T1 implements GeographicCRS {}
     private abstract static class T2 extends T1 implements SingleCRS, CoordinateOperation {}
     private abstract static class T3 extends T2 implements Transformation {}
+
+    /**
+     * Tests {@link Classes#getStandardType(Class)}.
+     */
+    @Test
+    public void testGetStandardType() {
+        assertEquals(GeographicCRS.class,  Classes.getStandardType(T1.class));
+        assertEquals(SingleCRS.class,      Classes.getStandardType(T2.class));
+        assertEquals(Transformation.class, Classes.getStandardType(T3.class));
+        assertEquals(String.class,         Classes.getStandardType(String.class));
+        assertEquals(CharSequence.class,   Classes.getStandardType(CharSequence.class));
+    }
 
     /**
      * Tests {@link Classes#findCommonClass(Iterable)}

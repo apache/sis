@@ -16,54 +16,50 @@
  */
 package org.apache.sis.filter;
 
-import java.io.Serializable;
-import org.opengis.filter.expression.Expression;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.internal.feature.FeatureExpression;
+
+// Branch-dependent imports
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.PropertyType;
+import org.opengis.filter.expression.Expression;
 
 
 /**
- * Override evaluate(Object,Class) by using the converters system.
+ * Base class of Apache SIS implementation of OGC expressions operating on feature instances.
+ * This base class adds an additional method, {@link #expectedType(FeatureType)}, for fetching
+ * in advance the expected type of expression results.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-public abstract class AbstractExpression implements Expression,Serializable {
+abstract class AbstractExpression implements Expression, FeatureExpression {
     /**
-     * Use SIS object converters to convert the default result object
-     * to the wished class.
-     *
-     * @param candidate to evaluate
-     * @param target wanted class
+     * Creates a new expression.
      */
-    @Override
-    public <T> T evaluate(final Object candidate, final Class<T> target) {
-        ArgumentChecks.ensureNonNull("target", target);
-        final Object value = evaluate(candidate);
-        try {
-            return ObjectConverters.convert(value, target);
-        } catch (UnconvertibleObjectException ex) {
-            return null;
-        }
+    protected AbstractExpression() {
     }
 
     /**
-     * Estimate the produced type of this expression when a feature will
-     * be evaluated.
-     * <p>
-     * The resulting type must be static, an AttributeType or FeatureAssociationRole
-     * but not an Operation.
-     * </p>
+     * Evaluates the expression for producing a result of the given type.
+     * The default implementation evaluate the expression in the default
+     * way and attempt to convert the result.
      *
-     * @param type expected evaluated feature type
-     * @return expected expression result type
+     * @param  feature  to feature to evaluate with this expression.
+     * @param  target   the desired type for the expression result.
      */
-    public abstract PropertyType expectedType(FeatureType type);
-
+    @Override
+    public <T> T evaluate(final Object feature, final Class<T> target) {
+        ArgumentChecks.ensureNonNull("target", target);
+        final Object value = evaluate(feature);
+        try {
+            return ObjectConverters.convert(value, target);
+        } catch (UnconvertibleObjectException ex) {
+            // TODO: should report the exception somewhere.
+            return null;
+        }
+    }
 }

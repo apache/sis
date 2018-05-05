@@ -28,8 +28,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.WildcardType;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Modifier;
+import org.opengis.annotation.UML;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import static org.apache.sis.internal.system.Modules.INTERNAL_CLASSNAME_PREFIX;
 
 
 /**
@@ -50,7 +53,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -271,6 +274,39 @@ public final class Classes extends Static {
             types.add(getClass(object));
         }
         return types;
+    }
+
+    /**
+     * Returns the first type or super-type (including interface) considered "standard" in Apache SIS sense.
+     * This method applies the following heuristic rules, in that order:
+     *
+     * <ul>
+     *   <li>If the given type implements at least one interface having the {@link UML} annotation,
+     *       then the first annotated interface is returned.</li>
+     *   <li>Otherwise the first public class or parent class is returned.</li>
+     * </ul>
+     *
+     * Those heuristic rules may be adjusted in any future Apache SIS version.
+     *
+     * @param  <T>   the compile-time type argument.
+     * @param  type  the type for which to get the standard interface or class. May be {@code null}.
+     * @return a standard interface implemented by {@code type}, or otherwise the most specific public class.
+     *         Is {@code null} if the given {@code type} argument was null.
+     *
+     * @since 1.0
+     */
+    public static <T> Class<? super T> getStandardType(final Class<T> type) {
+        for (final Class<? super T> candidate : getAllInterfaces(type)) {
+            if (candidate.isAnnotationPresent(UML.class)) {
+                return candidate;
+            }
+        }
+        for (Class<? super T> candidate = type; candidate != null; candidate = candidate.getSuperclass()) {
+            if (Modifier.isPublic(candidate.getModifiers()) && !candidate.getName().startsWith(INTERNAL_CLASSNAME_PREFIX)) {
+                return candidate;
+            }
+        }
+        return type;
     }
 
     /**

@@ -30,9 +30,9 @@ import org.opengis.filter.expression.Expression;
  * @since   1.0
  * @module
  */
-public class DefaultPropertyIsEqualTo extends AbstractBinaryComparisonOperator implements PropertyIsEqualTo {
+final class DefaultPropertyIsEqualTo extends AbstractComparisonOperator implements PropertyIsEqualTo {
 
-    public DefaultPropertyIsEqualTo(Expression exp1, Expression exp2, boolean matchCase, MatchAction matchAction) {
+    DefaultPropertyIsEqualTo(Expression exp1, Expression exp2, boolean matchCase, MatchAction matchAction) {
         super(exp1, exp2, matchCase, matchAction);
     }
 
@@ -41,8 +41,8 @@ public class DefaultPropertyIsEqualTo extends AbstractBinaryComparisonOperator i
      */
     @Override
     public boolean evaluate(Object object) {
-        final Object r1 = exp1.evaluate(object);
-        final Object r2 = exp2.evaluate(object);
+        final Object r1 = expression1.evaluate(object);
+        final Object r2 = expression2.evaluate(object);
         //TODO be more relax on equality testing, for example Date,TimeStamp,Instant or numerics
         return Objects.equals(r1, r2);
     }
@@ -54,5 +54,4 @@ public class DefaultPropertyIsEqualTo extends AbstractBinaryComparisonOperator i
     public Object accept(FilterVisitor visitor, Object extraData) {
         return visitor.visit(this, extraData);
     }
-
 }

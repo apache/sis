@@ -91,16 +91,20 @@ import org.opengis.filter.temporal.TOverlaps;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.ArgumentChecks;
+
 
 /**
  * Default implementation of GeoAPI filter factory.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {
+    public DefaultFilterFactory() {
+    }
 
     // SPATIAL FILTERS /////////////////////////////////////////////////////////
 
@@ -721,6 +725,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final Object value) {
+        ArgumentChecks.ensureNonNull("value", value);
         return new DefaultLiteral<>(value);
     }
 
