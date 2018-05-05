@@ -23,7 +23,7 @@ import org.apache.sis.filter.DefaultLiteral;
 import org.apache.sis.filter.DefaultPropertyIsEqualTo;
 import org.apache.sis.filter.DefaultPropertyName;
 import org.apache.sis.filter.DefaultSortBy;
-import org.apache.sis.internal.storage.ArrayFeatureSet;
+import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.TestCase;
@@ -73,7 +73,7 @@ public class SimpleQueryTest extends TestCase {
         f5.setPropertyValue("value2", 1);
 
         FEATURES = new Feature[]{f1,f2,f3,f4,f5};
-        FEATURESET = new ArrayFeatureSet(null, TYPE, Arrays.asList(FEATURES), null);
+        FEATURESET = new MemoryFeatureSet(null, null, TYPE, Arrays.asList(FEATURES));
     }
 
     /**

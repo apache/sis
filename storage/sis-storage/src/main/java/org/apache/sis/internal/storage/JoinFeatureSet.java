@@ -34,8 +34,6 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Query;
-import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
@@ -184,14 +182,6 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
     @Override
     public Envelope getEnvelope() throws DataStoreException {
         return null;
-    }
-
-    @Override
-    public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
-        if (query instanceof SimpleQuery) {
-            return SimpleQuery.executeOnCPU(this, (SimpleQuery) query);
-        }
-        return FeatureSet.super.subset(query);
     }
 
     @Override
