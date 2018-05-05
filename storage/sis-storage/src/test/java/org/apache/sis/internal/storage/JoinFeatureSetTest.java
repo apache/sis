@@ -113,7 +113,7 @@ public class JoinFeatureSetTest extends TestCase {
         fid_1_4 = getId(sf);
         features1.add(sf);
 
-        featureSet1 = new ArrayFeatureSet(null, sft1, features1, null);
+        featureSet1 = new MemoryFeatureSet(null, null, sft1, features1);
 
 
         //----------------------------------------------------------------------
@@ -169,7 +169,7 @@ public class JoinFeatureSetTest extends TestCase {
         fid_2_5 = getId(sf);
         features2.add(sf);
 
-        featureSet2 = new ArrayFeatureSet(null, sft2, features2, null);
+        featureSet2 = new MemoryFeatureSet(null, null, sft2, features2);
 
     }
 

@@ -43,14 +43,14 @@ import org.apache.sis.storage.event.ChangeListener;
  */
 public abstract class AbstractResource implements Resource, Localized {
     /**
-     * The set of registered warning listeners for the data store.
+     * The set of registered warning listeners for the data store, or {@code null} if none.
      */
     protected final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new resource.
      *
-     * @param listeners  the set of registered warning listeners for the data store.
+     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
      */
     protected AbstractResource(final WarningListeners<DataStore> listeners) {
         this.listeners = listeners;
