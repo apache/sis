@@ -24,7 +24,7 @@
  *
  *
  * <div class="section">Connection to the database</div>
- * By default Apache SIS uses Apache Derby (a.k.a. JavaDB in Oracle JDK),
+ * By default Apache SIS uses Apache Derby,
  * but the database can also be PostgreSQL or MS-Access.
  * The database connection is obtained by the first of the following data sources which is found:
  *
@@ -40,8 +40,7 @@
  * </ol>
  *
  * In choice 1, the JDBC driver must be provided by the application container (e.g. Apache Tomcat).
- * In choice 2 and 3, Apache SIS tries to use the JavaDB driver in the JDK installation directory
- * (included in Oracle's distribution of Java) if no Apache Derby driver is found on the classpath.
+ * With other choices, an Apache Derby driver should be available on the classpath.
  *
  *
  * <div class="section">The EPSG dataset</div>

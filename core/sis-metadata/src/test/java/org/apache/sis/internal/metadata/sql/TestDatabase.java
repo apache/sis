@@ -58,7 +58,7 @@ import static org.junit.Assume.*;
 public final strictfp class TestDatabase {
     /**
      * Data source to an alternative database to use for testing purpose.
-     * If {@code null}, an in-memory Derby or JavaDB database will be used.
+     * If {@code null}, an in-memory Derby database will be used.
      *
      * This field is occasionally set to a non-null value (e.g. a connection to a PostgreSQL database) only for
      * debugging purpose. In such case, it is developer responsibility to ensure that the appropriate driver is
@@ -74,7 +74,7 @@ public final strictfp class TestDatabase {
     }
 
     /**
-     * Creates a Derby database in memory. If no Derby or JavaDB driver is not found,
+     * Creates a Derby database in memory. If no Derby driver is not found,
      * then the test will be interrupted by an {@code org.junit.Assume} statement.
      *
      * @param  name  the database name (without {@code "memory:"} prefix).
@@ -89,7 +89,7 @@ public final strictfp class TestDatabase {
         try {
             ds = Initializer.forJavaDB("memory:" + name);
         } catch (ClassNotFoundException e) {
-            assumeNoException("No Derby or JavaDB driver has been found.", e);
+            assumeNoException("No Derby driver has been found.", e);
             throw e;
         }
         ds.getClass().getMethod("setCreateDatabase", String.class).invoke(ds, "create");
