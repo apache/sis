@@ -16,67 +16,65 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Objects;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.opengis.feature.AttributeType;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.io.Serializable;
+import org.opengis.util.LocalName;
 import org.opengis.feature.FeatureType;
-import org.opengis.filter.expression.ExpressionVisitor;
+import org.opengis.feature.AttributeType;
 import org.opengis.filter.expression.Literal;
+import org.opengis.filter.expression.ExpressionVisitor;
+import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.iso.Names;
 
 
 /**
- * Immutable literal expression.
+ * A constant, literal value that can be used in expressions.
+ * The {@link #evaluate(Object)} method ignore the argument and always returns {@link #getValue()}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  *
- * @param <T>  literal value type.
+ * @param <T>  the literal value type.
  *
- * @since 0.8
+ * @since 1.0
  * @module
  */
-public class DefaultLiteral<T> extends AbstractExpression implements Literal {
-
+final class DefaultLiteral<T> extends AbstractExpression implements Literal, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
     private static final long serialVersionUID = 3240145927452086297L;
 
+    /**
+     * The name of attribute types associated with literals.
+     */
+    private static final LocalName NAME = Names.createLocalName(null, null, "Literal");
+
+    /**
+     * A cache of {@link AttributeType} instances for literal classes. Used for avoiding to create many duplicated
+     * instances for the common case where the literal is a very common type like {@link String} or {@link Integer}.
+     */
+    private static final ConcurrentMap<Class<?>, AttributeType<?>> TYPES = new ConcurrentHashMap<>();
+
+    /**
+     * The constant value to be returned by {@link #getValue()}.
+     */
     private final T value;
-    private final AttributeType<T> resultType;
 
     /**
-     *
-     * @param value literal value
+     * Creates a new literal holding the given constant value.
+     * It is caller responsibility to ensure that the given argument is non-null.
      */
-    public DefaultLiteral(final T value) {
+    DefaultLiteral(final T value) {
         this.value = value;
-        resultType = (AttributeType<T>) new FeatureTypeBuilder().addAttribute(value.getClass()).setName("Literal").build();
     }
 
     /**
-     * {@inheritDoc }
-     */
-    @Override
-    public T evaluate(final Object candidate) {
-        return value;
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public AttributeType<T> expectedType(FeatureType type) {
-        return resultType;
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public Object accept(final ExpressionVisitor visitor, final Object extraData) {
-        return visitor.visit(this, extraData);
-    }
-
-    /**
-     * {@inheritDoc }
+     * Returns the constant value held by this object.
      */
     @Override
     public T getValue() {
@@ -84,29 +82,67 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the constant value held by this object.
      */
     @Override
-    public String toString() {
-        return String.valueOf(value);
+    public T evaluate(Object ignored) {
+        return value;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the type of values produced by this expression.
+     */
+    @Override
+    public AttributeType<?> expectedType(FeatureType ignored) {
+        final Class<?> valueType = value.getClass();
+        AttributeType<?> type = TYPES.get(valueType);
+        if (type == null) {
+            final Class<?> standardType = Classes.getStandardType(valueType);
+            type = TYPES.computeIfAbsent(standardType, DefaultLiteral::newType);
+            if (valueType != standardType) {
+                TYPES.put(valueType, type);
+            }
+        }
+        return type;
+    }
+
+    /**
+     * Invoked when a new attribute type need to be created for the given standard type.
+     */
+    private static <T> AttributeType<T> newType(final Class<T> standardType) {
+        return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, NAME),
+                                          standardType, 1, 1, null, (AttributeType<?>[]) null);
+    }
+
+    /**
+     * Accepts a visitor.
+     */
+    @Override
+    public Object accept(final ExpressionVisitor visitor, final Object extraData) {
+        return visitor.visit(this, extraData);
+    }
+
+    /**
+     * Compares this literal with the given object for equality.
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        return Objects.equals(value, ((DefaultLiteral<?>) obj).value);
+        return (obj instanceof Literal) && value.equals(((DefaultLiteral) obj).value);
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a hash-code value for this literal.
      */
     @Override
     public int hashCode() {
-        return Objects.hashCode(value) + 3;
+        return value.hashCode() ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Returns a string representation of this literal.
+     */
+    @Override
+    public String toString() {
+        return value.toString();
     }
 }

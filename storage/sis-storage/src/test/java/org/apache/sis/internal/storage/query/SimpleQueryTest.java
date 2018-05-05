@@ -19,10 +19,7 @@ package org.apache.sis.internal.storage.query;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.filter.DefaultLiteral;
-import org.apache.sis.filter.DefaultPropertyIsEqualTo;
-import org.apache.sis.filter.DefaultPropertyName;
-import org.apache.sis.filter.DefaultSortBy;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -120,11 +117,12 @@ public class SimpleQueryTest extends TestCase {
      */
     @Test
     public void testSortBy() throws DataStoreException {
+        final DefaultFilterFactory factory = new DefaultFilterFactory();
 
         final SimpleQuery query = new SimpleQuery();
         query.setSortBy(
-                new DefaultSortBy(new DefaultPropertyName("value1"), SortOrder.ASCENDING),
-                new DefaultSortBy(new DefaultPropertyName("value2"), SortOrder.DESCENDING)
+                factory.sort("value1", SortOrder.ASCENDING),
+                factory.sort("value2", SortOrder.DESCENDING)
         );
 
         final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
@@ -144,9 +142,10 @@ public class SimpleQueryTest extends TestCase {
      */
     @Test
     public void testFilter() throws DataStoreException {
+        final DefaultFilterFactory factory = new DefaultFilterFactory();
 
         final SimpleQuery query = new SimpleQuery();
-        query.setFilter(new DefaultPropertyIsEqualTo(new DefaultPropertyName("value1"), new DefaultLiteral(2), true, MatchAction.ALL));
+        query.setFilter(factory.equal(factory.property("value1"), factory.literal(2), true, MatchAction.ALL));
 
         final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
         final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
@@ -162,12 +161,13 @@ public class SimpleQueryTest extends TestCase {
      */
     @Test
     public void testColumns() throws DataStoreException {
+        final DefaultFilterFactory factory = new DefaultFilterFactory();
 
         final SimpleQuery query = new SimpleQuery();
         query.setColumns(Arrays.asList(
-                new SimpleQuery.Column(new DefaultPropertyName("value1"), (String)null),
-                new SimpleQuery.Column(new DefaultPropertyName("value1"), "renamed1"),
-                new SimpleQuery.Column(new DefaultLiteral<>("a literal"), "computed")
+                new SimpleQuery.Column(factory.property("value1"), (String)null),
+                new SimpleQuery.Column(factory.property("value1"), "renamed1"),
+                new SimpleQuery.Column(factory.literal("a literal"), "computed")
             ));
         query.setLimit(1);
 
@@ -195,7 +195,5 @@ public class SimpleQueryTest extends TestCase {
         assertEquals(3, result.getPropertyValue("value1"));
         assertEquals(3, result.getPropertyValue("renamed1"));
         assertEquals("a literal", result.getPropertyValue("computed"));
-
-
     }
 }

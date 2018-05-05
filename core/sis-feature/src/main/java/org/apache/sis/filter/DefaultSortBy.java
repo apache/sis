@@ -16,36 +16,52 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Objects;
-import org.opengis.filter.expression.PropertyName;
+import java.io.Serializable;
+
+// Branch-dependent imports
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
+import org.opengis.filter.expression.PropertyName;
+
 
 /**
- * Immutable SortBy.
+ * Defines a sort order based on a property and ascending/descending order.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class DefaultSortBy implements SortBy {
+final class DefaultSortBy implements SortBy, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 5434026034835575812L;
 
+    /**
+     * The property on which to apply sorting.
+     */
     private final PropertyName property;
+
+    /**
+     * The desired order: {@code ASCENDING} or {@code DESCENDING}.
+     */
     private final SortOrder order;
 
     /**
+     * Creates a new {@code SortBy} filter.
+     * It is caller responsibility to ensure that no argument is null.
      *
-     * @param property sort by property applied on.
-     * @param order sorting order
+     * @param property  property on which to apply sorting.
+     * @param order     the desired order: {@code ASCENDING} or {@code DESCENDING}.
      */
-    public DefaultSortBy(PropertyName property, SortOrder order) {
+    DefaultSortBy(final PropertyName property, final SortOrder order) {
         this.property = property;
-        this.order = order;
+        this.order    = order;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the property to sort by.
      */
     @Override
     public PropertyName getPropertyName() {
@@ -53,37 +69,34 @@ public class DefaultSortBy implements SortBy {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the sort order: {@code ASCENDING} or {@code DESCENDING}.
      */
     @Override
     public SortOrder getSortOrder() {
         return order;
     }
 
+    /**
+     * Computes a hash code value for this filter.
+     */
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + Objects.hashCode(this.property);
-        hash = 41 * hash + Objects.hashCode(this.order);
-        return hash;
+        return property.hashCode() + 41 * order.hashCode();
     }
 
+    /**
+     * Compares this filter with the given object for equality.
+     */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
+        if (obj instanceof DefaultSortBy) {
+            final DefaultSortBy other = (DefaultSortBy) obj;
+            return property.equals(other.property)
+                   && order.equals(other.order);
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DefaultSortBy other = (DefaultSortBy) obj;
-        if (!Objects.equals(this.property, other.property)) {
-            return false;
-        }
-        return Objects.equals(this.order, other.order);
+        return false;
     }
-
 }

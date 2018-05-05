@@ -18,17 +18,18 @@ package org.apache.sis.filter;
 
 import java.util.Map;
 import java.util.Objects;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
-import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.PropertyName;
 
@@ -39,12 +40,14 @@ import org.opengis.filter.expression.PropertyName;
  * property value of the evaluated feature.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-public class DefaultPropertyName extends AbstractExpression implements PropertyName {
-
+final class DefaultPropertyName extends AbstractExpression implements PropertyName, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
     private static final long serialVersionUID = -8474562134021521300L;
 
     private final String property;
@@ -53,7 +56,7 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
      *
      * @param property attribute name
      */
-    public DefaultPropertyName(final String property) {
+    DefaultPropertyName(final String property) {
         ArgumentChecks.ensureNonNull("property", property);
         this.property = property;
     }
@@ -103,7 +106,7 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
     }
 
     /**
-     * {@inheritDoc }
+     * Accepts a visitor.
      */
     @Override
     public Object accept(final ExpressionVisitor visitor, final Object extraData) {
@@ -111,29 +114,26 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a hash-code value for this property.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        return (obj instanceof DefaultPropertyName) && property.equals(((DefaultPropertyName) obj).property);
+    }
+
+    /**
+     * Returns a hash-code value for this property.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(property) ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Returns a string representation of this property.
      */
     @Override
     public String toString() {
         return '{' + property + '}';
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        return Objects.equals(property, ((DefaultPropertyName) obj).property);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(property) + 7;
     }
 }

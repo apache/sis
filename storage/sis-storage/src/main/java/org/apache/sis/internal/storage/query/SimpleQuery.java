@@ -21,22 +21,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.filter.AbstractExpression;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Query;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.iso.Names;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.util.GenericName;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Query;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.iso.Names;
 
 /**
  * A simple query mimics SQL SELECT using OGC Filter and Expressions.
@@ -251,12 +250,11 @@ public class SimpleQuery implements Query {
          */
         public PropertyType expectedType(FeatureType type) {
             PropertyType resultType;
-            if (expression instanceof AbstractExpression) {
-                resultType = ((AbstractExpression) expression).expectedType(type);
+            if (expression instanceof FeatureExpression) {
+                resultType = ((FeatureExpression) expression).expectedType(type);
             } else {
                 resultType = expression.evaluate(type, PropertyType.class);
             }
-
             if (alias != null) {
                 //rename result type
                 if (resultType instanceof AttributeType) {
@@ -267,7 +265,6 @@ public class SimpleQuery implements Query {
                     throw new BackingStoreException("Expression "+expression+" returned an unexpected property type result "+resultType);
                 }
             }
-
             return resultType;
         }
 
@@ -299,7 +296,6 @@ public class SimpleQuery implements Query {
             }
             return true;
         }
-
     }
 
     /**
@@ -339,7 +335,6 @@ public class SimpleQuery implements Query {
         for (Column col : columns) {
             ftb.addProperty(col.expectedType(source));
         }
-
         return ftb.build();
     }
 }

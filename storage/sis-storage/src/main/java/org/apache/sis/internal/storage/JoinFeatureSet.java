@@ -23,8 +23,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.filter.DefaultLiteral;
-import org.apache.sis.filter.DefaultPropertyIsEqualTo;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -39,6 +38,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
 import org.opengis.filter.PropertyIsEqualTo;
 import org.opengis.filter.expression.Expression;
@@ -60,7 +60,6 @@ import org.opengis.util.GenericName;
  * @module
  */
 public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
-
     /**
      * Join operation type.
      */
@@ -88,12 +87,15 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
     private final Type joinType;
     private final PropertyIsEqualTo condition;
 
+    private final FilterFactory factory;
+
     //cache
     private FeatureType type;
 
 
     public JoinFeatureSet(final WarningListeners<DataStore> listeners, FeatureSet left,
-            String leftAlias, FeatureSet right, String rightAlias, Type joinType, PropertyIsEqualTo condition) {
+            String leftAlias, FeatureSet right, String rightAlias, Type joinType, PropertyIsEqualTo condition)
+    {
         super(listeners);
         this.left = left;
         this.right = right;
@@ -101,6 +103,7 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
         this.rightAlias = rightAlias;
         this.joinType = joinType;
         this.condition = condition;
+        factory = new DefaultFilterFactory();
     }
 
     /**
@@ -156,7 +159,6 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
             ftb.setName(leftName.tip().toString() + '-' + rightName.tip().toString());
             type = ftb.build();
         }
-
         return type;
     }
 
@@ -222,7 +224,6 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
             id += right.getPropertyValue(AttributeConvention.IDENTIFIER_PROPERTY.toString());
             f.setPropertyValue(rightAlias,right);
         }
-
         f.setPropertyValue(AttributeConvention.IDENTIFIER_PROPERTY.toString(), id);
         return f;
     }
@@ -295,31 +296,25 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
                     combined = toFeature(leftFeature, rightRes);
                 }
             }
-
             if (rightIterator != null && !rightIterator.hasNext()){
                 //no more results in right iterator, close iterator
                 rightStream.close();
                 rightStream = null;
                 rightIterator = null;
             }
-
             while (combined == null && leftIterator.hasNext()) {
                 leftFeature = leftIterator.next();
-
                 final Object leftValue = leftProperty.evaluate(leftFeature);
-
                 if (rightIterator == null) {
                     final SimpleQuery rightQuery = new SimpleQuery();
-                    rightQuery.setFilter(new DefaultPropertyIsEqualTo(rightProperty, new DefaultLiteral<>(leftValue), true, MatchAction.ALL));
+                    rightQuery.setFilter(factory.equal(rightProperty, factory.literal(leftValue), true, MatchAction.ALL));
                     rightStream = right.subset(rightQuery).features(false);
                     rightIterator = rightStream.iterator();
                 }
-
                 while (combined == null && rightIterator.hasNext()) {
                     final Feature rightRow = rightIterator.next();
                     combined = toFeature(leftFeature, rightRow);
                 }
-
                 if (combined == null) {
                     //no more results in right iterator, close iterator
                     rightStream.close();
@@ -327,9 +322,7 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
                     rightIterator = null;
                 }
             }
-
         }
-
     }
 
     /**
@@ -354,7 +347,6 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
                 primeStream = right.features(false);
             }
             primeIterator = primeStream.iterator();
-
         }
 
         @Override
@@ -401,41 +393,35 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
                     nextFeature = checkValid(primeFeature, secondCandidate, leftJoint);
                 }
             }
-
             while (nextFeature == null && primeIterator.hasNext()) {
                 primeFeature = primeIterator.next();
-
                 if (secondIterator != null) {
                     secondStream.close();
                     secondStream = null;
                     secondIterator = null;
                 }
-
                 final Object primeValue;
                 if (leftJoint) {
                     primeValue = leftProperty.evaluate(primeFeature);
                 } else {
                     primeValue = rightProperty.evaluate(primeFeature);
                 }
-
                 if (secondIterator == null) {
                     final SimpleQuery query = new SimpleQuery();
                     if (leftJoint) {
-                        query.setFilter(new DefaultPropertyIsEqualTo(rightProperty, new DefaultLiteral<>(primeValue), true, MatchAction.ALL));
+                        query.setFilter(factory.equal(rightProperty, factory.literal(primeValue), true, MatchAction.ALL));
                         secondStream = right.subset(query).features(false);
                         secondIterator = secondStream.iterator();
                     } else {
-                        query.setFilter(new DefaultPropertyIsEqualTo(leftProperty, new DefaultLiteral<>(primeValue), true, MatchAction.ALL));
+                        query.setFilter(factory.equal(leftProperty, factory.literal(primeValue), true, MatchAction.ALL));
                         secondStream = left.subset(query).features(false);
                         secondIterator = secondStream.iterator();
                     }
                 }
-
                 while (nextFeature == null && secondIterator.hasNext()) {
                     final Feature rightRow = secondIterator.next();
                     nextFeature = checkValid(primeFeature, rightRow,leftJoint);
                 }
-
                 if (nextFeature == null) {
                     //outer left effect, no right match but still we must return the left side
                     if (leftJoint) {
@@ -444,9 +430,7 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
                         nextFeature = toFeature(null,primeFeature);
                     }
                 }
-
             }
-
         }
 
         private Feature checkValid(final Feature left, final Feature right, final boolean leftJoin) throws DataStoreException{
@@ -456,10 +440,7 @@ public class JoinFeatureSet extends AbstractFeatureSet implements FeatureSet {
             } else {
                 candidate = toFeature(right,left);
             }
-
             return candidate;
         }
-
     }
-
 }
