@@ -16,67 +16,90 @@
  */
 package org.apache.sis.internal.storage.query;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.apache.sis.internal.feature.FeatureUtilities;
+import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Query;
-import org.apache.sis.storage.UnsupportedQueryException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.util.GenericName;
+import org.opengis.filter.expression.Expression;
+
 
 /**
+ * The result of {@link SimpleQuery#execute(FeatureSet)} executed using Java {@link Stream} methods.
+ * Queries executed by this class do not benefit from accelerations provided for example by databases.
+ * This class should be used only as a fallback when the query can not be executed natively by
+ * {@link FeatureSet#subset(Query)}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class SimpleQueryFeatureSet implements FeatureSet {
-
+final class FeatureSetView extends AbstractFeatureSet {
+    /**
+     * The set of feature instances to filter, sort or process.
+     */
     private final FeatureSet source;
+
+    /**
+     * The query for filtering the source set of features.
+     */
     private final SimpleQuery query;
+
+    /**
+     * The type of features in this set. May or may not be the same as {@link #source}.
+     * This is computed when first needed.
+     */
     private FeatureType resultType;
+
+    /**
+     * A description of this set of features, computed when first needed.
+     */
     private DefaultMetadata metadata;
 
-    public SimpleQueryFeatureSet(FeatureSet source, SimpleQuery query) {
+    /**
+     * Creates a new set of features by filtering the given set using the given query.
+     */
+    FeatureSetView(final FeatureSet source, final SimpleQuery query) {
+        super(source);
         this.source = source;
         this.query = query;
     }
 
+    /**
+     * Returns {@code null} since computing the envelope would be costly.
+     */
     @Override
-    public Envelope getEnvelope() throws DataStoreException {
+    public Envelope getEnvelope() {
         return null;
     }
 
+    /**
+     * Computes information about this resource.
+     * Current implementation sets only the resource name.
+     */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            final FeatureType type = getType();
-
+            final DefaultCitation citation = new DefaultCitation(getType().getName().toInternationalString());
             final DefaultDataIdentification identification = new DefaultDataIdentification();
-            final NamedIdentifier identifier = new NamedIdentifier(type.getName());
-            final DefaultCitation citation = new DefaultCitation(type.getName().toString());
-            citation.setIdentifiers(Collections.singleton(identifier));
             identification.setCitation(citation);
 
             final DefaultMetadata metadata = new DefaultMetadata();
-            metadata.setIdentificationInfo(Collections.singleton(identification));
+            metadata.getIdentificationInfo().add(identification);
             metadata.freeze();
 
             this.metadata = metadata;
@@ -84,84 +107,70 @@ final class SimpleQueryFeatureSet implements FeatureSet {
         return metadata;
     }
 
+    /**
+     * Returns a description of properties that are common to all features in this dataset.
+     */
     @Override
     public synchronized FeatureType getType() throws DataStoreException {
         if (resultType == null) {
-            resultType = SimpleQuery.expectedType(source.getType(), query);
+            resultType = query.expectedType(source.getType());
         }
         return resultType;
     }
 
+    /**
+     * Returns a stream of all features contained in this dataset.
+     */
     @Override
-    public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
-        if (query instanceof SimpleQuery) {
-            return SimpleQuery.executeOnCPU(this, (SimpleQuery) query);
-        }
-        return FeatureSet.super.subset(query);
-    }
-
-    @Override
-    public Stream<Feature> features(boolean parallel) throws DataStoreException {
-
+    public Stream<Feature> features(final boolean parallel) throws DataStoreException {
         Stream<Feature> stream = source.features(parallel);
-
-        //apply filter
+        /*
+         * Apply filter.
+         */
         final Filter filter = query.getFilter();
         if (!Filter.INCLUDE.equals(filter)) {
             stream = stream.filter(filter::evaluate);
         }
-
-        //apply sort by
+        /*
+         * Apply sorting.
+         */
         final SortBy[] sortBy = query.getSortBy();
         if (sortBy.length > 0) {
             stream = stream.sorted(new SortByComparator(sortBy));
         }
-
-        //apply offset
+        /*
+         * Apply offset.
+         */
         final long offset = query.getOffset();
         if (offset > 0) {
             stream = stream.skip(offset);
         }
-
-        //apply limit
+        /*
+         * Apply limit.
+         */
         final long limit = query.getLimit();
         if (limit >= 0) {
             stream = stream.limit(limit);
         }
-
-        //transform feature
+        /*
+         * Transform feature instances.
+         */
         final List<SimpleQuery.Column> columns = query.getColumns();
         if (columns != null) {
-            final SimpleQuery.Column[] cols = columns.toArray(new SimpleQuery.Column[0]);
+            final Expression[] expressions = new Expression[columns.size()];
+            for (int i=0; i<expressions.length; i++) {
+                expressions[i] = columns.get(i).expression;
+            }
             final FeatureType type = getType();
-            final String[] names = type.getProperties(false).stream()
-                    .map(PropertyType::getName)
-                    .map(GenericName::tip)
-                    .map(Object::toString)
-                    .collect(Collectors.toList())
-                    .toArray(new String[0]);
-
-            stream = stream.map(new Function<Feature, Feature>() {
-                @Override
-                public Feature apply(Feature t) {
-                    final Feature f = type.newInstance();
-                    for (int i=0;i<cols.length;i++) {
-                        f.setPropertyValue(names[i], cols[i].expression.evaluate(t));
-                    }
-                    return f;
+            final String[] names = FeatureUtilities.getNames(type.getProperties(false));
+            stream = stream.map(t -> {
+                final Feature f = type.newInstance();
+                for (int i=0; i < expressions.length; i++) {
+                    f.setPropertyValue(names[i], expressions[i].evaluate(t));
                 }
+                return f;
             });
         }
-
         return stream;
     }
-
-    @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
 }

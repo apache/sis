@@ -17,324 +17,409 @@
 package org.apache.sis.internal.storage.query;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
+import org.opengis.filter.Filter;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.filter.expression.Expression;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
+
 
 /**
- * A simple query mimics SQL SELECT using OGC Filter and Expressions.
+ * Mimics {@code SQL SELECT} statements using OGC Filter and Expressions.
+ * Information stored in this query can be used directly with {@link java.util.stream.Stream} API.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public class SimpleQuery implements Query {
-
-    private static final SortBy[] EMPTY_SORTBY = new SortBy[0];
-
-    private List<Column> columns;
-    private Filter filter = Filter.INCLUDE;
-    private long offset;
-    private long limit = -1;
-    private SortBy[] sortBy = EMPTY_SORTBY;
-    private final Map<String,Object> hints = new HashMap<>();
-
-    public SimpleQuery() {
-    }
+    /**
+     * Sentinel limit value for queries of unlimited length.
+     * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
+     */
+    private static final long UNLIMITED = -1;
 
     /**
-     * Set query columns.
-     * A query column may use a simple or complex expression and a alias
-     * to create a new type of returned feature.<br>
+     * The columns to retrieve, or {@code null} if all columns shall be included in the query.
      *
-     * @return query columns or null to get all feature properties.
+     * @see #getColumns()
+     * @see #setColumns(Column...)
      */
-    public List<Column> getColumns() {
-        return columns;
+    private Column[] columns;
+
+    /**
+     * The filter for trimming feature instances.
+     *
+     * @see #getFilter()
+     * @see #setFilter(Filter)
+     */
+    private Filter filter;
+
+    /**
+     * The number of records to skip from the beginning.
+     *
+     * @see #getOffset()
+     * @see #setOffset(long)
+     * @see java.util.stream.Stream#skip(long)
+     */
+    private long skip;
+
+    /**
+     * The maximum number of records contained in the {@code FeatureSet}.
+     *
+     * @see #getLimit()
+     * @see #setLimit(long)
+     * @see java.util.stream.Stream#limit(long)
+     */
+    private long limit;
+
+    /**
+     * The expressions to use for sorting the feature instances.
+     *
+     * @see #getSortBy()
+     * @see #setSortBy(SortBy...)
+     */
+    private SortBy[] sortBy;
+
+    /**
+     * Creates a new query retrieving no column and applying no filter.
+     */
+    public SimpleQuery() {
+        filter = Filter.INCLUDE;
+        sortBy = SortBy.UNSORTED;
+        limit  = UNLIMITED;
     }
 
     /**
-     * Returns the query columns.
-     * @param columns query expressions or null to get all properties.
+     * Sets the columns to retrieve, or {@code null} if all columns shall be included in the query.
+     * A query column may use a simple or complex expression and an alias to create a new type of
+     * property in the returned features.
+     * This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
+     *
+     * @param columns columns to retrieve, or null to retrieve all properties.
      */
-    public void setColumns(List<Column> columns) {
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    public void setColumns(Column... columns) {
+        columns = columns.clone();
+        for (int i=0; i<columns.length; i++) {
+            ArgumentChecks.ensureNonNullElement("columns", i, columns[i]);
+        }
         this.columns = columns;
     }
 
     /**
-     * Get query filter.
-     * The filter is used to trim features, features who do not pass the filter
-     * are discarded.<br>
-     * Discarded features are not counted is there is a query limit defined.
+     * Returns the columns to retrieve, or {@code null} if all columns shall be included in the query.
+     * This is the columns specified in the last call to {@link #setColumns(Column...)}.
      *
-     * @return query filter, never null
+     * @return columns to retrieve, or null to retrieve all feature properties.
+     */
+    public List<Column> getColumns() {
+        return UnmodifiableArrayList.wrap(columns);
+    }
+
+    /**
+     * Sets a filter for trimming feature instances.
+     * Features that do not pass the filter are discarded.
+     * Discarded features are not counted for the {@linkplain #setLimit(long) query limit}.
+     *
+     * @param  filter  the filter, or {@link Filter#INCLUDE} if none.
+     */
+    public void setFilter(final Filter filter) {
+        ArgumentChecks.ensureNonNull("filter", filter);
+        this.filter = filter;
+    }
+
+    /**
+     * Returns the filter for trimming feature instances.
+     * This is the value specified in the last call to {@link #setFilter(Filter)}.
+     *
+     * @return the filter, or {@link Filter#INCLUDE} if none.
      */
     public Filter getFilter() {
         return filter;
     }
 
     /**
-     * Set query filter.
+     * Sets the number of records to skip from the beginning.
+     * Offset and limit are often combined to obtain paging.
+     * The offset can not be negative.
      *
-     * @param filter not null, use Filter.INCLUDE for all results
+     * <p>Note that setting this property can be costly on parallelized streams.
+     * See {@link java.util.stream.Stream#skip(long)} for more information.</p>
+     *
+     * @param  skip  the number of records to skip from the beginning.
      */
-    public void setFilter(Filter filter) {
-        this.filter = filter;
+    public void setOffset(final long skip) {
+        ArgumentChecks.ensurePositive("skip", skip);
+        this.skip = skip;
     }
 
     /**
-     * Returns the query offset.
-     * The offset is the number of records to skip from the beginning.<br>
-     * Offset and limit are often combined to obtain paging.
+     * Returns the number of records to skip from the beginning.
+     * This is the value specified in the last call to {@link #setOffset(long)}.
      *
-     * @return offset
+     * @return the number of records to skip from the beginning.
      */
     public long getOffset() {
-        return offset;
+        return skip;
     }
 
     /**
-     * Set query start offset.
-     *
-     * @param offset zero or positive
-     */
-    public void setOffset(long offset) {
-        this.offset = offset;
-    }
-
-    /**
-     * Returns the query limit.
-     * The limit is the maximum number of records that will contain the FeatureSet.<br>
+     * Set the maximum number of records contained in the {@code FeatureSet}.
      * Offset and limit are often combined to obtain paging.
      *
-     * @return limit or -1 for unlimited
+     * <p>Note that setting this property can be costly on parallelized streams.
+     * See {@link java.util.stream.Stream#limit(long)} for more information.</p>
+     *
+     * @param  limit  maximum number of records contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
+     */
+    public void setLimit(final long limit) {
+        if (limit != UNLIMITED) {
+            ArgumentChecks.ensurePositive("limit", limit);
+        }
+        this.limit = limit;
+    }
+
+    /**
+     * Returns the maximum number of records contained in the {@code FeatureSet}.
+     * This is the value specified in the last call to {@link #setLimit(long)}.
+     *
+     * @return maximum number of records contained in the {@code FeatureSet}, or {@link #UNLIMITED}.
      */
     public long getLimit() {
         return limit;
     }
 
     /**
-     * Set query limit.
+     * Sets the expressions to use for sorting the feature instances.
+     * {@code SortBy} objects are used to order the {@link org.opengis.feature.Feature} instances
+     * returned by the {@link org.apache.sis.storage.FeatureSet}. {@code SortBy} clauses are applied
+     * in declaration order, like SQL.
      *
-     * @param limit positive or -1 for unlimited
+     * @param  sortBy  expressions to use for sorting the feature instances.
      */
-    public void setLimit(long limit) {
-        this.limit = limit;
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    public void setSortBy(SortBy... sortBy) {
+        if (sortBy == null || sortBy.length == 0) {
+            sortBy = SortBy.UNSORTED;
+        } else {
+            sortBy = sortBy.clone();
+            for (int i=0; i < sortBy.length; i++) {
+                ArgumentChecks.ensureNonNullElement("sortBy", i, sortBy[i]);
+            }
+        }
+        this.sortBy = sortBy;
     }
 
     /**
-     * Returns the query sort by parameters.
-     * SortBy objects are used to order Features returned by the FeatureSet.<br>
-     * The first SortBy is applied first then the others as in SQL.
+     * Returns the expressions to use for sorting the feature instances.
+     * They are the values specified in the last call to {@link #setSortBy(SortBy...)}.
      *
-     * @return sort by array, never null, can be empty
+     * @return expressions to use for sorting the feature instances, or an empty array if none.
      */
     public SortBy[] getSortBy() {
-        return sortBy == EMPTY_SORTBY ? EMPTY_SORTBY : sortBy.clone();
+        return (sortBy.length == 0) ? SortBy.UNSORTED : sortBy.clone();
     }
 
     /**
-     * Set query sort by elements.
-     *
-     * @param sortBy
-     */
-    public void setSortBy(SortBy... sortBy) {
-        this.sortBy = sortBy == null ? EMPTY_SORTBY : sortBy;
-    }
-
-    /**
-     * Different FeatureSet may have more capabilities then what is provided
-     * with the SimpleQuery class.<br>
-     * Hints allow the user to pass more query parameters.<br>
-     * Unsupported hints will be ignored by the FeatureSet.<br>
-     * The returned map is modifiable.
-     *
-     * @return modifiable map of query hints
-     */
-    public Map<String, Object> getHints() {
-        return hints;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.columns);
-        hash = 97 * hash + Objects.hashCode(this.filter);
-        hash = 97 * hash + (int) (this.offset ^ (this.offset >>> 32));
-        hash = 97 * hash + (int) (this.limit ^ (this.limit >>> 32));
-        hash = 97 * hash + Arrays.deepHashCode(this.sortBy);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final SimpleQuery other = (SimpleQuery) obj;
-        if (this.offset != other.offset) {
-            return false;
-        }
-        if (this.limit != other.limit) {
-            return false;
-        }
-        if (!Objects.equals(this.columns, other.columns)) {
-            return false;
-        }
-        if (!Objects.equals(this.filter, other.filter)) {
-            return false;
-        }
-        if (!Arrays.deepEquals(this.sortBy, other.sortBy)) {
-            return false;
-        }
-        if (!Objects.equals(this.hints, other.hints)) {
-            return false;
-        }
-        return true;
-    }
-
-
-    /**
-     * A query column.
-     * Just an expression and an optional alias.
+     * A property or expression to be retrieved by a {@code Query}, together with the name to assign to it.
+     * Columns can be given to the {@link SimpleQuery#setColumns(Column...)} method.
      */
     public static class Column {
+        /**
+         * The literal, property name or more complex expression to be retrieved by a {@code Query}.
+         */
         public final Expression expression;
+
+        /**
+         * The name to assign to the expression result, or {@code null} if unspecified.
+         */
         public final GenericName alias;
 
-        public Column(Expression expression) {
+        /**
+         * Creates a new column with the given expression and no name.
+         *
+         * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
+         */
+        public Column(final Expression expression) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = null;
         }
 
-        public Column(Expression expression, GenericName alias) {
+        /**
+         * Creates a new column with the given expression and the given name.
+         *
+         * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
+         * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
+         */
+        public Column(final Expression expression, final GenericName alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = alias;
         }
 
-        public Column(Expression expression, String alias) {
+        /**
+         * Creates a new column with the given expression and the given name.
+         * This constructor creates a {@link org.opengis.util.LocalName} from the given string.
+         *
+         * @param expression  the literal, property name or expression to be retrieved by a {@code Query}.
+         * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
+         */
+        public Column(final Expression expression, final String alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
-            this.alias = alias == null ? null : Names.createLocalName(null, null, alias);
             this.expression = expression;
+            this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
         }
 
         /**
-         * Returns the column expected property type.
-         * @param type
-         * @return
+         * Returns the expected property type for this column.
+         *
+         * @see SimpleQuery#expectedType(FeatureType)
          */
-        public PropertyType expectedType(FeatureType type) {
+        final PropertyType expectedType(final FeatureType type) {
             PropertyType resultType;
             if (expression instanceof FeatureExpression) {
                 resultType = ((FeatureExpression) expression).expectedType(type);
             } else {
+                // TODO: remove this hack if we can get more type-safe Expression.
                 resultType = expression.evaluate(type, PropertyType.class);
             }
-            if (alias != null) {
-                //rename result type
-                if (resultType instanceof AttributeType) {
-                    resultType = new FeatureTypeBuilder().addAttribute((AttributeType<?>) resultType).setName(alias).build();
-                } else if (resultType instanceof FeatureAssociationRole) {
-                    resultType = new FeatureTypeBuilder().addAssociation((FeatureAssociationRole) resultType).setName(alias).build();
-                } else {
-                    throw new BackingStoreException("Expression "+expression+" returned an unexpected property type result "+resultType);
+            if (alias != null && !alias.equals(resultType.getName())) {
+                // Rename the result type.
+                resultType = new FeatureTypeBuilder().addProperty(resultType).setName(alias).build();
+                if (!(resultType instanceof AttributeType<?>) && !(resultType instanceof FeatureAssociationRole)) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                                alias, AttributeType.class, Classes.getStandardType(Classes.getClass(resultType))));
                 }
             }
             return resultType;
         }
 
+        /**
+         * Returns a hash code value for this column.
+         *
+         * @return a hash code value.
+         */
         @Override
         public int hashCode() {
-            int hash = 3;
-            hash = 29 * hash + Objects.hashCode(this.expression);
-            hash = 29 * hash + Objects.hashCode(this.alias);
-            return hash;
+            return 37 * expression.hashCode() + Objects.hashCode(alias);
         }
 
+        /**
+         * Compares this column with the given object for equality.
+         *
+         * @param  obj  the object to compare with this column.
+         * @return whether the two objects are equal.
+         */
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
+        public boolean equals(final Object obj) {
+            if (obj == this) {
                 return true;
             }
-            if (obj == null) {
-                return false;
+            if (obj != null && getClass() == obj.getClass()) {
+                final Column other = (Column) obj;
+                return expression.equals(other.expression) && Objects.equals(alias, other.alias);
             }
-            if (getClass() != obj.getClass()) {
-                return false;
+            return false;
+        }
+
+        /**
+         * Returns a string representation of this column for debugging purpose.
+         *
+         * @return a string representation of this column.
+         */
+        @Debug
+        @Override
+        public String toString() {
+            final StringBuilder b = new StringBuilder(getClass().getSimpleName()).append('[');
+            if (alias != null) {
+                b.append('"').append(alias).append('"');
             }
-            final Column other = (Column) obj;
-            if (!Objects.equals(this.expression, other.expression)) {
-                return false;
-            }
-            if (!Objects.equals(this.alias, other.alias)) {
-                return false;
-            }
-            return true;
+            return b.append(']').toString();
         }
     }
 
     /**
-     * Execute the query on the CPU.
-     * <p>
-     * All operations are processed in java on the CPU, this may use considerable
-     * resources. Consider giving the query to the FeatureSet to allow it to
-     * optimize the query.
-     * <p>
-     * <p>
-     * The returned FeatureSet do not cache the resulting Features, the query is
-     * processed on each call to features() method.
-     * </p>
+     * Applies this query on the given feature set. The default implementation executes the query using the default
+     * {@link java.util.stream.Stream} methods.  Queries executed by this method may not benefit from accelerations
+     * provided for example by databases. This method should be used only as a fallback when the query can not be
+     * executed natively by {@link FeatureSet#subset(Query)}.
      *
-     * @param source base FeatureSet to process.
-     * @param query Query to apply on source
-     * @return resulting query FeatureSet
+     * <p>The returned {@code FeatureSet} does not cache the resulting {@code Feature} instances;
+     * the query is processed on every call to the {@link FeatureSet#features(boolean)} method.</p>
+     *
+     * @param  source  the set of features to filter, sort or process.
+     * @return a view over the given feature set containing only the filtered feature instances.
      */
-    public static FeatureSet executeOnCPU(FeatureSet source, SimpleQuery query) {
-        return new SimpleQueryFeatureSet(source, query);
+    public FeatureSet execute(final FeatureSet source) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return new FeatureSetView(source, this);
     }
 
     /**
-     * Evaluate the expected returned type of a simple query.
-     *
-     * @param source
-     * @param query
-     * @return
+     * Returns the expected property type for this query executed on features of the given type.
      */
-    public static FeatureType expectedType(FeatureType source, SimpleQuery query) {
-
-        final List<Column> columns = query.getColumns();
-        if (columns == null) return source;
-
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName(source.getName());
-        for (Column col : columns) {
+    final FeatureType expectedType(final FeatureType source) {
+        if (columns == null) {
+            return source;          // All columns included: result is of the same type.
+        }
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(source.getName());
+        for (final Column col : columns) {
             ftb.addProperty(col.expectedType(source));
         }
         return ftb.build();
+    }
+
+    /**
+     * Returns a hash code value for this query.
+     *
+     * @return a hash value for this query.
+     */
+    @Override
+    public int hashCode() {
+        return 97 * Arrays.hashCode(columns) + 31 * filter.hashCode()
+                + 7 * Arrays.hashCode(sortBy) + Long.hashCode(limit ^ skip);
+    }
+
+    /**
+     * Compares this query with the given object for equality.
+     *
+     * @param  obj  the object to compare with this query.
+     * @return whether the two objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj != null && getClass() == obj.getClass()) {
+            final SimpleQuery other = (SimpleQuery) obj;
+            return skip  == other.skip &&
+                   limit == other.limit &&
+                   filter.equals(other.filter) &&
+                   Arrays.equals(columns, other.columns) &&
+                   Arrays.equals(sortBy,  other.sortBy);
+        }
+        return true;
     }
 }

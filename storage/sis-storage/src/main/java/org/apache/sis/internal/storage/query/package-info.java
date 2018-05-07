@@ -16,11 +16,9 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
- * contains also classes that may move to the public API someday,
- * but are considered not yet ready.
+ * Default implementation of query operations.
  *
- * <p><strong>Do not use!</strong></p>
+ * <STRONG>Do not use!</STRONG>
  *
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
@@ -28,7 +26,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.7
+ * @since   1.0
  * @module
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.internal.storage.query;

@@ -57,6 +57,16 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
+     * Creates a new resource with the same warning listeners than the given resource,
+     * or {@code null} if the listeners are unknown.
+     *
+     * @param resource  the resources from which to get the listeners, or {@code null} if none.
+     */
+    protected AbstractResource(final Resource resource) {
+        listeners = (resource instanceof AbstractResource) ? ((AbstractResource) resource).listeners : null;
+    }
+
+    /**
      * Returns the locale for error messages or warnings.
      * Returns {@code null} if no locale is explicitly defined.
      *

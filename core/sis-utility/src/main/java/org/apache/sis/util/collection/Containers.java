@@ -19,6 +19,7 @@ package org.apache.sis.util.collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.Iterator;
 import java.util.Collection;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
@@ -33,7 +34,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -267,5 +268,38 @@ public final class Containers extends Static {
             r++;
         }
         return count + r;
+    }
+
+    /**
+     * Compares element-by-element the values provided by two iterators, in iteration order. Let {@code o1} be an
+     * element from the first iterator and {@code o2} the element at the same position from the second iterator.
+     * This method returns the result of the first {@code o1.compareTo(o2)} call which returned a value different
+     * than zero. If all {@code o1.compareTo(o2)} calls returned zero, then this method returns -1 if {@code it1}
+     * iteration finished before {@code it2}, +1 if {@code it2} iteration finished before {@code it1}, or 0 if both
+     * iterators finished in same time.
+     *
+     * <p>Iterators may return null elements. Null elements are considered "after" any non-null element.</p>
+     *
+     * @param  <E>  the type of elements returned by the iterators.
+     * @param  it1  the first iterator (can not be null).
+     * @param  it2  the second iterator (can not be null).
+     * @return -1 if the content given by the first iterator is considered "before" the content given by the second
+     *         iterator, +1 if considered "after", or 0 if considered equal.
+     *
+     * @since 1.0
+     */
+    public static <E extends Comparable<E>> int compare(final Iterator<E> it1, final Iterator<? extends E> it2) {
+        while (it1.hasNext()) {
+            if (!it2.hasNext()) return +1;          // it1 longer than it2.
+            final E o1 = it1.next();
+            final E o2 = it2.next();
+            if (o1 != o2) {
+                if (o1 == null) return +1;
+                if (o2 == null) return -1;
+                final int c = o1.compareTo(o2);
+                if (c != 0) return c;
+            }
+        }
+        return it2.hasNext() ? -1 : 0;
     }
 }
