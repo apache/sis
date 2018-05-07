@@ -45,6 +45,16 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     }
 
     /**
+     * Creates a new feature set with the same warning listeners than the given resource,
+     * or {@code null} if the listeners are unknown.
+     *
+     * @param resource  the resources from which to get the listeners, or {@code null} if none.
+     */
+    protected AbstractFeatureSet(final FeatureSet resource) {
+        super(resource);
+    }
+
+    /**
      * Requests a subset of features and/or feature properties from this resource.
      * The default implementation try to execute the queries by filtering the
      * {@linkplain #features(boolean) stream of features}, which may be inefficient.
@@ -58,7 +68,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     @Override
     public FeatureSet subset(final Query query) throws DataStoreException {
         if (query instanceof SimpleQuery) {
-            return SimpleQuery.executeOnCPU(this, (SimpleQuery) query);
+            return ((SimpleQuery) query).execute(this);
         } else {
             return FeatureSet.super.subset(query);
         }

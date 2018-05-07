@@ -18,6 +18,10 @@ package org.apache.sis.internal.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -36,7 +40,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -89,5 +93,34 @@ public final class FeatureUtilities extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the name of all given properties. If any property is null or has a null name,
+     * then the corresponding entry in the returned array will be null.
+     *
+     * @param  properties  the properties for which to get the names, or {@code null}.
+     * @return the name of all given properties, or {@code null} if the given list was null.
+     */
+    public static String[] getNames(final Collection<? extends PropertyType> properties) {
+        if (properties == null) {
+            return null;
+        }
+        final String[] names = new String[properties.size()];
+        final Iterator<? extends PropertyType> it = properties.iterator();
+        for (int i=0; i < names.length; i++) {
+            final PropertyType property = it.next();
+            if (property != null) {
+                final GenericName name = property.getName();
+                if (name != null) {
+                    names[i] = name.toString();
+                }
+            }
+        }
+        // Should not have any element left, unless collection size changed during iteration.
+        if (it.hasNext()) {
+            throw new ConcurrentModificationException();
+        }
+        return names;
     }
 }

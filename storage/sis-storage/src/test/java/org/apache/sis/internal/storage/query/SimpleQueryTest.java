@@ -24,24 +24,28 @@ import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.test.TestCase;
-import static org.junit.Assert.*;
 import org.junit.Test;
-import org.opengis.feature.AttributeType;
+
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 import org.opengis.filter.MatchAction;
 import org.opengis.filter.sort.SortOrder;
+
 
 /**
  * Tests {@link SimpleQuery}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class SimpleQueryTest extends TestCase {
+public final strictfp class SimpleQueryTest extends TestCase {
 
     private static final FeatureType TYPE;
     private static final Feature[] FEATURES;
@@ -76,7 +80,7 @@ public class SimpleQueryTest extends TestCase {
     /**
      * Verify query limit.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testLimit() throws DataStoreException {
@@ -84,7 +88,7 @@ public class SimpleQueryTest extends TestCase {
         final SimpleQuery query = new SimpleQuery();
         query.setLimit(2);
 
-        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final FeatureSet fs = query.execute(FEATURESET);
         final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
 
         assertEquals(FEATURES[0], result[0]);
@@ -94,7 +98,7 @@ public class SimpleQueryTest extends TestCase {
     /**
      * Verify query offset.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testOffset() throws DataStoreException {
@@ -102,7 +106,7 @@ public class SimpleQueryTest extends TestCase {
         final SimpleQuery query = new SimpleQuery();
         query.setOffset(2);
 
-        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final FeatureSet fs = query.execute(FEATURESET);
         final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
 
         assertEquals(FEATURES[2], result[0]);
@@ -113,7 +117,7 @@ public class SimpleQueryTest extends TestCase {
     /**
      * Verify query sortby.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testSortBy() throws DataStoreException {
@@ -125,7 +129,7 @@ public class SimpleQueryTest extends TestCase {
                 factory.sort("value2", SortOrder.DESCENDING)
         );
 
-        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final FeatureSet fs = query.execute(FEATURESET);
         final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
 
         assertEquals(FEATURES[3], result[0]);
@@ -138,7 +142,7 @@ public class SimpleQueryTest extends TestCase {
     /**
      * Verify query filter.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testFilter() throws DataStoreException {
@@ -147,7 +151,7 @@ public class SimpleQueryTest extends TestCase {
         final SimpleQuery query = new SimpleQuery();
         query.setFilter(factory.equal(factory.property("value1"), factory.literal(2), true, MatchAction.ALL));
 
-        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final FeatureSet fs = query.execute(FEATURESET);
         final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
 
         assertEquals(FEATURES[1], result[0]);
@@ -157,21 +161,19 @@ public class SimpleQueryTest extends TestCase {
     /**
      * Verify query columns.
      *
-     * @throws DataStoreException
+     * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testColumns() throws DataStoreException {
         final DefaultFilterFactory factory = new DefaultFilterFactory();
 
         final SimpleQuery query = new SimpleQuery();
-        query.setColumns(Arrays.asList(
-                new SimpleQuery.Column(factory.property("value1"), (String)null),
-                new SimpleQuery.Column(factory.property("value1"), "renamed1"),
-                new SimpleQuery.Column(factory.literal("a literal"), "computed")
-            ));
+        query.setColumns(new SimpleQuery.Column(factory.property("value1"), (String)null),
+                         new SimpleQuery.Column(factory.property("value1"), "renamed1"),
+                         new SimpleQuery.Column(factory.literal("a literal"), "computed"));
         query.setLimit(1);
 
-        final FeatureSet fs = SimpleQuery.executeOnCPU(FEATURESET, query);
+        final FeatureSet fs = query.execute(FEATURESET);
         final Feature[] results = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
         assertEquals(1, results.length);
 
