@@ -17,11 +17,12 @@
 package org.apache.sis.filter;
 
 import java.util.Map;
-import java.util.Objects;
 import java.io.Serializable;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.feature.DefaultAssociationRole;
+
+import static java.util.Collections.singletonMap;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -35,9 +36,9 @@ import org.opengis.filter.expression.PropertyName;
 
 
 /**
- * Immutable property name expression.
- * A property name does not store any value, it acts as an indirection to a
- * property value of the evaluated feature.
+ * Expression whose value is computed by retrieving the value indicated by the provided name.
+ * A property name does not store any value; it acts as an indirection to a property value of
+ * the evaluated feature.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -50,56 +51,72 @@ final class DefaultPropertyName extends AbstractExpression implements PropertyNa
      */
     private static final long serialVersionUID = -8474562134021521300L;
 
-    private final String property;
+    /**
+     * Name of the property from which to retrieve the value.
+     */
+    private final String name;
 
     /**
+     * Creates a new expression retrieving values from a property of the given name.
+     * It is caller responsibility to ensure that the given name is non-null.
      *
-     * @param property attribute name
+     * @param  name  name of the property (usually a feature attribute).
      */
-    DefaultPropertyName(final String property) {
-        ArgumentChecks.ensureNonNull("property", property);
-        this.property = property;
+    DefaultPropertyName(final String name) {
+        this.name = name;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the name of the property whose value will be returned by the {@link #evaluate evaluate} method.
      */
     @Override
     public String getPropertyName() {
-        return property;
+        return name;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the value of the property of the given name.
+     * The {@code candidate} object can be any of the following type:
+     *
+     * <ul>
+     *   <li>A {@link Feature}, in which case {@link Feature#getPropertyValue(String)} will be invoked.</li>
+     *   <li>A {@link Map}, in which case {@link Map#get(Object)} will be invoked.</li>
+     * </ul>
+     *
+     * If no value is found for the given property, then this method returns {@code null}.
      */
     @Override
     public Object evaluate(final Object candidate) {
         if (candidate instanceof Feature) {
             try {
-                return ((Feature) candidate).getPropertyValue(property);
+                return ((Feature) candidate).getPropertyValue(name);
             } catch (PropertyNotFoundException ex) {
-                return null;
+                // Null will be returned below.
+                // TODO: report a warning somewhere?
             }
         } else if (candidate instanceof Map<?,?>) {
-            return ((Map<?,?>) candidate).get(property);
+            return ((Map<?,?>) candidate).get(name);
         }
         return null;
     }
 
     /**
-     * {@inheritDoc }
+     * Returns the expected type of values produced by this expression when a feature of the given type is evaluated.
+     *
+     * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
      */
     @Override
-    public PropertyType expectedType(FeatureType type) {
-        PropertyType propertyType = type.getProperty(property);
+    public PropertyType expectedType(final FeatureType type) {
+        PropertyType propertyType = type.getProperty(name);         // May throw IllegalArgumentException.
         while (propertyType instanceof Operation) {
-            IdentifiedType it = ((Operation) propertyType).getResult();
-            if (it instanceof FeatureType) {
-                propertyType = new FeatureTypeBuilder().addAssociation(type).setName(property).build();
-            } else if (it instanceof PropertyType) {
+            final IdentifiedType it = ((Operation) propertyType).getResult();
+            if (it instanceof PropertyType) {
                 propertyType = (PropertyType) it;
+            } else if (it instanceof FeatureType) {
+                propertyType = new DefaultAssociationRole(singletonMap(DefaultAssociationRole.NAME_KEY, name), type, 1, 1);
             } else {
-                throw new BackingStoreException("Unexpected operation result type "+it);
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                            name, PropertyType.class, Classes.getStandardType(Classes.getClass(it))));
             }
         }
         return propertyType;
@@ -114,26 +131,26 @@ final class DefaultPropertyName extends AbstractExpression implements PropertyNa
     }
 
     /**
-     * Returns a hash-code value for this property.
+     * Returns a hash-code value for this expression.
      */
     @Override
     public boolean equals(final Object obj) {
-        return (obj instanceof DefaultPropertyName) && property.equals(((DefaultPropertyName) obj).property);
+        return (obj instanceof DefaultPropertyName) && name.equals(((DefaultPropertyName) obj).name);
     }
 
     /**
-     * Returns a hash-code value for this property.
+     * Returns a hash-code value for this expression.
      */
     @Override
     public int hashCode() {
-        return Objects.hashCode(property) ^ (int) serialVersionUID;
+        return name.hashCode() ^ (int) serialVersionUID;
     }
 
     /**
-     * Returns a string representation of this property.
+     * Returns a string representation of this expression.
      */
     @Override
     public String toString() {
-        return '{' + property + '}';
+        return '{' + name + '}';
     }
 }

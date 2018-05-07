@@ -18,76 +18,14 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Set;
-import org.opengis.filter.And;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.Id;
-import org.opengis.filter.MatchAction;
-import org.opengis.filter.Not;
-import org.opengis.filter.Or;
-import org.opengis.filter.PropertyIsBetween;
-import org.opengis.filter.PropertyIsEqualTo;
-import org.opengis.filter.PropertyIsGreaterThan;
-import org.opengis.filter.PropertyIsGreaterThanOrEqualTo;
-import org.opengis.filter.PropertyIsLessThan;
-import org.opengis.filter.PropertyIsLessThanOrEqualTo;
-import org.opengis.filter.PropertyIsLike;
-import org.opengis.filter.PropertyIsNil;
-import org.opengis.filter.PropertyIsNotEqualTo;
-import org.opengis.filter.PropertyIsNull;
-import org.opengis.filter.capability.ArithmeticOperators;
-import org.opengis.filter.capability.ComparisonOperators;
-import org.opengis.filter.capability.FilterCapabilities;
-import org.opengis.filter.capability.FunctionName;
-import org.opengis.filter.capability.Functions;
-import org.opengis.filter.capability.GeometryOperand;
-import org.opengis.filter.capability.IdCapabilities;
-import org.opengis.filter.capability.Operator;
-import org.opengis.filter.capability.ScalarCapabilities;
-import org.opengis.filter.capability.SpatialCapabilities;
-import org.opengis.filter.capability.SpatialOperator;
-import org.opengis.filter.capability.SpatialOperators;
-import org.opengis.filter.capability.TemporalCapabilities;
-import org.opengis.filter.capability.TemporalOperand;
-import org.opengis.filter.capability.TemporalOperators;
-import org.opengis.filter.expression.Add;
-import org.opengis.filter.expression.Divide;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.Function;
-import org.opengis.filter.expression.Literal;
-import org.opengis.filter.expression.Multiply;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.expression.Subtract;
-import org.opengis.filter.identity.FeatureId;
-import org.opengis.filter.identity.GmlObjectId;
-import org.opengis.filter.identity.Identifier;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.sort.SortOrder;
-import org.opengis.filter.spatial.BBOX;
-import org.opengis.filter.spatial.Beyond;
-import org.opengis.filter.spatial.Contains;
-import org.opengis.filter.spatial.Crosses;
-import org.opengis.filter.spatial.DWithin;
-import org.opengis.filter.spatial.Disjoint;
-import org.opengis.filter.spatial.Equals;
-import org.opengis.filter.spatial.Intersects;
-import org.opengis.filter.spatial.Overlaps;
-import org.opengis.filter.spatial.Touches;
-import org.opengis.filter.spatial.Within;
-import org.opengis.filter.temporal.After;
-import org.opengis.filter.temporal.AnyInteracts;
-import org.opengis.filter.temporal.Before;
-import org.opengis.filter.temporal.Begins;
-import org.opengis.filter.temporal.BegunBy;
-import org.opengis.filter.temporal.During;
-import org.opengis.filter.temporal.EndedBy;
-import org.opengis.filter.temporal.Ends;
-import org.opengis.filter.temporal.Meets;
-import org.opengis.filter.temporal.MetBy;
-import org.opengis.filter.temporal.OverlappedBy;
-import org.opengis.filter.temporal.TContains;
-import org.opengis.filter.temporal.TEquals;
-import org.opengis.filter.temporal.TOverlaps;
+import org.opengis.filter.*;
+import org.opengis.filter.capability.*;
+import org.opengis.filter.expression.*;
+import org.opengis.filter.identity.*;
+import org.opengis.filter.sort.*;
+import org.opengis.filter.spatial.*;
+import org.opengis.filter.temporal.*;
+import org.opengis.filter.capability.SpatialOperator;       // Resolve ambiguity with org.opengis.filter.spatial.
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.GenericName;
@@ -95,7 +33,12 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * Default implementation of GeoAPI filter factory.
+ * Default implementation of GeoAPI filter factory for creation of {@link Filter} and {@link Expression} instances.
+ *
+ * <div class="warning"><b>Warning:</b> most methods in this class are still unimplemented.
+ * This is a very early draft subject to changes.
+ * <b>TODO: the API of this class needs severe revision! DO NOT RELEASE.</b>
+ * See <a href="https://github.com/opengeospatial/geoapi/issues/32">GeoAPI issue #32</a>.</div>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -103,13 +46,28 @@ import org.apache.sis.util.ArgumentChecks;
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {
+    /**
+     * Creates a new factory.
+     */
     public DefaultFilterFactory() {
     }
 
     // SPATIAL FILTERS /////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * Creates an operator that evaluates to {@code true} when the bounding box of the feature's geometry overlaps
+     * the given bounding box.
+     *
+     * @param  propertyName  name of geometry property (for a {@link PropertyName} to access a feature's Geometry)
+     * @param  minx          minimum "x" value (for a literal envelope).
+     * @param  miny          minimum "y" value (for a literal envelope).
+     * @param  maxx          maximum "x" value (for a literal envelope).
+     * @param  maxy          maximum "y" value (for a literal envelope).
+     * @param  srs           identifier of the Coordinate Reference System to use for a literal envelope.
+     * @return operator that evaluates to {@code true} when the bounding box of the feature's geometry overlaps
+     *         the bounding box provided in arguments to this method.
+     *
+     * @see #bbox(Expression, Envelope)
      */
     @Override
     public BBOX bbox(final String propertyName, final double minx,
@@ -138,7 +96,15 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * Creates an operator that checks if all of a feature's geometry is more distant than the given distance
+     * from the given geometry.
+     *
+     * @param  propertyName  name of geometry property (for a {@link PropertyName} to access a feature's Geometry).
+     * @param  geometry      the geometry from which to evaluate the distance.
+     * @param  distance      minimal distance for evaluating the expression as {@code true}.
+     * @param  units         units of the given {@code distance}.
+     * @return operator that evaluates to {@code true} when all of a feature's geometry is more distant than
+     *         the given distance from the given geometry.
      */
     @Override
     public Beyond beyond(final String propertyName, final Geometry geometry,
@@ -404,6 +370,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyName property(final String name) {
+        ArgumentChecks.ensureNonNull("name", name);
         return new DefaultPropertyName(name);
     }
 
@@ -428,9 +395,13 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsEqualTo equal(final Expression expr1,
-            final Expression expr2, final boolean matchCase, MatchAction matchAction) {
-        return new DefaultPropertyIsEqualTo(expr1, expr2, matchCase, matchAction);
+    public PropertyIsEqualTo equal(final Expression expression1, final Expression expression2,
+                                   final boolean matchCase, final MatchAction matchAction)
+    {
+        ArgumentChecks.ensureNonNull("expression1", expression1);
+        ArgumentChecks.ensureNonNull("expression2", expression2);
+        ArgumentChecks.ensureNonNull("matchAction", matchAction);
+        return new DefaultPropertyIsEqualTo(expression1, expression2, matchCase, matchAction);
     }
 
     /**

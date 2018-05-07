@@ -22,7 +22,10 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see <a href="http://docs.opengeospatial.org/is/09-026r2/09-026r2.html">OGC® Filter Encoding 2.0 Encoding Standard</a>
+ *
+ * @since 1.0
  * @module
  */
 package org.apache.sis.filter;
