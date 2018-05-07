@@ -67,15 +67,22 @@ abstract class AbstractComparisonOperator implements BinaryComparisonOperator, S
 
     /**
      * Creates a new binary comparison operator.
+     * It is caller responsibility to ensure that no argument is null.
      */
     AbstractComparisonOperator(final Expression expression1, final Expression expression2,
-                                     final boolean matchCase, final MatchAction matchAction)
+                               final boolean matchCase, final MatchAction matchAction)
     {
         this.expression1 = expression1;
         this.expression2 = expression2;
         this.matchCase   = matchCase;
         this.matchAction = matchAction;
     }
+
+    /**
+     * Returns the mathematical symbol for this comparison operator.
+     * The symbol should be one of the following: {@literal < > ≤ ≥ = ≠}.
+     */
+    protected abstract char symbol();
 
     /**
      * Returns the first of the two expressions to be compared by this operator.
@@ -114,5 +121,42 @@ abstract class AbstractComparisonOperator implements BinaryComparisonOperator, S
     @Override
     public final MatchAction getMatchAction() {
         return matchAction;
+    }
+
+    /**
+     * Returns a hash code value for this comparison operator.
+     */
+    @Override
+    public final int hashCode() {
+        int hash = (31 * expression1.hashCode() + expression2.hashCode()) * 37 + matchAction.hashCode();
+        if (matchCase) hash = ~hash;
+        return hash ^ symbol();             // Use the symbol as a way to differentiate the subclasses.
+    }
+
+    /**
+     * Compares this operator with the given object for equality.
+     */
+    @Override
+    public final boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj != null && obj.getClass() == getClass()) {
+            final AbstractComparisonOperator other = (AbstractComparisonOperator) obj;
+            return matchCase   ==     other.matchCase &&
+                   expression1.equals(other.expression1) &&
+                   expression2.equals(other.expression2) &&
+                   matchAction.equals(other.matchAction);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a string representation of this comparison operator.
+     */
+    @Override
+    public final String toString() {
+        return new StringBuilder(30).append(expression1).append(' ').append(symbol()).append(' ')
+                                    .append(expression2).toString();
     }
 }

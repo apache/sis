@@ -40,6 +40,7 @@ public interface FeatureExpression {
      *
      * @param  type the type of features on which to apply this expression.
      * @return expected expression result type.
+     * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
      */
     PropertyType expectedType(FeatureType type);
 }
