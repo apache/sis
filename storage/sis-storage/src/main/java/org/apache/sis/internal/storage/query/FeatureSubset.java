@@ -48,7 +48,7 @@ import org.opengis.filter.expression.Expression;
  * @since   1.0
  * @module
  */
-final class FeatureSetView extends AbstractFeatureSet {
+final class FeatureSubset extends AbstractFeatureSet {
     /**
      * The set of feature instances to filter, sort or process.
      */
@@ -73,7 +73,7 @@ final class FeatureSetView extends AbstractFeatureSet {
     /**
      * Creates a new set of features by filtering the given set using the given query.
      */
-    FeatureSetView(final FeatureSet source, final SimpleQuery query) {
+    FeatureSubset(final FeatureSet source, final SimpleQuery query) {
         super(source);
         this.source = source;
         this.query = query;

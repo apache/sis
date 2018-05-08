@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
+    org.apache.sis.internal.storage.query.SimpleQueryTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.StoreProviderTest.class,
     org.apache.sis.internal.storage.xml.StoreTest.class,
@@ -50,7 +51,6 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
     org.apache.sis.internal.storage.folder.StoreTest.class,
-    org.apache.sis.internal.storage.query.SimpleQueryTest.class,
     org.apache.sis.internal.storage.JoinFeatureSetTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
