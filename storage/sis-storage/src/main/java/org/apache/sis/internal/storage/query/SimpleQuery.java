@@ -373,7 +373,7 @@ public class SimpleQuery implements Query {
      */
     public FeatureSet execute(final FeatureSet source) {
         ArgumentChecks.ensureNonNull("source", source);
-        return new FeatureSetView(source, this);
+        return new FeatureSubset(source, this);
     }
 
     /**

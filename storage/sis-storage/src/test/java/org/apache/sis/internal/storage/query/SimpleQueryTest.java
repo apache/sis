@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.query;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -23,6 +24,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -33,12 +35,13 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.filter.Filter;
 import org.opengis.filter.MatchAction;
 import org.opengis.filter.sort.SortOrder;
 
 
 /**
- * Tests {@link SimpleQuery}.
+ * Tests {@link SimpleQuery} and (indirectly) {@link FeatureSubset}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -46,140 +49,133 @@ import org.opengis.filter.sort.SortOrder;
  * @module
  */
 public final strictfp class SimpleQueryTest extends TestCase {
+    /**
+     * An arbitrary amount of features, all of the same type.
+     */
+    private final Feature[] features;
 
-    private static final FeatureType TYPE;
-    private static final Feature[] FEATURES;
-    private static final FeatureSet FEATURESET;
-    static {
+    /**
+     * The {@link #features} array wrapped in a in-memory feature set.
+     */
+    private final FeatureSet featureSet;
+
+    /**
+     * The query to be executed.
+     */
+    private final SimpleQuery query;
+
+    /**
+     * Creates a new test.
+     */
+    public SimpleQueryTest() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("Test");
         ftb.addAttribute(Integer.class).setName("value1");
         ftb.addAttribute(Integer.class).setName("value2");
-        TYPE = ftb.build();
+        final FeatureType type = ftb.build();
+        features = new Feature[] {
+            feature(type, 3, 1),
+            feature(type, 2, 2),
+            feature(type, 2, 1),
+            feature(type, 1, 1),
+            feature(type, 4, 1)
+        };
+        featureSet = new MemoryFeatureSet(null, null, type, Arrays.asList(features));
+        query      = new SimpleQuery();
+    }
 
-        final Feature f1 = TYPE.newInstance();
-        f1.setPropertyValue("value1", 3);
-        f1.setPropertyValue("value2", 1);
-        final Feature f2 = TYPE.newInstance();
-        f2.setPropertyValue("value1", 2);
-        f2.setPropertyValue("value2", 2);
-        final Feature f3 = TYPE.newInstance();
-        f3.setPropertyValue("value1", 2);
-        f3.setPropertyValue("value2", 1);
-        final Feature f4 = TYPE.newInstance();
-        f4.setPropertyValue("value1", 1);
-        f4.setPropertyValue("value2", 1);
-        final Feature f5 = TYPE.newInstance();
-        f5.setPropertyValue("value1", 4);
-        f5.setPropertyValue("value2", 1);
-
-        FEATURES = new Feature[]{f1,f2,f3,f4,f5};
-        FEATURESET = new MemoryFeatureSet(null, null, TYPE, Arrays.asList(FEATURES));
+    private static Feature feature(final FeatureType type, final int value1, final int value2) {
+        final Feature f = type.newInstance();
+        f.setPropertyValue("value1", value1);
+        f.setPropertyValue("value2", value2);
+        return f;
     }
 
     /**
-     * Verify query limit.
+     * Executes the query and verify that the result is equal to the features at the given indices.
+     *
+     * @param  indices  indices of expected features.
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    private void verifyQueryResult(final int... indices) throws DataStoreException {
+        final FeatureSet fs = query.execute(featureSet);
+        final List<Feature> result = fs.features(false).collect(Collectors.toList());
+        assertEquals("size", indices.length, result.size());
+        for (int i=0; i<indices.length; i++) {
+            final Feature expected = features[indices[i]];
+            final Feature actual   = result.get(i);
+            if (!expected.equals(actual)) {
+                fail(String.format("Unexpected feature at index %d%n"
+                                 + "Expected:%n%s%n"
+                                 + "Actual:%n%s%n", i, expected, actual));
+            }
+        }
+    }
+
+    /**
+     * Verifies the effect of {@link SimpleQuery#setLimit(long)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testLimit() throws DataStoreException {
-
-        final SimpleQuery query = new SimpleQuery();
         query.setLimit(2);
-
-        final FeatureSet fs = query.execute(FEATURESET);
-        final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
-
-        assertEquals(FEATURES[0], result[0]);
-        assertEquals(FEATURES[1], result[1]);
+        verifyQueryResult(0, 1);
     }
 
     /**
-     * Verify query offset.
+     * Verifies the effect of {@link SimpleQuery#setOffset(long)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testOffset() throws DataStoreException {
-
-        final SimpleQuery query = new SimpleQuery();
         query.setOffset(2);
-
-        final FeatureSet fs = query.execute(FEATURESET);
-        final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
-
-        assertEquals(FEATURES[2], result[0]);
-        assertEquals(FEATURES[3], result[1]);
-        assertEquals(FEATURES[4], result[2]);
+        verifyQueryResult(2, 3, 4);
     }
 
     /**
-     * Verify query sortby.
+     * Verifies the effect of {@link SimpleQuery#setSortBy(SortBy...)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testSortBy() throws DataStoreException {
         final DefaultFilterFactory factory = new DefaultFilterFactory();
-
-        final SimpleQuery query = new SimpleQuery();
-        query.setSortBy(
-                factory.sort("value1", SortOrder.ASCENDING),
-                factory.sort("value2", SortOrder.DESCENDING)
-        );
-
-        final FeatureSet fs = query.execute(FEATURESET);
-        final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
-
-        assertEquals(FEATURES[3], result[0]);
-        assertEquals(FEATURES[1], result[1]);
-        assertEquals(FEATURES[2], result[2]);
-        assertEquals(FEATURES[0], result[3]);
-        assertEquals(FEATURES[4], result[4]);
+        query.setSortBy(factory.sort("value1", SortOrder.ASCENDING),
+                        factory.sort("value2", SortOrder.DESCENDING));
+        verifyQueryResult(3, 1, 2, 0, 4);
     }
 
     /**
-     * Verify query filter.
+     * Verifies the effect of {@link SimpleQuery#setFilter(Filter)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testFilter() throws DataStoreException {
         final DefaultFilterFactory factory = new DefaultFilterFactory();
-
-        final SimpleQuery query = new SimpleQuery();
         query.setFilter(factory.equal(factory.property("value1"), factory.literal(2), true, MatchAction.ALL));
-
-        final FeatureSet fs = query.execute(FEATURESET);
-        final Feature[] result = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
-
-        assertEquals(FEATURES[1], result[0]);
-        assertEquals(FEATURES[2], result[1]);
+        verifyQueryResult(1, 2);
     }
 
     /**
-     * Verify query columns.
+     * Verifies the effect of {@link SimpleQuery#setColumns(SimpleQuery.Column...)}.
      *
      * @throws DataStoreException if an error occurred while executing the query.
      */
     @Test
     public void testColumns() throws DataStoreException {
         final DefaultFilterFactory factory = new DefaultFilterFactory();
-
-        final SimpleQuery query = new SimpleQuery();
-        query.setColumns(new SimpleQuery.Column(factory.property("value1"), (String)null),
-                         new SimpleQuery.Column(factory.property("value1"), "renamed1"),
+        query.setColumns(new SimpleQuery.Column(factory.property("value1"),   (String) null),
+                         new SimpleQuery.Column(factory.property("value1"),   "renamed1"),
                          new SimpleQuery.Column(factory.literal("a literal"), "computed"));
         query.setLimit(1);
 
-        final FeatureSet fs = query.execute(FEATURESET);
-        final Feature[] results = fs.features(false).collect(Collectors.toList()).toArray(new Feature[0]);
-        assertEquals(1, results.length);
+        final FeatureSet fs = query.execute(featureSet);
+        final Feature result = TestUtilities.getSingleton(fs.features(false).collect(Collectors.toList()));
 
-        final Feature result = results[0];
-
-        //check result type
+        // Check result type.
         final FeatureType resultType = result.getType();
         assertEquals("Test", resultType.getName().toString());
         assertEquals(3, resultType.getProperties(true).size());
@@ -191,9 +187,9 @@ public final strictfp class SimpleQueryTest extends TestCase {
         assertTrue(pt3 instanceof AttributeType);
         assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
         assertEquals(Integer.class, ((AttributeType) pt2).getValueClass());
-        assertEquals(String.class, ((AttributeType) pt3).getValueClass());
+        assertEquals(String.class,  ((AttributeType) pt3).getValueClass());
 
-        //check feature
+        // Check feature.
         assertEquals(3, result.getPropertyValue("value1"));
         assertEquals(3, result.getPropertyValue("renamed1"));
         assertEquals("a literal", result.getPropertyValue("computed"));
