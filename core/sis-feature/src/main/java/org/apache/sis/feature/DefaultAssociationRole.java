@@ -25,6 +25,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -56,7 +57,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultFeatureType
  * @see AbstractAssociation
@@ -425,7 +426,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     private static String searchTitleProperty(final FeatureType ft) {
         String fallback = null;
         try {
-            return ft.getProperty("sis:identifier").getName().toString();
+            return ft.getProperty(AttributeConvention.IDENTIFIER).getName().toString();
         } catch (PropertyNotFoundException e) {
             // Ignore.
         }

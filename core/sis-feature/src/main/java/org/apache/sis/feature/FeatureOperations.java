@@ -30,6 +30,7 @@ import org.apache.sis.util.resources.Errors;
 // Branch-dependent imports
 import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -106,7 +107,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -176,7 +177,7 @@ public final class FeatureOperations extends Static {
      * <p><b>Restrictions:</b></p>
      * <ul>
      *   <li>The single properties can be either attributes or operations that produce attributes;
-     *       feature associations are not allowed.</li>
+     *       feature associations are not allowed, unless they have an {@code "sis:identifier"} property.</li>
      *   <li>Each attribute shall contain at most one value; multi-valued attributes are not allowed.</li>
      *   <li>The delimiter can not contain the {@code '\'} escape character.</li>
      * </ul>
@@ -217,7 +218,10 @@ public final class FeatureOperations extends Static {
             }
             case 1: {
                 if ((prefix == null || prefix.isEmpty()) && (suffix == null || suffix.isEmpty())) {
-                    return link(identification, singleAttributes[0]);
+                    final PropertyType at = singleAttributes[0];
+                    if (!(at instanceof FeatureAssociationRole)) {
+                        return link(identification, at);
+                    }
                 }
                 break;
             }
