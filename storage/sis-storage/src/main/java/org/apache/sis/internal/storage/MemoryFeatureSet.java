@@ -18,10 +18,6 @@ package org.apache.sis.internal.storage;
 
 import java.util.Collection;
 import java.util.stream.Stream;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListeners;
@@ -41,11 +37,6 @@ import org.opengis.metadata.Metadata;
  * @module
  */
 public final class MemoryFeatureSet extends AbstractFeatureSet {
-    /**
-     * The metadata to be returned by {@link #getMetadata()}.
-     */
-    private final Metadata metadata;
-
     /**
      * The type specified at construction time and returned by {@link #getType()}.
      */
@@ -75,27 +66,7 @@ public final class MemoryFeatureSet extends AbstractFeatureSet {
         ArgumentChecks.ensureNonNull("features", features);
         this.type     = type;
         this.features = features;
-        if (metadata == null) {
-            final DefaultDataIdentification identification = new DefaultDataIdentification();
-            final DefaultCitation citation = new DefaultCitation(type.getName().toString());
-            citation.getIdentifiers().add(new NamedIdentifier(type.getName()));
-            identification.setCitation(citation);
-
-            final DefaultMetadata md = new DefaultMetadata(null, null, identification);
-            md.freeze();
-            metadata = md;
-        }
         this.metadata = metadata;
-    }
-
-    /**
-     * Returns the metadata given or inferred at construction time.
-     *
-     * @return information about this resource.
-     */
-    @Override
-    public Metadata getMetadata() {
-        return metadata;
     }
 
     /**

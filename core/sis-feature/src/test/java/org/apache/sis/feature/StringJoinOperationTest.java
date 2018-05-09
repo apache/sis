@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Test;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -26,6 +27,8 @@ import org.apache.sis.test.TestCase;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.InvalidPropertyValueException;
 
@@ -35,7 +38,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -67,7 +70,7 @@ public final strictfp class StringJoinOperationTest extends TestCase {
     /**
      * Creates the identification map to be given to attribute, operation and feature constructors.
      */
-    private static Map<String,?> name(final String name) {
+    private static Map<String,?> name(final Object name) {
         return Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, name);
     }
 
@@ -171,5 +174,42 @@ public final strictfp class StringJoinOperationTest extends TestCase {
             assertTrue(message, message.contains("julie"));
             assertTrue(message, message.contains("age"));
         }
+    }
+
+    /**
+     * Tests the creation of an identifier when one property is a feature.
+     * This method tests both {@code getValue(…)} and {@code setValue(…)}.
+     */
+    @Test
+    public void testFeatureAssociation() {
+        final PropertyType id1 = new DefaultAttributeType<>(name(AttributeConvention.IDENTIFIER_PROPERTY), String.class, 1, 1, null);
+        final FeatureType  ft1 = new DefaultFeatureType(name("Child feature"), false, null, id1);
+        final PropertyType  p1 = new DefaultAssociationRole(name("first"), ft1, 1, 1);
+        final PropertyType  p2 = new DefaultAttributeType<>(name("second"), Integer.class, 1, 1, null);
+        final PropertyType idc = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", p1, p2);
+        final Feature  feature = new DefaultFeatureType(name("Parent feature"), false, null, p1, p2, idc).newInstance();
+        /*
+         * For empty feature, should have only the prefix, delimiter and suffix.
+         */
+        assertEquals("<<:/:>>", feature.getPropertyValue("concat"));
+        /*
+         * Test with a value for the property (nothing in the association yet).
+         */
+        feature.setPropertyValue("second", 21);
+        assertEquals("<<:/21:>>", feature.getPropertyValue("concat"));
+        /*
+         * Create the associated feature and set its identifier.
+         * The compound identifier shall be updated accordingly.
+         */
+        final Feature f1 = ft1.newInstance();
+        feature.setPropertyValue("first", f1);
+        f1.setPropertyValue("sis:identifier", "SomeKey");
+        assertEquals("<<:SomeKey/21:>>", feature.getPropertyValue("concat"));
+        /*
+         * Setting a value should cascade to the child feature.
+         */
+        feature.setPropertyValue("concat", "<<:NewKey/38:>>");
+        assertEquals(38, feature.getPropertyValue("second"));
+        assertEquals("NewKey", f1.getPropertyValue("sis:identifier"));
     }
 }

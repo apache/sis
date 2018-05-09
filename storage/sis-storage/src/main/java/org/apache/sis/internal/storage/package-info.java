@@ -24,8 +24,9 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
- * @since   0.3
+ * @since   0.4
  * @module
  */
 package org.apache.sis.internal.storage;

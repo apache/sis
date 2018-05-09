@@ -19,12 +19,8 @@ package org.apache.sis.internal.storage.query;
 import java.util.List;
 import java.util.stream.Stream;
 import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 
@@ -66,11 +62,6 @@ final class FeatureSubset extends AbstractFeatureSet {
     private FeatureType resultType;
 
     /**
-     * A description of this set of features, computed when first needed.
-     */
-    private DefaultMetadata metadata;
-
-    /**
      * Creates a new set of features by filtering the given set using the given query.
      */
     FeatureSubset(final FeatureSet source, final SimpleQuery query) {
@@ -85,26 +76,6 @@ final class FeatureSubset extends AbstractFeatureSet {
     @Override
     public Envelope getEnvelope() {
         return null;
-    }
-
-    /**
-     * Computes information about this resource.
-     * Current implementation sets only the resource name.
-     */
-    @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) {
-            final DefaultCitation citation = new DefaultCitation(getType().getName().toInternationalString());
-            final DefaultDataIdentification identification = new DefaultDataIdentification();
-            identification.setCitation(citation);
-
-            final DefaultMetadata metadata = new DefaultMetadata();
-            metadata.getIdentificationInfo().add(identification);
-            metadata.freeze();
-
-            this.metadata = metadata;
-        }
-        return metadata;
     }
 
     /**

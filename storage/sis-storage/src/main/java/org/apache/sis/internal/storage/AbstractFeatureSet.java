@@ -22,7 +22,15 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.internal.storage.query.SimpleQuery;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.util.logging.WarningListeners;
+import org.opengis.metadata.Metadata;
+import org.opengis.util.GenericName;
+
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -35,6 +43,13 @@ import org.apache.sis.util.logging.WarningListeners;
  * @module
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
+    /**
+     * A description of this set of features, or {@code null} if not yet computed.
+     * Those metadata are created by {@link #getMetadata()} when first needed.
+     * Subclasses can set a value to this field directly.
+     */
+    protected Metadata metadata;
+
     /**
      * Creates a new resource.
      *
@@ -52,6 +67,35 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      */
     protected AbstractFeatureSet(final FeatureSet resource) {
         super(resource);
+    }
+
+    /**
+     * Returns a description of this set of features.
+     * Current implementation sets only the resource name; this may change in any future Apache SIS version.
+     *
+     * <div class="note"><b>Note:</b>
+     * we currently do not set the geographic extent from the envelope because default {@link #getEnvelope()}
+     * implementation itself invokes {@code getMetadata()}. Consequently requesting the envelope from this
+     * method could create a never-ending loop.</div>
+     */
+    @Override
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (metadata == null) {
+            final DefaultMetadata metadata = new DefaultMetadata();
+            final FeatureType type = getType();
+            if (type != null) {
+                final GenericName name = type.getName();
+                if (name != null) {                         // Paranoiac check (should never be null).
+                    final DefaultCitation citation = new DefaultCitation(name.toInternationalString());
+                    final DefaultDataIdentification identification = new DefaultDataIdentification();
+                    identification.setCitation(citation);
+                }
+            }
+            // No geographic extent - see above javadoc.
+            metadata.freeze();
+            this.metadata = metadata;
+        }
+        return metadata;
     }
 
     /**

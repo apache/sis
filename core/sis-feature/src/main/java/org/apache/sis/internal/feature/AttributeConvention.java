@@ -24,6 +24,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
@@ -31,6 +32,7 @@ import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -65,7 +67,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -173,6 +175,18 @@ public final class AttributeConvention extends Static {
     }
 
     /**
+     * String representation of the {@link #IDENTIFIER_PROPERTY} name.
+     * This can be used in calls to {@link Feature#getPropertyValue(String)}.
+     */
+    public static final String IDENTIFIER = "sis:identifier";
+
+    /**
+     * String representation of the {@link #GEOMETRY_PROPERTY} name.
+     * This can be used in calls to {@link Feature#getPropertyValue(String)}.
+     */
+    public static final String GEOMETRY = "sis:geometry";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private AttributeConvention() {
@@ -197,6 +211,21 @@ public final class AttributeConvention extends Static {
                 return true;
             }
             name = ((ScopedName) name).tail();
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the given feature type is non-null and has a {@value #IDENTIFIER} property.
+     *
+     * @param  feature  the feature type to test, or {@code null}.
+     * @return whether the given feature type is non-null and has a {@value #IDENTIFIER} property.
+     */
+    public static boolean hasIdentifier(final FeatureType feature) {
+        if (feature != null) try {
+            return feature.getProperty(IDENTIFIER) != null;
+        } catch (PropertyNotFoundException e) {
+            // Ignore
         }
         return false;
     }

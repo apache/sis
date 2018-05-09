@@ -21,10 +21,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.io.IOException;
+import java.io.Serializable;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
@@ -38,11 +41,14 @@ import org.apache.sis.util.Classes;
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.InvalidPropertyValueException;
 import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -55,7 +61,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see <a href="https://en.wikipedia.org/wiki/Compound_key">Compound key on Wikipedia</a>
  *
@@ -77,6 +83,52 @@ final class StringJoinOperation extends AbstractOperation {
      * The parameter descriptor for the "String join" operation, which does not take any parameter.
      */
     private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("StringJoin");
+
+    /**
+     * A pseudo-converter returning the identifier of a feature. This pseudo-converter is used in place
+     * of "real" converters in the {@link StringJoinOperation#converters} array when the property is an
+     * association to a feature instead than an attribute. This pseudo-converters is used as below:
+     *
+     * <ul>
+     *   <li>{@link Result#getValue()} gets this converter by a call to {@code converters[i].inverse()}.
+     *       This works provided that {@link #inverse()} returns {@code this} (see comment below).</li>
+     *   <li>{@link Result#setValue(String)} needs to perform a special case for this class.</li>
+     * </ul>
+     *
+     * This is not a well-formed converter since its {@link #inverse()} method does not fulfill the required
+     * semantic of {@link ObjectConverter#inverse()}, but this is okay for {@link StringJoinOperation} needs.
+     * This converter should never be accessible to users however.
+     */
+    private static final class ForFeature extends SurjectiveConverter<Object,Object> implements Serializable {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 2208230611402221572L;
+
+        /**
+         * The "real" converter which would have been stored in the {@link StringJoinOperation#converters}
+         * array if the property was an attribute instead than an association. For formatting the feature
+         * identifier, we need to use the inverse of that converter.
+         */
+        final ObjectConverter<? super String, ?> converter;
+
+        /** Creates a new wrapper over the given converter. */
+        ForFeature(final ObjectConverter<? super String, ?> converter) {
+            this.converter = converter;
+        }
+
+        /**
+         * Returns {@code this} for allowing {@link Result#getValue()} to get this pseudo-converter.
+         * This is a violation of {@link ObjectConverter} contract since this pseudo-converter is not
+         * an identity converter. Direct uses of this pseudo-converter will need a {@code instanceof}
+         * check instead.
+         */
+        @Override public ObjectConverter<Object,Object> inverse()        {return this;}
+        @Override public Class<Object>                  getSourceClass() {return Object.class;}
+        @Override public Class<Object>                  getTargetClass() {return Object.class;}
+        @Override public Object apply(final Object f) {
+            return (f != null) ? format(converter.inverse(),
+                    ((Feature) f).getPropertyValue(AttributeConvention.IDENTIFIER)) : null;
+        }
+    }
 
     /**
      * The name of the properties (attributes of operations producing attributes)
@@ -139,21 +191,42 @@ final class StringJoinOperation extends AbstractOperation {
             /*
              * Verify the following conditions:
              *   - property types are non-null.
-             *   - properties are either attributes, or operations producing attributes.
+             *   - properties are either attributes, or operations producing attributes,
+             *     or association to features having an "sis:identifier" property.
              *   - attributes contain at most one value (no collections).
+             *
+             * We test FeatureAssociationRole, Operation and AttributeType in that order
+             * because the "sis:identifier" property of FeatureType may be an Operation,
+             * which may in turn produce an AttributeType. We do not accept more complex
+             * combinations (e.g. operation producing an association).
              */
-            IdentifiedType attributeType = singleAttributes[i];
-            ArgumentChecks.ensureNonNullElement("singleAttributes", i, attributeType);
-            final GenericName name = attributeType.getName();
-            if (attributeType instanceof Operation) {
-                attributeType = ((Operation) attributeType).getResult();
+            IdentifiedType propertyType = singleAttributes[i];
+            ArgumentChecks.ensureNonNullElement("singleAttributes", i, propertyType);
+            final GenericName name = propertyType.getName();
+            int maximumOccurs = 0;                              // May be a bitwise combination; need only to know if > 1.
+            PropertyNotFoundException cause = null;             // In case of failure to find "sis:identifier" property.
+            final boolean isAssociation = (propertyType instanceof FeatureAssociationRole);
+            if (isAssociation) {
+                final FeatureAssociationRole role = (FeatureAssociationRole) propertyType;
+                final FeatureType ft = role.getValueType();
+                maximumOccurs = role.getMaximumOccurs();
+                try {
+                    propertyType = ft.getProperty(AttributeConvention.IDENTIFIER);
+                } catch (PropertyNotFoundException e) {
+                    cause = e;
+                }
             }
-            if (!(attributeType instanceof AttributeType)) {
-                final Class<?>[] inf = Classes.getLeafInterfaces(Classes.getClass(attributeType), PropertyType.class);
+            if (propertyType instanceof Operation) {
+                propertyType = ((Operation) propertyType).getResult();
+            }
+            if (propertyType instanceof AttributeType) {
+                maximumOccurs |= ((AttributeType<?>) propertyType).getMaximumOccurs();
+            } else {
+                final Class<?>[] inf = Classes.getLeafInterfaces(Classes.getClass(propertyType), PropertyType.class);
                 throw new IllegalArgumentException(Resources.forProperties(identification)
-                        .getString(Resources.Keys.IllegalPropertyType_2, name, (inf.length != 0) ? inf[0] : null));
+                        .getString(Resources.Keys.IllegalPropertyType_2, name, (inf.length != 0) ? inf[0] : null), cause);
             }
-            if (((AttributeType<?>) attributeType).getMaximumOccurs() > 1) {
+            if (maximumOccurs > 1) {
                 throw new IllegalArgumentException(Resources.forProperties(identification)
                         .getString(Resources.Keys.NotASingleton_1, name));
             }
@@ -162,7 +235,12 @@ final class StringJoinOperation extends AbstractOperation {
              * We need only their names and how to convert from String to their values.
              */
             attributeNames[i] = name.toString();
-            converters[i] = ObjectConverters.find(String.class, ((AttributeType<?>) attributeType).getValueClass());
+            ObjectConverter<? super String, ?> converter = ObjectConverters.find(
+                    String.class, ((AttributeType<?>) propertyType).getValueClass());
+            if (isAssociation) {
+                converter = new ForFeature(converter);
+            }
+            converters[i] = converter;
         }
         resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
                 resultIdentification(identification), String.class, 1, 1, null));
@@ -208,7 +286,7 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * Formats the given value using the given converter. This method is a workaround for the presence
      * of the first {@code ?} in {@code ObjectConverter<?,?>}: defining a separated method allows us
-     * to replace that {@code <?>} by {@code <V>}, thus allowing the compiler to verify consistency.
+     * to replace that {@code <?>} by {@code <S>}, thus allowing the compiler to verify consistency.
      *
      * @param converter  the converter to use for formatting the given value.
      * @param value      the value to format, or {@code null}.
@@ -377,11 +455,17 @@ final class StringJoinOperation extends AbstractOperation {
                  * If we have more values than expected, continue the parsing but without storing the values.
                  * The intent is to get the correct count of values for error reporting.
                  */
-                if (!element.isEmpty() && count < values.length) try {
-                    values[count] = converters[count].apply(element);
-                } catch (UnconvertibleObjectException e) {
-                    throw new InvalidPropertyValueException(Errors.format(
-                            Errors.Keys.CanNotAssign_2, attributeNames[count], element), e);
+                if (!element.isEmpty() && count < values.length) {
+                    ObjectConverter<? super String, ?> converter = converters[count];
+                    if (converter instanceof ForFeature) {
+                        converter = ((ForFeature) converter).converter;
+                    }
+                    try {
+                        values[count] = converter.apply(element);
+                    } catch (UnconvertibleObjectException e) {
+                        throw new InvalidPropertyValueException(Errors.format(
+                                Errors.Keys.CanNotAssign_2, attributeNames[count], element), e);
+                    }
                 }
                 count++;
                 upper += delimiter.length();
@@ -389,14 +473,21 @@ final class StringJoinOperation extends AbstractOperation {
             } while (!done);
             /*
              * Store the values in the properties only after we successfully converted all of them,
-             * in order to have a "all or nothing" behavior.
+             * in order to have a "all or nothing" behavior (assuming that calls to Feature methods
+             * below do not fail).
              */
             if (values.length != count) {
                 throw new InvalidPropertyValueException(Resources.format(
                         Resources.Keys.UnexpectedNumberOfComponents_4, getName(), value, values.length, count));
             }
             for (int i=0; i < values.length; i++) {
-                feature.setPropertyValue(attributeNames[i], values[i]);
+                Feature f   = feature;
+                String name = attributeNames[i];
+                if (converters[i] instanceof ForFeature) {
+                    f = (Feature) f.getPropertyValue(name);
+                    name = AttributeConvention.IDENTIFIER;
+                }
+                f.setPropertyValue(name, values[i]);
             }
         }
     }
