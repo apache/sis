@@ -28,6 +28,7 @@ import org.opengis.filter.expression.Expression;
  * Filter operator that compares that its two sub-expressions are equal to each other.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -36,7 +37,7 @@ final class DefaultPropertyIsEqualTo extends AbstractComparisonOperator implemen
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -5549267988142039640L;
+    private static final long serialVersionUID = -5783347523815670017L;
 
     /**
      * Creates a new comparison operator.

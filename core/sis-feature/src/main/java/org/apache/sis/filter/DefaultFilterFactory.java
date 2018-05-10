@@ -523,8 +523,9 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsNull isNull(final Expression expr) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public PropertyIsNull isNull(final Expression expression) {
+        ArgumentChecks.ensureNonNull("expression", expression);
+        return new DefaultPropertyIsNull(expression);
     }
 
     /**

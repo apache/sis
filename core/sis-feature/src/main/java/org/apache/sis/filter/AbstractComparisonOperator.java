@@ -27,29 +27,16 @@ import org.opengis.filter.expression.Expression;
  * The nature of the comparison is dependent on the subclass.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-abstract class AbstractComparisonOperator implements BinaryComparisonOperator, Serializable {
+abstract class AbstractComparisonOperator extends AbstractBinaryOperator implements BinaryComparisonOperator, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1401452229232869720L;
-
-    /**
-     * The first of the two expressions to be compared by this operator.
-     *
-     * @see #getExpression1()
-     */
-    protected final Expression expression1;
-
-    /**
-     * The second of the two expressions to be compared by this operator.
-     *
-     * @see #getExpression2()
-     */
-    protected final Expression expression2;
+    private static final long serialVersionUID = -4709016194087609721L;
 
     /**
      * Whether comparisons are case sensitive.
@@ -72,32 +59,9 @@ abstract class AbstractComparisonOperator implements BinaryComparisonOperator, S
     AbstractComparisonOperator(final Expression expression1, final Expression expression2,
                                final boolean matchCase, final MatchAction matchAction)
     {
-        this.expression1 = expression1;
-        this.expression2 = expression2;
+        super(expression1, expression2);
         this.matchCase   = matchCase;
         this.matchAction = matchAction;
-    }
-
-    /**
-     * Returns the mathematical symbol for this comparison operator.
-     * The symbol should be one of the following: {@literal < > ≤ ≥ = ≠}.
-     */
-    protected abstract char symbol();
-
-    /**
-     * Returns the first of the two expressions to be compared by this operator.
-     */
-    @Override
-    public final Expression getExpression1() {
-        return expression1;
-    }
-
-    /**
-     * Returns the second of the two expressions to be compared by this operator.
-     */
-    @Override
-    public final Expression getExpression2() {
-        return expression2;
     }
 
     /**
@@ -128,9 +92,9 @@ abstract class AbstractComparisonOperator implements BinaryComparisonOperator, S
      */
     @Override
     public final int hashCode() {
-        int hash = (31 * expression1.hashCode() + expression2.hashCode()) * 37 + matchAction.hashCode();
+        int hash = super.hashCode() * 37 + matchAction.hashCode();
         if (matchCase) hash = ~hash;
-        return hash ^ symbol();             // Use the symbol as a way to differentiate the subclasses.
+        return hash;
     }
 
     /**
@@ -141,22 +105,10 @@ abstract class AbstractComparisonOperator implements BinaryComparisonOperator, S
         if (obj == this) {
             return true;
         }
-        if (obj != null && obj.getClass() == getClass()) {
+        if (super.equals(obj)) {
             final AbstractComparisonOperator other = (AbstractComparisonOperator) obj;
-            return matchCase   ==     other.matchCase &&
-                   expression1.equals(other.expression1) &&
-                   expression2.equals(other.expression2) &&
-                   matchAction.equals(other.matchAction);
+            return matchCase == other.matchCase && matchAction.equals(other.matchAction);
         }
         return false;
-    }
-
-    /**
-     * Returns a string representation of this comparison operator.
-     */
-    @Override
-    public final String toString() {
-        return new StringBuilder(30).append(expression1).append(' ').append(symbol()).append(' ')
-                                    .append(expression2).toString();
     }
 }
