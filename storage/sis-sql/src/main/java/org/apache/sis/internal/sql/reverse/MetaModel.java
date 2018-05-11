@@ -14,43 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql;
+package org.apache.sis.internal.sql.reverse;
 
 import java.util.Iterator;
 import org.apache.sis.util.CharSequences;
 
 
 /**
- * Miscellaneous utility methods.
+ * Base class of descriptions about a database entity (table or schema).
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final class SQLUtilities {
+abstract class MetaModel {
     /**
-     * Do not allow instantiation of this class.
+     * The schema or table name.
      */
-    private SQLUtilities(){
+    final String name;
+
+    /**
+     * Creates a new object describing a database table or a schema.
+     *
+     * @param  name  the schema or table name.
+     */
+    MetaModel(final String name) {
+        this.name = name;
     }
 
     /**
-     * Returns a graphical representation of the specified objects. This representation can be
+     * Formats a graphical representation of the specified objects. This representation can be
      * printed to the {@linkplain System#out standard output stream} (for example) if it uses
      * a monospaced font and supports Unicode.
      *
      * @param  root     the root name of the tree to format, or {@code null} if none.
      * @param  objects  the objects to format as root children, or {@code null} if none.
-     * @return a string representation of the tree.
+     * @param  sb       where to format the tree.
      */
-    public static String toTreeString(String root, final Iterable<?> objects) {
-        final StringBuilder sb = new StringBuilder(100);
+    static void appendTree(final String root, final Iterable<?> objects, final StringBuilder sb, final String lineSeparator) {
         if (root != null) {
             sb.append(root);
         }
         if (objects != null) {
-            final String lineSeparator = System.lineSeparator();
             final Iterator<?> it = objects.iterator();
             boolean hasNext;
             if (it.hasNext()) do {
@@ -69,6 +75,5 @@ public final class SQLUtilities {
                 }
             } while (hasNext);
         }
-        return sb.toString();
     }
 }

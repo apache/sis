@@ -19,38 +19,54 @@ package org.apache.sis.internal.sql.reverse;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.sis.internal.sql.SQLUtilities;
+import org.apache.sis.util.Debug;
 
 
 /**
  * Description of a database schema.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class SchemaMetaModel {
-
-    final String name;
-
+final class SchemaMetaModel extends MetaModel {
+    /**
+     * The tables in the schema.
+     */
     final Map<String,TableMetaModel> tables;
 
+    /**
+     * Creates a new schema of the given name.
+     * It is caller responsibility to populate the {@link #tables} map.
+     */
     SchemaMetaModel(final String name) {
-        this.name = name;
+        super(name);
         tables = new HashMap<>();
     }
 
+    /**
+     * Returns all tables in this schema.
+     */
     Collection<TableMetaModel> getTables() {
         return tables.values();
     }
 
+    /**
+     * Returns the table of the given name, or {@code null} if none.
+     */
     TableMetaModel getTable(final String name){
         return tables.get(name);
     }
 
+    /**
+     * Returns a string representation of this schema for debugging purposes.
+     */
+    @Debug
     @Override
     public String toString() {
-        return SQLUtilities.toTreeString(name, getTables());
+        final StringBuilder sb = new StringBuilder(100);
+        appendTree(name, getTables(), sb, System.lineSeparator());
+        return sb.toString();
     }
 }

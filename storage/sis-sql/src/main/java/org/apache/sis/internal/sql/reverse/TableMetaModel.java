@@ -19,19 +19,18 @@ package org.apache.sis.internal.sql.reverse;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.sql.SQLUtilities;
+import org.apache.sis.util.Debug;
 
 
 /**
  * Description of a database table.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class TableMetaModel {
-
+final class TableMetaModel extends MetaModel {
     enum View {
         TABLE,
         SIMPLE_FEATURE_TYPE,
@@ -39,7 +38,6 @@ final class TableMetaModel {
         ALL_COMPLEX
     }
 
-    String name;
     String type;
 
     FeatureTypeBuilder tableType;
@@ -64,8 +62,8 @@ final class TableMetaModel {
      */
     final Collection<String> parents = new ArrayList<>();
 
-    TableMetaModel(final String name, String type) {
-        this.name = name;
+    TableMetaModel(final String name, final String type) {
+        super(name);
         this.type = type;
     }
 
@@ -89,19 +87,6 @@ final class TableMetaModel {
         return false;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder(name);
-        if (!importedKeys.isEmpty()) {
-            // TODO: use system line separator.
-            sb.append(SQLUtilities.toTreeString("\n Imported Keys", importedKeys)).append('\n');
-        }
-        if (!exportedKeys.isEmpty()) {
-            sb.append(SQLUtilities.toTreeString("\n Exported Keys", exportedKeys)).append('\n');
-        }
-        return sb.toString();
-    }
-
     FeatureTypeBuilder getType(final View view) {
         switch (view) {
             case TABLE:                return tableType;
@@ -110,5 +95,24 @@ final class TableMetaModel {
             case ALL_COMPLEX:          return allTypes;
             default: throw new IllegalArgumentException("Unknown view type: " + view);
         }
+    }
+
+    /**
+     * Returns a string representation of this schema for debugging purposes.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder sb = new StringBuilder(100).append(name);
+        if (!importedKeys.isEmpty()) {
+            appendTree(" Imported Keys", importedKeys, sb.append(lineSeparator), lineSeparator);
+            sb.append(lineSeparator);
+        }
+        if (!exportedKeys.isEmpty()) {
+            appendTree(" Exported Keys", exportedKeys, sb.append(lineSeparator), lineSeparator);
+            sb.append(lineSeparator);
+        }
+        return sb.toString();
     }
 }

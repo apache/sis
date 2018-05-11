@@ -46,13 +46,23 @@ import org.opengis.feature.Feature;
  * and (sometime) simple attribute transformations. Well known query languages include SQL and CQL.
  *
  * @author Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see FeatureSet#subset(Query)
  *
  * @since 0.8
  * @module
  */
-public interface Query {
+public abstract class Query {
+    /*
+     * Current version does not yet contain any field. But some fields may be added in the future.
+     * For example some methods from org.apache.sis.internal.storage.query.SimpleQuery may move here.
+     * We use an abstract class instead than an interface for that reason.
+     */
 
+    /**
+     * Creates a new, initially empty, query.
+     */
+    protected Query() {
+    }
 }
