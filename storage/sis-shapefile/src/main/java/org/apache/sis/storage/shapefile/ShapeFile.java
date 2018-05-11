@@ -27,6 +27,9 @@ import org.apache.sis.internal.shapefile.jdbc.DBase3FieldDescriptor;
 /**
  * Provides a ShapeFile Reader.
  *
+ * <div class="warning">This is an experimental class,
+ * not yet target for any Apache SIS release at this time.</div>
+ *
  * @author  Travis L. Pinney
  * @version 0.5
  *
@@ -42,7 +45,7 @@ public class ShapeFile {
 
     /** Database file. */
     private File databaseFile;
-    
+
     /** Shapefile index, if any. */
     private File shapeFileIndex;
 
@@ -51,10 +54,10 @@ public class ShapeFile {
 
     /** Shapefile descriptor. */
     private ShapefileDescriptor shapefileDescriptor;
-    
+
     /** Database field descriptors. */
     private List<DBase3FieldDescriptor> databaseFieldsDescriptors;
-    
+
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
@@ -66,29 +69,29 @@ public class ShapeFile {
 
         // Deduct database file name by suffixing it by dbf (trying to respect the same case).
         StringBuilder dbfFileName = new StringBuilder(shpfile);
-        
+
         String dbfSuffix = null;
         dbfSuffix = shpfile.endsWith("shp") ? "dbf" : dbfSuffix;
         dbfSuffix = shpfile.endsWith("SHP") ? "DBF" : dbfSuffix;
         dbfSuffix = shpfile.endsWith("Shp") ? "Dbf" : dbfSuffix;
         dbfSuffix = (dbfSuffix == null) ? "dbf" : dbfSuffix;
-        
+
         dbfFileName.replace(shpfile.length() - 3, shpfile.length(), dbfSuffix);
         this.databaseFile = new File(dbfFileName.toString());
-        
+
         // Deduct shapefile index file name by suffixing it by shx (trying to respect the same case).
         StringBuilder shapeFileIndexName = new StringBuilder(shpfile);
-        
+
         String shapeFileIndexSuffix = null;
         shapeFileIndexSuffix = shpfile.endsWith("shp") ? "shx" : shapeFileIndexSuffix;
         shapeFileIndexSuffix = shpfile.endsWith("SHP") ? "SHX" : shapeFileIndexSuffix;
         shapeFileIndexSuffix = shpfile.endsWith("Shp") ? "Shx" : shapeFileIndexSuffix;
         shapeFileIndexSuffix = (shapeFileIndexSuffix == null) ? "shx" : shapeFileIndexSuffix;
-        
+
         shapeFileIndexName.replace(shpfile.length() - 3, shpfile.length(), shapeFileIndexSuffix);
-        this.shapeFileIndex = new File(shapeFileIndexName.toString()); 
+        this.shapeFileIndex = new File(shapeFileIndexName.toString());
     }
-    
+
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
@@ -97,11 +100,11 @@ public class ShapeFile {
     public ShapeFile(String shpfile, String dbasefile) {
         Objects.requireNonNull(shpfile, "The shapefile to load cannot be null.");
         Objects.requireNonNull(dbasefile, "The DBase III file to load cannot be null.");
-        
+
         this.shapeFile = new File(shpfile);
         this.databaseFile = new File(dbasefile);
     }
-    
+
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
@@ -120,7 +123,7 @@ public class ShapeFile {
     public DefaultFeatureType getFeaturesType() {
         return this.featuresType;
     }
-    
+
     /**
      * Returns the shapefile descriptor.
      * @return Shapefile descriptor.
@@ -128,10 +131,10 @@ public class ShapeFile {
     public ShapefileDescriptor getShapefileDescriptor() {
         return this.shapefileDescriptor;
     }
-    
-    /** 
+
+    /**
      * Returns the database fields descriptors.
-     * @return List of fields descriptors. 
+     * @return List of fields descriptors.
      */
     public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors() {
         return this.databaseFieldsDescriptors;
@@ -144,15 +147,15 @@ public class ShapeFile {
     public File getFileDatabase() {
         return this.databaseFile;
     }
-    
+
     /**
-     * Returns the shape file designed by this shapefile object. 
+     * Returns the shape file designed by this shapefile object.
      * @return Shape file.
      */
     public File getFileShapefile() {
         return this.shapeFile;
     }
-    
+
     /**
      * Return the shapefile Index provided with the shapefile, if any.
      * @return Shapefile Index file or null if none given.
@@ -160,7 +163,7 @@ public class ShapeFile {
     public File getFileShapefileIndex() {
         return this.shapeFileIndex;
     }
-    
+
     /**
      * Find features corresponding to an SQL request SELECT * FROM database.
      * @return Features
@@ -172,7 +175,7 @@ public class ShapeFile {
     public InputFeatureStream findAll() throws InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException, InvalidShapefileFormatException {
         return find(null);
     }
-    
+
     /**
      * Find features corresponding to an SQL request SELECT * FROM database.
      * @param sqlStatement SQL Statement to run, if null, will default to SELECT * FROM database.

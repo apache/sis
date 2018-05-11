@@ -24,6 +24,8 @@ import org.apache.sis.geometry.DirectPosition2D;
  * quad tree must implement this interface, so that quad tree can access
  * location and store name of file in which data is saved.
  *
+ * <div class="warning"><b>Note on future work:</b> this interface may change in incompatible way
+ * in a future Apache SIS release, or may be replaced by new API.</div>
  */
 public interface QuadTreeData {
   /**

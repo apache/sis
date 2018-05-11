@@ -21,6 +21,9 @@ import org.apache.sis.storage.DataStoreException;
 /**
  * Thrown when the Shapefile format seems to be invalid.
  *
+ * <div class="warning">This is an experimental class,
+ * not yet target for any Apache SIS release at this time.</div>
+ *
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
