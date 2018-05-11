@@ -18,6 +18,9 @@
 /**
  * Shapefile.
  *
+ * <div class="warning">This is an experimental package,
+ * not yet target for any Apache SIS release at this time.</div>
+ *
  * @author  Travis L. Pinney
  * @author  Marc Le Bihan
  * @version 0.5

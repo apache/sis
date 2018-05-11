@@ -20,6 +20,8 @@ package org.apache.sis.index.tree;
  * Enum to represent node type of quad tree. Black means node contains data.
  * White means node is empty. Gray means node is parent.
  *
+ * <div class="warning"><b>Note on future work:</b> this enumeration may change in incompatible way
+ * in a future Apache SIS release, or may be replaced by new API.</div>
  */
 public enum NodeType {
   BLACK, WHITE, GRAY

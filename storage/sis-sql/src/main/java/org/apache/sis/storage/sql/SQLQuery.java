@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql;
+package org.apache.sis.storage.sql;
 
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
@@ -23,6 +23,9 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * An SQL query executed directly on the database.
  * Such query should be transfered to the JDBC without or with minimum modifications.
+ *
+ * <div class="warning">This is an experimental class,
+ * not yet target for any Apache SIS release at this time.</div>
  *
  * @author Johann Sorel (Geomatys)
  * @version 1.0

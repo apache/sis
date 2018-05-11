@@ -14,23 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql;
-
-import org.apache.sis.storage.DataStoreProvider;
-
 
 /**
- * Provider of {@code SQLStore} instances.
+ * A simple quadtree implementation.
  *
- * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
- * @module
+ * <div class="warning"><b>Note on future work:</b> this package may change in incompatible way
+ * in a future Apache SIS release, or may be replaced by new API.</div>
  */
-public abstract class SQLStoreProvider extends DataStoreProvider {
-    /**
-     * Creates a new provider.
-     */
-    protected SQLStoreProvider() {
-    }
-}
+package org.apache.sis.index.tree;
