@@ -92,6 +92,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
         assertNull(properties.put(XML.TIMEZONE, UTC));
+        assertNull(properties.put("org.apache.sis.xml.version.lenient", Boolean.TRUE));   // XML.LENIENT_UNMARSHAL
         pool = new MarshallerPool(JAXBContext.newInstance(MetadataMock.class), properties);
     }
 
