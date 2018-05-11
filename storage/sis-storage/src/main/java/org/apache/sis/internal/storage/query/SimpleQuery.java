@@ -51,7 +51,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @since   1.0
  * @module
  */
-public class SimpleQuery implements Query {
+public class SimpleQuery extends Query {
     /**
      * Sentinel limit value for queries of unlimited length.
      * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
