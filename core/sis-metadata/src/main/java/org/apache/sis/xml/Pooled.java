@@ -250,11 +250,11 @@ abstract class Pooled {
      */
     final TransformVersion getTransformVersion() {
         /*
-         * If no version is specified, then the default behavior will be:
+         * If no version is specified and unmarshalling is lenient, then the default behavior will be:
          *   - enable namespace replacement on unmarshalling (in order to accept all versions)
          *   - disable namespace replacement on marshalling (in order to use latest version).
          */
-        final boolean byDefault = (bitMasks & Context.MARSHALLING) == 0;
+        final boolean byDefault = (bitMasks & (Context.MARSHALLING | Context.LENIENT_UNMARSHAL)) == Context.LENIENT_UNMARSHAL;
         /*
          * Bitwise combination of legacy schemas to support:
          *   1: namespace replacement needed for GML
@@ -348,6 +348,14 @@ abstract class Pooled {
                     converter = (ValueConverter) value;
                     return;
                 }
+                case XML.LENIENT_UNMARSHAL: {
+                    if ((value instanceof CharSequence) ? Boolean.parseBoolean(value.toString()) : (Boolean) value) {
+                        bitMasks |= Context.LENIENT_UNMARSHAL;
+                    } else {
+                        bitMasks &= ~Context.LENIENT_UNMARSHAL;
+                    }
+                    return;
+                }
                 case XML.STRING_SUBSTITUTES: {
                     bitMasks &= ~(Context.SUBSTITUTE_LANGUAGE |
                                   Context.SUBSTITUTE_COUNTRY  |
@@ -402,14 +410,15 @@ abstract class Pooled {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because unmodifiable.
     public final Object getProperty(String name) throws PropertyException {
         switch (name) {
-            case XML.LOCALE:           return locale;
-            case XML.TIMEZONE:         return timezone;
-            case XML.SCHEMAS:          return schemas;
-            case XML.GML_VERSION:      return versionGML;
-            case XML.METADATA_VERSION: return versionMetadata;
-            case XML.RESOLVER:         return resolver;
-            case XML.CONVERTER:        return converter;
-            case XML.WARNING_LISTENER: return warningListener;
+            case XML.LOCALE:            return locale;
+            case XML.TIMEZONE:          return timezone;
+            case XML.SCHEMAS:           return schemas;
+            case XML.GML_VERSION:       return versionGML;
+            case XML.METADATA_VERSION:  return versionMetadata;
+            case XML.RESOLVER:          return resolver;
+            case XML.CONVERTER:         return converter;
+            case XML.WARNING_LISTENER:  return warningListener;
+            case XML.LENIENT_UNMARSHAL: return (bitMasks & Context.LENIENT_UNMARSHAL) != 0;
             case XML.STRING_SUBSTITUTES: {
                 int n = 0;
                 final String[] substitutes = new String[4];

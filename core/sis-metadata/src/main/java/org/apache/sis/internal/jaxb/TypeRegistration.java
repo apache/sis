@@ -194,7 +194,7 @@ public abstract class TypeRegistration {
      * Completes the given properties with an entry for {@link #ROOT_ADAPTERS} if not already present.
      * If a {@code ROOT_ADAPTERS} entry is already present, then the map is returned unchanged.
      *
-     * <p>This method store a direct reference to the internal {@code TypeRegistration[]} array in the given map.
+     * <p>This method stores a reference to the internal {@code TypeRegistration[]} array in a copy of the given map.
      * <strong>That array shall not be modified.</strong> This method is currently for Apache SIS internal usage only,
      * because the {@code TypeRegistration} class is not part of public API. However if we add this functionality in a
      * future SIS release (probably as an interface rather than exposing {@code TypeRegistration} itself), then we may

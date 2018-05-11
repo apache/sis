@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Collections;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
 import java.io.File;
@@ -229,6 +230,13 @@ public final class XML extends Static {
     public static final String METADATA_VERSION = "org.apache.sis.xml.version.metadata";
 
     /**
+     * Whether the unmarshalling process should accept any metadata or GML version if the user did not
+     * specified an explicit version. Accepting any version may have surprising results since namespace
+     * substitutions may be performed on the fly.
+     */
+    static final String LENIENT_UNMARSHAL = "org.apache.sis.xml.version.lenient";
+
+    /**
      * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual objects to use.
      * The value for this property shall be an instance of {@link ReferenceResolver}.
      *
@@ -398,7 +406,7 @@ public final class XML extends Static {
             synchronized (XML.class) {
                 pool = POOL;                            // Double-check idiom: see javadoc.
                 if (pool == null) {
-                    POOL = pool = new MarshallerPool(null);
+                    POOL = pool = new MarshallerPool(Collections.singletonMap(LENIENT_UNMARSHAL, Boolean.TRUE));
                 }
             }
         }
