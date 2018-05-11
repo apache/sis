@@ -27,7 +27,6 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStore;
@@ -47,6 +46,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.PropertyIsEqualTo;
 import org.opengis.filter.expression.Expression;
+import org.apache.sis.filter.DefaultFilterFactory;
 
 
 /**
