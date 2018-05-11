@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql;
+package org.apache.sis.storage.sql;
 
 import javax.sql.DataSource;
 import org.apache.sis.storage.DataStore;
@@ -25,6 +25,9 @@ import org.apache.sis.storage.StorageConnector;
 
 /**
  * Parent store class for {@code DataStore} implementations using JDBC backend.
+ *
+ * <div class="warning">This is an experimental class,
+ * not yet target for any Apache SIS release at this time.</div>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql.postgres;
+package org.apache.sis.internal.sql.postgres;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.sql.SQLStore;
-import org.apache.sis.sql.SQLQuery;
+import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.sql.SQLQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
