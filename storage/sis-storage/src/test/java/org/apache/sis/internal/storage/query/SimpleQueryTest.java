@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -38,6 +37,7 @@ import org.opengis.feature.AttributeType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.MatchAction;
 import org.opengis.filter.sort.SortOrder;
+import org.apache.sis.filter.DefaultFilterFactory;
 
 
 /**
