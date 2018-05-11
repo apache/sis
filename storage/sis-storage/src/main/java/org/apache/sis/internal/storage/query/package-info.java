@@ -16,17 +16,17 @@
  */
 
 /**
- * Utility classes for the implementation of SIS storage classes.
+ * Default implementation of query operations.
  *
  * <STRONG>Do not use!</STRONG>
  *
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.4
+ * @since   1.0
  * @module
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.query;

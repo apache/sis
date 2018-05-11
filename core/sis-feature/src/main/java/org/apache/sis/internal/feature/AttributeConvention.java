@@ -24,6 +24,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
+import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.AbstractOperation;
@@ -63,7 +64,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -171,6 +172,18 @@ public final class AttributeConvention extends Static {
     }
 
     /**
+     * String representation of the {@link #IDENTIFIER_PROPERTY} name.
+     * This can be used in calls to {@link AbstractFeature#getPropertyValue(String)}.
+     */
+    public static final String IDENTIFIER = "sis:identifier";
+
+    /**
+     * String representation of the {@link #GEOMETRY_PROPERTY} name.
+     * This can be used in calls to {@link AbstractFeature#getPropertyValue(String)}.
+     */
+    public static final String GEOMETRY = "sis:geometry";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private AttributeConvention() {
@@ -195,6 +208,21 @@ public final class AttributeConvention extends Static {
                 return true;
             }
             name = ((ScopedName) name).tail();
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the given feature type is non-null and has a {@value #IDENTIFIER} property.
+     *
+     * @param  feature  the feature type to test, or {@code null}.
+     * @return whether the given feature type is non-null and has a {@value #IDENTIFIER} property.
+     */
+    public static boolean hasIdentifier(final DefaultFeatureType feature) {
+        if (feature != null) try {
+            return feature.getProperty(IDENTIFIER) != null;
+        } catch (IllegalArgumentException e) {
+            // Ignore
         }
         return false;
     }

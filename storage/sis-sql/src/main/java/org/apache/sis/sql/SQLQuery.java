@@ -19,6 +19,7 @@ package org.apache.sis.sql;
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * An SQL query executed directly on the database.
  * Such query should be transfered to the JDBC without or with minimum modifications.
@@ -28,7 +29,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.0
  * @module
  */
-public class SQLQuery implements Query {
+public class SQLQuery extends Query {
 
     private final String statement;
     private final String name;

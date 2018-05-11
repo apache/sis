@@ -382,7 +382,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
      * Invoked by {@link #toString()} in order to append additional information after the identifier.
      */
     @Override
-    protected void appendToString(final StringBuilder buffer) {
+    protected void appendStringTo(final StringBuilder buffer) {
         buffer.append(" : ").append(Types.getCodeLabel(getDataType()))
               .append(", ").append(getObligation().name().toLowerCase(Locale.US))
               .append(", maxOccurs=");

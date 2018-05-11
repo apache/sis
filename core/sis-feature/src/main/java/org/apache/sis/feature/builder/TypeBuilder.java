@@ -538,14 +538,14 @@ public abstract class TypeBuilder implements Localized {
     @Debug
     @Override
     public String toString() {
-        return toString(new StringBuilder(Classes.getShortClassName(this))).toString();
+        return appendStringTo(new StringBuilder(Classes.getShortClassName(this))).toString();
     }
 
     /**
      * Partial implementation of {@link #toString()}. This method assumes that the class name
      * has already be written in the buffer.
      */
-    final StringBuilder toString(final StringBuilder buffer) {
+    final StringBuilder appendStringTo(final StringBuilder buffer) {
         toStringInternal(buffer.append("[“").append(getDisplayName()).append('”'));
         return buffer.append(']');
     }

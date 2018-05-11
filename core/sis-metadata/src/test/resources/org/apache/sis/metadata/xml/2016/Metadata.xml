@@ -461,10 +461,10 @@
                 <gco:Boolean>true</gco:Boolean>
               </gex:extentTypeCode>
               <gex:westBoundLongitude>
-                <gco:Decimal>-24.5</gco:Decimal>
+                <gco:Decimal>-32.0</gco:Decimal>
               </gex:westBoundLongitude>
               <gex:eastBoundLongitude>
-                <gco:Decimal>-32.0</gco:Decimal>
+                <gco:Decimal>-24.5</gco:Decimal>
               </gex:eastBoundLongitude>
               <gex:southBoundLatitude>
                 <gco:Decimal>36.75</gco:Decimal>

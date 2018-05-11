@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.stream.Stream;
+import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
@@ -71,7 +72,7 @@ public interface FeatureSet extends DataSet {
     DefaultFeatureType getType() throws DataStoreException;
 
     /**
-     * Requests a subset of features and feature properties from this resource.
+     * Requests a subset of features and/or feature properties from this resource.
      * The filtering can be applied in two domains:
      *
      * <ul>
@@ -101,6 +102,7 @@ public interface FeatureSet extends DataSet {
      * @throws DataStoreException if another error occurred while processing the query.
      */
     default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+        ArgumentChecks.ensureNonNull("query", query);
         throw new UnsupportedQueryException();
     }
 

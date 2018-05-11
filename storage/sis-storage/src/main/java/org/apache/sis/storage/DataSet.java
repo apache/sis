@@ -67,7 +67,7 @@ public interface DataSet extends Resource {
      * If this resource uses many different CRS with none of them covering all data, then the envelope should use a
      * global system (typically a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geographic CRS}).
      *
-     * @return the spatio-temporal resource extent. Should not be {@code null}.
+     * @return the spatio-temporal resource extent. Should not be {@code null} (but may happen if too costly to compute).
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     Envelope getEnvelope() throws DataStoreException;

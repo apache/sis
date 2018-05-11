@@ -60,7 +60,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
     private MetadataWriter source;
 
     /**
-     * Runs all tests on JavaDB in the required order.
+     * Runs all tests on Derby in the required order.
      *
      * @throws Exception if an error occurred while writing or reading the database.
      */

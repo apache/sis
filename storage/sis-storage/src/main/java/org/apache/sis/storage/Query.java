@@ -31,24 +31,36 @@ package org.apache.sis.storage;
  * <code>{@linkplain java.util.function.Predicate}&lt;Feature&gt;</code>
  * while the second domain is equivalent to using
  * <code>{@linkplain java.util.function.UnaryOperator}&lt;Feature&gt;</code>.
- * It is technically possible to use {@code Query} for performing more generic feature transformations,
+ *
+ * <div class="note"><b>Note:</b>
+ * it is technically possible to use {@code Query} for performing more generic feature transformations,
  * for example inserting new properties computed from other properties, but such {@code Query} usages
  * should be rare since transformations (or more generic processing) are the topic of another package.
  * Queries are rather descriptive objects used by {@link FeatureSet} to optimize search operations
- * as much as possible on the resource, using for example caches and indexes.
+ * as much as possible on the resource, using for example caches and indexes.</div>
  *
- * <p>Compared to the SQL language, {@code Query} contains the information in the {@code SELECT} and
+ * Compared to the SQL language, {@code Query} contains the information in the {@code SELECT} and
  * {@code WHERE} clauses of a SQL statement. A {@code Query} typically contains filtering capabilities
- * and (sometime) simple attribute transformations. Well known query languages include SQL and CQL.</p>
+ * and (sometime) simple attribute transformations. Well known query languages include SQL and CQL.
  *
  * @author Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see FeatureSet#subset(Query)
  *
  * @since 0.8
  * @module
  */
-public interface Query {
+public abstract class Query {
+    /*
+     * Current version does not yet contain any field. But some fields may be added in the future.
+     * For example some methods from org.apache.sis.internal.storage.query.SimpleQuery may move here.
+     * We use an abstract class instead than an interface for that reason.
+     */
 
+    /**
+     * Creates a new, initially empty, query.
+     */
+    protected Query() {
+    }
 }

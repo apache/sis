@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
@@ -52,18 +51,6 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
     protected DiscreteSampling(final GeometryLibrary library, final WarningListeners<DataStore> listeners) {
         super(listeners);
         factory = Geometries.implementation(library);
-    }
-
-    /**
-     * Returns information about this resource.
-     *
-     * @return information about this resource, or {@code null} if none.
-     *
-     * @todo Not yet implemented.
-     */
-    @Override
-    public Metadata getMetadata() {
-        return null;
     }
 
     /**

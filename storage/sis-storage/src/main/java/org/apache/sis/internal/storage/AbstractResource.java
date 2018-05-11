@@ -46,17 +46,27 @@ import org.opengis.metadata.identification.DataIdentification;
  */
 public abstract class AbstractResource implements Resource, Localized {
     /**
-     * The set of registered warning listeners for the data store.
+     * The set of registered warning listeners for the data store, or {@code null} if none.
      */
     protected final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new resource.
      *
-     * @param listeners  the set of registered warning listeners for the data store.
+     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
      */
     protected AbstractResource(final WarningListeners<DataStore> listeners) {
         this.listeners = listeners;
+    }
+
+    /**
+     * Creates a new resource with the same warning listeners than the given resource,
+     * or {@code null} if the listeners are unknown.
+     *
+     * @param resource  the resources from which to get the listeners, or {@code null} if none.
+     */
+    protected AbstractResource(final Resource resource) {
+        listeners = (resource instanceof AbstractResource) ? ((AbstractResource) resource).listeners : null;
     }
 
     /**

@@ -187,7 +187,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
                     }
 
                     @Override public Object next() {
-                        return ((AbstractFeature) it.next()).getPropertyValue("sis:geometry");
+                        return ((AbstractFeature) it.next()).getPropertyValue(AttributeConvention.GEOMETRY);
                     }
                 });
                 geometry = getType().getValueClass().cast(geom);
