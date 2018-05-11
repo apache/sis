@@ -24,6 +24,9 @@ import java.util.Map;
 /**
  * Provides a ShapefileType Enumeration
  *
+ * <div class="warning">This is an experimental class,
+ * not yet target for any Apache SIS release at this time.</div>
+ *
  * @author  Travis L. Pinney
  * @version 0.5
  *

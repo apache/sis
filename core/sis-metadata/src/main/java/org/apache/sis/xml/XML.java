@@ -55,18 +55,18 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 /**
  * Provides convenience methods for marshalling and unmarshalling SIS objects.
  * Marshalling operations use the standard versions listed below
- * (for marshalling a document in a different version, see {@link PooledMarshaller}).
+ * (for marshalling a document in a different version, see {@link MarshallerPool}).
  * Unmarshalling detects the version automatically.
  *
  * <table class="sis">
  *   <caption>Versions of standards applied at marshalling time</caption>
- *   <tr><th>Topic</th>       <th>SIS 0.3 to 0.8</th>  <th>SIS 1.0</th>          <td>Remarks</td></tr>
+ *   <tr><th>Topic</th>       <th>SIS 0.3 to 0.8</th>  <th>SIS 1.0</th>          <th>Remarks</th></tr>
  *   <tr><td>Metadata</td>    <td>ISO 19139:2007</td>  <td>ISO 19115-3:2016</td> <td></td></tr>
  *   <tr><td>Referencing</td> <td>ISO 19136:2007</td>  <td>ISO 19136:2007</td>   <td>Same as GML 3.2</td></tr>
  * </table>
  *
  * This class defines also some property keys that can be given to the {@link Marshaller}
- * and {@link Unmarshaller} instances created by {@link PooledMarshaller}:
+ * and {@link Unmarshaller} instances created by {@link MarshallerPool}:
  *
  * <table class="sis">
  *   <caption>Supported (un)marshaller properties</caption>

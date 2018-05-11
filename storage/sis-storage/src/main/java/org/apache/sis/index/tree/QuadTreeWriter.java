@@ -16,7 +16,6 @@
  */
 package org.apache.sis.index.tree;
 
-//JDK imports
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -25,6 +24,8 @@ import java.io.IOException;
 /**
  * Class to save the quad tree index from file.
  *
+ * <div class="warning"><b>Note on future work:</b> this class may change in incompatible way
+ * in a future Apache SIS release, or may be replaced by new API.</div>
  */
 public final class QuadTreeWriter {
   private QuadTreeWriter() {

@@ -19,9 +19,12 @@
 /**
  * Data stores that create features from a JDBC connection to a database.
  *
+ * <div class="warning">This is an experimental package,
+ * not yet target for any Apache SIS release at this time.</div>
+ *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-package org.apache.sis.sql;
+package org.apache.sis.storage.sql;

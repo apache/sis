@@ -32,6 +32,8 @@ import org.apache.sis.distance.LatLonPointRadius;
  * design of quad tree index in H. Samet, The Design and Analysis of Spatial
  * Data Structures. Massachusetts: Addison Wesley Publishing Company, 1989.
  *
+ * <div class="warning"><b>Note on future work:</b> this class may change in incompatible way
+ * in a future Apache SIS release, or may be replaced by new API.</div>
  */
 public class QuadTree {
 

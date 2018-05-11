@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.sql.postgres;
+package org.apache.sis.internal.sql.postgres;
 
-import org.apache.sis.sql.SQLStoreProvider;
+import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;

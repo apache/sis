@@ -48,7 +48,7 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.sql.Dialect;
 import org.apache.sis.internal.sql.SingleAttributeTypeBuilder;
 import org.apache.sis.internal.sql.reverse.MetaDataConstants.*;
-import org.apache.sis.sql.SQLStore;
+import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureNaming;

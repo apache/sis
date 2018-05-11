@@ -22,6 +22,9 @@ import org.apache.sis.storage.DataStoreException;
 /**
  * Thrown when a DBF file has not been found.
  *
+ * <div class="warning">This is an experimental class,
+ * not yet target for any Apache SIS release at this time.</div>
+ *
  * @author  Marc Le Bihan
  * @version 0.6
  * @since   0.6
