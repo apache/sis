@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-storage} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
+    org.apache.sis.internal.storage.query.SimpleQueryTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.StoreProviderTest.class,
     org.apache.sis.internal.storage.xml.StoreTest.class,

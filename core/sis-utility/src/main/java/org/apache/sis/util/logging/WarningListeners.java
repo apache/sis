@@ -58,7 +58,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <S>  the type of the source of warnings.
  *
@@ -278,7 +278,7 @@ public class WarningListeners<S> implements Localized {
      */
     static boolean isPublic(final StackTraceElement e) {
         final String classname = e.getClassName();
-        if (classname.startsWith("java") || classname.contains(".internal.") ||
+        if (classname.startsWith("java") || classname.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX) ||
             classname.indexOf('$') >= 0 || e.getMethodName().indexOf('$') >= 0)
         {
             return false;

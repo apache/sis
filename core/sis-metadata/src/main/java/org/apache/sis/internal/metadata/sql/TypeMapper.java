@@ -34,7 +34,7 @@ public final class TypeMapper {
      * but only the ones which are of interest for the Apache SIS metadata implementation.
      * The types will be tested in the order they are declared, so the last declarations are fallbacks.
      *
-     * <p>The types declared here matches both the JavaDB and PostgreSQL mapping.</p>
+     * <p>The types declared here matches both the Derby and PostgreSQL mapping.</p>
      */
     private static final TypeMapper[] TYPES = {
         new TypeMapper(Boolean.class, Types.BOOLEAN,   "BOOLEAN"),
@@ -44,7 +44,7 @@ public final class TypeMapper {
         new TypeMapper(Long   .class, Types.BIGINT,    "BIGINT"),
         new TypeMapper(Integer.class, Types.INTEGER,   "INTEGER"),
         new TypeMapper(Short  .class, Types.SMALLINT,  "SMALLINT"),
-        new TypeMapper(Byte   .class, Types.TINYINT,   "SMALLINT"),     // JavaDB does not support TINYINT.
+        new TypeMapper(Byte   .class, Types.TINYINT,   "SMALLINT"),     // Derby does not support TINYINT.
         new TypeMapper(Number .class, Types.DECIMAL,   "DECIMAL")       // Implemented by BigDecimal.
     };
 

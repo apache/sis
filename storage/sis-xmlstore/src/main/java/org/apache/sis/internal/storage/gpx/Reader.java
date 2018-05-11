@@ -30,6 +30,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.xml.stream.StaxStreamReader;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -55,7 +56,7 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -409,8 +410,8 @@ parse:  while (reader.hasNext()) {
         }
         final Types types = ((Store) owner).types;
         final AbstractFeature feature = types.wayPoint.newInstance();
-        feature.setPropertyValue("sis:identifier", index);
-        feature.setPropertyValue("sis:geometry", types.geometries.createPoint(parseDouble(lon), parseDouble(lat)));
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, index);
+        feature.setPropertyValue(AttributeConvention.GEOMETRY, types.geometries.createPoint(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
         while (true) {
             /*
@@ -474,7 +475,7 @@ parse:  while (reader.hasNext()) {
     private AbstractFeature parseRoute(final int index) throws Exception {
         assert reader.isStartElement() && Tags.ROUTES.equals(reader.getLocalName());
         final AbstractFeature feature = ((Store) owner).types.route.newInstance();
-        feature.setPropertyValue("sis:identifier", index);
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, index);
         List<AbstractFeature> wayPoints = null;
         List<Link> links = null;
         while (true) {
@@ -530,7 +531,7 @@ parse:  while (reader.hasNext()) {
     private AbstractFeature parseTrackSegment(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACK_SEGMENTS.equals(reader.getLocalName());
         final AbstractFeature feature = ((Store) owner).types.trackSegment.newInstance();
-        feature.setPropertyValue("sis:identifier", index);
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, index);
         List<AbstractFeature> wayPoints = null;
         while (true) {
             /*
@@ -573,7 +574,7 @@ parse:  while (reader.hasNext()) {
     private AbstractFeature parseTrack(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACKS.equals(reader.getLocalName());
         final AbstractFeature feature = ((Store) owner).types.track.newInstance();
-        feature.setPropertyValue("sis:identifier", index);
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, index);
         List<AbstractFeature> segments = null;
         List<Link> links = null;
         while (true) {

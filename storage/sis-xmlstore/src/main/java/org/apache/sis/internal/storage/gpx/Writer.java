@@ -24,6 +24,7 @@ import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalFeatureTypeException;
 import org.apache.sis.internal.storage.xml.stream.StaxStreamWriter;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.Version;
 
@@ -191,7 +192,7 @@ final class Writer extends StaxStreamWriter {
      */
     private void writeWayPoint(final AbstractFeature feature, final String tagName) throws XMLStreamException, JAXBException {
         if (feature != null) {
-            final double[] pt = Geometries.getCoordinate(feature.getPropertyValue("sis:geometry"));
+            final double[] pt = Geometries.getCoordinate(feature.getPropertyValue(AttributeConvention.GEOMETRY));
             if (pt != null && pt.length >= 2) {
                 writer.writeStartElement(tagName);
                 writer.writeAttribute(Attributes.LATITUDE,  Double.toString(pt[1]));
