@@ -66,7 +66,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     private String marshal(final GenericName name) throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class),
-                    Collections.singletonMap("org.apache.sis.xml.version.lenient", Boolean.TRUE));
+                    Collections.singletonMap(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
