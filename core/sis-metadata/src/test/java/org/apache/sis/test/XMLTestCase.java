@@ -138,7 +138,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
             final Map<String,Object> properties = new HashMap<>(4);
             assertNull(properties.put(XML.LOCALE, Locale.UK));
             assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
-            assertNull(properties.put("org.apache.sis.xml.version.lenient", Boolean.TRUE));   // XML.LENIENT_UNMARSHAL
+            assertNull(properties.put(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
             defaultPool = new MarshallerPool(properties);
         }
         return defaultPool;
