@@ -31,7 +31,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -71,12 +71,13 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
      * @throws DataStoreException if an error occurred while reading the netCDF file.
      */
     @Test
+    @org.junit.Ignore("Pending GeoAPI update.")
     public void testGetConventionVersion() throws DataStoreException {
         final Version version;
-        try (NetcdfStore store = create(LANDSAT)) {
+        try (NetcdfStore store = create(CIP)) {
             version = store.getConventionVersion();
         }
         assertEquals("major", 1, version.getMajor());
-        assertEquals("minor", 0, version.getMinor());
+        assertEquals("minor", 4, version.getMinor());
     }
 }
