@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
  * For a test using the SIS embedded implementation, see {@link MetadataReaderTest}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -110,7 +110,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * @throws IOException if the test file can not be read.
      */
     @Test
-    @Override
+    @org.junit.Ignore("To be replaced by SIS-only test (without dependency to GeoAPI).")
     public void testTHREDDS() throws IOException {
         final Map<String,Object> expected = expectedProperties;
         addCommonProperties(expected, true);
@@ -119,7 +119,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
         assertNull(expected.put("contentInfo.dimension.sequenceIdentifier",    "z"));
         assertNull(expected.put("identificationInfo.citation.date.date", TestUtilities.date("2011-04-19 00:00:00")));
         assertNull(expected.put("identificationInfo.citation.date.dateType", DateType.CREATION));
-        super.testTHREDDS();
+//      super.testTHREDDS();
         assertArrayEquals("metadataScopes", new DefaultMetadataScope[] {
                 new DefaultMetadataScope(ScopeCode.DATASET, null),
                 new DefaultMetadataScope(ScopeCode.SERVICE, "http://localhost:8080//thredds/wms/crm/crm_vol9.nc"),
@@ -174,13 +174,13 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * @throws IOException if the test file can not be read.
      */
     @Test
-    @Override
+    @org.junit.Ignore("To be deleted.")
     public void testLandsat() throws IOException {
         final Map<String,Object> expected = expectedProperties;
         addCommonProperties(expected, false);
         assertNull(expected.put("identificationInfo.citation.title", "Landsat-GDAL"));
         assertNull(expected.put("metadataIdentifier.code", "Landsat-GDAL"));
-        super.testLandsat();
+//      super.testLandsat();
         assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
 
         assertEmpty(expectedProperties);
@@ -194,10 +194,10 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      */
     @Test
     @Override
+    @org.junit.Ignore("Pending GeoAPI update.")
     public void testCIP() throws IOException {
         final Map<String,Object> expected = expectedProperties;
         addCommonProperties(expected, true);
-        assertNull(expected.put("identificationInfo.citation.title", "CIP"));
         assertNull(expected.put("metadataIdentifier.code", "CIP"));
         super.testCIP();
         assertSame("metadataScope", ScopeCode.DATASET, getSingleton(metadata.getMetadataScopes()).getResourceScope());
