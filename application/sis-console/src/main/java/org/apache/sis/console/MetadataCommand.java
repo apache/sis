@@ -18,16 +18,19 @@ package org.apache.sis.console;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.function.Predicate;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 
 
 /**
  * The "metadata" sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -75,5 +78,17 @@ final class MetadataCommand extends FormattedOutputCommand {
             format(metadata);
         }
         return 0;
+    }
+
+    /**
+     * Returns the filter for simplifying the tree table to be formatted.
+     * This is used only for the tree in text format (not for XML output).
+     *
+     * <p>We omit the "Metadata standard" node because it is hard-coded to the same value in all Apache SIS {@code DataStore}
+     * implementations, and that hard-coded value is verbose. The value will be shown in XML output, which is verbose anyway.</p>
+     */
+    @Override
+    Predicate<TreeTable.Node> getNodeFilter() {
+        return (node) -> !"metadataStandard".equals(node.getValue(TableColumn.IDENTIFIER));
     }
 }

@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Currency;
 import java.util.ConcurrentModificationException;
+import java.util.function.Predicate;
 import java.io.IOException;
 import java.text.Format;
 import java.text.ParsePosition;
@@ -100,7 +101,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * than the user object of a parent node <var>A</var>, then the children of the <var>C</var> node will not be formatted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -160,6 +161,15 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @see #createTreeSymbols()
      */
     private transient String treeBlank, treeLine, treeCross, treeEnd;
+
+    /**
+     * A filter for specifying whether a node should be formatted, or {@code null} if no filtering is applied.
+     * This is ignored at parsing time.
+     *
+     * @see #getNodeFilter()
+     * @see #setNodeFilter(Predicate)
+     */
+    private Predicate<TreeTable.Node> nodeFilter;
 
     /**
      * The set to be given to {@link Writer} constructor,
@@ -289,6 +299,32 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         ArgumentChecks.ensureBetween("verticalLinePosition", 0, indentation, verticalLinePosition);
         this.verticalLinePosition = verticalLinePosition;
         clearTreeSymbols();
+    }
+
+    /**
+     * Returns the filter that specify whether a node should be formatted or ignored.
+     * This is the predicate specified in the last call to {@link #setNodeFilter(Predicate)}.
+     * If no filter has been set, then this method returns {@code null}.
+     *
+     * @return a filter for specifying whether a node should be formatted, or {@code null} if no filtering is applied.
+     *
+     * @since 1.0
+     */
+    public Predicate<TreeTable.Node> getNodeFilter() {
+        return nodeFilter;
+    }
+
+    /**
+     * Sets a filter specifying whether a node should be formatted or ignored.
+     * Filters are tested at formatting time for all children of the root node (but not for the root node itself).
+     * Filters are ignored at parsing time.
+     *
+     * @param  filter  filter for specifying whether a node should be formatted, or {@code null} for no filtering.
+     *
+     * @since 1.0
+     */
+    public void setNodeFilter(final Predicate<TreeTable.Node> filter) {
+        this.nodeFilter = filter;
     }
 
     /**
@@ -795,11 +831,11 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             final boolean omitCheck = node.getClass().isAnnotationPresent(Acyclic.class);
             if (omitCheck || recursivityGuard.add(node)) {
                 final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
-                boolean hasNext = it.hasNext();
-                while (hasNext) {
-                    final TreeTable.Node child = it.next();
-                    hasNext = it.hasNext();
-                    isLast[level] = !hasNext;                   // Must be set before the call to 'format' below.
+                TreeTable.Node next = next(it);
+                while (next != null) {
+                    final TreeTable.Node child = next;
+                    next = next(it);
+                    isLast[level] = (next == null);                 // Must be set before the call to 'format' below.
                     format(child, level+1);
                 }
                 if (!omitCheck && !recursivityGuard.remove(node)) {
@@ -860,6 +896,21 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         } finally {
             recursivityGuard.clear();
         }
+    }
+
+    /**
+     * Returns the next filtered element from the given iterator, or {@code null} if none.
+     */
+    private TreeTable.Node next(final Iterator<? extends TreeTable.Node> it) {
+        while (it.hasNext()) {
+            final TreeTable.Node next = it.next();
+            if (next != null) {
+                if (nodeFilter == null || nodeFilter.test(next)) {
+                    return next;
+                }
+            }
+        }
+        return null;
     }
 
     /**

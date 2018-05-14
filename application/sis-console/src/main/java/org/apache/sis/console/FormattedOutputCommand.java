@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.EnumSet;
 import java.io.Console;
 import java.io.IOException;
+import java.util.function.Predicate;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
@@ -54,7 +55,7 @@ import org.apache.sis.xml.XML;
  * The output format is controlled by {@link OutputFormat} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -221,6 +222,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                         ValueExistencePolicy.COMPACT);
                 final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                tf.setNodeFilter(getNodeFilter());
                 tf.format(tree, out);
                 break;
             }
@@ -277,6 +279,14 @@ abstract class FormattedOutputCommand extends CommandRunner {
             }
         }
         out.flush();
+    }
+
+    /**
+     * Returns the filter for simplifying the tree table to be formatted, or {@code null} if none.
+     * This is used only for the tree in text format (not for XML output).
+     */
+    Predicate<TreeTable.Node> getNodeFilter() {
+        return null;
     }
 
     /**
