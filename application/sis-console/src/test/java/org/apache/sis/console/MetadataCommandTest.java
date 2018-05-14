@@ -56,7 +56,6 @@ public final strictfp class MetadataCommandTest extends TestCase {
      */
     private static void verifyNetCDF(final String expectedHeader, final String result) {
         assertTrue(expectedHeader,                           result.startsWith(expectedHeader));
-        assertTrue("ISO 19115",                              result.contains("ISO 19115"));
         assertTrue("Sea Surface Temperature Analysis Model", result.contains("Sea Surface Temperature Analysis Model"));
         assertTrue("GCMD Science Keywords",                  result.contains("GCMD Science Keywords"));
         assertTrue("NOAA/NWS/NCEP",                          result.contains("NOAA/NWS/NCEP"));
