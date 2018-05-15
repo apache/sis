@@ -147,6 +147,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      */
     @Test
     @Override
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testNCEP() throws IOException {
         addCommonProperties(expectedProperties, true);
         super.testNCEP();

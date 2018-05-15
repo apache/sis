@@ -33,7 +33,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -45,6 +45,7 @@ public strictfp class DecoderTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testStringValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals("Sea Surface Temperature Analysis Model",      TITLE);
@@ -69,6 +70,7 @@ public strictfp class DecoderTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testNumericValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals(Double.valueOf( -90), LATITUDE .MINIMUM);
@@ -87,6 +89,7 @@ public strictfp class DecoderTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testDateValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);

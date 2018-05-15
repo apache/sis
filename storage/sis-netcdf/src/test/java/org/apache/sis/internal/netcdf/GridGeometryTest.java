@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -60,6 +60,7 @@ public strictfp class GridGeometryTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testDimensions() throws IOException, DataStoreException {
         final GridGeometry geometry = getSingleton(filter(selectDataset(NCEP).getGridGeometries()));
         assertEquals("getSourceDimensions()", 3, geometry.getSourceDimensions());
@@ -74,6 +75,7 @@ public strictfp class GridGeometryTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testDimensions")
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testAxes() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(NCEP).getGridGeometries())).getAxes();
         assertEquals(3, axes.length);
