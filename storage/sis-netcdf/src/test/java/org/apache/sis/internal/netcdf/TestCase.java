@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -82,7 +82,10 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  format  either {@code "THREDDS"} or {@code "HDF5"}.
      * @return {@code true} if the given supplemental format is supported.
+     *
+     * @deprecated Not needed anymore after GeoAPI update.
      */
+    @Deprecated
     protected boolean isSupplementalFormatSupported(final String format) {
         return true;
     }
