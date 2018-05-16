@@ -42,6 +42,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
      * @throws Exception if an error occurred while creating the command.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testNetCDF() throws Exception {
         final URL url = IOTestCase.class.getResource(IOTestCase.NCEP);
         assertNotNull(IOTestCase.NCEP, url);
@@ -68,6 +69,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testNetCDF")
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testFormatXML() throws Exception {
         final URL url = IOTestCase.class.getResource(IOTestCase.NCEP);
         final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString(), "--format", "XML");

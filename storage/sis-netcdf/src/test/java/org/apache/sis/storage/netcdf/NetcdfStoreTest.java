@@ -56,6 +56,7 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
      * @throws DataStoreException if an error occurred while reading the netCDF file.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
         try (NetcdfStore store = create(NCEP)) {
@@ -71,7 +72,7 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
      * @throws DataStoreException if an error occurred while reading the netCDF file.
      */
     @Test
-    @org.junit.Ignore("Pending GeoAPI update.")
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testGetConventionVersion() throws DataStoreException {
         final Version version;
         try (NetcdfStore store = create(CIP)) {

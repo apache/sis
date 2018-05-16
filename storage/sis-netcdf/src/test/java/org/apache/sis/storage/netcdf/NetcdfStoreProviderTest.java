@@ -53,6 +53,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testProbeContentFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
@@ -89,6 +90,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testDecoderFromStream() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         try (Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c)) {
