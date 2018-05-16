@@ -103,6 +103,7 @@ public strictfp class DecoderTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testNumberToDate() throws IOException, DataStoreException {
         final Decoder decoder = selectDataset(NCEP);
         assertArrayEquals(new Date[] {
@@ -123,6 +124,7 @@ public strictfp class DecoderTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testGetTitleAndID() throws IOException, DataStoreException {
         final Decoder decoder = selectDataset(NCEP);
         /*

@@ -65,6 +65,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testEmbedded() throws IOException, DataStoreException {
         final Metadata metadata;
         try (Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP)) {
@@ -81,6 +82,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
+    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
         try (Decoder input = new DecoderWrapper(new NetcdfDataset(open(NCEP)), GeometryLibrary.JAVA2D, TestCase.LISTENERS)) {
