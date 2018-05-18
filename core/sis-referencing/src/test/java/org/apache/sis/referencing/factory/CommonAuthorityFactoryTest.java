@@ -125,7 +125,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertTrue (Citations.identifierMatches(authority, "WMS"));
         assertFalse(Citations.identifierMatches(authority, "OGP"));
         assertFalse(Citations.identifierMatches(authority, "EPSG"));
-        assertEquals(Constants.OGC, Citations.getCodeSpace(authority));
+        assertEquals(Constants.OGC, Citations.toCodeSpace(authority));
     }
 
     /**

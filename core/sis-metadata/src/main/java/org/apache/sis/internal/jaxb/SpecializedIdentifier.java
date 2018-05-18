@@ -197,7 +197,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getCodeSpace(authority);
+        return Citations.toCodeSpace(authority);
     }
 
     /**
