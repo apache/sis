@@ -133,7 +133,7 @@ public final strictfp class CitationsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Citations#getCodeSpace(Citation)} with some ignorable characters.
+     * Tests {@link Citations#toCodeSpace(Citation)} with some ignorable characters.
      * Ignorable character used in this test are:
      *
      * <ul>
@@ -145,12 +145,12 @@ public final strictfp class CitationsTest extends TestCase {
     @DependsOnMethod("testGetIdentifier")
     public void testGetCodeSpace() {
         final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
-        assertEquals("ValidIdentifier", Citations.getCodeSpace(citation));
+        assertEquals("ValidIdentifier", Citations.toCodeSpace(citation));
 
         assertNull("Shall not be taken as a valid identifier.",
-                Citations.getCodeSpace(new SimpleCitation("Proj.4")));
+                Citations.toCodeSpace(new SimpleCitation("Proj.4")));
         assertEquals("Shall fallback on the the identifier space name.",
-                "TheProj4Space", Citations.getCodeSpace(new Proj4()));
+                "TheProj4Space", Citations.toCodeSpace(new Proj4()));
     }
 
     /**
@@ -169,27 +169,27 @@ public final strictfp class CitationsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Citations#getCodeSpace(Citation)} on the constants
+     * Tests {@link Citations#toCodeSpace(Citation)} on the constants
      * declared in the {@link Citations} class.
      */
     @Test
     @DependsOnMethod({"testGetUnicodeIdentifier", "testGetIdentifier"})
     public void testGetConstantCodeSpace() {
-        assertEquals("SIS",         Citations.getCodeSpace(SIS));
-        assertEquals("OGC",         Citations.getCodeSpace(WMS));
-        assertEquals("OGC",         Citations.getCodeSpace(OGC));
-        assertEquals("IOGP",        Citations.getCodeSpace(IOGP));
-        assertEquals("EPSG",        Citations.getCodeSpace(EPSG));
-        assertEquals("ESRI",        Citations.getCodeSpace(ESRI));
-        assertEquals("NetCDF",      Citations.getCodeSpace(NETCDF));
-        assertEquals("GeoTIFF",     Citations.getCodeSpace(GEOTIFF));
-        assertEquals("MapInfo",     Citations.getCodeSpace(MAP_INFO));
-        assertEquals("ISBN",        Citations.getCodeSpace(ISBN));
-        assertEquals("ISSN",        Citations.getCodeSpace(ISSN));
-        assertEquals("Proj4",       Citations.getCodeSpace(PROJ4));
-        assertEquals("S57",         Citations.getCodeSpace(S57));
-        assertNull  ("ISO_19115-1", Citations.getCodeSpace(ISO_19115.get(0)));
-        assertNull  ("ISO_19115-2", Citations.getCodeSpace(ISO_19115.get(1)));
+        assertEquals("SIS",         Citations.toCodeSpace(SIS));
+        assertEquals("OGC",         Citations.toCodeSpace(WMS));
+        assertEquals("OGC",         Citations.toCodeSpace(OGC));
+        assertEquals("IOGP",        Citations.toCodeSpace(IOGP));
+        assertEquals("EPSG",        Citations.toCodeSpace(EPSG));
+        assertEquals("ESRI",        Citations.toCodeSpace(ESRI));
+        assertEquals("NetCDF",      Citations.toCodeSpace(NETCDF));
+        assertEquals("GeoTIFF",     Citations.toCodeSpace(GEOTIFF));
+        assertEquals("MapInfo",     Citations.toCodeSpace(MAP_INFO));
+        assertEquals("ISBN",        Citations.toCodeSpace(ISBN));
+        assertEquals("ISSN",        Citations.toCodeSpace(ISSN));
+        assertEquals("Proj4",       Citations.toCodeSpace(PROJ4));
+        assertEquals("S57",         Citations.toCodeSpace(S57));
+        assertNull  ("ISO_19115-1", Citations.toCodeSpace(ISO_19115.get(0)));
+        assertNull  ("ISO_19115-2", Citations.toCodeSpace(ISO_19115.get(1)));
     }
 
     /**

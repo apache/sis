@@ -185,7 +185,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     public DefaultIdentifier(final Citation authority, final String code) {
         this.authority = authority;
         this.code = code;
-        codeSpace = Citations.getCodeSpace(authority);
+        codeSpace = Citations.toCodeSpace(authority);
     }
 
     /**

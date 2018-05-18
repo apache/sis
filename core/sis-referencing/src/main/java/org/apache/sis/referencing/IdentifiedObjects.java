@@ -426,7 +426,7 @@ public final class IdentifiedObjects extends Static {
         }
         IdentifiedObjectFinder finder;
         try {
-            finder = newFinder(Citations.getCodeSpace(authority));
+            finder = newFinder(Citations.toCodeSpace(authority));
         } catch (NoSuchAuthorityFactoryException e) {
             warning("lookupURN", e);
             finder = newFinder(null);
