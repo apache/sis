@@ -16,9 +16,7 @@
  */
 package org.apache.sis.test.suite;
 
-import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.test.TestSuite;
-import org.apache.sis.test.TestCase;
 import org.junit.runners.Suite;
 import org.junit.BeforeClass;
 
@@ -27,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-netcdf} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -40,7 +38,6 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
     org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class,
     org.apache.sis.storage.netcdf.MetadataReaderTest.class,
-    org.apache.sis.storage.netcdf.ConformanceTest.class,
     org.apache.sis.storage.netcdf.NetcdfStoreProviderTest.class,
     org.apache.sis.storage.netcdf.NetcdfStoreTest.class
 })
@@ -52,9 +49,6 @@ public final strictfp class NetcdfTestSuite extends TestSuite {
     @BeforeClass
     public static void verifyTestList() {
         assertNoMissingTest(NetcdfTestSuite.class);
-        verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
-            TestCase.class,
-            IOTestCase.class
-        });
+        verifyTestList(NetcdfTestSuite.class);
     }
 }

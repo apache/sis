@@ -18,7 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -28,15 +28,16 @@ import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
-import org.opengis.wrapper.netcdf.IOTestCase;
+import org.opengis.test.dataset.TestData;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.NetcdfFile;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.*;
 
 
 /**
- * Base class of netCDF tests. Subclasses shall override the {@link #createDecoder(String)}.
+ * Base class of netCDF tests. Subclasses shall override the {@link #createDecoder(TestData)}.
  *
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
@@ -45,11 +46,11 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
-public abstract strictfp class TestCase extends IOTestCase {
+public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     /**
      * A dummy list of listeners which can be given to the {@link Decoder} constructor.
      */
-    public static EmptyWarningListeners<DataStore> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
+    protected static EmptyWarningListeners<DataStore> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
 
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
@@ -58,12 +59,12 @@ public abstract strictfp class TestCase extends IOTestCase {
     private static final String[] GLOBAL = new String[1];
 
     /**
-     * The decoders cached by {@link #selectDataset(String)}.
+     * The decoders cached by {@link #selectDataset(TestData)}.
      */
-    private static final Map<String,Decoder> DECODERS = new HashMap<>();
+    private static final Map<TestData,Decoder> DECODERS = new EnumMap<>(TestData.class);
 
     /**
-     * The decoder to test, which is set by {@link #selectDataset(String)}.
+     * The decoder to test, which is set by {@link #selectDataset(TestData)}.
      * This field must be set before any {@code assert} method is invoked.
      */
     private Decoder decoder;
@@ -75,60 +76,60 @@ public abstract strictfp class TestCase extends IOTestCase {
     }
 
     /**
-     * Returns {@code true} if the given supplemental formats (THREDDS, HDF5) is supported.
-     * The default implementation returns {@code true} since the UCAR library supports all
-     * supplemental formats tested in this suite. Subclasses working only with the netCDF
-     * classic or 64-bits format can unconditionally returns {@code false}.
+     * Creates a netCDF reader from the UCAR library for the specified data set.
+     * We use the UCAR library as a reference implementation for the tests.
      *
-     * @param  format  either {@code "THREDDS"} or {@code "HDF5"}.
-     * @return {@code true} if the given supplemental format is supported.
-     *
-     * @deprecated Not needed anymore after GeoAPI update.
+     * @param  file  the dataset as one of the {@code NETCDF_*} constants.
+     * @return the decoder for the specified dataset.
+     * @throws IOException if an I/O error occurred while opening the file.
      */
-    @Deprecated
-    protected boolean isSupplementalFormatSupported(final String format) {
-        return true;
+    protected static NetcdfFile createUCAR(final TestData file) throws IOException {
+        /*
+         * Binary netCDF files need to be read either from a file, or from a byte array in memory.
+         * Reading from a file is not possible if the test file is in geoapi-conformance JAR file.
+         * But since those test files are less than 15 kilobytes, loading them in memory is okay.
+         */
+        String location = file.location().toString();
+        location = location.substring(location.lastIndexOf('/') + 1);
+        return NetcdfFile.openInMemory(location, file.content());
     }
 
     /**
-     * Invoked when a new {@link Decoder} instance needs to be created for dataset of the given name.
-     * The {@code name} parameter can be one of the following values:
+     * Invoked when a new {@link Decoder} instance needs to be created for the specified dataset.
+     * The {@code file} parameter can be one of the following values:
      *
      * <ul>
-     *   <li>{@link #THREDDS} for a NcML file.</li>
-     *   <li>{@link #NCEP}    for a netCDF binary file.</li>
-     *   <li>{@link #CIP}     for a netCDF binary file.</li>
-     *   <li>{@link #LANDSAT} for a netCDF binary file.</li>
+     *   <li>{@link TestData#NETCDF_2D_GEOGRAPHIC} — uses a geographic CRS for global data over the world.</li>
+     *   <li>{@link TestData#NETCDF_4D_PROJECTED}  — uses a projected CRS with elevation and time.</li>
      * </ul>
      *
-     * The default implementation first delegates to {@link #open(String)}, then wraps the result
-     * in a {@link DecoderWrapper}. We proceeded that way because the UCAR library is used as the
-     * reference implementation. However subclasses can override if they want to test a different
-     * library.
+     * Default implementation opens the file with UCAR netCDF library and wraps the UCAR object in {@link DecoderWrapper}.
+     * We proceeded that way because we use UCAR library as the reference implementation.
+     * Subclasses override this method for testing with Apache SIS implementation.
      *
-     * @param  name  the file name as one of the above-cited constants.
-     * @return the decoder for the given name.
+     * @param  file  the dataset as one of the above-cited constants.
+     * @return the decoder for the specified dataset.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
-        return new DecoderWrapper(new NetcdfDataset(open(name)), GeometryLibrary.JAVA2D, LISTENERS);
+    protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
+        return new DecoderWrapper(new NetcdfDataset(createUCAR(file)), GeometryLibrary.JAVA2D, LISTENERS);
     }
 
     /**
      * Selects the dataset to use for the tests. If a decoder for the given name has already been
      * opened, then this method returns that decoder. Otherwise a new decoder is created by a call
-     * to {@link #createDecoder(String)}, then cached.
+     * to {@link #createDecoder(TestData)}, then cached.
      *
      * <p>The {@linkplain Decoder#setSearchPath(String[]) search path} of the returned decoder
      * is initialized to the global attributes only.</p>
      *
-     * @param  name  the file name as one of the constants enumerated in the {@link #createDecoder(String)} method.
+     * @param  name  the file as one of the constants enumerated in the {@link #createDecoder(TestData)} method.
      * @return the decoder for the given name.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected final Decoder selectDataset(final String name) throws IOException, DataStoreException {
+    protected final Decoder selectDataset(final TestData name) throws IOException, DataStoreException {
         synchronized (DECODERS) {               // Paranoiac safety, but should not be used in multi-threads environment.
             decoder = DECODERS.get(name);
             if (decoder == null) {
@@ -187,7 +188,7 @@ public abstract strictfp class TestCase extends IOTestCase {
 
     /**
      * Asserts that the textual value of the named attribute is equals to the expected value.
-     * The {@link #selectDataset(String)} method must be invoked at least once before this method.
+     * The {@link #selectDataset(TestData)} method must be invoked at least once before this method.
      *
      * @param  expected       the expected attribute value.
      * @param  attributeName  the name of the attribute to test.
@@ -199,7 +200,7 @@ public abstract strictfp class TestCase extends IOTestCase {
 
     /**
      * Asserts that the numeric value of the named attribute is equals to the expected value.
-     * The {@link #selectDataset(String)} method must be invoked at least once before this method.
+     * The {@link #selectDataset(TestData)} method must be invoked at least once before this method.
      *
      * @param  expected       the expected attribute value.
      * @param  attributeName  the name of the attribute to test.
@@ -211,7 +212,7 @@ public abstract strictfp class TestCase extends IOTestCase {
 
     /**
      * Asserts that the temporal value of the named attribute is equals to the expected value.
-     * The {@link #selectDataset(String)} method must be invoked at least once before this method.
+     * The {@link #selectDataset(TestData)} method must be invoked at least once before this method.
      *
      * @param  expected       the expected attribute value.
      * @param  attributeName  the name of the attribute to test.

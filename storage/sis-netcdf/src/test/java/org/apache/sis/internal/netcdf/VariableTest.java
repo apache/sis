@@ -18,8 +18,11 @@ package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import org.apache.sis.math.Vector;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.test.DependsOn;
+import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -29,7 +32,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link Variable} implementation. The default implementation tests
  * {@code org.apache.sis.internal.netcdf.ucar.VariableWrapper} since the UCAR
  * library is our reference implementation. However subclasses can override the
- * {@link #createDecoder(String)} method in order to test a different implementation.
+ * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -45,7 +48,41 @@ public strictfp class VariableTest extends TestCase {
     private static final int NUM_BASIC_PROPERTY_COLUMNS = 6;
 
     /**
-     * Tests the basic properties of all variables found in the {@link #NCEP} file.
+     * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is considered an axis or not.
+     * The UCAR library considers it as an axis because it has an {@code "_CoordinateAxisType"} attribute.
+     * Apache SIS does not consider it as an axis because that variable does not match any dimension and is not used
+     * in any other variable.
+     */
+    protected boolean isRuntimeAnAxis;
+
+    /**
+     * Creates a new test.
+     */
+    public VariableTest() {
+        isRuntimeAnAxis = true;
+    }
+
+    /**
+     * Gets the variable from the given decoder, reordering them if the decoder is a wrapper for UCAR library.
+     * We perform this reordering because UCAR library does not always return the variables in the order they
+     * are declared. In the case of the {@link TestData#NETCDF_4D_PROJECTED} file, the CIP variable is expected
+     * last but UCAR library put it second.
+     */
+    @Workaround(library = "UCAR", version = "4.6.11")
+    private Variable[] getVariablesCIP(final Decoder decoder) {
+        Variable[] variables = decoder.getVariables();
+        if (decoder instanceof DecoderWrapper) {
+            variables = variables.clone();
+            final Variable cip = variables[1];
+            final int last = variables.length - 1;
+            System.arraycopy(variables, 2, variables, 1, last - 1);
+            variables[last] = cip;
+        }
+        return variables;
+    }
+
+    /**
+     * Tests the basic properties of all variables found in the {@link TestData#NETCDF_4D_PROJECTED} file.
      * The tested methods are:
      *
      * <ul>
@@ -61,37 +98,17 @@ public strictfp class VariableTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testBasicProperties() throws IOException, DataStoreException {
         assertBasicPropertiesEqual(new Object[] {
-        // __name______________description_________________________________datatype_______dim__axis?__raster?
-            "reftime",        "reference time",                            DataType.DOUBLE, 1, false, false,
-            "datetime",       "reference date and time",                   DataType.CHAR,   2, false, false,
-            "forecasttime",   "forecast date and time",                    DataType.CHAR,   2, false, false,
-            "model_id",       "generating process ID number",              DataType.INT,    1, false, false,
-            "nav_model",      "navigation model name",                     DataType.CHAR,   2, false, false,
-            "grid_type_code", "GRIB-1 GDS data representation type",       DataType.INT,    1, false, false,
-            "grid_type",      "GRIB-1 grid type",                          DataType.CHAR,   2, false, false,
-            "grid_name",      "grid name",                                 DataType.CHAR,   2, false, false,
-            "grid_center",    "GRIB-1 originating center ID",              DataType.INT,    1, false, false,
-            "grid_number",    "GRIB-1 catalogued grid numbers",            DataType.INT,    2, false, false,
-            "i_dim",          "longitude dimension name",                  DataType.CHAR,   2, false, false,
-            "j_dim",          "latitude dimension name",                   DataType.CHAR,   2, false, false,
-            "Ni",             "number of points along a latitude circle",  DataType.INT,    1, false, false,
-            "Nj",             "number of points along a longitude circle", DataType.INT,    1, false, false,
-            "La1",            "latitude of first grid point",              DataType.FLOAT,  1, false, false,
-            "Lo1",            "longitude of first grid point",             DataType.FLOAT,  1, false, false,
-            "La2",            "latitude of last grid point",               DataType.FLOAT,  1, false, false,
-            "Lo2",            "longitude of last grid point",              DataType.FLOAT,  1, false, false,
-            "Di",             "longitudinal direction increment",          DataType.FLOAT,  1, false, false,
-            "Dj",             "latitudinal direction increment",           DataType.FLOAT,  1, false, false,
-            "ResCompFlag",    "resolution and component flags",            DataType.BYTE,   1, false, false,
-            "SST",            "Sea temperature",                           DataType.FLOAT,  3, false, true,
-            "valtime",        "valid time",                                DataType.DOUBLE, 1, true,  false,
-            "valtime_offset", "hours from reference time",                 DataType.DOUBLE, 1, true,  false,
-            "lat",            "latitude",                                  DataType.FLOAT,  1, true,  false,
-            "lon",            "longitude",                                 DataType.FLOAT,  1, true,  false
-        }, selectDataset(NCEP).getVariables());
+        // __name______________description_____________________datatype_______dim__axis?__raster?
+            "grid_mapping_0", null,                            DataType.INT,    0, false, false,
+            "x0",             "projection_x_coordinate",       DataType.FLOAT,  1, true,  false,
+            "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, true,  false,
+            "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, true,  false,
+            "time",           "Data time",                     DataType.DOUBLE, 1, true,  false,
+            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis, false,
+            "CIP",            "Current Icing Product",         DataType.FLOAT,  4, false, true
+        }, getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED)));
     }
 
     /**
@@ -120,24 +137,44 @@ public strictfp class VariableTest extends TestCase {
     }
 
     /**
-     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}.
-     * Current implementation tests on the {@code "SST"} variable.
+     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}
+     * on a simple two-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
-    public void testGridDimensions() throws IOException, DataStoreException {
-        final Variable variable = selectDataset(NCEP).getVariables()[21];
+    public void testGridRange2D() throws IOException, DataStoreException {
+        final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[0];
         assertEquals("SST", variable.getName());
 
         assertArrayEquals("getGridDimensionNames()", new String[] {
-            "record", "lat", "lon"
+            "lat", "lon"
         }, variable.getGridDimensionNames());
 
         assertArrayEquals("getGridEnvelope()", new int[] {
-            1, 73, 73
+            73, 73
+        }, variable.getGridEnvelope());
+    }
+
+    /**
+     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}
+     * on a compound four-dimensional dataset.
+     *
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Test
+    public void testGridRange4D() throws IOException, DataStoreException {
+        final Variable variable = getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED))[6];
+        assertEquals("CIP", variable.getName());
+
+        assertArrayEquals("getGridDimensionNames()", new String[] {
+            "time", "z0", "y0", "x0"
+        }, variable.getGridDimensionNames());
+
+        assertArrayEquals("getGridEnvelope()", new int[] {
+            1, 4, 19, 38
         }, variable.getGridEnvelope());
     }
 
@@ -148,20 +185,19 @@ public strictfp class VariableTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testGetAttributes() throws IOException, DataStoreException {
-        final Variable[] variables = selectDataset(NCEP).getVariables();
-        Variable variable = variables[9];
-        assertEquals("grid_number", variable.getName());
-        assertArrayEquals("grid_number:_FillValue", new Number[] { -9999 }, variable.getAttributeValues("_FillValue", true));
-        assertArrayEquals("grid_number:_FillValue", new String[] {"-9999"}, variable.getAttributeValues("_FillValue", false));
+        final Variable[] variables = getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED));
+        Variable variable = variables[6];
+        assertEquals("CIP", variable.getName());
+        assertArrayEquals("CIP:_FillValue", new Number[] { -1f  }, variable.getAttributeValues("_FillValue", true));
+        assertArrayEquals("CIP:_FillValue", new String[] {"-1.0"}, variable.getAttributeValues("_FillValue", false));
+        assertArrayEquals("CIP:units",      new String[] {   "%"}, variable.getAttributeValues("units",      false));
+        assertArrayEquals("CIP:units",      new Number[] {      }, variable.getAttributeValues("units",      true));
 
-        variable = variables[21];
-        assertEquals("SST", variable.getName());
-        assertArrayEquals("SST:_FillValue", new Number[] { -9999f  }, variable.getAttributeValues("_FillValue", true));
-        assertArrayEquals("SST:_FillValue", new String[] {"-9999.0"}, variable.getAttributeValues("_FillValue", false));
-        assertArrayEquals("SST:units",      new String[] {"degK"},    variable.getAttributeValues("units",      false));
-        assertArrayEquals("SST:units",      new Number[] {      },    variable.getAttributeValues("units",      true));
+        variable = variables[0];
+        assertEquals("grid_mapping_0", variable.getName());
+        assertArrayEquals("standard_parallel", new Number[] { 25.f,   25.05f}, variable.getAttributeValues("standard_parallel", true));
+        assertArrayEquals("standard_parallel", new String[] {"25.0", "25.05"}, variable.getAttributeValues("standard_parallel", false));
     }
 
     /**
@@ -171,9 +207,8 @@ public strictfp class VariableTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testRead1D() throws IOException, DataStoreException {
-        final Variable variable = selectDataset(NCEP).getVariables()[25];
+        final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[2];
         assertEquals("lon", variable.getName());
         final Vector data = variable.read();
         assertEquals("lon", Float.class, data.getElementType());

@@ -17,7 +17,7 @@
 package org.apache.sis.console;
 
 import java.net.URL;
-import org.opengis.wrapper.netcdf.IOTestCase;
+import org.opengis.test.dataset.TestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link MetadataCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -42,10 +42,8 @@ public final strictfp class MetadataCommandTest extends TestCase {
      * @throws Exception if an error occurred while creating the command.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testNetCDF() throws Exception {
-        final URL url = IOTestCase.class.getResource(IOTestCase.NCEP);
-        assertNotNull(IOTestCase.NCEP, url);
+        final URL url = TestData.NETCDF_2D_GEOGRAPHIC.location();
         final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         verifyNetCDF("Metadata", test.outputBuffer.toString());
@@ -69,9 +67,8 @@ public final strictfp class MetadataCommandTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testNetCDF")
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testFormatXML() throws Exception {
-        final URL url = IOTestCase.class.getResource(IOTestCase.NCEP);
+        final URL url = TestData.NETCDF_2D_GEOGRAPHIC.location();
         final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString(), "--format", "XML");
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());

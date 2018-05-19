@@ -18,7 +18,6 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import ucar.nc2.NetcdfFile;
-import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
@@ -29,6 +28,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOn;
+import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -38,14 +38,14 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn({
     ChannelDecoderTest.class
 })
-public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
+public final strictfp class NetcdfStoreProviderTest extends TestCase {
     /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic netCDF file.
@@ -53,9 +53,8 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testProbeContentFromStream() throws DataStoreException {
-        final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
+        final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.location());
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
         final ProbeResult probe = provider.probeContent(c);
         assertTrue  ("isSupported", probe.isSupported());
@@ -72,7 +71,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      */
     @Test
     public void testProbeContentFromUCAR() throws IOException, DataStoreException {
-        try (NetcdfFile file = open(NCEP)) {
+        try (NetcdfFile file = createUCAR(TestData.NETCDF_2D_GEOGRAPHIC)) {
             final StorageConnector c = new StorageConnector(file);
             final NetcdfStoreProvider provider = new NetcdfStoreProvider();
             final ProbeResult probe = provider.probeContent(c);
@@ -90,11 +89,10 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testDecoderFromStream() throws IOException, DataStoreException {
-        final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
-        try (Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c)) {
-            assertInstanceOf(NCEP, ChannelDecoder.class, decoder);
+        final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
+        try (Decoder decoder = NetcdfStoreProvider.decoder(LISTENERS, c)) {
+            assertInstanceOf("decoder", ChannelDecoder.class, decoder);
         }
     }
 
@@ -107,9 +105,9 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      */
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
-        final StorageConnector c = new StorageConnector(open(NCEP));
-        try (Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c)) {
-            assertInstanceOf(NCEP, DecoderWrapper.class, decoder);
+        final StorageConnector c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
+        try (Decoder decoder = NetcdfStoreProvider.decoder(LISTENERS, c)) {
+            assertInstanceOf("decoder", DecoderWrapper.class, decoder);
         }
     }
 }
