@@ -814,7 +814,7 @@ public final class ChannelDecoder extends Decoder {
             final Set<VariableInfo> axes = new LinkedHashSet<>(4);
             final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
-                if (variable.isCoordinateSystemAxis()) {
+                if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
                     continue;
                 }
                 final List<Dimension> dimensions = Arrays.asList(variable.dimensions);

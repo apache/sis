@@ -111,6 +111,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * The grid geometry associated to this variable,
      * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
+     * May stay {@code null} if the variable is not a data cube.
      */
     GridGeometryInfo gridGeometry;
 

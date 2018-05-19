@@ -17,17 +17,14 @@
 package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
-import ucar.nc2.dataset.NetcdfDataset;
 import org.opengis.metadata.Metadata;
-import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
+import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -47,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
     ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
-public final strictfp class MetadataReaderTest extends IOTestCase {
+public final strictfp class MetadataReaderTest extends TestCase {
     /**
      * Tests {@link MetadataReader#split(String)}.
      */
@@ -65,10 +62,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testEmbedded() throws IOException, DataStoreException {
         final Metadata metadata;
-        try (Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP)) {
+        try (Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);
@@ -85,7 +81,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
-        try (Decoder input = new DecoderWrapper(new NetcdfDataset(open(NCEP)), GeometryLibrary.JAVA2D, TestCase.LISTENERS)) {
+        try (Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);
@@ -93,10 +89,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
 
     /**
      * Compares the string representation of the given metadata object with the expected one.
-     * The given metadata shall have been created from the {@link #NCEP} dataset.
+     * The given metadata shall have been created from the {@link TestData#NETCDF_2D_GEOGRAPHIC} dataset.
      */
     static void compareToExpected(final Metadata actual) {
-        if (true) return;   // TODO: need to be revised.
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
             "Metadata\n" +
@@ -124,25 +119,26 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n" +
             "  │   └─Presentation form………………………………………………………… Document digital\n" +
             "  ├─Spatial representation info\n" +
-            "  │   ├─Number of dimensions………………………………………………… 3\n" +
-            "  │   ├─Axis dimension properties (1 of 3)…………… Column\n" +
+            "  │   ├─Number of dimensions………………………………………………… 2\n" +
+            "  │   ├─Axis dimension properties (1 of 2)…………… Column\n" +
             "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (2 of 3)…………… Row\n" +
+            "  │   ├─Axis dimension properties (2 of 2)…………… Row\n" +
             "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (3 of 3)…………… Time\n" +
-            "  │   │   └─Dimension size……………………………………………………… 1\n" +
             "  │   ├─Cell geometry…………………………………………………………………… Area\n" +
             "  │   └─Transformation parameter availability…… false\n" +
             "  ├─Identification info\n" +
-            "  │   ├─Citation………………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
-            "  │   │   ├─Date………………………………………………………………………………… 2005-09-22 00:00:00\n" +
+            "  │   ├─Citation………………………………………………………………………………… Test data from Sea Surface Temperature Analysis Model\n" +
+            "  │   │   ├─Date (1 of 2)………………………………………………………… 2005-09-22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
+            "  │   │   ├─Date (2 of 2)………………………………………………………… 2018-05-15 13:00:00\n" +
+            "  │   │   │   └─Date type………………………………………………………… Revision\n" +
             "  │   │   ├─Identifier………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   │   │   └─Authority………………………………………………………… edu.ucar.unidata\n" +
             "  │   │   └─Cited responsible party\n" +
             "  │   │       ├─Role……………………………………………………………………… Originator\n" +
-            "  │   │       └─Individual……………………………………………………… NOAA/NWS/NCEP\n" +  // TODO: actually we can not distinguish individual from organization.
-            "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
+            "  │   │       └─Individual……………………………………………………… NOAA/NWS/NCEP\n" +
+            "  │   ├─Abstract………………………………………………………………………………… Global, two-dimensional model data\n" +
+            "  │   ├─Purpose…………………………………………………………………………………… GeoAPI conformance tests\n" +
             "  │   ├─Point of contact\n" +
             "  │   │   ├─Role………………………………………………………………………………… Point of contact\n" +
             "  │   │   └─Individual………………………………………………………………… NOAA/NWS/NCEP\n" +
@@ -161,21 +157,26 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
             "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
             "  │   │   └─Thesaurus name……………………………………………………… GCMD Science Keywords\n" +
-            "  │   └─Resource constraints\n" +
-            "  │       └─Use limitation……………………………………………………… Freely available\n" +
+            "  │   ├─Resource constraints\n" +
+            "  │   │   └─Use limitation……………………………………………………… Freely available\n" +
+            "  │   └─Supplemental information……………………………………… For testing purpose only.\n" +
             "  ├─Content info\n" +
             "  │   └─Attribute group\n" +
             "  │       └─Attribute…………………………………………………………………… SST\n" +
             "  │           ├─Description…………………………………………………… Sea temperature\n" +
             "  │           ├─Name……………………………………………………………………… sea_water_temperature\n" +
-            "  │           └─Units…………………………………………………………………… K\n" +
+            "  │           ├─Units…………………………………………………………………… °C\n" +
+            "  │           ├─Scale factor………………………………………………… 0.0011\n" +
+            "  │           ├─Offset………………………………………………………………… -1.85\n" +
+            "  │           └─Transfer function type……………………… Linear\n" +
             "  ├─Data quality info\n" +
             "  │   ├─Scope\n" +
             "  │   │   └─Level……………………………………………………………………………… Dataset\n" +
             "  │   └─Lineage\n" +
-            "  │       └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
-            "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +
-            "  └─Metadata scope\n" +
-            "      └─Resource scope………………………………………………………………… Dataset\n", text);
+            "  │       └─Statement…………………………………………………………………… Decimated and modified by GeoAPI for inclusion in conformance test suite.\n" +
+            "  ├─Metadata scope\n" +
+            "  │   └─Resource scope………………………………………………………………… Dataset\n" +
+            "  └─Date info………………………………………………………………………………………… 2018-05-15 13:01:00\n" +
+            "      └─Date type……………………………………………………………………………… Revision\n", text);
     }
 }

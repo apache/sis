@@ -21,6 +21,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.VariableTest;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
+import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -32,33 +33,29 @@ import static org.junit.Assert.*;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn({ChannelDecoderTest.class, VariableTest.class})
 public final strictfp class VariableInfoTest extends VariableTest {
     /**
-     * Creates a new decoder for dataset of the given name.
+     * Creates a new test.
+     */
+    public VariableInfoTest() {
+        isRuntimeAnAxis = false;
+    }
+
+    /**
+     * Creates a new decoder for the specified dataset.
      *
-     * @return the decoder for the given dataset.
+     * @return the decoder for the specified dataset.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
-        return ChannelDecoderTest.createChannelDecoder(name);
-    }
-
-    /**
-     * Unconditionally returns {@code false} since {@link ChannelDecoder}
-     * supports only the classic and 64 bits netCDF formats.
-     *
-     * @return {@code false}.
-     */
-    @Override
-    protected boolean isSupplementalFormatSupported(final String format) {
-        return false;
+    protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
+        return ChannelDecoderTest.createChannelDecoder(file);
     }
 
     /**
