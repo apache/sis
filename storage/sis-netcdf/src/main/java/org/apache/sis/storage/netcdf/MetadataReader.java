@@ -106,7 +106,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -595,7 +595,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             decoder.setSearchPath(path);
             final Responsibility party = createResponsibleParty(CREATOR, true);
             if (party != pointOfContact) {
-                addPointOfContact(party, Scope.ALL);
+                addPointOfContact(party, Scope.RESOURCE);
                 if (pointOfContact == null) {
                     pointOfContact = party;
                 }
@@ -975,9 +975,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             authority = null;
         }
         if (authority == null) {
-            addTitleOrIdentifier(identifier, Scope.ALL);
+            addTitleOrIdentifier(identifier, Scope.RESOURCE);
         } else {
-            addIdentifier(authority, identifier, Scope.ALL);
+            addIdentifier(authority, identifier, Scope.RESOURCE);
         }
     }
 
