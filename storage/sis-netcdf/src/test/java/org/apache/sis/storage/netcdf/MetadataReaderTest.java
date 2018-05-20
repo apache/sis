@@ -86,7 +86,6 @@ public final strictfp class MetadataReaderTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @org.junit.Ignore("To be modified after GeoAPI update.")
     public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
         try (Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {

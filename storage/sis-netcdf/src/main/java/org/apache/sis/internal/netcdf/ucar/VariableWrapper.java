@@ -25,6 +25,7 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
+import ucar.nc2.dataset.VariableEnhanced;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
@@ -38,21 +39,37 @@ import org.apache.sis.storage.DataStoreContentException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 final class VariableWrapper extends Variable {
     /**
-     * The netCDF variable.
+     * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
     private final VariableIF variable;
 
     /**
+     * The variable without enhancements. May be the same instance than {@link #variable}
+     * if that variable was not enhanced. This field is preferred to {@code variable} for
+     * fetching attribute values because the {@code "scale_factor"} and {@code "add_offset"}
+     * attributes are hidden by {@link VariableEnhanced}. In order to allow metadata reader
+     * to find them, we query attributes in the original variable instead.
+     */
+    private final VariableIF raw;
+
+    /**
      * Creates a new variable wrapping the given netCDF interface.
      */
-    VariableWrapper(final VariableIF variable) {
-        this.variable = variable;
+    VariableWrapper(VariableIF v) {
+        variable = v;
+        if (v instanceof VariableEnhanced) {
+            v = ((VariableEnhanced) v).getOriginalVariable();
+            if (v == null) {
+                v = variable;
+            }
+        }
+        raw = v;
     }
 
     /**
@@ -148,7 +165,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        final Attribute attribute = variable.findAttributeIgnoreCase(attributeName);
+        final Attribute attribute = raw.findAttributeIgnoreCase(attributeName);
         if (attribute != null) {
             boolean hasValues = false;
             final Object[] values = new Object[attribute.getLength()];
