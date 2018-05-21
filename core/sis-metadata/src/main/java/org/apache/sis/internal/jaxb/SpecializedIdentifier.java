@@ -196,7 +196,7 @@ public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Clon
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getCodeSpace(authority);
+        return Citations.toCodeSpace(authority);
     }
 
     /**

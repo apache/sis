@@ -98,9 +98,16 @@ public final class Context extends MarshalContext {
     public static final int LEGACY_METADATA = 0x20;
 
     /**
+     * Whether the unmarshalling process should accept any metadata or GML version if the user did not
+     * specified an explicit version. Accepting any version may have surprising results since namespace
+     * substitutions may be performed on the fly.
+     */
+    public static final int LENIENT_UNMARSHAL = 0x40;
+
+    /**
      * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
      */
-    private static final int CLEAR_SEMAPHORE = 0x40;
+    private static final int CLEAR_SEMAPHORE = 0x80;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a

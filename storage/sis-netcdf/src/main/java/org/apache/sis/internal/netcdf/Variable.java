@@ -158,6 +158,8 @@ public abstract class Variable extends NamedElement {
      * Returns the names of all attributes associated to this variable.
      *
      * @return names of all attributes associated to this variable.
+     *
+     * @todo Remove this method if it still not used.
      */
     public abstract Collection<String> getAttributeNames();
 

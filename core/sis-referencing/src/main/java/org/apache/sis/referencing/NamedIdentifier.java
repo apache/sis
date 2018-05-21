@@ -226,7 +226,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *          The code can not be null.
      */
     public NamedIdentifier(final Citation authority, final CharSequence code) {
-        super(authority, Citations.getCodeSpace(authority), toString(code));
+        super(authority, Citations.toCodeSpace(authority), toString(code));
         if (code instanceof InternationalString) {
             name = createName(authority, super.getCodeSpace(), code);
             isNameSupplied = true;                              // Because 'code' is an international string.
@@ -318,7 +318,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private static GenericName createName(final Citation authority, String codeSpace, final CharSequence code) {
         if (codeSpace == null) {
-            codeSpace = Citations.getCodeSpace(authority);          // Whitespaces trimed by Citations.
+            codeSpace = Citations.toCodeSpace(authority);           // Whitespaces trimed by Citations.
         }
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         if (codeSpace != null) {
