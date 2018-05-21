@@ -38,7 +38,7 @@ import static java.lang.Math.abs;
  */
 public final class Numerics extends Static {
     /**
-     * Some frequently used {@link Double} values. As of Java 7, those values do not
+     * Some frequently used {@link Double} values. As of Java 8, those values do not
      * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
      */
     private static final Map<Object,Object> CACHE = new HashMap<>(32);
