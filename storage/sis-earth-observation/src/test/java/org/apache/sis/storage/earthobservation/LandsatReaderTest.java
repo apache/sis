@@ -22,8 +22,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.acquisition.Context;
+import org.opengis.metadata.acquisition.OperationType;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.TransferFunctionType;
+import org.opengis.metadata.identification.Progress;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
-import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.opengis.test.dataset.ContentVerifier;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.system.Modules;
@@ -31,7 +39,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.formatNameAndValue;
+import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.storage.earthobservation.LandsatReader.DIM;
 
 
@@ -39,6 +47,7 @@ import static org.apache.sis.storage.earthobservation.LandsatReader.DIM;
  * Tests {@link LandsatReader}.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
  * @module
@@ -91,201 +100,167 @@ public class LandsatReaderTest extends TestCase {
             reader.read(in);
             actual = reader.getMetadata();
         }
-        final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
-        assertMultilinesEquals(
-                "Metadata\n"
-                + "  ├─Metadata identifier……………………………………………………………… LandsatTest\n"
-                + "  ├─Language…………………………………………………………………………………………… en\n"
-                + "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n"
-                + "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n"
-                + "  │   ├─Identifier…………………………………………………………………………… 19115-1\n"
-                + "  │   │   ├─Code space………………………………………………………………… ISO\n"
-                + "  │   │   └─Version………………………………………………………………………… 2014(E)\n"
-                + "  │   ├─Cited responsible party\n"
-                + "  │   │   ├─Role………………………………………………………………………………… Principal investigator\n"
-                + "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n"
-                + "  │   └─Presentation form………………………………………………………… Document digital\n"
-                + "  ├─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n"
-                + "  │   ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n"
-                + "  │   ├─Identifier…………………………………………………………………………… 19115-2\n"
-                + "  │   │   ├─Code space………………………………………………………………… ISO\n"
-                + "  │   │   └─Version………………………………………………………………………… 2009(E)\n"
-                + "  │   ├─Cited responsible party\n"
-                + "  │   │   ├─Role………………………………………………………………………………… Principal investigator\n"
-                + "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n"
-                + "  │   └─Presentation form………………………………………………………… Document digital\n"
-                + "  ├─Spatial representation info (1 of 2)\n"
-                + "  │   ├─Number of dimensions………………………………………………… 2\n"
-                + "  │   ├─Axis dimension properties (1 of 2)…………… Sample\n"
-                + "  │   │   └─Dimension size……………………………………………………… 15000\n"
-                + "  │   ├─Axis dimension properties (2 of 2)…………… Line\n"
-                + "  │   │   └─Dimension size……………………………………………………… 15500\n"
-                + "  │   ├─Transformation parameter availability…… false\n"
-                + "  │   └─Check point availability……………………………………… false\n"
-                + "  ├─Spatial representation info (2 of 2)\n"
-                + "  │   ├─Number of dimensions………………………………………………… 2\n"
-                + "  │   ├─Axis dimension properties (1 of 2)…………… Sample\n"
-                + "  │   │   └─Dimension size……………………………………………………… 7600\n"
-                + "  │   ├─Axis dimension properties (2 of 2)…………… Line\n"
-                + "  │   │   └─Dimension size……………………………………………………… 7800\n"
-                + "  │   ├─Transformation parameter availability…… false\n"
-                + "  │   └─Check point availability……………………………………… false\n"
-                + "  ├─Reference system info………………………………………………………… EPSG:WGS 84 / UTM zone 49N\n"
-                + "  ├─Identification info\n"
-                + "  │   ├─Citation………………………………………………………………………………… LandsatTest\n"
-                + "  │   │   └─Date………………………………………………………………………………… 2016-06-27 16:48:12\n"
-                + "  │   │       └─Date type………………………………………………………… Creation\n"
-                + "  │   ├─Credit……………………………………………………………………………………… Derived from U.S. Geological Survey data\n"
-                + "  │   ├─Spatial resolution (1 of 2)\n"
-                + "  │   │   └─Distance……………………………………………………………………… 15.0\n"
-                + "  │   ├─Spatial resolution (2 of 2)\n"
-                + "  │   │   └─Distance……………………………………………………………………… 30.0\n"
-                + "  │   ├─Extent\n"
-                + "  │   │   └─Geographic element\n"
-                + "  │   │       ├─West bound longitude…………………………… 108°20′24″E\n"
-                + "  │   │       ├─East bound longitude…………………………… 110°26′24″E\n"
-                + "  │   │       ├─South bound latitude…………………………… 10°30′N\n"
-                + "  │   │       ├─North bound latitude…………………………… 12°37′12″N\n"
-                + "  │   │       └─Extent type code……………………………………… true\n"
-                + "  │   └─Resource format\n"
-                + "  │       └─Format specification citation……………… GeoTIFF Coverage Encoding Profile\n"
-                + "  │           └─Alternate title………………………………………… GeoTIFF\n"
-                + "  ├─Content info\n"
-                + "  │   ├─Attribute group (1 of 3)\n"
-                + "  │   │   ├─Content type…………………………………………………………… Physical measurement\n"
-                + "  │   │   ├─Attribute (1 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Coastal Aerosol\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B1.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 0.0127\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -63.6\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 433.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   ├─Attribute (2 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Blue\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B2.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 0.013\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -65.1\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 482.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   ├─Attribute (3 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Green\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B3.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 0.012\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -60.0\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 562.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   ├─Attribute (4 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Red\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B4.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 0.0101\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -50.6\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 655.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   ├─Attribute (5 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Near-Infrared\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B5.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 0.00619\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -31.0\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 865.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   ├─Attribute (6 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Short Wavelength Infrared (SWIR) 1\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B6.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 0.00154\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -7.7\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 1610.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   ├─Attribute (7 of 8)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Short Wavelength Infrared (SWIR) 2\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B7.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 5.19E-4\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… -2.6\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 2200.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   └─Attribute (8 of 8)\n"
-                + "  │   │       ├─Description…………………………………………………… Cirrus\n"
-                + "  │   │       ├─Name……………………………………………………………………… TestImage_B9.TIF\n"
-                + "  │   │       ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │       ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │       ├─Scale factor………………………………………………… 0.00242\n"
-                + "  │   │       ├─Offset………………………………………………………………… -12.1\n"
-                + "  │   │       ├─Bound units…………………………………………………… nm\n"
-                + "  │   │       ├─Peak response……………………………………………… 1375.0\n"
-                + "  │   │       └─Transfer function type……………………… Linear\n"
-                + "  │   ├─Attribute group (2 of 3)\n"
-                + "  │   │   ├─Content type…………………………………………………………… Physical measurement\n"
-                + "  │   │   └─Attribute\n"
-                + "  │   │       ├─Description…………………………………………………… Panchromatic\n"
-                + "  │   │       ├─Name……………………………………………………………………… TestImage_B8.TIF\n"
-                + "  │   │       ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │       ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │       ├─Scale factor………………………………………………… 0.0115\n"
-                + "  │   │       ├─Offset………………………………………………………………… -57.3\n"
-                + "  │   │       ├─Bound units…………………………………………………… nm\n"
-                + "  │   │       ├─Peak response……………………………………………… 590.0\n"
-                + "  │   │       └─Transfer function type……………………… Linear\n"
-                + "  │   ├─Attribute group (3 of 3)\n"
-                + "  │   │   ├─Content type…………………………………………………………… Physical measurement\n"
-                + "  │   │   ├─Attribute (1 of 2)\n"
-                + "  │   │   │   ├─Description…………………………………………………… Thermal Infrared Sensor (TIRS) 1\n"
-                + "  │   │   │   ├─Name……………………………………………………………………… TestImage_B10.TIF\n"
-                + "  │   │   │   ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │   │   ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │   │   ├─Scale factor………………………………………………… 3.34E-4\n"
-                + "  │   │   │   ├─Offset………………………………………………………………… 0.1\n"
-                + "  │   │   │   ├─Bound units…………………………………………………… nm\n"
-                + "  │   │   │   ├─Peak response……………………………………………… 10800.0\n"
-                + "  │   │   │   └─Transfer function type……………………… Linear\n"
-                + "  │   │   └─Attribute (2 of 2)\n"
-                + "  │   │       ├─Description…………………………………………………… Thermal Infrared Sensor (TIRS) 2\n"
-                + "  │   │       ├─Name……………………………………………………………………… TestImage_B11.TIF\n"
-                + "  │   │       ├─Max value………………………………………………………… 65535.0\n"
-                + "  │   │       ├─Min value………………………………………………………… 1.0\n"
-                + "  │   │       ├─Scale factor………………………………………………… 3.34E-4\n"
-                + "  │   │       ├─Offset………………………………………………………………… 0.1\n"
-                + "  │   │       ├─Bound units…………………………………………………… nm\n"
-                + "  │   │       ├─Peak response……………………………………………… 12000.0\n"
-                + "  │   │       └─Transfer function type……………………… Linear\n"
-                + "  │   ├─Illumination elevation angle…………………………… 58.8\n"
-                + "  │   ├─Illumination azimuth angle………………………………… 116.9\n"
-                + "  │   └─Cloud cover percentage…………………………………………… 8.3\n"
-                + "  ├─Metadata scope\n"
-                + "  │   └─Resource scope………………………………………………………………… Coverage\n"
-                + "  ├─Acquisition information\n"
-                + "  │   ├─Acquisition requirement\n"
-                + "  │   │   └─Identifier………………………………………………………………… Software unit tests\n"
-                + "  │   ├─Operation\n"
-                + "  │   │   ├─Status…………………………………………………………………………… Completed\n"
-                + "  │   │   ├─Type………………………………………………………………………………… Real\n"
-                + "  │   │   └─Significant event\n"
-                + "  │   │       ├─Context……………………………………………………………… Acquisition\n"
-                + "  │   │       └─Time……………………………………………………………………… 2016-06-26 03:02:01\n"
-                + "  │   └─Platform\n"
-                + "  │       ├─Identifier………………………………………………………………… Pseudo LANDSAT\n"
-                + "  │       └─Instrument\n"
-                + "  │           └─Identifier……………………………………………………… Pseudo TIRS\n"
-                + "  └─Date info………………………………………………………………………………………… 2016-06-27 16:48:12\n"
-                + "      └─Date type……………………………………………………………………………… Creation\n", text);
+        final ContentVerifier verifier = new ContentVerifier();
+        verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");           // Because hard-coded in SIS.
+        verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");        // Very verbose and depends on EPSG connection.
+        verifier.addMetadataToVerify(actual);
+        verifier.assertMetadataEquals(
+            "language[0]",                                                                           "en",
+            "metadataIdentifier.code",                                                               "LandsatTest",
+            "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
+            "dateInfo[0].date",                                                                      date("2016-06-27 16:48:12"),
+            "dateInfo[0].dateType",                                                                  DateType.CREATION,
+            "identificationInfo[0].citation.date[0].date",                                           date("2016-06-27 16:48:12"),
+            "identificationInfo[0].citation.date[0].dateType",                                       DateType.CREATION,
+            "identificationInfo[0].citation.title",                                                  "LandsatTest",
+            "identificationInfo[0].credit[0]",                                                       "Derived from U.S. Geological Survey data",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.title",             "GeoTIFF Coverage Encoding Profile",
+            "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[0]", "GeoTIFF",
+            "identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",                   true,
+            "identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude",               108.34,
+            "identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",               110.44,
+            "identificationInfo[0].extent[0].geographicElement[0].southBoundLatitude",                10.50,
+            "identificationInfo[0].extent[0].geographicElement[0].northBoundLatitude",                12.62,
+            "identificationInfo[0].spatialResolution[0].distance",                                    15.0,
+            "identificationInfo[0].spatialResolution[1].distance",                                    30.0,
+
+            "acquisitionInformation[0].platform[0].identifier.code",               "Pseudo LANDSAT",
+            "acquisitionInformation[0].platform[0].instrument[0].identifier.code", "Pseudo TIRS",
+            "acquisitionInformation[0].acquisitionRequirement[0].identifier.code", "Software unit tests",
+            "acquisitionInformation[0].operation[0].significantEvent[0].context",  Context.ACQUISITION,
+            "acquisitionInformation[0].operation[0].significantEvent[0].time",     date("2016-06-26 03:02:01.090"),
+            "acquisitionInformation[0].operation[0].status",                       Progress.COMPLETED,
+            "acquisitionInformation[0].operation[0].type",                         OperationType.REAL,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].name[0].code",  "TestImage_B1.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[1].name[0].code",  "TestImage_B2.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[2].name[0].code",  "TestImage_B3.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[3].name[0].code",  "TestImage_B4.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[4].name[0].code",  "TestImage_B5.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[5].name[0].code",  "TestImage_B6.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[6].name[0].code",  "TestImage_B7.TIF",
+            "contentInfo[0].attributeGroup[0].attribute[7].name[0].code",  "TestImage_B9.TIF",
+            "contentInfo[0].attributeGroup[1].attribute[0].name[0].code",  "TestImage_B8.TIF",
+            "contentInfo[0].attributeGroup[2].attribute[0].name[0].code",  "TestImage_B10.TIF",
+            "contentInfo[0].attributeGroup[2].attribute[1].name[0].code",  "TestImage_B11.TIF",
+
+            "contentInfo[0].attributeGroup[0].attribute[0].description",   "Coastal Aerosol",
+            "contentInfo[0].attributeGroup[0].attribute[1].description",   "Blue",
+            "contentInfo[0].attributeGroup[0].attribute[2].description",   "Green",
+            "contentInfo[0].attributeGroup[0].attribute[3].description",   "Red",
+            "contentInfo[0].attributeGroup[0].attribute[4].description",   "Near-Infrared",
+            "contentInfo[0].attributeGroup[0].attribute[5].description",   "Short Wavelength Infrared (SWIR) 1",
+            "contentInfo[0].attributeGroup[0].attribute[6].description",   "Short Wavelength Infrared (SWIR) 2",
+            "contentInfo[0].attributeGroup[0].attribute[7].description",   "Cirrus",
+            "contentInfo[0].attributeGroup[1].attribute[0].description",   "Panchromatic",
+            "contentInfo[0].attributeGroup[2].attribute[0].description",   "Thermal Infrared Sensor (TIRS) 1",
+            "contentInfo[0].attributeGroup[2].attribute[1].description",   "Thermal Infrared Sensor (TIRS) 2",
+
+            "contentInfo[0].attributeGroup[0].attribute[0].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[1].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[2].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[3].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[4].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[5].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[6].minValue",      1.0,
+            "contentInfo[0].attributeGroup[0].attribute[7].minValue",      1.0,
+            "contentInfo[0].attributeGroup[1].attribute[0].minValue",      1.0,
+            "contentInfo[0].attributeGroup[2].attribute[0].minValue",      1.0,
+            "contentInfo[0].attributeGroup[2].attribute[1].minValue",      1.0,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[1].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[2].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[3].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[4].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[5].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[6].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[0].attribute[7].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[1].attribute[0].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[2].attribute[0].maxValue",      65535.0,
+            "contentInfo[0].attributeGroup[2].attribute[1].maxValue",      65535.0,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].peakResponse",    433.0,
+            "contentInfo[0].attributeGroup[0].attribute[1].peakResponse",    482.0,
+            "contentInfo[0].attributeGroup[0].attribute[2].peakResponse",    562.0,
+            "contentInfo[0].attributeGroup[0].attribute[3].peakResponse",    655.0,
+            "contentInfo[0].attributeGroup[0].attribute[4].peakResponse",    865.0,
+            "contentInfo[0].attributeGroup[0].attribute[5].peakResponse",   1610.0,
+            "contentInfo[0].attributeGroup[0].attribute[6].peakResponse",   2200.0,
+            "contentInfo[0].attributeGroup[0].attribute[7].peakResponse",   1375.0,
+            "contentInfo[0].attributeGroup[1].attribute[0].peakResponse",    590.0,
+            "contentInfo[0].attributeGroup[2].attribute[0].peakResponse",  10800.0,
+            "contentInfo[0].attributeGroup[2].attribute[1].peakResponse",  12000.0,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[1].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[2].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[3].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[4].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[5].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[6].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[7].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[1].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[2].attribute[0].transferFunctionType",  TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[2].attribute[1].transferFunctionType",  TransferFunctionType.LINEAR,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",  0.0127,
+            "contentInfo[0].attributeGroup[0].attribute[1].scaleFactor",  0.013,
+            "contentInfo[0].attributeGroup[0].attribute[2].scaleFactor",  0.012,
+            "contentInfo[0].attributeGroup[0].attribute[3].scaleFactor",  0.0101,
+            "contentInfo[0].attributeGroup[0].attribute[4].scaleFactor",  0.00619,
+            "contentInfo[0].attributeGroup[0].attribute[5].scaleFactor",  0.00154,
+            "contentInfo[0].attributeGroup[0].attribute[6].scaleFactor",  0.000519,
+            "contentInfo[0].attributeGroup[0].attribute[7].scaleFactor",  0.00242,
+            "contentInfo[0].attributeGroup[1].attribute[0].scaleFactor",  0.0115,
+            "contentInfo[0].attributeGroup[2].attribute[0].scaleFactor",  0.000334,
+            "contentInfo[0].attributeGroup[2].attribute[1].scaleFactor",  0.000334,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].offset",       -63.6,
+            "contentInfo[0].attributeGroup[0].attribute[1].offset",       -65.1,
+            "contentInfo[0].attributeGroup[0].attribute[2].offset",       -60.0,
+            "contentInfo[0].attributeGroup[0].attribute[3].offset",       -50.6,
+            "contentInfo[0].attributeGroup[0].attribute[4].offset",       -31.0,
+            "contentInfo[0].attributeGroup[0].attribute[5].offset",       -7.7,
+            "contentInfo[0].attributeGroup[0].attribute[6].offset",       -2.6,
+            "contentInfo[0].attributeGroup[0].attribute[7].offset",       -12.1,
+            "contentInfo[0].attributeGroup[1].attribute[0].offset",       -57.3,
+            "contentInfo[0].attributeGroup[2].attribute[0].offset",       0.1,
+            "contentInfo[0].attributeGroup[2].attribute[1].offset",       0.1,
+
+            "contentInfo[0].attributeGroup[0].attribute[0].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[1].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[2].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[3].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[4].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[5].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[6].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[0].attribute[7].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[1].attribute[0].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[2].attribute[0].boundUnits",   "nm",
+            "contentInfo[0].attributeGroup[2].attribute[1].boundUnits",   "nm",
+
+            "contentInfo[0].attributeGroup[0].contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT,
+            "contentInfo[0].attributeGroup[1].contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT,
+            "contentInfo[0].attributeGroup[2].contentType[0]", CoverageContentType.PHYSICAL_MEASUREMENT,
+
+            "contentInfo[0].cloudCoverPercentage",         8.3,
+            "contentInfo[0].illuminationAzimuthAngle",   116.9,
+            "contentInfo[0].illuminationElevationAngle",  58.8,
+
+            "spatialRepresentationInfo[0].numberOfDimensions",                       2,
+            "spatialRepresentationInfo[1].numberOfDimensions",                       2,
+            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE,
+            "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionName", DimensionNameType.SAMPLE,
+            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE,
+            "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionName", DimensionNameType.LINE,
+            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize", 15000,
+            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize", 15500,
+            "spatialRepresentationInfo[1].axisDimensionProperties[0].dimensionSize", 7600,
+            "spatialRepresentationInfo[1].axisDimensionProperties[1].dimensionSize", 7800,
+            "spatialRepresentationInfo[0].transformationParameterAvailability",      false,
+            "spatialRepresentationInfo[1].transformationParameterAvailability",      false,
+            "spatialRepresentationInfo[0].checkPointAvailability",                   false,
+            "spatialRepresentationInfo[1].checkPointAvailability",                   false);
     }
 }
