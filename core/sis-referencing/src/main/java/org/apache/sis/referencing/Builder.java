@@ -331,7 +331,7 @@ public abstract class Builder<B extends Builder<B>> {
             version    = getVersion();
         } else {
             // Do not use the version information since it applies to the default authority rather than the given one.
-            codeSpace = Citations.getCodeSpace(authority);
+            codeSpace = Citations.toCodeSpace(authority);
             version   = null;
         }
         return createIdentifier(authority, codeSpace, identifier, version);
@@ -557,7 +557,7 @@ public abstract class Builder<B extends Builder<B>> {
                 version    = getVersion();
             } else {
                 // Do not use the version information since it applies to the default authority rather than the given one.
-                codeSpace = Citations.getCodeSpace(authority);
+                codeSpace = Citations.toCodeSpace(authority);
                 version   = null;
             }
             if (isDeprecated) {

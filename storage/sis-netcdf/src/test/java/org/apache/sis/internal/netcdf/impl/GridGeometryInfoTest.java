@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.GridGeometryTest;
+import org.apache.sis.internal.netcdf.TestData;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOn;
@@ -31,33 +32,22 @@ import org.apache.sis.test.DependsOn;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @DependsOn({VariableInfoTest.class, GridGeometryTest.class})
 public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
-     * Creates a new decoder for dataset of the given name.
+     * Creates a new decoder for the specified dataset.
      *
-     * @return the decoder for the given name.
+     * @return the decoder for the specified dataset.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
-        return ChannelDecoderTest.createChannelDecoder(name);
-    }
-
-    /**
-     * Unconditionally returns {@code false} since {@link ChannelDecoder}
-     * supports only the classic and 64 bits netCDF formats.
-     *
-     * @return {@code false}.
-     */
-    @Override
-    protected boolean isSupplementalFormatSupported(final String format) {
-        return false;
+    protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
+        return ChannelDecoderTest.createChannelDecoder(file);
     }
 
     /**

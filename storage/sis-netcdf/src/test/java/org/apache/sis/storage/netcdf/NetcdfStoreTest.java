@@ -17,10 +17,12 @@
 package org.apache.sis.storage.netcdf;
 
 import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.util.Version;
+import org.apache.sis.internal.netcdf.TestData;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -30,7 +32,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -38,15 +40,15 @@ import static org.opengis.test.Assert.*;
     MetadataReaderTest.class,
     NetcdfStoreProviderTest.class
 })
-public final strictfp class NetcdfStoreTest extends IOTestCase {
+public final strictfp class NetcdfStoreTest extends TestCase {
     /**
      * Returns a new netCDF store to test.
      *
      * @param  dataset the name of the datastore to load.
      * @throws DataStoreException if an error occurred while reading the netCDF file.
      */
-    private static NetcdfStore create(final String dataset) throws DataStoreException {
-        return new NetcdfStore(null, new StorageConnector(IOTestCase.getResource(dataset)));
+    private static NetcdfStore create(final TestData dataset) throws DataStoreException {
+        return new NetcdfStore(null, new StorageConnector(dataset.location()));
     }
 
     /**
@@ -57,10 +59,25 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
     @Test
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (NetcdfStore store = create(NCEP)) {
+        try (NetcdfStore store = create(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = store.getMetadata();
             assertSame("Should be cached.", metadata, store.getMetadata());
         }
         MetadataReaderTest.compareToExpected(metadata);
+    }
+
+    /**
+     * Tests {@link NetcdfStore#getConventionVersion()}.
+     *
+     * @throws DataStoreException if an error occurred while reading the netCDF file.
+     */
+    @Test
+    public void testGetConventionVersion() throws DataStoreException {
+        final Version version;
+        try (NetcdfStore store = create(TestData.NETCDF_2D_GEOGRAPHIC)) {
+            version = store.getConventionVersion();
+        }
+        assertEquals("major", 1, version.getMajor());
+        assertEquals("minor", 4, version.getMinor());
     }
 }

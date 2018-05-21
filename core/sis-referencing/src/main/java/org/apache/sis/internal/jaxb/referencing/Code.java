@@ -28,7 +28,7 @@ import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-import static org.apache.sis.metadata.iso.citation.Citations.getCodeSpace;
+import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
 
 
 /**
@@ -242,7 +242,7 @@ public final class Code {
                                 }
                             }
                         } else {
-                            code.codeSpace = getCodeSpace(authority);
+                            code.codeSpace = toCodeSpace(authority);
                         }
                         code.code = urn;
                         return code;

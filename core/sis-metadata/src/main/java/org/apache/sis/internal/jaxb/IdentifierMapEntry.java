@@ -73,7 +73,7 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getCodeSpace(getAuthority());
+        return Citations.toCodeSpace(getAuthority());
     }
 
     /**
@@ -98,7 +98,7 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
         Immutable(Citation authority, String code) {super(authority, code);}
         @Override public Citation            getAuthority()   {return getKey();}
         @Override public String              getCode()        {return getValue();}
-        @Override public String              getCodeSpace()   {return Citations.getCodeSpace(getAuthority());}
+        @Override public String              getCodeSpace()   {return Citations.toCodeSpace(getAuthority());}
         @Override public String              getVersion()     {return null;}
     }
 }

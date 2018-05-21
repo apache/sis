@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
+import java.util.Collections;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBContext;
@@ -64,7 +65,8 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
      */
     private String marshal(final GenericName name) throws JAXBException {
         if (pool == null) {
-            pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class), null);
+            pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class),
+                    Collections.singletonMap(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);

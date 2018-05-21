@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Collections;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
 import java.io.File;
@@ -229,6 +230,27 @@ public final class XML extends Static {
     public static final String METADATA_VERSION = "org.apache.sis.xml.version.metadata";
 
     /**
+     * Specifies whether the unmarshalling process should accept any metadata or GML supported version
+     * if the user did not specified an explicit version. The value can be a {@link Boolean} instance,
+     * or {@code "true"} or {@code "false"} as a {@link String}. If this value is not specified, then
+     * the default is {@code true} for all {@code XML.unmarshal} methods and {@code false} otherwise.
+     *
+     * <p>Metadata and Geographic Markup Language have slightly different XML encoding depending on the
+     * OGC/ISO version in use. Often the namespaces are different, but not only. Internally, Apache SIS
+     * supports only the schema versions documented in this {@linkplain XML class javadoc}, for example
+     * the ISO 19115-3:2016 version of metadata schema.  For unmarshalling a document encoded according
+     * an older metadata schema (e.g. ISO 19139:2007), a transformation is applied on-the-fly.  However
+     * this transformation may sometime produce undesirable results or make debugging more difficult.
+     * For this reason {@link MarshallerPool} applies the transformation only if explicitely requested,
+     * either by setting a {@link #METADATA_VERSION} or {@link #GML_VERSION} explicitely, or by setting
+     * this {@code LENIENT_UNMARSHAL} property to {@code true} if the version to unmarshal is not known
+     * in advance.</p>
+     *
+     * @since 1.0
+     */
+    public static final String LENIENT_UNMARSHAL = "org.apache.sis.xml.lenient";
+
+    /**
      * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual objects to use.
      * The value for this property shall be an instance of {@link ReferenceResolver}.
      *
@@ -398,7 +420,7 @@ public final class XML extends Static {
             synchronized (XML.class) {
                 pool = POOL;                            // Double-check idiom: see javadoc.
                 if (pool == null) {
-                    POOL = pool = new MarshallerPool(null);
+                    POOL = pool = new MarshallerPool(Collections.singletonMap(LENIENT_UNMARSHAL, Boolean.TRUE));
                 }
             }
         }

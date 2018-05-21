@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link MetadataCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -44,8 +44,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     @Test
     @Ignore("Requires GeoAPI 3.1")
     public void testNetCDF() throws Exception {
-        final URL url = MetadataCommandTest.class.getResource("NCEP-SST.nc");
-        assertNotNull("NCEP-SST.nc", url);
+        final URL url = new URL("Cube2D_geographic_packed.nc"); // TestData.NETCDF_2D_GEOGRAPHIC.location();
         final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         verifyNetCDF("Metadata", test.outputBuffer.toString());
@@ -57,7 +56,6 @@ public final strictfp class MetadataCommandTest extends TestCase {
      */
     private static void verifyNetCDF(final String expectedHeader, final String result) {
         assertTrue(expectedHeader,                           result.startsWith(expectedHeader));
-        assertTrue("ISO 19115",                              result.contains("ISO 19115"));
         assertTrue("Sea Surface Temperature Analysis Model", result.contains("Sea Surface Temperature Analysis Model"));
         assertTrue("GCMD Science Keywords",                  result.contains("GCMD Science Keywords"));
         assertTrue("NOAA/NWS/NCEP",                          result.contains("NOAA/NWS/NCEP"));
@@ -72,7 +70,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     @Ignore("Requires GeoAPI 3.1")
     @DependsOnMethod("testNetCDF")
     public void testFormatXML() throws Exception {
-        final URL url = MetadataCommandTest.class.getResource("NCEP-SST.nc");
+        final URL url = new URL("Cube2D_geographic_packed.nc") ; // TestData.NETCDF_2D_GEOGRAPHIC.location();
         final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString(), "--format", "XML");
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());

@@ -979,7 +979,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                  * on MathTransform WKT neither for more reliable debugging.
                  */
                 final boolean filter = WKTUtilities.isEPSG(parameters.getDescriptor(), false) &&   // NOT method.getName()
-                        Constants.EPSG.equalsIgnoreCase(Citations.getCodeSpace(formatter.getNameAuthority()));
+                        Constants.EPSG.equalsIgnoreCase(Citations.toCodeSpace(formatter.getNameAuthority()));
                 formatter.newLine();
                 formatter.indent(+1);
                 for (final GeneralParameterValue param : parameters.values()) {

@@ -105,7 +105,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      */
     @Override
     public String getCodeSpace() {
-        return org.apache.sis.metadata.iso.citation.Citations.getCodeSpace(authority);
+        return org.apache.sis.metadata.iso.citation.Citations.toCodeSpace(authority);
     }
 
     /**
