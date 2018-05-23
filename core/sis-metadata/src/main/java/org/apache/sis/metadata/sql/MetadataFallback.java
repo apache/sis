@@ -17,6 +17,8 @@
 package org.apache.sis.metadata.sql;
 
 import org.opengis.util.ControlledVocabulary;
+import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.metadata.ServicesForUtility;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.xml.NilReason;
@@ -72,8 +74,14 @@ final class MetadataFallback extends MetadataSource {
         if (ControlledVocabulary.class.isAssignableFrom(type)) {
             value = getCodeList(type, identifier);
         } else {
-            // TODO: move some code from ServicesForUtility here.
-            return NilReason.MISSING.createNilObject(type);
+            value = null;
+            if (type == Citation.class) {
+                // TODO: move ServicesForUtility code here.
+                value = ServicesForUtility.createCitation(identifier);
+            }
+            if (value == null) {
+                return NilReason.MISSING.createNilObject(type);
+            }
         }
         return type.cast(value);
     }
