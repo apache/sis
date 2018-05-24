@@ -447,7 +447,8 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Empty constructor only used by JAXB.
+     * Constructs an initially empty type describing exactly one value as a string.
+     * See {@link #setValue(String)} for a description of the supported XML content.
      */
     @SuppressWarnings("unused")
     private DefaultRecordType() {
@@ -471,6 +472,17 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
 
     /**
      * Sets the record type value as a string. Current implementation expect one member per line.
+     * A record can be anything, but usages that we have seen so far write a character sequence
+     * of what seems <var>key</var>-<var>description</var> pairs. Examples:
+     *
+     * {@preformat xml
+     *   <gco:RecordType>
+     *     General Meteorological Products: General products include the baseline reflectivity and velocity,
+     *     and also algorithmic graphic products spectrum width, vertical integrated liquid, and VAD wind profile.
+     *   </gco:RecordType>
+     * }
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
     private void setValue(final String value) {
         if (value != null) {

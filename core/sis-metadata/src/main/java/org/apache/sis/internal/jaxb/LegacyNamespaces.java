@@ -66,6 +66,12 @@ public final class LegacyNamespaces {
     public static final String GMD = "http://www.isotc211.org/2005/gmd";
 
     /**
+     * The <code>{@value}</code> URL as an alias for {@link #GMI}.
+     * Was used in some XML files before a more official URL was set.
+     */
+    public static final String GMI_ALIAS = "http://www.isotc211.org/2005/gmi";
+
+    /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gmi"}.
      */
