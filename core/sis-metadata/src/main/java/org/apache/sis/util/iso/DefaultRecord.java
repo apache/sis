@@ -411,7 +411,8 @@ public class DefaultRecord implements Record, Serializable {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Constructs an initially empty record. Used by JAXB.
+     * Constructs an initially empty record expecting exactly one value as a string.
+     * See {@link #setValue(String)} for a description of the supported XML content.
      */
     private DefaultRecord() {
         definition = RecordSchemaSIS.STRING;
@@ -433,7 +434,20 @@ public class DefaultRecord implements Record, Serializable {
     }
 
     /**
-     * Sets the record value as a string.
+     * Sets the record value as a string. This method is invoked at unmarshalling time.
+     * A record can be anything, but usages that we have seen so far write a character
+     * sequence or a code list. Examples:
+     *
+     * {@preformat xml
+     *    <gco:Record>Alphanumeric values: Product is alphanumeric.</gco:Record>
+     *    <gco:Record>Alphanumeric Text: Message contains alphanumeric text.</gco:Record>
+     *    <gco:Record>Part A: Reflectivity presented as a tabular listing of alphanumerics.</gco:Record>
+     *    <gco:Record>
+     *      <gmd:CodeListValue codelist="someURL#DataQualityAssessment" codeListValue="intermediate">intermediate</gmd:CodeListValue>
+     *    </gco:Record>
+     * }
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
     private void setValue(String value) {
         if (value != null && !(value = value.trim()).isEmpty()) {
