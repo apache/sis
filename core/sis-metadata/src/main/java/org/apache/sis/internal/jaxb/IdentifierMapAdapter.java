@@ -98,7 +98,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * An immutable empty instance.
      */
-    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Collections.<Identifier>emptySet());
+    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Collections.emptySet());
 
     /**
      * The identifiers to wrap in a map view.
