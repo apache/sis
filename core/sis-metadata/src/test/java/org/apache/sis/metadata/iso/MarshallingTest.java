@@ -84,12 +84,6 @@ import static org.junit.Assert.*;
  */
 public final class MarshallingTest extends TestUsingFile implements WarningListener<Object> {
     /**
-     * An XML file containing a metadata.
-     * This is mostly an anti-regression test.
-     */
-    private static final String FILENAME = "Metadata.xml";
-
-    /**
      * The marshaller used to handle marshalling the created DefaultMetadata object.
      */
     private final Marshaller marshaller;

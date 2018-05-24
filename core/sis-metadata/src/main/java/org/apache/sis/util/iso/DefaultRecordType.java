@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.InvalidObjectException;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
@@ -37,11 +38,13 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
 
 /**
@@ -86,7 +89,7 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
@@ -448,7 +451,40 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      */
     @SuppressWarnings("unused")
     private DefaultRecordType() {
-        typeName  = null;
-        container = null;
+        final DefaultRecordType type = RecordSchemaSIS.STRING;
+        typeName  = type.typeName;
+        container = type.container;
+    }
+
+    /**
+     * Returns the record type value as a string. Current implementation returns the members with
+     * one member per line, but it may change in any future version for adapting to common practice.
+     */
+    @XmlValue
+    private String getValue() {
+        switch (size()) {
+            case 0:  return null;
+            case 1:  return String.valueOf(memberTypes[0]);
+            default: return toString(null, null);
+        }
+    }
+
+    /**
+     * Sets the record type value as a string. Current implementation expect one member per line.
+     */
+    private void setValue(final String value) {
+        if (value != null) {
+            final Map<MemberName,Type> members = new LinkedHashMap<>();
+            for (CharSequence element : CharSequences.splitOnEOL(value)) {
+                final int s = ((String) element).indexOf(':');
+                if (s >= 0) {
+                    element = element.subSequence(0, CharSequences.skipTrailingWhitespaces(element, 0, s));
+                    // TODO: the part after ":" is the description. For now, we have no room for storing it.
+                }
+                final MemberName m = Names.createMemberName(null, null, element, String.class);
+                members.put(m, RecordSchemaSIS.INSTANCE.toAttributeType(String.class));
+            }
+            memberTypes = computeTransientFields(members);
+        }
     }
 }

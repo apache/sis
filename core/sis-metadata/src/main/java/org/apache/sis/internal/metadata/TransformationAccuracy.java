@@ -34,7 +34,7 @@ import org.apache.sis.util.Static;
  * Creates a record reporting coordinate transformation accuracy.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -44,12 +44,6 @@ public final class TransformationAccuracy extends Static {
      */
     private static final InternationalString TRANSFORMATION_ACCURACY =
             Vocabulary.formatInternational(Vocabulary.Keys.TransformationAccuracy);
-
-    /**
-     * The type of record instances which will hold coordinate transformation accuracy values.
-     */
-    private static final RecordType TYPE = RecordSchemaSIS.INSTANCE.createRecordType("Real",
-            Collections.singletonMap(Vocabulary.formatInternational(Vocabulary.Keys.Value), Double.class));
 
     /**
      * Cache the positional accuracies. Most coordinate operation use a small set of accuracy values.
@@ -72,13 +66,14 @@ public final class TransformationAccuracy extends Static {
     public static PositionalAccuracy create(final Double accuracy) {
         PositionalAccuracy p = CACHE.get(accuracy);
         if (p == null) {
-            final DefaultRecord record = new DefaultRecord(TYPE);
+            final RecordType type = RecordSchemaSIS.REAL;
+            final DefaultRecord record = new DefaultRecord(type);
             record.setAll(accuracy);
 
             final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
             result.setValues(Collections.singletonList(record));
             result.setValueUnit(Units.METRE);              // In metres by definition in the EPSG database.
-            result.setValueType(TYPE);
+            result.setValueType(type);
 
             final DefaultAbsoluteExternalPositionalAccuracy element =
                     new DefaultAbsoluteExternalPositionalAccuracy(result);

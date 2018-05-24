@@ -18,24 +18,43 @@ package org.apache.sis.internal.metadata;
 
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.util.Collections;
+import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.DefaultRecordType;
 import org.apache.sis.util.iso.DefaultRecordSchema;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
  * The system-wide schema in the "SIS" namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
 @SuppressWarnings("serial")  // serialVersionUID not needed because of writeReplace().
-final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {
+public final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {
     /**
      * The schema used in SIS for creating records.
      */
-    static final DefaultRecordSchema INSTANCE = new RecordSchemaSIS();
+    public static final DefaultRecordSchema INSTANCE = new RecordSchemaSIS();
+
+    /**
+     * The type of record instances for holding a {@link String} value.
+     */
+    public static final DefaultRecordType STRING;
+
+    /**
+     * The type of record instances for holding a {@link Double} value.
+     */
+    public static final DefaultRecordType REAL;
+    static {
+        final InternationalString label = Vocabulary.formatInternational(Vocabulary.Keys.Value);
+        STRING = (DefaultRecordType) INSTANCE.createRecordType("CharacterSequence", Collections.singletonMap(label, String.class));
+        REAL   = (DefaultRecordType) INSTANCE.createRecordType("Real",              Collections.singletonMap(label, Double.class));
+    }
 
     /**
      * Creates the unique instance.
@@ -46,6 +65,9 @@ final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable 
 
     /**
      * On serialization, returns a proxy which will be resolved as {@link #INSTANCE} on deserialization.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     protected Object writeReplace() throws ObjectStreamException {
         return new Proxy();
