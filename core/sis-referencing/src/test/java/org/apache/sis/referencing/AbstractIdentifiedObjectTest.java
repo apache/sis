@@ -134,7 +134,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      */
     @Test
     public void testWithoutIdentifier() {
-        final Set<Identifier>          identifiers = Collections.<Identifier>emptySet();
+        final Set<Identifier>          identifiers = Collections.emptySet();
         final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
         final Identifier               gmlId       = validate(object, identifiers, "GRS1980");
         assertNull("gmlId", gmlId);

@@ -49,8 +49,7 @@ public final class TransformationAccuracy extends Static {
      * The type of record instances which will hold coordinate transformation accuracy values.
      */
     private static final RecordType TYPE = RecordSchemaSIS.INSTANCE.createRecordType("Real",
-            Collections.<CharSequence,Class<?>>singletonMap(
-                    Vocabulary.formatInternational(Vocabulary.Keys.Value), Double.class));
+            Collections.singletonMap(Vocabulary.formatInternational(Vocabulary.Keys.Value), Double.class));
 
     /**
      * Cache the positional accuracies. Most coordinate operation use a small set of accuracy values.
