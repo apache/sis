@@ -47,6 +47,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
@@ -74,14 +75,19 @@ import org.apache.sis.storage.event.ChangeListener;
  * @since   0.8
  * @module
  */
-class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path> {
+class Store extends DataStore implements StoreResource, Aggregate, DirectoryStream.Filter<Path> {
+    /**
+     * The data store for the root directory specified by the user.
+     */
+    private final DataStore originator;
+
     /**
      * The {@link FolderStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
     protected final Path location;
 
     /**
-     * Formating conventions of dates and numbers, or {@code null} if unspecified.
+     * Formatting conventions of dates and numbers, or {@code null} if unspecified.
      */
     protected final Locale locale;
 
@@ -147,11 +153,12 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
             throws DataStoreException, IOException
     {
         super(provider, connector);
-        location = path;
-        locale   = connector.getOption(OptionKey.LOCALE);
-        timezone = connector.getOption(OptionKey.TIMEZONE);
-        encoding = connector.getOption(OptionKey.ENCODING);
-        children = new ConcurrentHashMap<>();
+        originator = this;
+        location   = path;
+        locale     = connector.getOption(OptionKey.LOCALE);
+        timezone   = connector.getOption(OptionKey.TIMEZONE);
+        encoding   = connector.getOption(OptionKey.ENCODING);
+        children   = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
     }
@@ -165,12 +172,21 @@ class Store extends DataStore implements Aggregate, DirectoryStream.Filter<Path>
      */
     private Store(final Store parent, final StorageConnector connector) throws DataStoreException {
         super(parent, connector);
+        originator        = parent;
         location          = connector.getStorageAs(Path.class);
         locale            = connector.getOption(OptionKey.LOCALE);
         timezone          = connector.getOption(OptionKey.TIMEZONE);
         encoding          = connector.getOption(OptionKey.ENCODING);
         children          = parent.children;
         componentProvider = parent.componentProvider;
+    }
+
+    /**
+     * Returns the data store for the root directory specified by the user.
+     */
+    @Override
+    public DataStore getOriginator() {
+        return originator;
     }
 
     /**
