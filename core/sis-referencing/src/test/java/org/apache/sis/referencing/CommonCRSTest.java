@@ -229,7 +229,7 @@ public final strictfp class CommonCRSTest extends TestCase {
             final String        name  = e.name();
             final VerticalDatum datum = e.datum();
             final VerticalCRS   crs   = e.crs();
-            if (e.isEPSG) {
+            if (e.isEPSG && !name.startsWith("NAV")) {
                 /*
                  * BAROMETRIC, ELLIPSOIDAL and OTHER_SURFACE uses an axis named "Height", which is not
                  * a valid axis name according ISO 19111. We skip the validation test for those enums.
