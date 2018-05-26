@@ -47,11 +47,13 @@ public final class StoreProvider extends AbstractProvider {
      */
     public StoreProvider() {
         super(null);
-        mimeForNameSpaces.put(Namespaces.GML, "application/gml+xml");
-        mimeForNameSpaces.put(Namespaces.CSW, "application/vnd.ogc.csw_xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMD, "application/vnd.iso.19139+xml");
+        mimeForNameSpaces.put(      Namespaces.GML,       "application/gml+xml");
+        mimeForNameSpaces.put(      Namespaces.CSW,       "application/vnd.ogc.csw_xml");
+        mimeForNameSpaces.put(LegacyNamespaces.GMD,       "application/vnd.iso.19139+xml");
+        mimeForNameSpaces.put(LegacyNamespaces.GMI,       "application/vnd.iso.19139+xml");
+        mimeForNameSpaces.put(LegacyNamespaces.GMI_ALIAS, "application/vnd.iso.19139+xml");
+        mimeForRootElements.put("MD_Metadata",            "application/vnd.iso.19139+xml");
         // More types to be added in future versions.
-        mimeForRootElements.put("MD_Metadata", "application/vnd.iso.19139+xml");
     }
 
     /**

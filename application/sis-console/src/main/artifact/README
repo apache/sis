@@ -13,7 +13,7 @@ project logo are trademarks of The Apache Software Foundation.
 Installation
 ============
 
-SIS is based on Java 7 and provided as a unique standalone JAR file.
+SIS is based on Java 8 and provided as a unique standalone JAR file.
 
 Unix
 ----

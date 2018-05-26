@@ -70,7 +70,7 @@ import org.apache.sis.util.logging.Logging;
  * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -422,9 +422,10 @@ public abstract class Initializer {
      * This message can be used for constructing an exception when {@link #getDataSource()} returned {@code null}.
      *
      * @param  locale  the locale for the message to produce, or {@code null} for the default one.
+     * @param  asLog   {@code true} for returning the message as a {@link LogRecord}, {@code false} for a {@link String}.
      * @return message for unspecified data source.
      */
-    public static String unspecified(final Locale locale) {
+    public static Object unspecified(final Locale locale, final boolean asLog) {
         final short key;
         final String value;
         if (hasJNDI()) {
@@ -434,7 +435,8 @@ public abstract class Initializer {
             key = Messages.Keys.DataDirectoryNotSpecified_1;
             value = DataDirectory.ENV;
         }
-        return Messages.getResources(locale).getString(key, value);
+        final Messages resources = Messages.getResources(locale);
+        return asLog ? resources.getLogRecord(Level.WARNING, key, value) : resources.getString(key, value);
     }
 
     /**
@@ -486,7 +488,7 @@ public abstract class Initializer {
      */
     private static DataSource forJavaDB(final String path, final ClassLoader loader) throws Exception {
         final Class<?> c = Class.forName("org.apache.derby.jdbc.EmbeddedDataSource", true, loader);
-        final DataSource ds = (DataSource) c.newInstance();
+        final DataSource ds = (DataSource) c.getConstructor().newInstance();
         final Class<?>[] args = {String.class};
         c.getMethod("setDatabaseName", args).invoke(ds, path);
         c.getMethod("setDataSourceName", args).invoke(ds, "Apache SIS spatial metadata");

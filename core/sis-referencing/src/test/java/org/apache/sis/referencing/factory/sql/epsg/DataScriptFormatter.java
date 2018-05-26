@@ -38,6 +38,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
 
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * Rewrites the {@code INSERT TO ...} statements in a SQL script in a more compact form.
@@ -46,7 +48,7 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
  * The steps to follow are documented in the {@code package.html} file.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -189,13 +191,42 @@ public final class DataScriptFormatter extends ScriptRunner {
 
     /**
      * EPSG scripts version 8.9 seems to have 2 errors where the {@code OBJECT_TABLE_NAME} column contains
-     * {@code "AxisName"} instead of {@code "Coordinate Axis Name"}.
+     * {@code "AxisName"} instead of {@code "Coordinate Axis Name"}. Furthermore the version number noted
+     * in the history table is a copy-and-paste error.
      */
     @Override
     @Workaround(library="EPSG", version="8.9")
-    protected void editText(final StringBuilder sql, int lower, final int upper) {
-        if (upper - lower == 10 && CharSequences.regionMatches(sql, ++lower, "AxisName")) {
-            sql.replace(lower, upper-1, "Coordinate Axis Name");
+    protected void editText(final StringBuilder sql, int lower, int upper) {
+        final String table;         // Name of the table where to replace a value.
+        final String before;        // String that must exist before the value to replace, or null if none.
+        final String oldValue;      // The old value to replace.
+        final String newValue;      // The new value.
+        switch (upper - lower) {    // Optimization for reducing the amount of comparison.
+            default: return;
+            case 10: {
+                table    = "epsg_deprecation";
+                before   = null;
+                oldValue = "AxisName";
+                newValue = "Coordinate Axis Name";
+                break;
+            }
+            case 38: {
+                table    = "epsg_versionhistory";
+                before   = "'8.9'";
+                oldValue = "Version 8.8 full release of Dataset.";
+                newValue = "Version 8.9 full release of Dataset.";
+                break;
+            }
+        }
+        if (CharSequences.regionMatches(sql, ++lower, oldValue) &&
+            CharSequences.regionMatches(sql, 0, "INSERT INTO " + table + " VALUES"))
+        {
+            assertEquals("oldValue.length", oldValue.length(), --upper - lower);
+            if (before != null) {
+                final int i = sql.indexOf(before);
+                if (i < 0 || i >= lower) return;
+            }
+            sql.replace(lower, upper, newValue);
         }
     }
 

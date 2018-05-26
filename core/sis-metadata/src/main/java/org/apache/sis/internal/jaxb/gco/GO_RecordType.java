@@ -86,7 +86,9 @@ public class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
      * @param  metadata  the unmarshalled metadata.
      */
     public final void setElement(final DefaultRecordType metadata) {
-        this.metadata = metadata;
+        if (!metadata.getMembers().isEmpty()) {
+            this.metadata = metadata;
+        }
     }
 
     /**
