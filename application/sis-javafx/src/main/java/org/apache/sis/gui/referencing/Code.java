@@ -14,37 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.crs;
+package org.apache.sis.gui.referencing;
 
-import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.FactoryException;
 
 
 /**
- * This element stores the {@linkplain #code code value}.
- * The description name will be fetched when first needed and returned by {@link #toString}.
+ * Stores the code of a coordinate reference system (CRS) together with its description.
+ * The description will be fetched when first needed and returned by {@link #toString()}.
  *
- * @author Martin Desruisseaux (IRD)
- * @version 0.8
- * @since   0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 final class Code {
-
     /**
-     * The authority code.
+     * The CRS code. Usually defined by EPSG, but other authorities are allowed.
      */
-    public final String code;
+    final String code;
 
     /**
-     * The CRS object description for the {@linkplain #code}.
-     * Will be extracted only when first needed.
+     * The CRS object description for the {@linkplain #code}, fetched when first needed.
+     * In Apache SIS implementation of EPSG factory, this is the CRS name.
      */
     private String name;
-
-    private String description;
 
     /**
      * The authority factory to use for fetching the name. Will be set to {@code null} after
@@ -55,39 +52,29 @@ final class Code {
 
     /**
      * Creates a code from the specified value.
-     *
-     * @param factory The authority factory.
-     * @param code The authority code.
      */
-    public Code(final AuthorityFactory factory, final String code) {
-        ArgumentChecks.ensureNonNull("factory", factory);
-        ArgumentChecks.ensureNonNull("code", code);
+    Code(final AuthorityFactory factory, final String code) {
         this.factory = factory;
         this.code    = code;
     }
 
     /**
      * Create the Object identified by code.
-     *
-     * @return IdentifiedObject
-     * @throws FactoryException
      */
-    public IdentifiedObject createObject() throws FactoryException{
+    IdentifiedObject createObject() throws FactoryException{
         return factory.createObject(code);
     }
 
     /**
      * Returns a description of the object.
-     *
-     * @return
      */
-    public String getDescription(){
-        if (description == null) try {
-            description = factory.getDescriptionText(code).toString();
+    public String getDescription() {
+        if (name == null) try {
+            name = factory.getDescriptionText(code).toString();
         } catch (FactoryException e) {
-            description = e.getLocalizedMessage();
+            name = e.getLocalizedMessage();
         }
-        return description;
+        return name;
     }
 
     /**
@@ -97,9 +84,6 @@ final class Code {
      */
     @Override
     public String toString() {
-        if (name == null) {
-            name = code + " - "+getDescription();
-        }
-        return name;
+        return code + " - " + getDescription();
     }
 }

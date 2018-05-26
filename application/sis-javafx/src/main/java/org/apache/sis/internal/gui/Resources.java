@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui;
+package org.apache.sis.internal.gui;
 
 import java.net.URL;
 import java.util.Locale;
@@ -27,13 +27,13 @@ import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
- * Warning and error messages that are specific to the {@code sis-storage} module.
+ * Messages that are specific to the {@code sis-javafx} module.
  * Resources in this file should not be used by any other module. For resources shared by
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public final class Resources extends IndexedResourceBundle {
@@ -42,10 +42,6 @@ public final class Resources extends IndexedResourceBundle {
      * {@code Keys} should appear in any resulting class files. Since the Java compiler
      * inlines final integer values, using long identifiers will not bloat the constant
      * pools of compiled classes.
-     *
-     * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
-     * @module
      */
     @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
@@ -81,7 +77,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Description = 2;
 
         /**
-         * Logitude first
+         * Longitude first
          */
         public static final short LongitudeFirst = 5;
     }
