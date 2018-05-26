@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.crs;
+package org.apache.sis.gui.referencing;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -28,20 +28,21 @@ import javafx.scene.layout.BorderPane;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 
+
 /**
  * Small panel to display an object as WKT in various conventions.
  *
- * @author Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-class FormattableObjectPane extends BorderPane {
+final class WKTPane extends BorderPane {
 
     private final ChoiceBox<Convention> choice = new ChoiceBox<>(FXCollections.observableArrayList(Convention.values()));
     private final TextArea text = new TextArea();
 
-    public FormattableObjectPane(final FormattableObject obj) {
+    public WKTPane(final FormattableObject obj) {
         setTop(choice);
         setCenter(text);
 
@@ -55,7 +56,7 @@ class FormattableObjectPane extends BorderPane {
     }
 
     public static void showDialog(Object parent, FormattableObject candidate){
-        final FormattableObjectPane chooser = new FormattableObjectPane(candidate);
+        final WKTPane chooser = new WKTPane(candidate);
 
         final Alert alert = new Alert(Alert.AlertType.NONE);
         final DialogPane pane = alert.getDialogPane();
@@ -64,5 +65,4 @@ class FormattableObjectPane extends BorderPane {
         alert.setResizable(true);
         alert.showAndWait();
     }
-
 }
