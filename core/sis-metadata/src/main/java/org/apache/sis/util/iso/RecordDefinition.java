@@ -48,7 +48,7 @@ import org.apache.sis.internal.simple.SimpleAttributeType;
  * {@link #computeTransientFields(Map)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -233,7 +233,7 @@ abstract class RecordDefinition {                                       // Inten
     /**
      * Returns a string representation of a {@code Record} or {@code RecordType}.
      *
-     * @param  head    either {@code "Record"} or {@code "RecordType"}.
+     * @param  head    either {@code "Record"} or {@code "RecordType"} or {@code null}.
      * @param  values  the values as an array, or {@code null} for writing the types instead.
      * @return the string representation.
      */
@@ -241,20 +241,30 @@ abstract class RecordDefinition {                                       // Inten
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
         final String[] names = new String[size()];
+        final String margin;
         int width = 0;
-        buffer.append(head).append("[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);
         for (int i=0; i<names.length; i++) {
             width = Math.max(width, (names[i] = members[i].toString()).length());
         }
+        if (head == null) {
+            width  = 0;         // Ignore the width computation, but we still need the names in the array.
+            margin = "";
+        } else {
+            buffer.append(head).append("[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);
+            margin = "    ";
+        }
         for (int i=0; i<names.length; i++) {
             final String name = names[i];
-            buffer.append("    ").append(name);
+            buffer.append(margin).append(name);
             final Object value = (values != null) ? Array.get(values, i) : members[i].getAttributeType();
             if (value != null) {
                 buffer.append(CharSequences.spaces(width - name.length())).append(" : ").append(value);
             }
             buffer.append(lineSeparator);
         }
-        return buffer.append('}').append(lineSeparator).toString();
+        if (head != null) {
+            buffer.append('}').append(lineSeparator);
+        }
+        return buffer.toString();
     }
 }

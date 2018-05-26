@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.InvalidObjectException;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
@@ -36,11 +37,13 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
 
 /**
@@ -85,7 +88,7 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
@@ -443,11 +446,56 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Empty constructor only used by JAXB.
+     * Constructs an initially empty type describing exactly one value as a string.
+     * See {@link #setValue(String)} for a description of the supported XML content.
      */
     @SuppressWarnings("unused")
     private DefaultRecordType() {
-        typeName  = null;
-        container = null;
+        final DefaultRecordType type = RecordSchemaSIS.STRING;
+        typeName  = type.typeName;
+        container = type.container;
+    }
+
+    /**
+     * Returns the record type value as a string. Current implementation returns the members with
+     * one member per line, but it may change in any future version for adapting to common practice.
+     */
+    @XmlValue
+    private String getValue() {
+        switch (size()) {
+            case 0:  return null;
+            case 1:  return String.valueOf(memberTypes[0]);
+            default: return toString(null, null);
+        }
+    }
+
+    /**
+     * Sets the record type value as a string. Current implementation expect one member per line.
+     * A record can be anything, but usages that we have seen so far write a character sequence
+     * of what seems <var>key</var>-<var>description</var> pairs. Examples:
+     *
+     * {@preformat xml
+     *   <gco:RecordType>
+     *     General Meteorological Products: General products include the baseline reflectivity and velocity,
+     *     and also algorithmic graphic products spectrum width, vertical integrated liquid, and VAD wind profile.
+     *   </gco:RecordType>
+     * }
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
+     */
+    private void setValue(final String value) {
+        if (value != null) {
+            final Map<MemberName,Type> members = new LinkedHashMap<>();
+            for (CharSequence element : CharSequences.splitOnEOL(value)) {
+                final int s = ((String) element).indexOf(':');
+                if (s >= 0) {
+                    element = element.subSequence(0, CharSequences.skipTrailingWhitespaces(element, 0, s));
+                    // TODO: the part after ":" is the description. For now, we have no room for storing it.
+                }
+                final MemberName m = Names.createMemberName(null, null, element, String.class);
+                members.put(m, RecordSchemaSIS.INSTANCE.toAttributeType(String.class));
+            }
+            memberTypes = computeTransientFields(members);
+        }
     }
 }

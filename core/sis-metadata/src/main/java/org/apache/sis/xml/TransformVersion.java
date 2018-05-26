@@ -77,9 +77,10 @@ final class TransformVersion {
          * this rule is the "gco" namespace, because our reader renames only element namespaces while we need to
          * rename also attributes in "gco" namespace (e.g. "gco:nilReason").
          */
-        ISO19139.addSurjective(Namespaces.SRV, LegacyNamespaces.SRV);
-        ISO19139.addSurjective(Namespaces.GCX, LegacyNamespaces.GMX);
-        ISO19139.addBijective (Namespaces.GCO, LegacyNamespaces.GCO);
+        ISO19139.addSurjective (Namespaces.SRV, LegacyNamespaces.SRV);
+        ISO19139.addSurjective (Namespaces.GCX, LegacyNamespaces.GMX);
+        ISO19139.addBijective  (Namespaces.GCO, LegacyNamespaces.GCO);
+        ISO19139.addAlias(LegacyNamespaces.GMI, LegacyNamespaces.GMI_ALIAS);
     }
 
     /**
@@ -138,6 +139,14 @@ final class TransformVersion {
     private TransformVersion(final TransformVersion first) {
         exports = new HashMap<>(first.exports);
         imports = new HashMap<>(first.imports);
+    }
+
+    /**
+     * Adds a namespace to be considered as an alias of another namespace.
+     * The aliases are usually non-official URL and should not be used in exports.
+     */
+    private void addAlias(final String standard, final String alias) {
+        imports.put(alias, standard);
     }
 
     /**

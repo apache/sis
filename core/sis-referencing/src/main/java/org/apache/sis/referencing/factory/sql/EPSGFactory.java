@@ -268,7 +268,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         if (ds == null) try {
             ds = Initializer.getDataSource();
             if (ds == null) {
-                throw new UnavailableFactoryException(Initializer.unspecified(locale));
+                throw new UnavailableFactoryException(String.valueOf(Initializer.unspecified(locale, false)));
             }
         } catch (Exception e) {
             throw new UnavailableFactoryException(canNotUse(e), e);

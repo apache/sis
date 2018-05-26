@@ -217,7 +217,7 @@ public final class CollectionsExt extends Static {
      * @return the given collection, or an empty set if the given collection was null.
      */
     public static <E> Collection<E> nonNull(final Collection<E> c) {
-        return (c != null) ? c : Collections.<E>emptySet();
+        return (c != null) ? c : Collections.emptySet();
     }
 
     /**
@@ -228,7 +228,7 @@ public final class CollectionsExt extends Static {
      * @return the given collection, or an empty set if the given collection was null.
      */
     public static <E> Set<E> nonNull(final Set<E> c) {
-        return (c != null) ? c : Collections.<E>emptySet();
+        return (c != null) ? c : Collections.emptySet();
     }
 
     /**

@@ -44,7 +44,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * @since   0.8
  * @module
  */
-public abstract class URIDataStore extends DataStore {
+public abstract class URIDataStore extends DataStore implements StoreResource {
     /**
      * The {@link DataStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
@@ -60,6 +60,16 @@ public abstract class URIDataStore extends DataStore {
     protected URIDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         location = connector.getStorageAs(URI.class);
+    }
+
+    /**
+     * Returns the originator of this resource, which is this data store itself.
+     *
+     * @return {@code this}.
+     */
+    @Override
+    public final DataStore getOriginator() {
+        return this;
     }
 
     /**
