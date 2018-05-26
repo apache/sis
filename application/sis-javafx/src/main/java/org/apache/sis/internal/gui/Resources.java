@@ -56,9 +56,6 @@ public final class Resources extends IndexedResourceBundle {
         private Keys() {
         }
 
-        /**
-         * Axis convention
-         */
         public static final short AxisConvention = 3;
 
         /**
@@ -76,9 +73,6 @@ public final class Resources extends IndexedResourceBundle {
          */
         public static final short Description = 2;
 
-        /**
-         * Longitude first
-         */
         public static final short LongitudeFirst = 5;
     }
 
