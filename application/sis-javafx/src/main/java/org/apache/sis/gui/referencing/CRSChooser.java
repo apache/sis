@@ -22,30 +22,22 @@ import java.io.UncheckedIOException;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.gui.FXUtilities;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.AbstractCRS;
 
 
 /**
- * Widget configuration panel used to select a {@link CoordinateReferenceSystem}.
+ * A list of Coordinate Reference Systems (CRS) from which the user can select.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -53,15 +45,10 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 public class CRSChooser extends BorderPane {
 
     @FXML
-    private CheckBox uiLongFirst;
-    @FXML
-    private CheckBox uiAxisConv;
-    @FXML
     private BorderPane uiPane;
+
     @FXML
     private TextField uiSearch;
-    @FXML
-    private ChoiceBox<AxesConvention> uiChoice;
 
     private CRSTable uiTable;
 
@@ -96,30 +83,6 @@ public class CRSChooser extends BorderPane {
                 updateText = false;
             }
         });
-
-        uiChoice.setItems(FXCollections.observableArrayList(AxesConvention.values()));
-
-    }
-
-    private CoordinateReferenceSystem getCorrectedCRS(){
-        CoordinateReferenceSystem crs = crsProperty.get();
-        if (crs == null) return null;
-
-        try {
-            Integer epsg = IdentifiedObjects.lookupEPSG(crs);
-            if (epsg != null) {
-                crs = CRS.forCode("EPSG:" + epsg);
-                if (uiLongFirst.isSelected()) {
-                    crs = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
-                }
-            }
-        } catch (FactoryException ex) {
-            // TODO
-        }
-        if (uiAxisConv.isSelected() && crs instanceof DefaultGeographicCRS && uiChoice.getValue() != null) {
-            crs = ((DefaultGeographicCRS) crs).forConvention(uiChoice.getValue());
-        }
-        return crs;
     }
 
     /**
@@ -149,6 +112,6 @@ public class CRSChooser extends BorderPane {
         alert.getButtonTypes().setAll(ButtonType.OK,ButtonType.CANCEL);
         alert.setResizable(true);
         final ButtonType res = alert.showAndWait().orElse(ButtonType.CANCEL);
-        return res == ButtonType.CANCEL ? null : chooser.getCorrectedCRS();
+        return res == ButtonType.CANCEL ? null : chooser.crsProperty.get();
     }
 }
