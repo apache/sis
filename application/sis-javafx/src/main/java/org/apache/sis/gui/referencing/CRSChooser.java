@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.referencing;
 
-import java.util.Locale;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import javafx.beans.property.ObjectProperty;
@@ -60,7 +59,7 @@ public class CRSChooser extends BorderPane {
      */
     public CRSChooser() {
         try {
-            FXUtilities.loadJRXML(this, CRSChooser.class, Locale.getDefault());
+            FXUtilities.loadJRXML(this, CRSChooser.class);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

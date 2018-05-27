@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -33,7 +35,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import org.apache.sis.internal.storage.folder.FolderStoreProvider;
@@ -54,8 +56,7 @@ import org.apache.sis.storage.StorageConnector;
 public class ResourceView {
 
     private final TreeItem<Label> root = new TreeItem<>(new Label("Files"));
-    private final TreeView<Label> resources = new TreeView<>(root);
-    public final BorderPane pane = new BorderPane();
+    public final SplitPane pane = new SplitPane();
     private final Map<Label, TreeItem<?>> labelToItem = new HashMap<>();
 
     // TODO: What is that?
@@ -68,6 +69,7 @@ public class ResourceView {
         final VBox dragTarget = new VBox();
 
         root.setExpanded(true);
+        final TreeView<Label> resources = new TreeView<>(root);
         resources.setStyle("-fx-background-color: rgba(77, 201, 68, 0.4);");
         resources.setShowRoot(false);
 
@@ -98,9 +100,25 @@ public class ResourceView {
             event.setDropCompleted(success);
             event.consume();
         });
+        pane.getItems().add(resources);
+    }
 
-        pane.setLeft(resources);
-        pane.setCenter(null);
+    private MetadataOverview getContent() {
+        final ObservableList<Node> items = pane.getItems();
+        if (items.size() >= 2) {
+            return (MetadataOverview) items.get(1);
+        } else {
+            return null;
+        }
+    }
+
+    private void setContent(final MetadataOverview content) {
+        final ObservableList<Node> items = pane.getItems();
+        if (items.size() >= 2) {
+            items.set(1, content);
+        } else {
+            items.add(content);
+        }
     }
 
     private void addContextMenu(Label lab) {
@@ -109,9 +127,10 @@ public class ResourceView {
             root.getChildren().remove(labelToItem.get(lab));
             labelToItem.remove(lab);
             LABINTRV.remove(lab.getId());
-            if (pane.getCenter() != null) {
-                if (lab.getId().equals(((MetadataOverview) pane.getCenter()).getFromFile())) {
-                    pane.setCenter(null);
+            final MetadataOverview content = getContent();
+            if (content != null) {
+                if (lab.getId().equals(content.getFromFile())) {
+                    setContent(null);
                 }
             }
         });
@@ -158,7 +177,7 @@ public class ResourceView {
         try {
             DataStore ds = DataStores.open(filePath);
             meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), filePath);
-            pane.setCenter(meta);
+            setContent(meta);
         } catch (DataStoreException e) {
             final Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("An error was occur");
@@ -176,7 +195,7 @@ public class ResourceView {
         MetadataOverview meta;
         try {
             meta = new MetadataOverview(((DefaultMetadata) res.getMetadata()), filePath);
-            pane.setCenter(meta);
+            setContent(meta);
         } catch (DataStoreException e) {
             final Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("An error was occur");
@@ -190,7 +209,19 @@ public class ResourceView {
         }
     }
 
-    public void openFile(File f) {
+    public void open(final List<File> files) {
+        if (files != null) {
+            for (final File file : files) {
+                if (file.isDirectory()) {
+                    openDirectory(file);
+                } else {
+                    openFile(file);
+                }
+            }
+        }
+    }
+
+    private void openFile(File f) {
         if (checkMetaPanel(f.getAbsolutePath())) {
             Label label = new Label(f.getName());
             label.setId(f.getAbsolutePath());
@@ -210,7 +241,7 @@ public class ResourceView {
         }
     }
 
-    public void openDirectory(File firstFile) {
+    private void openDirectory(File firstFile) {
         if (!LABINTRV.contains("[Aggregate] " + firstFile.getName())) {
             DataStore resource = null;
             try {
@@ -234,9 +265,10 @@ public class ResourceView {
                     root.getChildren().remove(labelToItem.get(cl));
                     labelToItem.remove(cl);
                     LABINTRV.remove(parent.getText());
-                    if (pane.getCenter() != null) {
-                        if (parent.getId().equals(((MetadataOverview) pane.getCenter()).getFromFile())) {
-                            pane.setCenter(null);
+                    final MetadataOverview content = getContent();
+                    if (content != null) {
+                        if (parent.getId().equals(content.getFromFile())) {
+                            setContent(null);
                         }
                     }
                 });
@@ -276,7 +308,7 @@ public class ResourceView {
                     elem.getValue().setTextFill(Color.RED);
                 }
             });
-            pane.setCenter(null);
+            setContent(null);
         }
     }
 }
