@@ -47,11 +47,11 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.util.Callback;
-import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.FontGlyphs;
 import org.apache.sis.internal.gui.FXUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -278,7 +278,7 @@ final class CRSTable extends ScrollPane {
     private static class CodeColumn extends TableColumn<Code, String> {
 
         public CodeColumn() {
-            super(Resources.format(Resources.Keys.Code));
+            super(Vocabulary.format(Vocabulary.Keys.Code));
             setEditable(false);
             setPrefWidth(150);
             setCellValueFactory((TableColumn.CellDataFeatures<Code, String> param) -> new SimpleObjectProperty<>(param.getValue().code));
@@ -289,7 +289,7 @@ final class CRSTable extends ScrollPane {
     private static class DescColumn extends TableColumn<Code, String> {
 
         public DescColumn() {
-            super(Resources.format(Resources.Keys.Description));
+            super(Vocabulary.format(Vocabulary.Keys.Description));
             setEditable(false);
             setCellValueFactory((TableColumn.CellDataFeatures<Code, String> param) ->
                     new SimpleObjectProperty<>(param.getValue().getDescription()));

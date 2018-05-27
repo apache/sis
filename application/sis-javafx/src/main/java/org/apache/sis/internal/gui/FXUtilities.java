@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.util.Locale;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -76,12 +75,10 @@ public final class FXUtilities {
      *
      * @param  target  the widget for which to load the JRXML file.
      * @param  loader  the class to use for loading the file.
-     * @param  locale  the locale for the resources.
      * @throws IOException if an error occurred while loading the JRXML file.
      */
-    public static void loadJRXML(final Parent target, final Class<?> loader, final Locale locale) throws IOException {
-        final FXMLLoader fxl = new FXMLLoader(loader.getResource(loader.getSimpleName() + ".fxml"),
-                                              Resources.forLocale(locale));
+    public static void loadJRXML(final Parent target, final Class<?> loader) throws IOException {
+        final FXMLLoader fxl = new FXMLLoader(loader.getResource(loader.getSimpleName() + ".fxml"), Resources.getInstance());
         fxl.setRoot(target);
         fxl.setController(target);
         /*

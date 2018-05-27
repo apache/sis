@@ -17,13 +17,10 @@
 package org.apache.sis.internal.gui;
 
 import java.net.URL;
-import java.util.Locale;
 import java.util.MissingResourceException;
 import javax.annotation.Generated;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
-import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
@@ -56,24 +53,25 @@ public final class Resources extends IndexedResourceBundle {
         private Keys() {
         }
 
-        public static final short AxisConvention = 3;
+        /**
+         * All files
+         */
+        public static final short AllFiles = 3;
 
         /**
-         * CRS
+         * Coordinate Reference Systems
          */
-        public static final short CRS = 4;
+        public static final short CRSs = 1;
 
         /**
-         * Code
+         * Geospatial data files
          */
-        public static final short Code = 1;
+        public static final short GeospatialFiles = 4;
 
         /**
-         * Description
+         * Open data file
          */
-        public static final short Description = 2;
-
-        public static final short LongitudeFirst = 5;
+        public static final short OpenDataFile = 2;
     }
 
     /**
@@ -97,14 +95,13 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Returns resources in the given locale.
+     * Returns resources in the default locale.
      *
-     * @param  locale  the locale, or {@code null} for the default locale.
-     * @return resources in the given locale.
+     * @return resources in the default locale.
      * @throws MissingResourceException if resources can not be found.
      */
-    public static Resources forLocale(final Locale locale) throws MissingResourceException {
-        return getBundle(Resources.class, locale);
+    public static Resources getInstance() throws MissingResourceException {
+        return getBundle(Resources.class, null);
     }
 
     /**
@@ -115,7 +112,7 @@ public final class Resources extends IndexedResourceBundle {
      * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return forLocale(null).getString(key);
+        return getInstance().getString(key);
     }
 
     /**
@@ -130,7 +127,7 @@ public final class Resources extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return forLocale(null).getString(key, arg0);
+        return getInstance().getString(key, arg0);
     }
 
     /**
@@ -147,7 +144,7 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return forLocale(null).getString(key, arg0, arg1);
+        return getInstance().getString(key, arg0, arg1);
     }
 
     /**
@@ -166,45 +163,6 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return forLocale(null).getString(key, arg0, arg1, arg2);
-    }
-
-    /**
-     * The international string to be returned by {@link formatInternational}.
-     */
-    private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = -7265791441872360274L;
-
-        International(short key)                           {super(key);}
-        International(short key, Object args)              {super(key, args);}
-        @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
-        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
-            return forLocale(locale);
-        }
-    }
-
-    /**
-     * Gets an international string for the given key. This method does not check for the key
-     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
-     * when a {@link InternationalString#toString(Locale)} method is invoked.
-     *
-     * @param  key  the key for the desired string.
-     * @return an international string for the given key.
-     */
-    public static InternationalString formatInternational(final short key) {
-        return new International(key);
-    }
-
-    /**
-     * Gets an international string for the given key. This method does not check for the key
-     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
-     * when a {@link InternationalString#toString(Locale)} method is invoked.
-     *
-     * @param  key   the key for the desired string.
-     * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
-     * @return an international string for the given key.
-     */
-    public static InternationalString formatInternational(final short key, final Object... args) {
-        return new International(key, args);
+        return getInstance().getString(key, arg0, arg1, arg2);
     }
 }

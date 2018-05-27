@@ -16,7 +16,11 @@
  */
 package org.apache.sis.gui;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -29,10 +33,19 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.sis.gui.metadata.ResourceView;
+import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.StoreMetadata;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.DataStores;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
  * Entry point for Apache SIS application.
+ * Current implementation shows a {@link ResourceView} on which user can drop the files to open.
+ * The content shown by this {@code Main} class may change in any future Apache SIS version.
  *
  * @author  Smaniotto Enzo
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,9 +61,17 @@ public class Main extends Application {
 
     /**
      * The main content of this application. For now this is the metadata viewer.
-     * In a future version it will be another component.
+     * In a future version it may be another component.
      */
     private ResourceView content;
+
+    /**
+     * The file filters to use in the dialog box shown by the "File" ▶ "Open" menu.
+     * This array is created when first needed.
+     *
+     * @see #createFileFilters()
+     */
+    private FileChooser.ExtensionFilter[] openFilters;
 
     /**
      * Creates a new Apache SIS application.
@@ -67,22 +88,25 @@ public class Main extends Application {
     @Override
     public void start(final Stage window) {
         this.window = window;
+        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
         /*
-         * Configure the menu bar.
+         * Configure the menu bar. For most menu item, the action is to invoke a method
+         * of the same name in this application class (e.g. open()).
          */
         final MenuBar menus = new MenuBar();
-        final Menu file = new Menu("File");                                 // TODO: localize
+        final Menu file = new Menu(vocabulary.getString(Vocabulary.Keys.File));
+        {
+            final MenuItem open = new MenuItem(vocabulary.getMenuLabel(Vocabulary.Keys.Open));
+            open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
+            open.setOnAction(e -> open());
+
+            final MenuItem exit = new MenuItem(vocabulary.getString(Vocabulary.Keys.Exit));
+            exit.setOnAction(e -> Platform.exit());
+            file.getItems().addAll(open, new SeparatorMenuItem(), exit);
+        }
         menus.getMenus().add(file);
-
-        final MenuItem open = new MenuItem("Open…");                        // TODO: localize
-        open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
-        open.setOnAction(e -> open());
-
-        final MenuItem exit = new MenuItem("Exit");                         // TODO: localize
-        exit.setOnAction(e -> Platform.exit());
-        file.getItems().addAll(open, new SeparatorMenuItem(), exit);
         /*
-         *
+         * Set the main content and show.
          */
         content = new ResourceView();
         final BorderPane pane = new BorderPane();
@@ -97,19 +121,65 @@ public class Main extends Application {
     }
 
     /**
-     * Invoked when the user selected "File / open" menu.
+     * Creates the file filters for the dialog box to shown in "File" ▶ "Open" and "File" ▶ "Save" menus.
+     *
+     * @todo Iterate only over the classes in JDK9, without initializing the providers.
      */
-    private void open() {
-        final FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open data file");                         // TODO: localize
-        File fileByChooser = fileChooser.showOpenDialog(window);
-        if (fileByChooser != null) {
-            if (fileByChooser.isDirectory()) {
-                content.openDirectory(fileByChooser);
-            } else {
-                content.openFile(fileByChooser);
+    private void createFileFilters() {
+        final Resources res = Resources.getInstance();
+        final Set<String> allSuffixes = new LinkedHashSet<>();
+        final List<FileChooser.ExtensionFilter> openFilters = new ArrayList<>();
+//      final List<FileChooser.ExtensionFilter> saveFilters = new ArrayList<>();
+        /*
+         * Add an "All files (*.*)" filter only for the Open action.
+         * The Save action will need to specify a specific filter.
+         */
+        openFilters.add(new FileChooser.ExtensionFilter(res.getString(Resources.Keys.AllFiles), "*.*"));
+        for (DataStoreProvider provider : DataStores.providers()) {
+            final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
+            if (md != null) {
+                final String[] suffixes = md.fileSuffixes();
+                if (suffixes.length != 0) {
+                    final boolean canOpen = ArraysExt.contains(md.capabilities(), Capability.READ);
+//                  final boolean canSave = ArraysExt.contains(md.capabilities(), Capability.WRITE);
+                    for (int i=0; i < suffixes.length; i++) {
+                        final String fs = "*.".concat(suffixes[i]);
+                        suffixes[i] = fs;
+                        if (canOpen) {
+                            allSuffixes.add(fs);
+                        }
+                    }
+                    final FileChooser.ExtensionFilter f = new FileChooser.ExtensionFilter(
+                                    md.formatName() + " (" + suffixes[0] + ')', suffixes);
+                    if (canOpen) openFilters.add(f);
+//                  if (canSave) saveFilters.add(f);
+                }
             }
         }
+        /*
+         * Add a filter for all geospatial files in second position, after "All files" and before
+         * the filters for specific formats. This will be the default filter for the "Open" action.
+         */
+        openFilters.add(1, new FileChooser.ExtensionFilter(res.getString(Resources.Keys.GeospatialFiles),
+                            allSuffixes.toArray(new String[allSuffixes.size()])));
+        this.openFilters = openFilters.toArray(new FileChooser.ExtensionFilter[openFilters.size()]);
+//      this.saveFilters = saveFilters.toArray(new FileChooser.ExtensionFilter[saveFilters.size()]);
+    }
+
+    /**
+     * Invoked when the user selects "File" ▶ "Open" menu.
+     * Users can select an arbitrary amount of files or directories.
+     * The effect is the same as dragging the files in the "resources tree" window.
+     */
+    private void open() {
+        if (openFilters == null) {
+            createFileFilters();
+        }
+        final FileChooser chooser = new FileChooser();
+        chooser.setTitle(Resources.format(Resources.Keys.OpenDataFile));
+        chooser.getExtensionFilters().addAll(openFilters);
+        chooser.setSelectedExtensionFilter(openFilters[1]);         // TODO: remember last filter used.
+        content.open(chooser.showOpenMultipleDialog(window));
     }
 
     /**

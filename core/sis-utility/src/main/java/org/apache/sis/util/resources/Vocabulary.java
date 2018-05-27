@@ -28,7 +28,7 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for single words or short sentences.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -312,6 +312,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short EntryCount_1 = 121;
 
         /**
+         * Exit
+         */
+        public static final short Exit = 143;
+
+        /**
+         * File
+         */
+        public static final short File = 144;
+
+        /**
          * Geocentric
          */
         public static final short Geocentric = 42;
@@ -520,6 +530,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Offset
          */
         public static final short Offset = 79;
+
+        /**
+         * Open
+         */
+        public static final short Open = 145;
 
         /**
          * Operating system

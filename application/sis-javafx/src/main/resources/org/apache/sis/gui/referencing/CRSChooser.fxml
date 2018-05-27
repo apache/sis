@@ -19,7 +19,7 @@
         <RowConstraints vgrow="NEVER" />
       </rowConstraints>
       <children>
-        <Label styleClass="property-key" text="%CRS" GridPane.rowSpan="2" />
+        <Label styleClass="property-key" text="%CRSs" GridPane.rowSpan="2" />
         <TextField fx:id="uiSearch" GridPane.columnSpan="3" GridPane.rowIndex="2" />
        </children>
     </GridPane>
