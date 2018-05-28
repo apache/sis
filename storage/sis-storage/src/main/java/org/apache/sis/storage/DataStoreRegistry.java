@@ -22,9 +22,12 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.StoreMetadata;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -143,6 +146,8 @@ final class DataStoreRegistry {
      * @param  open     {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException if an error occurred while opening the storage.
+     *
+     * @todo Iterate on {@code ServiceLoader.Provider.type()} on JDK9.
      */
     private ProbeProviderPair lookup(final Object storage, final boolean open) throws DataStoreException {
         StorageConnector connector;
@@ -151,64 +156,76 @@ final class DataStoreRegistry {
         } else {
             connector = new StorageConnector(storage);
         }
+        /*
+         * If we can get a filename extension from the given storage (file, URL, etc.), then we may perform two iterations
+         * on the provider list. The first iteration will use only the providers which declare capability to read files of
+         * that suffix (matchCondition = TRUE). Only if no provider has been able to read that file, we will do a second
+         * iteration on other providers (matchCondition = FALSE). The intent is to avoid DataStoreProvider.probeContent(…)
+         * invocations loading large dependencies.
+         */
+        final String extension = IOUtilities.extension(storage);
+        Boolean matchCondition = (extension != null && !extension.isEmpty()) ? Boolean.TRUE : null;
+        final List<ProbeProviderPair> needMoreBytes = new LinkedList<>();
         ProbeProviderPair selected = null;
-        List<ProbeProviderPair> deferred = null;
         try {
-            /*
-             * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
-             * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
-             * possible for less contention. In particular, the probeContent(connector) method call may be costly.
-             */
-            final Iterator<DataStoreProvider> providers;
-            DataStoreProvider provider;
-            synchronized (loader) {
-                providers = loader.iterator();
-                provider = providers.hasNext() ? providers.next() : null;
-            }
-            while (provider != null) {
-                final ProbeResult probe = provider.probeContent(connector);
-                if (probe.isSupported()) {
-                    /*
-                     * Stop at the first provider claiming to be able to read the storage.
-                     * Do not iterate over the list of deferred providers (if any).
-                     */
-                    selected = new ProbeProviderPair(provider, probe);
-                    deferred = null;
-                    break;
-                }
-                if (ProbeResult.INSUFFICIENT_BYTES.equals(probe)) {
-                    /*
-                     * If a provider doesn't have enough bytes for answering the question,
-                     * try again after this loop with more bytes in the buffer, unless we
-                     * found an other provider.
-                     */
-                    if (deferred == null) {
-                        deferred = new LinkedList<>();
-                    }
-                    deferred.add(new ProbeProviderPair(provider, probe));
-                } else if (ProbeResult.UNDETERMINED.equals(probe)) {
-                    /*
-                     * If a provider doesn't know whether it can open the given storage,
-                     * we will try it only if we find no provider retuning SUPPORTED.
-                     *
-                     * TODO: What to do if we find more than one provider here? We can not invoke
-                     *       provider.open(connector) in a try … catch block because it may leave
-                     *       the StorageConnector in an invalid state in case of failure.
-                     */
-                    selected = new ProbeProviderPair(provider, probe);
-                }
+search:     do {
+                /*
+                 * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
+                 * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
+                 * possible for less contention. In particular, the probeContent(connector) method call may be costly.
+                 */
+                final Iterator<DataStoreProvider> providers;
+                DataStoreProvider provider;
                 synchronized (loader) {
+                    providers = loader.iterator();
                     provider = providers.hasNext() ? providers.next() : null;
                 }
-            }
-            /*
-             * If any provider did not had enough bytes for answering the 'probeContent(…)' question,
-             * get more bytes and try again. We try to prefetch more bytes only if we have no choice
-             * in order to avoid latency on network connection.
-             */
-            if (deferred != null) {
-search:         while (!deferred.isEmpty() && connector.prefetch()) {
-                    for (final Iterator<ProbeProviderPair> it = deferred.iterator(); it.hasNext();) {
+                while (provider != null) {
+                    boolean accept = true;
+                    if (matchCondition != null) {
+                        final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
+                        accept = (md != null && ArraysExt.containsIgnoreCase(md.fileSuffixes(), extension)) == matchCondition;
+                    }
+                    if (accept) {
+                        final ProbeResult probe = provider.probeContent(connector);
+                        if (probe.isSupported()) {
+                            /*
+                             * Stop at the first provider claiming to be able to read the storage.
+                             * Do not iterate over the list of deferred providers (if any).
+                             */
+                            selected = new ProbeProviderPair(provider, probe);
+                            break search;
+                        }
+                        if (ProbeResult.INSUFFICIENT_BYTES.equals(probe)) {
+                            /*
+                             * If a provider doesn't have enough bytes for answering the question,
+                             * try again after this loop with more bytes in the buffer, unless we
+                             * found an other provider.
+                             */
+                            needMoreBytes.add(new ProbeProviderPair(provider, probe));
+                        } else if (ProbeResult.UNDETERMINED.equals(probe)) {
+                            /*
+                             * If a provider doesn't know whether it can open the given storage,
+                             * we will try it only if we find no provider retuning SUPPORTED.
+                             * We select the first provider because it is more likely to be the
+                             * one for the file extension of the given storage.
+                             */
+                            if (selected == null) {
+                                selected = new ProbeProviderPair(provider, probe);
+                            }
+                        }
+                    }
+                    synchronized (loader) {
+                        provider = providers.hasNext() ? providers.next() : null;
+                    }
+                }
+                /*
+                 * If any provider did not had enough bytes for answering the 'probeContent(…)' question,
+                 * get more bytes and try again. We try to prefetch more bytes only if we have no choice
+                 * in order to avoid latency on network connection.
+                 */
+                while (!needMoreBytes.isEmpty() && connector.prefetch()) {
+                    for (final Iterator<ProbeProviderPair> it = needMoreBytes.iterator(); it.hasNext();) {
                         final ProbeProviderPair p = it.next();
                         p.probe = p.provider.probeContent(connector);
                         if (p.probe.isSupported()) {
@@ -216,14 +233,21 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
                             break search;
                         }
                         if (!ProbeResult.INSUFFICIENT_BYTES.equals(p.probe)) {
-                            if (ProbeResult.UNDETERMINED.equals(p.probe)) {
+                            if (selected == null && ProbeResult.UNDETERMINED.equals(p.probe)) {
                                 selected = p;                   // To be used only if we don't find a better match.
                             }
                             it.remove();        // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
                         }
                     }
                 }
-            }
+                /*
+                 * If we filtered providers by the file extension without finding a suitable provider,
+                 * try again with all other providers (even if they are for another file extension).
+                 */
+                if (Boolean.TRUE.equals(matchCondition)) {
+                    matchCondition = Boolean.FALSE;
+                }
+            } while (matchCondition != null);
             /*
              * If a provider has been found, or if a provider returned UNDETERMINED, use that one
              * for opening a DataStore. Note that if more than one provider returned UNDETERMINED,
