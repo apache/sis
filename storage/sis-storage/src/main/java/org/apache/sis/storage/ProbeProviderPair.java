@@ -18,8 +18,8 @@ package org.apache.sis.storage;
 
 
 /**
- * A pair of {@link ProbeResult} and {@link DataStoreProvider},
- * for internal usage by {@link DataStoreRegistry} only.
+ * A pair of {@link ProbeResult} and {@link DataStoreProvider}, for internal usage by {@link DataStoreRegistry} only.
+ * Provides also a {@link DataStore} created by the provider if this class is used for an {@code open} operation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
@@ -39,6 +39,7 @@ final class ProbeProviderPair {
 
     /**
      * A data store created by the provider.
+     * This is non-null only if this class is used for an {@code open} operation.
      */
     DataStore store;
 
