@@ -101,7 +101,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
+      <artifactId>sis-referencing</artifactId>
       <version>${project.version}</version>
     </dependency>
 
