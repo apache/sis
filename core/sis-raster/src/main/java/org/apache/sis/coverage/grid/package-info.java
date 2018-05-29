@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
+
 /**
- * A set of helper classes for the SIS implementation.
- *
- * <p><strong>Do not use!</strong></p>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * A coverage backed by a regular grid. In the two-dimensional case, the grid coverage is an image and the cells are pixels.
+ * In the three-dimensional case, the cells are voxels.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-package org.apache.sis.internal.raster;
+package org.apache.sis.coverage.grid;
