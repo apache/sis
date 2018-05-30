@@ -110,6 +110,9 @@ public class GridGeometry implements Serializable {
      * The valid domain of a grid coverage, or {@code null} if unknown. The lowest valid grid coordinate is zero
      * for {@link java.awt.image.BufferedImage}, but may be non-zero for arbitrary {@link RenderedImage}.
      * A grid with 512 cells can have a minimum coordinate of 0 and maximum of 511.
+     *
+     * @see #EXTENT
+     * @see #getExtent()
      */
     protected final GridExtent extent;
 
@@ -117,6 +120,9 @@ public class GridGeometry implements Serializable {
      * The geodetic envelope, or {@code null} if unknown. If non-null, this envelope is usually the grid {@link #extent}
      * {@linkplain #gridToCRS transformed} to real world coordinates. The Coordinate Reference System} (CRS) of this
      * envelope defines the "real world" CRS of this grid geometry.
+     *
+     * @see #ENVELOPE
+     * @see #getEnvelope()
      */
     protected final ImmutableEnvelope envelope;
 
@@ -129,6 +135,9 @@ public class GridGeometry implements Serializable {
      *     DirectPosition aCellIndices = ...:
      *     DirectPosition aPixelCenter = gridToCRS.transform(pixels, aCellIndices);
      * }
+     *
+     * @see #CRS
+     * @see #getGridToCRS()
      */
     protected final MathTransform gridToCRS;
 
@@ -144,6 +153,8 @@ public class GridGeometry implements Serializable {
     /**
      * The resolution in units of the CRS axes.
      * Computed only when first needed.
+     *
+     * @see #resolution(boolean)
      */
     private transient double[] resolution;
 

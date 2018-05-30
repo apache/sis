@@ -30,14 +30,16 @@ import org.opengis.coverage.grid.GridCoordinates;
 
 /**
  * A range of grid coverage coordinates, also known as "grid envelope".
- * {@code GridExtent} instances are unmodifiable,
- * so they can be shared between different {@link GridGeometry} instances.
+ * {@code GridExtent} are defined by {@linkplain #getLow() low} coordinates (often all zeros)
+ * and {@linkplain #getHigh() high} coordinates, <strong>inclusive</strong>.
+ * For example a grid with a width of 512 cells can have a low coordinate of 0 and high coordinate of 511.
  *
- * <p><b>CAUTION:</b>
- * ISO 19123 defines {@linkplain #getHigh high} coordinates as <strong>inclusive</strong>.
- * We follow this specification for all getters methods, but developer should keep in mind
- * that this is the opposite of Java2D usage where {@link java.awt.Rectangle} maximal values are exclusive.
- * When the context is ambiguous, an explicit {@code isHighIncluded} argument is required.</p>
+ * <div class="note"><b>Note:</b>
+ * The inclusiveness of {@linkplain #getHigh() high} coordinates come from ISO 19123.
+ * We follow this specification for all getters methods, but developers should keep in mind
+ * that this is the opposite of Java2D usage where {@link java.awt.Rectangle} maximal values are exclusive.</div>
+ *
+ * {@code GridExtent} instances are unmodifiable, so they can be shared between different {@link GridGeometry} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
