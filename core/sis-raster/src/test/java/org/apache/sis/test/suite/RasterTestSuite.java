@@ -25,12 +25,13 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-raster} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.image.DefaultIteratorTest.class
+    org.apache.sis.image.DefaultIteratorTest.class,
+    org.apache.sis.coverage.grid.PixelTranslationTest.class
 })
 public final strictfp class RasterTestSuite extends TestSuite {
     /**
