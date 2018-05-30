@@ -97,6 +97,21 @@ public final class Resources extends IndexedResourceBundle {
          * The two images have different tile grid.
          */
         public static final short MismatchedTileGrid = 7;
+
+        /**
+         * Coordinate reference system is unspecified.
+         */
+        public static final short UnspecifiedCRS = 9;
+
+        /**
+         * Grid extent is unspecified.
+         */
+        public static final short UnspecifiedGridExtent = 10;
+
+        /**
+         * Coordinates transform is unspecified.
+         */
+        public static final short UnspecifiedTransform = 11;
     }
 
     /**

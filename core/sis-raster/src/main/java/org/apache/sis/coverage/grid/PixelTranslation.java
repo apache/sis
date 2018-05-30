@@ -148,7 +148,7 @@ public final class PixelTranslation extends Static implements Serializable {
      *
      * @param  anchor  the {@code PixelInCell} code, or {@code null}.
      * @return the corresponding pixel orientation, or {@code null} if the argument was null.
-     * @throws IllegalArgumentException if the given code is unknown.
+     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      */
     public static PixelOrientation getPixelOrientation(final PixelInCell anchor) {
         if (anchor == null) {
@@ -171,12 +171,13 @@ public final class PixelTranslation extends Static implements Serializable {
      * <table class="sis">
      *   <caption>Translations</caption>
      *   <tr><th>Pixel in cell</th><th>offset</th></tr>
-     *   <tr><td>{@link PixelInCell#CELL_CENTER  CELL_CENTER}</td><td> 0.0</td></tr>
-     *   <tr><td>{@link PixelInCell#CELL_CORNER  CELL_CORNER}</td><td>-0.5</td></tr>
+     *   <tr><td>{@link PixelInCell#CELL_CENTER  CELL_CENTER}</td><td>{@code  0.0}</td></tr>
+     *   <tr><td>{@link PixelInCell#CELL_CORNER  CELL_CORNER}</td><td>{@code -0.5}</td></tr>
      * </table>
      *
      * @param  anchor  the "pixel in cell" value.
      * @return the translation for the given "pixel in cell" value.
+     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      */
     public static double getPixelTranslation(final PixelInCell anchor) {
         if (PixelInCell.CELL_CENTER.equals(anchor)) {
@@ -197,16 +198,16 @@ public final class PixelTranslation extends Static implements Serializable {
      * <table class="sis">
      *   <caption>Translations</caption>
      *   <tr><th>Pixel orientation</th>                               <th> dx </th><th> dy </th></tr>
-     *   <tr><td>{@link PixelOrientation#CENTER      CENTER}</td>     <td> 0.0</td><td> 0.0</td></tr>
-     *   <tr><td>{@link PixelOrientation#UPPER_LEFT  UPPER_LEFT}</td> <td>-0.5</td><td>-0.5</td></tr>
-     *   <tr><td>{@link PixelOrientation#UPPER_RIGHT UPPER_RIGHT}</td><td>+0.5</td><td>-0.5</td></tr>
-     *   <tr><td>{@link PixelOrientation#LOWER_LEFT  LOWER_LEFT}</td> <td>-0.5</td><td>+0.5</td></tr>
-     *   <tr><td>{@link PixelOrientation#LOWER_RIGHT LOWER_RIGHT}</td><td>+0.5</td><td>+0.5</td></tr>
+     *   <tr><td>{@link PixelOrientation#CENTER      CENTER}</td>     <td>{@code  0.0}</td><td>{@code  0.0}</td></tr>
+     *   <tr><td>{@link PixelOrientation#UPPER_LEFT  UPPER_LEFT}</td> <td>{@code -0.5}</td><td>{@code -0.5}</td></tr>
+     *   <tr><td>{@link PixelOrientation#UPPER_RIGHT UPPER_RIGHT}</td><td>{@code +0.5}</td><td>{@code -0.5}</td></tr>
+     *   <tr><td>{@link PixelOrientation#LOWER_LEFT  LOWER_LEFT}</td> <td>{@code -0.5}</td><td>{@code +0.5}</td></tr>
+     *   <tr><td>{@link PixelOrientation#LOWER_RIGHT LOWER_RIGHT}</td><td>{@code +0.5}</td><td>{@code +0.5}</td></tr>
      * </table>
      *
      * @param  anchor  the pixel orientation.
      * @return the position relative to the pixel center.
-     * @throws IllegalArgumentException if the specified orientation is unknown.
+     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      */
     public static PixelTranslation getPixelTranslation(final PixelOrientation anchor) {
         final PixelTranslation offset = ORIENTATIONS.get(anchor);
@@ -239,6 +240,7 @@ public final class PixelTranslation extends Static implements Serializable {
      * @param  current    the pixel orientation of the given {@code gridToCRS} transform.
      * @param  expected   the pixel orientation of the desired transform.
      * @return the translation from {@code current} to {@code expected}, or {@code null} if {@code gridToCRS} was null.
+     * @throws IllegalArgumentException if {@code current} or {@code expected} is not a known code list value.
      */
     public static MathTransform translate(final MathTransform gridToCRS, final PixelInCell current, final PixelInCell expected) {
         if (gridToCRS == null || expected.equals(current)) {
@@ -292,6 +294,7 @@ public final class PixelTranslation extends Static implements Serializable {
      * @param  xDimension  the dimension of <var>x</var> coordinates (pixel columns). Often 0.
      * @param  yDimension  the dimension of <var>y</var> coordinates (pixel rows). Often 1.
      * @return the translation from {@code current} to {@code expected}, or {@code null} if {@code gridToCRS} was null.
+     * @throws IllegalArgumentException if {@code current} or {@code expected} is not a known code list value.
      */
     public static MathTransform translate(final MathTransform gridToCRS,
             final PixelOrientation current, final PixelOrientation expected,
