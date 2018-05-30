@@ -26,7 +26,6 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.metadata.spatial.PixelOrientation;
 import static org.opengis.metadata.spatial.PixelOrientation.*;
 
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -363,7 +362,6 @@ public final class PixelTranslation extends Static implements Serializable {
     /**
      * Returns a string representation of this pixel translation.
      */
-    @Debug
     @Override
     public String toString() {
         return String.valueOf(orientation) + '[' + dx + ", " + dy + ']';

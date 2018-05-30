@@ -767,7 +767,6 @@ final class Element implements Serializable {
      * Formats this {@code Element} as a tree.
      * This method is used for debugging purpose only.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();

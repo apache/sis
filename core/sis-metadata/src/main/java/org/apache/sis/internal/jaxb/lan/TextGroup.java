@@ -18,7 +18,6 @@ package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -123,7 +122,6 @@ final class TextGroup {
      *
      * @see LocalisedCharacterString#toString()
      */
-    @Debug
     @Override
     public String toString() {
         final String lineSeparator = System.lineSeparator();

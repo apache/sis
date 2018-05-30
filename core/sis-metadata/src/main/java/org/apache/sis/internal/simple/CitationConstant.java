@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Debug;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.ServicesForUtility;
@@ -92,7 +91,6 @@ public class CitationConstant extends SimpleCitation {
         /**
          * Returns a string representation of this identifier space.
          */
-        @Debug
         @Override
         public final String toString() {
             return "IdentifierSpace[" + title + ']';

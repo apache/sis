@@ -32,7 +32,6 @@ import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.opengis.feature.IdentifiedType;
@@ -539,7 +538,6 @@ public abstract class TypeBuilder implements Localized {
      *
      * @return a string representation of this object for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return appendStringTo(new StringBuilder(Classes.getShortClassName(this))).toString();

@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Objects;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
@@ -87,7 +86,6 @@ public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
      * of the value uses more than one line, then only the first line is shown.
      * This method is mostly for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return String.valueOf(getKey()) + '=' + firstLine(getValue());

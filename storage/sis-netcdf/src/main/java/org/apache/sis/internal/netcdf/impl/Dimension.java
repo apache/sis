@@ -17,7 +17,6 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import org.apache.sis.internal.netcdf.NamedElement;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -71,7 +70,6 @@ final class Dimension extends NamedElement {
     /**
      * A string representation of this dimension for debugging purpose only.
      */
-    @Debug
     @Override
     public String toString() {
         return name + '[' + length() + ']';

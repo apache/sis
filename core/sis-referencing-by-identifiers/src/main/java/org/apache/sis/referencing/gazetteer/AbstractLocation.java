@@ -27,7 +27,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
@@ -264,7 +263,6 @@ public abstract class AbstractLocation implements Location {
      *
      * @return a string representation of this location for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         synchronized (LocationFormat.INSTANCE) {

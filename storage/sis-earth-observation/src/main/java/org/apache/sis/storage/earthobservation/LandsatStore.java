@@ -33,7 +33,6 @@ import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -184,7 +183,6 @@ public class LandsatStore extends DataStore {
      *
      * @return a string representation of this datastore for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return getClass().getSimpleName() + '[' + getDisplayName() + ']';

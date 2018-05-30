@@ -25,7 +25,6 @@ import java.io.Serializable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
@@ -207,7 +206,6 @@ abstract class PropertyView<V> extends Field<V> implements Property, Serializabl
     /**
      * Returns a string representation of this property for debugging purposes.
      */
-    @Debug
     @Override
     public final String toString() {
         return FieldType.toString(false, getClass().getSimpleName(), getName(),
