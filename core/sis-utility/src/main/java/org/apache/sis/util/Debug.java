@@ -24,20 +24,18 @@ import java.lang.annotation.RetentionPolicy;
 
 
 /**
- * Annotates classes or methods that are provided mostly for debugging purpose. This annotation
- * is defined in order to make easier to find which debugging tools are available in case of
- * problem. See the <cite>"Use"</cite> javadoc link for a list of annotated classes and methods.
+ * Annotates classes or methods that are provided mostly for debugging purpose.
+ * This annotation is defined in order to make easier to find which debugging tools are available in case of problem.
+ * See the <cite>"Use"</cite> javadoc link for a list of annotated classes and methods.
  *
- * <div class="section">{@code Object.toString()} policy</div>
- * Subclasses override the {@link Object#toString()} method for various purposes, sometime providing
- * content targeted to the end user (e.g. {@link java.lang.CharSequence}) and sometime providing
- * debugging information for developers only. In the Apache SIS library, {@code toString()}
- * methods without {@code @Debug} annotation shall be understandable by the end users,
- * while {@code toString()} methods with {@code @Debug} annotation is targeted to
- * developers and may change in any future version.
+ * <p>Unless specified otherwise in javadoc, {@link Object#toString()} method implementations in Apache SIS
+ * are implicitly for debugging purpose. Those methods are usually <em>not</em> annotated with {@code @Debug}
+ * in order to avoid polluting {@code @Debug} usage searches with long lists of {@code toString()} methods.
+ * As an exception to this convention, a {@code toString()} method may be annotated with {@code @Debug}
+ * in a few cases where we want to put emphasis on the method purpose as a debugging tools.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */

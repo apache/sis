@@ -38,7 +38,6 @@ import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.ft.FeatureCollection;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -465,7 +464,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
      * result. This is for debugging purpose only any may change in any future SIS version.
      */
-    @Debug
     @Override
     public String toString() {
         return "UCAR driver: “" + getFilename() + '”';

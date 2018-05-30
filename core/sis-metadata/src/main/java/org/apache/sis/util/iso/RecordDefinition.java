@@ -27,7 +27,6 @@ import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
 import org.opengis.feature.AttributeType;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
@@ -224,7 +223,6 @@ abstract class RecordDefinition {                                       // Inten
      *
      * @return a string representation of this record type.
      */
-    @Debug
     @Override
     public String toString() {
         return toString("RecordType", null);

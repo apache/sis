@@ -31,7 +31,6 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -1287,7 +1286,6 @@ class PropertyAccessor {
      *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]
      * }
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60);

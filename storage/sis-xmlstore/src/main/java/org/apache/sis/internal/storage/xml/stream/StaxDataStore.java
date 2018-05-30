@@ -53,7 +53,6 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.ForwardOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -364,7 +363,6 @@ public abstract class StaxDataStore extends URIDataStore {
         /**
          * Do not format all properties for avoiding a never-ending loop.
          */
-        @Debug
         @Override
         public String toString() {
             return Utilities.toString(getClass(), "locale", locale, "timezone", timezone);

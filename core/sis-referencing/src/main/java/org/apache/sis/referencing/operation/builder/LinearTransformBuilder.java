@@ -42,7 +42,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -713,7 +712,6 @@ search: for (int j=0; j<numPoints; j++) {
      *
      * @return a string representation of this builder.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');

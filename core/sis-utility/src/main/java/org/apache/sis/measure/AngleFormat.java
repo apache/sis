@@ -27,7 +27,6 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.AttributedCharacterIterator;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -1867,7 +1866,6 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     /**
      * Returns a string representation of this object for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return getClass().getSimpleName() + '[' + toPattern() + ']';

@@ -24,7 +24,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Deprecable;
 
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
@@ -203,7 +202,6 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
     /**
      * Returns a string representation of this identifier.
      */
-    @Debug
     @Override
     public String toString() {
         final String classname = Classes.getShortClassName(this);

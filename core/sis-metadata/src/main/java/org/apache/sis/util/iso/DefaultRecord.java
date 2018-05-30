@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -390,7 +389,6 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @return a string representation of this record.
      */
-    @Debug
     @Override
     public String toString() {
         return definition.toString("Record", values);

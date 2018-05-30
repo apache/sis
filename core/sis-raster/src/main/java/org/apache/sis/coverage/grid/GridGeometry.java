@@ -34,7 +34,6 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
@@ -585,7 +584,6 @@ public class GridGeometry implements Serializable {
      * Returns a string representation of this grid geometry. The returned string
      * is implementation dependent. It is provided for debugging purposes only.
      */
-    @Debug
     @Override
     public String toString() {
         return getClass().getSimpleName() + '[' + extent + ", " + gridToCRS + ']';

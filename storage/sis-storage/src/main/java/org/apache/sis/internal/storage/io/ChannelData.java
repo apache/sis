@@ -22,7 +22,6 @@ import java.nio.InvalidMarkException;
 import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
@@ -326,7 +325,6 @@ public abstract class ChannelData implements Markable {
      *
      * @return a string representation of this object.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder b = new StringBuilder().append(getClass().getSimpleName()).append("[“").append(filename).append('”');

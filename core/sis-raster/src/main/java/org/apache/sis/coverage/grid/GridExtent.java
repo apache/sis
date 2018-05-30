@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.io.Serializable;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.raster.Resources;
@@ -310,7 +309,6 @@ public class GridExtent implements GridEnvelope, Serializable {
      * Returns a string representation of this grid envelope. The returned string
      * is implementation dependent and is provided for debugging purposes only.
      */
-    @Debug
     @Override
     public String toString() {
         final int dimension = getDimension();

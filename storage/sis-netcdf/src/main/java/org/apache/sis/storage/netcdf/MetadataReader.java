@@ -630,10 +630,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final Responsibility r = createResponsibleParty(PUBLISHER, false);
             if (r != null) {
                 addDistributor(r);
-                /*
-                 * TODO: There is some transfert option, etc. that we could set there.
-                 * See UnidataDD2MI.xsl for options for OPeNDAP, THREDDS, etc.
-                 */
                 for (final Party party : r.getParties()) {
                     publisher = addIfNonNull(publisher, party.getName());
                 }

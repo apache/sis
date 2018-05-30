@@ -26,7 +26,6 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -365,7 +364,6 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * Returns a tree representation of this converter.
      * The tree leaves represent the backing converters.
      */
-    @Debug
     @Override
     public String toString() {
         final TreeTable table = Column.createTable();

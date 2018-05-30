@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.util.Debug;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -313,7 +312,6 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      *
      * @return a string representation for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return Utilities.toString(getClass(), "file", (files.length != 0) ? files[0] : null);

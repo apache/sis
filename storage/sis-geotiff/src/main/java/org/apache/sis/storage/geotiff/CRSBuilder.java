@@ -85,7 +85,6 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
@@ -1705,7 +1704,6 @@ final class CRSBuilder {
     /**
      * Returns a string representation of the keys and associated values in this {@code CRSBuilder}.
      */
-    @Debug
     @Override
     public final String toString() {
         final StringBuilder buffer = new StringBuilder("GeoTIFF keys ").append(majorRevision).append('.')

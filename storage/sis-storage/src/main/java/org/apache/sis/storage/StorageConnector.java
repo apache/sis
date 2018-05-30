@@ -503,7 +503,6 @@ public class StorageConnector implements Serializable {
         /**
          * Returns a string representation for debugging purpose.
          */
-        @Debug
         @Override
         public String toString() {
             return Utilities.toString(getClass(),
@@ -1361,7 +1360,6 @@ public class StorageConnector implements Serializable {
      *
      * @return a string representation of this {@code StorageConnector} for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         final TreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);

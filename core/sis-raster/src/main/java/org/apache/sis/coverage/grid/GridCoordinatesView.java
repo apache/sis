@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -90,7 +89,6 @@ final class GridCoordinatesView implements GridCoordinates {
     /**
      * Returns a string representation of this grid coordinates for debugging purpose.
      */
-    @Debug
     @Override
     public final String toString() {
         return "GridCoordinates".concat(Arrays.toString(getCoordinateValues()));
