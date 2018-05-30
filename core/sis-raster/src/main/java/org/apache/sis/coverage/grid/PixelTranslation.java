@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Objects;
 import java.io.Serializable;
 
 import org.opengis.referencing.operation.Matrix;
@@ -83,26 +82,27 @@ public final class PixelTranslation extends Static implements Serializable {
     private static final long serialVersionUID = -5671620211497720808L;
 
     /**
-     * Math transforms created by {@link #translate(MathTransform, PixelInCell, PixelInCell)}.
-     * Each element in this array will be created when first needed.
+     * Math transforms created by {@link #translate(MathTransform, PixelInCell, PixelInCell)}
+     * for dimensions 1 to 6. Each element in this array will be created when first needed.
      * Even indices are translations by -0.5 while odd indices are translations by +0.5.
      */
-    private static final MathTransform[] translations = new MathTransform[16];
+    private static final MathTransform[] translations = new MathTransform[10];
 
     /**
      * The pixel orientation for this translation.
+     * Most common values are {@link PixelOrientation#UPPER_LEFT} and {@link PixelOrientation#CENTER}.
      */
     public final PixelOrientation orientation;
 
     /**
      * The translation among the <var>x</var> axis relative to pixel center.
-     * The value is typically in the [-0.5 .. +0.5] range.
+     * The value is typically −½, 0 or +½.
      */
     public final double dx;
 
     /**
      * The translation among the <var>y</var> axis relative to pixel center.
-     * The value is typically in the [-0.5 .. +0.5] range.
+     * The value is typically −½, 0 or +½.
      */
     public final double dy;
 
@@ -135,7 +135,17 @@ public final class PixelTranslation extends Static implements Serializable {
     }
 
     /**
-     * Returns the pixel orientation for the given {@code PixelInCell} code.
+     * Returns the pixel orientation which is equivalent to the given {@code PixelInCell} code.
+     * This equivalence can be used for converting <var>n</var>-dimensional parameters to the
+     * more specific two-dimensional case. This method implements the following mapping:
+     *
+     * <table class="sis">
+     *   <caption>Pixel orientation equivalences</caption>
+     *   <tr><th>Pixel in cell</th><th>Pixel orientation</th></tr>
+     *   <tr><td>{@link PixelInCell#CELL_CENTER  CELL_CENTER}</td><td>{@link PixelOrientation#CENTER      CENTER}</td></tr>
+     *   <tr><td>{@link PixelInCell#CELL_CORNER  CELL_CORNER}</td><td>{@link PixelOrientation#UPPER_LEFT  UPPER_LEFT}</td></tr>
+     *   <tr><td>{@code null}</td><td>{@code null}</td></tr>
+     * </table>
      *
      * @param  anchor  the {@code PixelInCell} code, or {@code null}.
      * @return the corresponding pixel orientation, or {@code null} if the argument was null.
@@ -156,17 +166,15 @@ public final class PixelTranslation extends Static implements Serializable {
 
     /**
      * Returns the position relative to the pixel center.
-     * This method returns a value from the following table:
+     * This method is typically used for <var>n</var>-dimensional grids, where the number of dimension is unknown.
+     * The translation is determined from the following table, with the same value applied to all dimensions:
      *
-     * <table>
-     *   <caption>Translations for "pixel in cell" values</caption>
+     * <table class="sis">
+     *   <caption>Translations</caption>
      *   <tr><th>Pixel in cell</th><th>offset</th></tr>
      *   <tr><td>{@link PixelInCell#CELL_CENTER  CELL_CENTER}</td><td> 0.0</td></tr>
      *   <tr><td>{@link PixelInCell#CELL_CORNER  CELL_CORNER}</td><td>-0.5</td></tr>
      * </table>
-     *
-     * This method is typically used for <var>n</var>-dimensional grids,
-     * where the number of dimension is unknown.
      *
      * @param  anchor  the "pixel in cell" value.
      * @return the translation for the given "pixel in cell" value.
@@ -184,19 +192,18 @@ public final class PixelTranslation extends Static implements Serializable {
 
     /**
      * Returns the specified position relative to the pixel center.
-     * This method returns a value from the following table:
+     * This method can be used for grid restricted to 2 dimensions.
+     * The translation vector is determined from the following table:
      *
-     * <table>
-     *   <caption>Translations for "pixel orientation" values</caption>
-     *   <tr><th>Pixel orientation</th>                               <th>  x </th><th>  y </th></tr>
+     * <table class="sis">
+     *   <caption>Translations</caption>
+     *   <tr><th>Pixel orientation</th>                               <th> dx </th><th> dy </th></tr>
      *   <tr><td>{@link PixelOrientation#CENTER      CENTER}</td>     <td> 0.0</td><td> 0.0</td></tr>
      *   <tr><td>{@link PixelOrientation#UPPER_LEFT  UPPER_LEFT}</td> <td>-0.5</td><td>-0.5</td></tr>
      *   <tr><td>{@link PixelOrientation#UPPER_RIGHT UPPER_RIGHT}</td><td>+0.5</td><td>-0.5</td></tr>
      *   <tr><td>{@link PixelOrientation#LOWER_LEFT  LOWER_LEFT}</td> <td>-0.5</td><td>+0.5</td></tr>
      *   <tr><td>{@link PixelOrientation#LOWER_RIGHT LOWER_RIGHT}</td><td>+0.5</td><td>+0.5</td></tr>
      * </table>
-     *
-     * This method can be used for grid restricted to 2 dimensions.
      *
      * @param  anchor  the pixel orientation.
      * @return the position relative to the pixel center.
@@ -212,81 +219,87 @@ public final class PixelTranslation extends Static implements Serializable {
     }
 
     /**
-     * Returns the pixel orientation for the given offset, or {@code null} if none.
-     * This is the reverse of {@link #getPixelTranslation(PixelOrientation)}.
+     * Converts a math transform from a "pixel in cell" convention to another "pixel in cell" convention.
+     * This method concatenates −½, 0 or +½ translations on <em>all</em> dimensions before the given transform.
+     * If the two given conventions are the same, then this method returns the given transform unchanged.
      *
-     * @param  dx  the translation along <var>x</var> axis.
-     * @param  dy  the translation along <var>y</var> axis.
-     * @return the pixel orientation of the given values, or {@code null} if none.
-     */
-    public static PixelOrientation getPixelOrientation(final double dx, final double dy) {
-        for (final PixelTranslation candidate : ORIENTATIONS.values()) {
-            if (candidate.dx == dx && candidate.dy == dy) {
-                return candidate.orientation;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Translates the specified math transform according the specified pixel orientations.
+     * <div class="note"><b>Example:</b>
+     * if a given {@code gridToCRS} was mapping the pixel corner to "real world" coordinates, then a call to
+     * <code>translate(gridToCRS, {@link PixelInCell#CELL_CORNER}, {@link PixelInCell#CELL_CENTER})</code>
+     * will return a new transform performing the following steps:
+     * <ol>
+     *   <li>Translate the grid coordinates by +0.5, so that the (0,0) coordinate in "pixel center" convention
+     *       map to (½,½) in "pixel corner" convention.</li>
+     *   <li>Apply the transform described by the "pixel corner" convention.</li>
+     * </ol></div>
      *
-     * @param  gridToCRS  a math transform from <cite>pixel</cite> coordinates to any CRS.
+     * If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
+     * Otherwise {@code current} and {@code expected} arguments must be non-null.
+     *
+     * @param  gridToCRS  a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
      * @param  current    the pixel orientation of the given {@code gridToCRS} transform.
      * @param  expected   the pixel orientation of the desired transform.
-     * @return the translation from {@code current} to {@code expected}.
+     * @return the translation from {@code current} to {@code expected}, or {@code null} if {@code gridToCRS} was null.
      */
     public static MathTransform translate(final MathTransform gridToCRS, final PixelInCell current, final PixelInCell expected) {
-        if (Objects.equals(current, expected)) {
+        if (gridToCRS == null || expected.equals(current)) {
             return gridToCRS;
-        }
-        if (gridToCRS == null) {
-            return null;
         }
         final int dimension = gridToCRS.getSourceDimensions();
         final double offset = getPixelTranslation(expected) - getPixelTranslation(current);
-        final int index;
+        final int ci;               // Cache index.
         if (offset == -0.5) {
-            index = 2*dimension;
+            ci = 2*dimension - 2;
         } else if (offset == 0.5) {
-            index = 2*dimension + 1;
+            ci = 2*dimension - 1;
         } else {
-            index = translations.length;
+            ci = -1;
         }
         MathTransform mt;
-        if (index >= translations.length) {
+        if (ci < 0 || ci >= translations.length) {
             mt = translate(dimension, offset);
         } else synchronized (translations) {
-            mt = translations[index];
+            mt = translations[ci];
             if (mt == null) {
                 mt = translate(dimension, offset);
-                translations[index] = mt;
+                translations[ci] = mt;
             }
         }
         return MathTransforms.concatenate(mt, gridToCRS);
     }
 
     /**
-     * Translates the specified math transform according the specified pixel orientations.
+     * Converts a math transform from a "pixel orientation" convention to another "pixel orientation" convention.
+     * This method concatenates −½, 0 or +½ translations on <em>two</em> dimensions before the given transform.
+     * The given transform can have any number of input and output dimensions, but only two of them will be converted.
      *
-     * @param  gridToCRS   a math transform from <cite>pixel</cite> coordinates to any CRS.
+     * <div class="note"><b>Example:</b>
+     * if a given {@code gridToCRS} was mapping the upper-left corner to "real world" coordinates, then a call to
+     * <code>translate(gridToCRS, {@link PixelOrientation#UPPER_LEFT}, {@link PixelOrientation#CENTER}, 0, 1)</code>
+     * will return a new transform performing the following steps:
+     * <ol>
+     *   <li>Translate the grid coordinates by +0.5, so that the (0,0) coordinate in "pixel center" convention
+     *       map to (½,½) in "upper-left corner" convention. This translation is applied only in the specified
+     *       grid (source) dimensions; all other dimensions (if any) are left unchanged.</li>
+     *   <li>Apply the transform described by the "upper-left corner" convention.</li>
+     * </ol></div>
+     *
+     * If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
+     * Otherwise {@code current} and {@code expected} arguments must be non-null.
+     *
+     * @param  gridToCRS   a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
      * @param  current     the pixel orientation of the given {@code gridToCRS} transform.
      * @param  expected    the pixel orientation of the desired transform.
      * @param  xDimension  the dimension of <var>x</var> coordinates (pixel columns). Often 0.
      * @param  yDimension  the dimension of <var>y</var> coordinates (pixel rows). Often 1.
-     * @return the translation from {@code current} to {@code expected}.
+     * @return the translation from {@code current} to {@code expected}, or {@code null} if {@code gridToCRS} was null.
      */
     public static MathTransform translate(final MathTransform gridToCRS,
-                                          final PixelOrientation current,
-                                          final PixelOrientation expected,
-                                          final int xDimension,
-                                          final int yDimension)
+            final PixelOrientation current, final PixelOrientation expected,
+            final int xDimension, final int yDimension)
     {
-        if (Objects.equals(current, expected)) {
+        if (gridToCRS == null || expected.equals(current)) {
             return gridToCRS;
-        }
-        if (gridToCRS == null) {
-            return null;
         }
         final int dimension = gridToCRS.getSourceDimensions();
         if (xDimension < 0 || xDimension >= dimension) {
@@ -304,12 +317,12 @@ public final class PixelTranslation extends Static implements Serializable {
         final double dy = target.dy - source.dy;
         MathTransform mt;
         if (dimension == 2 && (xDimension | yDimension) == 1 && dx == dy && Math.abs(dx) == 0.5) {
-            final int index = (dx >= 0) ? 5 : 4;
+            final int ci = (dx >= 0) ? 3 : 2;
             synchronized (translations) {
-                mt = translations[index];
+                mt = translations[ci];
                 if (mt == null) {
                     mt = translate(dimension, dx);
-                    translations[index] = mt;
+                    translations[ci] = mt;
                 }
             }
         } else {
