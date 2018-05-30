@@ -18,9 +18,15 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.io.Serializable;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralDirectPosition;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
@@ -130,7 +136,7 @@ public class GridExtent implements GridEnvelope, Serializable {
         System.arraycopy(high, 0, ordinates, dimension, dimension);
         if (!isHighIncluded) {
             for (int i=dimension; i < ordinates.length; i++) {
-                ordinates[i]--;
+                ordinates[i] = Math.decrementExact(ordinates[i]);
             }
         }
         checkCoherence(ordinates);
@@ -245,6 +251,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @return the span at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() grid dimension}.
+     * @throws ArithmeticException if the span is too large for the {@code int} primitive type.
      *
      * @see #getLow(int)
      * @see #getHigh(int)
@@ -253,7 +260,37 @@ public class GridExtent implements GridEnvelope, Serializable {
     public int getSpan(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
-        return ordinates[dimension + index] - ordinates[index] + 1;
+        return Math.toIntExact(ordinates[dimension + index] - (ordinates[index] - 1L));
+    }
+
+    /**
+     * Returns the median (or center) coordinates of this grid extent.
+     *
+     * @return the coordinates of the grid center.
+     */
+    public DirectPosition getMedian() {
+        final int dimension = getDimension();
+        final GeneralDirectPosition center = new GeneralDirectPosition(dimension);
+        for (int i=0; i<dimension; i++) {
+            center.setOrdinate(i, ((double) ordinates[i] + (double) ordinates[i + dimension] + 1.0) * 0.5);
+        }
+        return center;
+    }
+
+    /**
+     * Transforms this grid extent to a "real world" envelope using the given transform.
+     * The transform shall map <em>pixel corner</em> to real world coordinates.
+     *
+     * @param  gridToCRS  a transform from <em>pixel corner</em> to real world coordinates
+     * @return this grid extent in real world coordinates.
+     */
+    final GeneralEnvelope toCRS(final MathTransform gridToCRS) throws TransformException {
+        final int dimension = getDimension();
+        final GeneralEnvelope envope = new GeneralEnvelope(dimension);
+        for (int i=0; i<dimension; i++) {
+            envope.setRange(i, ordinates[i], ordinates[i + dimension] + 1.0);
+        }
+        return Envelopes.transform(gridToCRS, envope);
     }
 
     /**
@@ -267,7 +304,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @return the sub grid envelope.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      */
-    public GridExtent subEnvelope(final int lower, final int upper) {
+    public GridExtent subExtent(final int lower, final int upper) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
         final int newDim = upper - lower;
