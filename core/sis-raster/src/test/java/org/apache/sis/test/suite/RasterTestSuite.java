@@ -31,7 +31,8 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.image.DefaultIteratorTest.class,
-    org.apache.sis.coverage.grid.PixelTranslationTest.class
+    org.apache.sis.coverage.grid.PixelTranslationTest.class,
+    org.apache.sis.coverage.grid.GridGeometryTest.class
 })
 public final strictfp class RasterTestSuite extends TestSuite {
     /**
