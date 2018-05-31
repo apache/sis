@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.Objects;
 import java.io.Serializable;
 import java.awt.image.RenderedImage;            // For javadoc only.
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -54,12 +55,12 @@ import org.opengis.coverage.grid.GridEnvelope;
  *       This CRS is the target of the <cite>grid to CRS</cite> transform.</li>
  *   <li>An <em>estimation</em> of {@linkplain #resolution(boolean) grid resolution} along each CRS axes,
  *       computed from the <cite>grid to CRS</cite> transform and eventually from the grid extent.</li>
- *   <li>An {@linkplain #isConversionLinear indication of whether conversion for an axis is linear or not}.</li>
+ *   <li>An {@linkplain #isConversionLinear indication of whether conversion for some axes is linear or not}.</li>
  * </ul>
  *
- * All above properties except the CRS should be mandatory, but are allowed to be temporarily absent during
- * grid coverage construction. Temporarily absent properties are allowed because they may be inferred from
- * a wider context. For example a grid geometry know nothing about {@link RenderedImage},
+ * The first three properties should be mandatory, but are allowed to be temporarily absent during
+ * grid coverage construction. Temporarily absent properties are allowed because they may be inferred
+ * from a wider context. For example a grid geometry know nothing about {@link RenderedImage},
  * but {@code GridCoverage2D} does and may use that information for providing a missing grid envelope.
  * By default, any request for an undefined property will throw an {@link IncompleteGridGeometryException}.
  * In order to check if a property is defined, use {@link #isDefined(int)}.
@@ -344,7 +345,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no envelope —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ENVELOPE})</code> returned {@code false}.
      */
-    public ImmutableEnvelope getEnvelope() throws IncompleteGridGeometryException {
+    public Envelope getEnvelope() throws IncompleteGridGeometryException {
         if (envelope != null && !envelope.isAllNaN()) {
             return envelope;
         }
@@ -356,7 +357,7 @@ public class GridGeometry implements Serializable {
      * for {@link java.awt.image.BufferedImage}, but may be non-zero for arbitrary {@link RenderedImage}.
      * A grid with 512 cells can have a minimum coordinate of 0 and maximum of 511.
      *
-     * @return the grid envelope (never {@code null}).
+     * @return the valid extent of grid coordinates (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no extent —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #EXTENT})</code> returned {@code false}.
      */
@@ -395,7 +396,7 @@ public class GridGeometry implements Serializable {
      * </ul>
      *
      * @param  anchor  the pixel part to map.
-     * @return the transform (never {@code null}).
+     * @return the conversion from grid coordinates to "real world" coordinates (never {@code null}).
      * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      * @throws IncompleteGridGeometryException if this grid geometry has no transform —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #GRID_TO_CRS})</code> returned {@code false}.
@@ -418,10 +419,10 @@ public class GridGeometry implements Serializable {
     /**
      * Indicates whether the <cite>grid to CRS</cite> conversion is linear for all the specified CRS axes.
      * The conversion from grid coordinates to real world coordinates is often linear for some dimensions,
-     * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 3)
+     * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 2)
      * is often non-linear, for example with data at 0, 5, 10, 100 and 1000 metres.
      *
-     * @param  targets  indices of the CRS axes. This is not necessarily the same than indices of grid axes.
+     * @param  targets  indices of CRS axes. This is not necessarily the same than indices of grid axes.
      * @return {@code true} if the conversion from grid coordinates to "real world" coordinates is linear
      *         for all the given CRS dimension.
      */
@@ -437,12 +438,13 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns an <em>estimation</em> of the grid resolution, in units of the coordinate reference system axes.
-     * If non-null, the length of the returned array is the number of CRS dimensions, with {@code resolution[0]}
+     * The length of the returned array is the number of CRS dimensions, with {@code resolution[0]}
      * being the resolution along the first CRS axis, {@code resolution[1]} the resolution along the second CRS
      * axis, <i>etc</i>. Note that this axis order is not necessarily the same than grid axis order.
      *
-     * <p>If some resolutions are not constant factors (i.e. the {@code gridToCRS} transform for the corresponding
-     * dimension is non-linear), then the resolution is set to one of the following values:</p>
+     * <p>If the resolution at CRS dimension <var>i</var> is not a constant factor
+     * (i.e. the <code>{@linkplain #isConversionLinear(int...) isConversionLinear}(i)</code> returns {@code false}),
+     * then {@code resolution[i]} is set to one of the following values:</p>
      *
      * <ul>
      *   <li>{@link Double#NaN} if {@code allowEstimates} is {@code false}.</li>
@@ -455,7 +457,7 @@ public class GridGeometry implements Serializable {
      * The resolution is computed and may be representative of only a part of the grid.</div>
      *
      * @param  allowEstimates  whether to provide some values even for resolutions that are not constant factors.
-     * @return an <em>estimation</em> of the grid resolution.
+     * @return an <em>estimation</em> of the grid resolution (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no resolution —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #RESOLUTION})</code> returned {@code false}.
      */
@@ -503,6 +505,9 @@ public class GridGeometry implements Serializable {
      * <p>We keep trace of non-linear dimensions in a bitmask, with bits of non-linear dimensions set to 1.
      * This limit us to 64 dimensions, which is assumed more than enough. Note that {@code GridGeometry} can
      * contain more dimensions provided that index of the last non-linear dimension is not greater than 64.</p>
+     *
+     * @param  gridToCRS  the transform to "real world" coordinates, or {@code null} if unknown.
+     * @return a bitmask of dimensions, or 0 (i.e. conversion assumed fully linear) if the given transform was null.
      */
     private static long findNonLinearTargets(final MathTransform gridToCRS) {
         long nonLinearDimensions = 0;
@@ -611,14 +616,17 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns {@code true} if all the parameters specified by the argument are set.
+     * If this method returns {@code true}, then invoking the corresponding getter
+     * methods will not throw {@link IncompleteGridGeometryException}.
      *
-     * @param  bitmask any combination of {@link #CRS}, {@link #ENVELOPE}, {@link #EXTENT} and {@link #GRID_TO_CRS}.
+     * @param  bitmask  any combination of {@link #CRS}, {@link #ENVELOPE}, {@link #EXTENT},
+     *         {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
      * @return {@code true} if all specified attributes are defined (i.e. invoking the
      *         corresponding method will not thrown an {@link IncompleteGridGeometryException}).
      * @throws IllegalArgumentException if the specified bitmask is not a combination of known masks.
      */
     public boolean isDefined(final int bitmask) throws IllegalArgumentException {
-        if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS)) != 0) {
+        if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | RESOLUTION)) != 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
