@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.Objects;
 import java.io.Serializable;
 import java.awt.image.RenderedImage;            // For javadoc only.
-import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -40,18 +39,22 @@ import org.opengis.coverage.grid.GridEnvelope;
 
 
 /**
- * Describes the valid extent of grid coordinates and the transform from those grid coordinates
- * to real world coordinates. Grid geometries contains:
+ * Valid extent of grid coordinates together with the transform from those grid coordinates
+ * to real world coordinates. {@code GridGeometry} contains:
  *
  * <ul>
- *   <li>A <cite>grid envelope</cite> (a.k.a. <cite>"grid extent"</cite>),
+ *   <li>A {@linkplain #getExtent() grid extent} (a.k.a. <cite>grid envelope</cite>),
  *       often inferred from the {@link RenderedImage} size.</li>
- *   <li>A <cite>grid to CRS</cite> {@link MathTransform},
- *       which can be inferred from the grid envelope and the georeferenced envelope.</li>
- *   <li>A georeferenced {@link Envelope}, which can be inferred from the grid envelope
- *       and the <cite>grid to CRS</cite> transform.</li>
- *   <li>An optional {@link CoordinateReferenceSystem} (CRS) specified as part of the georeferenced envelope.
+ *   <li>A {@linkplain #getGridToCRS grid to CRS} transform,
+ *       which may be inferred from the grid extent and the georeferenced envelope.</li>
+ *   <li>A {@linkplain #getEnvelope() georeferenced envelope}, which can be inferred
+ *       from the grid extent and the <cite>grid to CRS</cite> transform.</li>
+ *   <li>An optional {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS)
+ *       specified as part of the georeferenced envelope.
  *       This CRS is the target of the <cite>grid to CRS</cite> transform.</li>
+ *   <li>An <em>estimation</em> of {@linkplain #resolution(boolean) grid resolution} along each CRS axes,
+ *       computed from the <cite>grid to CRS</cite> transform and eventually from the grid extent.</li>
+ *   <li>An {@linkplain #isConversionLinear indication of whether conversion for an axis is linear or not}.</li>
  * </ul>
  *
  * All above properties except the CRS should be mandatory, but are allowed to be temporarily absent during
@@ -109,7 +112,7 @@ public class GridGeometry implements Serializable {
      * A bitmask to specify the validity of the grid resolution.
      *
      * @see #isDefined(int)
-     * @see #resolution()
+     * @see #resolution(boolean)
      */
     public static final int RESOLUTION = 16;
 
@@ -135,16 +138,12 @@ public class GridGeometry implements Serializable {
 
     /**
      * The conversion from grid indices to "real world" coordinates, or {@code null} if unknown.
-     * This conversion is usually affine. It maps {@linkplain PixelInCell#CELL_CENTER pixel center}
-     * to "real world" coordinate, for example using the following lines:
-     *
-     * {@preformat java
-     *     DirectPosition indicesOfCell = new GeneralDirectPosition(2, 3, 4):
-     *     DirectPosition aPixelCenter  = gridToCRS.transform(indicesOfCell, null);
-     * }
+     * If non-null, the conversion shall map {@linkplain PixelInCell#CELL_CENTER pixel center}.
+     * This conversion is usually, but not necessarily, affine.
      *
      * @see #CRS
      * @see #getGridToCRS(PixelInCell)
+     * @see PixelInCell#CELL_CENTER
      */
     protected final MathTransform gridToCRS;
 
@@ -161,9 +160,21 @@ public class GridGeometry implements Serializable {
      * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
      *
-     * @see #resolution()
+     * @see #RESOLUTION
+     * @see #resolution(boolean)
      */
     protected final double[] resolution;
+
+    /**
+     * Whether the conversions from grid coordinates to the CRS are linear, for each target axis.
+     * The bit located at {@code 1L << dimension} is set to 1 when the conversion at that dimension is non-linear.
+     * The dimension indices are those of the CRS, not the grid. The use of {@code long} type limits the capacity
+     * to 64 dimensions. But actually {@code GridGeometry} can contain more dimensions provided that index of the
+     * last non-linear dimension is not greater than 64.
+     *
+     * @see #isConversionLinear(int...)
+     */
+    private final long nonLinears;
 
     /**
      * Creates a new grid geometry with the same values than the given grid geometry.
@@ -177,6 +188,7 @@ public class GridGeometry implements Serializable {
         cornerToCRS = other.cornerToCRS;
         envelope    = other.envelope;
         resolution  = other.resolution;
+        nonLinears  = other.nonLinears;
     }
 
     /*
@@ -189,6 +201,15 @@ public class GridGeometry implements Serializable {
     /**
      * Creates a new grid geometry from a grid envelope and a mapping from pixel coordinates to "real world" coordinates.
      * At least one of {@code extent}, {@code gridToCRS} or {@code crs} arguments shall be non-null.
+     * If {@code gridToCRS} is non-null, than {@code anchor} shall be non-null too with one of the following values:
+     *
+     * <ul>
+     *   <li>{@link PixelInCell#CELL_CENTER} if conversions of cell indices by {@code gridToCRS} give "real world"
+     *       coordinates close to the center of each cell.</li>
+     *   <li>{@link PixelInCell#CELL_CORNER} if conversions of cell indices by {@code gridToCRS} give "real world"
+     *       coordinates at the corner of each cell. The cell corner is the one for which all grid indices have the
+     *       smallest values (closest to negative infinity).</li>
+     * </ul>
      *
      * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  anchor     {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
@@ -239,6 +260,7 @@ public class GridGeometry implements Serializable {
         } else {
             resolution = null;
         }
+        nonLinears = findNonLinearTargets(gridToCRS);
     }
 
     /**
@@ -277,6 +299,24 @@ public class GridGeometry implements Serializable {
              * this point since the constructor verified that at least one argument was non-null.
              */
             return envelope.getDimension();
+        }
+    }
+
+    /**
+     * Returns the number of dimensions of the <em>CRS</em>. This is typically the same than the
+     * number of {@linkplain #getDimension() grid dimensions}, but not necessarily.
+     */
+    private int getTargetDimension() {
+        if (gridToCRS != null) {
+            return gridToCRS.getTargetDimensions();
+        } else if (envelope != null) {
+            return envelope.getDimension();
+        } else {
+            /*
+             * Last resort only since we have no guarantee that the grid dimension is the same
+             * then the CRS dimension (converse of the rational in getDimension() method).
+             */
+            return extent.getDimension();
         }
     }
 
@@ -345,11 +385,13 @@ public class GridGeometry implements Serializable {
      * }
      *
      * Callers must specify whether they want the "real world" coordinates of pixel center or pixel corner.
+     * The cell corner is the one for which all grid indices have the smallest values (closest to negative infinity).
      * As a rule of thumb:
      *
      * <ul>
      *   <li>Use {@link PixelInCell#CELL_CENTER} for transforming <em>points</em>.</li>
-     *   <li>Use {@link PixelInCell#CELL_CORNER} for transforming <em>envelopes</em>.</li>
+     *   <li>Use {@link PixelInCell#CELL_CORNER} for transforming <em>envelopes</em>
+     *       with inclusive lower coordinates and <strong>exclusive</strong> upper coordinates.</li>
      * </ul>
      *
      * @param  anchor  the pixel part to map.
@@ -374,24 +416,63 @@ public class GridGeometry implements Serializable {
     }
 
     /**
+     * Indicates whether the <cite>grid to CRS</cite> conversion is linear for all the specified CRS axes.
+     * The conversion from grid coordinates to real world coordinates is often linear for some dimensions,
+     * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 3)
+     * is often non-linear, for example with data at 0, 5, 10, 100 and 1000 metres.
+     *
+     * @param  targets  indices of the CRS axes. This is not necessarily the same than indices of grid axes.
+     * @return {@code true} if the conversion from grid coordinates to "real world" coordinates is linear
+     *         for all the given CRS dimension.
+     */
+    public boolean isConversionLinear(final int... targets) {
+        final int dimension = getTargetDimension();
+        long mask = 0;
+        for (final int d : targets) {
+            ArgumentChecks.ensureValidIndex(dimension, d);
+            if (d < Long.SIZE) mask |= (1L << d);
+        }
+        return (nonLinears & mask) == 0;
+    }
+
+    /**
      * Returns an <em>estimation</em> of the grid resolution, in units of the coordinate reference system axes.
      * If non-null, the length of the returned array is the number of CRS dimensions, with {@code resolution[0]}
      * being the resolution along the first CRS axis, {@code resolution[1]} the resolution along the second CRS
      * axis, <i>etc</i>. Note that this axis order is not necessarily the same than grid axis order.
      *
      * <p>If some resolutions are not constant factors (i.e. the {@code gridToCRS} transform for the corresponding
-     * dimension is non-linear), then the resolution is set to an arbitrary representative resolution (currently
-     * the resolution in the grid center, but this arbitrary choice may change in any future Apache SIS version).</p>
+     * dimension is non-linear), then the resolution is set to one of the following values:</p>
      *
+     * <ul>
+     *   <li>{@link Double#NaN} if {@code allowEstimates} is {@code false}.</li>
+     *   <li>An arbitrary representative resolution otherwise. This is currently the resolution in the grid center,
+     *       but this arbitrary choice may change in any future Apache SIS version.</li>
+     * </ul>
+     *
+     * <div class="note"><b>API note:</b>
+     * this method name does not have the {@code "get"} prefix because it does not return a supplied value.
+     * The resolution is computed and may be representative of only a part of the grid.</div>
+     *
+     * @param  allowEstimates  whether to provide some values even for resolutions that are not constant factors.
      * @return an <em>estimation</em> of the grid resolution.
      * @throws IncompleteGridGeometryException if this grid geometry has no resolution —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #RESOLUTION})</code> returned {@code false}.
      */
-    public double[] resolution() {
+    public double[] resolution(final boolean allowEstimates) {
         if (resolution != null) {
-            resolution.clone();
+            final double[] res = resolution.clone();
+            if (!allowEstimates) {
+                long nonLinearDimensions = nonLinears;
+                while (nonLinearDimensions != 0) {
+                    final int i = Long.numberOfTrailingZeros(nonLinearDimensions);
+                    nonLinearDimensions &= ~(1L << i);
+                    res[i] = Double.NaN;
+                }
+            }
+            return res;
         }
-        throw incomplete(ENVELOPE, (gridToCRS == null) ? Resources.Keys.UnspecifiedTransform : Resources.Keys.UnspecifiedGridExtent);
+        throw incomplete(RESOLUTION, (gridToCRS == null) ? Resources.Keys.UnspecifiedTransform : Resources.Keys.UnspecifiedGridExtent);
     }
 
     /**
@@ -403,7 +484,7 @@ public class GridGeometry implements Serializable {
      */
     private static double[] resolution(final Matrix gridToCRS, final int numToIgnore) {
         final double[] resolution = new double[gridToCRS.getNumRow() - numToIgnore];
-        final double[] buffer = new double[gridToCRS.getNumCol() - numToIgnore];
+        final double[] buffer     = new double[gridToCRS.getNumCol() - numToIgnore];
         for (int j=0; j<resolution.length; j++) {
             for (int i=0; i<buffer.length; i++) {
                 buffer[i] = gridToCRS.getElement(j,i);
@@ -418,14 +499,13 @@ public class GridGeometry implements Serializable {
      * Current implementation assumes that everything else than {@code LinearTransform} and pass-through dimensions are non-linear.
      * This is not always true (e.g. in a Mercator projection, the "longitude → easting" part is linear too), but should be okay
      * for {@code GridGeometry} purposes.
+     *
+     * <p>We keep trace of non-linear dimensions in a bitmask, with bits of non-linear dimensions set to 1.
+     * This limit us to 64 dimensions, which is assumed more than enough. Note that {@code GridGeometry} can
+     * contain more dimensions provided that index of the last non-linear dimension is not greater than 64.</p>
      */
-    private static int[] findNonLinearTargets(final MathTransform gridToCRS) {
-        /*
-         * We keep trace of non-linear dimensions in a bitmask, with bits of non-linear dimensions set to 1.
-         * This limit us to 64 dimensions, which is assumed more than enough.
-         */
+    private static long findNonLinearTargets(final MathTransform gridToCRS) {
         long nonLinearDimensions = 0;
-        final int dimension = gridToCRS.getTargetDimensions();
         for (final MathTransform step : MathTransforms.getSteps(gridToCRS)) {
             final Matrix mat = MathTransforms.getMatrix(step);
             if (mat != null) {
@@ -441,12 +521,12 @@ public class GridGeometry implements Serializable {
                     for (int j = mat.getNumRow() - 1; --j >= 0;) {          // Possible target dimensions
                         if (mat.getElement(j, i) != 0) {
                             if (j >= Long.SIZE) {
-                                throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
+                                throw excessiveDimension(gridToCRS);
                             }
-                            nonLinearDimensions |= (1 << j);
+                            nonLinearDimensions |= (1L << j);
                         }
                     }
-                    mask &= ~(1 << i);
+                    mask &= ~(1L << i);
                 }
             } else if (step instanceof PassThroughTransform) {
                 /*
@@ -460,9 +540,9 @@ public class GridGeometry implements Serializable {
                 final int maxBits = Long.SIZE - Math.max(dimIncrease, 0);
                 for (final int i : ((PassThroughTransform) step).getModifiedCoordinates()) {
                     if (i >= maxBits) {
-                        throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
+                        throw excessiveDimension(gridToCRS);
                     }
-                    mask |= (1 << i);
+                    mask |= (1L << i);
                 }
                 /*
                  * The mask we just computed identifies non-linear source dimensions, but we need target
@@ -500,24 +580,21 @@ public class GridGeometry implements Serializable {
                 /*
                  * Not a known transform. Assume all dimensions may become non-linear.
                  */
-                final int[] indices = new int[dimension];
-                for (int i=0; i<dimension; i++) {
-                    indices[i] = i;
+                final int dimension = gridToCRS.getTargetDimensions();
+                if (dimension > Long.SIZE) {
+                    throw excessiveDimension(gridToCRS);
                 }
-                return indices;
+                return (dimension >= Long.SIZE) ? -1 : (1L << dimension) - 1;
             }
         }
-        /*
-         * Expand the bitmasks to an array.
-         */
-        int i = 0;
-        final int[] indices = new int[Long.bitCount(nonLinearDimensions)];
-        while (nonLinearDimensions != 0) {
-            final int p = Long.numberOfTrailingZeros(nonLinearDimensions);
-            nonLinearDimensions &= ~(1 << p);
-            indices[i++] = p;
-        }
-        return indices;
+        return nonLinearDimensions;
+    }
+
+    /**
+     * Invoked when the number of non-linear dimensions exceeds the {@code GridGeometry} capacity.
+     */
+    private static ArithmeticException excessiveDimension(final MathTransform gridToCRS) {
+        return new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, gridToCRS.getTargetDimensions()));
     }
 
     /**
