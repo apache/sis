@@ -264,11 +264,14 @@ public class GridExtent implements GridEnvelope, Serializable {
     }
 
     /**
-     * Returns the median (or center) coordinates of this grid extent.
+     * Returns the grid coordinates of a representative point.
+     * This point may be used for estimating a {@linkplain GridGeometry#getResolution(boolean) grid resolution}.
+     * The default implementation returns the median (or center) coordinates of this grid extent,
+     * but subclasses can override this method if another point is considered more representative.
      *
-     * @return the coordinates of the grid center.
+     * @return the grid coordinates of a representative point.
      */
-    public DirectPosition getMedian() {
+    public DirectPosition getCentroid() {
         final int dimension = getDimension();
         final GeneralDirectPosition center = new GeneralDirectPosition(dimension);
         for (int i=0; i<dimension; i++) {
@@ -306,6 +309,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      */
     public GridExtent subExtent(final int lower, final int upper) {
         final int dimension = getDimension();
+        if (lower == 0 && upper == dimension) return this;
         ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
         final int newDim = upper - lower;
         if (newDim == dimension && getClass() == GridExtent.class) {

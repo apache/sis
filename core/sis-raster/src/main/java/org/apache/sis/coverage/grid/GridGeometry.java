@@ -53,7 +53,7 @@ import org.opengis.coverage.grid.GridEnvelope;
  *   <li>An optional {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS)
  *       specified as part of the georeferenced envelope.
  *       This CRS is the target of the <cite>grid to CRS</cite> transform.</li>
- *   <li>An <em>estimation</em> of {@linkplain #resolution(boolean) grid resolution} along each CRS axes,
+ *   <li>An <em>estimation</em> of {@link #getResolution(boolean) grid resolution} along each CRS axes,
  *       computed from the <cite>grid to CRS</cite> transform and eventually from the grid extent.</li>
  *   <li>An {@linkplain #isConversionLinear indication of whether conversion for some axes is linear or not}.</li>
  * </ul>
@@ -113,7 +113,7 @@ public class GridGeometry implements Serializable {
      * A bitmask to specify the validity of the grid resolution.
      *
      * @see #isDefined(int)
-     * @see #resolution(boolean)
+     * @see #getResolution(boolean)
      */
     public static final int RESOLUTION = 16;
 
@@ -162,7 +162,7 @@ public class GridGeometry implements Serializable {
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
      *
      * @see #RESOLUTION
-     * @see #resolution(boolean)
+     * @see #getResolution(boolean)
      */
     protected final double[] resolution;
 
@@ -212,6 +212,11 @@ public class GridGeometry implements Serializable {
      *       smallest values (closest to negative infinity).</li>
      * </ul>
      *
+     * <div class="note"><b>API note:</b>
+     * there is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
+     * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
+     * to always think about wether their <cite>grid to CRS</cite> transform is mapping pixel corner or center.</div>
+     *
      * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  anchor     {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
      *                    {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
@@ -257,7 +262,7 @@ public class GridGeometry implements Serializable {
         if (mat != null) {
             resolution = resolution(mat, 1);
         } else if (extent != null && gridToCRS != null) {
-            resolution = resolution(gridToCRS.derivative(this.extent.getMedian()), 0);
+            resolution = resolution(gridToCRS.derivative(this.extent.getCentroid()), 0);
         } else {
             resolution = null;
         }
@@ -395,6 +400,11 @@ public class GridGeometry implements Serializable {
      *       with inclusive lower coordinates and <strong>exclusive</strong> upper coordinates.</li>
      * </ul>
      *
+     * <div class="note"><b>API note:</b>
+     * there is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
+     * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
+     * to always think about wether the desired <cite>grid to CRS</cite> transform shall map pixel corner or center.</div>
+     *
      * @param  anchor  the pixel part to map.
      * @return the conversion from grid coordinates to "real world" coordinates (never {@code null}).
      * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
@@ -417,26 +427,6 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Indicates whether the <cite>grid to CRS</cite> conversion is linear for all the specified CRS axes.
-     * The conversion from grid coordinates to real world coordinates is often linear for some dimensions,
-     * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 2)
-     * is often non-linear, for example with data at 0, 5, 10, 100 and 1000 metres.
-     *
-     * @param  targets  indices of CRS axes. This is not necessarily the same than indices of grid axes.
-     * @return {@code true} if the conversion from grid coordinates to "real world" coordinates is linear
-     *         for all the given CRS dimension.
-     */
-    public boolean isConversionLinear(final int... targets) {
-        final int dimension = getTargetDimension();
-        long mask = 0;
-        for (final int d : targets) {
-            ArgumentChecks.ensureValidIndex(dimension, d);
-            if (d < Long.SIZE) mask |= (1L << d);
-        }
-        return (nonLinears & mask) == 0;
-    }
-
-    /**
      * Returns an <em>estimation</em> of the grid resolution, in units of the coordinate reference system axes.
      * The length of the returned array is the number of CRS dimensions, with {@code resolution[0]}
      * being the resolution along the first CRS axis, {@code resolution[1]} the resolution along the second CRS
@@ -448,20 +438,17 @@ public class GridGeometry implements Serializable {
      *
      * <ul>
      *   <li>{@link Double#NaN} if {@code allowEstimates} is {@code false}.</li>
-     *   <li>An arbitrary representative resolution otherwise. This is currently the resolution in the grid center,
-     *       but this arbitrary choice may change in any future Apache SIS version.</li>
+     *   <li>An arbitrary representative resolution otherwise.
+     *       Current implementation computes the resolution at {@linkplain GridExtent#getCentroid() grid center},
+     *       but different implementations may use alternative algorithms.</li>
      * </ul>
-     *
-     * <div class="note"><b>API note:</b>
-     * this method name does not have the {@code "get"} prefix because it does not return a supplied value.
-     * The resolution is computed and may be representative of only a part of the grid.</div>
      *
      * @param  allowEstimates  whether to provide some values even for resolutions that are not constant factors.
      * @return an <em>estimation</em> of the grid resolution (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no resolution —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #RESOLUTION})</code> returned {@code false}.
      */
-    public double[] resolution(final boolean allowEstimates) {
+    public double[] getResolution(final boolean allowEstimates) {
         if (resolution != null) {
             final double[] res = resolution.clone();
             if (!allowEstimates) {
@@ -494,6 +481,26 @@ public class GridGeometry implements Serializable {
             resolution[j] = MathFunctions.magnitude(buffer);
         }
         return resolution;
+    }
+
+    /**
+     * Indicates whether the <cite>grid to CRS</cite> conversion is linear for all the specified CRS axes.
+     * The conversion from grid coordinates to real world coordinates is often linear for some dimensions,
+     * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 2)
+     * is often non-linear, for example with data at 0, 5, 10, 100 and 1000 metres.
+     *
+     * @param  targets  indices of CRS axes. This is not necessarily the same than indices of grid axes.
+     * @return {@code true} if the conversion from grid coordinates to "real world" coordinates is linear
+     *         for all the given CRS dimension.
+     */
+    public boolean isConversionLinear(final int... targets) {
+        final int dimension = getTargetDimension();
+        long mask = 0;
+        for (final int d : targets) {
+            ArgumentChecks.ensureValidIndex(dimension, d);
+            if (d < Long.SIZE) mask |= (1L << d);
+        }
+        return (nonLinears & mask) == 0;
     }
 
     /**
