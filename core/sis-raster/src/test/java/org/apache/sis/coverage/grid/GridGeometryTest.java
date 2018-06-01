@@ -90,7 +90,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {1, 1, 1, 1}, grid.resolution(false), STRICT);
+        assertArrayEquals("resolution", new double[] {1, 1, 1, 1}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2, 3));
     }
 
@@ -135,7 +135,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Verify other computed properties.
          */
-        assertArrayEquals("resolution", new double[] {1, 1, 1}, grid.resolution(false), STRICT);
+        assertArrayEquals("resolution", new double[] {1, 1, 1}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2));
     }
 
@@ -157,8 +157,8 @@ public final strictfp class GridGeometryTest extends TestCase {
         final MathTransform temporal  = MathTransforms.linear(3600, 60);
         final MathTransform gridToCRS = MathTransforms.compound(horizontal, vertical, temporal);
         final GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
-        assertArrayEquals("resolution", new double[] {0.5, 0.25,        6.0, 3600}, grid.resolution(true),  STRICT);
-        assertArrayEquals("resolution", new double[] {0.5, 0.25, Double.NaN, 3600}, grid.resolution(false), STRICT);
+        assertArrayEquals("resolution", new double[] {0.5, 0.25,        6.0, 3600}, grid.getResolution(true),  STRICT);
+        assertArrayEquals("resolution", new double[] {0.5, 0.25, Double.NaN, 3600}, grid.getResolution(false), STRICT);
         assertFalse("isConversionLinear", grid.isConversionLinear(0, 1, 2, 3));
         assertTrue ("isConversionLinear", grid.isConversionLinear(0, 1,    3));
     }
