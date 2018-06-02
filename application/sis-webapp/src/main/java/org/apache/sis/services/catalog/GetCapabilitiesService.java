@@ -16,12 +16,16 @@
  */
 package org.apache.sis.services.catalog;
 
+import java.io.StringWriter;
+import java.util.Collections;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.xml.bind.JAXBException;
+import javax.xml.transform.Result;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.xml.XML;
 
@@ -35,9 +39,17 @@ public class GetCapabilitiesService {
     @GET
     @Path("/GetCapabilities")
     @Consumes("application/xml")
-    public String getTest() throws JAXBException{
+    public String  getTest() throws JAXBException{
         GetCapabilities a = new GetCapabilities();
-        return XML.marshal(a.getServiceIdentification());
+//        return XML.marshal(a.getOperationMetadata());
+        StreamResult out = new StreamResult(new StringWriter());
+        XML.marshal(a.getServiceIdentification(), out, Collections.singletonMap(XML.METADATA_VERSION, "2007"));
+        
+        return out.getWriter().toString();
     }
+//    public static void main(String[] args) throws JAXBException {
+//        GetCapabilitiesService get =new GetCapabilitiesService();
+//        System.out.println(get.getTest().getWriter().toString());
+//    }
 
 }

@@ -18,14 +18,21 @@ package org.apache.sis.services.catalog;
  */
 
 
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
@@ -42,16 +49,21 @@ import org.apache.sis.metadata.iso.identification.DefaultOperationMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.util.iso.DefaultTypeName;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.XML;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.KeywordClass;
 import org.opengis.metadata.identification.KeywordType;
+import org.opengis.metadata.identification.OperationMetadata;
+import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.xml.sax.SAXException;
 import sun.java2d.pipe.SpanShapeRenderer;
 
 /**
@@ -71,7 +83,7 @@ public class GetCapabilities {
     }
 
 //    public DefaultResponsibleParty res;
-    public DefaultServiceIdentification getServiceIdentification() {
+    public ServiceIdentification getServiceIdentification() {
         DefaultCitation citation = new DefaultCitation();
         citation.setTitle(new SimpleInternationalString("Catalogue Service for Spatial Information"));
         serviceIdentification.setCitation(citation);
@@ -101,14 +113,14 @@ public class GetCapabilities {
 //Service type
 //        GenericName generic = new GenericName();
 //        generic.toInternationalString();
-//        serviceIdentification.setServiceType(generic);
+        serviceIdentification.setServiceType(Names.createLocalName(null, null, "le nom"));
 //       Service constrains
         List<DefaultConstraints> constraints = new ArrayList<DefaultConstraints>();
 //        constraints.
         serviceIdentification.setResourceConstraints(constraints);
         return serviceIdentification;
     }
-    public DefaultMetadata myMethod() {
+    public Metadata myMethod() {
         UUID identifier = UUID.randomUUID();
         DefaultMetadata metadata = new DefaultMetadata();
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.UUID, identifier);
@@ -116,7 +128,7 @@ public class GetCapabilities {
         return metadata;
     }
 
-    public DefaultServiceIdentification getServiceProvide() {
+    public ServiceIdentification getServiceProvide() {
 //        ResponsibleParty
         DefaultResponsibleParty responsibleParty = new DefaultResponsibleParty();
         responsibleParty.setOrganisationName(new SimpleInternationalString("Apache SIS"));
@@ -158,7 +170,7 @@ public class GetCapabilities {
         return serviceProvide;
     }
 
-    public DefaultOperationMetadata getOperationMetadata() {
+    public OperationMetadata getOperationMetadata() {
         operationMetadata.setOperationName("GetCapabilities");
         List<DistributedComputingPlatform> a = new ArrayList<>();
         a.add(DistributedComputingPlatform.HTTP);
@@ -180,11 +192,51 @@ public class GetCapabilities {
 //       operationMetadata.setParameters(newValues);
         return operationMetadata;
     }
+    
+    public static void main(String[] args) throws JAXBException, SAXException {
+//        GetCapabilities a = new GetCapabilities();
+//        String b = XML.marshal(a.getOperationMetadata());
+//        System.out.println(b);
 
-    public static void main(String[] args) throws JAXBException {
-        GetCapabilities a = new GetCapabilities();
-        String b = XML.marshal(a.getOperationMetadata());
-        System.out.println(b);
+        JAXBContext ctx = JAXBContext.newInstance(BriefRecord.class);
 
+        BriefRecord root = new BriefRecord();
+        root.setTitle("dsds");
+//        root.setContributor("dsdsds");
+        BoundingBox bbox = new BoundingBox();
+        List<Double> upper = new ArrayList<>();
+        upper.add(18.9);
+        upper.add(19.9);
+//        double[] u = {18.9 ,20.9};
+        List<Double> lower = new ArrayList<>();
+        lower.add(20.9);
+        lower.add(30.9);
+        bbox.setLowerCorner(lower);
+        bbox.setUpperCorner(upper);
+//        
+//        root.setCoverage(bbox);
+//        root.setCreator("dsds");
+//        root.setDescription("sdsd");
+//        root.setFormat("sasa");
+//        root.setLanguage("dsdsd");
+//        root.setRelation("dsds");
+//        root.setPublisher("dsds");
+//        root.setRights("dsdsd");
+        root.setType("tee");
+//        root.setSource("dsds");
+        root.setIdentifier("dwsds");
+//        root.setSubject("dsds");
+        String schemaLanguage = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+        SchemaFactory sf = SchemaFactory.newInstance(schemaLanguage);
+        File f = new File("build/classes/org/apache/sis/services/catalog/schema/record.xsd");
+
+         // create new schema
+        Schema schema = sf.newSchema(f);
+        Marshaller m = ctx.createMarshaller();
+        m.setSchema(schema);
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(root, System.out);
     }
+
+    
 }
