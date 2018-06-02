@@ -23,7 +23,7 @@ package org.apache.sis.storage.geotiff;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -43,6 +43,12 @@ final class GeoCodes {
      * The code value for a property defined by the user instead than by an EPSG code.
      */
     public static final short userDefined = 32767;
+
+    /**
+     * An alternative code for {@link #undefined} found in some GeoTIFF file.
+     * This is not a standard value. This is used only in some methods implemented defensively.
+     */
+    static final short missing = -1;
 
     /*
      * 6.3.1.1 Model Type Codes
