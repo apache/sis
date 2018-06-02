@@ -354,6 +354,10 @@ class PropertyAccessor {
             Class<?> elementType = getter.getReturnType();
             if (Collection.class.isAssignableFrom(elementType)) {
                 elementType = Classes.boundOfParameterizedProperty(getter);
+                if (elementType == null) {
+                    // Subclass has erased parameterized type. Use method declared in the interface.
+                    elementType = Classes.boundOfParameterizedProperty(getters[i]);
+                }
             }
             elementTypes[i] = Numbers.primitiveToWrapper(elementType);
         }
@@ -1238,7 +1242,7 @@ class PropertyAccessor {
         }
         Object copy = copier.copies.get(metadata);
         if (copy == null) {
-            copy = implementation.newInstance();
+            copy = implementation.getConstructor().newInstance();
             copier.copies.put(metadata, copy);              // Need to be first in case of cyclic graphs.
             final Object[] arguments = new Object[1];
             for (int i=0; i<allCount; i++) {
