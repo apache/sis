@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.sql.Statement;
@@ -33,6 +35,7 @@ import java.lang.reflect.Modifier;
 
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.util.FactoryException;
 
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
@@ -48,6 +51,7 @@ import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.xml.IdentifiedObject;
 
 // Branch-dependent imports
 import org.opengis.util.ControlledVocabulary;
@@ -106,7 +110,7 @@ import org.opengis.util.ControlledVocabulary;
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -214,6 +218,8 @@ public class MetadataWriter extends MetadataSource {
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
+        } catch (FactoryException e) {
+            throw new MetadataStoreException(e.getLocalizedMessage(), e);
         }
         return identifier;
     }
@@ -233,7 +239,7 @@ public class MetadataWriter extends MetadataSource {
      *         of the expected package.
      */
     private String add(final Statement stmt, final Object metadata, final Map<Object,String> done,
-            final String parent) throws ClassCastException, SQLException
+            final String parent) throws ClassCastException, SQLException, FactoryException
     {
         final SQLBuilder helper = helper();
         /*
@@ -306,9 +312,9 @@ public class MetadataWriter extends MetadataSource {
                     }
                 }
                 /*
-                 * Determine the column data type. We infer that type from the method return value, not from the
-                 * actual value for in the given metadata object, since the value type for the same property may
-                 * be different in future calls to this method.
+                 * Determine the column data type. We infer that type from the method return value, not from
+                 * actual value of given metadata object, since the value type for the same property may be
+                 * different in future calls to this method.
                  */
                 int maxLength = maximumValueLength;
                 Class<?> rt = colTypes.get(column);
@@ -364,7 +370,7 @@ public class MetadataWriter extends MetadataSource {
          */
         final int minimalIdentifierLength;
         if (isChildTable) {
-            identifier = TYPE_OPEN + table + TYPE_CLOSE + identifier;
+            identifier = TableHierarchy.encode(table, identifier);
             minimalIdentifierLength = table.length() + 2;
         } else {
             minimalIdentifierLength = 0;
@@ -507,7 +513,7 @@ public class MetadataWriter extends MetadataSource {
         /*
          * Create the SQL statement which will insert the data.
          */
-        helper.clear().append("INSERT INTO ").appendIdentifier(schema(), table).append(" (").append(ID_COLUMN);
+        helper.clear().append("INSERT INTO ").appendIdentifier(schema(), table).append(" (").appendIdentifier(ID_COLUMN);
         for (final String column : asSingletons.keySet()) {
             helper.append(", ").appendIdentifier(column);
         }
@@ -601,7 +607,7 @@ public class MetadataWriter extends MetadataSource {
                                  * not inherited, then we have to repeat the primary key creation in every child tables.
                                  */
                                 helper.append("(CONSTRAINT ").appendIdentifier(table + "_pkey")
-                                      .append(" PRIMARY KEY (").append(ID_COLUMN).append(")) ");
+                                      .append(" PRIMARY KEY (").appendIdentifier(ID_COLUMN).append(")) ");
                             }
                             inherits = new StringBuilder(helper.append(" INHERITS (").toString());
                         } else {
@@ -633,7 +639,7 @@ public class MetadataWriter extends MetadataSource {
      */
     private String createTable(final String table, final String primaryKey) throws SQLException {
         return helper().clear().append("CREATE TABLE ").appendIdentifier(schema(), table)
-                .append(" (").append(primaryKey).append(" VARCHAR(").append(maximumIdentifierLength)
+                .append(" (").appendIdentifier(primaryKey).append(" VARCHAR(").append(maximumIdentifierLength)
                 .append(") NOT NULL PRIMARY KEY)").toString();
     }
 
@@ -644,7 +650,7 @@ public class MetadataWriter extends MetadataSource {
      * the native SQL {@code ENUM} type for making easier to add new values when a standard
      * is updated.
      */
-    private String addCode(final Statement stmt, final ControlledVocabulary code) throws SQLException {
+    private String addCode(final Statement stmt, final ControlledVocabulary code) throws SQLException, FactoryException {
         assert Thread.holdsLock(this);
         final String table = getTableName(code.getClass());
         final Set<String> columns = getExistingColumns(table);
@@ -653,16 +659,16 @@ public class MetadataWriter extends MetadataSource {
             columns.add(CODE_COLUMN);
         }
         final String identifier = Types.getCodeName(code);
-        final String query = helper().clear().append("SELECT ").append(CODE_COLUMN)
+        final String query = helper().clear().append("SELECT ").appendIdentifier(CODE_COLUMN)
                 .append(" FROM ").appendIdentifier(schema(), table).append(" WHERE ")
-                .append(CODE_COLUMN).appendCondition(identifier).toString();
+                .appendIdentifier(CODE_COLUMN).appendCondition(identifier).toString();
         final boolean exists;
         try (ResultSet rs = stmt.executeQuery(query)) {
             exists = rs.next();
         }
         if (!exists) {
             final String sql = helper().clear().append("INSERT INTO ").appendIdentifier(schema(), table)
-                    .append(" (").append(CODE_COLUMN).append(") VALUES (").appendValue(identifier)
+                    .append(" (").appendIdentifier(CODE_COLUMN).append(") VALUES (").appendValue(identifier)
                     .append(')').toString();
             if (stmt.executeUpdate(sql) != 1) {
                 throw new SQLException(Errors.format(Errors.Keys.DatabaseUpdateFailure_3, 0, table, identifier));
@@ -674,8 +680,8 @@ public class MetadataWriter extends MetadataSource {
     /**
      * Suggests an identifier (primary key) to be used for the given metadata. This method is invoked automatically
      * when a new metadata is about to be inserted in the database. The default implementation uses heuristic rules
-     * of a few "well known" metadata like {@link Identifier} and {@link Citation}. Subclasses can override this method
-     * for implementing their own heuristic.
+     * for a few "well known" metadata like {@link Identifier} and {@link Citation}. Subclasses can override this
+     * method for implementing their own heuristic.
      *
      * <p>This method does not need to care about key collision.
      * The caller will adds some suffix if this is necessary for differentiating otherwise identical identifiers.</p>
@@ -688,11 +694,22 @@ public class MetadataWriter extends MetadataSource {
      */
     protected String suggestIdentifier(final Object metadata, final Map<String,Object> asValueMap) throws SQLException {
         String identifier = null;
+        final Collection<? extends Identifier> identifiers;
         if (metadata instanceof Identifier) {
-            identifier = nonEmpty(((Identifier) metadata).getCode());
-            final String cs = nonEmpty(((Identifier) metadata).getCodeSpace());
-            if (cs != null) {
-                identifier = (identifier != null) ? (cs + DefaultNameSpace.DEFAULT_SEPARATOR + identifier) : cs;
+            identifiers = Collections.singleton((Identifier) metadata);
+        } else if (metadata instanceof IdentifiedObject) {
+            identifiers = ((IdentifiedObject) metadata).getIdentifiers();
+        } else {
+            identifiers = Collections.emptySet();
+        }
+        for (final Identifier id : identifiers) {
+            identifier = nonEmpty(id.getCode());
+            if (identifier != null) {
+                final String cs = nonEmpty(id.getCodeSpace());
+                if (cs != null) {
+                    identifier = cs + DefaultNameSpace.DEFAULT_SEPARATOR + identifier;
+                }
+                break;
             }
         }
         if (identifier == null && metadata instanceof Citation) {
@@ -769,7 +786,7 @@ public class MetadataWriter extends MetadataSource {
      * Returns {@code true} if the given code point is a reserved character.
      */
     private static boolean isReservedChar(final int c) {
-        return (c == TYPE_OPEN) || (c == TYPE_CLOSE);
+        return (c == TableHierarchy.TYPE_OPEN) || (c == TableHierarchy.TYPE_CLOSE);
     }
 
     /**

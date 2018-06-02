@@ -47,6 +47,7 @@ import java.sql.PreparedStatement;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
+import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
@@ -123,16 +124,6 @@ public class MetadataSource implements AutoCloseable {
      * we will let the database uses its own lower-case / upper-case convention.
      */
     static final String ID_COLUMN = "ID";
-
-    /**
-     * Delimiter characters for the table name in identifier. Table names are prefixed to identifiers only if
-     * the type represented by the table is a subtype. For example since {@code CI_Organisation} is a subtype
-     * of {@code CI_Party}, identifiers for organizations need to be prefixed by {@code {CI_Organisation}} in
-     * order allow {@code MetadataSource} to know in which table to search for such party.
-     *
-     * @see MetadataWriter#isReservedChar(int)
-     */
-    static final char TYPE_OPEN = '{', TYPE_CLOSE = '}';
 
     /**
      * The timeout before to close a prepared statement, in nanoseconds. This is set to 2 seconds,
@@ -672,6 +663,8 @@ public class MetadataSource implements AutoCloseable {
                         identifier = search(table, null, asMap, stmt, helper());
                     } catch (SQLException e) {
                         throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
+                    } catch (FactoryException e) {
+                        throw new MetadataStoreException(e.getLocalizedMessage(), e);
                     }
                 }
             }
@@ -692,7 +685,7 @@ public class MetadataSource implements AutoCloseable {
      * @throws SQLException if an error occurred while searching in the database.
      */
     final String search(final String table, Set<String> columns, final Map<String,Object> metadata,
-            final Statement stmt, final SQLBuilder helper) throws SQLException
+            final Statement stmt, final SQLBuilder helper) throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
         helper.clear();
@@ -743,7 +736,7 @@ public class MetadataSource implements AutoCloseable {
              * Builds the SQL statement with the resolved value.
              */
             if (helper.isEmpty()) {
-                helper.append("SELECT ").append(ID_COLUMN).append(" FROM ")
+                helper.append("SELECT ").appendIdentifier(ID_COLUMN).append(" FROM ")
                         .appendIdentifier(schema, table).append(" WHERE ");
             } else {
                 helper.append(" AND ");
@@ -811,25 +804,6 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * If the given identifier specifies a subtype of the given type, then returns that subtype.
-     * For example if the given type is {@code Party.class} and the given identifier is
-     * {@code "{CI_Organisation}EPSG"}, then this method returns {@code Organisation.class}.
-     * Otherwise this method returns {@code type} unchanged.
-     */
-    private static Class<?> subType(Class<?> type, final String identifier) {
-        if (identifier.charAt(0) == TYPE_OPEN) {
-            final int i = identifier.indexOf(TYPE_CLOSE);
-            if (i >= 0) {
-                final Class<?> subType = Types.forStandardName(identifier.substring(1, i));
-                if (subType != null && type.isAssignableFrom(subType)) {
-                    type = subType;
-                }
-            }
-        }
-        return type;
-    }
-
-    /**
      * Returns an implementation of the specified metadata interface filled with the data referenced
      * by the specified identifier. Alternatively, this method can also return a {@link CodeList} or
      * {@link Enum} element.
@@ -871,7 +845,7 @@ public class MetadataSource implements AutoCloseable {
              */
             if (value == null) {
                 Method method = null;
-                final Class<?> subType = subType(type, identifier);
+                final Class<?> subType = TableHierarchy.subType(type, identifier);
                 final Dispatcher toSearch = new Dispatcher(identifier, this);
                 try {
                     value = subType.getConstructor().newInstance();
@@ -927,7 +901,7 @@ public class MetadataSource implements AutoCloseable {
          * If the identifier is prefixed with a table name as in "{CI_Organisation}identifier",
          * the name between bracket is a subtype of the given 'type' argument.
          */
-        final Class<?> type           = subType(info.getMetadataType(), toSearch.identifier);
+        final Class<?> type           = TableHierarchy.subType(info.getMetadataType(), toSearch.identifier);
         final Class<?> returnType     = method.getReturnType();
         final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
         final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
@@ -951,7 +925,7 @@ public class MetadataSource implements AutoCloseable {
                     final SQLBuilder helper = helper();
                     final String query = helper.clear().append("SELECT * FROM ")
                             .appendIdentifier(schema, tableName).append(" WHERE ")
-                            .append(ID_COLUMN).append("=?").toString();
+                            .appendIdentifier(ID_COLUMN).append("=?").toString();
                     result = new CachedStatement(type, connection().prepareStatement(query), listeners);
                 }
                 value = result.getValue(toSearch.identifier, columnName);

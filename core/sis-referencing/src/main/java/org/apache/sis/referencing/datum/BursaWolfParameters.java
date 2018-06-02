@@ -698,7 +698,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             return WKTKeywords.ToWGS84;
         }
         formatter.setInvalidWKT(BursaWolfParameters.class, null);
-        String name = IdentifiedObjects.getUnicodeIdentifier(getTargetDatum());
+        String name = IdentifiedObjects.getSimpleNameOrIdentifier(getTargetDatum());
         if (name == null) {
             name = "Unknown";
         }

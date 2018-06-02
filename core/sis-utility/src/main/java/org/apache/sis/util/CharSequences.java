@@ -1538,7 +1538,7 @@ cmp:    while (ia < lga) {
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier
      * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
-     * @see org.apache.sis.referencing.IdentifiedObjects#getUnicodeIdentifier(IdentifiedObject)
+     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
      */
     public static boolean isUnicodeIdentifier(final CharSequence identifier) {
         final int length = length(identifier);

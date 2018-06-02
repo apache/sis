@@ -59,6 +59,7 @@ import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
@@ -68,7 +69,6 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -148,7 +148,7 @@ class CoordinateOperationRegistry {
      * Creates an identifier in the Apache SIS namespace for the given vocabulary key.
      */
     private static Identifier createIdentifier(final short key) {
-        return new NamedIdentifier(org.apache.sis.metadata.iso.citation.Citations.SIS, Vocabulary.formatInternational(key));
+        return new NamedIdentifier(Citations.SIS, Vocabulary.formatInternational(key));
     }
 
     /**
@@ -227,7 +227,7 @@ class CoordinateOperationRegistry {
             if (registry instanceof GeodeticAuthorityFactory) {
                 codeFinder = ((GeodeticAuthorityFactory) registry).newIdentifiedObjectFinder();
             } else try {
-                codeFinder = IdentifiedObjects.newFinder(Citations.getIdentifier(registry.getAuthority(), false));
+                codeFinder = IdentifiedObjects.newFinder(Citations.getIdentifier(registry.getAuthority()));
             } catch (NoSuchAuthorityFactoryException e) {
                 Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                         CoordinateOperationRegistry.class, "<init>", e);
