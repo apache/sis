@@ -255,7 +255,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
     @Override
     protected int computeHashCode() {
         final long c = Double.doubleToLongBits(initialLongitude) + 31*Double.doubleToLongBits(zoneWidth);
-        return (super.computeHashCode() ^ Numerics.hashCode(c)) + 37 * projection.hashCode();
+        return (super.computeHashCode() ^ Long.hashCode(c)) + 37 * projection.hashCode();
     }
 
     /**
