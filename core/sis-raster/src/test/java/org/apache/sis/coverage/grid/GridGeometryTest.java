@@ -28,9 +28,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 
-// Branch-dependent imports
-import org.opengis.coverage.grid.GridEnvelope;
-
 
 /**
  * Tests the {@link GridGeometry} implementation.
@@ -44,7 +41,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Verifies grid extent coordinates.
      */
-    private static void assertExtentEquals(final GridEnvelope extent, final int[] low, final int[] high) {
+    private static void assertExtentEquals(final GridExtent extent, final long[] low, final long[] high) {
         assertArrayEquals("extent.low",  low,  extent.getLow() .getCoordinateValues());
         assertArrayEquals("extent.high", high, extent.getHigh().getCoordinateValues());
     }
@@ -56,8 +53,8 @@ public final strictfp class GridGeometryTest extends TestCase {
      */
     @Test
     public void testSimple() throws TransformException {
-        final int[]         low      = new int[] {100, 300, 3, 6};
-        final int[]         high     = new int[] {200, 400, 4, 7};
+        final long[]         low     = new long[] {100, 300, 3, 6};
+        final long[]         high    = new long[] {200, 400, 4, 7};
         final GridExtent    extent   = new GridExtent(low, high, true);
         final MathTransform identity = MathTransforms.identity(4);
         final GridGeometry  grid     = new GridGeometry(extent, PixelInCell.CELL_CORNER, identity, null);
@@ -102,8 +99,8 @@ public final strictfp class GridGeometryTest extends TestCase {
      */
     @Test
     public void testShifted() throws TransformException {
-        final int[]         low      = new int[] { 0,   0, 2};
-        final int[]         high     = new int[] {99, 199, 4};
+        final long[]        low      = new long[] { 0,   0, 2};
+        final long[]        high     = new long[] {99, 199, 4};
         final GridExtent    extent   = new GridExtent(low, high, true);
         final MathTransform identity = MathTransforms.identity(3);
         final GridGeometry  grid     = new GridGeometry(extent, PixelInCell.CELL_CENTER, identity, null);
@@ -147,8 +144,8 @@ public final strictfp class GridGeometryTest extends TestCase {
     @Test
     public void testNonLinear() throws TransformException {
         final GridExtent extent = new GridExtent(
-                new int[] {0,     0, 2, 6},
-                new int[] {100, 200, 3, 9}, false);
+                new long[] {0,     0, 2, 6},
+                new long[] {100, 200, 3, 9}, false);
         final MathTransform horizontal = MathTransforms.linear(Matrices.create(3, 3, new double[] {
                 0.5, 0,    12,
                 0,   0.25, -2,

@@ -18,26 +18,26 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import org.opengis.coverage.grid.GridCoordinates;
 
 
 /**
  * A view over the low or high grid envelope coordinates.
  * This is not a general-purpose grid coordinates since it assumes a {@link GridExtent} coordinates layout.
  *
+ * <div class="note"><b>Upcoming API generalization:</b>
+ * this class may implement the {@code GridCoordinates} interface in a future Apache SIS version.
+ * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class GridCoordinatesView implements GridCoordinates {
+final class GridCoordinatesView /* implements GridCoordinates */ {
     /**
      * A reference to the coordinate array of the enclosing grid envelope.
      */
-    private final int[] ordinates;
+    private final long[] ordinates;
 
     /**
      * Index of the first value in the {@link #ordinates} array.
@@ -48,7 +48,7 @@ final class GridCoordinatesView implements GridCoordinates {
     /**
      * Creates a new view over the low or high coordinates.
      */
-    GridCoordinatesView(final int[] ordinates, final int offset) {
+    GridCoordinatesView(final long[] ordinates, final int offset) {
         this.ordinates = ordinates;
         this.offset = offset;
     }
@@ -56,7 +56,6 @@ final class GridCoordinatesView implements GridCoordinates {
     /**
      * Returns the number of dimension.
      */
-    @Override
     public final int getDimension() {
         return ordinates.length >>> 1;
     }
@@ -64,16 +63,14 @@ final class GridCoordinatesView implements GridCoordinates {
     /**
      * Returns all coordinate values.
      */
-    @Override
-    public final int[] getCoordinateValues() {
+    public final long[] getCoordinateValues() {
         return Arrays.copyOfRange(ordinates, offset, offset + getDimension());
     }
 
     /**
      * Returns the coordinate value for the specified dimension.
      */
-    @Override
-    public final int getCoordinateValue(final int index) {
+    public final long getCoordinateValue(final int index) {
         ArgumentChecks.ensureValidIndex(getDimension(), index);
         return ordinates[offset + index];
     }
@@ -81,10 +78,9 @@ final class GridCoordinatesView implements GridCoordinates {
     /**
      * Do not allow modification of grid coordinates since they are backed by {@link GridExtent}.
      */
-    @Override
-    public void setCoordinateValue(final int index, int value) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "GridCoordinates"));
-    }
+//  public void setCoordinateValue(final int index, long value) {
+//      throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "GridCoordinates"));
+//  }
 
     /**
      * Returns a string representation of this grid coordinates for debugging purpose.
@@ -99,12 +95,12 @@ final class GridCoordinatesView implements GridCoordinates {
      */
     @Override
     public final int hashCode() {
-        int code = -3;                              // Arbitrary seed for differentiating from Arrays.hashCode(int[]).
+        long code = -3;                             // Arbitrary seed for differentiating from Arrays.hashCode(long[]).
         final int end = offset + getDimension();
         for (int i=offset; i<end; i++) {
             code = 31 * code + ordinates[i];
         }
-        return code;
+        return Long.hashCode(code);
     }
 
     /**
