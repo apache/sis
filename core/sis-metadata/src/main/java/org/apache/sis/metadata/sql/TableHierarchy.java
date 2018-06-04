@@ -43,24 +43,34 @@ final class TableHierarchy {
      * {@code "MD_VectorSpatialRepresentation"} consume a lot of space, which leave few spaces left
      * for actual identifiers when we want to limit the length to a relatively small value.
      */
-    private static final Map<String,String> ABBREVIATIONS = new HashMap<>(16);
+    private static final Map<String,String> ABBREVIATIONS = new HashMap<>(25);
 
     /**
      * The reverse of {@link #ABBREVIATIONS}.
      */
-    private static final Map<String,String> TABLES = new HashMap<>(16);
+    private static final Map<String,String> TABLES = new HashMap<>(25);
     static {
+        add("CI_Individual",                  "ind");
+        add("CI_Organisation",                "org");
         add("MD_VectorSpatialRepresentation", "vec");
         add("MD_GridSpatialRepresentation",   "grd");
         add("MD_Georectified",                "rtf");
         add("MD_Georeferenceable",            "cbl");
-        add("MD_DataIdentification",          "dat");
+        add("MD_DataIdentification",          "data");
         add("SV_ServiceIdentification",       "srv");
         add("MD_FeatureCatalogueDescription", "cat");
         add("MD_CoverageDescription",         "cov");
         add("MD_ImageDescription",            "img");
         add("MD_SampleDimension",             "sd");
-        add("MD_Band",                        "bd");
+        add("MD_Band",                        "band");
+        add("MD_LegalConstraints",            "legal");
+        add("MD_SecurityConstraints",         "secu");
+        add("EX_GeographicBoundingBox",       "bbox");
+        add("EX_BoundingPolygon",             "poly");
+        add("EX_GeographicDescription",       "gdsc");
+        add("EX_SpatialTemporalExtent",       "ste");
+        add("MI_GCPCollection",               "gcp");
+        // TODO: missing quality package.
     }
 
     /**
