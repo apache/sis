@@ -210,13 +210,11 @@ public class ResourceView {
     }
 
     public void open(final List<File> files) {
-        if (files != null) {
-            for (final File file : files) {
-                if (file.isDirectory()) {
-                    openDirectory(file);
-                } else {
-                    openFile(file);
-                }
+        for (final File file : files) {
+            if (file.isDirectory()) {
+                openDirectory(file);
+            } else {
+                openFile(file);
             }
         }
     }

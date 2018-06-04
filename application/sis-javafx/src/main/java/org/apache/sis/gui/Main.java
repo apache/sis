@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -72,6 +73,11 @@ public class Main extends Application {
      * @see #createFileFilters()
      */
     private FileChooser.ExtensionFilter[] openFilters;
+
+    /**
+     * The last filter used by the {@link #open()} action.
+     */
+    private FileChooser.ExtensionFilter lastFilter;
 
     /**
      * Creates a new Apache SIS application.
@@ -174,12 +180,17 @@ public class Main extends Application {
     private void open() {
         if (openFilters == null) {
             createFileFilters();
+            lastFilter = openFilters[1];
         }
         final FileChooser chooser = new FileChooser();
         chooser.setTitle(Resources.format(Resources.Keys.OpenDataFile));
         chooser.getExtensionFilters().addAll(openFilters);
-        chooser.setSelectedExtensionFilter(openFilters[1]);         // TODO: remember last filter used.
-        content.open(chooser.showOpenMultipleDialog(window));
+        chooser.setSelectedExtensionFilter(lastFilter);
+        final List<File> files = chooser.showOpenMultipleDialog(window);
+        if (files != null) {
+            lastFilter = chooser.getSelectedExtensionFilter();
+            content.open(files);
+        }
     }
 
     /**
