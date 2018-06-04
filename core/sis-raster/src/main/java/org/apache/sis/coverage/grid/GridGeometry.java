@@ -35,9 +35,6 @@ import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
-import org.opengis.coverage.grid.GridEnvelope;
-
 
 /**
  * Valid extent of grid coordinates together with the transform from those grid coordinates
@@ -217,6 +214,10 @@ public class GridGeometry implements Serializable {
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
      * to always think about wether their <cite>grid to CRS</cite> transform is mapping pixel corner or center.</div>
      *
+     * <div class="note"><b>Upcoming API generalization:</b>
+     * the {@code extent} type of this method may be changed to {@code GridEnvelope} interface in a future Apache SIS version.
+     * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+     *
      * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  anchor     {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
      *                    {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
@@ -227,7 +228,7 @@ public class GridGeometry implements Serializable {
      * @throws TransformException if the math transform can not compute the geospatial envelope or the resolution
      *         from the grid envelope.
      */
-    public GridGeometry(final GridEnvelope extent, final PixelInCell anchor, final MathTransform gridToCRS,
+    public GridGeometry(final GridExtent extent, final PixelInCell anchor, final MathTransform gridToCRS,
             final CoordinateReferenceSystem crs) throws TransformException
     {
         if (gridToCRS != null) {
@@ -240,12 +241,12 @@ public class GridGeometry implements Serializable {
         } else if (crs == null) {
             ArgumentChecks.ensureNonNull("extent", extent);
         }
-        this.extent      = GridExtent.castOrCopy(extent);
+        this.extent      = extent;
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
         GeneralEnvelope env = null;
         if (extent != null && gridToCRS != null) {
-            env = this.extent.toCRS(cornerToCRS);
+            env = extent.toCRS(cornerToCRS);
             env.setCoordinateReferenceSystem(crs);
         } else if (crs != null) {
             env = new GeneralEnvelope(crs);
@@ -262,7 +263,7 @@ public class GridGeometry implements Serializable {
         if (mat != null) {
             resolution = resolution(mat, 1);
         } else if (extent != null && gridToCRS != null) {
-            resolution = resolution(gridToCRS.derivative(this.extent.getCentroid()), 0);
+            resolution = resolution(gridToCRS.derivative(extent.getCentroid()), 0);
         } else {
             resolution = null;
         }
@@ -362,11 +363,15 @@ public class GridGeometry implements Serializable {
      * for {@link java.awt.image.BufferedImage}, but may be non-zero for arbitrary {@link RenderedImage}.
      * A grid with 512 cells can have a minimum coordinate of 0 and maximum of 511.
      *
+     * <div class="warning"><b>Upcoming API generalization:</b>
+     * the return type of this method may be changed to {@code GridEnvelope} interface in a future Apache SIS version.
+     * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+     *
      * @return the valid extent of grid coordinates (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no extent —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #EXTENT})</code> returned {@code false}.
      */
-    public GridEnvelope getExtent() throws IncompleteGridGeometryException {
+    public GridExtent getExtent() throws IncompleteGridGeometryException {
         if (extent != null) {
             return extent;
         }

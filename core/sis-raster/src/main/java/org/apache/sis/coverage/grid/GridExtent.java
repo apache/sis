@@ -30,7 +30,6 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
-import org.opengis.coverage.grid.GridCoordinates;
 
 
 /**
@@ -46,12 +45,16 @@ import org.opengis.coverage.grid.GridCoordinates;
  *
  * {@code GridExtent} instances are unmodifiable, so they can be shared between different {@link GridGeometry} instances.
  *
+ * <div class="note"><b>Upcoming API generalization:</b>
+ * this class may implement the {@code GridEnvelope} interface in a future Apache SIS version.
+ * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class GridExtent implements GridEnvelope, Serializable {
+public class GridExtent implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -62,18 +65,18 @@ public class GridExtent implements GridEnvelope, Serializable {
      * while the last half contains maximum ordinates (<strong>inclusive</strong>). Note that the
      * later is the opposite of Java2D usage but conform to ISO specification.
      */
-    private final int[] ordinates;
+    private final long[] ordinates;
 
     /**
      * Creates a new array of coordinates with the given number of dimensions.
      *
      * @throws IllegalArgumentException if the given number of dimensions is excessive.
      */
-    private static int[] allocate(final int dimension) throws IllegalArgumentException {
+    private static long[] allocate(final int dimension) throws IllegalArgumentException {
         if (dimension > Integer.MAX_VALUE / 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
         }
-        return new int[dimension << 1];
+        return new long[dimension << 1];
     }
 
     /**
@@ -83,11 +86,11 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @throws IllegalArgumentException if a coordinate value in the low part is
      *         greater than the corresponding coordinate value in the high part.
      */
-    private static void checkCoherence(final int[] ordinates) throws IllegalArgumentException {
+    private static void checkCoherence(final long[] ordinates) throws IllegalArgumentException {
         final int dimension = ordinates.length >>> 1;
         for (int i=0; i<dimension; i++) {
-            final int lower = ordinates[i];
-            final int upper = ordinates[i + dimension];
+            final long lower = ordinates[i];
+            final long upper = ordinates[i + dimension];
             if (lower > upper) {
                 throw new IllegalArgumentException(Resources.format(
                         Resources.Keys.IllegalGridEnvelope_3, i, lower, upper));
@@ -123,7 +126,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @see #getLow()
      * @see #getHigh()
      */
-    public GridExtent(final int[] low, final int[] high, final boolean isHighIncluded) {
+    public GridExtent(final long[] low, final long[] high, final boolean isHighIncluded) {
         ArgumentChecks.ensureNonNull("high", high);
         final int dimension = high.length;
         if (low != null && low.length != dimension) {
@@ -181,7 +184,6 @@ public class GridExtent implements GridEnvelope, Serializable {
      *
      * @return the number of dimensions.
      */
-    @Override
     public final int getDimension() {
         return ordinates.length >>> 1;
     }
@@ -191,9 +193,11 @@ public class GridExtent implements GridEnvelope, Serializable {
      * The sequence contains a minimum value for each dimension of the grid coverage.
      *
      * @return the valid minimum grid coordinates, inclusive.
+     *
+     * @todo Pending resolution of <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>
+     *       before to become public API, in order to use the interface in return type.
      */
-    @Override
-    public GridCoordinates getLow() {
+    GridCoordinatesView getLow() {
         return new GridCoordinatesView(ordinates, 0);
     }
 
@@ -202,9 +206,11 @@ public class GridExtent implements GridEnvelope, Serializable {
      * The sequence contains a maximum value for each dimension of the grid coverage.
      *
      * @return the valid maximum grid coordinates, <strong>inclusive</strong>.
+     *
+     * @todo Pending resolution of <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>
+     *       before to become public API, in order to use the interface in return type.
      */
-    @Override
-    public GridCoordinates getHigh() {
+    GridCoordinatesView getHigh() {
         return new GridCoordinatesView(ordinates, getDimension());
     }
 
@@ -219,8 +225,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @see #getLow()
      * @see #getHigh(int)
      */
-    @Override
-    public int getLow(final int index) {
+    public long getLow(final int index) {
         ArgumentChecks.ensureValidIndex(getDimension(), index);
         return ordinates[index];
     }
@@ -236,8 +241,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @see #getHigh()
      * @see #getLow(int)
      */
-    @Override
-    public int getHigh(final int index) {
+    public long getHigh(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
         return ordinates[index + dimension];
@@ -251,16 +255,15 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @return the span at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() grid dimension}.
-     * @throws ArithmeticException if the span is too large for the {@code int} primitive type.
+     * @throws ArithmeticException if the span is too large for the {@code long} primitive type.
      *
      * @see #getLow(int)
      * @see #getHigh(int)
      */
-    @Override
-    public int getSpan(final int index) {
+    public long getSpan(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
-        return Math.toIntExact(ordinates[dimension + index] - (ordinates[index] - 1L));
+        return Math.incrementExact(Math.subtractExact(ordinates[dimension + index], ordinates[index]));
     }
 
     /**
