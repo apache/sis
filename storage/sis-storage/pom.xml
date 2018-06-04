@@ -126,6 +126,11 @@
       <artifactId>sis-feature</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-raster</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
