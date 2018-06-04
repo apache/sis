@@ -35,7 +35,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -1113,7 +1112,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         boolean p = true;
         do {
             for (int i=0; i<dimension; i++) {
-                code = code*31 + Numerics.hashCode(doubleToLongBits(p ? getLower(i) : getUpper(i)));
+                code = code*31 + Double.hashCode(p ? getLower(i) : getUpper(i));
             }
         } while ((p = !p) == false);
         return code + Objects.hashCode(getCoordinateReferenceSystem());

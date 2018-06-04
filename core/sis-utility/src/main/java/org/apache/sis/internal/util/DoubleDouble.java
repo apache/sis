@@ -1077,7 +1077,7 @@ public final class DoubleDouble extends Number {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
+        return Long.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
     }
 
     /**

@@ -308,16 +308,6 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Returns a hash code value for the given long.
-     *
-     * @param  c  the value to hash.
-     * @return hash code value for the given long.
-     */
-    public static int hashCode(final long c) {
-        return ((int) c) ^ (int) (c >>> Integer.SIZE);
-    }
-
-    /**
      * Converts an unsigned {@code long} to a {@code float} value.
      *
      * @param  value  the unsigned {@code long} value.

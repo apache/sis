@@ -423,9 +423,9 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(scale)
-                         + 31 * (Double.doubleToLongBits(offset)
-                         + 37 *  Double.doubleToLongBits(divisor)));
+        return Long.hashCode(Double.doubleToLongBits(scale)
+                     + 31 * (Double.doubleToLongBits(offset)
+                     + 37 *  Double.doubleToLongBits(divisor)));
     }
 
     /**

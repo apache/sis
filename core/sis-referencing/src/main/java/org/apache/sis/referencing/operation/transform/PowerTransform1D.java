@@ -194,7 +194,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(power));
+        return super.computeHashCode() + Double.hashCode(power);
     }
 
     /**
