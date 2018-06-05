@@ -1162,7 +1162,7 @@ final class ImageFileDirectory {
          * the translation terms now.
          */
         if (gridToCRS != null && !completeMatrixSpecified) {
-            if (!GridGeometry.setTranslationTerms(gridToCRS, modelTiePoints)) {
+            if (!Localization.setTranslationTerms(gridToCRS, modelTiePoints)) {
                 throw missingTag(Tags.ModelTiePoints);
             }
         }
@@ -1254,7 +1254,7 @@ final class ImageFileDirectory {
         }
         try {
             if (!isGeorectified) {
-                metadata.addGeolocation(new GridGeometry(filename(), crs, modelTiePoints));
+                metadata.addGeolocation(new Localization(filename(), crs, modelTiePoints));
             }
         } catch (TransformException e) {
             reader.owner.warning(null, e);

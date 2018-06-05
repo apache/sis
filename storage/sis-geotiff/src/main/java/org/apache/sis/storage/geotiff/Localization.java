@@ -79,7 +79,7 @@ import org.apache.sis.math.Vector;
  * @module
  */
 @SuppressWarnings("serial")
-final class GridGeometry extends AbstractCoordinateOperation implements GeolocationInformation {
+final class Localization extends AbstractCoordinateOperation implements GeolocationInformation {
     /**
      * Number of floating point values in each (I,J,K,X,Y,Z) record.
      */
@@ -94,7 +94,7 @@ final class GridGeometry extends AbstractCoordinateOperation implements Geolocat
     /**
      * Creates a new transformation from the information found by {@link ImageFileDirectory}.
      */
-    GridGeometry(final String name, final CoordinateReferenceSystem crs, final Vector modelTiePoints)
+    Localization(final String name, final CoordinateReferenceSystem crs, final Vector modelTiePoints)
             throws FactoryException, TransformException
     {
         super(Collections.singletonMap(NAME_KEY, name), null, crs, null, localizationGrid(modelTiePoints, null));
