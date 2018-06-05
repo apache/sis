@@ -248,7 +248,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(meridian) + baseDirection.hashCode());
+        return Double.hashCode(meridian) + baseDirection.hashCode();
     }
 
     /**

@@ -27,7 +27,6 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
 
@@ -348,7 +347,6 @@ public class SimpleQuery extends Query {
          *
          * @return a string representation of this column.
          */
-        @Debug
         @Override
         public String toString() {
             final StringBuilder b = new StringBuilder(getClass().getSimpleName()).append('[');

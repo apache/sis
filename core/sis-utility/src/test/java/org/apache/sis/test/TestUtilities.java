@@ -213,13 +213,25 @@ public final strictfp class TestUtilities extends Static {
      */
     public static Date date(final String date) {
         ArgumentChecks.ensureNonNull("date", date);
+        final Date t;
         try {
             synchronized (dateFormat) {
-                return dateFormat.parse(date);
+                t = dateFormat.parse(date);
             }
         } catch (ParseException e) {
             throw new AssertionError(e);
         }
+        /*
+         * The milliseconds are not part of the pattern used by this method because they are rarely specified.
+         * If a test needs to specify milliseconds, add the manually here. Note that this naive hack requires
+         * all milliseconds digits to be provided, e.g. ".900" - not ".9".
+         */
+        final int s = date.lastIndexOf('.');
+        if (s >= 0) {
+            final int ms = Integer.parseInt(date.substring(s + 1));
+            t.setTime(t.getTime() + ms);
+        }
+        return t;
     }
 
     /**

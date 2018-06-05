@@ -466,7 +466,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
             if (name == null) { // Should never happen, but be safe.
                 return super.formatTo(formatter);
             }
-            if ("ESRI".equalsIgnoreCase(Citations.getCodeSpace(authority)) && !name.startsWith(ESRI_PREFIX)) {
+            if ("ESRI".equalsIgnoreCase(Citations.toCodeSpace(authority)) && !name.startsWith(ESRI_PREFIX)) {
                 name = ESRI_PREFIX + name;
             }
         }

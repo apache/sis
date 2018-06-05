@@ -31,7 +31,6 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -355,6 +354,10 @@ class PropertyAccessor {
             Class<?> elementType = getter.getReturnType();
             if (Collection.class.isAssignableFrom(elementType)) {
                 elementType = Classes.boundOfParameterizedProperty(getter);
+                if (elementType == null) {
+                    // Subclass has erased parameterized type. Use method declared in the interface.
+                    elementType = Classes.boundOfParameterizedProperty(getters[i]);
+                }
             }
             elementTypes[i] = Numbers.primitiveToWrapper(elementType);
         }
@@ -1239,7 +1242,7 @@ class PropertyAccessor {
         }
         Object copy = copier.copies.get(metadata);
         if (copy == null) {
-            copy = implementation.newInstance();
+            copy = implementation.getConstructor().newInstance();
             copier.copies.put(metadata, copy);              // Need to be first in case of cyclic graphs.
             final Object[] arguments = new Object[1];
             for (int i=0; i<allCount; i++) {
@@ -1287,7 +1290,6 @@ class PropertyAccessor {
      *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]
      * }
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60);

@@ -41,11 +41,13 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTransientException;
 import java.sql.SQLNonTransientException;
 import java.sql.PreparedStatement;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
+import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
@@ -106,7 +108,7 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -122,16 +124,6 @@ public class MetadataSource implements AutoCloseable {
      * we will let the database uses its own lower-case / upper-case convention.
      */
     static final String ID_COLUMN = "ID";
-
-    /**
-     * Delimiter characters for the table name in identifier. Table names are prefixed to identifiers only if
-     * the type represented by the table is a subtype. For example since {@code CI_Organisation} is a subtype
-     * of {@code CI_Party}, identifiers for organizations need to be prefixed by {@code {CI_Organisation}} in
-     * order allow {@code MetadataSource} to know in which table to search for such party.
-     *
-     * @see MetadataWriter#isReservedChar(int)
-     */
-    static final char TYPE_OPEN = '{', TYPE_CLOSE = '}';
 
     /**
      * The timeout before to close a prepared statement, in nanoseconds. This is set to 2 seconds,
@@ -285,12 +277,16 @@ public class MetadataSource implements AutoCloseable {
     /**
      * The instance connected to the {@code "jdbc/SpatialMetadata"} database,
      * created when first needed and cleared when the classpath change.
+     * May be {@link MetadataFallback#INSTANCE} if we failed to establish
+     * a connection to the database for a non-transient reason.
      */
-    private static volatile MetadataSource instance;
+    private static MetadataSource instance;
     static {
         SystemListener.add(new SystemListener(Modules.METADATA) {
             @Override protected void classpathChanged() {
-                instance = null;
+                synchronized (MetadataSource.class) {
+                    instance = null;
+                }
             }
         });
     }
@@ -302,28 +298,51 @@ public class MetadataSource implements AutoCloseable {
      * citations} and {@linkplain org.apache.sis.metadata.iso.distribution.DefaultFormat formats}
      * among others.
      *
+     * <p>If connection to the metadata database can not be established, then this method returns
+     * a fallback with a few hard-coded values.</p>
+     *
      * @return source of pre-defined metadata records from the {@code "jdbc/SpatialMetadata"} database.
-     * @throws MetadataStoreException if this method can not connect to the database.
      */
-    public static MetadataSource getProvided() throws MetadataStoreException {
+    public static synchronized MetadataSource getProvided() {
         MetadataSource ms = instance;
         if (ms == null) {
-            final DataSource dataSource;
+            LogRecord warning = null;
+            boolean isTransient = false;
             try {
-                dataSource = Initializer.getDataSource();
-            } catch (Exception e) {
-                throw new MetadataStoreException(Errors.format(Errors.Keys.CanNotConnectTo_1, Initializer.JNDI), e);
-            }
-            if (dataSource == null) {
-                throw new MetadataStoreException(Initializer.unspecified(null));
-            }
-            synchronized (MetadataSource.class) {
-                ms = instance;
-                if (ms == null) {
+                final DataSource dataSource = Initializer.getDataSource();
+                if (dataSource != null) {
                     ms = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata", null);
                     ms.install();
-                    instance = ms;
+                } else {
+                    warning = (LogRecord) Initializer.unspecified(null, true);
+                    ms = MetadataFallback.INSTANCE;
                 }
+            } catch (Exception e) {
+                ms = MetadataFallback.INSTANCE;
+                /*
+                 * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+                 * little bit simpler, keep only the root cause provided that the exception type is compatible.
+                 */
+                warning = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotConnectTo_1, Initializer.JNDI);
+                warning.setThrown(Exceptions.unwrap(e));
+                /*
+                 * If the error is transient or has a transient cause, we will not save MetadataFallback.INSTANCE
+                 * in the 'instance' field. The intent is to try again next time this method will be invoked, in
+                 * case the transient error has disappeared.
+                 */
+                for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+                    if (cause instanceof SQLTransientException) {
+                        isTransient = true;
+                        break;
+                    }
+                }
+            }
+            if (warning != null) {
+                warning.setLoggerName(Loggers.SYSTEM);
+                Logging.log(MetadataSource.class, "getProvided", warning);
+            }
+            if (!isTransient) {
+                instance = ms;
             }
         }
         return ms;
@@ -399,6 +418,21 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
+     * For {@link MetadataFallback} constructor only.
+     */
+    MetadataSource() {
+        standard     = MetadataStandard.ISO_19115;
+        dataSource   = null;
+        catalog      = null;
+        statements   = null;
+        tableColumns = null;
+        classloader  = getClass().getClassLoader();
+        pool         = null;
+        lastUsed     = null;
+        listeners    = null;
+    }
+
+    /**
      * If the metadata schema does not exist in the database, creates it and inserts the pre-defined metadata values.
      * The current implementation has the following restrictions:
      *
@@ -410,32 +444,24 @@ public class MetadataSource implements AutoCloseable {
      * Maintenance note: this method is invoked by reflection in {@code non-free:sis-embedded-data} module.
      * If we make this method public in a future Apache SIS version, then we can remove the reflection code.
      *
-     * @throws MetadataStoreException if an error occurred while inserting the metadata.
+     * @throws SQLException if an error occurred while inserting the metadata.
      */
-    final synchronized void install() throws MetadataStoreException {
-        try {
-            final Connection connection = connection();
-            final DatabaseMetaData md = connection.getMetaData();
-            if (md.storesUpperCaseIdentifiers()) {
-                schema = schema.toUpperCase(Locale.US);
-            } else if (md.storesLowerCaseIdentifiers()) {
-                schema = schema.toLowerCase(Locale.US);
-            }
-            quoteSchema = false;
-            try (ResultSet result = md.getTables(catalog, schema, "CI_Citation", null)) {
-                if (result.next()) {
-                    return;
-                }
-            }
-            final Installer installer = new Installer(connection);
-            installer.run();
-        } catch (IOException | SQLException e) {
-            /*
-             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
-             * little bit simpler, keep only the root cause provided that the exception type is compatible.
-             */
-            throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
+    final synchronized void install() throws IOException, SQLException {
+        final Connection connection = connection();
+        final DatabaseMetaData md = connection.getMetaData();
+        if (md.storesUpperCaseIdentifiers()) {
+            schema = schema.toUpperCase(Locale.US);
+        } else if (md.storesLowerCaseIdentifiers()) {
+            schema = schema.toLowerCase(Locale.US);
         }
+        quoteSchema = false;
+        try (ResultSet result = md.getTables(catalog, schema, "CI_Citation", null)) {
+            if (result.next()) {
+                return;
+            }
+        }
+        final Installer installer = new Installer(connection);
+        installer.run();
     }
 
     /**
@@ -637,6 +663,8 @@ public class MetadataSource implements AutoCloseable {
                         identifier = search(table, null, asMap, stmt, helper());
                     } catch (SQLException e) {
                         throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
+                    } catch (FactoryException e) {
+                        throw new MetadataStoreException(e.getLocalizedMessage(), e);
                     }
                 }
             }
@@ -657,7 +685,7 @@ public class MetadataSource implements AutoCloseable {
      * @throws SQLException if an error occurred while searching in the database.
      */
     final String search(final String table, Set<String> columns, final Map<String,Object> metadata,
-            final Statement stmt, final SQLBuilder helper) throws SQLException
+            final Statement stmt, final SQLBuilder helper) throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
         helper.clear();
@@ -708,7 +736,7 @@ public class MetadataSource implements AutoCloseable {
              * Builds the SQL statement with the resolved value.
              */
             if (helper.isEmpty()) {
-                helper.append("SELECT ").append(ID_COLUMN).append(" FROM ")
+                helper.append("SELECT ").appendIdentifier(ID_COLUMN).append(" FROM ")
                         .appendIdentifier(schema, table).append(" WHERE ");
             } else {
                 helper.append(" AND ");
@@ -776,25 +804,6 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * If the given identifier specifies a subtype of the given type, then returns that subtype.
-     * For example if the given type is {@code Party.class} and the given identifier is
-     * {@code "{CI_Organisation}EPSG"}, then this method returns {@code Organisation.class}.
-     * Otherwise this method returns {@code type} unchanged.
-     */
-    private static Class<?> subType(Class<?> type, final String identifier) {
-        if (identifier.charAt(0) == TYPE_OPEN) {
-            final int i = identifier.indexOf(TYPE_CLOSE);
-            if (i >= 0) {
-                final Class<?> subType = Types.forStandardName(identifier.substring(1, i));
-                if (subType != null && type.isAssignableFrom(subType)) {
-                    type = subType;
-                }
-            }
-        }
-        return type;
-    }
-
-    /**
      * Returns an implementation of the specified metadata interface filled with the data referenced
      * by the specified identifier. Alternatively, this method can also return a {@link CodeList} or
      * {@link Enum} element.
@@ -836,10 +845,10 @@ public class MetadataSource implements AutoCloseable {
              */
             if (value == null) {
                 Method method = null;
-                final Class<?> subType = subType(type, identifier);
+                final Class<?> subType = TableHierarchy.subType(type, identifier);
                 final Dispatcher toSearch = new Dispatcher(identifier, this);
                 try {
-                    value = subType.newInstance();
+                    value = subType.getConstructor().newInstance();
                     final LookupInfo info            = getLookupInfo(subType);
                     final Map<String,Object> map     = asValueMap(value);
                     final Map<String,String> methods = standard.asNameMap(subType, NAME_POLICY, KeyNamePolicy.METHOD_NAME);
@@ -892,7 +901,7 @@ public class MetadataSource implements AutoCloseable {
          * If the identifier is prefixed with a table name as in "{CI_Organisation}identifier",
          * the name between bracket is a subtype of the given 'type' argument.
          */
-        final Class<?> type           = subType(info.getMetadataType(), toSearch.identifier);
+        final Class<?> type           = TableHierarchy.subType(info.getMetadataType(), toSearch.identifier);
         final Class<?> returnType     = method.getReturnType();
         final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
         final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
@@ -916,7 +925,7 @@ public class MetadataSource implements AutoCloseable {
                     final SQLBuilder helper = helper();
                     final String query = helper.clear().append("SELECT * FROM ")
                             .appendIdentifier(schema, tableName).append(" WHERE ")
-                            .append(ID_COLUMN).append("=?").toString();
+                            .appendIdentifier(ID_COLUMN).append("=?").toString();
                     result = new CachedStatement(type, connection().prepareStatement(query), listeners);
                 }
                 value = result.getValue(toSearch.identifier, columnName);
@@ -984,7 +993,7 @@ public class MetadataSource implements AutoCloseable {
      * message when the actual class is unknown (it must have been checked dynamically by the caller however).
      */
     @SuppressWarnings("unchecked")
-    private static ControlledVocabulary getCodeList(final Class<?> type, final String name) {
+    static ControlledVocabulary getCodeList(final Class<?> type, final String name) {
         if (type.isEnum()) {
             return (ControlledVocabulary) Types.forEnumName(type.asSubclass(Enum.class), name);
         } else {

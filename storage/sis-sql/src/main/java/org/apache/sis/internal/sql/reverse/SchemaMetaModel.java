@@ -19,7 +19,6 @@ package org.apache.sis.internal.sql.reverse;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -62,7 +61,6 @@ final class SchemaMetaModel extends MetaModel {
     /**
      * Returns a string representation of this schema for debugging purposes.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(100);

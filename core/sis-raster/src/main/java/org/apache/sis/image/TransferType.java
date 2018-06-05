@@ -42,11 +42,11 @@ import org.apache.sis.util.resources.Errors;
  * <a href="http://openjdk.java.net/jeps/301">JEP 301</a> is implemented.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param  <T>  the type of buffer which can be used for transferring data.
  *
- * @since 0.8
+ * @since 1.0
  * @module
  *
  * @see Raster#getTransferType()

@@ -70,6 +70,7 @@ import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
@@ -189,11 +190,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4935599812744534502L;
-
-    /**
-     * Unique identifier for this metadata record, or {@code null} if none.
-     */
-    private Identifier metadataIdentifier;
 
     /**
      * Language(s) used for documenting metadata.
@@ -347,7 +343,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public DefaultMetadata(final Metadata object) {
         super(object);
         if (object != null) {
-            metadataIdentifier            = object.getMetadataIdentifier();
+            identifiers                   = singleton(object.getMetadataIdentifier(), Identifier.class);
             parentMetadata                = object.getParentMetadata();
             languages                     = copyCollection(object.getLanguages(),                     Locale.class);
             characterSets                 = copyCollection(object.getCharacterSets(),                 Charset.class);
@@ -423,7 +419,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "metadataIdentifier")
     @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getMetadataIdentifier() {
-        return metadataIdentifier;
+        return NonMarshalledAuthority.getMarshallable(identifiers);
     }
 
     /**
@@ -435,7 +431,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     public void setMetadataIdentifier(final Identifier newValue) {
         checkWritePermission();
-        metadataIdentifier = newValue;
+        identifiers = nonNullCollection(identifiers, Identifier.class);
+        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
     }
 
     /**
@@ -467,7 +464,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setFileIdentifier(final String newValue) {
-        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(metadataIdentifier); // See "Note about deprecated methods implementation"
+        // See "Note about deprecated methods implementation"
+        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(NonMarshalledAuthority.getMarshallable(identifiers));
         if (identifier == null) {
             if (newValue == null) return;
             identifier = new DefaultIdentifier();

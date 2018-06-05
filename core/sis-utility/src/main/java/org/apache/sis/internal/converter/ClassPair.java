@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.io.Serializable;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -161,7 +160,6 @@ class ClassPair<S,T> implements Serializable {
      * Returns a string representation for this entry.
      * Used for formatting error messages.
      */
-    @Debug
     @Override
     public String toString() {
         return targetClass.getSimpleName() + " ← " + sourceClass.getSimpleName();

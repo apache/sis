@@ -164,8 +164,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * A map containing only the {@link #NAME} column.
      * This is the default set of columns when parsing a tree table.
      */
-    static final Map<TableColumn<?>,Integer> NAME_MAP =
-            Collections.<TableColumn<?>,Integer>singletonMap(NAME, 0);
+    static final Map<TableColumn<?>,Integer> NAME_MAP = Collections.singletonMap(NAME, 0);
 
     /**
      * Base type of all values in the column identified by this {@code ColumnTable} instance.

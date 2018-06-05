@@ -453,7 +453,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      */
     @Override
     protected int computeHashCode() {
-        int code = super.computeHashCode() + Numerics.hashCode(
+        int code = super.computeHashCode() + Long.hashCode(
                         Double.doubleToLongBits(Δa)
                 +       Double.doubleToLongBits(Δfmod)
                 + 31 * (Double.doubleToLongBits(tX)

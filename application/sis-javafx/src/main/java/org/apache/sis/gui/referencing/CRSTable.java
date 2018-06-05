@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.crs;
+package org.apache.sis.gui.referencing;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.logging.Level;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -47,11 +47,11 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.util.Callback;
-import org.apache.sis.gui.Resources;
 import org.apache.sis.internal.gui.FontGlyphs;
-import org.apache.sis.internal.gui.JavaFxUtilities;
+import org.apache.sis.internal.gui.FXUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -59,27 +59,35 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.ConicProjection;
 import org.opengis.referencing.operation.CylindricalProjection;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.PlanarProjection;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.util.FactoryException;
 
 /**
  *
- * @author Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-public class CRSTable extends ScrollPane{
+final class CRSTable extends ScrollPane {
 
     private static final Color COLOR = new Color(30, 150, 250);
-    private static final Image ICON_GEO = JavaFxUtilities.getImage("/org/apache/sis/gui/crs/proj_geo.png", new Dimension(16, 16));
-    private static final Image ICON_SQUARE = JavaFxUtilities.getImage("/org/apache/sis/gui/crs/proj_square.png", new Dimension(16, 16));
-    private static final Image ICON_STEREO = JavaFxUtilities.getImage("/org/apache/sis/gui/crs/proj_stereo.png", new Dimension(16, 16));
-    private static final Image ICON_UTM = JavaFxUtilities.getImage("/org/apache/sis/gui/crs/proj_utm.png", new Dimension(16, 16));
-    private static final Image ICON_CONIC = JavaFxUtilities.getImage("/org/apache/sis/gui/crs/proj_conic.png", new Dimension(16, 16));
-    private static final Image ICON_UNKNOWNED = FontGlyphs.createImage("\uE22F",16,COLOR);
+    private static final Image ICON_GEO, ICON_SQUARE, ICON_STEREO, ICON_UTM, ICON_CONIC;
+    private static final Image ICON_UNKNOWN = FontGlyphs.createImage("\uE22F",16,COLOR);
+    static {
+        final Class<?> c = CRSTable.class;
+        final Dimension dim = new Dimension(16, 16);
+        try {
+            ICON_GEO    = FXUtilities.getImage(c, "proj_geo.png",    dim);
+            ICON_SQUARE = FXUtilities.getImage(c, "proj_square.png", dim);
+            ICON_STEREO = FXUtilities.getImage(c, "proj_stereo.png", dim);
+            ICON_UTM    = FXUtilities.getImage(c, "proj_utm.png",    dim);
+            ICON_CONIC  = FXUtilities.getImage(c, "proj_conic.png",  dim);
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     private final ObjectProperty<CoordinateReferenceSystem> crsProperty = new SimpleObjectProperty<>();
     private final TableView<Code> uiTable = new TableView<>();
@@ -112,7 +120,7 @@ public class CRSTable extends ScrollPane{
                     try {
                         crsProperty.set((CoordinateReferenceSystem) code.createObject());
                     } catch (FactoryException ex) {
-                        JavaFxUtilities.LOGGER.log(Level.INFO,ex.getMessage(),ex);
+                        error(ex);
                     }
                 }
             }
@@ -135,11 +143,10 @@ public class CRSTable extends ScrollPane{
                         uiTable.setPlaceholder(new Label(""));
                     });
                 } catch (FactoryException ex) {
-                    JavaFxUtilities.LOGGER.log(Level.WARNING,ex.getMessage(),ex);
+                    error(ex);
                 }
             }
         }.start();
-
     }
 
     public ObjectProperty<CoordinateReferenceSystem> crsProperty(){
@@ -148,6 +155,10 @@ public class CRSTable extends ScrollPane{
 
     public void searchCRS(final String searchword){
         filter(searchword);
+    }
+
+    private static void error(final Exception e) {
+        // TODO
     }
 
     /**
@@ -205,7 +216,7 @@ public class CRSTable extends ScrollPane{
     }
 
     static Image getIcon(IdentifiedObject obj) {
-        Image icon = ICON_UNKNOWNED;
+        Image icon = ICON_UNKNOWN;
         if (obj instanceof GeographicCRS) {
             icon = ICON_GEO;
         } else if (obj instanceof ProjectedCRS) {
@@ -247,12 +258,12 @@ public class CRSTable extends ScrollPane{
                             super.updateItem(item, empty);
                             setGraphic(null);
                             if (item!=null){
-                                Image icon = ICON_UNKNOWNED;
+                                Image icon = ICON_UNKNOWN;
                                 try {
                                     final IdentifiedObject obj = item.createObject();
                                     icon = getIcon(obj);
                                 } catch (FactoryException ex) {
-                                    JavaFxUtilities.LOGGER.log(Level.INFO, ex.getMessage(),ex);
+                                    error(ex);
                                 }
                                 setGraphic(new ImageView(icon));
                             }
@@ -267,7 +278,7 @@ public class CRSTable extends ScrollPane{
     private static class CodeColumn extends TableColumn<Code, String> {
 
         public CodeColumn() {
-            super(Resources.format(Resources.Keys.Code));
+            super(Vocabulary.format(Vocabulary.Keys.Code));
             setEditable(false);
             setPrefWidth(150);
             setCellValueFactory((TableColumn.CellDataFeatures<Code, String> param) -> new SimpleObjectProperty<>(param.getValue().code));
@@ -278,9 +289,10 @@ public class CRSTable extends ScrollPane{
     private static class DescColumn extends TableColumn<Code, String> {
 
         public DescColumn() {
-            super(Resources.format(Resources.Keys.Description));
+            super(Vocabulary.format(Vocabulary.Keys.Description));
             setEditable(false);
-            setCellValueFactory((TableColumn.CellDataFeatures<Code, String> param) -> new SimpleObjectProperty<>(param.getValue().getDescription()));
+            setCellValueFactory((TableColumn.CellDataFeatures<Code, String> param) ->
+                    new SimpleObjectProperty<>(param.getValue().getDescription()));
         }
 
     }
@@ -300,8 +312,7 @@ public class CRSTable extends ScrollPane{
 
                 @Override
                 public TableCell<Code, Code> call(TableColumn<Code, Code> param) {
-                    return new TableCell<Code,Code>(){
-
+                    return new TableCell<Code,Code>() {
                         {
                             setOnMouseClicked(new EventHandler<MouseEvent>() {
                                 @Override
@@ -311,10 +322,10 @@ public class CRSTable extends ScrollPane{
                                         try {
                                             final IdentifiedObject obj = getItem().createObject();
                                             if (obj instanceof FormattableObject) {
-                                                FormattableObjectPane.showDialog(this, (FormattableObject) obj);
+                                                WKTPane.showDialog(this, (FormattableObject) obj);
                                             }
                                         } catch (FactoryException ex) {
-                                            JavaFxUtilities.LOGGER.log(Level.INFO,ex.getMessage(),ex);
+                                            error(ex);
                                         }
                                     }
                                 }
@@ -334,7 +345,5 @@ public class CRSTable extends ScrollPane{
                 }
             });
         }
-
     }
-
 }

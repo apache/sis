@@ -22,17 +22,19 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Collections;
 import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.AbstractMapEntry;
+import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
 
 /**
@@ -69,23 +71,16 @@ public class DefaultRecord implements Record, Serializable {
     private static final long serialVersionUID = -5293250754663538325L;
 
     /**
-     * The type definition of this record.
+     * The type definition of this record. Can not be {@code null}.
      */
     final RecordDefinition definition;
 
     /**
      * The record values in an array. May be an array of primitive type for compactness,
-     * which is why the type is not {@code Object[]}.
+     * which is why the type is not {@code Object[]}. Should never be {@code null}, except
+     * temporarily during XML unmarshalling.
      */
-    private final Object values;
-
-    /**
-     * Constructs an initially empty record. Used by JAXB.
-     */
-    private DefaultRecord() {
-        definition = null;
-        values = null;
-    }
+    private Object values;
 
     /**
      * Creates a new record for the given record type.
@@ -170,8 +165,7 @@ public class DefaultRecord implements Record, Serializable {
      */
     @Override
     public RecordType getRecordType() {
-        // Should never be null, unless temporarily during unmarshalling.
-        return (definition != null) ? definition.getRecordType() : null;
+        return definition.getRecordType();
     }
 
     /**
@@ -185,6 +179,9 @@ public class DefaultRecord implements Record, Serializable {
      */
     @Override
     public Map<MemberName, Object> getAttributes() {
+        if (values == null) {                         // Should never be null, except temporarily at XML unmarshalling time.
+            return Collections.emptyMap();
+        }
         return new AbstractMap<MemberName, Object>() {
             /** Returns the number of members in the record. */
             @Override
@@ -392,9 +389,67 @@ public class DefaultRecord implements Record, Serializable {
      *
      * @return a string representation of this record.
      */
-    @Debug
     @Override
     public String toString() {
         return definition.toString("Record", values);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs an initially empty record expecting exactly one value as a string.
+     * See {@link #setValue(String)} for a description of the supported XML content.
+     */
+    private DefaultRecord() {
+        definition = RecordSchemaSIS.STRING;
+    }
+
+    /**
+     * Returns the record value as a string.
+     */
+    @XmlValue
+    private String getValue() {
+        if (values != null) {
+            switch (Array.getLength(values)) {
+                case 0:  break;
+                case 1:  return String.valueOf(Array.get(values, 0));
+                default: return definition.toString(null, values);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Sets the record value as a string. This method is invoked at unmarshalling time.
+     * A record can be anything, but usages that we have seen so far write a character
+     * sequence or a code list. Examples:
+     *
+     * {@preformat xml
+     *    <gco:Record>Alphanumeric values: Product is alphanumeric.</gco:Record>
+     *    <gco:Record>Alphanumeric Text: Message contains alphanumeric text.</gco:Record>
+     *    <gco:Record>Part A: Reflectivity presented as a tabular listing of alphanumerics.</gco:Record>
+     *    <gco:Record>
+     *      <gmd:CodeListValue codelist="someURL#DataQualityAssessment" codeListValue="intermediate">intermediate</gmd:CodeListValue>
+     *    </gco:Record>
+     * }
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
+     */
+    private void setValue(String value) {
+        if (value != null && !(value = value.trim()).isEmpty()) {
+            values = new String[] {value};
+        }
     }
 }

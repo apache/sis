@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.opengis.annotation.UML;
+import org.opengis.geoapi.SchemaException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
@@ -134,9 +135,9 @@ final strictfp class PackageVerifier {
     /**
      * The schema definition for the class under examination.
      *
-     * @see SchemaCompliance#typeDefinition(String)
+     * @see SchemaCompliance#getTypeDefinition(String)
      */
-    private Map<String, SchemaCompliance.Info> properties;
+    private Map<String, SchemaCompliance.Element> properties;
 
     /**
      * Whether a namespace is actually used of not.
@@ -259,7 +260,7 @@ final strictfp class PackageVerifier {
             if (xmlType != null) {
                 if (!classNS.equals(xmlType.namespace())) {
                     throw new SchemaException(errorInClassMember(null)
-                            .append("Mismatched namespace in @XmlType and @XmlRootElement."));
+                            .append("Mismatched namespace in @XmlType and @XmlRootElement.").toString());
                 }
                 SchemaCompliance.verifyNamingConvention(type.getName(), isoName, xmlType.name(), SchemaCompliance.TYPE_SUFFIX);
             }
@@ -293,14 +294,14 @@ final strictfp class PackageVerifier {
             classNS = packageNS;
         } else if (classNS.equals(packageNS)) {
             throw new SchemaException(errorInClassMember(null)
-                    .append("Redundant namespace declaration: ").append(classNS));
+                    .append("Redundant namespace declaration: ").append(classNS).toString());
         }
         /*
          * Verify that the namespace has a prefix associated to it in the package-info file.
          */
         if (namespaceIsUsed.put(classNS, Boolean.TRUE) == null) {
             throw new SchemaException(errorInClassMember(null)
-                    .append("No prefix in package-info for ").append(classNS));
+                    .append("No prefix in package-info for ").append(classNS).toString());
         }
         /*
          * Properties in the legacy GMD or GMI namespaces may be deprecated, depending if a replacement
@@ -311,20 +312,20 @@ final strictfp class PackageVerifier {
         if (!isDeprecatedClass) {
             if (type.isAnnotationPresent(Deprecated.class)) {
                 throw new SchemaException(errorInClassMember(null)
-                        .append("Unexpected @Deprecated annotation."));
+                        .append("Unexpected @Deprecated annotation.").toString());
             }
             /*
              * Verify that class name exists, then verify its namespace (associated to the null key by convention).
              */
-            properties = schemas.typeDefinition(isoName);
+            properties = schemas.getTypeDefinition(isoName);
             if (properties == null) {
                 throw new SchemaException(errorInClassMember(null)
-                        .append("Unknown name declared in @XmlRootElement: ").append(isoName));
+                        .append("Unknown name declared in @XmlRootElement: ").append(isoName).toString());
             }
             final String expectedNS = properties.get(null).namespace;
             if (!classNS.equals(expectedNS)) {
                 throw new SchemaException(errorInClassMember(null)
-                        .append(isoName).append(" shall be associated to namespace ").append(expectedNS));
+                        .append(isoName).append(" shall be associated to namespace ").append(expectedNS).toString());
             }
             if (codeList != null) return;                   // If the class was a code list, we are done.
         }
@@ -375,7 +376,7 @@ final strictfp class PackageVerifier {
         }
         if (namespaceIsUsed.put(ns, Boolean.TRUE) == null) {
             throw new SchemaException(errorInClassMember(javaName)
-                    .append("Missing @XmlNs for namespace ").append(ns));
+                    .append("Missing @XmlNs for namespace ").append(ns).toString());
         }
         /*
          * Remember that we need an adapter for this property, unless the method or field defines its own adapter.
@@ -395,7 +396,7 @@ final strictfp class PackageVerifier {
                     final Class<?>[] p = c.getInterfaces();
                     if (p.length == 0) {
                         throw new SchemaException(errorInClassMember(javaName)
-                                .append("Missing @XmlJavaTypeAdapter for ").append(valueType));
+                                .append("Missing @XmlJavaTypeAdapter for ").append(valueType).toString());
                     }
                     c = p[0];   // Take only the first interface, which should be the "main" parent.
                 }
@@ -408,7 +409,7 @@ final strictfp class PackageVerifier {
         if (LEGACY_NAMESPACES.getOrDefault(ns, Collections.emptySet()).contains(name)) {
             if (!isDeprecatedClass && element.required()) {
                 throw new SchemaException(errorInClassMember(javaName)
-                        .append("Legacy property should not be required."));
+                        .append("Legacy property should not be required.").toString());
             }
         } else {
             /*
@@ -417,21 +418,21 @@ final strictfp class PackageVerifier {
              */
             if (property.isAnnotationPresent(Deprecated.class)) {
                 throw new SchemaException(errorInClassMember(javaName)
-                        .append("Unexpected deprecation status."));
+                        .append("Unexpected deprecation status.").toString());
             }
-            final SchemaCompliance.Info info = properties.get(name);
+            final SchemaCompliance.Element info = properties.get(name);
             if (info == null) {
                 throw new SchemaException(errorInClassMember(javaName)
-                        .append("Unexpected XML element: ").append(name));
+                        .append("Unexpected XML element: ").append(name).toString());
             }
             if (info.namespace != null && !ns.equals(info.namespace)) {
                 throw new SchemaException(errorInClassMember(javaName)
                         .append("Declared namespace: ").append(ns).append(System.lineSeparator())
-                        .append("Expected namespace: ").append(info.namespace));
+                        .append("Expected namespace: ").append(info.namespace).toString());
             }
             if (element.required() != info.isRequired) {
                 throw new SchemaException(errorInClassMember(javaName)
-                        .append("Expected @XmlElement(required = ").append(info.isRequired).append(')'));
+                        .append("Expected @XmlElement(required = ").append(info.isRequired).append(')').toString());
             }
             /*
              * Following is a continuation of our check for cardinality, but also the beginning of the check
@@ -441,11 +442,11 @@ final strictfp class PackageVerifier {
             if (isCollection) {
                 if (!info.isCollection) {
                     if (false)  // Temporarily disabled because require GeoAPI modifications.
-                    throw new SchemaException(errorInClassMember(javaName).append("Value should be a singleton."));
+                    throw new SchemaException(errorInClassMember(javaName).append("Value should be a singleton.").toString());
                 }
             } else if (info.isCollection) {
                 if (false)  // Temporarily disabled because require GeoAPI modifications.
-                throw new SchemaException(errorInClassMember(javaName).append("Value should be a collection."));
+                throw new SchemaException(errorInClassMember(javaName).append("Value should be a collection.").toString());
             }
             if (valueType != null) {
                 final UML valueUML = valueType.getAnnotation(UML.class);
@@ -458,7 +459,7 @@ final strictfp class PackageVerifier {
                         if (false)  // Temporarily disabled because require GeoAPI modifications.
                         throw new SchemaException(errorInClassMember(javaName)
                                 .append("Declared value type: ").append(actual).append(System.lineSeparator())
-                                .append("Expected value type: ").append(expected));
+                                .append("Expected value type: ").append(expected).toString());
                     }
                 }
             }
@@ -466,12 +467,12 @@ final strictfp class PackageVerifier {
              * Verify if we have a @XmlNs for the type of the value. This is probably not required, but we
              * do that as a safety. A common namespace added by this check is Metadata Common Classes (MCC).
              */
-            final Map<String, SchemaCompliance.Info> valueInfo = schemas.typeDefinition(info.typeName);
+            final Map<String, SchemaCompliance.Element> valueInfo = schemas.getTypeDefinition(info.typeName);
             if (valueInfo != null) {
                 final String valueNS = valueInfo.get(null).namespace;
                 if (namespaceIsUsed.put(valueNS, Boolean.TRUE) == null) {
                     throw new SchemaException(errorInClassMember(javaName)
-                            .append("Missing @XmlNs for property value namespace: ").append(valueNS));
+                            .append("Missing @XmlNs for property value namespace: ").append(valueNS).toString());
                 }
             }
         }

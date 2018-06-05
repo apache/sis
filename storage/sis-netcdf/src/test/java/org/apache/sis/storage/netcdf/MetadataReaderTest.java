@@ -17,21 +17,26 @@
 package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
-import ucar.nc2.dataset.NetcdfDataset;
 import org.opengis.metadata.Metadata;
-import org.opengis.wrapper.netcdf.IOTestCase;
+import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.identification.KeywordType;
+import org.opengis.metadata.content.TransferFunctionType;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.metadata.spatial.CellGeometry;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.test.dataset.ContentVerifier;
+import org.opengis.test.dataset.TestData;
 import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
-import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.formatNameAndValue;
+import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -47,7 +52,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
     ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
-public final strictfp class MetadataReaderTest extends IOTestCase {
+public final strictfp class MetadataReaderTest extends TestCase {
     /**
      * Tests {@link MetadataReader#split(String)}.
      */
@@ -67,7 +72,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testEmbedded() throws IOException, DataStoreException {
         final Metadata metadata;
-        try (Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP)) {
+        try (Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);
@@ -83,7 +88,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testUCAR() throws IOException, DataStoreException {
         final Metadata metadata;
-        try (Decoder input = new DecoderWrapper(new NetcdfDataset(open(NCEP)), GeometryLibrary.JAVA2D, TestCase.LISTENERS)) {
+        try (Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);
@@ -91,88 +96,60 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
 
     /**
      * Compares the string representation of the given metadata object with the expected one.
-     * The given metadata shall have been created from the {@link #NCEP} dataset.
+     * The given metadata shall have been created from the {@link TestData#NETCDF_2D_GEOGRAPHIC} dataset.
      */
     static void compareToExpected(final Metadata actual) {
-        final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
-        assertMultilinesEquals(
-            "Metadata\n" +
-            "  ├─Metadata identifier……………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   └─Authority……………………………………………………………………………… edu.ucar.unidata\n" +
-            "  ├─Contact\n" +
-            "  │   ├─Role…………………………………………………………………………………………… Point of contact\n" +
-            "  │   └─Individual…………………………………………………………………………… NOAA/NWS/NCEP\n" +     // TODO: actually we can not distinguish individual from organization.
-            "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
-            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
-            "  │   ├─Identifier…………………………………………………………………………… 19115-1\n" +
-            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
-            "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
-            "  │   ├─Cited responsible party\n" +
-            "  │   │   ├─Role………………………………………………………………………………… Principal investigator\n" +
-            "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n" +
-            "  │   └─Presentation form………………………………………………………… Document digital\n" +
-            "  ├─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
-            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
-            "  │   ├─Identifier…………………………………………………………………………… 19115-2\n" +
-            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
-            "  │   │   └─Version………………………………………………………………………… 2009(E)\n" +
-            "  │   ├─Cited responsible party\n" +
-            "  │   │   ├─Role………………………………………………………………………………… Principal investigator\n" +
-            "  │   │   └─Organisation…………………………………………………………… International Organization for Standardization\n" +
-            "  │   └─Presentation form………………………………………………………… Document digital\n" +
-            "  ├─Spatial representation info\n" +
-            "  │   ├─Number of dimensions………………………………………………… 3\n" +
-            "  │   ├─Axis dimension properties (1 of 3)…………… Column\n" +
-            "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (2 of 3)…………… Row\n" +
-            "  │   │   └─Dimension size……………………………………………………… 73\n" +
-            "  │   ├─Axis dimension properties (3 of 3)…………… Time\n" +
-            "  │   │   └─Dimension size……………………………………………………… 1\n" +
-            "  │   ├─Cell geometry…………………………………………………………………… Area\n" +
-            "  │   └─Transformation parameter availability…… false\n" +
-            "  ├─Identification info\n" +
-            "  │   ├─Citation………………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
-            "  │   │   ├─Date………………………………………………………………………………… 2005-09-22 00:00:00\n" +
-            "  │   │   │   └─Date type………………………………………………………… Creation\n" +
-            "  │   │   ├─Identifier………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   │   │   └─Authority………………………………………………………… edu.ucar.unidata\n" +
-            "  │   │   └─Cited responsible party\n" +
-            "  │   │       ├─Role……………………………………………………………………… Originator\n" +
-            "  │   │       └─Individual……………………………………………………… NOAA/NWS/NCEP\n" +  // TODO: actually we can not distinguish individual from organization.
-            "  │   ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
-            "  │   ├─Point of contact\n" +
-            "  │   │   ├─Role………………………………………………………………………………… Point of contact\n" +
-            "  │   │   └─Individual………………………………………………………………… NOAA/NWS/NCEP\n" +
-            "  │   ├─Spatial representation type……………………………… Grid\n" +
-            "  │   ├─Extent\n" +
-            "  │   │   ├─Geographic element\n" +
-            "  │   │   │   ├─West bound longitude…………………………… 180°W\n" +
-            "  │   │   │   ├─East bound longitude…………………………… 180°E\n" +
-            "  │   │   │   ├─South bound latitude…………………………… 90°S\n" +
-            "  │   │   │   ├─North bound latitude…………………………… 90°N\n" +
-            "  │   │   │   └─Extent type code……………………………………… true\n" +
-            "  │   │   └─Vertical element\n" +
-            "  │   │       ├─Minimum value……………………………………………… 0.0\n" +
-            "  │   │       └─Maximum value……………………………………………… 0.0\n" +
-            "  │   ├─Descriptive keywords\n" +
-            "  │   │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\n" +
-            "  │   │   ├─Type………………………………………………………………………………… Theme\n" +
-            "  │   │   └─Thesaurus name……………………………………………………… GCMD Science Keywords\n" +
-            "  │   └─Resource constraints\n" +
-            "  │       └─Use limitation……………………………………………………… Freely available\n" +
-            "  ├─Content info\n" +
-            "  │   └─Attribute group\n" +
-            "  │       └─Attribute…………………………………………………………………… SST\n" +
-            "  │           ├─Description…………………………………………………… Sea temperature\n" +
-            "  │           ├─Name……………………………………………………………………… sea_water_temperature\n" +
-            "  │           └─Units…………………………………………………………………… K\n" +
-            "  ├─Data quality info\n" +
-            "  │   ├─Scope\n" +
-            "  │   │   └─Level……………………………………………………………………………… Dataset\n" +
-            "  │   └─Lineage\n" +
-            "  │       └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
-            "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n" +
-            "  └─Metadata scope\n" +
-            "      └─Resource scope………………………………………………………………… Dataset\n", text);
+        final ContentVerifier verifier = new ContentVerifier();
+        verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
+        verifier.addMetadataToVerify(actual);
+        verifier.assertMetadataEquals(
+            "dateInfo[0].date",                                                        date("2018-05-15 13:01:00"),
+            "dateInfo[0].dateType",                                                    DateType.REVISION,
+            "metadataScope[0].resourceScope",                                          ScopeCode.DATASET,
+            "identificationInfo[0].abstract",                                          "Global, two-dimensional model data",
+            "identificationInfo[0].purpose",                                           "GeoAPI conformance tests",
+            "identificationInfo[0].supplementalInformation",                           "For testing purpose only.",
+            "identificationInfo[0].citation.title",                                    "Test data from Sea Surface Temperature Analysis Model",
+            "identificationInfo[0].descriptiveKeywords[0].keyword[0]",                 "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature",
+            "identificationInfo[0].descriptiveKeywords[0].thesaurusName.title",        "GCMD Science Keywords",
+            "identificationInfo[0].descriptiveKeywords[0].type",                       KeywordType.THEME,
+            "identificationInfo[0].pointOfContact[0].role",                            Role.POINT_OF_CONTACT,
+            "identificationInfo[0].pointOfContact[0].party[0].name",                   "NOAA/NWS/NCEP",
+            "identificationInfo[0].citation.citedResponsibleParty[0].role",            Role.ORIGINATOR,
+            "identificationInfo[0].citation.citedResponsibleParty[0].party[0].name",   "NOAA/NWS/NCEP",
+            "identificationInfo[0].citation.date[0].date",                             date("2005-09-22 00:00:00"),
+            "identificationInfo[0].citation.date[1].date",                             date("2018-05-15 13:00:00"),
+            "identificationInfo[0].citation.date[0].dateType",                         DateType.CREATION,
+            "identificationInfo[0].citation.date[1].dateType",                         DateType.REVISION,
+            "identificationInfo[0].citation.identifier[0].code",                       "NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc",
+            "identificationInfo[0].citation.identifier[0].authority.title",            "edu.ucar.unidata",
+            "identificationInfo[0].resourceConstraints[0].useLimitation[0]",           "Freely available",
+            "identificationInfo[0].extent[0].geographicElement[0].extentTypeCode",     Boolean.TRUE,
+            "identificationInfo[0].extent[0].geographicElement[0].westBoundLongitude", -180.0,
+            "identificationInfo[0].extent[0].geographicElement[0].eastBoundLongitude",  180.0,
+            "identificationInfo[0].extent[0].geographicElement[0].southBoundLatitude",  -90.0,
+            "identificationInfo[0].extent[0].geographicElement[0].northBoundLatitude",   90.0,
+            "identificationInfo[0].extent[0].verticalElement[0].maximumValue",            0.0,
+            "identificationInfo[0].extent[0].verticalElement[0].minimumValue",            0.0,
+            "identificationInfo[0].spatialRepresentationType[0]",                      SpatialRepresentationType.GRID,
+            "spatialRepresentationInfo[0].cellGeometry",                               CellGeometry.AREA,
+            "spatialRepresentationInfo[0].numberOfDimensions",                         2,
+            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionName",   DimensionNameType.COLUMN,
+            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionName",   DimensionNameType.ROW,
+            "spatialRepresentationInfo[0].axisDimensionProperties[0].dimensionSize",   73,
+            "spatialRepresentationInfo[0].axisDimensionProperties[1].dimensionSize",   73,
+            "spatialRepresentationInfo[0].transformationParameterAvailability",        false,
+
+            // Variable descriptions (only one in this test).
+            "contentInfo[0].attributeGroup[0].attribute[0].sequenceIdentifier",        "SST",
+            "contentInfo[0].attributeGroup[0].attribute[0].description",               "Sea temperature",
+            "contentInfo[0].attributeGroup[0].attribute[0].name[0].code",              "sea_water_temperature",
+            "contentInfo[0].attributeGroup[0].attribute[0].transferFunctionType",      TransferFunctionType.LINEAR,
+            "contentInfo[0].attributeGroup[0].attribute[0].scaleFactor",               0.0011,
+            "contentInfo[0].attributeGroup[0].attribute[0].offset",                    -1.85,
+            "contentInfo[0].attributeGroup[0].attribute[0].units",                     "°C",
+
+            "dataQualityInfo[0].lineage.statement", "Decimated and modified by GeoAPI for inclusion in conformance test suite.",
+            "dataQualityInfo[0].scope.level",       ScopeCode.DATASET);
     }
 }

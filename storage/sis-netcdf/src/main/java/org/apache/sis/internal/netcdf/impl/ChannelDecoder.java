@@ -57,7 +57,6 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.util.Debug;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
@@ -814,7 +813,7 @@ public final class ChannelDecoder extends Decoder {
             final Set<VariableInfo> axes = new LinkedHashSet<>(4);
             final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
-                if (variable.isCoordinateSystemAxis()) {
+                if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
                     continue;
                 }
                 final List<Dimension> dimensions = Arrays.asList(variable.dimensions);
@@ -860,7 +859,6 @@ nextVar:    for (final VariableInfo variable : variables) {
      *
      * @return {@inheritDoc}
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();

@@ -51,8 +51,8 @@ import org.apache.sis.internal.raster.Resources;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public abstract class WritablePixelIterator extends PixelIterator implements Closeable {

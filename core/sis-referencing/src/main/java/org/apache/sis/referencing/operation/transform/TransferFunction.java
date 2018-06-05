@@ -24,7 +24,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -314,7 +313,6 @@ public class TransferFunction implements Cloneable, Serializable {
      *
      * @return a string representation of this transfer function.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder b = new StringBuilder("y = ");

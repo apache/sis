@@ -26,7 +26,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -524,7 +523,6 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @return a string representation of this association role for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return toString(deprecated, "FeatureAssociationRole", getName(), valueType.getName()).toString();

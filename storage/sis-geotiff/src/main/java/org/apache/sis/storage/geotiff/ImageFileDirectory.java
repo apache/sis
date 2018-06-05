@@ -52,7 +52,7 @@ import org.apache.sis.measure.Units;
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  *
@@ -286,6 +286,12 @@ final class ImageFileDirectory {
      * May be a vector of length 1 if the same single value applies to all bands.
      */
     private Vector minValues, maxValues;
+
+    /**
+     * {@code true} if {@link #minValues} and {@link #maxValues} have been explicitly specified
+     * in the TIFF file, or {@code false} if they have been inferred from {@link #bitsPerSample}.
+     */
+    private boolean isMinSpecified, isMaxSpecified;
 
     /**
      * The number of pixels per {@link #resolutionUnit} in the {@link #imageWidth} and the {@link #imageHeight}
@@ -634,6 +640,7 @@ final class ImageFileDirectory {
             case Tags.MinSampleValue:
             case Tags.SMinSampleValue: {
                 minValues = extremum(minValues, type.readVector(input(), count), false);
+                isMinSpecified = true;
                 break;
             }
             /*
@@ -644,6 +651,7 @@ final class ImageFileDirectory {
             case Tags.MaxSampleValue:
             case Tags.SMaxSampleValue: {
                 maxValues = extremum(maxValues, type.readVector(input(), count), true);
+                isMaxSpecified = true;
                 break;
             }
 
@@ -1180,8 +1188,8 @@ final class ImageFileDirectory {
         for (int band = 0; band < samplesPerPixel;) {
             metadata.newSampleDimension();
             metadata.setBitPerSample(bitsPerSample);
-            if (minValues != null) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
-            if (maxValues != null) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
+            if (isMinSpecified) metadata.addMinimumSampleValue(minValues.doubleValue(Math.min(band, minValues.size()-1)));
+            if (isMaxSpecified) metadata.addMaximumSampleValue(maxValues.doubleValue(Math.min(band, maxValues.size()-1)));
             metadata.setBandIdentifier(++band);
         }
         /*

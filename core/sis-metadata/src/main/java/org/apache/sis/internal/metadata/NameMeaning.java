@@ -170,7 +170,7 @@ public final class NameMeaning extends Static {
              * new name for that organization).
              */
             final Citation c = Citations.fromName(key);
-            codeSpace = Citations.getCodeSpace(c);
+            codeSpace = Citations.toCodeSpace(c);
             if (AUTHORITIES.get(codeSpace) == null) {
                 return null;            // Not an authority that we recognize for the OGC namespace.
             }

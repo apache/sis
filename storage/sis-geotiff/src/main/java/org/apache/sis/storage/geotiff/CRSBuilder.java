@@ -85,7 +85,6 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
@@ -133,7 +132,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see GeoKeys
  *
@@ -458,7 +457,7 @@ final class CRSBuilder {
      */
     private double getMandatoryDouble(final short key) {
         final double value = getAsDouble(key);
-        if (!Double.isNaN(value)) {
+        if (Double.isFinite(value)) {
             return value;
         }
         alreadyReported = true;
@@ -869,6 +868,15 @@ final class CRSBuilder {
             case GeoCodes.userDefined: {
                 if (scaleKey == 0) return defaultValue;
                 return defaultValue.getSystemUnit().multiply(getMandatoryDouble(scaleKey));
+            }
+            case GeoCodes.missing & 0xFFFF: {
+                if (scaleKey != 0) {
+                    final double scale = getAsDouble(scaleKey);
+                    if (Double.isFinite(scale)) {
+                        return defaultValue.getSystemUnit().multiply(scale);
+                    }
+                }
+                return defaultValue;
             }
             default: {
                 /*
@@ -1705,7 +1713,6 @@ final class CRSBuilder {
     /**
      * Returns a string representation of the keys and associated values in this {@code CRSBuilder}.
      */
-    @Debug
     @Override
     public final String toString() {
         final StringBuilder buffer = new StringBuilder("GeoTIFF keys ").append(majorRevision).append('.')

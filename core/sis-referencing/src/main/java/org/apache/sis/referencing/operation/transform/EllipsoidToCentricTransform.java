@@ -748,7 +748,7 @@ next:   while (--numPts >= 0) {
      */
     @Override
     protected int computeHashCode() {
-        int code = super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(axisRatio));
+        int code = super.computeHashCode() + Double.hashCode(axisRatio);
         if (withHeight) code += 37;
         return code;
     }

@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.measure.UnitConverter;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ComparisonMode;
@@ -424,9 +423,9 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(scale)
-                         + 31 * (Double.doubleToLongBits(offset)
-                         + 37 *  Double.doubleToLongBits(divisor)));
+        return Long.hashCode(Double.doubleToLongBits(scale)
+                     + 31 * (Double.doubleToLongBits(offset)
+                     + 37 *  Double.doubleToLongBits(divisor)));
     }
 
     /**
@@ -469,7 +468,6 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * This string representation may change in any future SIS release.
      * Current format is of the form "y = scale⋅x + offset".
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder().append("y = ");

@@ -69,7 +69,7 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -684,7 +684,7 @@ public final class Citations extends Static {
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier
-     * @see org.apache.sis.referencing.IdentifiedObjects#getUnicodeIdentifier(IdentifiedObject)
+     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
      * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
      *
      * @since 0.6
@@ -705,13 +705,24 @@ public final class Citations extends Static {
      * @return a non-empty code space for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
-     * @since 0.8
+     * @since 1.0
      */
-    public static String getCodeSpace(final Citation citation) {
+    public static String toCodeSpace(final Citation citation) {
         if (citation instanceof IdentifierSpace<?>) {
             return ((IdentifierSpace<?>) citation).getName();
         } else {
             return getUnicodeIdentifier(citation);
         }
+    }
+
+    /**
+     * @deprecated Renamed as {@link #toCodeSpace(Citation)}. The previous name was confusing because this
+     * method does not return the namespace of the given citation, but instead represents it as a namespace.
+     *
+     * @since 0.8
+     */
+    @Deprecated
+    public static String getCodeSpace(final Citation citation) {
+        return toCodeSpace(citation);
     }
 }

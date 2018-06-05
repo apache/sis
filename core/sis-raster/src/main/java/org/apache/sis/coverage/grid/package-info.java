@@ -14,26 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.xml;
 
 
 /**
- * Thrown when a {@link SchemaCompliance} failed to load a XSD file because it does not comply
- * with expected OGC/ISO conventions, or when a JAXB annotation failed a compliance check.
+ * A coverage backed by a regular grid. In the two-dimensional case, the grid coverage is an image and the cells are pixels.
+ * In the three-dimensional case, the cells are voxels.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-@SuppressWarnings("serial")
-public final class SchemaException extends Exception {
-    /**
-     * Creates an exception with the specified details message.
-     *
-     * @param message  the detail message.
-     */
-    public SchemaException(final CharSequence message) {
-        super(message != null ? message.toString() : null);
-    }
-}
+package org.apache.sis.coverage.grid;

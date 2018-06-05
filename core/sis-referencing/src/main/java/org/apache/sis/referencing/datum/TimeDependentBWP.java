@@ -20,7 +20,6 @@ import java.util.Date;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -294,6 +293,6 @@ public class TimeDependentBWP extends BursaWolfParameters {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Numerics.hashCode(timeReference);
+        return super.hashCode() ^ Long.hashCode(timeReference);
     }
 }

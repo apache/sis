@@ -19,7 +19,6 @@ package org.apache.sis.storage;
 import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.internal.util.Utilities;
 
@@ -250,7 +249,6 @@ public class ProbeResult implements Serializable {
     /**
      * Returns a string representation of this {@code ProbeResult} for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return Utilities.toString(getClass(), "isSupported", isSupported, "mimeType", mimeType, "version", version);

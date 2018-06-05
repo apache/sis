@@ -19,6 +19,7 @@ package org.apache.sis.internal.netcdf;
 import java.util.Date;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
+import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -30,10 +31,10 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * Tests the {@link Decoder} implementation. The default implementation tests
  * {@link org.apache.sis.internal.netcdf.ucar.DecoderWrapper} since the UCAR
  * library is our reference implementation. However subclasses can override the
- * {@link #createDecoder(String)} method in order to test a different implementation.
+ * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -46,20 +47,13 @@ public strictfp class DecoderTest extends TestCase {
      */
     @Test
     public void testStringValue() throws IOException, DataStoreException {
-        selectDataset(NCEP);
-        assertAttributeEquals("Sea Surface Temperature Analysis Model",      TITLE);
-        assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", SUMMARY);
-        assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", "SUMMARY"); // test case-insensitive search
-        assertAttributeEquals("NOAA/NWS/NCEP",                               CREATOR.NAME);
-        assertAttributeEquals(/* Empty string in file   */ (String) null,    CREATOR.EMAIL);
-        assertAttributeEquals(/* Non-existent attribute */ (String) null,    CONTRIBUTOR.NAME);
-
-        if (isSupplementalFormatSupported("HDF5")) {
-            selectDataset(CIP);
-// TODO     assertAttributeEquals(/* Only control character */ (String) null,   TITLE);
-            assertAttributeEquals("UCAR",                                      "INSTITUTION");
-// TODO     assertAttributeEquals("U.S. National Weather Service - NCEP (WMC)", HISTORY);
-        }
+        selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
+        assertAttributeEquals("Test data from Sea Surface Temperature Analysis Model", TITLE);
+        assertAttributeEquals("Global, two-dimensional model data",                    SUMMARY);
+        assertAttributeEquals("Global, two-dimensional model data",                    "SUMMARY");    // test case-insensitive search
+        assertAttributeEquals("NOAA/NWS/NCEP",                                         CREATOR.NAME);
+        assertAttributeEquals((String) null,                                           CREATOR.EMAIL);
+        assertAttributeEquals((String) null,                                           CONTRIBUTOR.NAME);
     }
 
     /**
@@ -70,14 +64,13 @@ public strictfp class DecoderTest extends TestCase {
      */
     @Test
     public void testNumericValue() throws IOException, DataStoreException {
-        selectDataset(NCEP);
+        selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
         assertAttributeEquals(Double.valueOf( -90), LATITUDE .MINIMUM);
         assertAttributeEquals(Double.valueOf( +90), LATITUDE .MAXIMUM);
         assertAttributeEquals(Double.valueOf(-180), LONGITUDE.MINIMUM);
         assertAttributeEquals(Double.valueOf(+180), LONGITUDE.MAXIMUM);
         assertAttributeEquals((Double) null,        LATITUDE .RESOLUTION);
         assertAttributeEquals((Double) null,        LONGITUDE.RESOLUTION);
-        assertAttributeEquals(Double.valueOf(1),    "version"); // Specific to the NCEP file.
     }
 
     /**
@@ -88,9 +81,10 @@ public strictfp class DecoderTest extends TestCase {
      */
     @Test
     public void testDateValue() throws IOException, DataStoreException {
-        selectDataset(NCEP);
+        selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
         assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);
-        assertAttributeEquals((Date) null,                 DATE_MODIFIED);
+        assertAttributeEquals(date("2018-05-15 13:00:00"), DATE_MODIFIED);
+        assertAttributeEquals((Date) null,                 DATE_ISSUED);
     }
 
     /**
@@ -101,7 +95,7 @@ public strictfp class DecoderTest extends TestCase {
      */
     @Test
     public void testNumberToDate() throws IOException, DataStoreException {
-        final Decoder decoder = selectDataset(NCEP);
+        final Decoder decoder = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
         assertArrayEquals(new Date[] {
             date("2005-09-22 00:00:00")
         }, decoder.numberToDate("hours since 1992-1-1", 120312));
@@ -121,7 +115,7 @@ public strictfp class DecoderTest extends TestCase {
      */
     @Test
     public void testGetTitleAndID() throws IOException, DataStoreException {
-        final Decoder decoder = selectDataset(NCEP);
+        final Decoder decoder = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
         /*
          * Actually we really want a null value, even if the NCEP file contains 'title' and 'id' attributes,
          * because the decoder methods are supposed to check only for the "_Title" and "_Id" attributes as a

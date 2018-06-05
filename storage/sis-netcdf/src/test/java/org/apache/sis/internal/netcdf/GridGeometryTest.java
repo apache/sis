@@ -21,6 +21,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,10 +32,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link GridGeometry} implementation. The default implementation tests
  * {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper} since the UCAR
  * library is our reference implementation. However subclasses can override the
- * {@link #createDecoder(String)} method in order to test a different implementation.
+ * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -61,36 +62,68 @@ public strictfp class GridGeometryTest extends TestCase {
      */
     @Test
     public void testDimensions() throws IOException, DataStoreException {
-        final GridGeometry geometry = getSingleton(filter(selectDataset(NCEP).getGridGeometries()));
-        assertEquals("getSourceDimensions()", 3, geometry.getSourceDimensions());
-        assertEquals("getTargetDimensions()", 3, geometry.getTargetDimensions());
+        GridGeometry geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries()));
+        assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
+        assertEquals("getTargetDimensions()", 2, geometry.getTargetDimensions());
+
+        geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridGeometries()));
+        assertEquals("getSourceDimensions()", 4, geometry.getSourceDimensions());
+        assertEquals("getTargetDimensions()", 4, geometry.getTargetDimensions());
     }
 
     /**
-     * Tests {@link GridGeometry#getAxes()}.
+     * Tests {@link GridGeometry#getAxes()} on a two-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
     @DependsOnMethod("testDimensions")
-    public void testAxes() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(NCEP).getGridGeometries())).getAxes();
-        assertEquals(3, axes.length);
-        final Axis x = axes[2];
-        final Axis y = axes[1];
-        final Axis t = axes[0];
+    public void testAxes2D() throws IOException, DataStoreException {
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries())).getAxes();
+        assertEquals(2, axes.length);
+        final Axis x = axes[1];
+        final Axis y = axes[0];
 
         assertSame(AttributeNames.LONGITUDE, x.attributeNames);
         assertSame(AttributeNames.LATITUDE,  y.attributeNames);
-        assertSame(AttributeNames.TIME,      t.attributeNames);
 
-        assertArrayEquals(new int[] {2}, x.sourceDimensions);
-        assertArrayEquals(new int[] {1}, y.sourceDimensions);
-        assertArrayEquals(new int[] {0}, t.sourceDimensions);
+        assertArrayEquals(new int[] {1}, x.sourceDimensions);
+        assertArrayEquals(new int[] {0}, y.sourceDimensions);
 
         assertArrayEquals(new int[] {73}, x.sourceSizes);
         assertArrayEquals(new int[] {73}, y.sourceSizes);
+    }
+
+    /**
+     * Tests {@link GridGeometry#getAxes()} on a four-dimensional dataset.
+     *
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Test
+    @DependsOnMethod("testDimensions")
+    public void testAxes4D() throws IOException, DataStoreException {
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridGeometries())).getAxes();
+        assertEquals(4, axes.length);
+        final Axis x = axes[3];
+        final Axis y = axes[2];
+        final Axis z = axes[1];
+        final Axis t = axes[0];
+
+        assertNull("Not geographic",        x.attributeNames);
+        assertNull("Not geographic",        y.attributeNames);
+        assertSame(AttributeNames.VERTICAL, z.attributeNames);
+        assertSame(AttributeNames.TIME,     t.attributeNames);
+
+        assertArrayEquals(new int[] {3}, x.sourceDimensions);
+        assertArrayEquals(new int[] {2}, y.sourceDimensions);
+        assertArrayEquals(new int[] {1}, z.sourceDimensions);
+        assertArrayEquals(new int[] {0}, t.sourceDimensions);
+
+        assertArrayEquals(new int[] {38}, x.sourceSizes);
+        assertArrayEquals(new int[] {19}, y.sourceSizes);
+        assertArrayEquals(new int[] { 4}, z.sourceSizes);
         assertArrayEquals(new int[] { 1}, t.sourceSizes);
     }
 }
