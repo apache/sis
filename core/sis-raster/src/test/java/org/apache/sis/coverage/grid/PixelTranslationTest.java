@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -52,20 +53,34 @@ public final strictfp class PixelTranslationTest extends TestCase {
     }
 
     /**
-     * Tests {@link PixelTranslation#translate(MathTransform, PixelInCell, PixelInCell)}.
+     * Tests {@link PixelTranslation#translate(MathTransform, PixelInCell, PixelInCell)} with an identity transform.
+     * If grid coordinates (0,0) in "pixel center" convention map to (0,0) in "real world" coordinates,
+     * then grid coordinates (0,0) in "pixel corner" convention shall map to (-½, -½) in real world.
+     * That way, grid coordinates (½,½) in "pixel corner" convention still map to (0,0) in real world.
+     *
+     * @throws TransformException if an error occurred while transforming a test point.
      */
     @Test
-    public void testTranslatePixelInCell() {
+    public void testTranslatePixelInCell() throws TransformException {
         final MathTransform mt = centerToCorner(3);
         assertMatrixEquals("center → corner", new Matrix4(
                 1, 0, 0, -0.5,
                 0, 1, 0, -0.5,
                 0, 0, 1, -0.5,
                 0, 0, 0,  1), MathTransforms.getMatrix(mt), STRICT);
+        /*
+         * Just for making clear what we explained in javadoc comment: the real world (0,0,0) coordinates was in the center
+         * of cell (0,0,0). After we switched to "cell corner" convention, that center is (½,½,½) in grid coordinates but
+         * should still map (0,0,0) in "real world" coordinates.
+         */
+        final double[] coordinates = new double[] {0.5, 0.5, 0.5};
+        mt.transform(coordinates, 0, coordinates, 0, 1);
+        assertArrayEquals(new double[3], coordinates, STRICT);
     }
 
     /**
      * Tests {@link PixelTranslation#translate(MathTransform, PixelOrientation, PixelOrientation, int, int)}.
+     * See {@link #testTranslatePixelInCell()} for discussion on expected values.
      */
     @Test
     public void testTranslatePixelOrientation() {
@@ -76,7 +91,7 @@ public final strictfp class PixelTranslationTest extends TestCase {
                 0, 0,  1), MathTransforms.getMatrix(mt), STRICT);
 
         mt = PixelTranslation.translate(MathTransforms.identity(3), PixelOrientation.LOWER_LEFT, PixelOrientation.CENTER, 1, 2);
-        assertMatrixEquals("center → corner", new Matrix4(
+        assertMatrixEquals("corner → center", new Matrix4(
                 1, 0, 0,  0.0,
                 0, 1, 0, +0.5,
                 0, 0, 1, -0.5,
