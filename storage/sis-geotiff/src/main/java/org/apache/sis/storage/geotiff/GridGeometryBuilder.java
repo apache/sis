@@ -292,7 +292,7 @@ final class GridGeometryBuilder {
                 reader.owner.warning(reader.resources().getString(key, reader.owner.getDisplayName()), e);
             } catch (IllegalArgumentException | NoSuchElementException | ClassCastException e) {
                 if (!helper.alreadyReported) {
-                    reader.owner.warning(null, e);
+                    canNotCreate(e);
                 }
             }
         }
@@ -308,7 +308,7 @@ final class GridGeometryBuilder {
             gridGeometry = new GridGeometry(extent, pixelIsPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER, gridToCRS, crs);
         } catch (TransformException e) {
             gridGeometry = new GridGeometry(extent, crs);
-            reader.owner.warning(null, e);
+            canNotCreate(e);
             /*
              * Note: we catch TransformExceptions because they may be caused by erroneous data in the GeoTIFF file,
              * but let FactoryExceptions propagate because they are more likely to be a SIS configuration problem.
@@ -364,5 +364,12 @@ final class GridGeometryBuilder {
             return;
         }
         metadata.setPointInPixel(po);
+    }
+
+    /**
+     * Logs a warning telling that we can not create a grid geometry for the given reason.
+     */
+    private void canNotCreate(final Exception e) {
+        reader.owner.warning(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, reader.input.filename), e);
     }
 }
