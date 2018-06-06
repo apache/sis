@@ -1221,7 +1221,7 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
             if (gridGeometry == null) try {
                 gridGeometry = referencing.build(extent());
             } catch (FactoryException e) {
-                throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename(), e));
+                throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
             }
             return gridGeometry;
         } else {

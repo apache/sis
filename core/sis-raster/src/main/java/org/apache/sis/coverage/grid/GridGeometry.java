@@ -234,10 +234,10 @@ public class GridGeometry implements Serializable {
     {
         if (gridToCRS != null) {
             if (extent != null) {
-                ensureDimensionMatches("extent", extent.getDimension(), gridToCRS.getSourceDimensions());
+                ensureDimensionMatches("extent", gridToCRS.getSourceDimensions(), extent.getDimension());
             }
             if (crs != null) {
-                ensureDimensionMatches("crs", crs.getCoordinateSystem().getDimension(), gridToCRS.getTargetDimensions());
+                ensureDimensionMatches("crs", gridToCRS.getTargetDimensions(), crs.getCoordinateSystem().getDimension());
             }
         } else if (crs == null) {
             ArgumentChecks.ensureNonNull("extent", extent);
@@ -275,15 +275,15 @@ public class GridGeometry implements Serializable {
      * Ensures that the given dimension is equals to the expected value. If not, throws an exception.
      *
      * @param argument  the name of the argument being tested.
-     * @param dimension the dimension of the argument value.
-     * @param expected  the expected dimension.
+     * @param expected  the expected number of dimension.
+     * @param dimension the actual dimension of the argument value.
      */
-    private static void ensureDimensionMatches(final String argument, final int dimension, final int expected)
+    private static void ensureDimensionMatches(final String argument, final int expected, final int dimension)
             throws MismatchedDimensionException
     {
         if (dimension != expected) {
             throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, argument, dimension, expected));
+                    Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
         }
     }
 
