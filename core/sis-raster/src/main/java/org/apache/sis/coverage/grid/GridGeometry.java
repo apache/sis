@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
 import java.awt.image.RenderedImage;            // For javadoc only.
@@ -283,6 +284,30 @@ public class GridGeometry implements Serializable {
         if (dimension != expected) {
             throw new MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, argument, dimension, expected));
+        }
+    }
+
+    /**
+     * Creates a grid geometry with only an extent and a coordinate reference system.
+     * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     *
+     * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
+     * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
+     * @throws NullPointerException if {@code extent} and {@code crs} arguments are both null.
+     */
+    public GridGeometry(final GridExtent extent, final CoordinateReferenceSystem crs) {
+        this.extent = extent;
+        gridToCRS   = null;
+        cornerToCRS = null;
+        resolution  = null;
+        nonLinears  = 0;
+        if (crs == null) {
+            ArgumentChecks.ensureNonNull("extent", extent);
+            envelope = null;
+        } else {
+            final double[] coords = new double[crs.getCoordinateSystem().getDimension()];
+            Arrays.fill(coords, Double.NaN);
+            envelope = new ImmutableEnvelope(coords, coords, crs);
         }
     }
 

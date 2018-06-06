@@ -55,11 +55,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * {@preformat java
  *   final AffineTransform  gridToCRS = ...;
  *   final PixelOrientation current   = PixelOrientation.CENTER;
- *   final PixelOrientation expected  = PixelOrientation.UPPER_LEFT;
+ *   final PixelOrientation desired   = PixelOrientation.UPPER_LEFT;
  *
- *   // Switch the transform from 'current' to 'expected' convention.
+ *   // Switch the transform from 'current' to 'desired' convention.
  *   final PixelTranslation source = getPixelTranslation(current);
- *   final PixelTranslation target = getPixelTranslation(expected);
+ *   final PixelTranslation target = getPixelTranslation(desired);
  *   gridToCRS.translate(target.dx - source.dx,
  *                       target.dy - source.dy);
  * }
@@ -224,30 +224,29 @@ public final class PixelTranslation extends Static implements Serializable {
      * If the two given conventions are the same, then this method returns the given transform unchanged.
      *
      * <div class="note"><b>Example:</b>
-     * if a given {@code gridToCRS} was mapping the pixel corner to "real world" coordinates, then a call to
-     * <code>translate(gridToCRS, {@link PixelInCell#CELL_CORNER}, {@link PixelInCell#CELL_CENTER})</code>
-     * will return a new transform performing the following steps:
-     * <ol>
-     *   <li>Translate the grid coordinates by +0.5, so that the (0,0) coordinate in "pixel center" convention
-     *       map to (½,½) in "pixel corner" convention.</li>
-     *   <li>Apply the transform described by the "pixel corner" convention.</li>
-     * </ol></div>
+     * if a given {@code gridToCRS} transform was mapping the <em>cell corner</em> to "real world" coordinates, then a call to
+     * <code>translate(gridToCRS, {@link PixelInCell#CELL_CORNER CELL_CORNER}, {@link PixelInCell#CELL_CENTER CELL_CENTER})</code>
+     * will return a new transform performing the following steps: first convert grid coordinates from <var>cell center</var>
+     * convention ({@code desired}) to <var>cell corner</var> convention ({@code current}), then concatenate the given
+     * {@code gridToCRS} transform which was designed for the <em>cell corner</em> convention.
+     * The above-cited <var>cell center</var> → <var>cell corner</var> conversion is done by translating the grid coordinates
+     * by +½, because the grid coordinates (0,0) relative to cell center is (½,½) relative to cell corner.</div>
      *
      * If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
-     * Otherwise {@code current} and {@code expected} arguments must be non-null.
+     * Otherwise {@code current} and {@code desired} arguments must be non-null.
      *
      * @param  gridToCRS  a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
      * @param  current    the pixel orientation of the given {@code gridToCRS} transform.
-     * @param  expected   the pixel orientation of the desired transform.
-     * @return the translation from {@code current} to {@code expected}, or {@code null} if {@code gridToCRS} was null.
-     * @throws IllegalArgumentException if {@code current} or {@code expected} is not a known code list value.
+     * @param  desired    the pixel orientation of the desired transform.
+     * @return the translation from {@code current} to {@code desired}, or {@code null} if {@code gridToCRS} was null.
+     * @throws IllegalArgumentException if {@code current} or {@code desired} is not a known code list value.
      */
-    public static MathTransform translate(final MathTransform gridToCRS, final PixelInCell current, final PixelInCell expected) {
-        if (gridToCRS == null || expected.equals(current)) {
+    public static MathTransform translate(final MathTransform gridToCRS, final PixelInCell current, final PixelInCell desired) {
+        if (gridToCRS == null || desired.equals(current)) {
             return gridToCRS;
         }
         final int dimension = gridToCRS.getSourceDimensions();
-        final double offset = getPixelTranslation(expected) - getPixelTranslation(current);
+        final double offset = getPixelTranslation(desired) - getPixelTranslation(current);
         final int ci;               // Cache index.
         if (offset == -0.5) {
             ci = 2*dimension - 2;
@@ -275,32 +274,27 @@ public final class PixelTranslation extends Static implements Serializable {
      * The given transform can have any number of input and output dimensions, but only two of them will be converted.
      *
      * <div class="note"><b>Example:</b>
-     * if a given {@code gridToCRS} was mapping the upper-left corner to "real world" coordinates, then a call to
-     * <code>translate(gridToCRS, {@link PixelOrientation#UPPER_LEFT}, {@link PixelOrientation#CENTER}, 0, 1)</code>
-     * will return a new transform performing the following steps:
-     * <ol>
-     *   <li>Translate the grid coordinates by +0.5, so that the (0,0) coordinate in "pixel center" convention
-     *       map to (½,½) in "upper-left corner" convention. This translation is applied only in the specified
-     *       grid (source) dimensions; all other dimensions (if any) are left unchanged.</li>
-     *   <li>Apply the transform described by the "upper-left corner" convention.</li>
-     * </ol></div>
+     * if a given {@code gridToCRS} transform was mapping the upper-left corner to "real world" coordinates, then a call to
+     * <code>translate(gridToCRS, {@link PixelOrientation#UPPER_LEFT UPPER_LEFT}, {@link PixelOrientation#CENTER CENTER}, 0, 1)</code>
+     * will return a new transform translating grid coordinates by +0.5 before to apply the given {@code gridToCRS} transform.
+     * See example in above {@link #translate(MathTransform, PixelInCell, PixelInCell) translate} method for more details.</div>
      *
      * If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
-     * Otherwise {@code current} and {@code expected} arguments must be non-null.
+     * Otherwise {@code current} and {@code desired} arguments must be non-null.
      *
      * @param  gridToCRS   a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
      * @param  current     the pixel orientation of the given {@code gridToCRS} transform.
-     * @param  expected    the pixel orientation of the desired transform.
+     * @param  desired     the pixel orientation of the desired transform.
      * @param  xDimension  the dimension of <var>x</var> coordinates (pixel columns). Often 0.
      * @param  yDimension  the dimension of <var>y</var> coordinates (pixel rows). Often 1.
-     * @return the translation from {@code current} to {@code expected}, or {@code null} if {@code gridToCRS} was null.
-     * @throws IllegalArgumentException if {@code current} or {@code expected} is not a known code list value.
+     * @return the translation from {@code current} to {@code desired}, or {@code null} if {@code gridToCRS} was null.
+     * @throws IllegalArgumentException if {@code current} or {@code desired} is not a known code list value.
      */
     public static MathTransform translate(final MathTransform gridToCRS,
-            final PixelOrientation current, final PixelOrientation expected,
+            final PixelOrientation current, final PixelOrientation desired,
             final int xDimension, final int yDimension)
     {
-        if (gridToCRS == null || expected.equals(current)) {
+        if (gridToCRS == null || desired.equals(current)) {
             return gridToCRS;
         }
         final int dimension = gridToCRS.getSourceDimensions();
@@ -314,7 +308,7 @@ public final class PixelTranslation extends Static implements Serializable {
             throw illegalDimension("xDimension", "yDimension");
         }
         final PixelTranslation source = getPixelTranslation(current);
-        final PixelTranslation target = getPixelTranslation(expected);
+        final PixelTranslation target = getPixelTranslation(desired);
         final double dx = target.dx - source.dx;
         final double dy = target.dy - source.dy;
         MathTransform mt;

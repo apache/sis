@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -52,7 +53,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testSimple() throws TransformException {
+    public void testFromPixelCorner() throws TransformException {
         final long[]         low     = new long[] {100, 300, 3, 6};
         final long[]         high    = new long[] {200, 400, 4, 7};
         final GridExtent    extent   = new GridExtent(low, high, true);
@@ -98,7 +99,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testShifted() throws TransformException {
+    public void testFromPixelCenter() throws TransformException {
         final long[]        low      = new long[] { 0,   0, 2};
         final long[]        high     = new long[] {99, 199, 4};
         final GridExtent    extent   = new GridExtent(low, high, true);
@@ -134,6 +135,26 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         assertArrayEquals("resolution", new double[] {1, 1, 1}, grid.getResolution(false), STRICT);
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1, 2));
+    }
+
+    /**
+     * Tests construction from a <cite>grid to CRS</cite> having a 0.5 pixel translation.
+     * This translation happens in transform mapping <cite>pixel center</cite> when the
+     * corresponding <cite>pixel corner</cite> transformation is identity.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
+     */
+    @Test
+    public void testShifted() throws TransformException {
+        final long[]        low      = new long[] {100, 300};
+        final long[]        high     = new long[] {200, 400};
+        final GridExtent    extent   = new GridExtent(low, high, true);
+        final MathTransform identity = MathTransforms.linear(new Matrix3(
+                1, 0, 0.5,
+                0, 1, 0.5,
+                0, 0, 1));
+        final GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, identity, null);
+        assertTrue("gridToCRS.isIdentity", grid.getGridToCRS(PixelInCell.CELL_CORNER).isIdentity());
     }
 
     /**
