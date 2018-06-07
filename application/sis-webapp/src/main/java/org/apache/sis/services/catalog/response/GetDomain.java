@@ -14,20 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.services.catalog.response;
 
-
-@XmlSchema(
-    elementFormDefault=XmlNsForm.QUALIFIED,
-    namespace="http://www.opengis.net/cat/csw/2.0.2",
-    xmlns={
-        @XmlNs(prefix="csw",namespaceURI=Namespaces.CSW),
-        @XmlNs(prefix="dc", namespaceURI=Namespaces.DC),
-        @XmlNs(prefix="dct",namespaceURI=Namespaces.DCT),
-        @XmlNs(prefix="ows",namespaceURI=Namespaces.OWS),
-    }
-)
-package org.apache.sis.services.catalog;
-
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
+/**
+ *
+ * @author haonguyen
+ */
+public class GetDomain {
+    
+}

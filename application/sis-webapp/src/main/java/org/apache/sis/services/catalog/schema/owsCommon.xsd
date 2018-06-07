@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns:ows="http://www.opengis.net/ows"
+<schema xmlns:ows20="http://www.opengis.net/ows/2.0"
         xmlns:xlink="http://www.w3.org/1999/xlink"
-        targetNamespace="http://www.opengis.net/ows"
+        targetNamespace="http://www.opengis.net/ows/2.0"
         xmlns="http://www.w3.org/2001/XMLSchema"
-        elementFormDefault="qualified" version="1.0.0" xml:lang="en">
+        elementFormDefault="qualified" version="2.0" xml:lang="en">
   <annotation>
     <appinfo>owsCommon.xsd 2005-11-21</appinfo>
     <documentation>This XML Schema Document encodes various parameters and parameter types that can
@@ -44,7 +44,7 @@
     <restriction base="string"/>
   </simpleType>
   <!-- ========================================================== -->
-  <element name="Metadata" type="ows:MetadataType"/>
+  <element name="Metadata" type="ows20:MetadataType"/>
   <!-- ========================================================== -->
   <complexType name="MetadataType">
     <annotation>
@@ -58,7 +58,7 @@
       </documentation>
     </annotation>
     <sequence>
-      <element ref="ows:AbstractMetaData" minOccurs="0"/>
+      <element ref="ows20:AbstractMetaData" minOccurs="0"/>
     </sequence>
     <attributeGroup ref="xlink:simpleLink">
       <annotation>
@@ -87,7 +87,7 @@
   </element>
   <!-- ========================================================== -->
   <!-- ========================================================== -->
-  <element name="BoundingBox" type="ows:BoundingBoxType"/>
+  <element name="BoundingBox" type="ows20:BoundingBoxType"/>
   <!-- =========================================================== -->
   <complexType name="BoundingBoxType">
     <annotation>
@@ -99,7 +99,7 @@
       </documentation>
     </annotation>
     <sequence>
-      <element name="LowerCorner" type="ows:PositionType">
+      <element name="LowerCorner" type="ows20:PositionType">
         <annotation>
           <documentation>Position of the bounding box corner at which the value of each coordinate
             normally is the algebraic minimum within this bounding box. In some cases, this position
@@ -108,7 +108,7 @@
           </documentation>
         </annotation>
       </element>
-      <element name="UpperCorner" type="ows:PositionType">
+      <element name="UpperCorner" type="ows20:PositionType">
         <annotation>
           <documentation>Position of the bounding box corner at which the value of each coordinate
             normally is the algebraic maximum within this bounding box. In some cases, this position
@@ -164,8 +164,8 @@
     <list itemType="double"/>
   </simpleType>
   <!-- =========================================================== -->
-  <element name="WGS84BoundingBox" type="ows:WGS84BoundingBoxType"
-           substitutionGroup="ows:BoundingBox"/>
+  <element name="WGS84BoundingBox" type="ows20:WGS84BoundingBoxType"
+           substitutionGroup="ows20:BoundingBox"/>
   <!-- =========================================================== -->
   <complexType name="WGS84BoundingBoxType">
     <annotation>
@@ -178,9 +178,9 @@
       </documentation>
     </annotation>
     <complexContent>
-      <restriction base="ows:BoundingBoxType">
+      <restriction base="ows20:BoundingBoxType">
         <sequence>
-          <element name="LowerCorner" type="ows:PositionType2D">
+          <element name="LowerCorner" type="ows20:PositionType2D">
             <annotation>
               <documentation>Position of the bounding box corner at which the values of longitude
                 and latitude normally are the algebraic minimums within this bounding box. For more
@@ -188,7 +188,7 @@
               </documentation>
             </annotation>
           </element>
-          <element name="UpperCorner" type="ows:PositionType2D">
+          <element name="UpperCorner" type="ows20:PositionType2D">
             <annotation>
               <documentation>Position of the bounding box corner at which the values of longitude
                 and latitude normally are the algebraic minimums within this bounding box. For more
@@ -232,7 +232,7 @@
         OWS use of the WGS84BoundingBoxType. For more information, see Subclauses 10.4.5 and C.13.
       </documentation>
     </annotation>
-    <restriction base="ows:PositionType">
+    <restriction base="ows20:PositionType">
       <length value="2"/>
     </restriction>
   </simpleType>

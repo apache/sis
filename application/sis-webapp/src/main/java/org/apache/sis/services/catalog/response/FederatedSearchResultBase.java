@@ -14,15 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.catalog;
+package org.apache.sis.services.catalog.response;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  *
  * @author haonguyen
  */
-public class Namespaces {
-    public static final String DC = "http://purl.org/dc/elements/1.1/";
-    public static final String DCT = "http://purl.org/dc/terms/";
-    public static final String CSW = "http://www.opengis.net/cat/csw/2.0.2";
-    public static final String OWS = "http://www.opengis.net/ows";
+@XmlType(name = "FederatedSearchResultBaseType", namespace = Namespaces.CSW)
+@XmlRootElement(name = "FederatedSearchResultBase", namespace = Namespaces.CSW)
+public abstract class FederatedSearchResultBase {
+    private String catalogueURL;
+
+    /**
+     *
+     * @return
+     */
+    @XmlAttribute
+    public String getCatalogueURL() {
+        return catalogueURL;
+    }
+
+    /**
+     *
+     * @param catalogueURL
+     */
+    public void setCatalogueURL(String catalogueURL) {
+        this.catalogueURL = catalogueURL;
+    }
 }

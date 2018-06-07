@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://www.opengis.net/ows" 
-xmlns:ows="http://www.opengis.net/ows" 
+<schema targetNamespace="http://www.opengis.net/ows/2.0" 
+xmlns:ows20="http://www.opengis.net/ows/2.0" 
 xmlns="http://www.w3.org/2001/XMLSchema" 
-elementFormDefault="qualified" version="1.1.0" xml:lang="en">
+elementFormDefault="qualified" version="2.0" xml:lang="en">
 	<annotation>
 		<appinfo>owsGetResourceByID.xsd 2006-02-14</appinfo>
 		<documentation>This XML Schema Document encodes the GetResourceByID operation request message. This typical operation is specified as a base for profiling in specific OWS specifications. For information on the allowed changes and limitations in such profiling, see Subclause 9.4.1 of the OWS Common specification.
@@ -22,7 +22,7 @@ elementFormDefault="qualified" version="1.1.0" xml:lang="en">
 		</annotation>
 	</element>
 	<!-- =========================================================== -->
-	<element name="GetResourceByID" type="ows:GetResourceByIdType"></element>
+	<element name="GetResourceByID" type="ows20:GetResourceByIdType"></element>
 	<!-- =========================================================== -->
 	<complexType name="GetResourceByIdType">
 		<annotation>
@@ -34,14 +34,14 @@ elementFormDefault="qualified" version="1.1.0" xml:lang="en">
 					<documentation>Unordered list of zero or more resource identifiers. These identifiers can be listed in the Contents section of the service metadata (Capabilities) document. For more information on this parameter, see Subclause 9.4.2.1 of the OWS Common specification. </documentation>
 				</annotation>
 			</element>
-			<element ref="ows:OutputFormat" minOccurs="0">
+			<element ref="ows20:OutputFormat" minOccurs="0">
 				<annotation>
 					<documentation>Optional reference to the data format to be used for response to this operation request. This element shall be included when multiple output formats are available for the selected resource(s), and the client desires a format other than the specified default, if any. </documentation>
 				</annotation>
 			</element>
 		</sequence>
-		<attribute name="service" type="ows:ServiceType" use="required"></attribute>
-		<attribute name="version" type="ows:VersionType" use="required"></attribute>
+		<attribute name="service" type="ows20:ServiceType" use="required"></attribute>
+		<attribute name="version" type="ows20:VersionType" use="required"></attribute>
 	</complexType>
 	<!-- =========================================================== -->
 </schema>

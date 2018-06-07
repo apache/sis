@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns:ows="http://www.opengis.net/ows"
-        targetNamespace="http://www.opengis.net/ows"
+<schema xmlns:ows20="http://www.opengis.net/ows/2.0"
+        targetNamespace="http://www.opengis.net/ows/2.0"
         xmlns="http://www.w3.org/2001/XMLSchema"
-        elementFormDefault="qualified" version="1.0.0" xml:lang="en">
+        elementFormDefault="qualified" version="2.0" xml:lang="en">
   <annotation>
     <appinfo>owsExceptionReport.xsd 2005-11-21</appinfo>
     <documentation>This XML Schema Document encodes the Exception Report response to all OWS
@@ -21,7 +21,7 @@
     </annotation>
     <complexType>
       <sequence>
-        <element ref="ows:Exception" maxOccurs="unbounded">
+        <element ref="ows20:Exception" maxOccurs="unbounded">
           <annotation>
             <documentation>Unordered list of one or more Exception elements that each describes an
               error. These Exception elements shall be interpreted by clients as being independent
@@ -54,7 +54,7 @@
     </complexType>
   </element>
   <!-- ======================================================= -->
-  <element name="Exception" type="ows:ExceptionType"/>
+  <element name="Exception" type="ows20:ExceptionType"/>
   <!-- ======================================================= -->
   <complexType name="ExceptionType">
     <annotation>

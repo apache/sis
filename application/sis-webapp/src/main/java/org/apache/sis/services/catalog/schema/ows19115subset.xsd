@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns:ows="http://www.opengis.net/ows"
+<schema xmlns:ows20="http://www.opengis.net/ows/2.0"
         xmlns:xlink="http://www.w3.org/1999/xlink"
-        targetNamespace="http://www.opengis.net/ows"
+        targetNamespace="http://www.opengis.net/ows/2.0"
         xmlns="http://www.w3.org/2001/XMLSchema"
-        elementFormDefault="qualified" version="1.0.0" xml:lang="en">
+        elementFormDefault="qualified" version="2.0" xml:lang="en">
   <annotation>
     <appinfo>ows19115subset.xsd 2005-11-21</appinfo>
     <documentation>This XML Schema Document encodes the parts of ISO 19115 used by the common
@@ -38,7 +38,7 @@
     </annotation>
   </element>
   <!-- =========================================================== -->
-  <element name="Keywords" type="ows:KeywordsType"/>
+  <element name="Keywords" type="ows20:KeywordsType"/>
   <!-- =========================================================== -->
   <complexType name="KeywordsType">
     <annotation>
@@ -53,7 +53,7 @@
     </annotation>
     <sequence>
       <element name="Keyword" type="string" maxOccurs="unbounded"/>
-      <element name="Type" type="ows:CodeType" minOccurs="0"/>
+      <element name="Type" type="ows20:CodeType" minOccurs="0"/>
     </sequence>
   </complexType>
   <!-- =========================================================== -->
@@ -75,7 +75,7 @@
     </simpleContent>
   </complexType>
   <!-- =========================================================== -->
-  <element name="PointOfContact" type="ows:ResponsiblePartyType">
+  <element name="PointOfContact" type="ows20:ResponsiblePartyType">
     <annotation>
       <documentation>Identification of, and means of communication with, person(s) responsible for
         the resource(s).
@@ -97,11 +97,11 @@
       </documentation>
     </annotation>
     <sequence>
-      <element ref="ows:IndividualName" minOccurs="0"/>
-      <element ref="ows:OrganisationName" minOccurs="0"/>
-      <element ref="ows:PositionName" minOccurs="0"/>
-      <element ref="ows:ContactInfo" minOccurs="0"/>
-      <element ref="ows:Role"/>
+      <element ref="ows20:IndividualName" minOccurs="0"/>
+      <element ref="ows20:OrganisationName" minOccurs="0"/>
+      <element ref="ows20:PositionName" minOccurs="0"/>
+      <element ref="ows20:ContactInfo" minOccurs="0"/>
+      <element ref="ows20:Role"/>
     </sequence>
   </complexType>
   <!-- =========================================================== -->
@@ -119,10 +119,10 @@
       </documentation>
     </annotation>
     <sequence>
-      <element ref="ows:IndividualName" minOccurs="0"/>
-      <element ref="ows:PositionName" minOccurs="0"/>
-      <element ref="ows:ContactInfo" minOccurs="0"/>
-      <element ref="ows:Role" minOccurs="0"/>
+      <element ref="ows20:IndividualName" minOccurs="0"/>
+      <element ref="ows20:PositionName" minOccurs="0"/>
+      <element ref="ows20:ContactInfo" minOccurs="0"/>
+      <element ref="ows20:Role" minOccurs="0"/>
     </sequence>
   </complexType>
   <!-- =========================================================== -->
@@ -146,7 +146,7 @@
     </annotation>
   </element>
   <!-- =========================================================== -->
-  <element name="Role" type="ows:CodeType">
+  <element name="Role" type="ows20:CodeType">
     <annotation>
       <documentation>Function performed by the responsible party. Possible values of this Role shall
         include the values and the meanings listed in Subclause B.5.5 of ISO 19115:2003.
@@ -154,7 +154,7 @@
     </annotation>
   </element>
   <!-- =========================================================== -->
-  <element name="ContactInfo" type="ows:ContactType">
+  <element name="ContactInfo" type="ows20:ContactType">
     <annotation>
       <documentation>Address of the responsible party.</documentation>
     </annotation>
@@ -171,21 +171,21 @@
       </documentation>
     </annotation>
     <sequence>
-      <element name="Phone" type="ows:TelephoneType" minOccurs="0">
+      <element name="Phone" type="ows20:TelephoneType" minOccurs="0">
         <annotation>
           <documentation>Telephone numbers at which the organization or individual may be
             contacted.
           </documentation>
         </annotation>
       </element>
-      <element name="Address" type="ows:AddressType" minOccurs="0">
+      <element name="Address" type="ows20:AddressType" minOccurs="0">
         <annotation>
           <documentation>Physical and email address at which the organization or individual may be
             contacted.
           </documentation>
         </annotation>
       </element>
-      <element name="OnlineResource" type="ows:OnlineResourceType" minOccurs="0">
+      <element name="OnlineResource" type="ows20:OnlineResourceType" minOccurs="0">
         <annotation>
           <documentation>On-line information that can be used to contact the individual or
             organization. OWS specifics: The xlink:href attribute in the xlink:simpleLink attribute

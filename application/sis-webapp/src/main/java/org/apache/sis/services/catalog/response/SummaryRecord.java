@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.catalog;
+package org.apache.sis.services.catalog.response;
 
 import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
@@ -25,164 +25,142 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author haonguyen
  */
-@XmlType(name = "Record", namespace = Namespaces.CSW, propOrder = {
-    "title",
-    "creator",
-    "subject",
-    "description",             
-    "publisher",
-    "contributor",
-    "date",
-    "type",
-    "format",
+@XmlType(name = "SummaryRecordType", namespace = Namespaces.CSW, propOrder = {    
     "identifier",
-    "source",     
-    "language",
-    "relation",
-    "rights",
-    "coverage",
-    
+    "title",
+    "type",
+    "subject",  
+    "date",    
+    "format",
+    "description",
 })
-@XmlRootElement(name = "Record", namespace = Namespaces.CSW)
+@XmlRootElement(name = "SummaryRecord", namespace = Namespaces.CSW)
 
-public class Record {
+public class SummaryRecord extends AbstractRecord{
     private String title;
-    private String creator;
     private String subject;
     private String description;
-    private String publisher;
-    private String contributor;
     private Date date;
     private String type;
     private String format;
     private String identifier;
-    private String source;
-    private String language;
-    private String relation;
-    private BoundingBox coverage;
-    private String rights;
+
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "title",namespace=Namespaces.DC)
     public String getTitle() {
         return title;
     }
 
+    /**
+     *
+     * @param title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
-    @XmlElement(name = "creator",namespace=Namespaces.DC)
-    public String getCreator() {
-        return creator;
-    }
 
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "subject",namespace=Namespaces.DC)
     public String getSubject() {
         return subject;
     }
 
+    /**
+     *
+     * @param subject
+     */
     public void setSubject(String subject) {
         this.subject = subject;
     }
+
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "abstract",namespace=Namespaces.DCT)
     public String getDescription() {
         return description;
     }
 
+    /**
+     *
+     * @param description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
-    @XmlElement(name = "publisher",namespace=Namespaces.DC)
-    public String getPublisher() {
-        return publisher;
-    }
 
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
-    }
-    @XmlElement(name = "contributor",namespace=Namespaces.DC)
-    public String getContributor() {
-        return contributor;
-    }
-
-    public void setContributor(String contributor) {
-        this.contributor = contributor;
-    }
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "modified",namespace=Namespaces.DCT)
     public Date getDate() {
         return date;
     }
 
+    /**
+     *
+     * @param date
+     */
     public void setDate(Date date) {
         this.date = date;
     }
+
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "type",namespace=Namespaces.DC)
     public String getType() {
         return type;
     }
 
+    /**
+     *
+     * @param type
+     */
     public void setType(String type) {
         this.type = type;
     }
+
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "format",namespace=Namespaces.DC)
     public String getFormat() {
         return format;
     }
 
+    /**
+     *
+     * @param format
+     */
     public void setFormat(String format) {
         this.format = format;
     }
+
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "identifier",namespace=Namespaces.DC)
     public String getIdentifier() {
         return identifier;
     }
 
+    /**
+     *
+     * @param identifier
+     */
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-    @XmlElement(name = "source",namespace=Namespaces.DC)
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-    @XmlElement(name = "language",namespace=Namespaces.DC)
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-    @XmlElement(name = "relation",namespace=Namespaces.DC)
-    public String getRelation() {
-        return relation;
-    }
-
-    public void setRelation(String relation) {
-        this.relation = relation;
-    }
-    @XmlElement(name = "BoundingBox",namespace=Namespaces.OWS)
-    public BoundingBox getCoverage() {
-        return coverage;
-    }
-
-    public void setCoverage(BoundingBox coverage) {
-        this.coverage = coverage;
-    }
-    @XmlElement(name = "rights",namespace=Namespaces.DC)
-    public String getRights() {
-        return rights;
-    }
-
-    public void setRights(String rights) {
-        this.rights = rights;
-    }
-    
-    
-    
-    
 }

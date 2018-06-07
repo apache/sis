@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.catalog;
+package org.apache.sis.services.catalog.response;
 
 import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
@@ -25,82 +25,66 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author haonguyen
  */
-@XmlType(name = "SummaryRecord", namespace = Namespaces.CSW, propOrder = {    
+@XmlType(name = "BriefRecordType", namespace = Namespaces.CSW, propOrder = {    
     "identifier",
     "title",
     "type",
-    "subject",  
-    "date",    
-    "format",
-    "description",
 })
-@XmlRootElement(name = "SummaryRecord", namespace = Namespaces.CSW)
+@XmlRootElement(name = "BriefRecord", namespace = Namespaces.CSW)
 
-public class SummaryRecord {
+public class BriefRecord extends AbstractRecord {
     private String title;
-    private String subject;
-    private String description;
-    private Date date;
     private String type;
-    private String format;
     private String identifier;
+
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "title",namespace=Namespaces.DC)
     public String getTitle() {
         return title;
     }
 
+    /**
+     *
+     * @param title
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
-    @XmlElement(name = "subject",namespace=Namespaces.DC)
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-    @XmlElement(name = "abstract",namespace=Namespaces.DCT)
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    @XmlElement(name = "modified",namespace=Namespaces.DCT)
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "type",namespace=Namespaces.DC)
     public String getType() {
         return type;
     }
 
+    /**
+     *
+     * @param type
+     */
     public void setType(String type) {
         this.type = type;
     }
-    @XmlElement(name = "format",namespace=Namespaces.DC)
-    public String getFormat() {
-        return format;
-    }
 
-    public void setFormat(String format) {
-        this.format = format;
-    }
+    /**
+     *
+     * @return
+     */
     @XmlElement(name = "identifier",namespace=Namespaces.DC)
     public String getIdentifier() {
         return identifier;
     }
 
+    /**
+     *
+     * @param identifier
+     */
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
- 
 }
-

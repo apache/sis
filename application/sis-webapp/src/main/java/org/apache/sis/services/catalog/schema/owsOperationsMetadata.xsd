@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns:ows="http://www.opengis.net/ows"
-        targetNamespace="http://www.opengis.net/ows"
+<schema xmlns:ows20="http://www.opengis.net/ows/2.0"
+        targetNamespace="http://www.opengis.net/ows/2.0"
         xmlns="http://www.w3.org/2001/XMLSchema"
-        elementFormDefault="qualified" version="1.0.0" xml:lang="en">
+        elementFormDefault="qualified" version="2.0" xml:lang="en">
   <annotation>
     <appinfo>owsOperationsMetadata.xsd 2005-11-21</appinfo>
     <documentation>This XML Schema Document encodes the basic contents of the "OperationsMetadata"
@@ -29,7 +29,7 @@
     </annotation>
     <complexType>
       <sequence>
-        <element ref="ows:Operation" minOccurs="2" maxOccurs="unbounded">
+        <element ref="ows20:Operation" minOccurs="2" maxOccurs="unbounded">
           <annotation>
             <documentation>Metadata for unordered list of all the (requests for) operations that
               this server interface implements. The list of required and optional operations
@@ -37,7 +37,7 @@
             </documentation>
           </annotation>
         </element>
-        <element name="Parameter" type="ows:DomainType" minOccurs="0" maxOccurs="unbounded">
+        <element name="Parameter" type="ows20:DomainType" minOccurs="0" maxOccurs="unbounded">
           <annotation>
             <documentation>Optional unordered list of parameter valid domains that each apply to one
               or more operations which this server interface implements. The list of required and
@@ -46,7 +46,7 @@
             </documentation>
           </annotation>
         </element>
-        <element name="Constraint" type="ows:DomainType" minOccurs="0" maxOccurs="unbounded">
+        <element name="Constraint" type="ows20:DomainType" minOccurs="0" maxOccurs="unbounded">
           <annotation>
             <documentation>Optional unordered list of valid domain constraints on non-parameter
               quantities that each apply to this server. The list of required and optional
@@ -54,7 +54,7 @@
             </documentation>
           </annotation>
         </element>
-        <element ref="ows:ExtendedCapabilities" minOccurs="0"/>
+        <element ref="ows20:ExtendedCapabilities" minOccurs="0"/>
       </sequence>
     </complexType>
   </element>
@@ -73,7 +73,7 @@
     </annotation>
     <complexType>
       <sequence>
-        <element ref="ows:DCP" maxOccurs="unbounded">
+        <element ref="ows20:DCP" maxOccurs="unbounded">
           <annotation>
             <documentation>Unordered list of Distributed Computing Platforms (DCPs) supported for
               this operation. At present, only the HTTP DCP is defined, so this element will appear
@@ -81,7 +81,7 @@
             </documentation>
           </annotation>
         </element>
-        <element name="Parameter" type="ows:DomainType" minOccurs="0" maxOccurs="unbounded">
+        <element name="Parameter" type="ows20:DomainType" minOccurs="0" maxOccurs="unbounded">
           <annotation>
             <documentation>Optional unordered list of parameter domains that each apply to this
               operation which this server implements. If one of these Parameter elements has the
@@ -92,7 +92,7 @@
             </documentation>
           </annotation>
         </element>
-        <element name="Constraint" type="ows:DomainType" minOccurs="0" maxOccurs="unbounded">
+        <element name="Constraint" type="ows20:DomainType" minOccurs="0" maxOccurs="unbounded">
           <annotation>
             <documentation>Optional unordered list of valid domain constraints on non-parameter
               quantities that each apply to this operation. If one of these Constraint elements has
@@ -103,7 +103,7 @@
             </documentation>
           </annotation>
         </element>
-        <element ref="ows:Metadata" minOccurs="0" maxOccurs="unbounded">
+        <element ref="ows20:Metadata" minOccurs="0" maxOccurs="unbounded">
           <annotation>
             <documentation>Optional unordered list of additional metadata about this operation and
               its' implementation. A list of required and optional metadata elements for this
@@ -134,7 +134,7 @@
     </annotation>
     <complexType>
       <choice>
-        <element ref="ows:HTTP"/>
+        <element ref="ows20:HTTP"/>
       </choice>
     </complexType>
   </element>
@@ -148,14 +148,14 @@
     </annotation>
     <complexType>
       <choice maxOccurs="unbounded">
-        <element name="Get" type="ows:RequestMethodType">
+        <element name="Get" type="ows20:RequestMethodType">
           <annotation>
             <documentation>Connect point URL prefix and any constraints for the HTTP "Get" request
               method for this operation request.
             </documentation>
           </annotation>
         </element>
-        <element name="Post" type="ows:RequestMethodType">
+        <element name="Post" type="ows20:RequestMethodType">
           <annotation>
             <documentation>Connect point URL and any constraints for the HTTP "Post" request method
               for this operation request.
@@ -175,9 +175,9 @@
       </documentation>
     </annotation>
     <complexContent>
-      <extension base="ows:OnlineResourceType">
+      <extension base="ows20:OnlineResourceType">
         <sequence>
-          <element name="Constraint" type="ows:DomainType" minOccurs="0" maxOccurs="unbounded">
+          <element name="Constraint" type="ows20:DomainType" minOccurs="0" maxOccurs="unbounded">
             <annotation>
               <documentation>Optional unordered list of valid domain constraints on non-parameter
                 quantities that each apply to this request method for this operation. If one of
@@ -214,7 +214,7 @@
           </documentation>
         </annotation>
       </element>
-      <element ref="ows:Metadata" minOccurs="0" maxOccurs="unbounded">
+      <element ref="ows20:Metadata" minOccurs="0" maxOccurs="unbounded">
         <annotation>
           <documentation>Optional unordered list of additional metadata about this parameter. A list
             of required and optional metadata elements for this domain should be specified in the

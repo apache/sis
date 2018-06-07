@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.catalog;
+package org.apache.sis.services.catalog.response;
 
 import java.util.List;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -27,36 +25,19 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author haonguyen
  */
-@XmlType(name = "BoundingBox", namespace = Namespaces.OWS, propOrder = {
-    "lowerCorner",
-    "upperCorner",
-    
+@XmlType(name = "FederatedExceptionType", namespace = Namespaces.CSW, propOrder = {    
+    "exceptionReport",
 })
-@XmlRootElement(name = "BoundingBox", namespace = Namespaces.OWS)
-public class BoundingBox {
-    private List<Double> lowerCorner;
-    private List<Double> upperCorner;
-    private String crs;
-    private String dimensions;
-    @XmlElement(name = "LowerCorner",namespace=Namespaces.OWS)
-    @XmlList
-    public List<Double> getLowerCorner() {
-            return lowerCorner;
+@XmlRootElement(name = "FederatedException", namespace = Namespaces.CSW)
+public class FederatedException extends FederatedSearchResultBase {
+    private List<String> exceptionReport;
+    @XmlElement(name = "ExceptionReport",namespace=Namespaces.OWS)
+    public List<String> getExceptionReport() {
+        return exceptionReport;
     }
 
-    public void setLowerCorner(List<Double> lowerCorner) {
-            this.lowerCorner = lowerCorner;
+    public void setExceptionReport(List<String> exceptionReport) {
+        this.exceptionReport = exceptionReport;
     }
-    @XmlElement(name = "UpperCorner",namespace=Namespaces.OWS)
-    @XmlList
-    public List<Double> getUpperCorner() {
-            return upperCorner;
-    }
-
-    public void setUpperCorner(List<Double> upperCorner) {
-            this.upperCorner = upperCorner;
-    }
-
-    
     
 }
