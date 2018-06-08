@@ -71,7 +71,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 public class WarningListeners<S> implements Localized {
     /**
      * The declared source of warnings. This is not necessarily the real source,
-     * but this is the source that the implementor wants to declare as public API.
+     * but this is the source that the implementer wants to declare as public API.
      */
     private final S source;
 
@@ -95,7 +95,7 @@ public class WarningListeners<S> implements Localized {
      * unless at least one listener is {@linkplain #addWarningListener registered}.
      *
      * @param source  the declared source of warnings. This is not necessarily the real source,
-     *                but this is the source that the implementor wants to declare as public API.
+     *                but this is the source that the implementer wants to declare as public API.
      */
     public WarningListeners(final S source) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -108,7 +108,7 @@ public class WarningListeners<S> implements Localized {
      * be duplicated for concurrency reasons.
      *
      * @param source  the declared source of warnings. This is not necessarily the real source,
-     *                but this is the source that the implementor wants to declare as public API.
+     *                but this is the source that the implementer wants to declare as public API.
      * @param other   the existing instance from which to copy the listeners, or {@code null} if none.
      *
      * @since 0.8
@@ -231,7 +231,7 @@ public class WarningListeners<S> implements Localized {
      * If the stack trace is desired, then users can either:
      * <ul>
      *   <li>invoke {@code warning(LogRecord)} directly, or</li>
-     *   <li>override {@code warning(LogRecord)} and invoke {@link LogRecord#setThrown(Throwable)} explicitely, or</li>
+     *   <li>override {@code warning(LogRecord)} and invoke {@link LogRecord#setThrown(Throwable)} explicitly, or</li>
      *   <li>register a listener which will log the record itself.</li>
      * </ul>
      *

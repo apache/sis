@@ -22,24 +22,21 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.NoSuchElementException;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
-import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
@@ -59,7 +56,7 @@ import org.apache.sis.measure.Units;
  * @since 0.8
  * @module
  */
-final class ImageFileDirectory {
+final class ImageFileDirectory extends AbstractResource implements GridCoverageResource {
     /**
      * Possible value for the {@link #tileTagFamily} field. That field tells whether image tiling
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
@@ -314,57 +311,28 @@ final class ImageFileDirectory {
     private Compression compression;
 
     /**
-     * References the {@link GeoKeys} needed for building the Coordinate Reference System.
-     * This is a GeoTIFF extension to the TIFF specification.
-     * Content will be parsed by {@link CRSBuilder}.
-     */
-    private Vector geoKeyDirectory;
-
-    /**
-     * The numeric values referenced by the {@link #geoKeyDirectory}.
-     * This is a GeoTIFF extension to the TIFF specification.
-     * Content will be parsed by {@link CRSBuilder}.
-     */
-    private Vector numericGeoParameters;
-
-    /**
-     * The characters referenced by the {@link #geoKeyDirectory}.
-     * This is a GeoTIFF extension to the TIFF specification.
-     * Content will be parsed by {@link CRSBuilder}.
-     */
-    private String asciiGeoParameters;
-
-    /**
-     * Raster model tie points. This vector contains ordinate values structured as (I,J,K, X,Y,Z) records.
-     * The (I,J,K) ordinate values specify the point at location (I,J) in raster space with pixel-value K,
-     * and (X,Y,Z) ordinate values specify the point in the Coordinate Reference System. In most cases the
-     * coordinate system is only two-dimensional, in which case both K and Z should be set to zero.
-     */
-    private Vector modelTiePoints;
-
-    /**
-     * The conversion from grid coordinates to CRS coordinates. It can be determined in different ways,
-     * from simpler to more complex:
+     * A helper class for building Coordinate Reference System and complete related metadata.
+     * Contains the following information:
      *
      * <ul>
-     *   <li>By a combination of a single {@link #modelTiePoints} with the 3 values given in
-     *       {@link Tags#ModelPixelScaleTag} as documented in the Javadoc of that tag.</li>
-     *   <li>By a {@link Tags#ModelTransformation} giving all coefficients of the 4×4 matrix}.
-     *       Note that the third row and the third column have all their value set to 0 if the
-     *       space model (or the coordinate reference system) should be two-dimensional.</li>
-     *   <li>By building a non-linear transformation from all {@link #modelTiePoints}.
-     *       Such transformation can not be stored in a matrix, so will leave this field {@code null}.</li>
+     *   <li>{@link GridGeometryBuilder#keyDirectory}</li>
+     *   <li>{@link GridGeometryBuilder#numericParameters}</li>
+     *   <li>{@link GridGeometryBuilder#asciiParameters}</li>
+     *   <li>{@link GridGeometryBuilder#modelTiePoints}</li>
      * </ul>
-     *
-     * By convention, the translation column is set to NaN values if it needs to be computed from the tie point.
      */
-    private MatrixSIS gridToCRS;
+    private GridGeometryBuilder referencing;
 
     /**
-     * {@code true} if {@link #gridToCRS} has been specified by a complete matrix ({@link Tags#ModelTransformation}),
-     * or {@code false} if it has been specified by the scale factors only ({@link Tags#ModelPixelScaleTag}).
+     * Returns {@link #referencing}, created when first needed. We delay its creation since
+     * this object is not needed for ordinary TIFF files (i.e. without the GeoTIFF extension).
      */
-    private boolean completeMatrixSpecified;
+    private GridGeometryBuilder referencing() {
+        if (referencing == null) {
+            referencing = new GridGeometryBuilder(reader);
+        }
+        return referencing;
+    }
 
     /**
      * Creates a new image file directory.
@@ -372,6 +340,7 @@ final class ImageFileDirectory {
      * @param reader  information about the input stream to read, the metadata and the character encoding.
      */
     ImageFileDirectory(final Reader reader) {
+        super(reader.owner);
         this.reader = reader;
     }
 
@@ -697,14 +666,14 @@ final class ImageFileDirectory {
              * The first 4 values are special, and contain GeoKey directory header information.
              */
             case Tags.GeoKeyDirectory: {
-                geoKeyDirectory = type.readVector(input(), count);
+                referencing().keyDirectory = type.readVector(input(), count);
                 break;
             }
             /*
              * Stores all of the 'double' valued GeoKeys, referenced by the GeoKeyDirectory.
              */
             case Tags.GeoDoubleParams: {
-                numericGeoParameters = type.readVector(input(), count);
+                referencing().numericParameters = type.readVector(input(), count);
                 break;
             }
             /*
@@ -716,8 +685,8 @@ final class ImageFileDirectory {
                 final String[] values = type.readString(input(), count, encoding());
                 switch (values.length) {
                     case 0:  break;
-                    case 1:  asciiGeoParameters = values[0]; break;
-                    default: asciiGeoParameters = String.join("\u0000", values).concat("\u0000"); break;
+                    case 1:  referencing().asciiParameters = values[0]; break;
+                    default: referencing().asciiParameters = String.join("\u0000", values).concat("\u0000"); break;
                 }
                 break;
             }
@@ -736,21 +705,15 @@ final class ImageFileDirectory {
              */
             case Tags.ModelTransformation: {
                 final Vector m = type.readVector(input(), count);
-                final int size = m.size();
                 final int n;
-                switch (size) {
+                switch (m.size()) {
                     case  6:                    // Assume 2D model with implicit [0 0 1] last row.
                     case  9: n = 3; break;      // Assume 2D model with full 3×3 matrix.
                     case 12:                    // Assume 3D model with implicit [0 0 0 1] last row.
                     case 16: n = 4; break;      // 3D model with full 4×4 matrix, as required by GeoTIFF spec.
                     default: return m;
                 }
-                completeMatrixSpecified = true;
-                gridToCRS = Matrices.createZero(n, n);
-                gridToCRS.setElement(n-1, n-1, 1);
-                for (int i=0; i<size; i++) {
-                    gridToCRS.setElement(i / n, i % n, m.doubleValue(i));
-                }
+                referencing().setGridToCRS(m, n);
                 break;
             }
             /*
@@ -763,22 +726,14 @@ final class ImageFileDirectory {
                 if (size < 2 || size > 3) {     // Length should be exactly 3, but we make this reader tolerant.
                     return m;
                 }
-                completeMatrixSpecified = false;
-                gridToCRS = Matrices.createZero(size+1, size+1);
-                gridToCRS.setElement(size, size, 1);
-                for (int i=0; i<size; i++) {
-                    double e = m.doubleValue(i);
-                    if (i == 1) e = -e;                             // Make y scale factor negative.
-                    gridToCRS.setElement(i, i, e);
-                    gridToCRS.setElement(i, size, Double.NaN);
-                }
+                referencing().setScaleFactors(m);
                 break;
             }
             /*
              * The mapping from pixel coordinates to CRS coordinates as a sequence of (I,J,K, X,Y,Z) records.
              */
             case Tags.ModelTiePoints: {
-                modelTiePoints = type.readVector(input(), count);
+                referencing().modelTiePoints = type.readVector(input(), count);
                 break;
             }
 
@@ -1161,10 +1116,8 @@ final class ImageFileDirectory {
          * If a "grid to CRS" conversion has been specified with only the scale factor, we need to compute
          * the translation terms now.
          */
-        if (gridToCRS != null && !completeMatrixSpecified) {
-            if (!GridGeometry.setTranslationTerms(gridToCRS, modelTiePoints)) {
-                throw missingTag(Tags.ModelTiePoints);
-            }
+        if (referencing != null && !referencing.validateMandatoryTags()) {
+            throw missingTag(Tags.ModelTiePoints);
         }
     }
 
@@ -1229,40 +1182,51 @@ final class ImageFileDirectory {
          * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
          * ignore null values (a design choice because this pattern come very often).
          */
-        final boolean isGeorectified = (modelTiePoints == null) || (gridToCRS != null);
-        metadata.newGridRepresentation(isGeorectified ? MetadataBuilder.GridType.GEORECTIFIED
-                                                      : MetadataBuilder.GridType.GEOREFERENCEABLE);
-        metadata.setGeoreferencingAvailability(gridToCRS != null, false, false);
-        CoordinateReferenceSystem crs = null;
-        if (geoKeyDirectory != null) {
-            final CRSBuilder helper = new CRSBuilder(reader);
-            try {
-                crs = helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters);
-                metadata.addReferenceSystem(crs);
-                helper.complete(metadata);
-            } catch (NoSuchIdentifierException | ParameterNotFoundException e) {
-                short key = Resources.Keys.UnsupportedProjectionMethod_1;
-                if (e instanceof NoSuchAuthorityCodeException) {
-                    key = Resources.Keys.UnknownCRS_1;
-                }
-                reader.owner.warning(reader.resources().getString(key, reader.owner.getDisplayName()), e);
-            } catch (IllegalArgumentException | NoSuchElementException | ClassCastException e) {
-                if (!helper.alreadyReported) {
-                    reader.owner.warning(null, e);
-                }
-            }
+        if (referencing != null) {
+            getGridGeometry();                  // For calculation of gridGeometry if not already done.
+            referencing.completeMetadata(metadata);
         }
-        try {
-            if (!isGeorectified) {
-                metadata.addGeolocation(new GridGeometry(filename(), crs, modelTiePoints));
+    }
+
+    @Override
+    public Metadata getMetadata() throws DataStoreContentException {
+        /*
+         * TODO:
+         *   - Modify ImageFileDirectory.completeMetadata(…) with the addition of a boolean telling that
+         *     that we invoke this method for a single image instead than the whole image. Use that flag
+         *     for skipping MetadataBuilder calls writing in metadata/identificationInfo/resourceFormat.
+         *   - Invoke ImageFileDirectory.completeMetadata(…) if not already done and cache in a field.
+         *   - Add a metadata utility method taking two Metadata in argument, search for properties that
+         *     are equal and replace them by the same instance.
+         *   - Invoke that method from here if GeoTiffStore already has a metadata, or conversely from
+         *     GeoTiffStore if ImageResource already has a metadata.
+         */
+        return null;
+    }
+
+    /**
+     * Returns the grid envelope for this image.
+     */
+    private GridExtent extent() {
+        return new GridExtent(null, new long[] {imageWidth, imageHeight}, false);
+    }
+
+    /**
+     * Returns the grid geometry for this image.
+     */
+    @Override
+    public GridGeometry getGridGeometry() throws DataStoreContentException {
+        if (referencing != null) {
+            GridGeometry gridGeometry = referencing.gridGeometry;
+            if (gridGeometry == null) try {
+                gridGeometry = referencing.build(extent());
+            } catch (FactoryException e) {
+                throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
             }
-        } catch (TransformException e) {
-            reader.owner.warning(null, e);
+            return gridGeometry;
+        } else {
+            return new GridGeometry(extent(), null);
         }
-        geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
-        numericGeoParameters = null;
-        asciiGeoParameters   = null;
-        modelTiePoints       = null;
     }
 
     /**

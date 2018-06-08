@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
 import java.awt.image.RenderedImage;            // For javadoc only.
@@ -233,10 +234,10 @@ public class GridGeometry implements Serializable {
     {
         if (gridToCRS != null) {
             if (extent != null) {
-                ensureDimensionMatches("extent", extent.getDimension(), gridToCRS.getSourceDimensions());
+                ensureDimensionMatches("extent", gridToCRS.getSourceDimensions(), extent.getDimension());
             }
             if (crs != null) {
-                ensureDimensionMatches("crs", crs.getCoordinateSystem().getDimension(), gridToCRS.getTargetDimensions());
+                ensureDimensionMatches("crs", gridToCRS.getTargetDimensions(), crs.getCoordinateSystem().getDimension());
             }
         } else if (crs == null) {
             ArgumentChecks.ensureNonNull("extent", extent);
@@ -274,15 +275,39 @@ public class GridGeometry implements Serializable {
      * Ensures that the given dimension is equals to the expected value. If not, throws an exception.
      *
      * @param argument  the name of the argument being tested.
-     * @param dimension the dimension of the argument value.
-     * @param expected  the expected dimension.
+     * @param expected  the expected number of dimension.
+     * @param dimension the actual dimension of the argument value.
      */
-    private static void ensureDimensionMatches(final String argument, final int dimension, final int expected)
+    private static void ensureDimensionMatches(final String argument, final int expected, final int dimension)
             throws MismatchedDimensionException
     {
         if (dimension != expected) {
             throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, argument, dimension, expected));
+                    Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
+        }
+    }
+
+    /**
+     * Creates a grid geometry with only an extent and a coordinate reference system.
+     * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     *
+     * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
+     * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
+     * @throws NullPointerException if {@code extent} and {@code crs} arguments are both null.
+     */
+    public GridGeometry(final GridExtent extent, final CoordinateReferenceSystem crs) {
+        this.extent = extent;
+        gridToCRS   = null;
+        cornerToCRS = null;
+        resolution  = null;
+        nonLinears  = 0;
+        if (crs == null) {
+            ArgumentChecks.ensureNonNull("extent", extent);
+            envelope = null;
+        } else {
+            final double[] coords = new double[crs.getCoordinateSystem().getDimension()];
+            Arrays.fill(coords, Double.NaN);
+            envelope = new ImmutableEnvelope(coords, coords, crs);
         }
     }
 

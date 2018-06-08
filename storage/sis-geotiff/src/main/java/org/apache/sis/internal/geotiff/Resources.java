@@ -61,6 +61,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Can not compute the grid geometry of “{0}” TIFF file.
+         */
+        public static final short CanNotComputeGridGeometry_1 = 26;
+
+        /**
          * TIFF file “{0}” has circular references in its chain of images.
          */
         public static final short CircularImageReference_1 = 1;
