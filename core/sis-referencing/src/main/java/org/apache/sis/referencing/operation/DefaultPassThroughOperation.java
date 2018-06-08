@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
@@ -109,7 +110,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
                                        final int firstAffectedOrdinate,
                                        final int numTrailingOrdinates)
     {
-        super(properties, sourceCRS, targetCRS, null, PassThroughTransform.create(
+        super(properties, sourceCRS, targetCRS, null, MathTransforms.passThrough(
                 firstAffectedOrdinate, operation.getMathTransform(), numTrailingOrdinates));
         ArgumentChecks.ensureNonNull("operation", operation);
         this.operation = operation;
@@ -350,7 +351,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
                                     Errors.Keys.CanNotAssign_2, missing, Arrays.toString(ordinates)));
                         }
                     }
-                    transform = PassThroughTransform.create(ordinates[0] - 1, operation.getMathTransform(),
+                    transform = MathTransforms.passThrough(ordinates[0] - 1, operation.getMathTransform(),
                             ReferencingUtilities.getDimension(sourceCRS) - ordinates[ordinates.length - 1]);
                     return;
                 }
