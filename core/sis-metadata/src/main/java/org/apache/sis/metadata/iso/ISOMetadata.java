@@ -170,12 +170,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * Declares this metadata and all its properties as unmodifiable. Any attempt to modify a property
-     * after this method call will throw an {@link org.apache.sis.metadata.UnmodifiableMetadataException}.
-     * If this metadata is already unmodifiable, then this method does nothing.
-     *
-     * <p>Subclasses usually do not need to override this method since the default implementation
-     * performs most of its work using Java reflection.</p>
+     * {@inheritDoc}
      */
     @Override
     public void freeze() {

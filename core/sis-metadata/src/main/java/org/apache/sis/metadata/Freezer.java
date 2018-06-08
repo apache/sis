@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.collection.CodeListSet;
@@ -35,15 +36,67 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
  * tries to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 final class Freezer extends Cloner {
     /**
+     * The {@code Freezer} instance in current use. The clean way would have been to pass the {@code Freezer}
+     * instance in argument to all {@code freeze()} and {@code unmodifiable()} methods in metadata packages.
+     * But above-cited methods are public, and we do not want to expose {@code Freezer} in public API for now.
+     * This thread-local is a workaround for that situation.
+     */
+    private static final ThreadLocal<Freezer> CURRENT = ThreadLocal.withInitial(Freezer::new);
+
+    /**
+     * All objects made immutable during iteration over children properties.
+     * Keys and values are the same instances. This is used for sharing unique instances when possible.
+     */
+    private final Map<Object,Object> existings;
+
+    /**
+     * Usage count, for determining when to clean {@link #CURRENT}.
+     */
+    private int useCount;
+
+    /**
      * Creates a new {@code Freezer} instance.
      */
-    Freezer() {
+    private Freezer() {
+        existings = new HashMap<>(32);
+    }
+
+    /**
+     * Returns the freezer in current use, or a new one if none.
+     * Callers <strong>must</strong> invoke {@link #release()} in a {@code finally} block.
+     */
+    static Freezer acquire() {
+        final Freezer freezer = CURRENT.get();
+        freezer.useCount++;
+        return freezer;
+    }
+
+    /**
+     * Release this freezer after usage.
+     */
+    final void release() {
+        if (--useCount == 0) {
+            CURRENT.remove();
+        }
+    }
+
+    /**
+     * Returns a unique instance of the given object (metadata or value).
+     */
+    private Object unique(final Object object) {
+        if (object != null) {
+            final Object c = existings.putIfAbsent(object, object);
+            if (c != null) {
+                return c;
+            }
+        }
+        return object;
     }
 
     /**
@@ -89,12 +142,12 @@ final class Freezer extends Cloner {
          *          its own algorithm for creating an unmodifiable view of metadata.
          */
         if (object instanceof ModifiableMetadata) {
-            return ((ModifiableMetadata) object).unmodifiable();
+            return unique(((ModifiableMetadata) object).unmodifiable());
         }
         if (object instanceof DefaultRepresentativeFraction) {
             final DefaultRepresentativeFraction c = ((DefaultRepresentativeFraction) object).clone();
             c.freeze();
-            return c;
+            return unique(c);
         }
         /*
          * CASE 2 - The object is a collection. All elements are replaced by their
@@ -156,11 +209,11 @@ final class Freezer extends Cloner {
          * CASE 4 - The object is presumed cloneable.
          */
         if (object instanceof Cloneable) {
-            return super.clone(object);
+            return unique(super.clone(object));
         }
         /*
          * CASE 5 - Any other case. The object is assumed immutable and returned unchanged.
          */
-        return object;
+        return unique(object);
     }
 }

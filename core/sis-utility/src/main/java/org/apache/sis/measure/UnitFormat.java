@@ -29,12 +29,14 @@ import java.text.ParseException;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
+import java.security.AccessController;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
@@ -1376,26 +1378,23 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     public UnitFormat clone() {
         final UnitFormat f = (UnitFormat) super.clone();
         try {
-            f.setFinal("unitToLabel", unitToLabel);
-            f.setFinal("labelToUnit", labelToUnit);
+            AccessController.doPrivileged(new FinalFieldSetter<>(UnitFormat.class, "unitToLabel", "labelToUnit"))
+                            .set(f, clone(unitToLabel), clone(labelToUnit));
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw FinalFieldSetter.cloneFailure(e);
         }
         return f;
     }
 
     /**
-     * Sets final field to a clone of the given map. The given map shall be either
-     * a {@link HashMap} or the instance returned by {@link Collections#emptyMap()}.
+     * Clones the given map, which can be either a {@link HashMap}
+     * or the instance returned by {@link Collections#emptyMap()}.
      */
-    private void setFinal(final String name, Map<?,?> value) throws ReflectiveOperationException {
+    private static Object clone(final Map<?,?> value) {
         if (value instanceof HashMap<?,?>) {
-            value = (Map<?,?>) ((HashMap<?,?>) value).clone();
+            return ((HashMap<?,?>) value).clone();
         } else {
-            value = new HashMap<>();
+            return new HashMap<>();
         }
-        java.lang.reflect.Field f = UnitFormat.class.getDeclaredField(name);
-        f.setAccessible(true);
-        f.set(this, value);
     }
 }

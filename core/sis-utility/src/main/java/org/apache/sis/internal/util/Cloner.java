@@ -99,6 +99,7 @@ public class Cloner {
                  * in order to report it in case of failure.
                  */
                 if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) try {
+                    // TODO: use trySetAccessible() with JDK9.
                     method.setAccessible(true);
                 } catch (SecurityException e) {
                     security = e;

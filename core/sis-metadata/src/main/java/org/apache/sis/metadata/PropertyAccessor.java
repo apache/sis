@@ -79,7 +79,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * {@link ModifiableMetadata} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -1180,14 +1180,18 @@ class PropertyAccessor {
     /**
      * Replaces every properties in the specified metadata by their
      * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
+     * This method also replaces duplicated elements by single instances.
      *
      * @throws BackingStoreException if the implementation threw a checked exception.
      */
     final void freeze(final Object metadata) throws BackingStoreException {
         assert implementation.isInstance(metadata) : metadata;
-        if (setters != null) try {
-            final Object[] arguments = new Object[1];
-            final Freezer freezer = new Freezer();
+        if (setters == null) {
+            return;
+        }
+        final Object[] arguments = new Object[1];
+        final Freezer freezer = Freezer.acquire();
+        try {
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
                 if (setter != null) {
@@ -1223,6 +1227,8 @@ class PropertyAccessor {
             }
         } catch (CloneNotSupportedException e) {
             throw new UnsupportedOperationException(e);
+        } finally {
+            freezer.release();
         }
     }
 
