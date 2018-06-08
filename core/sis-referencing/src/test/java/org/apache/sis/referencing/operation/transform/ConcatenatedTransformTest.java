@@ -118,7 +118,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
     @Test
     public void testPassthrough() throws FactoryException {
         final MathTransform kernel = new PseudoTransform(2, 3);                     // Any non-linear transform.
-        final MathTransform passth = PassThroughTransform.create(0, kernel, 1);
+        final MathTransform passth = MathTransforms.passThrough(0, kernel, 1);
         final Matrix4 matrix = new Matrix4();
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
         assertSame("Identity transform should be ignored.", passth, transform);

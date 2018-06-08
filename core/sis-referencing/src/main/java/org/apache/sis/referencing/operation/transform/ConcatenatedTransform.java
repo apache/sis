@@ -309,7 +309,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                                 factory.createConcatenatedTransform(factory.createAffineTransform(sub), candidate.subTransform),
                                 candidate.numTrailingOrdinates);
                     } else {
-                        return PassThroughTransform.create(
+                        return MathTransforms.passThrough(
                                 candidate.firstAffectedOrdinate,
                                 create(MathTransforms.linear(sub), candidate.subTransform, factory),
                                 candidate.numTrailingOrdinates);
