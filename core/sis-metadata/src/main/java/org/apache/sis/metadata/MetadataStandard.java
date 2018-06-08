@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
+import java.io.InvalidClassException;
+import java.security.AccessController;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
@@ -38,6 +39,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.util.FinalFieldSetter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -1058,13 +1060,13 @@ public class MetadataStandard implements Serializable {
      * Assigns a {@link ConcurrentMap} instance to the given field.
      * Used on deserialization only.
      */
-    final void setMapForField(final Class<?> classe, final String name) {
+    static <T extends MetadataStandard> void setMapForField(final Class<T> classe, final T instance, final String name)
+            throws InvalidClassException
+    {
         try {
-            final Field field = classe.getDeclaredField(name);
-            field.setAccessible(true);
-            field.set(this, new ConcurrentHashMap<>());
+            AccessController.doPrivileged(new FinalFieldSetter<>(classe, name)).set(instance, new ConcurrentHashMap<>());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);                // Should never happen (tested by MetadataStandardTest).
+            throw FinalFieldSetter.readFailure(e);
         }
     }
 
@@ -1077,6 +1079,6 @@ public class MetadataStandard implements Serializable {
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        setMapForField(MetadataStandard.class, "accessors");
+        setMapForField(MetadataStandard.class, this, "accessors");
     }
 }

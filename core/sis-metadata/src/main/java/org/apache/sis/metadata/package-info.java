@@ -119,7 +119,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

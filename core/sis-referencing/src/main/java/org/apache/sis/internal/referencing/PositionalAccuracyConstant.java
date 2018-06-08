@@ -105,7 +105,6 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     /**
      * Creates an positional accuracy initialized to the given result.
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")                  // Safe because this class is final.
     private PositionalAccuracyConstant(final InternationalString measureDescription,
             final InternationalString evaluationMethodDescription, final boolean pass)
     {
