@@ -61,7 +61,7 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Can not compute the grid geometry of “{0}” TIFF file.
+         * Can not compute the grid geometry of “{0}” GeoTIFF file.
          */
         public static final short CanNotComputeGridGeometry_1 = 26;
 

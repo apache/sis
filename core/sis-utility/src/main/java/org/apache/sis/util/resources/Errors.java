@@ -86,6 +86,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAssignUnitToDimension_2 = 3;
 
         /**
+         * Can not assign units “{1}” to variable “{0}”.
+         */
+        public static final short CanNotAssignUnitToVariable_2 = 183;
+
+        /**
          * Can not assign “{1}” to “{0}”.
          */
         public static final short CanNotAssign_2 = 4;

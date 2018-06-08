@@ -63,6 +63,7 @@ final class Localization {
 
     /**
      * Creates a new localization grid from the information found by {@link ImageFileDirectory}.
+     * Current implementation creates two-dimensional transforms only.
      *
      * @param  modelTiePoints  the tie points to use for computing {@code gridToCRS}.
      * @return the grid geometry created from above properties. Never null.
@@ -96,8 +97,8 @@ final class Localization {
                 sourceToGrid.transform(ordinates, 0, ordinates, 0, 1);
                 grid.setControlPoint(Math.toIntExact(Math.round(ordinates[0])),
                                      Math.toIntExact(Math.round(ordinates[1])),
-                                     modelTiePoints.doubleValue(i+3),
-                                     modelTiePoints.doubleValue(i+4));
+                                     modelTiePoints.doubleValue(i + (RECORD_LENGTH/2)),
+                                     modelTiePoints.doubleValue(i + (RECORD_LENGTH/2 + 1)));
             }
             grid.setDesiredPrecision(PRECISION);
             final MathTransform tr = grid.create(null);

@@ -50,6 +50,8 @@ import org.opengis.referencing.crs.VerticalCRS;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
@@ -211,13 +213,14 @@ final class MetadataReader extends MetadataBuilder {
     }
 
     /**
-     * Returns the localized error resource bundle for the locale given by
-     * {@link org.apache.sis.util.logging.WarningListeners#getLocale()}.
+     * Logs a warning using the localized error resource bundle for the locale given by
+     * {@link WarningListeners#getLocale()}.
      *
-     * @return the localized error resource bundle.
+     * @param  key  one of {@link Errors.Keys} values.
      */
-    private Errors errors() {
-        return Errors.getResources(decoder.listeners.getLocale());
+    private void warning(final short key, final Object p1, final Object p2, final Exception e) {
+        final WarningListeners<DataStore> listeners = decoder.listeners;
+        listeners.warning(Errors.getResources(listeners.getLocale()).getString(key, p1, p2), e);
     }
 
     /**
@@ -296,7 +299,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private <T extends Enum<T>> T forEnumName(final Class<T> enumType, final String name) {
         final T code = Types.forEnumName(enumType, name);
         if (code == null && name != null) {
-            decoder.listeners.warning(errors().getString(Errors.Keys.UnknownEnumValue_2, enumType, name), null);
+            warning(Errors.Keys.UnknownEnumValue_2, enumType, name, null);
         }
         return code;
     }
@@ -312,7 +315,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * CodeLists are not enums, but using the error message for enums is not completly wrong since
              * if we did not allowed CodeList to create new elements, then we are using it like an enum.
              */
-            decoder.listeners.warning(errors().getString(Errors.Keys.UnknownEnumValue_2, codeType, name), null);
+            warning(Errors.Keys.UnknownEnumValue_2, codeType, name, null);
         }
         return code;
     }
@@ -715,7 +718,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
             final AttributeNames.Dimension attributeNames = axis.attributeNames;
             if (attributeNames != null) {
-                setAxisName(dim, attributeNames.DEFAULT_NAME_TYPE);
+                final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
+                setAxisName(dim, name);
                 final String res = stringValue(attributeNames.RESOLUTION);
                 if (res != null) try {
                     /*
@@ -724,13 +728,19 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                      */
                     final int s = res.indexOf(' ');
                     final double value;
+                    Unit<?> units = null;
                     if (s < 0) {
                         value = numericValue(attributeNames.RESOLUTION);
                     } else {
-                        value = Double.parseDouble(res.substring(0, s));
-                        // TODO: parse units and build a Quantity object.
+                        value = Double.parseDouble(res.substring(0, s).trim());
+                        final String symbol = res.substring(s+1).trim();
+                        if (!symbol.isEmpty()) try {
+                            units = Units.valueOf(symbol);
+                        } catch (ParserException e) {
+                            warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
+                        }
                     }
-                    setAxisResolution(dim, value);
+                    setAxisResolution(dim, value, units);
                 } catch (NumberFormatException e) {
                     warning(e);
                 }
@@ -940,7 +950,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         if (units != null) try {
             setSampleUnits(Units.valueOf(units));
         } catch (ParserException e) {
-            decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
+            warning(Errors.Keys.CanNotAssignUnitToVariable_2, name, units, e);
         }
         double scale  = Double.NaN;
         double offset = Double.NaN;

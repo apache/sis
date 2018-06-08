@@ -21,16 +21,18 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -177,20 +179,20 @@ final class GridGeometryBuilder {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * The grid geometry to be created by {@link #build(GridExtent)}.
+     * The grid geometry to be created by {@link #build(long, long)}.
      */
     public GridGeometry gridGeometry;
 
     /**
      * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
-     * This information is obtained as a side-effect of {@link #build(GridExtent)} call.
+     * This information is obtained as a side-effect of {@link #build(long, long)} call.
      */
     private String description;
 
     /**
      * {@code POINT} if {@link GeoKeys#RasterType} is {@link GeoCodes#RasterPixelIsPoint},
      * {@code AREA} if it is {@link GeoCodes#RasterPixelIsArea}, or null if unspecified.
-     * This information is obtained as a side-effect of {@link #build(GridExtent)} call.
+     * This information is obtained as a side-effect of {@link #build(long, long)} call.
      */
     private CellGeometry cellGeometry;
 
@@ -272,11 +274,13 @@ final class GridGeometryBuilder {
      * After this method call (if successful), {@link #gridGeometry} is guaranteed non-null
      * and can be used as a flag for determining that the build has been completed.
      *
-     * @param  extent  the image width and height in pixels. Must be two-dimensional.
+     * @param  width   the image width in pixels.
+     * @param  height  the image height in pixels.
      * @return {@link #gridGeometry}, guaranteed non-null.
      * @throws FactoryException if an error occurred while creating a CRS or a transform.
      */
-    public GridGeometry build(final GridExtent extent) throws FactoryException {
+    @SuppressWarnings("fallthrough")
+    public GridGeometry build(final long width, final long height) throws FactoryException {
         CoordinateReferenceSystem crs = null;
         if (keyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
@@ -296,14 +300,31 @@ final class GridGeometryBuilder {
                 }
             }
         }
+        /*
+         * If the CRS is non-null, then it is either two- or three-dimensional.
+         * The 'affine' matrix may be for a greater number of dimensions, so it
+         * may need to be reduced.
+         */
+        int n = (crs != null) ? crs.getCoordinateSystem().getDimension() : 2;
+        final DimensionNameType[] axisTypes = new DimensionNameType[n];
+        final long[] high = new long[n];
+        switch (n) {
+            default: axisTypes[2] = DimensionNameType.VERTICAL; // Fallthrough everywhere.
+            case 2:  axisTypes[1] = DimensionNameType.ROW;      high[1] = height - 1;
+            case 1:  axisTypes[0] = DimensionNameType.COLUMN;   high[0] = width  - 1;
+            case 0:  break;
+        }
+        final GridExtent extent = new GridExtent(axisTypes, null, high, true);
         boolean pixelIsPoint = CellGeometry.POINT.equals(cellGeometry);
+        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         try {
-            final MathTransform gridToCRS;
+            MathTransform gridToCRS;
             if (affine != null) {
-                gridToCRS = MathTransforms.linear(affine);
+                gridToCRS = factory.createAffineTransform(Matrices.resizeAffine(affine, ++n, n));
             } else {
-                gridToCRS = Localization.nonLinear(modelTiePoints);
                 pixelIsPoint = true;
+                gridToCRS = Localization.nonLinear(modelTiePoints);
+                gridToCRS = factory.createPassThroughTransform(0, gridToCRS, n - 2);
             }
             gridGeometry = new GridGeometry(extent, pixelIsPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER, gridToCRS, crs);
         } catch (TransformException e) {
@@ -327,7 +348,7 @@ final class GridGeometryBuilder {
      *
      * <p><b>Pre-requite:</b></p>
      * <ul>
-     *   <li>{@link #build(GridExtent)} must have been invoked successfully before this method.</li>
+     *   <li>{@link #build(long, long)} must have been invoked successfully before this method.</li>
      *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
      * </ul>
      *
@@ -338,32 +359,26 @@ final class GridGeometryBuilder {
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      */
     public void completeMetadata(final MetadataBuilder metadata) {
-        final boolean isGeorectified = (modelTiePoints == null) || (affine != null);
-        metadata.newGridRepresentation(isGeorectified ? MetadataBuilder.GridType.GEORECTIFIED
-                                                      : MetadataBuilder.GridType.GEOREFERENCEABLE);
-        metadata.setGeoreferencingAvailability(affine != null, false, false);
-        if (gridGeometry != null && gridGeometry.isDefined(GridGeometry.CRS)) {
-            metadata.addReferenceSystem(gridGeometry.getCoordinateReferenceSystem());
+        if (metadata.addSpatialRepresentation(description, gridGeometry, true)) {
+            /*
+             * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
+             * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated to
+             * GeoKeys.RasterType, which can be GeoCodes.RasterPixelIsArea or GeoCodes.RasterPixelIsPoint.
+             *
+             * Note: the pixel orientation (UPPER_LEFT versus CENTER) should be kept consistent with the discussion in
+             * GridGeometryBuilder class javadoc.
+             */
+            metadata.setCellGeometry(cellGeometry);
+            final PixelOrientation po;
+            if (CellGeometry.POINT.equals(cellGeometry)) {
+                po = PixelOrientation.CENTER;
+            } else if (CellGeometry.AREA.equals(cellGeometry)) {
+                po = PixelOrientation.UPPER_LEFT;
+            } else {
+                return;
+            }
+            metadata.setPointInPixel(po);
         }
-        metadata.setGridToCRS(description);
-        /*
-         * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
-         * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated to
-         * GeoKeys.RasterType, which can be GeoCodes.RasterPixelIsArea or GeoCodes.RasterPixelIsPoint.
-         *
-         * Note: the pixel orientation (UPPER_LEFT versus CENTER) should be kept consistent with the discussion in
-         * GridGeometryBuilder class javadoc.
-         */
-        metadata.setCellGeometry(cellGeometry);
-        final PixelOrientation po;
-        if (CellGeometry.POINT.equals(cellGeometry)) {
-            po = PixelOrientation.CENTER;
-        } else if (CellGeometry.AREA.equals(cellGeometry)) {
-            po = PixelOrientation.UPPER_LEFT;
-        } else {
-            return;
-        }
-        metadata.setPointInPixel(po);
     }
 
     /**

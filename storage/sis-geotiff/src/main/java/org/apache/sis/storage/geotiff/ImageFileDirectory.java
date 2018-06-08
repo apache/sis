@@ -1205,13 +1205,6 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
     }
 
     /**
-     * Returns the grid envelope for this image.
-     */
-    private GridExtent extent() {
-        return new GridExtent(null, new long[] {imageWidth, imageHeight}, false);
-    }
-
-    /**
      * Returns the grid geometry for this image.
      */
     @Override
@@ -1219,13 +1212,13 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
         if (referencing != null) {
             GridGeometry gridGeometry = referencing.gridGeometry;
             if (gridGeometry == null) try {
-                gridGeometry = referencing.build(extent());
+                gridGeometry = referencing.build(imageWidth, imageHeight);
             } catch (FactoryException e) {
                 throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
             }
             return gridGeometry;
         } else {
-            return new GridGeometry(extent(), null);
+            return new GridGeometry(new GridExtent(imageWidth, imageHeight), null);
         }
     }
 
