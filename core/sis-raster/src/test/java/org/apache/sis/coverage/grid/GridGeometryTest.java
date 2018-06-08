@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -56,7 +57,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     public void testFromPixelCorner() throws TransformException {
         final long[]         low     = new long[] {100, 300, 3, 6};
         final long[]         high    = new long[] {200, 400, 4, 7};
-        final GridExtent    extent   = new GridExtent(low, high, true);
+        final GridExtent    extent   = new GridExtent(null, low, high, true);
         final MathTransform identity = MathTransforms.identity(4);
         final GridGeometry  grid     = new GridGeometry(extent, PixelInCell.CELL_CORNER, identity, null);
         /*
@@ -102,7 +103,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     public void testFromPixelCenter() throws TransformException {
         final long[]        low      = new long[] { 0,   0, 2};
         final long[]        high     = new long[] {99, 199, 4};
-        final GridExtent    extent   = new GridExtent(low, high, true);
+        final GridExtent    extent   = new GridExtent(null, low, high, true);
         final MathTransform identity = MathTransforms.identity(3);
         final GridGeometry  grid     = new GridGeometry(extent, PixelInCell.CELL_CENTER, identity, null);
         /*
@@ -148,7 +149,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     public void testShifted() throws TransformException {
         final long[]        low      = new long[] {100, 300};
         final long[]        high     = new long[] {200, 400};
-        final GridExtent    extent   = new GridExtent(low, high, true);
+        final GridExtent    extent   = new GridExtent(null, low, high, true);
         final MathTransform identity = MathTransforms.linear(new Matrix3(
                 1, 0, 0.5,
                 0, 1, 0.5,
@@ -165,6 +166,12 @@ public final strictfp class GridGeometryTest extends TestCase {
     @Test
     public void testNonLinear() throws TransformException {
         final GridExtent extent = new GridExtent(
+                new DimensionNameType[] {
+                    DimensionNameType.COLUMN,
+                    DimensionNameType.ROW,
+                    DimensionNameType.VERTICAL,
+                    DimensionNameType.TIME
+                },
                 new long[] {0,     0, 2, 6},
                 new long[] {100, 200, 3, 9}, false);
         final MathTransform horizontal = MathTransforms.linear(Matrices.create(3, 3, new double[] {

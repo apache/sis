@@ -271,7 +271,7 @@ final class CRSBuilder {
      */
     CRSBuilder(final Reader reader) {
         this.reader = reader;
-        geoKeys = new HashMap<>();
+        geoKeys = new HashMap<>(32);
     }
 
     /**
@@ -292,6 +292,7 @@ final class CRSBuilder {
      * The factory is fetched when first needed.
      *
      * @return the EPSG factory (never {@code null}).
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
      */
     private GeodeticAuthorityFactory epsgFactory() throws FactoryException {
         if (epsgFactory == null) {
@@ -305,6 +306,7 @@ final class CRSBuilder {
      * The factory is fetched when first needed.
      *
      * @return the object factory (never {@code null}).
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
      */
     private GeodeticObjectFactory objectFactory() {
         if (objectFactory == null) {
@@ -318,6 +320,7 @@ final class CRSBuilder {
      * The factory is fetched when first needed.
      *
      * @return the operation factory (never {@code null}).
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
      */
     private CoordinateOperationFactory operationFactory() {
         if (operationFactory == null) {
@@ -572,7 +575,7 @@ final class CRSBuilder {
      * @param  keyDirectory       the GeoTIFF keys to be associated to values. Can not be null.
      * @param  numericParameters  a vector of {@code double} parameters, or {@code null} if none.
      * @param  asciiParameters    the sequence of characters from which to build strings, or {@code null} if none.
-     * @return the coordinate reference system created from the given GeoTIFF keys.
+     * @return the coordinate reference system created from the given GeoTIFF keys, or {@code null} if undefined.
      *
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
@@ -746,10 +749,12 @@ final class CRSBuilder {
         }
         if (crsType != GeoCodes.ModelTypeGeocentric) {
             final VerticalCRS vertical = createVerticalCRS();
-            if (crs == null) {
-                crs = vertical;
-            } else if (vertical != null) {
-                crs = objectFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+            if (vertical != null) {
+                if (crs == null) {
+                    missingValue(GeoKeys.GeographicType);
+                } else {
+                    crs = objectFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                }
             }
         }
         /*

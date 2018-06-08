@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -35,6 +36,8 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -711,9 +714,102 @@ public class GridGeometry implements Serializable {
     /**
      * Returns a string representation of this grid geometry. The returned string
      * is implementation dependent. It is provided for debugging purposes only.
+     * Current implementation is equivalent to the following:
+     *
+     * {@preformat java
+     *   return toString(EXTENT | CRS | GRID_TO_CRS | RESOLUTION);
+     * }
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '[' + extent + ", " + gridToCRS + ']';
+        return toString(EXTENT | CRS | GRID_TO_CRS | RESOLUTION);
+    }
+
+    /**
+     * Returns a string representation of some elements of this grid geometry.
+     * The string representation is for debugging purpose only and may change
+     * in any future SIS version.
+     *
+     * @param  bitmask  any combination of {@link #EXTENT}, {@link #CRS},
+     *         {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+     * @return a string representation of the given elements.
+     */
+    @Debug
+    public String toString(final int bitmask) {
+        if ((bitmask & ~(EXTENT | CRS | GRID_TO_CRS | RESOLUTION)) != 0) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
+        }
+        final boolean visible = Integer.bitCount(bitmask) >= 2;
+        final int dimension = (extent != null) ? extent.getDimension() : 0;
+        final StringBuilder buffer = new StringBuilder();
+        if ((bitmask & EXTENT) != 0) {
+            appendLabel(buffer, "Grid size", visible);
+            if (dimension == 0) {
+                buffer.append("unspecified");
+            } else for (int i=0; i<dimension; i++) {
+                if (i != 0) buffer.append(" × ");
+                buffer.append(extent.getSize(i));
+            }
+            appendLabel(buffer, "Grid low", visible);
+            if (dimension == 0) {
+                buffer.append("unspecified");
+            } else for (int i=0; i<dimension; i++) {
+                if (i != 0) buffer.append(", ");
+                buffer.append(extent.getLow(i));
+            }
+        }
+        CoordinateSystem cs = null;
+        if ((bitmask & CRS) != 0) {
+            appendLabel(buffer, "CRS", visible);
+            CoordinateReferenceSystem crs;
+            if (envelope == null || (crs = envelope.getCoordinateReferenceSystem()) == null) {
+                buffer.append("unspecified");
+            } else {
+                buffer.append(crs.getName());
+                cs = crs.getCoordinateSystem();
+            }
+        }
+        if ((bitmask & GRID_TO_CRS) != 0) {
+            appendLabel(buffer, "Conversion", visible);
+            if (gridToCRS == null) {
+                buffer.append("unspecified");
+            } else {
+                buffer.append(gridToCRS.getSourceDimensions()).append("D → ")
+                      .append(gridToCRS.getTargetDimensions()).append('D');
+                long nonLinearDimensions = nonLinears;
+                String separator = " non linear in ";
+                while (nonLinearDimensions != 0) {
+                    final int i = Long.numberOfTrailingZeros(nonLinearDimensions);
+                    nonLinearDimensions &= ~(1L << i);
+                    buffer.append(separator).append(cs != null ? cs.getAxis(i).getName() : String.valueOf(i));
+                    separator = ", ";
+                }
+            }
+        }
+        if ((bitmask & RESOLUTION) != 0) {
+            appendLabel(buffer, "Resolution", visible);
+            if (resolution == null) {
+                buffer.append("unspecified");
+            } for (int i=0; i<resolution.length; i++) {
+                if (i != 0) buffer.append(" × ");
+                buffer.append((float) resolution[i]);
+                if (cs != null) {
+                    buffer.append(' ').append(cs.getAxis(i).getUnit());
+                }
+            }
+        }
+        return buffer.append(System.lineSeparator()).toString();
+    }
+
+    /**
+     * Appends the given text to the given buffer, followed by colon and spaces.
+     * Adjusted for the specific needs of {@link #toString()} implementation.
+     */
+    private static void appendLabel(final StringBuilder appendTo, final String label, final boolean visible) {
+        if (appendTo.length() != 0) appendTo.append(System.lineSeparator());
+        if (visible) {
+            appendTo.append(label).append(':').append(CharSequences.spaces(12 - label.length()));
+        }
     }
 }
