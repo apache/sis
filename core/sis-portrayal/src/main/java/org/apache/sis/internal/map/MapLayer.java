@@ -38,7 +38,7 @@ import org.apache.sis.storage.Resource;
  * @since   1.0
  * @module
  */
-public final class MapLayer {
+public class MapLayer extends MapItem {
     /**
      * Data to be rendered.
      */
