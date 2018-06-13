@@ -14,37 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw.common;
+package org.apache.sis.services.ows;
 
-import org.apache.sis.services.ows.Service;
-import org.apache.sis.services.ows.Version;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+
 
 /**
  *
  * @author haonguyen
  */
-@XmlType(name = "RequestBaseType", namespace = Namespaces.OWS)
-@XmlRootElement(name = "RequestBase", namespace = Namespaces.OWS)
-public abstract class RequestBase {
-    private Service service;
-    private Version version;
-    @XmlAttribute
-    public Service getService() {
-        return service;
-    }
+public class Namespaces {
 
-    public void setService(Service service) {
-        this.service = service;
-    }
-    @XmlAttribute
-    public Version getVersion() {
-        return version;
-    }
+    /**
+     *
+     */
+    public static final String DC = "http://purl.org/dc/elements/1.1/";
 
-    public void setVersion(Version version) {
-        this.version = version;
-    }  
+    /**
+     *
+     */
+    public static final String DCT = "http://purl.org/dc/terms/";
+
+    /**
+     *
+     */
+    public static final String CSW = "http://www.opengis.net/cat/csw/3.0";
+
+    /**
+     *
+     */
+    public static final String OWS = "http://www.opengis.net/ows/2.0";
+
+    /**
+     *
+     */
+    public static final String FES = "http://www.opengis.net/fes/2.0";
+
+    /**
+     *
+     */
+    public static final String GML = "http://www.opengis.net/gml/3.2";
 }

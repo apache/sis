@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw.common;
+package org.apache.sis.services.ows;
 
 import javax.xml.bind.annotation.XmlValue;
 
@@ -22,19 +22,19 @@ import javax.xml.bind.annotation.XmlValue;
  *
  * @author haonguyen
  */
-public class Service {
-    private String service ;
-    
-    public Service(String service) {
-        this.service = service;
+public class Version {
+    private String version ;
+
+    public Version(String version) {
+        this.version = version;
     }
     @XmlValue
-    public String getService() {
-        return service;
+    public String getVersion() {
+        return version;
     }
 
-    public void setService(String service) {
-        this.service = service;
+    public void setVersion(String version) {
+        this.version = version;
     }
     
 }

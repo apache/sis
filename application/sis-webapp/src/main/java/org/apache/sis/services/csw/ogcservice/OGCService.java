@@ -14,27 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw.common;
-
-import javax.xml.bind.annotation.XmlValue;
+package org.apache.sis.services.csw.ogcservice;
 
 /**
  *
  * @author haonguyen
  */
-public class Version {
-    private String version ;
-
-    public Version(String version) {
-        this.version = version;
-    }
-    @XmlValue
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-    
+public interface OGCService {
+    public Capabilities getCapalities(GetCapabilities getCapabilities);
 }

@@ -14,37 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw.common;
+package org.apache.sis.services.ows;
 
-import org.apache.sis.services.ows.Service;
-import org.apache.sis.services.ows.Version;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import java.util.List;
+import javax.xml.bind.annotation.*;
 
 /**
  *
  * @author haonguyen
  */
-@XmlType(name = "RequestBaseType", namespace = Namespaces.OWS)
-@XmlRootElement(name = "RequestBase", namespace = Namespaces.OWS)
-public abstract class RequestBase {
-    private Service service;
-    private Version version;
-    @XmlAttribute
-    public Service getService() {
-        return service;
+@XmlType(name="AcceptLanguagesType",namespace = Namespaces.OWS)
+@XmlRootElement(name="AcceptLanguages",namespace = Namespaces.OWS)
+class AcceptLanguages {
+    private List<Language> language;
+    @XmlElement(name="Language")
+    public List<Language> getLanguage() {
+        return language;
     }
 
-    public void setService(Service service) {
-        this.service = service;
+    public void setLanguage(List<Language> language) {
+        this.language = language;
     }
-    @XmlAttribute
-    public Version getVersion() {
-        return version;
-    }
-
-    public void setVersion(Version version) {
-        this.version = version;
-    }  
+    
+    
 }
