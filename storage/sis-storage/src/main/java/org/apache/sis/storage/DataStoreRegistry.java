@@ -243,11 +243,10 @@ search:     do {
                 /*
                  * If we filtered providers by the file extension without finding a suitable provider,
                  * try again with all other providers (even if they are for another file extension).
+                 * We do that by changing 'matchCondition' from TRUE to FALSE. In all other cases,
+                 * we stop the search.
                  */
-                if (Boolean.TRUE.equals(matchCondition)) {
-                    matchCondition = Boolean.FALSE;
-                }
-            } while (matchCondition != null);
+            } while (matchCondition != null && (matchCondition = !matchCondition) == false);
             /*
              * If a provider has been found, or if a provider returned UNDETERMINED, use that one
              * for opening a DataStore. Note that if more than one provider returned UNDETERMINED,
