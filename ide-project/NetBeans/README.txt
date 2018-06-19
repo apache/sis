@@ -11,7 +11,7 @@ source code. The recommended installation steps is as below (from the root
 directory of all SIS-related projects):
 
   mkdir SIS
-  svn checkout http://svn.apache.org/repos/asf/sis/branches/JDK8 SIS/JDK8
+  git clone -b geoapi-4.0 https://gitbox.apache.org/repos/asf/sis.git SIS/dev
   mkdir GeoAPI
   git clone http://github.com/opengeospatial/geoapi GeoAPI/master
 
@@ -19,10 +19,10 @@ Above commands should create the following directory structure:
 
   +-- GeoAPI
   |   +-- master
-  |       +-- README.txt
+  |       +-- README.md
   |       +-- etc...
   +-- SIS
-      +-- JDK8
+      +-- dev
           +-- README
           +-- etc...
 
