@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicDescription;
@@ -70,7 +70,7 @@ public final strictfp class TypeMapTest extends TestCase {
             new SimpleEntry<>("edition",               InternationalString.class),
             new SimpleEntry<>("editionDate",           Date.class),
             new SimpleEntry<>("identifier",            Identifier.class),
-            new SimpleEntry<>("citedResponsibleParty", Responsibility.class),
+            new SimpleEntry<>("citedResponsibleParty", ResponsibleParty.class),
             new SimpleEntry<>("presentationForm",      PresentationForm.class),
             new SimpleEntry<>("series",                Series.class),
             new SimpleEntry<>("otherCitationDetails",  InternationalString.class),

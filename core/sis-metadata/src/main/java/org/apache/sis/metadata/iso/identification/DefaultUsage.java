@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.identification.Usage;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -103,7 +103,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Identification of and means of communicating with person(s) and organization(s) using the resource(s).
      */
-    private Collection<Responsibility> userContactInfo;
+    private Collection<ResponsibleParty> userContactInfo;
 
     /**
      * Responses to the user-determined limitations.
@@ -134,10 +134,10 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param userContactInfo  means of communicating with person(s) and organization(s), or {@code null} if none.
      */
     public DefaultUsage(final CharSequence specificUsage,
-                        final Responsibility userContactInfo)
+                        final ResponsibleParty userContactInfo)
     {
         this.specificUsage   = Types.toInternationalString(specificUsage);
-        this.userContactInfo = singleton(userContactInfo, Responsibility.class);
+        this.userContactInfo = singleton(userContactInfo, ResponsibleParty.class);
     }
 
     /**
@@ -155,7 +155,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
             specificUsage             = object.getSpecificUsage();
             usageDate                 = toMilliseconds(object.getUsageDate());
             userDeterminedLimitations = object.getUserDeterminedLimitations();
-            userContactInfo           = copyCollection(object.getUserContactInfo(), Responsibility.class);
+            userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
             responses                 = copyCollection(object.getResponses(), InternationalString.class);
             additionalDocumentation   = copyCollection(object.getAdditionalDocumentation(), Citation.class);
             identifiedIssues          = copyCollection(object.getIdentifiedIssues(), Citation.class);
@@ -253,21 +253,31 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Returns identification of and means of communicating with person(s) and organization(s) using the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return means of communicating with person(s) and organization(s) using the resource(s).
      */
     @Override
     @XmlElement(name = "userContactInfo")
-    public Collection<Responsibility> getUserContactInfo() {
-        return userContactInfo = nonNullCollection(userContactInfo, Responsibility.class);
+    public Collection<ResponsibleParty> getUserContactInfo() {
+        return userContactInfo = nonNullCollection(userContactInfo, ResponsibleParty.class);
     }
 
     /**
      * Sets identification of and means of communicating with person(s) and organization(s) using the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new user contact info.
      */
-    public void setUserContactInfo(final Collection<? extends Responsibility> newValues) {
-        userContactInfo = writeCollection(newValues, userContactInfo, Responsibility.class);
+    public void setUserContactInfo(final Collection<? extends ResponsibleParty> newValues) {
+        userContactInfo = writeCollection(newValues, userContactInfo, ResponsibleParty.class);
     }
 
     /**

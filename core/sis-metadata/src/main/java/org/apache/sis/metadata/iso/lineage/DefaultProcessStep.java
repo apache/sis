@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Processing;
@@ -110,7 +110,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
      */
-    private Collection<Responsibility> processors;
+    private Collection<ResponsibleParty> processors;
 
     /**
      * Process step documentation.
@@ -174,7 +174,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
             description           = object.getDescription();
             rationale             = object.getRationale();
             stepDateTime          = TemporalUtilities.createInstant(object.getDate());
-            processors            = copyCollection(object.getProcessors(), Responsibility.class);
+            processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
             references            = copyCollection(object.getReferences(), Citation.class);
             sources               = copyCollection(object.getSources(), Source.class);
             scope                 = object.getScope();
@@ -306,22 +306,32 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Returns the identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return means of communication with person(s) and organization(s) associated with the process step.
      */
     @Override
     @XmlElement(name = "processor")
-    public Collection<Responsibility> getProcessors() {
-        return processors = nonNullCollection(processors, Responsibility.class);
+    public Collection<ResponsibleParty> getProcessors() {
+        return processors = nonNullCollection(processors, ResponsibleParty.class);
     }
 
     /**
      * Identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new processors.
      */
-    public void setProcessors(final Collection<? extends Responsibility> newValues) {
-        processors = writeCollection(newValues, processors, Responsibility.class);
+    public void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
+        processors = writeCollection(newValues, processors, ResponsibleParty.class);
     }
 
     /**

@@ -90,7 +90,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Name of the online resources.
      */
-    private InternationalString name;
+    private String name;
 
     /**
      * Detailed text description of what the online resource is/does.
@@ -196,20 +196,28 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Name of the online resource. Returns {@code null} if none.
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The return type may be changed from {@code String} to {@code InternationalString} in GeoAPI 4.0.
+     * </div>
+     *
      * @return name of the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
-    public InternationalString getName() {
+    public String getName() {
         return name;
     }
 
     /**
      * Sets the name of the online resource.
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The argument type may be changed from {@code String} to {@code InternationalString} in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new name, or {@code null} if none.
      */
-    public void setName(final InternationalString newValue) {
+    public void setName(final String newValue) {
         checkWritePermission();
         name = newValue;
     }

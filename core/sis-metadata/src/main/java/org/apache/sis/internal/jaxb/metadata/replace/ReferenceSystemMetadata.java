@@ -22,8 +22,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
@@ -87,7 +87,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      *
      * @param  name  the primary name by which this object is identified.
      */
-    public ReferenceSystemMetadata(final Identifier name) {
+    public ReferenceSystemMetadata(final ReferenceIdentifier name) {
         super(name);
     }
 
@@ -107,7 +107,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
     @XmlJavaTypeAdapter(MD_Identifier.class)
-    public final Identifier getName() {
+    public ReferenceIdentifier getName() {
         return isLegacyMetadata ? null : super.getName();
     }
 
@@ -116,7 +116,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      *
      * @param  name  the new primary name.
      */
-    public final void setName(final Identifier name) {
+    public final void setName(final ReferenceIdentifier name) {
         this.name = name;
     }
 
@@ -126,7 +126,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     @XmlElement(name = "referenceSystemIdentifier", namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(RS_Identifier.class)
-    private Identifier getLegacyName() {
+    private ReferenceIdentifier getLegacyName() {
         return isLegacyMetadata ? super.getName() : null;
     }
 
@@ -134,7 +134,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * Sets the name for this reference system metadata (used in ISO 19115:2003 model).
      */
     @SuppressWarnings("unused")
-    private void setLegacyName(final Identifier name) {
+    private void setLegacyName(final ReferenceIdentifier name) {
         this.name = name;
     }
 

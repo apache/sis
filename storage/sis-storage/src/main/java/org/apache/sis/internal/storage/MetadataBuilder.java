@@ -117,8 +117,10 @@ import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
+import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.feature.FeatureType;
-import org.opengis.metadata.citation.Responsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 
 
 /**
@@ -244,16 +246,16 @@ public class MetadataBuilder {
     /**
      * Part of the responsible party of the {@linkplain #citation}, or {@code null} if none.
      */
-    private DefaultResponsibility responsibility;
+    private DefaultResponsibleParty responsibility;
 
     /**
      * Creates the responsibility object if it does not already exists, then returns it.
      *
      * @return the responsibility party (never {@code null}).
      */
-    private DefaultResponsibility responsibility() {
+    private DefaultResponsibleParty responsibility() {
         if (responsibility == null) {
-            responsibility = new DefaultResponsibility();
+            responsibility = new DefaultResponsibleParty();
         }
         return responsibility;
     }
@@ -688,7 +690,7 @@ public class MetadataBuilder {
      */
     public final void newDistribution() {
         if (distribution != null) {
-            addIfNotPresent(metadata().getDistributionInfo(), distribution);
+            metadata().setDistributionInfo(distribution);
             distribution = null;
         }
     }
@@ -977,7 +979,8 @@ public class MetadataBuilder {
         if (encoding != null) {
             // No need to use 'addIfNotPresent(…)' because Charset collection is a Set by default.
             if (scope != Scope.RESOURCE) metadata().getCharacterSets().add(encoding);
-            if (scope != Scope.METADATA) identification().getCharacterSets().add(encoding);
+            if (scope != Scope.METADATA) identification().getCharacterSets().add(
+                    Types.forCodeName(CharacterSet.class, encoding.toString(), true));
         }
     }
 
@@ -1220,7 +1223,8 @@ public class MetadataBuilder {
     public final void addOtherCitationDetails(final CharSequence details) {
         final InternationalString i18n = trim(details);
         if (i18n != null) {
-            addIfNotPresent(citation().getOtherCitationDetails(), i18n);
+            final DefaultCitation citation = citation();
+            citation.setOtherCitationDetails(append(citation.getOtherCitationDetails(), i18n));
         }
     }
 
@@ -1345,10 +1349,10 @@ public class MetadataBuilder {
      * @param  party  the individual or organization that is responsible, or {@code null} for no-operation.
      * @param  role   the role to set, or {@code null} for leaving it unchanged.
      */
-    public final void addCitedResponsibleParty(Responsibility party, final Role role) {
+    public final void addCitedResponsibleParty(ResponsibleParty party, final Role role) {
         if (party != null) {
             if (role != null && !role.equals(party.getRole())) {
-                party = new DefaultResponsibility(party);
+                party = new DefaultResponsibleParty(party);
                 ((DefaultResponsibility) party).setRole(role);
             }
             addIfNotPresent(citation().getCitedResponsibleParties(), party);
@@ -1368,7 +1372,7 @@ public class MetadataBuilder {
      * @param  contact  means of communication with party associated with the resource, or {@code null} for no-operation.
      * @param  scope    whether the contact applies to data, to metadata or to both.
      */
-    public final void addPointOfContact(final Responsibility contact, final Scope scope) {
+    public final void addPointOfContact(final ResponsibleParty contact, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (contact != null) {
             if (scope != Scope.RESOURCE)     addIfNotPresent(metadata().getContacts(), contact);
@@ -1386,7 +1390,7 @@ public class MetadataBuilder {
      *
      * @param  distributor  the distributor, or {@code null} for no-operation.
      */
-    public final void addDistributor(final Responsibility distributor) {
+    public final void addDistributor(final ResponsibleParty distributor) {
         if (distributor != null) {
             addIfNotPresent(distribution().getDistributors(), new DefaultDistributor(distributor));
         }
@@ -1403,9 +1407,11 @@ public class MetadataBuilder {
      * @param  credit  recognition of those who contributed to the resource, or {@code null} for no-operation.
      */
     public final void addCredits(final CharSequence credit) {
-        final InternationalString i18n = trim(credit);
-        if (i18n != null) {
-            addIfNotPresent(identification().getCredits(), i18n);
+        if (credit != null) {
+            final String c = CharSequences.trimWhitespaces(credit).toString();
+            if (!c.isEmpty()) {
+                addIfNotPresent(identification().getCredits(), c);
+            }
         }
     }
 
@@ -1588,7 +1594,8 @@ parse:      for (int i = 0; i < length;) {
                 buffer.setLength(i);
                 // Same limitation than MetadataBuilder.party().
                 final AbstractParty party = new AbstractParty(buffer, null);
-                final DefaultResponsibility r = new DefaultResponsibility(Role.OWNER, null, party);
+                final DefaultResponsibleParty r = new DefaultResponsibleParty(Role.OWNER);
+                r.setParties(Collections.singleton(party));
                 c.setCitedResponsibleParties(Collections.singleton(r));
             }
             constraints.getReferences().add(c);

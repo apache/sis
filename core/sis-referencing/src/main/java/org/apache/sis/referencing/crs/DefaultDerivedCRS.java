@@ -381,7 +381,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (object == null || object instanceof DefaultDerivedCRS) {
             return (DefaultDerivedCRS) object;
         } else {
-            final String type = getType(object.getBaseCRS(), object.getCoordinateSystem());
+            final String type = getType((SingleCRS) object.getBaseCRS(), object.getCoordinateSystem());
             if (type != null) switch (type) {
                 case WKTKeywords.GeodeticCRS:    return new Geodetic   (object);
                 case WKTKeywords.VerticalCRS:    return new Vertical   (object);

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -24,8 +25,6 @@ import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
-import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
 
 
 /**
@@ -71,7 +70,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5667352094985433121L;
+    private static final long serialVersionUID = -884081423040392985L;
 
     /**
      * Name of the application schema used.
@@ -91,17 +90,17 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Full application schema given as an ASCII file.
      */
-    private CharSequence schemaAscii;
+    private URI schemaAscii;
 
     /**
      * Full application schema given as a graphics file.
      */
-    private OnlineResource graphicsFile;
+    private URI graphicsFile;
 
     /**
      * Full application schema given as a software development file.
      */
-    private OnlineResource softwareDevelopmentFile;
+    private URI softwareDevelopmentFile;
 
     /**
      * Software dependent format used for the application schema software dependent file.
@@ -243,21 +242,29 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Full application schema given as an ASCII file.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@code URI} may be replaced by {@link CharSequence} in GeoAPI 4.0.
+     * </div>
+     *
      * @return application schema as an ASCII file, or {@code null}.
      */
     @Override
     @XmlElement(name = "schemaAscii")
-    @XmlJavaTypeAdapter(CharSequenceAdapter.Since2014.class)
-    public CharSequence getSchemaAscii()  {
+    @XmlJavaTypeAdapter(URIStringAdapter.class)
+    public URI getSchemaAscii()  {
         return schemaAscii;
     }
 
     /**
      * Sets the full application schema given as an ASCII file.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@code URI} may be replaced by {@link CharSequence} in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new ASCII file.
      */
-    public void setSchemaAscii(final CharSequence newValue) {
+    public void setSchemaAscii(final URI newValue) {
         checkWritePermission();
         schemaAscii = newValue;
     }
@@ -265,21 +272,31 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Full application schema given as a graphics file.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * As of ISO 19115:2014, {@code URI} is replaced by {@link OnlineResource}.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return application schema as a graphics file, or {@code null}.
      */
     @Override
     @XmlElement(name = "graphicsFile")
-    @XmlJavaTypeAdapter(CI_OnlineResource.Since2014.class)
-    public OnlineResource getGraphicsFile()  {
+    @XmlJavaTypeAdapter(OnlineResourceAdapter.class)
+    public URI getGraphicsFile()  {
         return graphicsFile;
     }
 
     /**
      * Sets the full application schema given as a graphics file.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * As of ISO 19115:2014, {@code URI} is replaced by {@link OnlineResource}.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new graphics file.
      */
-    public void setGraphicsFile(final OnlineResource newValue) {
+    public void setGraphicsFile(final URI newValue) {
         checkWritePermission();
         graphicsFile = newValue;
     }
@@ -287,21 +304,31 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
     /**
      * Full application schema given as a software development file.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * As of ISO 19115:2014, {@code URI} is replaced by {@link OnlineResource}.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return application schema as a software development file, or {@code null}.
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFile")
-    @XmlJavaTypeAdapter(CI_OnlineResource.Since2014.class)
-    public OnlineResource getSoftwareDevelopmentFile()  {
+    @XmlJavaTypeAdapter(OnlineResourceAdapter.class)
+    public URI getSoftwareDevelopmentFile()  {
         return softwareDevelopmentFile;
     }
 
     /**
      * Sets the full application schema given as a software development file.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * As of ISO 19115:2014, {@code URI} is replaced by {@link OnlineResource}.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new software development file.
      */
-    public void setSoftwareDevelopmentFile(final OnlineResource newValue) {
+    public void setSoftwareDevelopmentFile(final URI newValue) {
         checkWritePermission();
         softwareDevelopmentFile = newValue;
     }

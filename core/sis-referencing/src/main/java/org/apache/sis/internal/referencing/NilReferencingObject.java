@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.NilObject;
@@ -54,7 +54,7 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
      *
      * @since 0.6
      */
-    public static final Identifier UNNAMED = new NamedIdentifier(null, Vocabulary.format(Vocabulary.Keys.Unnamed));
+    public static final ReferenceIdentifier UNNAMED = new NamedIdentifier(null, Vocabulary.format(Vocabulary.Keys.Unnamed));
 
     /**
      * The unique instance.
@@ -80,9 +80,9 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
      * Returning null for collection are okay in the particular case of SIS implementation,
      * because the constructor will replace empty collections by null references anyway.
      */
-    @Override public Identifier               getName()        {return UNNAMED;}
+    @Override public ReferenceIdentifier      getName()        {return UNNAMED;}
     @Override public Collection<GenericName>  getAlias()       {return null;}
-    @Override public Set<Identifier>          getIdentifiers() {return null;}
+    @Override public Set<ReferenceIdentifier> getIdentifiers() {return null;}
     @Override public InternationalString      getRemarks()     {return null;}
     @Override public InternationalString      getScope()       {return null;}
     @Override public Extent getDomainOfValidity()              {return null;}

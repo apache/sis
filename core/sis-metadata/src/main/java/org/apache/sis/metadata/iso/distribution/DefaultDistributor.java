@@ -20,7 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.StandardOrderProcess;
@@ -71,12 +71,12 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8819538342342106743L;
+    private static final long serialVersionUID = 5706757156163948001L;
 
     /**
      * Party from whom the resource may be obtained. This list need not be exhaustive.
      */
-    private Responsibility distributorContact;
+    private ResponsibleParty distributorContact;
 
     /**
      * Provides information about how the resource may be obtained, and related
@@ -105,7 +105,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *
      * @param distributorContact  party from whom the resource may be obtained, or {@code null}.
      */
-    public DefaultDistributor(final Responsibility distributorContact) {
+    public DefaultDistributor(final ResponsibleParty distributorContact) {
         this.distributorContact = distributorContact;
     }
 
@@ -156,20 +156,30 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Party from whom the resource may be obtained.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return party from whom the resource may be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
-    public Responsibility getDistributorContact() {
+    public ResponsibleParty getDistributorContact() {
         return distributorContact;
     }
 
     /**
      * Sets the party from whom the resource may be obtained.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new distributor contact.
      */
-    public void setDistributorContact(final Responsibility newValue) {
+    public void setDistributorContact(final ResponsibleParty newValue) {
         checkWritePermission();
         distributorContact = newValue;
     }

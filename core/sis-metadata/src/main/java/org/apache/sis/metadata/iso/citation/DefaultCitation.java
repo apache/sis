@@ -26,7 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
@@ -99,7 +99,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7343644724857519090L;
+    private static final long serialVersionUID = 3490090845236158848L;
 
     /**
      * Name by which the cited resource is known.
@@ -132,7 +132,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Roles, Name, contact, and position information for an individual or organization that is responsible
      * for the resource.
      */
-    private Collection<Responsibility> citedResponsibleParties;
+    private Collection<ResponsibleParty> citedResponsibleParties;
 
     /**
      * Mode in which the resource is represented, or an empty collection if none.
@@ -149,7 +149,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Other information required to complete the citation that is not recorded elsewhere.
      * May be {@code null} if none.
      */
-    private Collection<InternationalString> otherCitationDetails;
+    private InternationalString otherCitationDetails;
 
     /**
      * Common title with holdings note. Note: title identifies elements of a series
@@ -206,10 +206,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             edition                 = object.getEdition();
             editionDate             = toMilliseconds(object.getEditionDate());
             identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
-            citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), Responsibility.class);
+            citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
             presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
             series                  = object.getSeries();
-            otherCitationDetails    = copyCollection(object.getOtherCitationDetails(), InternationalString.class);
+            otherCitationDetails    = object.getOtherCitationDetails();
             collectiveTitle         = object.getCollectiveTitle();
             onlineResources         = copyCollection(object.getOnlineResources(), OnlineResource.class);
             graphics                = copyCollection(object.getGraphics(), BrowseGraphic.class);
@@ -402,22 +402,32 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Returns the role, name, contact and position information for an individual or organization
      * that is responsible for the resource.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return the individual or organization that is responsible, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "citedResponsibleParty")
-    public Collection<Responsibility> getCitedResponsibleParties() {
-        return citedResponsibleParties = nonNullCollection(citedResponsibleParties, Responsibility.class);
+    public Collection<ResponsibleParty> getCitedResponsibleParties() {
+        return citedResponsibleParties = nonNullCollection(citedResponsibleParties, ResponsibleParty.class);
     }
 
     /**
      * Sets the role, name, contact and position information for an individual or organization
      * that is responsible for the resource.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new cited responsible parties, or {@code null} if none.
      */
-    public void setCitedResponsibleParties(final Collection<? extends Responsibility> newValues) {
-        citedResponsibleParties = writeCollection(newValues, citedResponsibleParties, Responsibility.class);
+    public void setCitedResponsibleParties(final Collection<? extends ResponsibleParty> newValues) {
+        citedResponsibleParties = writeCollection(newValues, citedResponsibleParties, ResponsibleParty.class);
     }
 
     /**
@@ -464,21 +474,32 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns other information required to complete the citation that is not recorded elsewhere.
      *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return other details, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "otherCitationDetails")
-    public Collection<InternationalString> getOtherCitationDetails() {
-        return otherCitationDetails = nonNullCollection(otherCitationDetails, InternationalString.class);
+    public InternationalString getOtherCitationDetails() {
+        return otherCitationDetails;
     }
 
     /**
      * Sets other information required to complete the citation that is not recorded elsewhere.
      *
-     * @param newValues Other citations details.
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @param newValue Other citations details, or {@code null} if none.
      */
-    public void setOtherCitationDetails(final Collection<? extends InternationalString> newValues) {
-        otherCitationDetails = writeCollection(newValues, otherCitationDetails, InternationalString.class);
+    public void setOtherCitationDetails(final InternationalString newValue) {
+        checkWritePermission();
+        otherCitationDetails = newValue;
     }
 
     /**

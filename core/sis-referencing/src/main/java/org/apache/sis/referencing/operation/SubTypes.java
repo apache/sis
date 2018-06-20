@@ -47,6 +47,17 @@ final class SubTypes {
     }
 
     /**
+     * Returns {@code true} if the given operation is a single operation but not a pass-through operation.
+     * In an older ISO 19111 model, {@link PassThroughOperation} extended {@link SingleOperation}, which
+     * was a problem for providing a value to the inherited {@link SingleOperation#getMethod()} method.
+     * This has been fixed in newer ISO 19111 model, but for safety with objects following the older model
+     * (e.g. GeoAPI 3.0) we are better to perform an explicit exclusion of {@link PassThroughOperation}.
+     */
+    static boolean isSingleOperation(final CoordinateOperation operation) {
+        return (operation instanceof SingleOperation) && !(operation instanceof PassThroughOperation);
+    }
+
+    /**
      * Returns a SIS implementation for the given coordinate operation.
      *
      * @see AbstractCoordinateOperation#castOrCopy(CoordinateOperation)
@@ -64,7 +75,7 @@ final class SubTypes {
         if (object instanceof ConcatenatedOperation) {
             return DefaultConcatenatedOperation.castOrCopy((ConcatenatedOperation) object);
         }
-        if (object instanceof SingleOperation) {
+        if (isSingleOperation(object)) {
             return (object instanceof AbstractSingleOperation) ? (AbstractSingleOperation) object
                    : new AbstractSingleOperation((SingleOperation) object);
         }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.simple;
 
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -32,7 +31,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
@@ -140,7 +139,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * Also the character coding standard(s) used for the dataset.
      */
     @Override
-    public Collection<Charset> getCharacterSets() {
+    public final Collection getCharacterSets() {
         return Collections.emptySet();                  // We use 'Set' because we handle 'Charset' like a CodeList.
     }
 
@@ -225,7 +224,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * Parties responsible for the metadata information.
      */
     @Override
-    public Collection<Responsibility> getContacts() {
+    public Collection<ResponsibleParty> getContacts() {
         return Collections.emptyList();
     }
 
@@ -365,8 +364,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * Information about the distributor of and options for obtaining the resource(s).
      */
     @Override
-    public Collection<Distribution> getDistributionInfo() {
-        return Collections.emptyList();
+    public Distribution getDistributionInfo() {
+        return null;
     }
 
     /**
@@ -463,7 +462,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      */
     @Override
-    public Collection<InternationalString> getCredits() {
+    public Collection<String> getCredits() {
         return Collections.emptyList();
     }
 
@@ -481,7 +480,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      */
     @Override
-    public Collection<Responsibility> getPointOfContacts() {
+    public Collection<ResponsibleParty> getPointOfContacts() {
         return Collections.emptyList();
     }
 
@@ -709,7 +708,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getCitation()}.
      */
     @Override
-    public Collection<Responsibility> getCitedResponsibleParties() {
+    public Collection<ResponsibleParty> getCitedResponsibleParties() {
         return Collections.emptyList();
     }
 
@@ -738,8 +737,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getCitation()}.
      */
     @Override
-    public Collection<InternationalString> getOtherCitationDetails() {
-        return Collections.emptyList();
+    public InternationalString getOtherCitationDetails() {
+        return null;
     }
 
     /**

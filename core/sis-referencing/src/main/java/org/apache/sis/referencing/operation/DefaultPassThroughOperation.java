@@ -22,6 +22,7 @@ import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
@@ -39,6 +40,8 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 
 /**
  * Specifies that a subset of a coordinate tuple is subject to a specific coordinate operation.
@@ -63,11 +66,11 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * The operation to apply on the subset of a coordinate tuple.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setOperation(CoordinateOperation)}</p>
+     * This field is modified only at unmarshalling time by {@code setOperation(CoordinateOperation)}</p>
      *
      * @see #getOperation()
      */
-    private CoordinateOperation operation;
+    private SingleOperation operation;
 
     /**
      * Constructs a single operation from a set of properties.
@@ -105,7 +108,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     public DefaultPassThroughOperation(final Map<String,?>            properties,
                                        final CoordinateReferenceSystem sourceCRS,
                                        final CoordinateReferenceSystem targetCRS,
-                                       final CoordinateOperation       operation,
+                                       final SingleOperation           operation,
                                        final int firstAffectedOrdinate,
                                        final int numTrailingOrdinates)
     {
@@ -165,7 +168,35 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     }
 
     /**
+     * @deprecated May be removed in GeoAPI 4.0 since it does not apply to pass-through operations.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    @Deprecated
+    public OperationMethod getMethod() {
+        return null;
+    }
+
+    /**
+     * @deprecated May be removed in GeoAPI 4.0 since it does not apply to pass-through operations.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    @Deprecated
+    public ParameterValueGroup getParameterValues() {
+        return null;
+    }
+
+    /**
      * Returns the operation to apply on the subset of a coordinate tuple.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the type from
+     * {@code SingleOperation} to {@link CoordinateOperation}. This change may be applied in GeoAPI 4.0.
+     * This is necessary for supporting usage of {@code PassThroughOperation} with {@code ConcatenatedOperation}.
+     * </div>
      *
      * @return the operation to apply on the subset of a coordinate tuple.
      *
@@ -173,7 +204,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      */
     @Override
     @XmlElement(name = "coordOperation", required = true)
-    public CoordinateOperation getOperation() {
+    public SingleOperation getOperation() {
         return operation;
     }
 
@@ -309,7 +340,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *
      * @see #getOperation()
      */
-    private void setOperation(final CoordinateOperation op) {
+    private void setOperation(final SingleOperation op) {
         if (operation == null) {
             operation = op;
         } else {

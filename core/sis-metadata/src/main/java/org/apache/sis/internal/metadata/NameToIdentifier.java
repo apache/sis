@@ -24,6 +24,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.CharSequences;
@@ -45,7 +46,7 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * @since   0.4
  * @module
  */
-public final class NameToIdentifier implements Identifier {
+public final class NameToIdentifier implements ReferenceIdentifier {
     /**
      * The name from which to infer the identifier attributes.
      */

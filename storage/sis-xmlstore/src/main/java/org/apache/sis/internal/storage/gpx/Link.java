@@ -26,9 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -134,7 +132,7 @@ public final class Link implements OnlineResource {
      */
     private Link(final OnlineResource r, final Locale locale) {
         uri  = r.getLinkage();
-        text = Types.toString(r.getName(), locale);
+        text = r.getName();
     }
 
     /**
@@ -185,8 +183,8 @@ public final class Link implements OnlineResource {
      * @return name of the online resource.
      */
     @Override
-    public InternationalString getName() {
-        return (text != null) ? new SimpleInternationalString(text) : null;
+    public String getName() {
+        return text;
     }
 
     /**

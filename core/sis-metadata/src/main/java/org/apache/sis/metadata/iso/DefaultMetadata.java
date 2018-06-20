@@ -42,7 +42,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Distribution;
@@ -188,7 +188,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4935599812744534502L;
+    private static final long serialVersionUID = 7337533776231004504L;
 
     /**
      * Unique identifier for this metadata record, or {@code null} if none.
@@ -218,7 +218,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Parties responsible for the metadata information.
      */
-    private Collection<Responsibility> contacts;
+    private Collection<ResponsibleParty> contacts;
 
     /**
      * Date(s) associated with the metadata.
@@ -274,7 +274,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Provides information about the distributor of and options for obtaining the resource(s).
      */
-    private Collection<Distribution> distributionInfo;
+    private Distribution distributionInfo;
 
     /**
      * Provides overall assessment of quality of a resource(s).
@@ -324,11 +324,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param dateStamp           date that the metadata was created.
      * @param identificationInfo  basic information about the resource to which the metadata applies.
      */
-    public DefaultMetadata(final Responsibility contact,
+    public DefaultMetadata(final ResponsibleParty contact,
                            final Date           dateStamp,
                            final Identification identificationInfo)
     {
-        this.contacts  = singleton(contact, Responsibility.class);
+        this.contacts  = singleton(contact, ResponsibleParty.class);
         this.identificationInfo = singleton(identificationInfo, Identification.class);
         if (dateStamp != null) {
             dateInfo = singleton(new DefaultCitationDate(dateStamp, DateType.CREATION), CitationDate.class);
@@ -352,7 +352,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             languages                     = copyCollection(object.getLanguages(),                     Locale.class);
             characterSets                 = copyCollection(object.getCharacterSets(),                 Charset.class);
             metadataScopes                = copyCollection(object.getMetadataScopes(),                MetadataScope.class);
-            contacts                      = copyCollection(object.getContacts(),                      Responsibility.class);
+            contacts                      = copyCollection(object.getContacts(),                      ResponsibleParty.class);
             dateInfo                      = copyCollection(object.getDateInfo(),                      CitationDate.class);
             metadataStandards             = copyCollection(object.getMetadataStandards(),             Citation.class);
             metadataProfiles              = copyCollection(object.getMetadataProfiles(),              Citation.class);
@@ -363,7 +363,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             metadataExtensionInfo         = copyCollection(object.getMetadataExtensionInfo(),         MetadataExtensionInformation.class);
             identificationInfo            = copyCollection(object.getIdentificationInfo(),            Identification.class);
             contentInfo                   = copyCollection(object.getContentInfo(),                   ContentInformation.class);
-            distributionInfo              = copyCollection(object.getDistributionInfo(),              Distribution.class);
+            distributionInfo              = object.getDistributionInfo();
             dataQualityInfo               = copyCollection(object.getDataQualityInfo(),               DataQuality.class);
             portrayalCatalogueInfo        = copyCollection(object.getPortrayalCatalogueInfo(),        PortrayalCatalogueReference.class);
             metadataConstraints           = copyCollection(object.getMetadataConstraints(),           Constraints.class);
@@ -865,12 +865,17 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the parties responsible for the metadata information.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return parties responsible for the metadata information.
      */
     @Override
     @XmlElement(name = "contact", required = true)
-    public Collection<Responsibility> getContacts() {
-        return contacts = nonNullCollection(contacts, Responsibility.class);
+    public Collection<ResponsibleParty> getContacts() {
+        return contacts = nonNullCollection(contacts, ResponsibleParty.class);
     }
 
     /**
@@ -878,9 +883,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new contacts.
      */
-    public void setContacts(final Collection<? extends Responsibility> newValues) {
+    public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
         checkWritePermission();
-        contacts = writeCollection(newValues, contacts, Responsibility.class);
+        contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
 
     /**
@@ -1363,21 +1368,32 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the distributor of and options for obtaining the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change will tentatively be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return the distributor of and options for obtaining the resource(s).
      */
     @Override
     @XmlElement(name = "distributionInfo")
-    public Collection<Distribution> getDistributionInfo() {
-        return distributionInfo = nonNullCollection(distributionInfo, Distribution.class);
+    public Distribution getDistributionInfo() {
+        return distributionInfo;
     }
 
     /**
      * Sets information about the distributor of and options for obtaining the resource(s).
      *
-     * @param  newValues  the new distribution info.
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change will tentatively be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @param  newValue  the new distribution info.
      */
-    public void setDistributionInfo(final Collection<? extends Distribution> newValues) {
-        distributionInfo = writeCollection(newValues, distributionInfo, Distribution.class);
+    public void setDistributionInfo(final Distribution newValue) {
+        checkWritePermission();
+        distributionInfo = newValue;
     }
 
     /**

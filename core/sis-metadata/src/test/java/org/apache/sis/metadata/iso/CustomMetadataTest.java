@@ -23,13 +23,12 @@ import java.util.Locale;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
-import java.nio.charset.Charset;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
@@ -123,12 +122,12 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
             @Override public Collection<Resolution>                getSpatialResolutions()         {return null;}
             @Override public Collection<Duration>                  getTemporalResolutions()        {return null;}
             @Override public Collection<Locale>                    getLanguages()                  {return null;}
-            @Override public Collection<Charset>                   getCharacterSets()              {return null;}
+            @Override public Collection<CharacterSet>              getCharacterSets()              {return null;}
             @Override public Collection<TopicCategory>             getTopicCategories()            {return null;}
             @Override public Collection<Extent>                    getExtents()                    {return null;}
-            @Override public Collection<InternationalString>       getCredits()                    {return null;}
+            @Override public Collection<String>                    getCredits()                    {return null;}
             @Override public Collection<Progress>                  getStatus()                     {return null;}
-            @Override public Collection<Responsibility>            getPointOfContacts()            {return null;}
+            @Override public Collection<ResponsibleParty>          getPointOfContacts()            {return null;}
             @Override public Collection<MaintenanceInformation>    getResourceMaintenances()       {return null;}
             @Override public Collection<BrowseGraphic>             getGraphicOverviews()           {return null;}
             @Override public Collection<Format>                    getResourceFormats()            {return null;}

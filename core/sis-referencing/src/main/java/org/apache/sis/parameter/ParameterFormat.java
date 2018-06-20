@@ -40,6 +40,7 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
 
 import org.apache.sis.measure.Range;
@@ -836,7 +837,7 @@ public class ParameterFormat extends TabularFormat<Object> {
              * Put the first identifier in the first column. If no identifier has a codespace in the list
              * supplied by the user, then we will use the first identifier (any codespace) as a fallback.
              */
-            final Set<Identifier> identifiers = object.getIdentifiers();
+            final Set<ReferenceIdentifier> identifiers = object.getIdentifiers();
             if (identifiers != null) {                                              // Paranoiac check.
                 Identifier identifier = null;
                 for (final Identifier candidate : identifiers) {

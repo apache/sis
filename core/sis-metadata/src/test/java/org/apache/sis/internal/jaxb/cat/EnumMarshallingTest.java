@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.cat;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Collection;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.identification.TopicCategory;
@@ -72,7 +71,6 @@ public final strictfp class EnumMarshallingTest extends XMLTestCase {
          * Unmarshall the above XML and verify that we find all the topic categories.
          */
         final Collection<TopicCategory> unmarshalled = unmarshal(DefaultDataIdentification.class, expected).getTopicCategories();
-        assertInstanceOf("topicCategory", EnumSet.class, unmarshalled);
         assertSetEquals(topics, unmarshalled);
     }
 }

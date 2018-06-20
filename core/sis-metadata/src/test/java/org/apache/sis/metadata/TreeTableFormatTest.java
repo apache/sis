@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
@@ -91,10 +91,9 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   │   └─Alternate title…………………………… ISBN\n" +
             "  │   └─Code space…………………………………………………… ISBN\n"+
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Role…………………………………………………………………… Author\n" +
-            "  │   └─Individual…………………………………………………… Testsuya Toyoda\n" +
+            "  │   ├─Individual…………………………………………………… Testsuya Toyoda\n" +
+            "  │   └─Role…………………………………………………………………… Author\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Role…………………………………………………………………… Editor\n" +
             "  │   ├─Extent……………………………………………………………… World\n" +
             "  │   │   └─Geographic element\n" +
             "  │   │       ├─West bound longitude…… 180°W\n" +
@@ -102,7 +101,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   │       ├─South bound latitude…… 90°S\n" +
             "  │   │       ├─North bound latitude…… 90°N\n" +
             "  │   │       └─Extent type code……………… true\n" +
-            "  │   └─Organisation……………………………………………… Kōdansha\n" +
+            "  │   ├─Organisation……………………………………………… Kōdansha\n" +
+            "  │   └─Role…………………………………………………………………… Editor\n" +
             "  ├─Presentation form (1 of 2)…………………… Document digital\n" +
             "  ├─Presentation form (2 of 2)…………………… Document hardcopy\n" +
             "  └─ISBN……………………………………………………………………………… 9782505004509\n", text);
@@ -118,7 +118,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultCitation untitled = new DefaultCitation();
         titled  .setPresentationForms(singleton(PresentationForm.DOCUMENT_HARDCOPY));
         coded   .setPresentationForms(singleton(PresentationForm.IMAGE_HARDCOPY));
-        untitled.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.AUTHOR, null, null)));
+        untitled.setCitedResponsibleParties(singleton(new DefaultResponsibleParty(Role.AUTHOR)));
         final DefaultProcessing processing = new DefaultProcessing();
         processing.setDocumentations(asList(titled, coded, untitled));
         final String text = format.format(processing.asTreeTable());

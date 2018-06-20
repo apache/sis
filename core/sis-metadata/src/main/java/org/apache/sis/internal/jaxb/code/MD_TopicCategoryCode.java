@@ -18,7 +18,8 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
-import org.apache.sis.internal.jaxb.cat.EnumAdapter;
+import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -34,13 +35,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode, TopicCategory> {
-    /**
-     * The enumeration value.
-     */
-    @XmlElement(name = "MD_TopicCategoryCode", namespace = Namespaces.MRI)
-    private String value;
-
+public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategoryCode, TopicCategory> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -48,29 +43,57 @@ public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode
     }
 
     /**
-     * Returns the wrapped value.
-     *
-     * @param  wrapper  the wrapper.
-     * @return the wrapped value.
+     * Creates a new adapter for the given proxy.
      */
-    @Override
-    public final TopicCategory unmarshal(final MD_TopicCategoryCode wrapper) {
-        return TopicCategory.valueOf(name(wrapper.value));
+    private MD_TopicCategoryCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
-     * Wraps the given value.
+     * {@inheritDoc}
      *
-     * @param  e  the value to wrap.
-     * @return the wrapped value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    public final MD_TopicCategoryCode marshal(final TopicCategory e) {
-        if (e == null) {
-            return null;
-        }
-        final MD_TopicCategoryCode wrapper = new MD_TopicCategoryCode();
-        wrapper.value = value(e);
-        return wrapper;
+    protected MD_TopicCategoryCode wrap(final CodeListUID value) {
+        return new MD_TopicCategoryCode(value);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return the code list class.
+     */
+    @Override
+    protected Class<TopicCategory> getCodeListClass() {
+        return TopicCategory.class;
+    }
+
+    /**
+     * Returns {@code true} since this code list is actually an enum.
+     */
+    @Override
+    protected boolean isEnum() {
+        return true;
+    }
+
+    /**
+     * Invoked by JAXB on marshalling.
+     *
+     * @return The value to be marshalled.
+     */
+    @Override
+    @XmlElement(name = "MD_TopicCategoryCode", namespace = Namespaces.MRI)
+    public CodeListUID getElement() {
+        return identifier;
+    }
+
+    /**
+     * Invoked by JAXB on unmarshalling.
+     *
+     * @param value The unmarshalled value.
+     */
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

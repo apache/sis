@@ -68,6 +68,9 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  * Base class for objects identified by a name or a code. Those objects are typically
@@ -110,7 +113,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * </ul>
  *
  * <div class="section">Immutability and thread safety</div>
- * This base class is immutable if the {@link Citation}, {@link Identifier}, {@link GenericName} and
+ * This base class is immutable if the {@link Citation}, {@link ReferenceIdentifier}, {@link GenericName} and
  * {@link InternationalString} instances given to the constructor are also immutable. Most SIS subclasses and
  * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,
  * {@code IdentifiedObject} instances created using only SIS factories and static constants can be shared by many
@@ -171,12 +174,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name for this object or code. Shall never be {@code null}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link Names#add(Identifier)}.</p>
+     * This field is modified only at unmarshalling time by {@code Names.add(Identifier)}.</p>
      *
      * @see #getName()
      * @see #getNames()
      */
-    private Identifier name;
+    private ReferenceIdentifier name;
 
     /**
      * An alternative name by which this object is identified, or {@code null} if none.
@@ -184,7 +187,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * we may get both on unmarshalling.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link Names#add(Identifier)}.</p>
+     * This field is modified only at unmarshalling time by {@code Names.add(Identifier)}.</p>
      */
     private Collection<GenericName> alias;
 
@@ -198,7 +201,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getIdentifiers()
      * @see #getIdentifier()
      */
-    private Set<Identifier> identifiers;
+    private Set<ReferenceIdentifier> identifiers;
 
     /**
      * Comments on or information about this object, or {@code null} if none.
@@ -233,7 +236,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Other properties listed in the table below are optional.
      * In particular, {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"}
      * are convenience properties for building a name, and are ignored if the {@code "name"} property
-     * is already a {@link Identifier} object instead than a {@link String}.
+     * is already a {@link ReferenceIdentifier} object instead than a {@link String}.
      *
      * <table class="sis">
      *   <caption>Recognized properties (non exhaustive list)</caption>
@@ -244,7 +247,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link Identifier} or {@link String}</td>
+     *     <td>{@link ReferenceIdentifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
      *   </tr>
      *   <tr>
@@ -258,12 +261,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@link NamedIdentifier#getCode()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceIdentifier#CODESPACE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getCodeSpace()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceIdentifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain #getName() name}</td>
      *   </tr>
@@ -279,7 +282,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link Identifier} (optionally as array)</td>
+     *     <td>{@link ReferenceIdentifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -330,8 +333,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                         .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
             }
             name = new NamedIdentifier(PropertiesConverter.convert(properties));
-        } else if (value instanceof Identifier) {
-            name = (Identifier) value;
+        } else if (value instanceof ReferenceIdentifier) {
+            name = (ReferenceIdentifier) value;
         } else {
             throw illegalPropertyType(properties, NAME_KEY, value);
         }
@@ -360,10 +363,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         value = properties.get(IDENTIFIERS_KEY);
         if (value == null) {
             identifiers = null;
-        } else if (value instanceof Identifier) {
-            identifiers = Collections.singleton((Identifier) value);
-        } else if (value instanceof Identifier[]) {
-            identifiers = immutableSet(true, (Identifier[]) value);
+        } else if (value instanceof ReferenceIdentifier) {
+            identifiers = Collections.singleton((ReferenceIdentifier) value);
+        } else if (value instanceof ReferenceIdentifier[]) {
+            identifiers = immutableSet(true, (ReferenceIdentifier[]) value);
         } else {
             throw illegalPropertyType(properties, IDENTIFIERS_KEY, value);
         }
@@ -481,7 +484,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
     @Override
-    public Identifier getName() {
+    public ReferenceIdentifier getName() {
         return name;
     }
 
@@ -506,7 +509,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see IdentifiedObjects#getIdentifier(IdentifiedObject, Citation)
      */
     @Override
-    public Set<Identifier> getIdentifiers() {
+    public Set<ReferenceIdentifier> getIdentifiers() {
         return nonNull(identifiers);    // Needs to be null-safe because we may have a null value on unmarshalling.
     }
 
@@ -967,7 +970,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private void setIdentifier(final Code identifier) {
         if (identifiers == null) {
             if (identifier != null) {
-                final Identifier id = identifier.getIdentifier();
+                final ReferenceIdentifier id = identifier.getIdentifier();
                 if (id != null) {
                     identifiers = Collections.singleton(id);
                 }
@@ -995,7 +998,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a>
      */
     @XmlElement(name = "name", required = true)
-    final Collection<Identifier> getNames() {
+    final Collection<ReferenceIdentifier> getNames() {
         return new Names();
     }
 
@@ -1012,7 +1015,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * subclasses, this is too late. For example {@code DefaultOperationMethod} may need to know the operation name
      * before to parse the parameters.
      */
-    private final class Names extends AbstractCollection<Identifier> {
+    private final class Names extends AbstractCollection<ReferenceIdentifier> {
         /**
          * Invoked by JAXB before to write in the collection at unmarshalling time.
          * Do nothing since our object is already empty.
@@ -1033,7 +1036,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          * Returns an iterator over the name and aliases that are instance of {@link Identifier}.
          */
         @Override
-        public Iterator<Identifier> iterator() {
+        public Iterator<ReferenceIdentifier> iterator() {
             return new NameIterator(AbstractIdentifiedObject.this);
         }
 
@@ -1047,7 +1050,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
          */
         @Override
-        public boolean add(final Identifier id) {
+        public boolean add(final ReferenceIdentifier id) {
             if (NameIterator.isUnnamed(name)) {
                 name = id;
             } else {

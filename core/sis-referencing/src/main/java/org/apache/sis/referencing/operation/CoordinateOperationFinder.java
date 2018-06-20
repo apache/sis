@@ -972,7 +972,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                  * it is not, try to copy it in such object.
                  */
                 final SingleOperation op;
-                if (subOperation instanceof SingleOperation) {
+                if (SubTypes.isSingleOperation(subOperation)) {
                     op = (SingleOperation) subOperation;
                 } else {
                     op = factorySIS.createSingleOperation(properties,
@@ -1073,7 +1073,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (isAxisChange1 && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
             if (isAxisChange2 && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
         }
-        if (main instanceof SingleOperation) {
+        if (SubTypes.isSingleOperation(main)) {
             final SingleOperation op = (SingleOperation) main;
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
             main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),

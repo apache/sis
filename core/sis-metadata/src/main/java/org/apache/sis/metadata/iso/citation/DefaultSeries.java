@@ -54,7 +54,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1584743260325409070L;
+    private static final long serialVersionUID = 7061644572814855051L;
 
     /**
      * Name of the series, or aggregate dataset, of which the dataset is a part.
@@ -64,12 +64,12 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Information identifying the issue of the series.
      */
-    private InternationalString issueIdentification;
+    private String issueIdentification;
 
     /**
      * Details on which pages of the publication the article was published.
      */
-    private InternationalString page;
+    private String page;
 
     /**
      * Constructs a default series.
@@ -153,20 +153,30 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Returns information identifying the issue of the series.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return information identifying the issue of the series, or {@code null}.
      */
     @Override
     @XmlElement(name = "issueIdentification")
-    public InternationalString getIssueIdentification() {
+    public String getIssueIdentification() {
         return issueIdentification;
     }
 
     /**
      * Sets information identifying the issue of the series.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new issue identification, or {@code null} if none.
      */
-    public void setIssueIdentification(final InternationalString newValue) {
+    public void setIssueIdentification(final String newValue) {
         checkWritePermission();
         issueIdentification = newValue;
     }
@@ -174,20 +184,30 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Returns details on which pages of the publication the article was published.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return details on which pages of the publication the article was published, or {@code null}.
      */
     @Override
     @XmlElement(name = "page")
-    public InternationalString getPage() {
+    public String getPage() {
         return page;
     }
 
     /**
      * Sets details on which pages of the publication the article was published.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValue  the new page, or {@code null} if none.
      */
-    public void setPage(final InternationalString newValue) {
+    public void setPage(final String newValue) {
         checkWritePermission();
         page = newValue;
     }

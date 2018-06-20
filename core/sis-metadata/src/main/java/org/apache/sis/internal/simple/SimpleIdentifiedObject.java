@@ -27,6 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.LenientComparable;
@@ -56,7 +57,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     /**
      * The primary name by which this object is identified.
      */
-    protected Identifier name;
+    protected ReferenceIdentifier name;
 
     /**
      * Creates an identified object without identifier.
@@ -79,7 +80,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      *
      * @param  name  the primary name by which this object is identified.
      */
-    public SimpleIdentifiedObject(final Identifier name) {
+    public SimpleIdentifiedObject(final ReferenceIdentifier name) {
         this.name = name;
     }
 
@@ -89,7 +90,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @return the identifier given at construction time.
      */
     @Override
-    public Identifier getName() {
+    public ReferenceIdentifier getName() {
         return name;
     }
 
@@ -103,7 +104,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @return the identifiers, or an empty set if none.
      */
     @Override
-    public final Set<Identifier> getIdentifiers() {
+    public final Set<ReferenceIdentifier> getIdentifiers() {
         return Collections.emptySet();
     }
 

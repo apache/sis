@@ -32,6 +32,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -94,7 +95,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @since 0.4
  * @module
  */
-public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
+public class NamedIdentifier extends ImmutableIdentifier implements GenericName, ReferenceIdentifier {
     /**
      * Serial number for inter-operability with different versions.
      */

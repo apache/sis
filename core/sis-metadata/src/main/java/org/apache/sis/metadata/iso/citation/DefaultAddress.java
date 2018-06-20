@@ -83,7 +83,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Address line for the location (as described in ISO 11180, Annex A).
      */
-    private Collection<InternationalString> deliveryPoints;
+    private Collection<String> deliveryPoints;
 
     /**
      * Address of the electronic mailbox of the responsible organization or individual.
@@ -108,7 +108,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     public DefaultAddress(final Address object) {
         super(object);
         if (object != null) {
-            deliveryPoints          = copyCollection(object.getDeliveryPoints(), InternationalString.class);
+            deliveryPoints          = copyCollection(object.getDeliveryPoints(), String.class);
             city                    = object.getCity();
             administrativeArea      = object.getAdministrativeArea();
             postalCode              = object.getPostalCode();
@@ -208,21 +208,31 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Returns the address line for the location (as described in ISO 11180, Annex A).
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The return type may be changed from {@code Collection<String>} to
+     * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
+     * </div>
+     *
      * @return address line for the location.
      */
     @Override
     @XmlElement(name = "deliveryPoint")
-    public Collection<InternationalString> getDeliveryPoints() {
-        return deliveryPoints = nonNullCollection(deliveryPoints, InternationalString.class);
+    public Collection<String> getDeliveryPoints() {
+        return deliveryPoints = nonNullCollection(deliveryPoints, String.class);
     }
 
     /**
      * Sets the address line for the location (as described in ISO 11180, Annex A).
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The argument type may be changed from {@code Collection<String>} to
+     * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new delivery points, or {@code null} if none.
      */
-    public void setDeliveryPoints(final Collection<? extends InternationalString> newValues) {
-        deliveryPoints = writeCollection(newValues, deliveryPoints, InternationalString.class);
+    public void setDeliveryPoints(final Collection<? extends String> newValues) {
+        deliveryPoints = writeCollection(newValues, deliveryPoints, String.class);
     }
 
     /**

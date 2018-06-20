@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
+import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
@@ -35,6 +37,7 @@ import org.apache.sis.util.iso.Types;
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**
@@ -61,7 +64,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @since   0.8
  * @module
  */
-public final class Person implements Responsibility, Party, Contact, Address {
+public final class Person implements ResponsibleParty, Party, Contact, Address {
     /**
      * Name of person or organization.
      *
@@ -186,6 +189,37 @@ public final class Person implements Responsibility, Party, Contact, Address {
     }
 
     /**
+     * ISO 19115 metadata property not specified by GPX. Actually could be the {@link #name},
+     * but we have no way to know if the author is an individual or an organization.
+     *
+     * @return name of the organization, or {@code null} if none.
+     */
+    @Override
+    public InternationalString getOrganisationName() {
+        return null;
+    }
+
+    /**
+     * ISO 19115 metadata property not specified by GPX.
+     *
+     * @return position of the individual in the organization, or {@code null} if none.
+     */
+    @Override
+    public InternationalString getPositionName() {
+        return null;
+    }
+
+    /**
+     * ISO 19115 metadata property determined by the {@link #name} field.
+     *
+     * @return name of the party, or {@code null} if none.
+     */
+    @Override
+    public String getIndividualName() {
+        return name;
+    }
+
+    /**
      * ISO 19115 metadata property determined by the {@link #email} and {@link #link} fields.
      * Invoking this method is one of the steps in the path from the {@code Responsibility} root
      * to the {@link #getElectronicMailAddresses()} and {@link #getOnlineResources()} methods.
@@ -196,8 +230,28 @@ public final class Person implements Responsibility, Party, Contact, Address {
      * @see #getOnlineResources()
      */
     @Override
-    public Collection<? extends Contact> getContactInfo() {
-        return thisOrEmpty(email != null || link != null);
+    public Proxy getContactInfo() {        // Both Contact singleton and Collection<Contact>.
+        return new Proxy();
+    }
+
+    private final class Proxy extends AbstractSet<Contact> implements Contact {
+        @Override public int size() {
+            return (email != null || link != null) ? 1 : 0;
+        }
+
+        @Override public Iterator<Contact> iterator() {
+            return Collections.<Contact>singleton(Person.this).iterator();
+        }
+
+        @Override public Collection<Telephone>         getPhones()              {return Person.this.getPhones();}
+        @Override public Telephone                     getPhone()               {return Person.this.getPhone();}
+        @Override public Collection<? extends Address> getAddresses()           {return Person.this.getAddresses();}
+        @Override public Address                       getAddress()             {return Person.this.getAddress();}
+        @Override public Collection<OnlineResource>    getOnlineResources()     {return Person.this.getOnlineResources();}
+        @Override public OnlineResource                getOnlineResource()      {return Person.this.getOnlineResource();}
+        @Override public InternationalString           getHoursOfService()      {return Person.this.getHoursOfService();}
+        @Override public InternationalString           getContactInstructions() {return Person.this.getContactInstructions();}
+        @Override public InternationalString           getContactType()         {return Person.this.getContactType();}
     }
 
 
@@ -273,8 +327,8 @@ public final class Person implements Responsibility, Party, Contact, Address {
      * @return time period when individuals can contact the organization or individual.
      */
     @Override
-    public Collection<InternationalString> getHoursOfService() {
-        return Collections.emptyList();
+    public InternationalString getHoursOfService() {
+        return null;
     }
 
     /**
@@ -309,7 +363,7 @@ public final class Person implements Responsibility, Party, Contact, Address {
      * @return address line for the location.
      */
     @Override
-    public Collection<InternationalString> getDeliveryPoints() {
+    public Collection<String> getDeliveryPoints() {
         return Collections.emptyList();
     }
 

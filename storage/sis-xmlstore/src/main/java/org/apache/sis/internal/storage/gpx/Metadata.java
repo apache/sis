@@ -52,6 +52,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Responsibility;
 
 
@@ -319,10 +320,10 @@ public final class Metadata extends SimpleMetadata {
      * @return means of communication with person(s) and organisations(s) associated with the resource.
      */
     @Override
-    public Collection<Responsibility> getPointOfContacts() {
+    public Collection<ResponsibleParty> getPointOfContacts() {
         if (creator != null) {
             final Person p = new Person(creator);
-            return (author != null) ? UnmodifiableArrayList.wrap(new Responsibility[] {p, author})
+            return (author != null) ? UnmodifiableArrayList.wrap(new ResponsibleParty[] {p, author})
                                     : Collections.singletonList(author);
         }
         return (author != null) ? Collections.singletonList(author) : super.getPointOfContacts();

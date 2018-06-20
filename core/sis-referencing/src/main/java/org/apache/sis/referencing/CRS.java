@@ -556,12 +556,12 @@ public final class CRS extends Static {
              */
             if (maxInsideArea < roiArea) {
                 if (tryDerivedCRS) break;                                               // Do not try twice.
-                final SingleCRS[] derivedCRS = new SingleCRS[sourceCRS.length];
+                final CoordinateReferenceSystem[] derivedCRS = new CoordinateReferenceSystem[sourceCRS.length];
                 for (int i=0; i < derivedCRS.length; i++) {
                     GeographicBoundingBox bbox = null;
                     final CoordinateReferenceSystem crs = sourceCRS[i];
                     if (crs instanceof GeneralDerivedCRS) {
-                        final SingleCRS baseCRS = ((GeneralDerivedCRS) crs).getBaseCRS();
+                        final CoordinateReferenceSystem baseCRS = ((GeneralDerivedCRS) crs).getBaseCRS();
                         bbox = getGeographicBoundingBox(baseCRS);
                         if (bbox == null && bestCRS == null && baseCRS instanceof GeodeticCRS) {
                             bestCRS = baseCRS;      // Fallback to be used if we don't find anything better.

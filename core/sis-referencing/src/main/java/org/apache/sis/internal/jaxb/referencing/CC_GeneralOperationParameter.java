@@ -27,6 +27,7 @@ import java.lang.reflect.Array;
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -261,7 +262,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         final Map<String,Object> merged = new HashMap<>(expected);
         merged.putAll(actual);  // May overwrite pre-defined properties.
         mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(),       merged, complete.getName());
-        mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, Identifier.class,  provided.getIdentifiers(), merged, null);
+        mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, ReferenceIdentifier.class, provided.getIdentifiers(), merged, null);
         if (isGroup) {
             final List<GeneralParameterDescriptor> descriptors = ((ParameterDescriptorGroup) provided).descriptors();
             return merge(DefaultParameterValueGroup.class, merged, merged, minimumOccurs, maximumOccurs,

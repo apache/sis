@@ -44,8 +44,9 @@ public final strictfp class DefaultResponsibilityTest extends XMLTestCase {
     @Test
     public void testLegacyMarshalling() throws JAXBException {
         final DefaultIndividual  party = new DefaultIndividual("An author", null, null);
-        final DefaultResponsibility  r = new DefaultResponsibility(Role.AUTHOR, null, party);
+        final DefaultResponsibleParty r = new DefaultResponsibleParty(Role.AUTHOR);
         final DefaultCitation citation = new DefaultCitation();
+        r.setParties(singleton(party));
         citation.setCitedResponsibleParties(singleton(r));
         final String xml = marshal(citation, VERSION_2007);
         assertXmlEquals("<gmd:CI_Citation xmlns:gco=\"" + LegacyNamespaces.GCO + '"' +

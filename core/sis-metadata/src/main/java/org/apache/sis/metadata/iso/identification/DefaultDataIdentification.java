@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.internal.metadata.OtherLocales;
@@ -93,7 +94,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 6104637930243499851L;
+    private static final long serialVersionUID = 6104637930243499850L;
 
     /**
      * Language(s) used within the dataset.
@@ -103,7 +104,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Full name of the character coding standard used for the dataset.
      */
-    private Collection<Charset> characterSets;
+    private Collection<CharacterSet> characterSets;
 
     /**
      * Description of the dataset in the producers processing environment, including items
@@ -153,7 +154,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
         super(object);
         if (object != null) {
             languages                  = copyCollection(object.getLanguages(), Locale.class);
-            characterSets              = copyCollection(object.getCharacterSets(), Charset.class);
+            characterSets              = copyCollection(object.getCharacterSets(), CharacterSet.class);
             environmentDescription     = object.getEnvironmentDescription();
             supplementalInformation    = object.getSupplementalInformation();
         }
@@ -214,21 +215,29 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Returns the character coding standard used for the dataset.
      *
+     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
+     * The element type may change to the {@link Charset} class in GeoAPI 4.0.
+     * </div>
+     *
      * @return character coding standard(s) used.
      */
     @Override
     @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
-    public Collection<Charset> getCharacterSets() {
-        return characterSets = nonNullCollection(characterSets, Charset.class);
+    public Collection<CharacterSet> getCharacterSets() {
+        return characterSets = nonNullCollection(characterSets, CharacterSet.class);
     }
 
     /**
      * Sets the character coding standard used for the dataset.
      *
+     * <div class="warning"><b>Upcoming API change — JDK integration</b><br>
+     * The element type may change to the {@link Charset} class in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new character sets.
      */
-    public void setCharacterSets(final Collection<? extends Charset> newValues) {
-        characterSets = writeCollection(newValues, characterSets, Charset.class);
+    public void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
+        characterSets = writeCollection(newValues, characterSets, CharacterSet.class);
     }
 
     /**

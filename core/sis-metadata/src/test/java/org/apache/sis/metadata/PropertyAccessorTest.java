@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
-import java.nio.charset.Charset;
 
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -32,7 +31,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.content.AttributeGroup;
@@ -43,6 +42,7 @@ import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -177,10 +177,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Citation.class, "getEdition",                 "edition",                 "edition",               "Edition",                    InternationalString.class,
             Citation.class, "getEditionDate",             "editionDate",             "editionDate",           "Edition date",               Date.class,
             Citation.class, "getIdentifiers",             "identifiers",             "identifier",            "Identifiers",                Identifier[].class,
-            Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  Responsibility[].class,
+            Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  ResponsibleParty[].class,
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,
             Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class,
-            Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString[].class,
+            Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
 //          Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,   -- deprecated as of ISO 19115:2014
             Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
             Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
@@ -205,9 +205,9 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
             Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
             Identification.class, "getPurpose",                    "purpose",                    "purpose",                   "Purpose",                      InternationalString.class,
-            Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      InternationalString[].class,
+            Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      String[].class,
             Identification.class, "getStatus",                     "status",                     "status",                    "Status",                       Progress[].class,
-            Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            Responsibility[].class,
+            Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            ResponsibleParty[].class,
             Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
             Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
             Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         Duration[].class,
@@ -223,7 +223,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
             Identification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         AssociatedResource[].class,
         DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
-        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               Charset[].class,
+        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               CharacterSet[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
         DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class);
     }
@@ -242,10 +242,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
-            IdentifiedObject.class, "getName",             "name",             "name",             "Name",               Identifier.class,
+            IdentifiedObject.class, "getName",             "name",             "name",             "Name",               ReferenceIdentifier.class,
             IdentifiedObject.class, "getAlias",            "alias",            "alias",            "Alias",              GenericName[].class,
             ReferenceSystem.class,  "getDomainOfValidity", "domainOfValidity", "domainOfValidity", "Domain of validity", Extent.class,
-            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        Identifier[].class,
+            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        ReferenceIdentifier[].class,
             IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",            InternationalString.class,
             ReferenceSystem.class,  "getScope",            "scope",            "SC_CRS.scope",     "Scope",              InternationalString.class);
     }

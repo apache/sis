@@ -97,7 +97,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Time period (including time zone) when individuals can contact the organization or individual.
      */
-    private Collection<InternationalString> hoursOfService;
+    private InternationalString hoursOfService;
 
     /**
      * Supplemental instructions on how or when to contact the individual or organization.
@@ -140,7 +140,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             phones              = copyCollection(object.getPhones(), Telephone.class);
             addresses           = copyCollection(object.getAddresses(), Address.class);
             onlineResources     = copyCollection(object.getOnlineResources(), OnlineResource.class);
-            hoursOfService      = copyCollection(object.getHoursOfService(), InternationalString.class);
+            hoursOfService      = object.getHoursOfService();
             contactInstructions = object.getContactInstructions();
             contactType         = object.getContactType();
         }
@@ -400,21 +400,32 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns the time period (including time zone) when individuals can contact the organization or individual.
      *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change will tentatively be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return time period when individuals can contact the organization or individual.
      */
     @Override
     @XmlElement(name = "hoursOfService")
-    public Collection<InternationalString> getHoursOfService() {
-        return hoursOfService = nonNullCollection(hoursOfService, InternationalString.class);
+    public InternationalString getHoursOfService() {
+        return hoursOfService;
     }
 
     /**
      * Sets time period (including time zone) when individuals can contact the organization or individual.
      *
-     * @param  newValues  the new hours of service.
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change will tentatively be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @param  newValue  the new hours of service.
      */
-    public void setHoursOfService(final Collection<? extends InternationalString> newValues) {
-        hoursOfService = writeCollection(newValues, hoursOfService, InternationalString.class);
+    public void setHoursOfService(final InternationalString newValue) {
+        checkWritePermission();
+        hoursOfService = newValue;
     }
 
     /**

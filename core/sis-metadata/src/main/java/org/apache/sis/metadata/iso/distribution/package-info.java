@@ -97,6 +97,7 @@
     @XmlJavaTypeAdapter(MD_Medium.class),
     @XmlJavaTypeAdapter(MD_MediumFormatCode.class),
     @XmlJavaTypeAdapter(MD_MediumNameCode.class),
+    @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
 
     // Java types, primitive types and basic OGC types handling

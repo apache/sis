@@ -26,7 +26,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
@@ -89,10 +89,10 @@ public class SimpleCitation implements Citation, Serializable {
     @Override public InternationalString                        getEdition()                 {return null;}
     @Override public Date                                       getEditionDate()             {return null;}
     @Override public Collection<? extends Identifier>           getIdentifiers()             {return Collections.emptyList();}
-    @Override public Collection<? extends Responsibility>       getCitedResponsibleParties() {return Collections.emptyList();}
+    @Override public Collection<? extends ResponsibleParty>     getCitedResponsibleParties() {return Collections.emptyList();}
     @Override public Collection<PresentationForm>               getPresentationForms()       {return Collections.emptyList();}
     @Override public Series                                     getSeries()                  {return null;}
-    @Override public Collection<? extends InternationalString>  getOtherCitationDetails()    {return Collections.emptyList();}
+    @Override public InternationalString                        getOtherCitationDetails()    {return null;}
     @Override public Collection<? extends OnlineResource>       getOnlineResources()         {return Collections.emptyList();}
     @Override public Collection<? extends BrowseGraphic>        getGraphics()                {return Collections.emptyList();}
     @Override public String                                     getISBN()                    {return null;}

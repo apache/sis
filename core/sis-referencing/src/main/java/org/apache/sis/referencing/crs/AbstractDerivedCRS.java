@@ -145,7 +145,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      */
     AbstractDerivedCRS(final GeneralDerivedCRS crs) {
         super(crs);
-        conversionFromBase = createConversionFromBase(null, crs.getBaseCRS(), crs.getConversionFromBase());
+        conversionFromBase = createConversionFromBase(null, (SingleCRS) crs.getBaseCRS(), crs.getConversionFromBase());
     }
 
     /**

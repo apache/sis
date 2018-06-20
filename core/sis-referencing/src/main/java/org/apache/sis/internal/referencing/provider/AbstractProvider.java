@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
@@ -95,10 +95,10 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
         ArgumentChecks.ensureNonNull("parameters", parameters);
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, parameters.getName());
-        final Collection<Identifier> identifiers = parameters.getIdentifiers();
+        final Collection<ReferenceIdentifier> identifiers = parameters.getIdentifiers();
         int size = identifiers.size();
         if (size != 0) {
-            properties.put(IDENTIFIERS_KEY, identifiers.toArray(new Identifier[size]));
+            properties.put(IDENTIFIERS_KEY, identifiers.toArray(new ReferenceIdentifier[size]));
         }
         final Collection<GenericName> aliases = parameters.getAlias();
         size = aliases.size();

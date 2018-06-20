@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
-import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -51,7 +51,7 @@ import org.apache.sis.internal.system.OS;
  * @module
  */
 @SuppressWarnings("serial")     // serialVersionUID not needed since writeReplace() gives another kind of object.
-final class PJ implements Identifier, Serializable {
+final class PJ implements ReferenceIdentifier, Serializable {
     /**
      * Loads the {@literal Proj.4} library.
      * This static initializer may throw a {@link UnsatisfiedLinkError} if the static library can not be loaded.

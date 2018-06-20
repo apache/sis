@@ -187,7 +187,7 @@ final class MetadataReader extends MetadataBuilder {
      * An object very similar is used as the creator. The point of contact and the creator
      * are often identical except for their role attribute.
      */
-    private transient Responsibility pointOfContact;
+    private transient ResponsibleParty pointOfContact;
 
     /**
      * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
@@ -457,7 +457,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @see AttributeNames#CONTRIBUTOR
      * @see AttributeNames#PUBLISHER
      */
-    private Responsibility createResponsibleParty(final Responsible keys, final boolean isPointOfContact) {
+    private ResponsibleParty createResponsibleParty(final Responsible keys, final boolean isPointOfContact) {
         String individualName   = stringValue(keys.NAME);
         String organisationName = stringValue(keys.INSTITUTION);
         final String email      = stringValue(keys.EMAIL);
@@ -489,7 +489,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Verify if we can share the existing 'pointOfContact' instance. This is often the case in practice.
          * If we can not share the whole existing instance, we usually can share parts of it like the address.
          */
-        Responsibility responsibility = pointOfContact;
+        ResponsibleParty responsibility = pointOfContact;
         Contact        contact        = null;
         Address        address        = null;
         OnlineResource resource       = null;
@@ -542,7 +542,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (Individual) party, null);
                 if (party            == null) party = isOrganisation(keys) ? new DefaultOrganisation() : new DefaultIndividual();
                 if (contact          != null) party.setContactInfo(singleton(contact));
-                responsibility = new DefaultResponsibility(role, null, party);
+                responsibility = new DefaultResponsibleParty(role);
+                ((DefaultResponsibleParty) responsibility).setParties(singleton(party));
             }
         }
         return responsibility;
@@ -593,7 +594,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          */
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final Responsibility party = createResponsibleParty(CREATOR, true);
+            final ResponsibleParty party = createResponsibleParty(CREATOR, true);
             if (party != pointOfContact) {
                 addPointOfContact(party, Scope.RESOURCE);
                 if (pointOfContact == null) {
@@ -614,11 +615,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         Set<InternationalString> publisher = null;
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            final Responsibility contributor = createResponsibleParty(CONTRIBUTOR, false);
+            final ResponsibleParty contributor = createResponsibleParty(CONTRIBUTOR, false);
             if (contributor != pointOfContact) {
                 addCitedResponsibleParty(contributor, null);
             }
-            final Responsibility r = createResponsibleParty(PUBLISHER, false);
+            final ResponsibleParty r = createResponsibleParty(PUBLISHER, false);
             if (r != null) {
                 addDistributor(r);
                 /*
@@ -652,7 +653,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             for (final String keyword : split(stringValue(ACCESS_CONSTRAINT))) {
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
             }
-            addTopicCategory(forEnumName(TopicCategory.class, stringValue(TOPIC_CATEGORY)));
+            addTopicCategory(forCodeName(TopicCategory.class, stringValue(TOPIC_CATEGORY)));
             addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
             if (!hasExtent) {
                 /*

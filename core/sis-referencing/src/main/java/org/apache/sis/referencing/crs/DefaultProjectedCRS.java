@@ -235,7 +235,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     @XmlElement(name = "baseGeodeticCRS", required = true)        // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
         final Projection projection = super.getConversionFromBase();
-        return (projection != null) ? projection.getSourceCRS() : null;
+        return (projection != null) ? (GeographicCRS) projection.getSourceCRS() : null;
     }
 
     /**
@@ -288,7 +288,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     @Override
     final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
         final Projection conversion = super.getConversionFromBase();
-        return new DefaultProjectedCRS(properties, conversion.getSourceCRS(), conversion, (CartesianCS) cs);
+        return new DefaultProjectedCRS(properties, (GeographicCRS) conversion.getSourceCRS(), conversion, (CartesianCS) cs);
     }
 
     /**

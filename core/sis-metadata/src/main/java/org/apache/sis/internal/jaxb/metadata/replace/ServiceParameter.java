@@ -31,6 +31,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
@@ -266,10 +267,10 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
      * @return the parameter name as an identifier (the type specified by ISO 19111).
      */
     @Override
-    public synchronized Identifier getName() {
+    public synchronized ReferenceIdentifier getName() {
         if (name == null && memberName != null) {
-            if (memberName instanceof Identifier) {
-                name = (Identifier) memberName;
+            if (memberName instanceof ReferenceIdentifier) {
+                name = (ReferenceIdentifier) memberName;
             } else {
                 name = new NameToIdentifier(memberName);
             }

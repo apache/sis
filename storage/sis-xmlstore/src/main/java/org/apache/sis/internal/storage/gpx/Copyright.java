@@ -45,6 +45,7 @@ import org.apache.sis.util.iso.Types;
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Releasability;
 import org.opengis.metadata.maintenance.Scope;
 
@@ -432,7 +433,7 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
      * @see #getResponsibleParties()
      */
     @Override
-    public Collection<Responsibility> getCitedResponsibleParties() {
+    public Collection<ResponsibleParty> getCitedResponsibleParties() {
         return Collections.emptySet();
     }
 
@@ -465,8 +466,8 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
      * @return other details.
      */
     @Override
-    public Collection<InternationalString> getOtherCitationDetails() {
-        return Collections.emptySet();
+    public InternationalString getOtherCitationDetails() {
+        return null;
     }
 
     /**

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
@@ -62,14 +61,14 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
         assertEquals("dataset", "A dataset", metadata.getDataset());
         loggings.assertNoUnexpectedLog();
 
-        metadata.setOther(new SimpleInternationalString("Other value"));
-        assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
+        metadata.setOther("Other value");
+        assertEquals("other", "Other value", metadata.getOther());
         assertNull("dataset", metadata.getDataset());
         loggings.assertNextLogContains("dataset", "other");
         loggings.assertNoUnexpectedLog();
 
         metadata.setDataset(null);                  // Expected to be a no-op.
-        assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
+        assertEquals("other", "Other value", metadata.getOther());
         assertNull("dataset", metadata.getDataset());
 
         metadata.setOther(null);

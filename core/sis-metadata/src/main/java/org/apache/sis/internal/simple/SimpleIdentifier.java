@@ -19,7 +19,7 @@ package org.apache.sis.internal.simple;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
@@ -31,14 +31,14 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
 
 /**
- * An implementation of {@link Identifier} as a wrapper around a {@link Citation}.
+ * An implementation of {@link ReferenceIdentifier} as a wrapper around a {@link Citation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
  */
-public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
+public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -237,7 +237,7 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
 
     /**
      * Returns a pseudo Well Known Text for this identifier.
-     * While this method is not defined in the {@link Identifier} interface, it is often
+     * While this method is not defined in the {@link ReferenceIdentifier} interface, it is often
      * defined in related interfaces like {@link org.opengis.referencing.IdentifiedObject}.
      *
      * @return pseudo Well Known Text for this identifier.

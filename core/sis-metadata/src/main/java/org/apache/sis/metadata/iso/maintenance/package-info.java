@@ -77,7 +77,7 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Date.class),
-    @XmlJavaTypeAdapter(CI_Responsibility.class),
+    @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
@@ -87,6 +87,8 @@
     @XmlJavaTypeAdapter(TM_PeriodDuration.class),
 
     // Java types, primitive types and basic OGC types handling
+    @XmlJavaTypeAdapter(FeatureTypeAdapter.class),
+    @XmlJavaTypeAdapter(AttributeTypeAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(CharSequenceAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)

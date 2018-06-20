@@ -22,9 +22,9 @@ import java.util.Iterator;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.annotation.Obligation;
 import org.opengis.metadata.Datatype;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.Obligation;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.TitleProperty;
@@ -101,7 +101,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 489138542195499530L;
+    private static final long serialVersionUID = 5892811836634834434L;
 
     /**
      * Name of the extended metadata element.
@@ -176,12 +176,12 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     /**
      * Reason for creating the extended element.
      */
-    private InternationalString rationale;
+    private Collection<InternationalString> rationales;
 
     /**
      * Name of the person or organization creating the extended element.
      */
-    private Collection<Responsibility> sources;
+    private Collection<ResponsibleParty> sources;
 
     /**
      * Construct an initially empty extended element information.
@@ -206,7 +206,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
                                              final Datatype     dataType,
                                              final String       parentEntity,
                                              final CharSequence rule,
-                                             final Responsibility source)
+                                             final ResponsibleParty source)
     {
         this.name         = name;
         this.definition   = Types.toInternationalString(definition);
@@ -214,7 +214,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
         this.dataType     = dataType;
         this.parentEntity = singleton(parentEntity, String.class);
         this.rule         = Types.toInternationalString(rule);
-        this.sources      = singleton(source, Responsibility.class);
+        this.sources      = singleton(source, ResponsibleParty.class);
     }
 
     /**
@@ -248,8 +248,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
             domainValue       = object.getDomainValue();
             parentEntity      = copyCollection(object.getParentEntity(), String.class);
             rule              = object.getRule();
-            rationale         = object.getRationale();
-            sources           = copyCollection(object.getSources(), Responsibility.class);
+            rationales        = copyCollection(object.getRationales(), InternationalString.class);
+            sources           = copyCollection(object.getSources(), ResponsibleParty.class);
         }
     }
 
@@ -546,7 +546,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     @Override
     @XmlElement(name = "rationale")
     public InternationalString getRationale() {
-        return rationale;
+        return LegacyPropertyAdapter.getSingleton(rationales, InternationalString.class, null,
+                DefaultExtendedElementInformation.class, "getRationale");
     }
 
     /**
@@ -557,8 +558,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @since 0.5
      */
     public void setRationale(final InternationalString newValue) {
-        checkWritePermission();
-        rationale = newValue;
+        rationales = writeCollection(LegacyPropertyAdapter.asCollection(newValue), rationales, InternationalString.class);
     }
 
     /**
@@ -609,21 +609,31 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     /**
      * Name of the person or organization creating the extended element.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return name of the person or organization creating the extended element.
      */
     @Override
     @XmlElement(name = "source", required = true)
-    public Collection<Responsibility> getSources() {
-        return sources = nonNullCollection(sources, Responsibility.class);
+    public Collection<ResponsibleParty> getSources() {
+        return sources = nonNullCollection(sources, ResponsibleParty.class);
     }
 
     /**
      * Sets the name of the person or organization creating the extended element.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new sources.
      */
-    public void setSources(final Collection<? extends Responsibility> newValues) {
-        sources = writeCollection(newValues, sources, Responsibility.class);
+    public void setSources(final Collection<? extends ResponsibleParty> newValues) {
+        sources = writeCollection(newValues, sources, ResponsibleParty.class);
     }
 
 

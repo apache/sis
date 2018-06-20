@@ -25,9 +25,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 
@@ -44,7 +44,7 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  */
 @SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")
-public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifier, Serializable {
+public strictfp class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifier, Serializable {
     /**
      * The object name to be returned by {@link #getCode()}.
      */
@@ -102,7 +102,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
      * @return the name of this object, or {@code null} if none.
      */
     @Override
-    public final Identifier getName() {
+    public final ReferenceIdentifier getName() {
         return (code != null) ? this : null;
     }
 
@@ -162,7 +162,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
      * @return the identifiers of this object.
      */
     @Override
-    public final Set<Identifier> getIdentifiers() {
+    public final Set<ReferenceIdentifier> getIdentifiers() {
         return null;
     }
 

@@ -19,7 +19,6 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Locale;
-import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.identification.KeywordType;
@@ -37,6 +36,9 @@ import org.junit.Test;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
+
+// Branch-specific imports
+import org.opengis.metadata.identification.CharacterSet;
 
 
 /**
@@ -117,7 +119,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
         info.setResourceConstraints(singleton(new DefaultConstraints("Freely available")));
         info.setExtents(singleton(Extents.WORLD));
         info.setLanguages(asList(LOCALES));
-        info.setCharacterSets(singleton(StandardCharsets.US_ASCII));
+        info.setCharacterSets(singleton(CharacterSet.US_ASCII));
         return info;
     }
 

@@ -30,6 +30,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
@@ -84,9 +85,15 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
                 PresentationForm.DOCUMENT_DIGITAL));
         citation.setAlternateTitles(Collections.singleton(
                 new SimpleInternationalString("Andākarento")));   // Actually a different script of the Japanese title.
-        citation.setCitedResponsibleParties(Arrays.asList(
-                new DefaultResponsibility(Role.AUTHOR, null, new DefaultIndividual("Testsuya Toyoda", null, null)),
-                new DefaultResponsibility(Role.EDITOR, Extents.WORLD, new DefaultOrganisation("Kōdansha", null, null, null))));
+
+        final DefaultResponsibleParty author = new DefaultResponsibleParty(Role.AUTHOR);
+        author.setParties(Collections.singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
+
+        final DefaultResponsibleParty editor = new DefaultResponsibleParty(Role.EDITOR);
+        editor.setParties(Collections.singleton(new DefaultOrganisation("Kōdansha", null, null, null)));
+        editor.setExtents(Collections.singleton(Extents.WORLD));
+
+        citation.setCitedResponsibleParties(Arrays.asList(author, editor));
         return citation;
     }
 
@@ -214,7 +221,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
      */
     private void testMarshalling(final String file, final Version version) throws JAXBException {
         final DefaultOnlineResource rs = new DefaultOnlineResource(URI.create("https://tools.ietf.org/html/rfc1149"));
-        rs.setName(new SimpleInternationalString("IP over Avian Carriers"));
+        rs.setName("IP over Avian Carriers");
         rs.setDescription(new SimpleInternationalString("High delay, low throughput, and low altitude service."));
         rs.setFunction(OnLineFunction.OFFLINE_ACCESS);
 
@@ -222,10 +229,11 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
         final DefaultCitation c = new DefaultCitation("Fight against poverty");
-        c.setCitedResponsibleParties(Arrays.asList(
-                new DefaultResponsibility(Role.ORIGINATOR, null, new DefaultIndividual("Maid Marian", null, contact)),
-                new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
-        ));
+        final DefaultResponsibleParty r1 = new DefaultResponsibleParty(Role.ORIGINATOR);
+        final DefaultResponsibleParty r2 = new DefaultResponsibleParty(Role.FUNDER);
+        r1.setParties(Collections.singleton(new DefaultIndividual("Maid Marian", null, contact)));
+        r2.setParties(Collections.singleton(new DefaultIndividual("Robin Hood",  null, contact)));
+        c.setCitedResponsibleParties(Arrays.asList(r1, r2));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
         c.getPresentationForms().add(PresentationForm.PHYSICAL_OBJECT);
         /*
@@ -276,7 +284,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         assertEquals("dateType", DateType.ADOPTED, date.getDateType());
         assertEquals("presentationForm", PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
 
-        final Iterator<Responsibility> it = c.getCitedResponsibleParties().iterator();
+        final Iterator<ResponsibleParty> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
         assertEquals("Contact instruction", "Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
 

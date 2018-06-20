@@ -18,7 +18,8 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
-import org.apache.sis.internal.jaxb.cat.EnumAdapter;
+import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -33,13 +34,9 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientationCode, PixelOrientation> {
-    /**
-     * The enumeration value.
-     */
-    @XmlElement(name = "MD_PixelOrientationCode", namespace = Namespaces.MSR)
-    private String value;
-
+public final class MD_PixelOrientationCode
+        extends CodeListAdapter<MD_PixelOrientationCode, PixelOrientation>
+{
     /**
      * Empty constructor for JAXB only.
      */
@@ -47,29 +44,57 @@ public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientati
     }
 
     /**
-     * Returns the wrapped value.
-     *
-     * @param  wrapper  the wrapper.
-     * @return the wrapped value.
+     * Creates a new adapter for the given proxy.
      */
-    @Override
-    public final PixelOrientation unmarshal(final MD_PixelOrientationCode wrapper) {
-        return PixelOrientation.valueOf(name(wrapper.value));
+    private MD_PixelOrientationCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
-     * Wraps the given value.
+     * {@inheritDoc}
      *
-     * @param  e  the value to wrap.
-     * @return the wrapped value.
+     * @return the wrapper for the code list value.
      */
     @Override
-    public final MD_PixelOrientationCode marshal(final PixelOrientation e) {
-        if (e == null) {
-            return null;
-        }
-        final MD_PixelOrientationCode wrapper = new MD_PixelOrientationCode();
-        wrapper.value = value(e);
-        return wrapper;
+    protected MD_PixelOrientationCode wrap(final CodeListUID value) {
+        return new MD_PixelOrientationCode(value);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return the code list class.
+     */
+    @Override
+    protected Class<PixelOrientation> getCodeListClass() {
+        return PixelOrientation.class;
+    }
+
+    /**
+     * Returns {@code true} since this code list is actually an enum.
+     */
+    @Override
+    protected boolean isEnum() {
+        return true;
+    }
+
+    /**
+     * Invoked by JAXB on marshalling.
+     *
+     * @return The value to be marshalled.
+     */
+    @Override
+    @XmlElement(name = "MD_PixelOrientationCode", namespace = Namespaces.MSR)
+    public CodeListUID getElement() {
+        return identifier;
+    }
+
+    /**
+     * Invoked by JAXB on unmarshalling.
+     *
+     * @param value The unmarshalled value.
+     */
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

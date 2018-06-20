@@ -25,9 +25,10 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Debug;
@@ -43,7 +44,7 @@ import org.apache.sis.util.Debug;
  * @module
  */
 @SuppressWarnings("ReturnOfCollectionOrArrayField")
-final strictfp class CitationMock implements Citation, Identifier {
+final strictfp class CitationMock implements Citation, ReferenceIdentifier {
     /**
      * The title to be returned by {@link #getTitle()}.
      */
@@ -85,10 +86,10 @@ final strictfp class CitationMock implements Citation, Identifier {
     @Override public String                           getCodeSpace()               {return codeSpace;}
     @Override public String                           getVersion()                 {return null;}
     @Override public InternationalString              getDescription()             {return null;}
-    @Override public Collection<Responsibility>       getCitedResponsibleParties() {return Collections.emptyList();}
+    @Override public Collection<ResponsibleParty>     getCitedResponsibleParties() {return Collections.emptyList();}
     @Override public Collection<PresentationForm>     getPresentationForms()       {return Collections.emptyList();}
     @Override public Series                           getSeries()                  {return null;}
-    @Override public Collection<InternationalString>  getOtherCitationDetails()    {return Collections.emptyList();}
+    @Override public InternationalString              getOtherCitationDetails()    {return null;}
     @Override public Collection<OnlineResource>       getOnlineResources()         {return Collections.emptyList();}
     @Override public Collection<BrowseGraphic>        getGraphics()                {return Collections.emptyList();}
     @Override public String                           getISBN()                    {return null;}

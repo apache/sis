@@ -43,6 +43,7 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
+import org.opengis.referencing.operation.SingleOperation;
 
 /**
  * An ordered sequence of two or more single coordinate operations. The sequence of operations is constrained
@@ -70,7 +71,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setSteps(CoordinateOperation[])}</p>
      */
-    private List<? extends CoordinateOperation> operations;
+    private List<SingleOperation> operations;
 
     /**
      * Constructs a concatenated operation from a set of properties and a
@@ -142,7 +143,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
          * At this point we should have flattened.size() >= 2, except if some operations
          * were omitted because their associated math transform were identity operation.
          */
-        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(new CoordinateOperation[flattened.size()]));
+        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(new SingleOperation[flattened.size()]));
     }
 
     /**
@@ -326,11 +327,17 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     /**
      * Returns the sequence of operations.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the element type
+     * from {@code SingleOperation} to {@link CoordinateOperation}. This change may be applied in GeoAPI 4.0.
+     * This is necessary for supporting usage of {@code PassThroughOperation} with {@link ConcatenatedOperation}.
+     * </div>
+     *
      * @return the sequence of operations.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<? extends CoordinateOperation> getOperations() {
+    public List<SingleOperation> getOperations() {
         return operations;
     }
 

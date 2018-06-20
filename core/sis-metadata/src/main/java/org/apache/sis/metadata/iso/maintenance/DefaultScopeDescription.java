@@ -34,6 +34,10 @@ import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
+// Branch-dependent imports
+import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.FeatureType;
+
 
 /**
  * Description of the class of information covered by the information.
@@ -117,12 +121,12 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The value, as one of the following types:
      *
      * <ul>
-     *   <li>{@code Set<CharSequence>}   for the {@code features} property</li>
-     *   <li>{@code Set<CharSequence>}   for the {@code attributes} property</li>
-     *   <li>{@code Set<CharSequence>}   for the {@code featureInstances} property</li>
-     *   <li>{@code Set<CharSequence>}   for the {@code attributeInstances} property</li>
-     *   <li>{@code String}              for the {@code dataset} property</li>
-     *   <li>{@code InternationalString} for the {@code other} property</li>
+     *   <li>{@code Set<FeatureType>}   for the {@code features} property</li>
+     *   <li>{@code Set<AttributeType>} for the {@code attributes} property</li>
+     *   <li>{@code Set<FeatureType>}   for the {@code featureInstances} property</li>
+     *   <li>{@code Set<AttributeType>} for the {@code attributeInstances} property</li>
+     *   <li>{@code String} for the {@code dataset} property</li>
+     *   <li>{@code String} for the {@code other} property</li>
      * </ul>
      */
     private Object value;
@@ -151,27 +155,36 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @see #castOrCopy(ScopeDescription)
      */
+    @SuppressWarnings("unchecked")
     public DefaultScopeDescription(final ScopeDescription object) {
         super(object);
         if (object != null) {
             for (byte i=DATASET; i<=OTHER; i++) {
-                Collection<? extends CharSequence> props = null;
-                Object value = null;
+                Object candidate;
                 switch (i) {
-                    case DATASET:             value = object.getDataset();            break;
-                    case FEATURES:            props = object.getFeatures();           break;
-                    case ATTRIBUTES:          props = object.getAttributes();         break;
-                    case FEATURE_INSTANCES:   props = object.getFeatureInstances();   break;
-                    case ATTRIBUTE_INSTANCES: props = object.getAttributeInstances(); break;
-                    case OTHER:               value = object.getOther();              break;
+                    case DATASET:             candidate = object.getDataset();            break;
+                    case FEATURES:            candidate = object.getFeatures();           break;
+                    case ATTRIBUTES:          candidate = object.getAttributes();         break;
+                    case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
+                    case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
+                    case OTHER:               candidate = object.getOther();              break;
                     default: throw new AssertionError(i);
                 }
-                if (props != null) {
-                    value = copySet(props, CharSequence.class);
-                }
-                if (value != null) {
-                    this.value = value;
-                    this.property = i;
+                if (candidate != null) {
+                    switch (i) {
+                        case ATTRIBUTES:
+                        case ATTRIBUTE_INSTANCES: {
+                            candidate = copySet((Collection<AttributeType>) candidate, AttributeType.class);
+                            break;
+                        }
+                        case FEATURES:
+                        case FEATURE_INSTANCES: {
+                            candidate = copySet((Collection<FeatureType>) candidate, FeatureType.class);
+                            break;
+                        }
+                    }
+                    value = candidate;
+                    property = i;
                     break;
                 }
             }
@@ -204,33 +217,35 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns the given value casted to a {@code Set<CharSequence>}.
+     * Returns the given value casted to a {@code Set} of elements of the given type.
+     * It is caller responsibility to ensure that the cast is valid, as element type
+     * is verified only when assertions are enabled.
      */
     @SuppressWarnings("unchecked")
-    private static Set<CharSequence> cast(final Object value) {
-        assert ((CheckedContainer<?>) value).getElementType() == CharSequence.class;
-        return (Set<CharSequence>) value;
+    private static <E> Set<E> cast(final Object value, final Class<E> type) {
+        assert ((CheckedContainer<?>) value).getElementType() == type;
+        return (Set<E>) value;
     }
 
     /**
      * Returns the set of properties identified by the {@code code} argument,
      * or an unmodifiable empty set if another value is defined.
      */
-    private Set<CharSequence> getProperty(final byte code) {
+    private <E> Set<E> getProperty(final Class<E> type, final byte code) {
         final Object value = this.value;
         if (value != null) {
             if (property == code) {
-                return cast(value);
+                return cast(value, type);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
                 return Semaphores.query(Semaphores.NULL_COLLECTION)
-                       ? null : new ExcludedSet<>(NAMES[code-1], NAMES[property-1]);
+                       ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
             }
         }
         /*
          * Unconditionally create a new set, because the
          * user may hold a reference to the previous one.
          */
-        final Set<CharSequence> c = nonNullSet(null, CharSequence.class);
+        final Set<E> c = nonNullSet(null, type);
         property = code;
         this.value = c;
         return c;
@@ -243,17 +258,17 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValue  the value to set.
      * @param code      the property which is going to be set.
      */
-    private void setProperty(final Set<? extends CharSequence> newValue, final byte code) {
-        Set<CharSequence> c = null;
+    private <E> void setProperty(final Set<? extends E> newValue, final Class<E> type, final byte code) {
+        Set<E> c = null;
         if (property == code) {
-            c = cast(value);
+            c = cast(value, type);
         } else if (isNullOrEmpty(newValue)) {
             return;
         } else {
             warningOnOverwrite(code);
             property = code;
         }
-        value = writeSet(newValue, c, CharSequence.class);
+        value = writeSet(newValue, c, type);
     }
 
     /**
@@ -317,12 +332,16 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @return feature types to which the information applies.
      */
     @Override
     @XmlElement(name = "features")
-    public Set<CharSequence> getFeatures() {
-        return getProperty(FEATURES);
+    public Set<FeatureType> getFeatures() {
+        return getProperty(FeatureType.class, FEATURES);
     }
 
     /**
@@ -332,10 +351,14 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param  newValues  the new feature types.
      */
-    public void setFeatures(final Set<? extends CharSequence> newValues) {
-        setProperty(newValues, FEATURES);
+    public void setFeatures(final Set<? extends FeatureType> newValues) {
+        setProperty(newValues, FeatureType.class, FEATURES);
     }
 
     /**
@@ -351,12 +374,16 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @return attribute types to which the information applies.
      */
     @Override
     @XmlElement(name = "attributes")
-    public Set<CharSequence> getAttributes() {
-        return getProperty(ATTRIBUTES);
+    public Set<AttributeType> getAttributes() {
+        return getProperty(AttributeType.class, ATTRIBUTES);
     }
 
     /**
@@ -366,10 +393,14 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param  newValues  the new attribute types.
      */
-    public void setAttributes(final Set<? extends CharSequence> newValues) {
-        setProperty(newValues, ATTRIBUTES);
+    public void setAttributes(final Set<? extends AttributeType> newValues) {
+        setProperty(newValues, AttributeType.class, ATTRIBUTES);
     }
 
     /**
@@ -385,12 +416,16 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @return feature instances to which the information applies.
      */
     @Override
     @XmlElement(name = "featureInstances")
-    public Set<CharSequence> getFeatureInstances() {
-        return getProperty(FEATURE_INSTANCES);
+    public Set<FeatureType> getFeatureInstances() {
+        return getProperty(FeatureType.class, FEATURE_INSTANCES);
     }
 
     /**
@@ -400,10 +435,14 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param  newValues  the new feature instances.
      */
-    public void setFeatureInstances(final Set<? extends CharSequence> newValues) {
-        setProperty(newValues, FEATURE_INSTANCES);
+    public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
+        setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
     }
 
     /**
@@ -419,12 +458,16 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @return attribute instances to which the information applies.
      */
     @Override
     @XmlElement(name = "attributeInstances")
-    public Set<CharSequence> getAttributeInstances() {
-        return getProperty(ATTRIBUTE_INSTANCES);
+    public Set<AttributeType> getAttributeInstances() {
+        return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
     }
 
     /**
@@ -434,21 +477,29 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
      * @param  newValues  the new attribute instances.
      */
-    public void setAttributeInstances(final Set<? extends CharSequence> newValues) {
-        setProperty(newValues, ATTRIBUTE_INSTANCES);
+    public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
+        setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
     }
 
     /**
      * Returns the class of information that does not fall into the other categories to which the information applies.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
+     *
      * @return class of information that does not fall into the other categories, or {@code null}.
      */
     @Override
     @XmlElement(name = "other")
-    public InternationalString getOther() {
-        return (property == OTHER) ? (InternationalString) value : null;
+    public String getOther() {
+        return (property == OTHER) ? (String) value : null;
     }
 
     /**
@@ -459,9 +510,13 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
+     *
      * @param newValue Other class of information.
      */
-    public void setOther(final InternationalString newValue) {
+    public void setOther(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == OTHER) {
             warningOnOverwrite(OTHER);

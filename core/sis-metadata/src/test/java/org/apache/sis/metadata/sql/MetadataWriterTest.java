@@ -126,7 +126,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
         assertEquals("EPSG",      source.search(HardCodedCitations.EPSG));
         assertEquals("SIS",       source.search(HardCodedCitations.SIS));
         assertNull  ("ISO 19111", source.search(HardCodedCitations.ISO_19111));
-        assertEquals("EPSG",      source.search(TestUtilities.getSingleton(
+        assertEquals("{CI_ResponsibleParty}EPS", source.search(TestUtilities.getSingleton(
                 HardCodedCitations.EPSG.getCitedResponsibleParties())));
     }
 

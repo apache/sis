@@ -59,14 +59,14 @@ public final strictfp class TreeTableViewTest extends TestCase {
             "  ├─Alternate title (2 of 2)…………………………………………… Second alternate title\n" +
             "  ├─Edition………………………………………………………………………………………… Some edition\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
-            "  │   ├─Role……………………………………………………………………………………… Distributor\n" +
-            "  │   └─Organisation………………………………………………………………… Some organisation\n" +
+            "  │   ├─Organisation………………………………………………………………… Some organisation\n" +
+            "  │   └─Role……………………………………………………………………………………… Distributor\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   ├─Role……………………………………………………………………………………… Point of contact\n" +
-            "  │   └─Individual……………………………………………………………………… Some person of contact\n" +
-            "  │       └─Contact info\n" +
-            "  │           └─Address\n" +
-            "  │               └─Electronic mail address…… Some email\n" +
+            "  │   ├─Individual……………………………………………………………………… Some person of contact\n" +
+            "  │   │   └─Contact info\n" +
+            "  │   │       └─Address\n" +
+            "  │   │           └─Electronic mail address…… Some email\n" +
+            "  │   └─Role……………………………………………………………………………………… Point of contact\n" +
             "  ├─Presentation form (1 of 2)……………………………………… Map digital\n" +
             "  ├─Presentation form (2 of 2)……………………………………… Map hardcopy\n" +
             "  └─Other citation details………………………………………………… Some other details\n";

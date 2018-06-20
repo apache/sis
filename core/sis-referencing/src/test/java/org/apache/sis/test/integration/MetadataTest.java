@@ -162,7 +162,7 @@ public strictfp class MetadataTest extends XMLTestCase {
          * because this is what will be unmarshalled from the XML document.
          */
         @SuppressWarnings("deprecation")
-        final DefaultResponsibility author = new DefaultResponsibleParty(Role.AUTHOR);
+        final DefaultResponsibleParty author = new DefaultResponsibleParty(Role.AUTHOR);
         final Anchor country = new Anchor(URI.create("SDN:C320:2:FR"), "France"); // Non-public SIS class.
         {
             final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));
@@ -174,7 +174,7 @@ public strictfp class MetadataTest extends XMLTestCase {
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x4", TelephoneType.FACSIMILE)
             ));
             final DefaultAddress address = new DefaultAddress();
-            address.setDeliveryPoints(singleton(new SimpleInternationalString("Brest institute")));
+            address.setDeliveryPoints(singleton("Brest institute"));
             address.setCity(new SimpleInternationalString("Plouzane"));
             address.setPostalCode("29280");
             address.setCountry(country);
@@ -194,7 +194,7 @@ public strictfp class MetadataTest extends XMLTestCase {
                     new DefaultCitationDate(TestUtilities.date("1979-08-02 22:00:00"), DateType.CREATION)));
             {
                 @SuppressWarnings("deprecation")
-                final DefaultResponsibility originator = new DefaultResponsibleParty(Role.ORIGINATOR);
+                final DefaultResponsibleParty originator = new DefaultResponsibleParty(Role.ORIGINATOR);
                 final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.com.univ-mrs.fr/LOB/"));
                 online.setProtocol("http");
                 final DefaultContact contact = new DefaultContact(online);
@@ -203,7 +203,7 @@ public strictfp class MetadataTest extends XMLTestCase {
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x8", TelephoneType.FACSIMILE)
                 ));
                 final DefaultAddress address = new DefaultAddress();
-                address.setDeliveryPoints(singleton(new SimpleInternationalString("Oceanology institute")));
+                address.setDeliveryPoints(singleton("Oceanology institute"));
                 address.setCity(new SimpleInternationalString("Marseille"));
                 address.setPostalCode("13288");
                 address.setCountry(country);
@@ -218,7 +218,7 @@ public strictfp class MetadataTest extends XMLTestCase {
                     TopicCategory.OCEANS);      // Topic category
             {
                 @SuppressWarnings("deprecation")
-                final DefaultResponsibility custodian = new DefaultResponsibleParty(author);
+                final DefaultResponsibleParty custodian = new DefaultResponsibleParty((DefaultResponsibility) author);
                 custodian.setRole(Role.CUSTODIAN);
                 identification.setPointOfContacts(singleton(custodian));
             }
@@ -352,7 +352,7 @@ public strictfp class MetadataTest extends XMLTestCase {
          */
         {
             @SuppressWarnings("deprecation")
-            final DefaultResponsibility distributor = new DefaultResponsibleParty(author);
+            final DefaultResponsibleParty distributor = new DefaultResponsibleParty((DefaultResponsibility) author);
             final DefaultDistribution distributionInfo = new DefaultDistribution();
             distributor.setRole(Role.DISTRIBUTOR);
             distributionInfo.setDistributors(singleton(new DefaultDistributor(distributor)));
@@ -372,7 +372,7 @@ public strictfp class MetadataTest extends XMLTestCase {
             onlines.setProtocol("http");
             transfer.setOnLines(singleton(onlines));
             distributionInfo.setTransferOptions(singleton(transfer));
-            metadata.setDistributionInfo(singleton(distributionInfo));
+            metadata.setDistributionInfo(distributionInfo);
         }
         return metadata;
     }

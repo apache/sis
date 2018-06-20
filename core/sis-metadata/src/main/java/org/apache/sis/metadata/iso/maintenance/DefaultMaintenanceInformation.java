@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -116,7 +116,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Identification of, and means of communicating with, person(s) and organization(s)
      * with responsibility for maintaining the resource.
      */
-    private Collection<Responsibility> contacts;
+    private Collection<ResponsibleParty> contacts;
 
     /**
      * Creates a an initially empty maintenance information.
@@ -151,7 +151,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
             maintenanceScopes               = copyCollection(object.getMaintenanceScopes(), Scope.class);
             maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
-            contacts                        = copyCollection(object.getContacts(), Responsibility.class);
+            contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
         }
     }
 
@@ -467,24 +467,34 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Returns identification of, and means of communicating with,
      * person(s) and organization(s) with responsibility for maintaining the resource.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return means of communicating with person(s) and organization(s) with responsibility
      *         for maintaining the resource.
      */
     @Override
     @XmlElement(name = "contact")
-    public Collection<Responsibility> getContacts() {
-        return contacts = nonNullCollection(contacts, Responsibility.class);
+    public Collection<ResponsibleParty> getContacts() {
+        return contacts = nonNullCollection(contacts, ResponsibleParty.class);
     }
 
     /**
      * Sets identification of, and means of communicating with,
      * person(s) and organization(s) with responsibility for maintaining the resource.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new identification of person(s) and organization(s)
      *                    with responsibility for maintaining the resource.
      */
-    public void setContacts(final Collection<? extends Responsibility> newValues) {
-        contacts = writeCollection(newValues, contacts, Responsibility.class);
+    public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
+        contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
 
 

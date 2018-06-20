@@ -41,6 +41,9 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  * Base class of builders for various kind of {@link IdentifiedObject}. This class provides convenience methods
@@ -93,7 +96,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
  *       in which the code space information is shown by the {@code toString()} method.</li>
  *
- *   <li>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
+ *   <li>The {@code addIdentifier(Identifier)}, {@code addName(Identifier)} and {@link #addName(GenericName)}
  *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
  *       information given to the {@code Builder} are ignored.</li>
  * </ul>
@@ -202,7 +205,7 @@ public abstract class Builder<B extends Builder<B>> {
     /**
      * A temporary list for identifiers, before to assign them to the {@link #properties}.
      */
-    private final List<Identifier> identifiers;
+    private final List<ReferenceIdentifier> identifiers;
 
     /**
      * The codespace as a {@code NameSpace} object, or {@code null} if not yet created.
@@ -271,7 +274,7 @@ public abstract class Builder<B extends Builder<B>> {
         if (object != null) {
             properties.putAll(IdentifiedObjects.getProperties(object));
             final GenericName[] valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
-            final Identifier[]  valueIds   = (Identifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
+            final ReferenceIdentifier[] valueIds = (ReferenceIdentifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
             if (valueAlias != null) aliases.addAll(Arrays.asList(valueAlias));
             if (valueIds != null) identifiers.addAll(Arrays.asList(valueIds));
         }
@@ -320,7 +323,7 @@ public abstract class Builder<B extends Builder<B>> {
      * then the new identifier will also contain the user-supplied code space and version (if any).
      * The new identifier will be marked as deprecated if {@link #isDeprecated()} returns {@code true}.
      */
-    private Identifier createIdentifier(final Citation authority, final String identifier) {
+    private ReferenceIdentifier createIdentifier(final Citation authority, final String identifier) {
         final String codeSpace;
         final String version;
         if (authority == getAuthority()) {
@@ -338,7 +341,9 @@ public abstract class Builder<B extends Builder<B>> {
      * Creates an identifier for the given authority, code space and version.
      * The new identifier will be marked as deprecated if {@link #isDeprecated()} returns {@code true}.
      */
-    private Identifier createIdentifier(final Citation authority, final String codeSpace, final String identifier, final String version) {
+    private ReferenceIdentifier createIdentifier(final Citation authority,
+            final String codeSpace, final String identifier, final String version)
+    {
         if (isDeprecated()) {
             return new DeprecatedCode(authority, codeSpace, identifier, version, null, getRemarks());
         } else {
@@ -350,8 +355,8 @@ public abstract class Builder<B extends Builder<B>> {
      * Converts the given name into an identifier. Note that {@link NamedIdentifier}
      * implements both {@link GenericName} and {@link Identifier} interfaces.
      */
-    private static Identifier toIdentifier(final GenericName name) {
-        return (name instanceof Identifier) ? (Identifier) name : new NamedIdentifier(name);
+    private static ReferenceIdentifier toIdentifier(final GenericName name) {
+        return (name instanceof ReferenceIdentifier) ? (ReferenceIdentifier) name : new NamedIdentifier(name);
     }
 
     /**
@@ -582,7 +587,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  name  the {@code IdentifiedObject} name as an identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B addName(final Identifier name) {
+    public B addName(final ReferenceIdentifier name) {
         ensureNonNull("name", name);
         if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name) != null) {
             // A primary name is already present. Add the given name as an alias instead.
@@ -674,7 +679,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  identifier  the {@code IdentifiedObject} identifier.
      * @return {@code this}, for method call chaining.
      */
-    public B addIdentifier(final Identifier identifier) {
+    public B addIdentifier(final ReferenceIdentifier identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(identifier);
         return self();
@@ -704,12 +709,12 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addNamesAndIdentifiers(final IdentifiedObject object) {
         ensureNonNull("object", object);
-        for (final Identifier id : object.getIdentifiers()) {
+        for (final ReferenceIdentifier id : object.getIdentifiers()) {
             if (!isDeprecated(id)) {
                 addIdentifier(id);
             }
         }
-        Identifier id = object.getName();
+        ReferenceIdentifier id = object.getName();
         if (!isDeprecated(id)) {
             addName(id);
         }
@@ -1020,7 +1025,7 @@ public abstract class Builder<B extends Builder<B>> {
             valueIds   = null;
         } else {
             valueAlias = aliases    .toArray(new GenericName[aliases    .size()]);
-            valueIds   = identifiers.toArray(new Identifier [identifiers.size()]);
+            valueIds   = identifiers.toArray(new ReferenceIdentifier[identifiers.size()]);
         }
         properties.put(IdentifiedObject.ALIAS_KEY,       valueAlias);
         properties.put(IdentifiedObject.IDENTIFIERS_KEY, valueIds);

@@ -21,7 +21,6 @@ import java.util.Random;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.PresentationForm;
@@ -70,7 +69,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     static DefaultCitation metadataWithoutCollections() {
         final DefaultCitation citation = new DefaultCitation("Some title");
         citation.setEdition(new SimpleInternationalString("Some edition"));
-        citation.setOtherCitationDetails(Collections.singleton(new SimpleInternationalString("Some other details")));
+        citation.setOtherCitationDetails(new SimpleInternationalString("Some other details"));
         return citation;
     }
 

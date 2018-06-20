@@ -27,6 +27,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 
+import static java.util.Collections.singleton;
+
 
 /**
  * Hard-coded citation constants used for testing purpose only.
@@ -92,8 +94,9 @@ public final strictfp class HardCodedCitations extends Static {
         final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("http://www.epsg.org"));
         r.setFunction(OnLineFunction.INFORMATION);
 
-        final DefaultResponsibility p = new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null,
-                new DefaultOrganisation("International Association of Oil & Gas Producers", null, null, new DefaultContact(r)));
+        final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
+        p.setParties(singleton(new DefaultOrganisation("International Association of Oil & Gas Producers",
+                null, null, new DefaultContact(r))));
 
         final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         c.getPresentationForms().add(PresentationForm.TABLE_DIGITAL);

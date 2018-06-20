@@ -65,7 +65,7 @@ final class SubOperationInfo {
      */
     private static Class<?> type(SingleCRS crs) {
         while (crs instanceof GeneralDerivedCRS) {
-            crs = ((GeneralDerivedCRS) crs).getBaseCRS();
+            crs = (SingleCRS) ((GeneralDerivedCRS) crs).getBaseCRS();
         }
         return crs.getClass();
     }

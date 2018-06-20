@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
@@ -163,10 +163,10 @@ public class CitationConstant extends SimpleCitation {
     @Override public InternationalString                        getEdition()                 {return delegate().getEdition();}
     @Override public Date                                       getEditionDate()             {return delegate().getEditionDate();}
     @Override public Collection<? extends Identifier>           getIdentifiers()             {return delegate().getIdentifiers();}
-    @Override public Collection<? extends Responsibility>       getCitedResponsibleParties() {return delegate().getCitedResponsibleParties();}
+    @Override public Collection<? extends ResponsibleParty>     getCitedResponsibleParties() {return delegate().getCitedResponsibleParties();}
     @Override public Collection<PresentationForm>               getPresentationForms()       {return delegate().getPresentationForms();}
     @Override public Series                                     getSeries()                  {return delegate().getSeries();}
-    @Override public Collection<? extends InternationalString>  getOtherCitationDetails()    {return delegate().getOtherCitationDetails();}
+    @Override public InternationalString                        getOtherCitationDetails()    {return delegate().getOtherCitationDetails();}
     @Override public Collection<? extends OnlineResource>       getOnlineResources()         {return delegate().getOnlineResources();}
     @Override public Collection<? extends BrowseGraphic>        getGraphics()                {return delegate().getGraphics();}
     @Override public String                                     getISBN()                    {return delegate().getISBN();}

@@ -31,6 +31,7 @@ import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -293,7 +294,8 @@ public abstract class MapProjection extends AbstractProvider {
             final ParameterDescriptor<Double> replacement, final ParameterBuilder builder)
     {
         return copyAliases(template, toRename, sameNameAs(toRename, replacement),
-                IdentifiedObjects.getIdentifier(replacement, toRename), builder.addName(template.getName()));
+                (ReferenceIdentifier) IdentifiedObjects.getIdentifier(replacement, toRename),
+                builder.addName(template.getName()));
     }
 
     /**
@@ -310,7 +312,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @return the given {@code builder}, for method call chaining.
      */
     private static ParameterBuilder copyAliases(final ParameterDescriptor<Double> template, final Citation exclude,
-            GenericName replacement, Identifier newCode, final ParameterBuilder builder)
+            GenericName replacement, ReferenceIdentifier newCode, final ParameterBuilder builder)
     {
         for (GenericName alias : template.getAlias()) {
             if (((Identifier) alias).getAuthority() == exclude) {
@@ -320,7 +322,7 @@ public abstract class MapProjection extends AbstractProvider {
             }
             builder.addName(alias);
         }
-        for (Identifier id : template.getIdentifiers()) {
+        for (ReferenceIdentifier id : template.getIdentifiers()) {
             if (id.getAuthority() == exclude) {
                 if (newCode == null) continue;
                 id = newCode;

@@ -26,7 +26,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
@@ -37,7 +37,7 @@ import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Exceptions;
@@ -208,13 +208,14 @@ public final class ServicesForUtility extends MetadataServices {
         if (code                  != null) c.setIdentifiers(singleton(new ImmutableIdentifier(null, codeSpace, code, version, null)));
         if (presentationForm      != null) c.setPresentationForms(singleton(presentationForm));
         if (citedResponsibleParty != null) {
-            c.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null,
-                    new DefaultOrganisation(citedResponsibleParty, null, null, null))));
+            final DefaultResponsibleParty r = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
+            r.setParties(singleton(new DefaultOrganisation(citedResponsibleParty, null, null, null)));
+            c.setCitedResponsibleParties(singleton(r));
         }
         if (copyFrom != null) {
             for (final Citation other : copyFrom) {
-                final Collection<? extends Responsibility> parties = other.getCitedResponsibleParties();
-                final Collection<Responsibility> current = c.getCitedResponsibleParties();
+                final Collection<? extends ResponsibleParty> parties = other.getCitedResponsibleParties();
+                final Collection<ResponsibleParty> current = c.getCitedResponsibleParties();
                 if (current != null) {
                     current.addAll(parties);
                 } else {

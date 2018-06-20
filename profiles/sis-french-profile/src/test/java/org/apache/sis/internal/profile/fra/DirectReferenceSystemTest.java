@@ -18,7 +18,7 @@ package org.apache.sis.internal.profile.fra;
 
 import java.util.Collection;
 import javax.xml.bind.JAXBException;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -58,7 +58,7 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
     private static DefaultMetadata createMetadata(final boolean legacy) {
         final DefaultMetadata metadata = new DefaultMetadata();
         final DefaultCitation citation = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-        Collection<Responsibility> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
+        Collection<ResponsibleParty> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
         if (legacy) {
             r = singleton(new DefaultResponsibleParty(TestUtilities.getSingleton(r)));
         }

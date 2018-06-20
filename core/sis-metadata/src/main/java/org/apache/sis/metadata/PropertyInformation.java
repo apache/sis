@@ -21,11 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.lang.reflect.Method;
 import org.opengis.annotation.UML;
-import org.opengis.annotation.Obligation;
 import org.opengis.metadata.Datatype;
+import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleIdentifier;
@@ -343,7 +343,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
      * Returns the name of the person or organization creating the element.
      */
     @Override
-    public Collection<? extends Responsibility> getSources() {
+    public Collection<? extends ResponsibleParty> getSources() {
         return authority.getCitedResponsibleParties();
     }
 

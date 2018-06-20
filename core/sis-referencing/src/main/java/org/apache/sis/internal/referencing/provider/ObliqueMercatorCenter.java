@@ -24,6 +24,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.referencing.IdentifiedObjects.getIdentifier;
 
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  * The provider for <cite>"Hotine Oblique Mercator (variant B)"</cite> projection (EPSG:9815).
@@ -97,7 +100,7 @@ public final class ObliqueMercatorCenter extends ObliqueMercator {
                 .addName      (Citations.S57,     "OME")
                 .addIdentifier(Citations.S57,     "9")
                 .addName      (Citations.GEOTIFF, "CT_ObliqueMercator")
-                .addIdentifier(getIdentifier(PARAMETERS_A, Citations.GEOTIFF))      // Same GeoTIFF identifier.
+                .addIdentifier((ReferenceIdentifier) getIdentifier(PARAMETERS_A, Citations.GEOTIFF))      // Same GeoTIFF identifier.
                 .addName      (Citations.PROJ4,   "omerc")
                 .createGroupForMapProjection(
                         LATITUDE_OF_CENTRE,

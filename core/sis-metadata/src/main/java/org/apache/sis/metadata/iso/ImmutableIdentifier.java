@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValue;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
@@ -137,7 +138,7 @@ import static org.apache.sis.util.collection.Containers.property;
     "version"
 })
 @XmlRootElement(name = "RS_Identifier", namespace = Namespaces.GMD)
-public class ImmutableIdentifier extends FormattableObject implements Identifier, Serializable {
+public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Serializable {
     /**
      * For cross-version compatibility.
      */

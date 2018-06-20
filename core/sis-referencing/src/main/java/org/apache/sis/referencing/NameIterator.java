@@ -19,8 +19,8 @@ package org.apache.sis.referencing;
 import java.util.Iterator;
 import java.util.Collection;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.NilReferencingObject;
@@ -30,7 +30,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 /**
  * An iterator over the {@linkplain IdentifiedObject#getName() name} of an identified object followed by
- * {@linkplain IdentifiedObject#getAlias() aliases} which are instance of {@link Identifier}.
+ * {@linkplain IdentifiedObject#getAlias() aliases} which are instance of {@link ReferenceIdentifier}.
  * This iterator is used for {@link AbstractIdentifiedObject} XML marshalling because GML merges the name
  * and aliases in a single {@code <gml:name>} property. However this iterator is useful only if the aliases
  * are instances of {@link NamedIdentifier}, or any other implementation which is both a name and an identifier.
@@ -42,11 +42,11 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  * @since   0.4
  * @module
  */
-final class NameIterator implements Iterator<Identifier> {
+final class NameIterator implements Iterator<ReferenceIdentifier> {
     /**
      * The next element to return, or {@code null} if we reached the end of iteration.
      */
-    private Identifier next;
+    private ReferenceIdentifier next;
 
     /**
      * An iterator over the aliases.
@@ -68,7 +68,7 @@ final class NameIterator implements Iterator<Identifier> {
     /**
      * Returns {@code true} if the given identifier is null or the {@link NilReferencingObject#UNNAMED} instance.
      */
-    static boolean isUnnamed(final Identifier name) {
+    static boolean isUnnamed(final ReferenceIdentifier name) {
         return (name == null) || (name == NilReferencingObject.UNNAMED);
     }
 
@@ -87,12 +87,12 @@ final class NameIterator implements Iterator<Identifier> {
      * will be used only by JAXB, which is presumed checking for {@link #hasNext()} correctly.
      */
     @Override
-    public Identifier next() {
-        final Identifier n = next;
+    public ReferenceIdentifier next() {
+        final ReferenceIdentifier n = next;
         while (alias.hasNext()) {
             final GenericName c = alias.next();
-            if (c instanceof Identifier) {
-                next = (Identifier) c;
+            if (c instanceof ReferenceIdentifier) {
+                next = (ReferenceIdentifier) c;
                 return n;
             }
         }
@@ -144,8 +144,8 @@ final class NameIterator implements Iterator<Identifier> {
      * @param  identifiers  the identifiers, or {@code null} if none.
      * @return proposed value for {@code gml:id} attribute, or {@code null} if none.
      */
-    static String getID(final Context context, final IdentifiedObject object, final Identifier name,
-            final Collection<? extends GenericName> alias, final Collection<? extends Identifier> identifiers)
+    static String getID(final Context context, final IdentifiedObject object, final ReferenceIdentifier name,
+            final Collection<? extends GenericName> alias, final Collection<? extends ReferenceIdentifier> identifiers)
     {
         String candidate = Context.getObjectID(context, object);
         if (candidate == null) {
@@ -155,7 +155,7 @@ final class NameIterator implements Iterator<Identifier> {
              * if we found no suitable ID, then we will use the primary name as a last resort.
              */
             if (identifiers != null) {
-                for (final Identifier identifier : identifiers) {
+                for (final ReferenceIdentifier identifier : identifiers) {
                     if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), "", true) |    // Really |, not ||
                         appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(object.getClass()), "", false) |
                         appendUnicodeIdentifier(id, '-', identifier.getCode(), "", true))

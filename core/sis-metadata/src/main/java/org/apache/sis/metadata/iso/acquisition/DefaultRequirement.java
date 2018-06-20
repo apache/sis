@@ -27,7 +27,7 @@ import org.opengis.metadata.acquisition.Priority;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
@@ -95,12 +95,12 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Origin of requirement.
      */
-    private Collection<Responsibility> requestors;
+    private Collection<ResponsibleParty> requestors;
 
     /**
      * Person(s), or body(ies), to receive results of requirement.
      */
-    private Collection<Responsibility> recipients;
+    private Collection<ResponsibleParty> recipients;
 
     /**
      * Relative ordered importance, or urgency, of the requirement.
@@ -143,8 +143,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
         if (object != null) {
             citation       = object.getCitation();
             identifiers    = singleton(object.getIdentifier(), Identifier.class);
-            requestors     = copyCollection(object.getRequestors(), Responsibility.class);
-            recipients     = copyCollection(object.getRecipients(), Responsibility.class);
+            requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
+            recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
             priority       = object.getPriority();
             requestedDate  = object.getRequestedDate();
             expiryDate     = toMilliseconds(object.getExpiryDate());
@@ -224,41 +224,61 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Returns the origin of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return origin of requirement.
      */
     @Override
     @XmlElement(name = "requestor", required = true)
-    public Collection<Responsibility> getRequestors() {
-        return requestors = nonNullCollection(requestors, Responsibility.class);
+    public Collection<ResponsibleParty> getRequestors() {
+        return requestors = nonNullCollection(requestors, ResponsibleParty.class);
     }
 
     /**
      * Sets the origin of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new requestors values.
      */
-    public void setRequestors(final Collection<? extends Responsibility> newValues) {
-        requestors = writeCollection(newValues, requestors, Responsibility.class);
+    public void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
+        requestors = writeCollection(newValues, requestors, ResponsibleParty.class);
     }
 
     /**
      * Returns the person(s), or body(ies), to receive results of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return person(s), or body(ies), to receive results.
      */
     @Override
     @XmlElement(name = "recipient", required = true)
-    public Collection<Responsibility> getRecipients() {
-        return recipients = nonNullCollection(recipients, Responsibility.class);
+    public Collection<ResponsibleParty> getRecipients() {
+        return recipients = nonNullCollection(recipients, ResponsibleParty.class);
     }
 
     /**
      * Sets the Person(s), or body(ies), to receive results of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new recipients values.
      */
-    public void setRecipients(final Collection<? extends Responsibility> newValues) {
-        recipients = writeCollection(newValues, recipients, Responsibility.class);
+    public void setRecipients(final Collection<? extends ResponsibleParty> newValues) {
+        recipients = writeCollection(newValues, recipients, ResponsibleParty.class);
     }
 
     /**

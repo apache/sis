@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
@@ -145,7 +145,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Recognition of those who contributed to the resource(s).
      */
-    private Collection<InternationalString> credits;
+    private Collection<String> credits;
 
     /**
      * Status of the resource(s).
@@ -156,7 +156,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Identification of, and means of communication with, person(s) and organizations(s)
      * associated with the resource(s).
      */
-    private Collection<Responsibility> pointOfContacts;
+    private Collection<ResponsibleParty> pointOfContacts;
 
     /**
      * Methods used to spatially represent geographic information.
@@ -261,9 +261,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
             citation                   = object.getCitation();
             abstracts                  = object.getAbstract();
             purpose                    = object.getPurpose();
-            credits                    = copyCollection(object.getCredits(), InternationalString.class);
+            credits                    = copyCollection(object.getCredits(), String.class);
             status                     = copyCollection(object.getStatus(), Progress.class);
-            pointOfContacts            = copyCollection(object.getPointOfContacts(), Responsibility.class);
+            pointOfContacts            = copyCollection(object.getPointOfContacts(), ResponsibleParty.class);
             spatialRepresentationTypes = copyCollection(object.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
             spatialResolutions         = copyCollection(object.getSpatialResolutions(), Resolution.class);
             temporalResolutions        = copyCollection(object.getTemporalResolutions(), Duration.class);
@@ -384,21 +384,29 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the recognition of those who contributed to the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type may be changed to the {@code InternationalString} interface in GeoAPI 4.0.
+     * </div>
+     *
      * @return recognition of those who contributed to the resource(s).
      */
     @Override
     @XmlElement(name = "credit")
-    public Collection<InternationalString> getCredits() {
-        return credits = nonNullCollection(credits, InternationalString.class);
+    public Collection<String> getCredits() {
+        return credits = nonNullCollection(credits, String.class);
     }
 
     /**
      * Sets the recognition of those who contributed to the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type may be changed to the {@code InternationalString} interface in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new credits.
      */
-    public void setCredits(final Collection<? extends InternationalString> newValues) {
-        credits = writeCollection(newValues, credits, InternationalString.class);
+    public void setCredits(final Collection<? extends String> newValues) {
+        credits = writeCollection(newValues, credits, String.class);
     }
 
     /**
@@ -425,23 +433,33 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Returns the identification of, and means of communication with, person(s) and organizations(s)
      * associated with the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return means of communication with person(s) and organizations(s) associated with the resource(s).
      *
      * @see org.apache.sis.metadata.iso.DefaultMetadata#getContacts()
      */
     @Override
     @XmlElement(name = "pointOfContact")
-    public Collection<Responsibility> getPointOfContacts() {
-        return pointOfContacts = nonNullCollection(pointOfContacts, Responsibility.class);
+    public Collection<ResponsibleParty> getPointOfContacts() {
+        return pointOfContacts = nonNullCollection(pointOfContacts, ResponsibleParty.class);
     }
 
     /**
      * Sets the means of communication with persons(s) and organizations(s) associated with the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@code Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param  newValues  the new points of contacts.
      */
-    public void setPointOfContacts(final Collection<? extends Responsibility> newValues) {
-        pointOfContacts = writeCollection(newValues, pointOfContacts, Responsibility.class);
+    public void setPointOfContacts(final Collection<? extends ResponsibleParty> newValues) {
+        pointOfContacts = writeCollection(newValues, pointOfContacts, ResponsibleParty.class);
     }
 
     /**

@@ -24,44 +24,38 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
 
 
 /**
- * JAXB adapter for {@link CharacterSet}
- * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
- * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
+ * JAXB adapter for {@link CharacterSet}, in order to integrate the value in an element
+ * complying with ISO 19139:2007 standard.
  *
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
  */
-@SuppressWarnings("deprecation")
-public final class LegacyCharacterSet extends CodeListAdapter<LegacyCharacterSet, CharacterSet> {
+public final class MD_CharacterSetLegacy extends CodeListAdapter<MD_CharacterSetLegacy, CharacterSet> {
     /**
      * Empty constructor for JAXB only.
      */
-    public LegacyCharacterSet() {
+    public MD_CharacterSetLegacy() {
     }
 
     /**
-     * Creates a new adapter for the given value.
+     * Creates a new adapter for the given proxy.
      */
-    private LegacyCharacterSet(final CodeListUID value) {
+    private MD_CharacterSetLegacy(final CodeListUID value) {
         super(value);
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @return the wrapper for the code list value.
      */
     @Override
-    protected LegacyCharacterSet wrap(final CodeListUID value) {
-        return new LegacyCharacterSet(value);
+    protected MD_CharacterSetLegacy wrap(final CodeListUID value) {
+        return new MD_CharacterSetLegacy(value);
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @return the code list class.
      */
     @Override
     protected Class<CharacterSet> getCodeListClass() {

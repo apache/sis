@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.NameMeaning;
@@ -95,7 +96,7 @@ public final class Code {
      *
      * @return the identifier, or {@code null} if none.
      */
-    public Identifier getIdentifier() {
+    public ReferenceIdentifier getIdentifier() {
         String c = code;
         if (c == null) {
             return null;

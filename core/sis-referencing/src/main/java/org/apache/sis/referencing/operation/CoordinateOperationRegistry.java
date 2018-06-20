@@ -601,7 +601,7 @@ class CoordinateOperationRegistry {
     private CoordinateOperation inverse(final CoordinateOperation operation)
             throws NoninvertibleTransformException, FactoryException
     {
-        if (operation instanceof SingleOperation) {
+        if (SubTypes.isSingleOperation(operation)) {
             return inverse((SingleOperation) operation);
         }
         if (operation instanceof ConcatenatedOperation) {
@@ -788,7 +788,7 @@ class CoordinateOperationRegistry {
          * be prepared to see the 'redimension' call fails. In such case, we will try to get
          * the SIS implementation of the operation method and try again.
          */
-        if (operation instanceof SingleOperation) {
+        if (SubTypes.isSingleOperation(operation)) {
             final SingleOperation single = (SingleOperation) operation;
             properties.put(ReferencingServices.PARAMETERS_KEY, single.getParameterValues());
             if (method == null) {
@@ -947,7 +947,7 @@ class CoordinateOperationRegistry {
              */
             Matrix matrix = MathTransforms.getMatrix(op.getMathTransform());
             if (matrix == null) {
-                if (op instanceof SingleOperation) {
+                if (SubTypes.isSingleOperation(op)) {
                     final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
                     if (mtFactory instanceof DefaultMathTransformFactory) {
                         if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);

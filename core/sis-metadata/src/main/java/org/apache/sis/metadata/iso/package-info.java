@@ -103,12 +103,13 @@
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(CI_Date.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
-    @XmlJavaTypeAdapter(CI_Responsibility.class),
+    @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(DQ_DataQuality.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_Integer.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
+    @XmlJavaTypeAdapter(MD_CharacterSetLegacy.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_DatatypeCode.class),
@@ -125,7 +126,6 @@
     @XmlJavaTypeAdapter(MI_AcquisitionInformation.class),
     @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(RS_ReferenceSystem.class),
-    @XmlJavaTypeAdapter(LegacyCharacterSet.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(StringAdapter.class),

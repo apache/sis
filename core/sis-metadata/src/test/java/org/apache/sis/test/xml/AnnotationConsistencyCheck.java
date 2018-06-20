@@ -502,7 +502,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
          * We check only the namespace start, since some specifications define many namespaces
          * under a common root (e.g. "http://standards.iso.org/iso/19115/-3/").
          */
-        if (uml != null) {
+        if (uml != null && false) {     // This verification is available only on development branches.
             final String expected = getExpectedNamespaceStart(impl, uml);
             if (!namespace.startsWith(expected)) {
                 fail("Expected " + expected + "… namespace for that ISO specification but got " + namespace);
@@ -564,6 +564,18 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      */
     protected boolean isIgnored(final Method method) {
         switch (method.getName()) {
+            /*
+             * Spelling changed.
+             */
+            case "getCenterPoint": {
+                return true;
+            }
+            /*
+             * Method that override an annotated method in parent class.
+             */
+            case "getUnits": {
+                return org.opengis.metadata.content.Band.class.isAssignableFrom(method.getDeclaringClass());
+            }
             /*
              * Types for which JAXB binding has not yet implemented.
              */
