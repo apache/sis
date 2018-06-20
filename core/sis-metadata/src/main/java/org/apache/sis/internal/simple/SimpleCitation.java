@@ -80,7 +80,7 @@ public class SimpleCitation implements Citation, Serializable {
 
     /**
      * Methods inherited from the {@link Citation} interface which are not of interest to this
-     * {@code SimpleCitation} implementation. Those methods may be removed in the JDK8 branch.
+     * {@code SimpleCitation} implementation.
      *
      * @return an empty list.
      */

@@ -65,12 +65,12 @@
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/trunk
+      scm:git:https://gitbox.apache.org/repos/asf/sis.git
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/trunk
+      scm:git:https://gitbox.apache.org/repos/asf/sis.git
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/trunk</url>
+    <url>https://gitbox.apache.org/repos/asf?p=sis.git</url>
   </scm>
 
   <ciManagement>
@@ -935,7 +935,7 @@
   </pluginRepositories>
 
   <!-- Used for GeoAPI snapshots only.
-       Shall be removed on SIS trunk. -->
+       Shall be removed on SIS master. -->
   <repositories>
     <repository>
       <id>geotoolkit</id>
