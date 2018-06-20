@@ -69,7 +69,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1413613911128890864L;
+    private static final long serialVersionUID = 2627991335953178610L;
 
     /**
      * Location (address) for on-line access using a Uniform Resource Locator address or
