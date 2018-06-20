@@ -27,7 +27,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>application</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
 
@@ -35,11 +35,11 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>application</artifactId>
-  <packaging>pom</packaging>
-  <name>Apache SIS applications</name>
+  <groupId>org.apache.sis.application</groupId>
+  <artifactId>sis-javafx</artifactId>
+  <name>Apache SIS application for JavaFX</name>
   <description>
-    Group of modules providing applications built on top of Apache SIS.
+    Client application for JavaFX.
   </description>
 
 
@@ -48,15 +48,14 @@
        =========================================================== -->
   <developers>
     <developer>
-      <name>Chris A. Mattmann</name>
-      <id>mattmann</id>
-      <email>mattmann@apache.org</email>
-      <url>http://sunset.usc.edu/~mattmann/</url>
-      <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
-      <timezone>-8</timezone>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
-        <role>committer</role>
+        <role>developer</role>
       </roles>
     </developer>
   </developers>
@@ -67,20 +66,19 @@
        =========================================================== -->
   <build>
     <plugins>
-
-      <!-- Collect JAR files in <root>/target/binaries directory. -->
+      <!-- Anticipation for Java 9 -->
       <plugin>
-        <groupId>org.apache.sis.core</groupId>
-        <artifactId>sis-build-helper</artifactId>
-        <version>${sis.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile-resources</goal>
-              <goal>collect-jars</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.gui
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -91,43 +89,15 @@
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis.storage</groupId>
-      <artifactId>sis-storage</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
+      <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>material-design-icons</artifactId>
+      <version>3.0.1</version>
     </dependency>
   </dependencies>
 
-
-  <!-- ===========================================================
-           Sub-modules included in the build in dependency order
-       =========================================================== -->
-  <modules>
-    <module>sis-console</module>
-    <module>sis-javafx</module>
-    <module>sis-webapp</module>
-  </modules>
-
-  <!-- Following module is omitted for now (unless doing a release)
-       because of the numerous warnings emitted by Pack200. -->
-  <profiles>
-    <profile>
-      <id>apache-release</id>
-      <modules>
-        <module>sis-openoffice</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
