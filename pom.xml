@@ -510,8 +510,8 @@
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compile.source>1.8</maven.compile.source>
-    <maven.compile.target>1.8</maven.compile.target>
+    <maven.compile.source>9</maven.compile.source>
+    <maven.compile.target>9</maven.compile.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>0.8</sis.non-free.version>
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
@@ -525,35 +525,6 @@
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.apache.sis.test.extensive>true</org.apache.sis.test.extensive>
       </properties>
-    </profile>
-
-    <!-- Cross-version compilation (to be removed with JDK9). -->
-    <profile>
-      <id>bootclasspath</id>
-      <activation>
-        <property>
-          <name>bootclasspath</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArgs>
-                <arg>-bootclasspath</arg>
-                <arg>${bootclasspath}</arg>
-              </compilerArgs>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <bootclasspath>${bootclasspath}</bootclasspath>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
 
     <!-- ===================================================================
@@ -603,6 +574,7 @@
           <compilerArgs>
             <arg>-Xlint:all</arg>
             <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>
+            <arg>--add-modules</arg> <arg>java.xml.bind,java.xml.ws.annotation,javafx.graphics</arg>
             <arg>-h</arg> <arg>${project.build.sourceDirectory}/../c</arg>
           </compilerArgs>
         </configuration>
