@@ -178,7 +178,7 @@ public final strictfp class TreeNodeTest extends TestCase {
      *
      * <p>If {@link #valuePolicy} is {@link ValueExistencePolicy#COMPACT}, then this method removes the elements at
      * indices 0, 6 and 10 (if {@code offset} = 0) or 1, 7 and 11 (if {@code offset} = 1) from the {@code expected}
-     * array before to perform the comparison.</p>
+     * array before to perform the comparison (note: actual indices vary according branches).</p>
      *
      * @param  offset    0 if compact mode excludes the parent, or 1 if compact mode exclude the first child.
      * @param  column    the column from which to get a value.

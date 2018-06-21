@@ -49,13 +49,6 @@ import java.time.format.SignStyle;
  * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
  * which is not necessarily identical to other ISO standards.
  *
- * <p>This class is implemented in two different way depending on the Apache SIS branch:</p>
- * <ul>
- *   <li>Branches for JDK8 and more use {@link java.time.format.DateTimeFormatter}.</li>
- *   <li>Branches for older JDKs use {@link java.text.SimpleDateFormat} together with some hacks
- *       for allowing some fields to be optional (for example adding ":00" is seconds are missing).</li>
- * </ul>
- *
  * External users should use nothing else than the parsing and formating methods.
  * The methods for configuring the {@code DateFormat} instances may or may not work
  * depending on the branch.
@@ -74,7 +67,6 @@ import java.time.format.SignStyle;
 public final class StandardDateFormat extends DateFormat {
     /**
      * For cross-version compatibility.
-     * This number must be different between the JDK8 branch and pre-JDK8 branches.
      */
     private static final long serialVersionUID = 2764313272939921664L;
 

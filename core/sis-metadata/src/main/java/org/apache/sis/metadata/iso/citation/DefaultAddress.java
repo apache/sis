@@ -70,7 +70,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     private InternationalString city;
 
-   /**
+    /**
      * Country of the physical address.
      */
     private InternationalString country;

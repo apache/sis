@@ -51,8 +51,6 @@ public final strictfp class StandardDateFormatTest extends TestCase {
 
     /**
      * Tests parsing a date.
-     * Since the implementation is completely different in JDK8 branch than in previous branch,
-     * a key purpose of this test is to ensure that the parsing is consistent between the branches.
      *
      * @throws ParseException if an error occurred while parsing the date.
      */
