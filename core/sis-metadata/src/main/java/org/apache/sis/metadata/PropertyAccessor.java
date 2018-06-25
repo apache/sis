@@ -94,7 +94,7 @@ class PropertyAccessor {
      * Enumeration constants for the {@code mode} argument
      * in the {@link #set(int, Object, Object, int)} method.
      */
-    static final int RETURN_NULL=0, RETURN_PREVIOUS=1, APPEND=2;
+    static final int RETURN_NULL=0, RETURN_PREVIOUS=1, APPEND=2, IGNORE_READ_ONLY=3;
 
     /**
      * Additional getter to declare in every list of getter methods that do not already provide
@@ -744,15 +744,17 @@ class PropertyAccessor {
      * {@link #RETURN_PREVIOUS}. The {@code mode} argument can be one of the following:
      *
      * <ul>
-     *   <li>RETURN_NULL:     Set the value and returns {@code null}.</li>
-     *   <li>RETURN_PREVIOUS: Set the value and returns the previous value. If the previous value was a
-     *                        collection or a map, then that value is copied in a new collection or map
-     *                        before the new value is set because the setter methods typically copy the
-     *                        new collection in their existing instance.</li>
-     *   <li>APPEND:          Set the value only if it doesn't overwrite an existing value, then returns
-     *                        {@link Boolean#TRUE} if the metadata changed as a result of this method call,
-     *                        {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
-     *                        value can not be set because an other value already exists.</li>
+     *   <li>RETURN_NULL:      Set the value and returns {@code null}.</li>
+     *   <li>RETURN_PREVIOUS:  Set the value and returns the previous value. If the previous value was a
+     *                         collection or a map, then that value is copied in a new collection or map
+     *                         before the new value is set because the setter methods typically copy the
+     *                         new collection in their existing instance.</li>
+     *   <li>APPEND:           Set the value only if it does not overwrite an existing value, then returns
+     *                         {@link Boolean#TRUE} if the metadata changed as a result of this method call,
+     *                         {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
+     *                         value can not be set because an other value already exists.</li>
+     *   <li>IGNORE_READ_ONLY: Set the value and returns {@code null} on success. If the property is read-only,
+     *                         do not throw an exception; returns exception class instead.</li>
      * </ul>
      *
      * <p>The {@code APPEND} mode has an additional side effect: it sets the {@code append} argument to
@@ -769,8 +771,8 @@ class PropertyAccessor {
      * @param  metadata  the metadata object on which to set the value.
      * @param  value     the new value.
      * @param  mode      whether this method should first fetches the old value,
-     *                   as one of the {@code RETURN_*} constants.
-     * @return the old value, or {@code null} if {@code returnValue} was {@code RETURN_NULL}.
+     *                   as one of the constants listed in this method javadoc.
+     * @return the old value, or {@code null} if {@code mode} was {@code RETURN_NULL} or {@code IGNORE_READ_ONLY}.
      * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
@@ -788,6 +790,7 @@ class PropertyAccessor {
                 final Object oldValue;
                 final Object snapshot;                      // Copy of oldValue before modification.
                 switch (mode) {
+                    case IGNORE_READ_ONLY:
                     case RETURN_NULL: {
                         oldValue = null;
                         snapshot = null;
@@ -826,8 +829,8 @@ class PropertyAccessor {
                 final Object[] newValues = new Object[] {value};
                 Boolean changed = convert(getter, metadata, oldValue, newValues, elementTypes[index], mode == APPEND);
                 if (changed == null) {
-                    changed = (mode == RETURN_NULL) || (newValues[0] != oldValue);
-                    if (changed && mode == APPEND && !ValueExistencePolicy.isNullOrEmpty(oldValue)) {
+                    changed = (mode == RETURN_NULL) || (mode == IGNORE_READ_ONLY) || (newValues[0] != oldValue);
+                    if (changed && mode == APPEND && !isNullOrEmpty(oldValue)) {
                         /*
                          * If 'convert' did not added the value in a collection and if a value already
                          * exists, do not modify the existing value. Exit now with "no change" status.
@@ -841,7 +844,11 @@ class PropertyAccessor {
                 return (mode == APPEND) ? changed : snapshot;
             }
         }
-        throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, names[index]));
+        if (mode == IGNORE_READ_ONLY) {
+            return UnmodifiableMetadataException.class;
+        }
+        throw new UnmodifiableMetadataException(Errors.format(
+                Errors.Keys.CanNotSetPropertyValue_1, type.getSimpleName() + '.' + names[index]));
     }
 
     /**
@@ -1239,10 +1246,9 @@ class PropertyAccessor {
      * @param  copier     contains a map of metadata objects already copied.
      * @return a copy of the given metadata object, or {@code metadata} itself if there is
      *         no known implementation class or that implementation has no setter method.
-     * @throws Exception if an error occurred while creating the copy. This include any
-     *         checked checked exception that the no-argument constructor may throw.
+     * @throws ReflectiveOperationException if an error occurred while creating the copy.
      */
-    final Object copy(final Object metadata, final MetadataCopier copier) throws Exception {
+    final Object copy(final Object metadata, final MetadataCopier copier) throws ReflectiveOperationException {
         if (setters == null) {
             return metadata;
         }
@@ -1269,23 +1275,25 @@ class PropertyAccessor {
     }
 
     /**
-     * Computes a hash code for the specified metadata. The hash code is defined as the sum
-     * of hash code values of all non-empty properties, plus the hash code of the interface.
-     * This is a similar contract than {@link java.util.Set#hashCode()} (except for the interface)
-     * and ensures that the hash code value is insensitive to the ordering of properties.
+     * Invokes {@link MetadataVisitor#visit(Class, Object)} for all non-null properties in the given metadata.
+     * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
      *
-     * @throws BackingStoreException if the implementation threw a checked exception.
+     * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
+     * @param  metadata  the metadata instance for which to visit the non-null properties.
      */
-    public int hashCode(final Object metadata) throws BackingStoreException {
+    final void walk(final MetadataVisitor<?> visitor, final Object metadata) {
         assert type.isInstance(metadata) : metadata;
-        int code = type.hashCode();
         for (int i=0; i<standardCount; i++) {
-            final Object value = get(getters[i], metadata);
-            if (!isNullOrEmpty(value)) {
-                code += value.hashCode();
+            final Object element = get(getters[i], metadata);
+            if (element != null) {
+                Object r = visitor.visit(elementTypes[i], element);
+                if (r != null) {
+                    if (r == MetadataVisitor.SKIP_SIBLINGS) break;
+                    if (r == MetadataVisitor.CLEAR) r = null;
+                    set(i, metadata, r, IGNORE_READ_ONLY);
+                }
             }
         }
-        return code;
     }
 
     /**

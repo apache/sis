@@ -90,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see AbstractMetadata
  *
@@ -1024,24 +1024,14 @@ public class MetadataStandard implements Serializable {
      */
     public int hashCode(final Object metadata) throws ClassCastException {
         if (metadata != null) {
-            final Map<Object,Object> inProgress = RecursivityGuard.HASH_CODES.get();
-            if (inProgress.put(metadata, Boolean.TRUE) == null) {
-                // See comment in 'equals(…) about NULL_COLLECTION semaphore purpose.
-                final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
-                try {
-                    return getAccessor(new CacheKey(metadata.getClass()), true).hashCode(metadata);
-                } finally {
-                    inProgress.remove(metadata);
-                    if (!allowNull) {
-                        Semaphores.clear(Semaphores.NULL_COLLECTION);
-                    }
-                }
-            }
+            final Integer hash = HashCode.getOrCreate().walk(this, null, metadata, true);
+            if (hash != null) return hash;
             /*
-             * If we get there, a cycle has been found. We can not compute a hash code value for that metadata.
-             * However it should not be a problem since this metadata is part of a bigger metadata object, and
-             * that enclosing object has other properties for computing its hash code. We just need the result
-             * to be consistent, wich should be the case if properties ordering is always the same.
+             * 'hash' may be null if a cycle has been found. Example: A depends on B which depends on A,
+             * in which case the null value is returned for the second occurrence of A (not the first one).
+             * We can not compute a hash code value here, but it should be okay since that metadata is part
+             * of a bigger metadata object, and that enclosing object should have other properties for computing
+             * its hash code.
              */
         }
         return 0;

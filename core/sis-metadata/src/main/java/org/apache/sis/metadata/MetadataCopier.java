@@ -25,6 +25,7 @@ import java.util.IdentityHashMap;
 import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CodeListSet;
 
@@ -80,7 +81,7 @@ import org.apache.sis.util.collection.CodeListSet;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see ModifiableMetadata#unmodifiable()
  *
@@ -172,16 +173,9 @@ public class MetadataCopier {
                 final PropertyAccessor accessor = std.getAccessor(new CacheKey(metadata.getClass(), type), false);
                 if (accessor != null) try {
                     return accessor.copy(metadata, this);
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    /*
-                     * In our PropertyAccessor.copy(…) implementation, checked exceptions can only be thrown
-                     * by the constructor.   Note that Class.newInstance() may throw more checked exceptions
-                     * than the ones declared in its method signature,  so we really need to catch Exception
-                     * (ReflectiveOperationException is not sufficient).
-                     */
-                    throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type), e);
+                } catch (ReflectiveOperationException e) {
+                    throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type),
+                            Exceptions.unwrap(e));
                 }
             }
         }

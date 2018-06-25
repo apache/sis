@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import org.opengis.util.ControlledVocabulary;
@@ -29,44 +28,46 @@ import static org.apache.sis.metadata.ValueExistencePolicy.*;
 /**
  * Implementation of {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  *
+ * The {@link #visited} map inherited by this class is the thread-local map of metadata objects already tested.
+ * Keys are metadata instances, and values are the results of the {@code metadata.isEmpty()} operation.
+ * If the final operation requested by the user is {@code isEmpty()}, then this map will contain one of
+ * few {@code false} values since the walk in the tree will stop at the first {@code false} value found.
+ * If the final operation requested by the user is {@code prune()}, then this map will contain a mix of
+ * {@code false} and {@code true} values since the operation will unconditionally walk through the entire tree.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
-final class Pruner {
+final class Pruner extends MetadataVisitor<Boolean> {
     /**
-     * The thread-local map of metadata objects already tested. The keys are metadata instances, and values
-     * are the results of the {@code metadata.isEmpty()} operation.
-     *
-     * If the final operation requested by the user is {@code isEmpty()}, then this map will contain at most
-     * one {@code false} value since the walk in the tree will stop at the first {@code false} value found.
-     *
-     * If the final operation requested by the user is {@code prune()}, then this map will contain a mix of
-     * {@code false} and {@code true} values since the operation will unconditionally walk through the entire tree.
+     * Provider of visitor instances.
      */
-    private static final RecursivityGuard<Boolean> MAPS = new RecursivityGuard<>();
+    private static final ThreadLocal<Pruner> VISITORS = ThreadLocal.withInitial(Pruner::new);
 
     /**
-     * For internal usage only.
+     * {@code true} for removing empty properties.
+     */
+    private boolean prune;
+
+    /**
+     * Whether the metadata is empty.
+     */
+    private boolean isEmpty;
+
+    /**
+     * Creates a new object which will test or prune metadata properties.
      */
     private Pruner() {
     }
 
     /**
-     * Returns the metadata properties. When used for pruning empty values, the map needs to
-     * include empty (but non-null) values in order to allow us to set them to {@code null}.
+     * Returns the thread-local variable that created this {@code Pruner} instance.
      */
-    private static Map<String, Object> asMap(final Object metadata, final PropertyAccessor accessor, final boolean prune) {
-        return new ValueMap(metadata, accessor, KeyNamePolicy.JAVABEANS_PROPERTY, prune ? NON_NULL : NON_EMPTY);
-    }
-
-    /**
-     * Returns {@code true} if the value for the given entry is a primitive type.
-     */
-    private static boolean isPrimitive(final Map.Entry<String,Object> entry) {
-        return (entry instanceof ValueMap.Property) &&
-                ((ValueMap.Property) entry).getValueType().isPrimitive();
+    @Override
+    final ThreadLocal<? extends MetadataVisitor<?>> creator() {
+        return VISITORS;
     }
 
     /**
@@ -74,164 +75,115 @@ final class Pruner {
      * This method is the entry point for the {@link AbstractMetadata#isEmpty()} and
      * {@link ModifiableMetadata#prune()} public methods.
      *
-     * <p>This method is typically invoked recursively while we iterate down the metadata tree.
-     * It creates a map of visited nodes when the iteration begin, and deletes that map when the
-     * iteration ends.</p>
-     *
-     * @param  metadata      the metadata object.
-     * @param  mandatory     {@code true} if we shall throw an exception if {@code metadata} is not of the expected class.
-     * @param  propertyType  if the given metadata is the return value of a property, the declared type of that property.
-     * @param  prune         {@code true} for deleting empty entries.
+     * @param  metadata  the metadata object.
+     * @param  prune     {@code true} for deleting empty entries.
      * @return {@code true} if all metadata properties are null or empty.
      */
-    static boolean isEmpty(final AbstractMetadata metadata, final Class<?> propertyType,
-            final boolean mandatory, final boolean prune)
-    {
-        final PropertyAccessor accessor = metadata.getStandard().getAccessor(
-                new CacheKey(metadata.getClass(), propertyType), mandatory);
-        if (accessor == null) {
-            return false;                       // For metadata of unknown class, conservatively assume non-empty.
-        }
-        final Map<String,Object> properties = asMap(metadata, accessor, prune);
-        final Map<Object,Boolean> tested = MAPS.get();
-        if (!tested.isEmpty()) {
-            return isEmpty(accessor, properties, tested, prune);
-        } else try {
-            tested.put(metadata, Boolean.FALSE);
-            return isEmpty(accessor, properties, tested, prune);
-        } finally {
-            MAPS.remove();
-            /*
-             * Note: we could invoke 'tested.clear()' instead in order to recycle the existing
-             *       IdentityHashMap instance, but we presume that usage of this class will be
-             *       rare enough for not being worth to keep those objects around.
-             */
-        }
+    static boolean isEmpty(final AbstractMetadata metadata, final boolean prune) {
+        final Pruner visitor = VISITORS.get();
+        final boolean p = visitor.prune;
+        visitor.prune = prune;
+        final Boolean r = visitor.walk(metadata.getStandard(), metadata.getInterface(), metadata, false);
+        visitor.prune = p;
+        return (r != null) && r;        // If there is a cycle (r == null), then the metadata is non-empty.
     }
 
     /**
-     * {@link #isEmpty(AbstractMetadata, Class, boolean, boolean)} implementation, potentially
-     * invoked recursively for inspecting child metadata and optionally removing empty ones.
-     * The map given in argument is a safety guard against infinite recursivity.
-     *
-     * @param  accessor    the accessor that provided the metadata {@code properties}.
-     * @param  properties  the metadata properties.
-     * @param  tested      an initially singleton map, to be filled with tested metadata.
-     * @param  prune       {@code true} for removing empty properties.
-     * @return {@code true} if all metadata properties are null or empty.
+     * Marks a metadata instance as empty before we start visiting its non-null properties.
+     * If the metadata does not contain any property, then this field will stay {@code true}.
      */
-    private static boolean isEmpty(final PropertyAccessor accessor, final Map<String,Object> properties,
-            final Map<Object,Boolean> tested, final boolean prune)
-    {
-        boolean isEmpty = true;
-        for (final Map.Entry<String,Object> entry : properties.entrySet()) {
-            final Object value = entry.getValue();
-            /*
-             * No need to check for null values, because the ValueExistencePolicy argument
-             * given to asMap(…) asked for non-null values. If nevertheless a value is null,
-             * following code should be robust to that.
-             *
-             * We use the 'tested' map in order to avoid computing the same value twice, but
-             * also as a check against infinite recursivity - which is why a value needs to be
-             * set before to iterate over children. The default value is 'false' because if we
-             * test the same object through a "A → B → A" dependency chain, this means that A
-             * was not empty (since it contains B).
-             */
-            final Boolean isEntryEmpty = tested.put(value, Boolean.FALSE);
-            if (isEntryEmpty != null) {
-                if (isEntryEmpty) {                     // If a value was already set, restore the original value.
-                    tested.put(value, Boolean.TRUE);
-                } else {
-                    isEmpty = false;
-                    if (!prune) break;                  // No need to continue if we are not pruning the metadata.
-                }
-            } else {
+    @Override
+    void preVisit(Class<?> type) {
+        isEmpty = true;
+    }
+
+    /**
+     * Invoked for each element in the metadata to test or prune. This method is invoked only for new elements
+     * not yet processed by {@code Pruner}. The element may be a value object or a collection. For convenience
+     * we will proceed as if we had only collections, wrapping value object in a singleton collection.
+     *
+     * @param  type   the type of elements. Note that this is not necessarily the type
+     *                of given {@code element} argument if the later is a collection.
+     * @param  value  value of the metadata element being visited.
+     */
+    @Override
+    Object visit(final Class<?> type, final Object value) {
+        final boolean isEmptyMetadata = isEmpty;    // Save the value in case it is overwritten by recursive invocations.
+        boolean isEmptyValue = true;
+        final Collection<?> values = CollectionsExt.toCollection(value);
+        for (final Iterator<?> it = values.iterator(); it.hasNext();) {
+            final Object element = it.next();
+            if (!isNullOrEmpty(element)) {
                 /*
-                 * At this point, 'value' is a new instance not yet processed by Pruner. The value may
-                 * be a data object or a collection. For convenience we will proceed as if we had only
-                 * collections, wrapping data object in a singleton collection if necessary.
+                 * At this point, 'element' is not an empty CharSequence, Collection or array.
+                 * It may be an other metadata, a Java primitive type or user-defined object.
+                 *
+                 *  - For AbstractMetadata, delegate to the public API in case it has been overriden.
+                 *  - For user-defined Emptiable, delegate to the user's isEmpty() method. Note that
+                 *    we test at different times depending if 'prune' is true of false.
                  */
-                Class<?> elementType = null;                    // To be computed when first needed.
-                boolean allElementsAreEmpty = true;
-                final Collection<?> values = CollectionsExt.toCollection(value);
-                for (final Iterator<?> it = values.iterator(); it.hasNext();) {
-                    final Object element = it.next();
-                    if (!isNullOrEmpty(element)) {
+                boolean isEmptyElement = false;
+                if (element instanceof AbstractMetadata) {
+                    final AbstractMetadata md = (AbstractMetadata) element;
+                    if (prune) md.prune();
+                    isEmptyElement = md.isEmpty();
+                } else if (!prune && element instanceof Emptiable) {
+                    isEmptyElement = ((Emptiable) element).isEmpty();
+                    // If 'prune' is true, we will rather test for Emptiable after our pruning attempt.
+                } else if (!(element instanceof ControlledVocabulary)) {
+                    final MetadataStandard standard = MetadataStandard.forClass(element.getClass());
+                    if (standard != null) {
                         /*
-                         * At this point, 'element' is not an empty CharSequence, Collection or array.
-                         * It may be an other metadata, a Java primitive type or user-defined object.
-                         *
-                         *  - For AbstractMetadata, delegate to the public API in case it has been overriden.
-                         *  - For user-defined Emptiable, delegate to the user's isEmpty() method. Note that
-                         *    we test at different times depending if 'prune' is true of false.
+                         * For implementation that are not subtype of AbstractMetadata but nevertheless
+                         * implement some metadata interfaces, we will invoke recursively this method.
                          */
-                        boolean isEmptyElement = false;
-                        if (element instanceof AbstractMetadata) {
-                            final AbstractMetadata md = (AbstractMetadata) element;
-                            if (prune) md.prune();
-                            isEmptyElement = md.isEmpty();
-                        } else if (!prune && element instanceof Emptiable) {
-                            isEmptyElement = ((Emptiable) element).isEmpty();
-                            // If 'prune' is true, we will rather test for Emptiable after our pruning attempt.
-                        } else if (!(element instanceof ControlledVocabulary)) {
-                            final MetadataStandard standard = MetadataStandard.forClass(element.getClass());
-                            if (standard != null) {
-                                /*
-                                 * For implementation that are not subtype of AbstractMetadata but nevertheless
-                                 * implement some metadata interface, we will invoke recursively this method.
-                                 * But since a class may implement more than one interface, we need to get the
-                                 * type of the value returned by the getter method in order to take in account
-                                 * only that type.
-                                 */
-                                if (elementType == null) {
-                                    elementType = accessor.type(accessor.indexOf(entry.getKey(), false),
-                                                                TypeValuePolicy.ELEMENT_TYPE);
-                                }
-                                final PropertyAccessor elementAccessor = standard.getAccessor(
-                                        new CacheKey(element.getClass(), elementType), false);
-                                if (elementAccessor != null) {
-                                    isEmptyElement = isEmpty(elementAccessor, asMap(element, elementAccessor, prune), tested, prune);
-                                    if (!isEmptyElement && element instanceof Emptiable) {
-                                        isEmptyElement = ((Emptiable) element).isEmpty();
-                                    }
-                                }
-                            } else if (isPrimitive(entry)) {
-                                if (value instanceof Number) {
-                                    isEmptyElement = Double.isNaN(((Number) value).doubleValue());
-                                } else {
-                                    // Typically methods of the kind 'isFooAvailable()'.
-                                    isEmptyElement = Boolean.FALSE.equals(value);
-                                }
+                        final Boolean r = walk(standard, type, value, false);
+                        if (r != null) {
+                            isEmptyElement = r;
+                            if (!isEmptyElement && element instanceof Emptiable) {
+                                isEmptyElement = ((Emptiable) element).isEmpty();
                             }
                         }
-                        if (!isEmptyElement) {
-                            // At this point, we have determined that the property is not empty.
-                            // If we are not removing empty nodes, there is no need to continue.
-                            if (!prune) {
-                                return false;
-                            }
-                            allElementsAreEmpty = false;
-                            continue;
-                        }
-                    }
-                    // Found an empty element. Remove it if we are
-                    // allowed to do so, then check next elements.
-                    if (prune && values == value) {
-                        it.remove();
+                    } else if (value instanceof Number) {
+                        isEmptyElement = Double.isNaN(((Number) value).doubleValue());
+                    } else if (value instanceof Boolean) {
+                        // Typically methods of the kind 'isFooAvailable()'.
+                        isEmptyElement = !((Boolean) value);
                     }
                 }
-                // If all elements were empty, set the whole property to 'null'.
-                isEmpty &= allElementsAreEmpty;
-                if (allElementsAreEmpty) {
-                    tested.put(value, Boolean.TRUE);
-                    if (prune) try {
-                        entry.setValue(null);
-                    } catch (UnsupportedOperationException e) {
-                        // Entry is read only - ignore.
+                if (!isEmptyElement) {
+                    /*
+                     * At this point, we have determined that the property is not empty.
+                     * If we are not removing empty nodes, there is no need to continue.
+                     */
+                    if (!prune) {
+                        isEmpty = false;
+                        return SKIP_SIBLINGS;
                     }
+                    isEmptyValue = false;
+                    continue;
                 }
             }
+            /*
+             * Found an empty element. Remove it if the element is part of a collection,
+             * then move to the next element in the collection (not yet the next property).
+             */
+            if (prune && values == value) {
+                it.remove();
+            }
         }
+        /*
+         * If all elements were empty, set the whole property to 'null'.
+         */
+        isEmpty = isEmptyMetadata & isEmptyValue;
+        return isEmptyValue & prune ? CLEAR : null;
+    }
+
+    /**
+     * Returns the result of visiting all elements in the metadata.
+     */
+    @Override
+    Boolean result() {
         return isEmpty;
     }
 }
