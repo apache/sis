@@ -1,0 +1,22 @@
+# Convert line endings to native line endings on checkout.
+*.c          text
+*.css        text
+*.fxml       text
+*.h          text
+*.html       text
+*.idl        text
+*.java       text
+*.jsp        text
+*.prj        text
+*.properties text
+*.sh         text eol=lf
+*.txt        text
+*.xml        text
+
+# Denote files that are truly binary and should not be modified.
+*.dbf binary
+*.jpg binary
+*.png binary
+*.shp binary
+*.shx binary
+*.so  binary
