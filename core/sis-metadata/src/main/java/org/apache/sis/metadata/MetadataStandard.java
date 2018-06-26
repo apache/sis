@@ -926,7 +926,9 @@ public class MetadataStandard implements Serializable {
      * @see ModifiableMetadata#freeze()
      */
     final void freeze(final Object metadata) throws ClassCastException {
-        getAccessor(new CacheKey(metadata.getClass()), true).freeze(metadata);
+        if (metadata != null) {
+            Freezer.getOrCreate().walk(this, null, metadata, true);
+        }
     }
 
     /**

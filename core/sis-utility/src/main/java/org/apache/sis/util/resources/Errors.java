@@ -136,6 +136,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParse_1 = 180;
 
         /**
+         * Can not process property “{1}” located at path “{0}”. The reason is: {2}
+         */
+        public static final short CanNotProcessPropertyAtPath_3 = 184;
+
+        /**
+         * Can not process property “{0}”. The reason is: {1}
+         */
+        public static final short CanNotProcessProperty_2 = 185;
+
+        /**
          * Can not read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 11;

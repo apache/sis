@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
@@ -37,16 +38,6 @@ import org.apache.sis.internal.system.Semaphores;
  * @module
  */
 abstract class MetadataVisitor<R> {
-    /**
-     * Sentinel value that may be returned by {@link #visit(Class, Object)} for meaning that a property value
-     * should be set to {@code null}. If the property type is a collection, then "null" value is interpreted
-     * as an instruction to {@linkplain java.util.Collection#clear() clear} the collection.
-     *
-     * <div class="note"><b>Note:</b> a sentinel value is required because {@code visit(…)} already uses
-     * the {@code null} return value for meaning that the property value shall not be modified.</div>
-     */
-    static final Object CLEAR = Void.TYPE;                              // The choice of this type is arbitrary.
-
     /**
      * Sentinel value that may be returned by {@link #visit(Class, Object)} for notifying the walker to stop.
      * This value causes {@link #walk walk(…)} to stop its iteration, but does not stop iteration by the parent
@@ -73,6 +64,13 @@ abstract class MetadataVisitor<R> {
     private final Map<Object,R> visited;
 
     /**
+     * The name of the property being visited as the last element of the queue. If {@code visit} method
+     * is invoked recursively, then the properties before the last one are the parent properties.
+     * The number of valid elements is {@link #nestedCount}.
+     */
+    private String[] propertyPath;
+
+    /**
      * Count of nested calls to {@link #walk(MetadataStandard, Class, Object, boolean)} method.
      * When this count reach zero, the visitor should be removed from the thread local variable.
      */
@@ -93,6 +91,7 @@ abstract class MetadataVisitor<R> {
      */
     protected MetadataVisitor() {
         visited = new IdentityHashMap<>();
+        propertyPath = new String[6];
     }
 
     /**
@@ -100,6 +99,13 @@ abstract class MetadataVisitor<R> {
      * This is usually a static final {@code VISITORS} constant defined in the subclass.
      */
     abstract ThreadLocal<? extends MetadataVisitor<?>> creator();
+
+    /**
+     * Sets the name of the method being visited. This is invoked by {@code PropertyAccessor.walk} methods only.
+     */
+    final void setCurrentProperty(final String name) {
+        propertyPath[nestedCount - 1] = name;
+    }
 
     /**
      * Invokes {@link #visit(Class, Object)} for all elements of the given metadata if that metadata has not
@@ -121,10 +127,13 @@ abstract class MetadataVisitor<R> {
         if (!visited.containsKey(metadata)) {               // Reminder: the associated value may be null.
             final PropertyAccessor accessor = standard.getAccessor(new CacheKey(metadata.getClass(), type), mandatory);
             if (accessor != null) {
-                preVisit(accessor.type);
+                final boolean write = preVisit(accessor.type);
                 if (visited.put(metadata, null) != null) {
                     // Should never happen, unless this method is invoked concurrently in another thread.
                     throw new ConcurrentModificationException();
+                }
+                if (nestedCount >= propertyPath.length) {
+                    propertyPath = Arrays.copyOf(propertyPath, nestedCount * 2);
                 }
                 if (nestedCount++ == 0) {
                     /*
@@ -137,7 +146,15 @@ abstract class MetadataVisitor<R> {
                     allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
                 }
                 try {
-                    accessor.walk(this, metadata);
+                    if (write) {
+                        accessor.walkWritable(this, metadata);
+                    } else {
+                        accessor.walkReadable(this, metadata);
+                    }
+                } catch (MetadataVisitorException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new MetadataVisitorException(Arrays.copyOf(propertyPath, nestedCount), accessor.type, e);
                 } finally {
                     if (--nestedCount == 0) {
                         if (!allowNull) {
@@ -161,8 +178,11 @@ abstract class MetadataVisitor<R> {
      * {@link #visit(Class, Object)} will be invoked for each property in the metadata object.
      *
      * @param  type  the standard interface implemented by the metadata instance being visited.
+     * @return {@code true} for visiting only writable properties, or
+     *         {@code false} for visiting all readable properties.
      */
-    void preVisit(Class<?> type) {
+    boolean preVisit(Class<?> type) {
+        return false;
     }
 
     /**
@@ -170,22 +190,23 @@ abstract class MetadataVisitor<R> {
      * The return value is interpreted as below:
      *
      * <ul>
-     *   <li>{@link #SKIP_SIBLINGS}: do not iterate over other elements of current metadata,
-     *       but continue iteration over elements of the parent metadata.</li>
-     *   <li>{@link #CLEAR}: clear the property value (e.g. by setting it to {@code null}),
+     *   <li>{@link #SKIP_SIBLINGS}: do not iterate over other properties of current metadata,
+     *       but continue iteration over properties of the parent metadata.</li>
+     *   <li>{@code value}: continue with next sibling property without setting any value.</li>
+     *   <li>{@code null}: clear the property value, then continue with next sibling property.
+     *       If the property type is a collection, then "null" value is interpreted as an instruction
+     *       to {@linkplain java.util.Collection#clear() clear} the collection.</li>
+     *   <li>Any other value: set the property value to the given value,
      *       then continue with next sibling property.</li>
-     *   <li>Any other non-null value: set the property value to the given value,
-     *       then continue with next sibling property.</li>
-     *   <li>{@code null}: continue with next sibling property without setting any value.</li>
      * </ul>
      *
      * @param  type   the type of elements. Note that this is not necessarily the type
      *                of given {@code value} argument if the later is a collection.
      * @param  value  value of the metadata property being visited.
-     * @return one of the sentinel values ({@link #CLEAR} or {@link #SKIP_SIBLINGS}),
-     *         or the new property value to set, or {@code null} for leaving the property value unchanged.
+     * @return the new property value to set, or {@link #SKIP_SIBLINGS}.
+     * @throws Exception if the visit operation failed.
      */
-    abstract Object visit(Class<?> type, Object value);
+    abstract Object visit(Class<?> type, Object value) throws Exception;
 
     /**
      * Returns the result of visiting all elements in a metadata instance.

@@ -66,7 +66,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
      * Returns the thread-local variable that created this {@code Pruner} instance.
      */
     @Override
-    final ThreadLocal<? extends MetadataVisitor<?>> creator() {
+    final ThreadLocal<Pruner> creator() {
         return VISITORS;
     }
 
@@ -90,11 +90,17 @@ final class Pruner extends MetadataVisitor<Boolean> {
 
     /**
      * Marks a metadata instance as empty before we start visiting its non-null properties.
-     * If the metadata does not contain any property, then this field will stay {@code true}.
+     * If the metadata does not contain any property, then the {@link #isEmpty} field will
+     * stay {@code true}.
+     *
+     * @return {@code false} since this visitor is not restricted to writable properties.
+     *         We need to visit all readable properties even for pruning operation since
+     *         we need to determine if the metadata is empty.
      */
     @Override
-    void preVisit(Class<?> type) {
+    boolean preVisit(final Class<?> type) {
         isEmpty = true;
+        return false;
     }
 
     /**
@@ -176,7 +182,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
          * If all elements were empty, set the whole property to 'null'.
          */
         isEmpty = isEmptyMetadata & isEmptyValue;
-        return isEmptyValue & prune ? CLEAR : null;
+        return isEmptyValue & prune ? null : value;
     }
 
     /**

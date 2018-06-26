@@ -56,7 +56,7 @@ final class HashCode extends MetadataVisitor<Integer> {
      * Returns the thread-local variable that created this {@code HashCode} instance.
      */
     @Override
-    final ThreadLocal<? extends MetadataVisitor<?>> creator() {
+    final ThreadLocal<HashCode> creator() {
         return VISITORS;
     }
 
@@ -65,10 +65,12 @@ final class HashCode extends MetadataVisitor<Integer> {
      * If another hash code computation was in progress, that code shall be saved before this method is invoked.
      *
      * @param  type  the standard interface of the metadata for which a hash code value will be computed.
+     * @return {@code false} since this visitor is not restricted to writable properties.
      */
     @Override
-    void preVisit(final Class<?> type) {
+    boolean preVisit(final Class<?> type) {
         code = type.hashCode();
+        return false;
     }
 
     /**
@@ -90,7 +92,7 @@ final class HashCode extends MetadataVisitor<Integer> {
             c += value.hashCode();
             code = c;
         }
-        return null;
+        return value;
     }
 
     /**

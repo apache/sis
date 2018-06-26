@@ -32,22 +32,21 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 /**
  * Returns unmodifiable view of metadata elements of arbitrary type.
- * Despite the {@code Cloner} parent class name, this class actually
- * tries to avoid creating new clones as much as possible.
+ * This class tries to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
  */
-final class Freezer extends Cloner {
+final class Freezer extends MetadataVisitor<Boolean> {
     /**
      * The {@code Freezer} instance in current use. The clean way would have been to pass the {@code Freezer}
      * instance in argument to all {@code freeze()} and {@code unmodifiable()} methods in metadata packages.
      * But above-cited methods are public, and we do not want to expose {@code Freezer} in public API for now.
      * This thread-local is a workaround for that situation.
      */
-    private static final ThreadLocal<Freezer> CURRENT = ThreadLocal.withInitial(Freezer::new);
+    private static final ThreadLocal<Freezer> VISITORS = ThreadLocal.withInitial(Freezer::new);
 
     /**
      * All objects made immutable during iteration over children properties.
@@ -56,9 +55,9 @@ final class Freezer extends Cloner {
     private final Map<Object,Object> existings;
 
     /**
-     * Usage count, for determining when to clean {@link #CURRENT}.
+     * The cloner, created when first needed.
      */
-    private int useCount;
+    private Cloner cloner;
 
     /**
      * Creates a new {@code Freezer} instance.
@@ -68,22 +67,29 @@ final class Freezer extends Cloner {
     }
 
     /**
-     * Returns the freezer in current use, or a new one if none.
-     * Callers <strong>must</strong> invoke {@link #release()} in a {@code finally} block.
+     * Returns the visitor for the current thread if it already exists, or creates a new one otherwise.
      */
-    static Freezer acquire() {
-        final Freezer freezer = CURRENT.get();
-        freezer.useCount++;
-        return freezer;
+    static Freezer getOrCreate() {
+        return VISITORS.get();
     }
 
     /**
-     * Release this freezer after usage.
+     * Returns the thread-local variable that created this {@code Freezer} instance.
      */
-    final void release() {
-        if (--useCount == 0) {
-            CURRENT.remove();
-        }
+    @Override
+    final ThreadLocal<Freezer> creator() {
+        return VISITORS;
+    }
+
+    /**
+     * Notifies {@link MetadataVisitor} that we want to visit all writable properties.
+     *
+     * @param  type  ignored.
+     * @return {@code true}, for iterating over all writable properties.
+     */
+    @Override
+    boolean preVisit(final Class<?> type) {
+        return true;
     }
 
     /**
@@ -100,20 +106,11 @@ final class Freezer extends Cloner {
     }
 
     /**
-     * Tells {@link Cloner#clone(Object)} to return the original object
-     * if no public {@code clone()} method is found.
+     * Recursively freezes all elements in the given array.
      */
-    @Override
-    protected boolean isCloneRequired(final Object object) {
-        return false;
-    }
-
-    /**
-     * Recursively clones all elements in the given array.
-     */
-    private void clones(final Object[] array) throws CloneNotSupportedException {
+    private void freezeAll(final Object[] array) throws CloneNotSupportedException {
         for (int i=0; i < array.length; i++) {
-            array[i] = clone(array[i]);
+            array[i] = visit(null, array[i]);
         }
     }
 
@@ -132,11 +129,12 @@ final class Freezer extends Cloner {
      *   <li>Otherwise, the object is assumed immutable and returned unchanged.</li>
      * </ul>
      *
+     * @param  type    ignored (can be {@code null}).
      * @param  object  the object to convert in an immutable one.
      * @return a presumed immutable view of the specified object.
      */
     @Override
-    public Object clone(final Object object) throws CloneNotSupportedException {
+    final Object visit(final Class<?> type, final Object object) throws CloneNotSupportedException {
         /*
          * CASE 1 - The object is an org.apache.sis.metadata.* implementation. It may have
          *          its own algorithm for creating an unmodifiable view of metadata.
@@ -165,7 +163,7 @@ final class Freezer extends Cloner {
                     break;
                 }
                 case 1: {
-                    final Object value = clone(array[0]);
+                    final Object value = visit(null, array[0]);
                     collection = isSet ? Collections.singleton(value)
                                        : Collections.singletonList(value);
                     break;
@@ -177,7 +175,7 @@ final class Freezer extends Cloner {
                         } else if (collection instanceof CodeListSet<?>) {
                             collection = Collections.unmodifiableSet(((CodeListSet<?>) collection).clone());
                         } else {
-                            clones(array);
+                            freezeAll(array);
                             collection = CollectionsExt.immutableSet(false, array);
                         }
                     } else {
@@ -186,7 +184,7 @@ final class Freezer extends Cloner {
                          * Conservatively assumes a List if we are not sure to have a Set since the list
                          * is less destructive (no removal of duplicated values).
                          */
-                        clones(array);
+                        freezeAll(array);
                         collection = UnmodifiableArrayList.wrap(array);
                     }
                     break;
@@ -201,7 +199,7 @@ final class Freezer extends Cloner {
         if (object instanceof Map<?,?>) {
             final Map<Object,Object> map = new LinkedHashMap<>((Map<?,?>) object);
             for (final Map.Entry<Object,Object> entry : map.entrySet()) {
-                entry.setValue(clone(entry.getValue()));
+                entry.setValue(visit(null, entry.getValue()));
             }
             return CollectionsExt.unmodifiableOrCopy(map);
         }
@@ -209,11 +207,23 @@ final class Freezer extends Cloner {
          * CASE 4 - The object is presumed cloneable.
          */
         if (object instanceof Cloneable) {
-            return unique(super.clone(object));
+            if (cloner == null) {
+                cloner = new Cloner(false);
+            }
+            return unique(cloner.clone(object));
         }
         /*
          * CASE 5 - Any other case. The object is assumed immutable and returned unchanged.
          */
         return unique(object);
+    }
+
+    /**
+     * Returns an arbitrary value used by {@link MetadataVisitor} for remembering that
+     * a metadata instance has been processed.
+     */
+    @Override
+    Boolean result() {
+        return Boolean.TRUE;
     }
 }

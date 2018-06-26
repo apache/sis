@@ -63,8 +63,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
- *       Those properties are the only one accessible by most methods in this class,
- *       except {@link #equals(Object, Object, ComparisonMode)} and {@link #freeze(Object)}.</li>
+ *       Those properties are the only ones accessible by most methods in this class, except
+ *       {@link #equals(Object, Object, ComparisonMode)} and {@link #walkWritable(MetadataVisitor, Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115-1 model, but appears in ISO 19115-3 XML marshalling. So we
@@ -1185,61 +1185,6 @@ class PropertyAccessor {
     }
 
     /**
-     * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
-     * This method also replaces duplicated elements by single instances.
-     *
-     * @throws BackingStoreException if the implementation threw a checked exception.
-     */
-    final void freeze(final Object metadata) throws BackingStoreException {
-        assert implementation.isInstance(metadata) : metadata;
-        if (setters == null) {
-            return;
-        }
-        final Object[] arguments = new Object[1];
-        final Freezer freezer = Freezer.acquire();
-        try {
-            for (int i=0; i<allCount; i++) {
-                final Method setter = setters[i];
-                if (setter != null) {
-                    if (setter.isAnnotationPresent(Deprecated.class)) {
-                        /*
-                         * We need to skip deprecated setter methods, because those methods may delegate
-                         * their work to other setter methods in different objects and those objects may
-                         * have been made unmodifiable by previous iteration in this loop.  If we do not
-                         * skip them, we get an UnmodifiableMetadataException in the call to set(…).
-                         *
-                         * Note that in some cases, only the setter method is deprecated, not the getter.
-                         * This happen when Apache SIS classes represent a more recent ISO standard than
-                         * the GeoAPI interfaces.
-                         */
-                        continue;
-                    }
-                    final Method getter = getters[i];
-                    final Object source = get(getter, metadata);
-                    final Object target = freezer.clone(source);
-                    if (source != target) {
-                        arguments[0] = target;
-                        set(setter, metadata, arguments);
-                        /*
-                         * We invoke the set(…) method variant that do not perform type conversion
-                         * because we don't want it to replace the immutable collection created
-                         * by ModifiableMetadata.unmodifiable(source). Conversion should not be
-                         * required anyway because the getter method should have returned a value
-                         * compatible with the setter method - this contract is ensured by the
-                         * way the PropertyAccessor constructor selected the setter methods.
-                         */
-                    }
-                }
-            }
-        } catch (CloneNotSupportedException e) {
-            throw new UnsupportedOperationException(e);
-        } finally {
-            freezer.release();
-        }
-    }
-
-    /**
      * Returns a potentially deep copy of the given metadata object.
      *
      * @param  metadata   the metadata object to copy.
@@ -1280,17 +1225,68 @@ class PropertyAccessor {
      *
      * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
      * @param  metadata  the metadata instance for which to visit the non-null properties.
+     * @throws Exception if an error occurred while visiting a property.
      */
-    final void walk(final MetadataVisitor<?> visitor, final Object metadata) {
+    final void walkReadable(final MetadataVisitor<?> visitor, final Object metadata) throws Exception {
         assert type.isInstance(metadata) : metadata;
         for (int i=0; i<standardCount; i++) {
-            final Object element = get(getters[i], metadata);
-            if (element != null) {
-                Object r = visitor.visit(elementTypes[i], element);
-                if (r != null) {
-                    if (r == MetadataVisitor.SKIP_SIBLINGS) break;
-                    if (r == MetadataVisitor.CLEAR) r = null;
-                    set(i, metadata, r, IGNORE_READ_ONLY);
+            visitor.setCurrentProperty(names[i]);
+            final Object value = get(getters[i], metadata);
+            if (value != null) {
+                final Object result = visitor.visit(elementTypes[i], value);
+                if (result != value) {
+                    if (result == MetadataVisitor.SKIP_SIBLINGS) break;
+                    set(i, metadata, result, IGNORE_READ_ONLY);
+                }
+            }
+        }
+    }
+
+    /**
+     * Invokes {@link MetadataVisitor#visit(Class, Object)} for all writable properties in the given metadata.
+     * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
+     *
+     * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
+     * @param  metadata  the metadata instance for which to visit the writable properties.
+     * @throws Exception if an error occurred while visiting a property.
+     */
+    final void walkWritable(final MetadataVisitor<?> visitor, final Object metadata) throws Exception {
+        assert implementation.isInstance(metadata) : metadata;
+        if (setters == null) {
+            return;
+        }
+        final Object[] arguments = new Object[1];
+        for (int i=0; i<allCount; i++) {
+            visitor.setCurrentProperty(names[i]);
+            final Method setter = setters[i];
+            if (setter != null) {
+                if (setter.isAnnotationPresent(Deprecated.class)) {
+                    /*
+                     * We need to skip deprecated setter methods, because those methods may delegate
+                     * their work to other setter methods in different objects and those objects may
+                     * have been made unmodifiable by previous iteration in this loop.  If we do not
+                     * skip them, we may get an UnmodifiableMetadataException in the call to set(…).
+                     *
+                     * Note that in some cases, only the setter method is deprecated, not the getter.
+                     * This happen when Apache SIS classes represent a more recent ISO standard than
+                     * the GeoAPI interfaces.
+                     */
+                    continue;
+                }
+                final Object value = get(getters[i], metadata);
+                final Object result = visitor.visit(elementTypes[i], value);
+                if (result != value) {
+                    if (result == MetadataVisitor.SKIP_SIBLINGS) break;
+                    arguments[0] = result;
+                    set(setter, metadata, arguments);
+                    /*
+                     * We invoke the set(…) method variant that do not perform type conversion
+                     * because we do not want it to replace the immutable collections created
+                     * by ModifiableMetadata.unmodifiable(source). Conversions should not be
+                     * required anyway because the getter method should have returned a value
+                     * compatible with the setter method - this contract is ensured by the
+                     * way the PropertyAccessor constructor selected the setter methods.
+                     */
                 }
             }
         }

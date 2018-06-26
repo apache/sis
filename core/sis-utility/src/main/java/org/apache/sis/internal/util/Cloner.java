@@ -28,12 +28,12 @@ import org.apache.sis.util.resources.Errors;
  * for the lack of public {@code clone()} method in the {@link Cloneable} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @Workaround(library="JDK", version="1.7")
-public class Cloner {
+public final class Cloner {
     /**
      * The type of the object to clone, or {@code null} if not yet specified.
      * Used for checking if the cached {@linkplain #method} is still valid.
@@ -47,25 +47,27 @@ public class Cloner {
     private Method method;
 
     /**
-     * Creates a new {@code Cloner} instance.
+     * Action to take when an object can not be cloned because no public {@code clone()} method has been found.
+     * If this field is {@code true}, then the {@link #clone(Object)} method in this class will throw a
+     * {@link CloneNotSupportedException}. Otherwise the {@code clone(Object)} method will return the original object.
+     */
+    private final boolean isCloneRequired;
+
+    /**
+     * Creates a new {@code Cloner} instance which requires public {@code clone()} method to be present.
      */
     public Cloner() {
+        isCloneRequired = true;
     }
 
     /**
-     * Invoked when the given object can not be cloned because no public {@code clone()} method
-     * has been found. If this method returns {@code true}, then the {@link #clone(Object)}
-     * method in this class will throw a {@link CloneNotSupportedException}. Otherwise the
-     * {@code clone(Object)} method will return the original object.
+     * Creates a new {@code Cloner} instance.
      *
-     * <p>The default implementation returns {@code true} in every cases.
-     * Subclasses can override this method if they need a different behavior.</p>
-     *
-     * @param  object  the object that can not be cloned.
-     * @return {@code true} if the problem shall be considered a clone failure.
+     * @param  isCloneRequired  whether a {@link CloneNotSupportedException} should be thrown if no public
+     *         {@code clone()} method is found.
      */
-    protected boolean isCloneRequired(final Object object) {
-        return true;
+    public Cloner(final boolean isCloneRequired) {
+        this.isCloneRequired = isCloneRequired;
     }
 
     /**
@@ -113,7 +115,7 @@ public class Cloner {
                 return method.invoke(object, (Object[]) null);
             }
         } catch (NoSuchMethodException e) {
-            if (isCloneRequired(object)) {
+            if (isCloneRequired) {
                 throw fail(e, valueType);
             }
             method = null;
