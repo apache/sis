@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.Usability;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**

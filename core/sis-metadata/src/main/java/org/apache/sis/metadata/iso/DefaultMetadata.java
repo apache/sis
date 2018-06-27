@@ -67,7 +67,7 @@ import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;

@@ -40,7 +40,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.Namespaces;

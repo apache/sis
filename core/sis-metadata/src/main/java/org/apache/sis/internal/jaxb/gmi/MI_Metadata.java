@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.xml.stream;
+package org.apache.sis.internal.xml;
 
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
@@ -38,7 +38,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @Workaround(library = "JDK", version = "1.8")
-class StreamWriterDelegate implements XMLStreamWriter {
+public class StreamWriterDelegate implements XMLStreamWriter {
     /**
      * Where to write the XML.
      */

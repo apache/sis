@@ -39,7 +39,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 

@@ -40,7 +40,7 @@ import org.opengis.annotation.UML;
 import org.opengis.geoapi.SchemaException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
 

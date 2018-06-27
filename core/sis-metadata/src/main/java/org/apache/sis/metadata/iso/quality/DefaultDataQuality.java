@@ -28,7 +28,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**

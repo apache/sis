@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

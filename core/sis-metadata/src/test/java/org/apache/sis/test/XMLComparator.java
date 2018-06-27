@@ -43,7 +43,7 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;

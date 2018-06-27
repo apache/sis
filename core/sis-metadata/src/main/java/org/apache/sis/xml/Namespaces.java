@@ -22,7 +22,7 @@ import java.util.Locale;
 import javax.xml.XMLConstants;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**

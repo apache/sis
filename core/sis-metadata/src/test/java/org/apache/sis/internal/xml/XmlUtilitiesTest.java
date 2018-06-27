@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb;
+package org.apache.sis.internal.xml;
 
 import java.util.Date;
 import java.util.Locale;

@@ -28,7 +28,7 @@ import org.opengis.metadata.distribution.DataFile;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.MimeFileTypeAdapter;
 import org.opengis.util.InternationalString;
 

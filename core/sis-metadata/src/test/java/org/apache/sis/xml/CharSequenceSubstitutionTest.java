@@ -22,7 +22,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.InitiativeType;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.SensorType;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.test.DependsOnMethod;

@@ -16,16 +16,22 @@
  */
 
 /**
- * Helper classes for reading and writing XML documents using StAX (Streaming API for XML).
- * This package uses the <cite>cursor API</cite> through {@link javax.xml.stream.XMLStreamReader}
- * and {@link javax.xml.stream.XMLStreamWriter} interfaces.
- * Implementations can optionally use JAXB for some specific elements,
- * typically for metadata before the stream of features.
+ * A set of helper classes for XML handling in the SIS implementation.
  *
- * @author  Johann Sorel (Geomatys)
+ * <strong>Do not use!</strong>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * <p>The content of this class is independent of our JAXB usage, except
+ * {@link org.apache.sis.internal.jaxb.Context} which is used for fetching
+ * locale and timezone information.</p>
+ *
+ * @author  Cédric Briançon (Geomatys)
+ * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.8
+ * @since   1.0
  * @module
  */
-package org.apache.sis.internal.storage.xml.stream;
+package org.apache.sis.internal.xml;

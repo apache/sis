@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 

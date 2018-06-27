@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.measure.UnitFormat;

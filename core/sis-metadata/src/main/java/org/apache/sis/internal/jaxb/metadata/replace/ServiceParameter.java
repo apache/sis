@@ -33,7 +33,7 @@ import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.NameToIdentifier;

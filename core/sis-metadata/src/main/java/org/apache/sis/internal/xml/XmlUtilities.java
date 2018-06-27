@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb;
+package org.apache.sis.internal.xml;
 
 import java.util.Date;
 import java.util.Locale;
@@ -25,6 +25,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.jaxb.Context;
 
 import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 
