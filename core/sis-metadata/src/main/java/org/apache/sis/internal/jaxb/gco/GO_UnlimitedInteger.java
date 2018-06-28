@@ -17,25 +17,30 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * Wraps a long value in an {@code <gco:Integer>} element.
+ * Wraps an "unlimited" integer value in an {@code <gco:UnlimitedInteger>} element.
  * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
- * @author  Cédric Briançon (Geomatys)
- * @version 0.4
- * @since   0.4
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
+ *
+ * @see GO_Integer
+ * @see GO_Integer64
+ *
+ * @since 1.0
  * @module
  */
-public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
+@XmlType(name = "UnlimitedInteger_PropertyType")
+final class GO_UnlimitedInteger extends PropertyType<GO_UnlimitedInteger, UnlimitedInteger> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Integer64() {
+    GO_UnlimitedInteger() {
     }
 
     /**
@@ -43,31 +48,31 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *
      * @param  value  the value.
      */
-    private GO_Integer64(final Long value) {
-        super(value, value == 0L);
+    private GO_UnlimitedInteger(final UnlimitedInteger value) {
+        super(value, false);
     }
 
     /**
      * Returns the Java type which is bound by this adapter.
      *
-     * @return {@code Long.class}
+     * @return {@code UnlimitedInteger.class}
      */
     @Override
-    protected Class<Long> getBoundType() {
-        return Long.class;
+    protected final Class<UnlimitedInteger> getBoundType() {
+        return UnlimitedInteger.class;
     }
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO 19115-3 standard and its requirements about primitive types.
      *
-     * @param  value  the integer value we want to surround by an element representing its type.
-     * @return an adaptation of the integer value, that is to say a integer value surrounded
-     *         by {@code <gco:Integer>} element.
+     * @param  value  the integer value we want to wrap in an element representing its type.
+     * @return a wrapper for the integer value, that is to say an integer value wrapped
+     *         by {@code <gco:UnlimitedInteger>} element.
      */
     @Override
-    protected GO_Integer64 wrap(final Long value) {
-        return new GO_Integer64(value);
+    protected GO_UnlimitedInteger wrap(final UnlimitedInteger value) {
+        return new GO_UnlimitedInteger(value);
     }
 
     /**
@@ -75,9 +80,8 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *
      * @return the value to be marshalled.
      */
-    @XmlElement(name = "Integer")
-    @XmlSchemaType(name = "integer")
-    public Long getElement() {
+    @XmlElement(name = "UnlimitedInteger")
+    public final UnlimitedInteger getElement() {
         return metadata;
     }
 
@@ -86,7 +90,7 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *
      * @param  metadata  the unmarshalled value.
      */
-    public void setElement(final Long metadata) {
+    public final void setElement(final UnlimitedInteger metadata) {
         this.metadata = metadata;
     }
 }

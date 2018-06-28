@@ -17,25 +17,24 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
- * Wraps a long value in an {@code <gco:Integer>} element.
- * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
- * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
- * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
+ * Adapter for a component of a multiplicity, consisting of an non-negative lower bound,
+ * and a potentially infinite upper bound.
  *
- * @author  Cédric Briançon (Geomatys)
- * @version 0.4
- * @since   0.4
+ * @author  Guilhem Legal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
-public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
+final class GO_MultiplicityRange extends PropertyType<GO_MultiplicityRange, NumberRange<Integer>> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Integer64() {
+    GO_MultiplicityRange() {
     }
 
     /**
@@ -43,31 +42,32 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *
      * @param  value  the value.
      */
-    private GO_Integer64(final Long value) {
-        super(value, value == 0L);
+    private GO_MultiplicityRange(final NumberRange<Integer> value) {
+        super(value, false);
     }
 
     /**
      * Returns the Java type which is bound by this adapter.
      *
-     * @return {@code Long.class}
+     * @return {@code MultiplicityRange.class}
      */
     @Override
-    protected Class<Long> getBoundType() {
-        return Long.class;
+    @SuppressWarnings("unchecked")
+    protected final Class<NumberRange<Integer>> getBoundType() {
+        return (Class) NumberRange.class;
     }
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO 19115-3 standard and its requirements about primitive types.
      *
-     * @param  value  the integer value we want to surround by an element representing its type.
-     * @return an adaptation of the integer value, that is to say a integer value surrounded
-     *         by {@code <gco:Integer>} element.
+     * @param  value  the integer range we want to wrap in an element representing its type.
+     * @return a wrapper for the integer range, that is to say an integer value wrapped
+     *         by {@code <gco:MultiplicityRange>} element.
      */
     @Override
-    protected GO_Integer64 wrap(final Long value) {
-        return new GO_Integer64(value);
+    protected GO_MultiplicityRange wrap(final NumberRange<Integer> value) {
+        return new GO_MultiplicityRange(value);
     }
 
     /**
@@ -75,10 +75,9 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *
      * @return the value to be marshalled.
      */
-    @XmlElement(name = "Integer")
-    @XmlSchemaType(name = "integer")
-    public Long getElement() {
-        return metadata;
+    @XmlElement(name = "MultiplicityRange")
+    private MultiplicityRange getElement() {
+        return MultiplicityRange.wrap(metadata);
     }
 
     /**
@@ -86,7 +85,9 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *
      * @param  metadata  the unmarshalled value.
      */
-    public void setElement(final Long metadata) {
-        this.metadata = metadata;
+    private void setElement(final MultiplicityRange metadata) {
+        if (metadata != null) {
+            this.metadata = metadata.value();
+        }
     }
 }

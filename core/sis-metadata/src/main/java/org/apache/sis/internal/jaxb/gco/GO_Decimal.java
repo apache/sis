@@ -78,7 +78,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      *         by {@code <gco:Decimal>} element.
      */
     @Override
-    public GO_Decimal wrap(final Double value) {
+    protected GO_Decimal wrap(final Double value) {
         return new GO_Decimal(value);
     }
 

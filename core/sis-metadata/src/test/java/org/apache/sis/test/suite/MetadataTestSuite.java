@@ -71,6 +71,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.internal.jaxb.gco.MultiplicityTest.class,
     org.apache.sis.internal.jaxb.lan.PT_LocaleTest.class,
     org.apache.sis.internal.jaxb.lan.LanguageCodeTest.class,
     org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest.class,
