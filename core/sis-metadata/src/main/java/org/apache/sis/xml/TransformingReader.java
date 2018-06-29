@@ -30,6 +30,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.util.collection.BackingStoreException;
 
 import static javax.xml.stream.XMLStreamConstants.*;
@@ -82,7 +83,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * Returns the namespace for the given ISO type, or {@code null} if unknown.
      * This is the namespace used in JAXB annotations.
      *
-     * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
+     * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}).
      * @return a namespace for the given type, or {@code null} if unknown.
      */
     static String namespace(final String type) {
@@ -280,11 +281,27 @@ final class TransformingReader extends Transformer implements XMLEventReader {
 
     /**
      * Returns the map loaded by {@link #load(String, int)}.
+     *
+     * @param  namespace  the namespace URI for which to get the substitution map.
+     * @return the substitution map for the given namespace, or an empty map if none.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final Map<String, Map<String,String>> renamingMap() {
-        return NAMESPACES;
+    final Map<String, Map<String,String>> renamingMap(final String namespace) {
+        if (!namespace.isEmpty()) {
+            switch (removeTrailingSlash(namespace)) {
+                case LegacyNamespaces.GMI_ALIAS:
+                case LegacyNamespaces.GMI:
+                case LegacyNamespaces.GMD:
+                case LegacyNamespaces.SRV:
+                case LegacyNamespaces.GCO:
+                case LegacyNamespaces.GMX:
+                case LegacyNamespaces.GML: {
+                    return NAMESPACES;
+                }
+            }
+        }
+        return Collections.emptyMap();
     }
 
     /**

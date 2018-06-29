@@ -539,8 +539,7 @@ public final class Namespaces extends Static {
         "http://www.isotc211.org/2005/",
         "http://www.opengis.net/",
         "http://www.w3.org/1999/",
-        "http://www.cnig.gouv.fr/2005/",
-        "http://purl.org/"
+        "http://www.cnig.gouv.fr/2005/"
     };
 
     /**
