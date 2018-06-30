@@ -34,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  */
 @XmlType(name = "MI_Band_Type", namespace = Namespaces.MRC)
 @XmlRootElement(name = "MI_Band", namespace = Namespaces.MRC)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Band extends DefaultBand {
     /**
      * For cross-version compatibility.

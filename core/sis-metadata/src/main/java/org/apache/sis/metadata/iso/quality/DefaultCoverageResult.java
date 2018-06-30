@@ -58,7 +58,6 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "QE_CoverageResult_Type", propOrder = {
     "spatialRepresentationType",
     "resultSpatialRepresentation",

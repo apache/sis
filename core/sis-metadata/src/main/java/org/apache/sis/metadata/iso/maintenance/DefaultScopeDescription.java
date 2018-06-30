@@ -69,7 +69,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription", namespace = Namespaces.MCC)
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {

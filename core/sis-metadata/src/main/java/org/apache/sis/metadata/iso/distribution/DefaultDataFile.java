@@ -59,7 +59,6 @@ import org.opengis.util.InternationalString;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
     "fileName",
     "fileDescription",

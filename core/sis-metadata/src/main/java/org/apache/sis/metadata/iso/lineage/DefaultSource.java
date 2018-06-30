@@ -85,7 +85,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",

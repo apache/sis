@@ -68,7 +68,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "identifier",           // New in ISO 19115-3

@@ -47,7 +47,6 @@ import org.opengis.metadata.constraint.SecurityConstraints;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_SecurityConstraints_Type", propOrder = {
     "classification",
     "userNote",

@@ -51,7 +51,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 @XmlTransient
-@SuppressWarnings("CloneableClassWithoutClone")       // ModifiableMetadata needs shallow clones.
 public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPositionalAccuracy {
     /**
      * Serial number for inter-operability with different versions.

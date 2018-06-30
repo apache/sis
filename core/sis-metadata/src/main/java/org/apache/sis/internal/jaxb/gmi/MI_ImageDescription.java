@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_ImageDescription_Type", namespace = Namespaces.MRC)
 @XmlRootElement(name = "MI_ImageDescription", namespace = Namespaces.MRC)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_ImageDescription extends DefaultImageDescription {
     /**
      * For cross-version compatibility.

@@ -75,7 +75,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "title")
 @XmlType(name = "CI_Citation_Type", propOrder = {
     "title",

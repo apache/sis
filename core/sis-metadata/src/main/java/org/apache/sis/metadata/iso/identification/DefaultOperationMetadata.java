@@ -57,7 +57,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",

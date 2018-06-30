@@ -59,7 +59,6 @@ import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "MD_Distribution_Type", propOrder = {
     "description",              // New in ISO 19115-3

@@ -79,7 +79,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "MD_ExtendedElementInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "name",

@@ -59,7 +59,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @module
  */
 @XmlTransient
-@SuppressWarnings("CloneableClassWithoutClone")     // ModifiableMetadata needs shallow clones.
 public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject, Serializable {
     /**
      * Serial number for inter-operability with different versions.

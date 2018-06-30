@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_Georeferenceable_Type", namespace = Namespaces.MSR)
 @XmlRootElement(name = "MI_Georeferenceable", namespace = Namespaces.MSR)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Georeferenceable  extends DefaultGeoreferenceable {
     /**
      * For cross-version compatibility.

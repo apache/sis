@@ -58,7 +58,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {
     "scope",
     "reports",

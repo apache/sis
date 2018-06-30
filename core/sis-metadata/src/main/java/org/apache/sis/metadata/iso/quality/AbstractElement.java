@@ -71,7 +71,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
     "namesOfMeasure",
     "measureIdentification",

@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.ThematicClassificationCorrectness;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_ThematicClassificationCorrectness_Type")
 @XmlRootElement(name = "DQ_ThematicClassificationCorrectness")
 public class DefaultThematicClassificationCorrectness extends AbstractThematicAccuracy

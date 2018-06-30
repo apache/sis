@@ -56,7 +56,6 @@ import org.apache.sis.metadata.TitleProperty;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {
     "collectionIdentification",

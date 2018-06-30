@@ -67,7 +67,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
     "maintenanceDate",                          // New in ISO 19115:2014

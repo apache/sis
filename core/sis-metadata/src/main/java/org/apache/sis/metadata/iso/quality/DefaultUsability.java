@@ -47,7 +47,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @deprecated Not found in ISO 19115-3:2016 schemas.
  */
 @Deprecated
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "QE_Usability_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "QE_Usability", namespace = LegacyNamespaces.GMI)
 public class DefaultUsability extends AbstractElement implements Usability {

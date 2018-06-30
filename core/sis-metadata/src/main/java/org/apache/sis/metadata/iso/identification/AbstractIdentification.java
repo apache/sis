@@ -86,7 +86,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
     "citation",
     "abstract",

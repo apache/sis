@@ -130,7 +130,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
     "metadataIdentifier",

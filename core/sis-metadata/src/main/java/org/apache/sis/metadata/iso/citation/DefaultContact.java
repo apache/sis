@@ -60,7 +60,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",
     "phoneList",

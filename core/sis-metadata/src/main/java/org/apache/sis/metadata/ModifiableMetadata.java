@@ -85,7 +85,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @module
  */
 @XmlTransient
-public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
+public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Initial capacity of sets. We use a small value because collections will typically
      * contain few elements (often just a singleton).
@@ -789,36 +789,5 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 ||        Locale.class ==               elementType
                 ||      Currency.class ==               elementType
                 ? Set.class : List.class);
-    }
-
-    /**
-     * Creates a <strong>shallow</strong> copy of this metadata.
-     * The clone operation is required for the internal working of the {@link #unmodifiable()} method,
-     * which needs <em>shallow</em> copies of metadata entities.
-     * For deep copies, see {@link MetadataCopier}.
-     *
-     * <div class="section">API note</div>
-     * While {@link Cloneable}, the {@code ModifiableMetadata} subclasses should not provide
-     * the {@code clone()} operation as part of their public API, because the cloned object
-     * share reference to the same collections than the original object.
-     *
-     * <div class="section">Note for subclass implementors</div>
-     * The default {@link Object#clone()} implementation is sufficient in most cases.
-     * The need to override this method should be rare, but may happen if the object
-     * contains for example connection to a database.
-     *
-     * @return a <em>shallow</em> copy of this metadata.
-     * @throws CloneNotSupportedException if the clone is not supported.
-     *
-     * @see #unmodifiable()
-     * @see MetadataCopier
-     *
-     * @deprecated Apache SIS 1.0 no longer use this mechanism. SIS 1.1 will make the standard
-     *             {@link Object#clone()} available for subclasses at their implementation choice.
-     */
-    @Override
-    @Deprecated
-    protected ModifiableMetadata clone() throws CloneNotSupportedException {
-        return (ModifiableMetadata) super.clone();
     }
 }

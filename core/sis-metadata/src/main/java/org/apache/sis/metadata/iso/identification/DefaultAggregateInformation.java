@@ -70,7 +70,6 @@ import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
  * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.
  */
 @Deprecated
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_AggregateInformation_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",

@@ -59,7 +59,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @since   0.5
  * @module
  */
-@SuppressWarnings({"CloneableClassWithoutClone", "deprecation"})    // ModifiableMetadata needs shallow clones.
+@SuppressWarnings("deprecation")
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
     "role",
     "extent",

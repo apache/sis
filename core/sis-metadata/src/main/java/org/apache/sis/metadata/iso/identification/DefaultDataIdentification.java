@@ -70,7 +70,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "language",                 // Legacy ISO 19115:2003
     "characterSets",            // Legacy ISO 19115:2003

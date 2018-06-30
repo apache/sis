@@ -64,7 +64,6 @@ import org.opengis.metadata.spatial.GeolocationInformation;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Georeferenceable_Type", propOrder = {
     "controlPointAvailable",
     "orientationParameterAvailable",

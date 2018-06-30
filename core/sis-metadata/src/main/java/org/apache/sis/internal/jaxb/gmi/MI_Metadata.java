@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_Metadata_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "MI_Metadata", namespace = LegacyNamespaces.GMI)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Metadata extends DefaultMetadata {
     /**
      * For cross-version compatibility.

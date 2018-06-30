@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.FormatConsistency;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_FormatConsistency_Type")
 @XmlRootElement(name = "DQ_FormatConsistency")
 public class DefaultFormatConsistency extends AbstractLogicalConsistency implements FormatConsistency {

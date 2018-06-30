@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.DomainConsistency;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_DomainConsistency_Type")
 @XmlRootElement(name = "DQ_DomainConsistency")
 public class DefaultDomainConsistency extends AbstractLogicalConsistency implements DomainConsistency {

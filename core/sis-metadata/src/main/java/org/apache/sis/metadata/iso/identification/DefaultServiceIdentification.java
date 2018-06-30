@@ -73,7 +73,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_ServiceIdentification_Type", namespace = Namespaces.SRV, propOrder = {
     "serviceType",
     "serviceTypeVersions",

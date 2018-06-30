@@ -85,7 +85,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
     // ISO 19115:2003 (legacy)
     "name",

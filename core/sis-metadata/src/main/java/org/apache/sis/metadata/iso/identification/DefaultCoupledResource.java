@@ -56,7 +56,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "scopedName",               // ISO 19115-3:2016 way to write scoped name
     "resourceReference",        // New in ISO 19115:2014

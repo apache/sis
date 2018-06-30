@@ -60,7 +60,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
     "compliant",
     "locale",                       // New in ISO 19115:2014

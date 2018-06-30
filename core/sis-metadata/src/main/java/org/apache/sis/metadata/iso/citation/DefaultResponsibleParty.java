@@ -58,7 +58,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @module
  */
 @Deprecated
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_ResponsibleParty_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "individualName",
     "organisationName",

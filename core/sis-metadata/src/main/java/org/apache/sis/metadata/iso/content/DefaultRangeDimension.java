@@ -56,7 +56,6 @@ import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",

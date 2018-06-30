@@ -68,7 +68,6 @@ import org.apache.sis.internal.util.TemporalUtilities;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",

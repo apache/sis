@@ -74,7 +74,6 @@ import org.apache.sis.internal.metadata.Dependencies;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Telephone_Type", propOrder = {
     "number",           // New in ISO 19115:2014
     "numberType",       // Ibid.

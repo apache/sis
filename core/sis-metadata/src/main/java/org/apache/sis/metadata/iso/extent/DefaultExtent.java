@@ -91,7 +91,6 @@ import org.apache.sis.xml.NilReason;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",

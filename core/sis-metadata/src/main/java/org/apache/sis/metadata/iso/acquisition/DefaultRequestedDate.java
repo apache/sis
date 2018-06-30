@@ -50,7 +50,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_RequestedDate_Type", propOrder = {
     "requestedDateOfCollection",
     "latestAcceptableDate"

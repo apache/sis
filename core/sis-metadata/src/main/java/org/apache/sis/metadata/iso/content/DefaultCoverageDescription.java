@@ -62,7 +62,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
     "attributeDescription",
     "processingLevelCode",          // New in ISO 19115:2014

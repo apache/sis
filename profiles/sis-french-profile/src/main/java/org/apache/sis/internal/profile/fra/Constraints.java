@@ -50,7 +50,6 @@ import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_Constraints_Type")
 @XmlRootElement(name= "FRA_Constraints")
 public class Constraints extends DefaultConstraints {

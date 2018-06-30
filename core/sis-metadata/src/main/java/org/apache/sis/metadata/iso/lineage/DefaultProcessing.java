@@ -53,7 +53,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_Processing_Type", propOrder = {
     "identifier",
     "softwareReferences",
