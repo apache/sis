@@ -280,7 +280,11 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
-     * Returns the map loaded by {@link #load(String, int)}.
+     * Returns the map loaded by {@link #load(String, int)} if the given namespace is a known legacy namespace.
+     * This method returns a non-empty map only for legacy namespaces for which the {@value #FILENAME} file has
+     * been designed. This is necessary for avoiding confusion with classes of the same name defined in other
+     * standards. For example the {@code Record} class name is used by other standards like Catalog Service for
+     * the Web (OGC CSW), and we don't want to replace the namespace of CSW classes.
      *
      * @param  namespace  the namespace URI for which to get the substitution map.
      * @return the substitution map for the given namespace, or an empty map if none.
