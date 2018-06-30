@@ -41,8 +41,8 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
  */
 final class Freezer extends MetadataVisitor<Boolean> {
     /**
-     * The {@code Freezer} instance in current use. The clean way would have been to pass the {@code Freezer}
-     * instance in argument to all {@code freeze()} and {@code unmodifiable()} methods in metadata packages.
+     * The {@code Freezer} instance in current use. The clean way would have been to pass the
+     * instance in argument to all {@code apply(State.FINAL)} methods in metadata packages.
      * But above-cited methods are public, and we do not want to expose {@code Freezer} in public API for now.
      * This thread-local is a workaround for that situation.
      */
@@ -136,16 +136,16 @@ final class Freezer extends MetadataVisitor<Boolean> {
     @Override
     final Object visit(final Class<?> type, final Object object) throws CloneNotSupportedException {
         /*
-         * CASE 1 - The object is an org.apache.sis.metadata.* implementation. It may have
-         *          its own algorithm for creating an unmodifiable view of metadata.
+         * CASE 1 - The object is an org.apache.sis.metadata.* implementation.
+         *          It may have its own algorithm for freezing itself.
          */
         if (object instanceof ModifiableMetadata) {
-            return unique(((ModifiableMetadata) object).unmodifiable());
+            ((ModifiableMetadata) object).freeze();
+            return unique(object);
         }
         if (object instanceof DefaultRepresentativeFraction) {
-            final DefaultRepresentativeFraction c = ((DefaultRepresentativeFraction) object).clone();
-            c.freeze();
-            return unique(c);
+            ((DefaultRepresentativeFraction) object).freeze();
+            return unique(object);
         }
         /*
          * CASE 2 - The object is a collection. All elements are replaced by their

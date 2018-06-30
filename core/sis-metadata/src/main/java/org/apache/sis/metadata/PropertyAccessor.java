@@ -1251,8 +1251,8 @@ class PropertyAccessor {
      * @throws Exception if an error occurred while visiting a property.
      */
     final void walkWritable(final MetadataVisitor<?> visitor, final Object metadata) throws Exception {
-        assert implementation.isInstance(metadata) : metadata;
-        if (setters == null) {
+        assert type.isInstance(metadata) : metadata;
+        if (setters == null || !implementation.isInstance(metadata)) {
             return;
         }
         final Object[] arguments = new Object[1];

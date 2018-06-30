@@ -77,7 +77,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * }
  *
  * An initially modifiable metadata may become unmodifiable at a later stage
- * (typically after its construction is completed) by the call to the {@link #freeze()} method.
+ * (typically after its construction is completed) by the call to {@code apply(State.FINAL)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -93,33 +93,178 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     private static final int INITIAL_CAPACITY = 4;
 
     /**
-     * A null implementation for the {@link #FREEZING} constant.
+     * The {@link #state} value meaning that the metadata is modifiable.
+     * This is the default state when new {@link ModifiableMetadata} instances are created.
      */
-    @SuppressWarnings("CloneableClassWithoutClone")
-    private static final class Null extends ModifiableMetadata {
-        @Override public MetadataStandard getStandard() {
-            return null;
-        }
-    }
+    private static final byte EDITABLE = 0;
 
     /**
-     * A sentinel value used for {@link #unmodifiable} in order to specify that {@link #freeze()} is under way.
+     * A bitmask for {@link #state} meaning that {@code apply(State.FINAL)} has been invoked.
      */
-    private static final ModifiableMetadata FREEZING = new Null();
+    private static final byte FINAL = 1;
+
+    /**
+     * See https://issues.apache.org/jira/browse/SIS-81 - not yet committed.
+     */
+    private static final byte STAGED = 2;
+
+    /**
+     * A value for {@link #state} meaning that execution of {@code apply(State.FINAL)} is in progress.
+     */
+    private static final byte FREEZING = FINAL | STAGED;
+
+    /**
+     * Whether this metadata has been made unmodifiable, as one of {@link #EDITABLE}, {@link #FREEZING}
+     * or {@link #FINAL} values.
+     *
+     * <p>This field is not yet serialized because we are not sure to keep this information as a byte in
+     * the future. We could for example use an {@code int} and use remaining bits for caching hash-code
+     * value of final metadata.</p>
+     */
+    private transient byte state;
 
     /**
      * An unmodifiable copy of this metadata, created only when first needed.
      * If {@code null}, then no unmodifiable entity is available.
      * If {@code this}, then this entity is itself unmodifiable.
      *
-     * @see #unmodifiable()
+     * @deprecated to be deleted after the removal of {@link #unmodifiable()}.
      */
+    @Deprecated
     private transient ModifiableMetadata unmodifiable;
 
     /**
      * Constructs an initially empty metadata.
+     * The initial state is {@link State#EDITABLE}.
      */
     protected ModifiableMetadata() {
+    }
+
+    /**
+     * Whether the metadata is still editable or has been made final.
+     * New {@link ModifiableMetadata} instances are initially {@link #EDITABLE}
+     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#apply(State)}.
+     *
+     * <div class="note"><b>Note:</b>
+     * more states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.</div>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.0
+     * @since   1.0
+     * @module
+     */
+    public enum State {
+        /**
+         * The metadata is modifiable.
+         * This is the default state when new {@link ModifiableMetadata} instances are created.
+         * Note that a modifiable metadata instance does <strong>not</strong> imply that all
+         * properties contained in that instance are also editable.
+         */
+        EDITABLE,
+
+        /**
+         * The metadata is unmodifiable.
+         * When a metadata is final, it can not be moved back to an editable state
+         * (but it is still possible to create a modifiable copy with {@link MetadataCopier}).
+         * Invoking any setter method on an unmodifiable metadata cause an
+         * {@link UnmodifiableMetadataException} to be thrown.
+         */
+        FINAL;
+
+        /**
+         * Mapping from {@link ModifiableMetadata} private flags to {@code State} enumeration.
+         * A mapping exists because {@code ModifiableMetadata} does not use the same set of enumeration values
+         * (e.g. it has an internal {@link #FREEZING} value), and because future versions may use a bitmask.
+         */
+        private static final State[] VALUES = new State[ModifiableMetadata.FREEZING + 1];
+        static {
+            VALUES[ModifiableMetadata.EDITABLE] = EDITABLE;
+            VALUES[ModifiableMetadata.STAGED]   = EDITABLE;
+            VALUES[ModifiableMetadata.FREEZING] = FINAL;
+            VALUES[ModifiableMetadata.FINAL]    = FINAL;
+        }
+    }
+
+    /**
+     * Tells whether this instance of metadata is editable.
+     * This is initially {@link State#EDITABLE} for new {@code ModifiableMetadata} instances,
+     * but can be changed by a call to {@link #apply(State)}.
+     *
+     * <p>{@link State#FINAL} implies that all properties are also final.
+     * This recursivity does not necessarily apply to other states. For example {@link State#EDITABLE}
+     * does <strong>not</strong> imply that all {@code ModifiableMetadata} children are also editable.</p>
+     *
+     * <div class="note"><b>API note:</b>
+     * the {@code ModifiableMetadata} state is not a metadata per se, but rather an information about
+     * this particular instance of a metadata class. Two metadata instances may be in different states
+     * but still have the same metadata content. For this reason, this method does not have {@code get}
+     * prefix for avoiding confusion with getter and setter methods of metadata properties.</div>
+     *
+     * @return the state (editable or final) of this {@code ModifiableMetadata} instance.
+     *
+     * @since 1.0
+     */
+    public State state() {
+        return State.VALUES[state];
+    }
+
+    /**
+     * Applies a state transition on this metadata instance and (potentially) all its children.
+     * The action performed by this method depends on the {@linkplain #state() current state},
+     * as listed in the following table:
+     *
+     * <table class="sis">
+     *   <caption>State transitions</caption>
+     *   <tr>
+     *     <th>Current state</th>
+     *     <th>Target state</th>
+     *     <th>Action</th>
+     *   </tr><tr>
+     *     <td><var>Any</var></td>
+     *     <td><var>Same</var></td>
+     *     <td>Does nothing and returns {@code false}.</td>
+     *   </tr><tr>
+     *     <td>{@link State#EDITABLE}</td>
+     *     <td>{@link State#FINAL}</td>
+     *     <td>Marks this metadata and all children as unmodifiable.</td>
+     *   </tr><tr>
+     *     <td>{@link State#FINAL}</td>
+     *     <td>{@link State#EDITABLE}</td>
+     *     <td>Throws {@link UnmodifiableMetadataException}.</td>
+     *   </tr>
+     * </table>
+     *
+     * The effect of invoking this method may be recursive. For example transitioning to {@link State#FINAL}
+     * implies transitioning all children {@code ModifiableMetadata} instances to the final state too.
+     *
+     * @param  target  the desired new state.
+     * @return {@code true} if the state of this {@code ModifiableMetadata} changed as a result of this method call.
+     * @throws UnmodifiableMetadataException if a transition from {@link State#FINAL} to {@link State#EDITABLE} was attempted.
+     *
+     * @since 1.0
+     */
+    public boolean apply(final State target) {
+        switch (target) {
+            case EDITABLE: {
+                if ((state & FINAL) == 0) break;
+                throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+            }
+            case FINAL: {
+                if ((state & FINAL) != 0) break;
+                final MetadataStandard standard = getStandard();
+                byte result = state;
+                try {
+                    state = FREEZING;
+                    standard.freeze(this);
+                    result = FINAL;
+                } finally {
+                    state = result;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -130,9 +275,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @see #freeze()
      * @see #checkWritePermission()
+     *
+     * @deprecated Replaced by <code>{@linkplain #state()} != State.FINAL</code>.
+     *             See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.
      */
+    @Deprecated
     public final boolean isModifiable() {
-        return unmodifiable != this && unmodifiable != FREEZING;
+        return (state & FINAL) == 0;
     }
 
     /**
@@ -165,29 +314,22 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @return an unmodifiable copy of this metadata.
      *
      * @see MetadataCopier
+     *
+     * @deprecated Replaced by {@code MetadataCopier.forModifiable(getStandard()).copy(this).apply(State.FINAL)}.
      */
+    @Deprecated
     public AbstractMetadata unmodifiable() {
+        if ((state & FINAL) != 0) {
+            unmodifiable = this;
+        }
         /*
          * The 'unmodifiable' field is reset to null by checkWritePermission().
          * However this is not sufficient since the setter method of some child
          * could have been invoked without invoking any setter method on 'this'.
          * So we also need to perform an equality check.
          */
-        if (unmodifiable == null || (unmodifiable != this && unmodifiable != FREEZING && !equals(unmodifiable))) {
-            final ModifiableMetadata candidate;
-            try {
-                /*
-                 * Need a SHALLOW copy of this metadata, because some properties
-                 * may already be unmodifiable and we don't want to clone them.
-                 */
-                candidate = clone();
-            } catch (CloneNotSupportedException exception) {
-                /*
-                 * The metadata is not cloneable for some reason left to the user
-                 * (for example it may be backed by some external database).
-                 */
-                throw new UnsupportedOperationException(exception);
-            }
+        if (unmodifiable == null || !equals(unmodifiable)) {
+            final ModifiableMetadata candidate = (ModifiableMetadata) MetadataCopier.forModifiable(getStandard()).copy(this);
             candidate.freeze();
             /*
              * Set the field only after success. The 'unmodifiable' field must
@@ -207,20 +349,14 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * <p>Subclasses usually do not need to override this method since the default implementation
      * performs its work using Java reflection.</p>
      *
-     * @see #isModifiable()
+     * @see #state()
      * @see #checkWritePermission()
+     *
+     * @deprecated Replaced by {@code apply(State.FINAL)}.
      */
+    @Deprecated
     public void freeze() {
-        if (isModifiable()) {
-            ModifiableMetadata success = null;
-            try {
-                unmodifiable = FREEZING;
-                getStandard().freeze(this);
-                success = this;
-            } finally {
-                unmodifiable = success;
-            }
-        }
+        apply(State.FINAL);
     }
 
     /**
@@ -229,16 +365,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
-     * @see #isModifiable()
-     * @see #freeze()
+     * @see #state()
      */
     protected void checkWritePermission() throws UnmodifiableMetadataException {
-        if (unmodifiable != null) {
-            if (unmodifiable == this) {
-                throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
-            } else if (unmodifiable != FREEZING) {
-                unmodifiable = null;                    // Discard since this metadata is going to change.
-            }
+        if (state == FINAL) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        } else {
+            unmodifiable = null;                    // Discard since this metadata is going to change.
         }
     }
 
@@ -271,7 +404,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     {
         // See the comments in writeCollection(…) for implementation notes.
         if (source != target) {
-            if (unmodifiable == FREEZING) {
+            if (state == FREEZING) {
                 return (List<E>) source;
             }
             checkWritePermission();
@@ -318,7 +451,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     {
         // See the comments in writeCollection(…) for implementation notes.
         if (source != target) {
-            if (unmodifiable == FREEZING) {
+            if (state == FREEZING) {
                 return (Set<E>) source;
             }
             checkWritePermission();
@@ -376,9 +509,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
          * and JAXB unmarshalling.
          */
         if (source != target) {
-            if (unmodifiable == FREEZING) {
+            if (state == FREEZING) {
                 /*
-                 * freeze() method is under progress. The source collection is already
+                 * apply(State.FINAL) is under progress. The source collection is already
                  * an unmodifiable instance created by Freezer.clone(Object).
                  */
                 assert collectionType(elementType).isInstance(source);
@@ -527,7 +660,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (emptyCollectionAsNull()) {
             return null;
         }
-        if (isModifiable()) {
+        if ((state & FINAL) == 0) {
             /*
              * Do not specify an initial capacity, because the list will stay empty in a majority of cases
              * (i.e. the users will want to iterate over the list elements more often than they will want
@@ -556,7 +689,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (emptyCollectionAsNull()) {
             return null;
         }
-        if (isModifiable()) {
+        if ((state & FINAL) == 0) {
             return createSet(elementType, INITIAL_CAPACITY);
         }
         return Collections.emptySet();
@@ -586,7 +719,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (emptyCollectionAsNull()) {
             return null;
         }
-        final boolean isModifiable = isModifiable();
+        final boolean isModifiable = (state & FINAL) == 0;
         if (useSet(elementType)) {
             if (isModifiable) {
                 return createSet(elementType, INITIAL_CAPACITY);
@@ -679,8 +812,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @see #unmodifiable()
      * @see MetadataCopier
+     *
+     * @deprecated Apache SIS 1.0 no longer use this mechanism. SIS 1.1 will make the standard
+     *             {@link Object#clone()} available for subclasses at their implementation choice.
      */
     @Override
+    @Deprecated
     protected ModifiableMetadata clone() throws CloneNotSupportedException {
         return (ModifiableMetadata) super.clone();
     }

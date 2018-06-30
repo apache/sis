@@ -428,7 +428,7 @@ public class DefaultSource extends ISOMetadata implements Source {
             Scope scope = getScope();
             if (scope != null) {
                 if (!(scope instanceof DefaultScope)) {
-                    if (isModifiable()) {
+                    if (super.state() != State.FINAL) {
                         scope = new DefaultScope(scope);
                         this.scope = scope;
                     } else {

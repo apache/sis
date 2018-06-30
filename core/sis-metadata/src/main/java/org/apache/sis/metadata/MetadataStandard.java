@@ -922,8 +922,6 @@ public class MetadataStandard implements Serializable {
      *
      * @throws ClassCastException if the specified implementation class do
      *         not implements a metadata interface of the expected package.
-     *
-     * @see ModifiableMetadata#freeze()
      */
     final void freeze(final Object metadata) throws ClassCastException {
         if (metadata != null) {

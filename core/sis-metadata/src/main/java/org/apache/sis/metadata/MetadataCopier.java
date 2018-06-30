@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Arrays;
 import java.util.Collection;
+import java.lang.reflect.Constructor;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
@@ -31,61 +32,35 @@ import org.apache.sis.util.collection.CodeListSet;
 
 
 /**
- * Performs deep copies of given metadata instances. This class performs a <em>copies</em>, not clones,
+ * Performs deep copies of given metadata instances. This class performs <em>copies</em>, not clones,
  * since the copied metadata may not be instances of the same class than the original metadata.
  * This class performs the following steps:
  *
  * <ul>
  *   <li>Get the {@linkplain MetadataStandard#getImplementation implementation class} of the given metadata instance.</li>
- *   <li>Create a {@linkplain Class#newInstance() new instance} of the implementation class using the public no-argument constructor.</li>
+ *   <li>Create a {@linkplain Constructor#newInstance new instance} of the implementation class using the public no-argument constructor.</li>
  *   <li>Invoke all non-deprecated setter methods on the new instance with the corresponding value from the given metadata.</li>
  *   <li>If any of the values copied in above step is itself a metadata, recursively performs deep copy on those metadata instances too.</li>
  * </ul>
  *
- * This class supports cyclic graphs in the metadata tree. It may return the given {@code metadata} object directly
- * if the {@linkplain MetadataStandard#getImplementation implementation class} does not provide any setter method.
+ * This copier may be used for converting metadata tree of unknown implementations (for example the result of a call to
+ * {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}) into instances of {@link AbstractMetadata}.
+ * The copier may also be used if a {@linkplain ModifiableMetadata.State#EDITABLE modifiable} metadata is desired after
+ * the original metadata has been made {@linkplain ModifiableMetadata.State#FINAL final}.
+ *
+ * <p>Default implementation copies all copiable children, regardless their {@linkplain ModifiableMetadata#state() state}.
+ * Static factory methods allow to construct some variants, for example skipping the copy of unmodifiable metadata instances
+ * since they can be safely shared.</p>
+ *
+ * <p>This class supports cyclic graphs in the metadata tree. It may return the given {@code metadata} object directly
+ * if the {@linkplain MetadataStandard#getImplementation implementation class} does not provide any setter method.</p>
  *
  * <p>This class is not thread-safe.
  * In multi-threads environment, each thread should use its own {@code MetadataCopier} instance.</p>
  *
- * <div class="note"><b>Recommended alternative:</b>
- * deep metadata copies are sometime useful when using an existing metadata as a template.
- * But the {@link ModifiableMetadata#unmodifiable()} method may provide a better way to use a metadata as a template,
- * as it returns a snapshot and allows the caller to continue to modify the original metadata object and create new
- * snapshots. Example:
- *
- * {@preformat java
- *   // Prepare a Citation to be used as a template.
- *   DefaultCitation citation = new DefaultCitation();
- *   citation.getCitedResponsibleParties(someAuthor);
- *
- *   // Set the title and get a first snapshot.
- *   citation.setTitle(new SimpleInternationalString("A title"));
- *   Citation myFirstCitation = (Citation) citation.unmodifiable();
- *
- *   // Change the title and get another snapshot.
- *   citation.setTitle(new SimpleInternationalString("Another title"));
- *   Citation mySecondCitation = (Citation) citation.unmodifiable();
- * }
- *
- * This approach allows sharing the children that have the same content, thus reducing memory usage. In above example,
- * the {@code someAuthor} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getCitedResponsibleParties()
- * cited responsible party} is the same instance in both citations. In comparison, deep copy operations unconditionally
- * duplicate everything, no matter if it was needed or not. Nevertheless deep copies are still sometime useful,
- * for example when we do not have the original {@link ModifiableMetadata} instance anymore.
- *
- * <p>{@code MetadataCopier} is also useful for converting a metadata tree of unknown implementations (for example the
- * result of a call to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}) into instances of the
- * public {@link AbstractMetadata} subclasses. But note that shallow copies as provided by the {@code castOrCopy(…)}
- * static methods in each {@code AbstractMetadata} subclass are sometime sufficient.</p>
- * </div>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see ModifiableMetadata#unmodifiable()
- *
- * @since 0.8
+ * @since   0.8
  * @module
 */
 public class MetadataCopier {
@@ -110,6 +85,32 @@ public class MetadataCopier {
     public MetadataCopier(final MetadataStandard standard) {
         this.standard = standard;
         copies = new IdentityHashMap<>();
+    }
+
+    /**
+     * Creates a new metadata copier which avoid copying unmodifiable metadata.
+     * More specifically, any {@link ModifiableMetadata} instance in
+     * {@linkplain ModifiableMetadata.State#FINAL final state} will be kept <i>as-is</i>;
+     * those final metadata will not be copied since they can be safely shared.
+     *
+     * @param  standard  the default metadata standard to use for object that are not {@link AbstractMetadata} instances,
+     *                   or {@code null} if none.
+     * @return a metadata copier which skip the copy of unmodifiable metadata.
+     *
+     * @since 1.0
+     */
+    public static MetadataCopier forModifiable(final MetadataStandard standard) {
+        return new MetadataCopier(standard) {
+            @Override protected Object copyRecursively(final Class<?> type, final Object metadata) {
+                if (metadata instanceof ModifiableMetadata) {
+                    final ModifiableMetadata.State state = ((ModifiableMetadata) metadata).state();
+                    if (state == ModifiableMetadata.State.FINAL) {
+                        return metadata;
+                    }
+                }
+                return super.copyRecursively(type, metadata);
+            }
+        };
     }
 
     /**

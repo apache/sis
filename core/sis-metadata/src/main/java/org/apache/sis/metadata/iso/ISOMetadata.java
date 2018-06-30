@@ -54,7 +54,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -161,8 +161,8 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
          * We do not cache (for now) the IdentifierMap because it is cheap to create, and if we were
          * caching it we would need anyway to check if 'identifiers' still references the same list.
          */
-        return isModifiable() ? new ModifiableIdentifierMap(identifiers)
-                              : new IdentifierMapAdapter(identifiers);
+        return (super.state() != State.FINAL) ? new ModifiableIdentifierMap(identifiers)
+                                              : new IdentifierMapAdapter(identifiers);
     }
 
     // --------------------------------------------------------------------------------------
@@ -173,10 +173,10 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@inheritDoc}
      */
     @Override
-    public void freeze() {
-        if (isModifiable()) {
-            final Collection<Identifier> p = identifiers;
-            super.freeze();
+    public boolean apply(final State target) {
+        final Collection<Identifier> p = identifiers;
+        final boolean changed = super.apply(target);
+        if (changed) {
             /*
              * The 'identifiers' collection will have been replaced by an unmodifiable collection if
              * subclass has an "identifiers" property. If this is not the case, then the collection
@@ -186,6 +186,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
                 identifiers = CollectionsExt.unmodifiableOrCopy(p);                     // Null safe.
             }
         }
+        return changed;
     }
 
 
