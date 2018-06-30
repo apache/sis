@@ -252,11 +252,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             }
             case FINAL: {
                 if ((state & FINAL) != 0) break;
-                final MetadataStandard standard = getStandard();
                 byte result = state;
                 try {
                     state = FREEZING;
-                    standard.freeze(this);
+                    StateChanger.applyTo(target, this);
                     result = FINAL;
                 } finally {
                     state = result;
@@ -512,7 +511,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             if (state == FREEZING) {
                 /*
                  * apply(State.FINAL) is under progress. The source collection is already
-                 * an unmodifiable instance created by Freezer.clone(Object).
+                 * an unmodifiable instance created by StageChanger.
                  */
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;

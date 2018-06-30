@@ -917,19 +917,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
-     *
-     * @throws ClassCastException if the specified implementation class do
-     *         not implements a metadata interface of the expected package.
-     */
-    final void freeze(final Object metadata) throws ClassCastException {
-        if (metadata != null) {
-            Freezer.getOrCreate().walk(this, null, metadata, true);
-        }
-    }
-
-    /**
      * Compares the two specified metadata objects.
      * The two metadata arguments shall be implementations of a metadata interface defined by
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two

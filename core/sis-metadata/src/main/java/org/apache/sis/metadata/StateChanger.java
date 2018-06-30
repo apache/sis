@@ -31,22 +31,29 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 
 /**
- * Returns unmodifiable view of metadata elements of arbitrary type.
- * This class tries to avoid creating new clones as much as possible.
+ * Invokes {@link ModifiableMetadata#apply(ModifiableMetadata.State)} recursively on metadata elements.
+ *
+ * As of Apache SIS 1.0, this class is used only for {@link ModifiableMetadata.State#FINAL}.
+ * But a future version may use this object for other states too.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
  */
-final class Freezer extends MetadataVisitor<Boolean> {
+final class StateChanger extends MetadataVisitor<Boolean> {
     /**
-     * The {@code Freezer} instance in current use. The clean way would have been to pass the
-     * instance in argument to all {@code apply(State.FINAL)} methods in metadata packages.
-     * But above-cited methods are public, and we do not want to expose {@code Freezer} in public API for now.
-     * This thread-local is a workaround for that situation.
+     * The {@code StateChanger} instance in current use. The clean way would have been to pass
+     * the instance in argument to all {@code apply(State.FINAL)} methods in metadata packages.
+     * But above-cited methods are public, and we do not want to expose {@code StateChanger}
+     * in public API. This thread-local is a workaround for that situation.
      */
-    private static final ThreadLocal<Freezer> VISITORS = ThreadLocal.withInitial(Freezer::new);
+    private static final ThreadLocal<StateChanger> VISITORS = ThreadLocal.withInitial(StateChanger::new);
+
+    /**
+     * The state to apply on all metadata objects.
+     */
+    private ModifiableMetadata.State target;
 
     /**
      * All objects made immutable during iteration over children properties.
@@ -60,24 +67,28 @@ final class Freezer extends MetadataVisitor<Boolean> {
     private Cloner cloner;
 
     /**
-     * Creates a new {@code Freezer} instance.
+     * Creates a new {@code StateChanger} instance.
      */
-    private Freezer() {
+    private StateChanger() {
         existings = new HashMap<>(32);
     }
 
     /**
-     * Returns the visitor for the current thread if it already exists, or creates a new one otherwise.
+     * Applies a state change on the given metadata object.
      */
-    static Freezer getOrCreate() {
-        return VISITORS.get();
+    static void applyTo(final ModifiableMetadata.State target, final ModifiableMetadata metadata) {
+        final StateChanger changer = VISITORS.get();
+        final ModifiableMetadata.State previous = changer.target;
+        changer.target = target;
+        changer.walk(metadata.getStandard(), null, metadata, true);
+        changer.target = previous;
     }
 
     /**
-     * Returns the thread-local variable that created this {@code Freezer} instance.
+     * Returns the thread-local variable that created this {@code StateChanger} instance.
      */
     @Override
-    final ThreadLocal<Freezer> creator() {
+    final ThreadLocal<StateChanger> creator() {
         return VISITORS;
     }
 
@@ -106,9 +117,9 @@ final class Freezer extends MetadataVisitor<Boolean> {
     }
 
     /**
-     * Recursively freezes all elements in the given array.
+     * Recursively change the state of all elements in the given array.
      */
-    private void freezeAll(final Object[] array) throws CloneNotSupportedException {
+    private void applyTo(final Object[] array) throws CloneNotSupportedException {
         for (int i=0; i < array.length; i++) {
             array[i] = visit(null, array[i]);
         }
@@ -119,8 +130,8 @@ final class Freezer extends MetadataVisitor<Boolean> {
      * This method performs the following heuristic tests:
      *
      * <ul>
-     *   <li>If the specified object is an instance of {@code ModifiableMetadata},
-     *       then {@link ModifiableMetadata#unmodifiable()} is invoked on that object.</li>
+     *   <li>If the specified object is an instance of {@code ModifiableMetadata}, then
+     *       {@link ModifiableMetadata#apply(ModifiableMetadata.State)} is invoked on that object.</li>
      *   <li>Otherwise, if the object is a {@linkplain Collection collection}, then the
      *       content is copied into a new collection of similar type, with values replaced
      *       by their unmodifiable variant.</li>
@@ -140,8 +151,11 @@ final class Freezer extends MetadataVisitor<Boolean> {
          *          It may have its own algorithm for freezing itself.
          */
         if (object instanceof ModifiableMetadata) {
-            ((ModifiableMetadata) object).freeze();
+            ((ModifiableMetadata) object).apply(target);
             return unique(object);
+        }
+        if (target != ModifiableMetadata.State.FINAL) {
+            return object;
         }
         if (object instanceof DefaultRepresentativeFraction) {
             ((DefaultRepresentativeFraction) object).freeze();
@@ -175,7 +189,7 @@ final class Freezer extends MetadataVisitor<Boolean> {
                         } else if (collection instanceof CodeListSet<?>) {
                             collection = Collections.unmodifiableSet(((CodeListSet<?>) collection).clone());
                         } else {
-                            freezeAll(array);
+                            applyTo(array);
                             collection = CollectionsExt.immutableSet(false, array);
                         }
                     } else {
@@ -184,7 +198,7 @@ final class Freezer extends MetadataVisitor<Boolean> {
                          * Conservatively assumes a List if we are not sure to have a Set since the list
                          * is less destructive (no removal of duplicated values).
                          */
-                        freezeAll(array);
+                        applyTo(array);
                         collection = UnmodifiableArrayList.wrap(array);
                     }
                     break;
