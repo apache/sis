@@ -429,9 +429,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     public void setMetadataIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**

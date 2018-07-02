@@ -287,8 +287,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
 
     /**
      * Returns the resource identifier, which is assumed to be the name as a string.
-     * Used in legacy ISO 19139:2007 documents. There is no setter method; we expect
-     * the XML to declare {@code <srv:operationName>} instead.
+     * Used in legacy ISO 19139:2007 documents.
      */
     @XmlElement(name = "identifier", namespace = LegacyNamespaces.SRV)
     private String getIdentifier() {
@@ -299,6 +298,13 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
             }
         }
         return null;
+    }
+
+    /**
+     * Handled as a synonymous of {@code <srv:operationName>}.
+     */
+    private void setIdentifier(final String identifier) {
+        setOperationName(identifier);
     }
 
     /**

@@ -386,9 +386,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @since 0.5
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 }

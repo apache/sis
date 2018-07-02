@@ -174,10 +174,9 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param  newValue  the new identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**

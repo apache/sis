@@ -185,10 +185,9 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param  newValue  the event identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**

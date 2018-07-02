@@ -61,7 +61,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @param <T>  the type of object used as identifier values.
  *
@@ -138,13 +138,18 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * <p>This method is used for implementation of {@code setIdentifier(Identifier)} methods
      * in public metadata objects.</p>
      *
-     * @param <T>          the type of object used as identifier values.
-     * @param identifiers  the collection in which to add the identifier.
-     * @param newValue     the identifier to add, or {@code null}.
+     * @param  <T>          the type of object used as identifier values.
+     * @param  identifiers  the collection in which to add the identifier.
+     * @param  newValue     the identifier to add, or {@code null}.
+     * @return the given collection, or a new collection if the given collection was {@code null}.
      *
      * @see #setMarshallables(Collection, Collection)
      */
-    public static <T extends Identifier> void setMarshallable(final Collection<T> identifiers, final T newValue) {
+    public static <T extends Identifier> Collection<T> setMarshallable(final Collection<T> identifiers, final T newValue) {
+        if (identifiers == null) {
+            // This may happen during MetadataVisitor execution.
+            return CollectionsExt.singletonOrEmpty(newValue);
+        }
         final Iterator<T> it = identifiers.iterator();
         while (it.hasNext()) {
             final T old = it.next();
@@ -156,6 +161,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         if (newValue != null) {
             identifiers.add(newValue);
         }
+        return identifiers;
     }
 
     /**

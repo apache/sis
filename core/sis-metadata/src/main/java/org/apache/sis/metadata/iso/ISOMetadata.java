@@ -32,6 +32,7 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Modules;
@@ -162,6 +163,24 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
          */
         return (super.state() != State.FINAL) ? new ModifiableIdentifierMap(identifiers)
                                               : new IdentifierMapAdapter(identifiers);
+    }
+
+    /**
+     * Sets the identifier for metadata objects that are expected to contain at most one ISO 19115-1 identifier.
+     * This convenience method is used for implementation of public {@link setIdentifier(Identifier)} methods in
+     * subclasses having a [0 … 1] cardinality for the {@code identifier} property.
+     *
+     * <p>The default implementation removes all identifiers that are not ISO 19115-3 identifiers before to add
+     * the given one in the {@link #identifiers} collection.</p>
+     *
+     * @param  newValue  the new identifier value, or {@code null} for removing the ISO 19115-1 identifier.
+     *
+     * @since 1.0
+     */
+    protected void setIdentifier(final Identifier newValue) {
+        checkWritePermission();
+        identifiers = nonNullCollection(identifiers, Identifier.class);
+        identifiers = writeCollection(NonMarshalledAuthority.setMarshallable(identifiers, newValue), identifiers, Identifier.class);
     }
 
     // --------------------------------------------------------------------------------------
