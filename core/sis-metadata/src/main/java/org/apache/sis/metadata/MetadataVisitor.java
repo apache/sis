@@ -266,12 +266,21 @@ abstract class MetadataVisitor<R> {
 
     /**
      * Returns the result of visiting all elements in a metadata instance.
-     * This method is invoked exactly once per metadata instance.
-     * It is usually invoked after all metadata properties have been visited
-     * (or after a {@link #visit(Class, Object)} method call returned {@link #SKIP_SIBLINGS}),
-     * unless {@link #preVisit(PropertyAccessor)} returned {@link Filter#WRITABLE_RESULT}
-     * in which case this method is invoked <strong>before</strong> metadata properties are visited.
+     * This method is invoked zero or one time per metadata instance.
+     * The invocation time depends on the value returned by {@link #preVisit(PropertyAccessor)}:
+     *
+     * <ul>
+     *   <li>If {@link Filter#NONE}, then this method is never invoked for the current metadata instance.</li>
+     *   <li>If {@link Filter#NON_EMPTY} or {@link Filter#WRITABLE}, then this method is invoked after all properties
+     *       have been visited or after {@link #visit(Class, Object)} returned {@link #SKIP_SIBLINGS}.</li>
+     *   <li>If {@link Filter#WRITABLE_RESULT}, then this method is invoked <strong>before</strong> metadata
+     *       properties are visited. In such case, this method should return an initially empty instance.</li>
+     * </ul>
+     *
      * The value returned by this method will be cached in case the same metadata instance is revisited again.
+     * This value can be {@code null}.
      */
-    abstract R result();
+    R result() {
+        return null;
+    }
 }

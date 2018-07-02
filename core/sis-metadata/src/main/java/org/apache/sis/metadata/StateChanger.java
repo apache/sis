@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.collection.CodeListSet;
@@ -56,12 +55,6 @@ final class StateChanger extends MetadataVisitor<Boolean> {
     private ModifiableMetadata.State target;
 
     /**
-     * All objects made immutable during iteration over children properties.
-     * Keys and values are the same instances. This is used for sharing unique instances when possible.
-     */
-    private final Map<Object,Object> existings;
-
-    /**
      * The cloner, created when first needed.
      */
     private Cloner cloner;
@@ -70,7 +63,6 @@ final class StateChanger extends MetadataVisitor<Boolean> {
      * Creates a new {@code StateChanger} instance.
      */
     private StateChanger() {
-        existings = new HashMap<>(32);
     }
 
     /**
@@ -104,29 +96,28 @@ final class StateChanger extends MetadataVisitor<Boolean> {
     }
 
     /**
-     * Returns a unique instance of the given object (metadata or value).
+     * Invoked for metadata instances on which to apply a change of state.
+     *
+     * @param  type    ignored (can be {@code null}).
+     * @param  object  the object to transition to a different state.
+     * @return the given object or a copy of the given object with its state changed.
      */
-    private Object unique(final Object object) {
-        if (object != null) {
-            final Object c = existings.putIfAbsent(object, object);
-            if (c != null) {
-                return c;
-            }
-        }
-        return object;
+    @Override
+    final Object visit(final Class<?> type, final Object object) throws CloneNotSupportedException {
+        return applyTo(object);
     }
 
     /**
      * Recursively change the state of all elements in the given array.
      */
-    private void applyTo(final Object[] array) throws CloneNotSupportedException {
+    private void applyToAll(final Object[] array) throws CloneNotSupportedException {
         for (int i=0; i < array.length; i++) {
-            array[i] = visit(null, array[i]);
+            array[i] = applyTo(array[i]);
         }
     }
 
     /**
-     * Returns an unmodifiable copy of the specified object.
+     * Returns the given object, or a copy of the given object, with its state changed.
      * This method performs the following heuristic tests:
      *
      * <ul>
@@ -140,26 +131,24 @@ final class StateChanger extends MetadataVisitor<Boolean> {
      *   <li>Otherwise, the object is assumed immutable and returned unchanged.</li>
      * </ul>
      *
-     * @param  type    ignored (can be {@code null}).
-     * @param  object  the object to convert in an immutable one.
-     * @return a presumed immutable view of the specified object.
+     * @param  object  the object to transition to a different state.
+     * @return the given object or a copy of the given object with its state changed.
      */
-    @Override
-    final Object visit(final Class<?> type, final Object object) throws CloneNotSupportedException {
+    private Object applyTo(final Object object) throws CloneNotSupportedException {
         /*
          * CASE 1 - The object is an org.apache.sis.metadata.* implementation.
-         *          It may have its own algorithm for freezing itself.
+         *          It may have its own algorithm for changing its state.
          */
         if (object instanceof ModifiableMetadata) {
             ((ModifiableMetadata) object).apply(target);
-            return unique(object);
+            return object;
         }
         if (target != ModifiableMetadata.State.FINAL) {
             return object;
         }
         if (object instanceof DefaultRepresentativeFraction) {
             ((DefaultRepresentativeFraction) object).freeze();
-            return unique(object);
+            return object;
         }
         /*
          * CASE 2 - The object is a collection. All elements are replaced by their
@@ -177,7 +166,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
                     break;
                 }
                 case 1: {
-                    final Object value = visit(null, array[0]);
+                    final Object value = applyTo(array[0]);
                     collection = isSet ? Collections.singleton(value)
                                        : Collections.singletonList(value);
                     break;
@@ -189,7 +178,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
                         } else if (collection instanceof CodeListSet<?>) {
                             collection = Collections.unmodifiableSet(((CodeListSet<?>) collection).clone());
                         } else {
-                            applyTo(array);
+                            applyToAll(array);
                             collection = CollectionsExt.immutableSet(false, array);
                         }
                     } else {
@@ -198,7 +187,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
                          * Conservatively assumes a List if we are not sure to have a Set since the list
                          * is less destructive (no removal of duplicated values).
                          */
-                        applyTo(array);
+                        applyToAll(array);
                         collection = UnmodifiableArrayList.wrap(array);
                     }
                     break;
@@ -213,7 +202,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
         if (object instanceof Map<?,?>) {
             final Map<Object,Object> map = new LinkedHashMap<>((Map<?,?>) object);
             for (final Map.Entry<Object,Object> entry : map.entrySet()) {
-                entry.setValue(visit(null, entry.getValue()));
+                entry.setValue(applyTo(entry.getValue()));
             }
             return CollectionsExt.unmodifiableOrCopy(map);
         }
@@ -224,20 +213,11 @@ final class StateChanger extends MetadataVisitor<Boolean> {
             if (cloner == null) {
                 cloner = new Cloner(false);
             }
-            return unique(cloner.clone(object));
+            return cloner.clone(object);
         }
         /*
          * CASE 5 - Any other case. The object is assumed immutable and returned unchanged.
          */
-        return unique(object);
-    }
-
-    /**
-     * Returns an arbitrary value used by {@link MetadataVisitor} for remembering that
-     * a metadata instance has been processed.
-     */
-    @Override
-    Boolean result() {
-        return Boolean.TRUE;
+        return object;
     }
 }

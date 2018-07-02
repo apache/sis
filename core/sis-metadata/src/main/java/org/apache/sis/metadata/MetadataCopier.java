@@ -197,7 +197,8 @@ public class MetadataCopier extends MetadataVisitor<Object> {
 
     /**
      * Returns the metadata instance resulting from the copy. This method is invoked <strong>before</strong>
-     * metadata properties are visited.
+     * metadata properties are visited. The returned value is a new, initially empty, metadata instance
+     * created by {@link #preVisit(PropertyAccessor)}.
      */
     @Override
     final Object result() {
