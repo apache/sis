@@ -95,12 +95,12 @@ final class StateChanger extends MetadataVisitor<Boolean> {
     /**
      * Notifies {@link MetadataVisitor} that we want to visit all writable properties.
      *
-     * @param  type  ignored.
-     * @return {@code true}, for iterating over all writable properties.
+     * @param  accessor  ignored.
+     * @return {@link Filter#WRITABLE}, for iterating over all writable properties.
      */
     @Override
-    boolean preVisit(final Class<?> type) {
-        return true;
+    Filter preVisit(final PropertyAccessor accessor) {
+        return Filter.WRITABLE;
     }
 
     /**

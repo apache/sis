@@ -64,7 +64,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only ones accessible by most methods in this class, except
- *       {@link #equals(Object, Object, ComparisonMode)} and {@link #walkWritable(MetadataVisitor, Object)}.</li>
+ *       {@link #equals(Object, Object, ComparisonMode)} and {@link #walkWritable(MetadataVisitor, Object, Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115-1 model, but appears in ISO 19115-3 XML marshalling. So we
@@ -667,6 +667,13 @@ class PropertyAccessor {
     }
 
     /**
+     * Returns {@code true} if the {@link #implementation} class has at least one setter method.
+     */
+    final boolean isWritable() {
+        return setters != null;
+    }
+
+    /**
      * Returns {@code true} if the property at the given index is writable.
      */
     final boolean isWritable(final int index) {
@@ -1185,41 +1192,6 @@ class PropertyAccessor {
     }
 
     /**
-     * Returns a potentially deep copy of the given metadata object.
-     *
-     * @param  metadata   the metadata object to copy.
-     * @param  copier     contains a map of metadata objects already copied.
-     * @return a copy of the given metadata object, or {@code metadata} itself if there is
-     *         no known implementation class or that implementation has no setter method.
-     * @throws ReflectiveOperationException if an error occurred while creating the copy.
-     */
-    final Object copy(final Object metadata, final MetadataCopier copier) throws ReflectiveOperationException {
-        if (setters == null) {
-            return metadata;
-        }
-        Object copy = copier.copies.get(metadata);
-        if (copy == null) {
-            copy = implementation.getConstructor().newInstance();
-            copier.copies.put(metadata, copy);              // Need to be first in case of cyclic graphs.
-            final Object[] arguments = new Object[1];
-            for (int i=0; i<allCount; i++) {
-                final Method setter = setters[i];
-                if (setter != null && !setter.isAnnotationPresent(Deprecated.class)) {
-                    Object value = get(getters[i], metadata);
-                    if (value != null) {
-                        value = copier.copyAny(elementTypes[i], value);
-                        if (value != null) {
-                            arguments[0] = value;
-                            set(setter, copy, arguments);
-                        }
-                    }
-                }
-            }
-        }
-        return copy;
-    }
-
-    /**
      * Invokes {@link MetadataVisitor#visit(Class, Object)} for all non-null properties in the given metadata.
      * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
      *
@@ -1246,13 +1218,18 @@ class PropertyAccessor {
      * Invokes {@link MetadataVisitor#visit(Class, Object)} for all writable properties in the given metadata.
      * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
      *
+     * <p><b>Constraint:</b> in current implementation, if {@code source} and {@code target} are not the same,
+     * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.</p>
+     *
      * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
-     * @param  metadata  the metadata instance for which to visit the writable properties.
+     * @param  source    the metadata from which to read properties. May be the same than {@code target}.
+     * @param  target    the metadata instance where to write properties.
      * @throws Exception if an error occurred while visiting a property.
      */
-    final void walkWritable(final MetadataVisitor<?> visitor, final Object metadata) throws Exception {
-        assert type.isInstance(metadata) : metadata;
-        if (setters == null || !implementation.isInstance(metadata)) {
+    final void walkWritable(final MetadataVisitor<?> visitor, final Object source, final Object target) throws Exception {
+        assert type.isInstance(source) : source;
+        assert type.isInstance(target) : target;
+        if (setters == null || !implementation.isInstance(target)) {
             return;
         }
         final Object[] arguments = new Object[1];
@@ -1273,12 +1250,12 @@ class PropertyAccessor {
                      */
                     continue;
                 }
-                final Object value = get(getters[i], metadata);
+                final Object value = get(getters[i], source);
                 final Object result = visitor.visit(elementTypes[i], value);
-                if (result != value) {
+                if (source == target ? (result != value) : !isNullOrEmpty(result)) {    // See "constraint" in Javadoc
                     if (result == MetadataVisitor.SKIP_SIBLINGS) break;
                     arguments[0] = result;
-                    set(setter, metadata, arguments);
+                    set(setter, target, arguments);
                     /*
                      * We invoke the set(…) method variant that do not perform type conversion
                      * because we do not want it to replace the immutable collections created

@@ -17,10 +17,12 @@
 package org.apache.sis.metadata;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -89,7 +91,7 @@ abstract class MetadataVisitor<R> {
     /**
      * Creates a new visitor.
      */
-    protected MetadataVisitor() {
+    MetadataVisitor() {
         visited = new IdentityHashMap<>();
         propertyPath = new String[6];
     }
@@ -97,14 +99,32 @@ abstract class MetadataVisitor<R> {
     /**
      * The thread-local variable that created this {@code MetadataVisitor} instance.
      * This is usually a static final {@code VISITORS} constant defined in the subclass.
+     * May be {@code null} if this visitor does not use thread-local instances.
      */
-    abstract ThreadLocal<? extends MetadataVisitor<?>> creator();
+    ThreadLocal<? extends MetadataVisitor<?>> creator() {
+        return null;
+    }
 
     /**
      * Sets the name of the method being visited. This is invoked by {@code PropertyAccessor.walk} methods only.
      */
     final void setCurrentProperty(final String name) {
         propertyPath[nestedCount - 1] = name;
+    }
+
+    /**
+     * Returns the path to the currently visited property.
+     * Each element in the list is the UML identifier of a property.
+     * Element at index 0 is the name of the property of the root metadata object being visited.
+     * Element at index 1 is the name of a property which is a children of above property, <i>etc.</i>
+     *
+     * <p>The returned list is valid only during {@link #visit(Class, Object)} method execution.
+     * The content of this list become undetermined after the {@code visit} method returned.</p>
+     *
+     * @return the path to the currently visited property.
+     */
+    List<String> getCurrentPropertyPath() {
+        return UnmodifiableArrayList.wrap(propertyPath, 0, nestedCount);
     }
 
     /**
@@ -127,8 +147,15 @@ abstract class MetadataVisitor<R> {
         if (!visited.containsKey(metadata)) {               // Reminder: the associated value may be null.
             final PropertyAccessor accessor = standard.getAccessor(new CacheKey(metadata.getClass(), type), mandatory);
             if (accessor != null) {
-                final boolean write = preVisit(accessor.type);
-                if (visited.put(metadata, null) != null) {
+                final Filter filter = preVisit(accessor);
+                final boolean preconstructed;
+                final R sentinel;
+                switch (filter) {
+                    case NONE:            return null;
+                    case WRITABLE_RESULT: preconstructed = true;  sentinel = result(); break;
+                    default:              preconstructed = false; sentinel = null;     break;
+                }
+                if (visited.put(metadata, sentinel) != null) {
                     // Should never happen, unless this method is invoked concurrently in another thread.
                     throw new ConcurrentModificationException();
                 }
@@ -146,10 +173,10 @@ abstract class MetadataVisitor<R> {
                     allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
                 }
                 try {
-                    if (write) {
-                        accessor.walkWritable(this, metadata);
-                    } else {
-                        accessor.walkReadable(this, metadata);
+                    switch (filter) {
+                        case NON_EMPTY:       accessor.walkReadable(this, metadata); break;
+                        case WRITABLE:        accessor.walkWritable(this, metadata, metadata); break;
+                        case WRITABLE_RESULT: accessor.walkWritable(this, metadata, sentinel); break;
                     }
                 } catch (MetadataVisitorException e) {
                     throw e;
@@ -160,11 +187,12 @@ abstract class MetadataVisitor<R> {
                         if (!allowNull) {
                             Semaphores.clear(Semaphores.NULL_COLLECTION);
                         }
-                        creator().remove();
+                        final ThreadLocal<? extends MetadataVisitor<?>> creator = creator();
+                        if (creator != null) creator.remove();
                     }
                 }
-                final R result = result();
-                if (visited.put(metadata, result) != null) {
+                final R result = preconstructed ? sentinel : result();
+                if (visited.put(metadata, result) != sentinel) {
                     throw new ConcurrentModificationException();
                 }
                 return result;
@@ -174,15 +202,43 @@ abstract class MetadataVisitor<R> {
     }
 
     /**
+     * Filter the properties to visit. A value of this enumeration is returned by {@link #preVisit(PropertyAccessor)}
+     * before the properties of a metadata instance are visited.
+     */
+    enum Filter {
+        /**
+         * Do not visit any property (skip completely the metadata).
+         */
+        NONE,
+
+        /**
+         * Visit all non-null and non-empty standard properties.
+         */
+        NON_EMPTY,
+
+        /**
+         * Visit all writable properties. May include some non-standard properties.
+         */
+        WRITABLE,
+
+        /**
+         * Same as {@link #WRITABLE}, but write properties in the object returned by {@link #result()}.
+         * This mode implies that {@code result()} is invoked <strong>before</strong> metadata properties
+         * are visited instead than after.
+         */
+        WRITABLE_RESULT
+    }
+
+    /**
      * Invoked when a new metadata is about to be visited. After this method has been invoked,
      * {@link #visit(Class, Object)} will be invoked for each property in the metadata object.
      *
-     * @param  type  the standard interface implemented by the metadata instance being visited.
-     * @return {@code true} for visiting only writable properties, or
-     *         {@code false} for visiting all readable properties.
+     * @param  accessor  information about the standard interface and implementation of the metadata being visited.
+     * @return most common values are {@code NON_EMPTY} for visiting all non-empty properties (the default),
+     *         or {@code WRITABLE} for visiting only writable properties.
      */
-    boolean preVisit(Class<?> type) {
-        return false;
+    Filter preVisit(PropertyAccessor accessor) {
+        return Filter.NON_EMPTY;
     }
 
     /**
@@ -210,8 +266,11 @@ abstract class MetadataVisitor<R> {
 
     /**
      * Returns the result of visiting all elements in a metadata instance.
-     * This method is invoked after all metadata properties have been visited,
-     * or after a {@link #visit(Class, Object)} method call returned {@link #SKIP_SIBLINGS}.
+     * This method is invoked exactly once per metadata instance.
+     * It is usually invoked after all metadata properties have been visited
+     * (or after a {@link #visit(Class, Object)} method call returned {@link #SKIP_SIBLINGS}),
+     * unless {@link #preVisit(PropertyAccessor)} returned {@link Filter#WRITABLE_RESULT}
+     * in which case this method is invoked <strong>before</strong> metadata properties are visited.
      * The value returned by this method will be cached in case the same metadata instance is revisited again.
      */
     abstract R result();

@@ -38,15 +38,20 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**
- * Provides convenience methods for support of modifiable properties in metadata implementations.
- * Implementations typically provide {@code set*(…)} methods for each corresponding {@code get*()}
- * method. Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
- * with a different processing for singleton value or for {@linkplain Collection collections}.
+ * Base class of metadata having an editable content.
+ * Newly created {@code ModifiableMetadata} are initially in {@linkplain State#EDITABLE editable} state.
+ * The metadata can be populated using the setter methods provided by subclasses, then transition to the
+ * {@linkplain State#FINAL final} state for making it safe to share by many consumers.
  *
- * <p>For singleton value:</p>
+ * <div class="section">Tip for subclass implementations</div>
+ * Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
+ * with a different processing for singleton value or for {@linkplain Collection collections}.
  *
  * {@preformat java
  *     public class MyMetadata {
+ *
+ *         // ==== Example for a singleton value =============================
+ *
  *         private Foo property;
  *
  *         public Foo getProperty() {
@@ -57,13 +62,9 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *             checkWritePermission();
  *             property = newValue;
  *         }
- *     }
- * }
  *
- * For collections (note that the call to {@link #checkWritePermission()} is implicit):
+ *         // ==== Example for a collection ==================================
  *
- * {@preformat java
- *     public class MyMetadata {
  *         private Collection<Foo> properties;
  *
  *         public Collection<Foo> getProperties() {
@@ -71,13 +72,11 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *         }
  *
  *         public void setProperties(Collection<Foo> newValues) {
+ *             // the call to checkWritePermission() is implicit
  *             properties = writeCollection(newValues, properties, Foo.class);
  *         }
  *     }
  * }
- *
- * An initially modifiable metadata may become unmodifiable at a later stage
- * (typically after its construction is completed) by the call to {@code apply(State.FINAL)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

@@ -64,13 +64,13 @@ final class HashCode extends MetadataVisitor<Integer> {
      * Resets the hash code to an initial value for a new metadata instance.
      * If another hash code computation was in progress, that code shall be saved before this method is invoked.
      *
-     * @param  type  the standard interface of the metadata for which a hash code value will be computed.
-     * @return {@code false} since this visitor is not restricted to writable properties.
+     * @param  accessor  contains the standard interface of the metadata for which a hash code value will be computed.
+     * @return {@link Filter#NON_EMPTY} since this visitor is not restricted to writable properties.
      */
     @Override
-    boolean preVisit(final Class<?> type) {
-        code = type.hashCode();
-        return false;
+    Filter preVisit(final PropertyAccessor accessor) {
+        code = accessor.type.hashCode();
+        return Filter.NON_EMPTY;
     }
 
     /**

@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.lang.reflect.Constructor;
@@ -63,7 +63,7 @@ import org.apache.sis.util.collection.CodeListSet;
  * @since   0.8
  * @module
 */
-public class MetadataCopier {
+public class MetadataCopier extends MetadataVisitor<Object> {
     /**
      * The default metadata standard to use for object that are not {@link AbstractMetadata} instances,
      * or {@code null} if none.
@@ -71,10 +71,16 @@ public class MetadataCopier {
     private final MetadataStandard standard;
 
     /**
-     * The metadata objects that have been copied so far.
-     * This is used for resolving cyclic graphs.
+     * The current metadata instance where to copy the property values.
      */
-    final Map<Object,Object> copies;
+    private Object target;
+
+    /**
+     * Creates a new {@code MetadataCopier} instance.
+     */
+    private MetadataCopier() {
+        standard = null;
+    }
 
     /**
      * Creates a new metadata copier.
@@ -84,7 +90,6 @@ public class MetadataCopier {
      */
     public MetadataCopier(final MetadataStandard standard) {
         this.standard = standard;
-        copies = new IdentityHashMap<>();
     }
 
     /**
@@ -123,11 +128,7 @@ public class MetadataCopier {
      *         or an implementation class does not provide a public default constructor.
      */
     public Object copy(final Object metadata) {
-        try {
-            return copyRecursively(null, metadata);
-        } finally {
-            copies.clear();
-        }
+        return copyRecursively(null, metadata);
     }
 
     /**
@@ -143,11 +144,7 @@ public class MetadataCopier {
      */
     public <T> T copy(final Class<T> type, final T metadata) {
         ArgumentChecks.ensureNonNull("type", type);
-        try {
-            return type.cast(copyRecursively(type, metadata));
-        } finally {
-            copies.clear();
-        }
+        return type.cast(copyRecursively(type, metadata));
     }
 
     /**
@@ -171,12 +168,9 @@ public class MetadataCopier {
                 std = ((AbstractMetadata) metadata).getStandard();
             }
             if (std != null) {
-                final PropertyAccessor accessor = std.getAccessor(new CacheKey(metadata.getClass(), type), false);
-                if (accessor != null) try {
-                    return accessor.copy(metadata, this);
-                } catch (ReflectiveOperationException e) {
-                    throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type),
-                            Exceptions.unwrap(e));
+                final Object result = walk(std, type, metadata, false);
+                if (result != null) {
+                    return result;
                 }
             }
         }
@@ -184,11 +178,39 @@ public class MetadataCopier {
     }
 
     /**
+     * Invoked before the properties of a metadata instance are visited. This method creates a new instance,
+     * to be returned by {@link #result()}, and returns {@link Filter#WRITABLE_RESULT} for notifying the caller
+     * that write operations need to be performed on that {@code result} object.
+     */
+    @Override
+    final Filter preVisit(final PropertyAccessor accessor) {
+        if (accessor.isWritable()) try {
+            target = accessor.implementation.getConstructor().newInstance();
+            return Filter.WRITABLE_RESULT;
+        } catch (ReflectiveOperationException e) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type), Exceptions.unwrap(e));
+        } else {
+            target = null;
+            return Filter.NONE;
+        }
+    }
+
+    /**
+     * Returns the metadata instance resulting from the copy. This method is invoked <strong>before</strong>
+     * metadata properties are visited.
+     */
+    @Override
+    final Object result() {
+        return target;
+    }
+
+    /**
      * Verifies if the given metadata value is a map or a collection before to invoke
      * {@link #copyRecursively(Class, Object)} for metadata elements.  This method is
-     * invoked by {@link PropertyAccessor#copy(Object, MetadataCopier)}.
+     * invoked by {@link PropertyAccessor#walkWritable(MetadataVisitor, Object, Object)}.
      */
-    final Object copyAny(final Class<?> type, final Object metadata) {
+    @Override
+    final Object visit(final Class<?> type, final Object metadata) {
         if (!type.isInstance(metadata)) {
             if (metadata instanceof Collection<?>) {
                 Collection<?> c = (Collection<?>) metadata;
@@ -221,5 +243,23 @@ public class MetadataCopier {
             }
         }
         return copyRecursively(type, metadata);
+    }
+
+    /**
+     * Returns the path to the currently copied property.
+     * Each element in the list is the UML identifier of a property.
+     * Element at index 0 is the name of the property of the root metadata object being copied.
+     * Element at index 1 is the name of a property which is a children of above property, <i>etc.</i>
+     *
+     * <p>The returned list is valid only during {@link #copyRecursively(Class, Object)} method execution.
+     * The content of this list become undetermined after the {@code copyRecursively} method returned.</p>
+     *
+     * @return the path to the currently copied property.
+     *
+     * @since 1.0
+     */
+    @Override
+    protected List<String> getCurrentPropertyPath() {
+        return super.getCurrentPropertyPath();
     }
 }

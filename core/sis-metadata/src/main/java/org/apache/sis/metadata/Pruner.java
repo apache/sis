@@ -90,17 +90,16 @@ final class Pruner extends MetadataVisitor<Boolean> {
 
     /**
      * Marks a metadata instance as empty before we start visiting its non-null properties.
-     * If the metadata does not contain any property, then the {@link #isEmpty} field will
-     * stay {@code true}.
+     * If the metadata does not contain any property, then the {@link #isEmpty} field will stay {@code true}.
      *
-     * @return {@code false} since this visitor is not restricted to writable properties.
-     *         We need to visit all readable properties even for pruning operation since
-     *         we need to determine if the metadata is empty.
+     * @return {@link Filter#NON_EMPTY} since this visitor is not restricted to writable properties.
+     *         We need to visit all readable properties even for pruning operation since we need to
+     *         determine if the metadata is empty.
      */
     @Override
-    boolean preVisit(final Class<?> type) {
+    Filter preVisit(final PropertyAccessor accessor) {
         isEmpty = true;
-        return false;
+        return Filter.NON_EMPTY;
     }
 
     /**
