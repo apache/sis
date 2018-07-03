@@ -62,7 +62,7 @@ import org.apache.sis.xml.Namespaces;
     "resource",                 // Ibid.
     "operation",                // Ibid.
     "operationName",            // Legacy ISO 19139:2007
-    "identifier",               // Ibid.
+    "id",                       // Ibid.
     "legacyName"                // Legacy ISO 19139:2007 way to write scoped name
 })
 @XmlRootElement(name = "SV_CoupledResource", namespace = Namespaces.SRV)
@@ -287,10 +287,11 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
 
     /**
      * Returns the resource identifier, which is assumed to be the name as a string.
-     * Used in legacy ISO 19139:2007 documents.
+     * Used in legacy ISO 19139:2007 documents. There is no setter method; we expect
+     * the XML to declare {@code <srv:operationName>} instead.
      */
     @XmlElement(name = "identifier", namespace = LegacyNamespaces.SRV)
-    private String getIdentifier() {
+    private String getId() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final ScopedName name = getScopedName();
             if (name != null) {
@@ -298,13 +299,6 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
             }
         }
         return null;
-    }
-
-    /**
-     * Handled as a synonymous of {@code <srv:operationName>}.
-     */
-    private void setIdentifier(final String identifier) {
-        setOperationName(identifier);
     }
 
     /**

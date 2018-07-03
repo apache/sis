@@ -109,7 +109,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
 
     /**
      * Returns the first marshallable identifier from the given collection. This method omits
-     * "special" identifiers (ISO 19115-3 attributes, ISBN codes...), which are recognized by
+     * "special" identifiers (ISO 19115-3 attributes, ISBN codes…), which are recognized by
      * the implementation class of their authority.
      *
      * <p>This method is used for implementation of {@code getIdentifier()} methods (singular form)

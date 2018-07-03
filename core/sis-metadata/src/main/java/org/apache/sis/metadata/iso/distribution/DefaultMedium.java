@@ -35,7 +35,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
@@ -376,7 +375,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @XmlElement(name = "identifier")
     @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**

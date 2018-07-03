@@ -29,7 +29,6 @@ import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
@@ -206,7 +205,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**

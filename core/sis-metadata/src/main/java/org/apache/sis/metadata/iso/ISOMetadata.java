@@ -133,7 +133,20 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * {@inheritDoc}
+     * Returns all identifiers associated to this object (from conceptual model and from XML document).
+     * This collection may contain identifiers from different sources:
+     *
+     * <ul class="verbose">
+     *   <li>Identifiers specified in the ISO 19115-1 or 19115-2 abstract models,
+     *       typically (but not necessarily) as an {@code identifier} property
+     *       (may also be {@link DefaultMetadata#getMetadataIdentifier() metadataIdentifier},
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} or
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getISSN() ISSN} properties).</li>
+     *   <li>Identifiers specified in the ISO 19115-3 or 19115-4 XML schemas.
+     *       Those identifiers are typically stored as a result of unmarshalling an XML document.
+     *       Those identifiers can be recognized by an {@linkplain Identifier#getAuthority() authority}
+     *       sets as one of the {@link IdentifierSpace} constants.</li>
+     * </ul>
      */
     @Override
     public Collection<Identifier> getIdentifiers() {
@@ -166,14 +179,29 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     }
 
     /**
-     * Sets the identifier for metadata objects that are expected to contain at most one ISO 19115-1 identifier.
-     * This convenience method is used for implementation of public {@link setIdentifier(Identifier)} methods in
-     * subclasses having a [0 … 1] cardinality for the {@code identifier} property.
+     * Returns the first identifier which is presumed to be defined by ISO 19115 conceptual model.
+     * This method checks the {@linkplain Identifier#getAuthority() authority} for filtering ignorable
+     * identifiers like ISBN/ISSN codes and XML attributes.
+     * This convenience method is provided for implementation of public {@code getIdentifier(Identifier)}
+     * methods in subclasses having an {@code identifier} property with [0 … 1] cardinality.
      *
-     * <p>The default implementation removes all identifiers that are not ISO 19115-3 identifiers before to add
-     * the given one in the {@link #identifiers} collection.</p>
+     * @return an identifier from ISO 19115-3 conceptual model (excluding XML identifiers),
+     *         or {@code null} if none.
      *
-     * @param  newValue  the new identifier value, or {@code null} for removing the ISO 19115-1 identifier.
+     * @since 1.0
+     */
+    protected Identifier getIdentifier() {
+        return NonMarshalledAuthority.getMarshallable(identifiers);
+    }
+
+    /**
+     * Sets the identifier for metadata objects that are expected to contain at most one ISO 19115 identifier.
+     * This convenience method is provided for implementation of public {@code setIdentifier(Identifier)} methods
+     * in subclasses having an {@code identifier} property with [0 … 1] cardinality.
+     * The default implementation removes all identifiers that would be returned by {@link #getIdentifier()}
+     * before to add the given one in the {@link #identifiers} collection.
+     *
+     * @param  newValue  the new identifier value, or {@code null} for removing the identifier.
      *
      * @since 1.0
      */

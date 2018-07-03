@@ -30,7 +30,6 @@ import org.opengis.metadata.acquisition.PlatformPass;
 import org.opengis.metadata.acquisition.Sequence;
 import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
@@ -177,7 +176,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**

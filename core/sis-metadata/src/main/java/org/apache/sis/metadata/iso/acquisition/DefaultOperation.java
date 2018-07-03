@@ -31,7 +31,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Progress;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
@@ -238,7 +237,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     @Override
     @XmlElement(name = "identifier")
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**

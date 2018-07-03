@@ -70,7 +70,6 @@ import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
@@ -418,7 +417,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "metadataIdentifier")
     @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getMetadataIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -462,7 +461,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setFileIdentifier(final String newValue) {
         // See "Note about deprecated methods implementation"
-        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(NonMarshalledAuthority.getMarshallable(identifiers));
+        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(super.getIdentifier());
         if (identifier == null) {
             if (newValue == null) return;
             identifier = new DefaultIdentifier();

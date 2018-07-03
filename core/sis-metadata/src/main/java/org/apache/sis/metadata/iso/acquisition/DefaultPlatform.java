@@ -27,7 +27,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
@@ -171,7 +170,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
