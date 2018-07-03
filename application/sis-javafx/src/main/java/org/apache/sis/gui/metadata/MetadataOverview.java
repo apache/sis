@@ -16,21 +16,19 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import static java.text.NumberFormat.getIntegerInstance;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import static javafx.event.ActionEvent.ACTION;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -48,11 +46,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultIndividual;
-import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
-import static org.apache.sis.util.iso.Types.getCodeTitle;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Party;
@@ -69,27 +62,35 @@ import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
+import org.apache.sis.util.iso.Types;
+
 
 /**
  * Metadata Viewer.
  *
- * @author Smaniotto Enzo
+ * @author  Smaniotto Enzo
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
 class MetadataOverview extends StackPane {
 
-    private final Metadata METADATA;
-    private final String FROMFILE;
-    private final Locale LOCALE = Locale.getDefault();
+    private final Metadata metadata;
+    final String fromFile;
+    private final Locale locale = Locale.getDefault();
 
-    public MetadataOverview(DefaultMetadata _md, String _fromFile) {
-        METADATA = _md;
-        FROMFILE = _fromFile;
+    public MetadataOverview(final DefaultMetadata md, final String fromFile) {
+        this.metadata = md;
+        this.fromFile = fromFile;
         VBox root = new VBox();
         root.setStyle("-fx-background-color: linear-gradient(to bottom right, #aeb7c4, #fafafa);");
 
         // Creation of the differents views.
         VBox summaryView = createSummaryView();
-        DefaultMetadata md = (DefaultMetadata) METADATA;
         MetadataNode advancedView = new MetadataNode(md.asTreeTable());
         advancedView.setMaxHeight(Double.MAX_VALUE);
         VBox.setVgrow(advancedView, Priority.ALWAYS);
@@ -133,9 +134,12 @@ class MetadataOverview extends StackPane {
     private VBox createSummaryView() {
         VBox vb = new VBox();
         TitledPane idPane = new TitledPane("Identification info", createIdGridPane());
-        TitledPane spatialPane = new TitledPane("Spatial representation", createSpatialGridPane());
+        GridPane createSpatialGridPane = createSpatialGridPane();
         vb.getChildren().add(idPane);
-        vb.getChildren().add(spatialPane);
+        if (!createSpatialGridPane.getChildren().isEmpty()) {
+            TitledPane spatialPane = new TitledPane("Spatial representation", createSpatialGridPane);
+            vb.getChildren().add(spatialPane);
+        }
         return vb;
     }
 
@@ -145,10 +149,10 @@ class MetadataOverview extends StackPane {
         int j = 0, k = 1;
 
         HashMap<String, Identification> m = new HashMap<>();
-        ComboBox comboBox = createComboBox(m);
+        ComboBox<String> comboBox = createComboBox(m);
         comboBox.setStyle("-fx-font-weight: bold; -fx-font-size: 2em;");
         if (!comboBox.isVisible()) {
-            Label la = new Label(comboBox.getValue().toString());
+            Label la = new Label(comboBox.getValue());
             la.setStyle("-fx-font-weight: bold; -fx-font-size: 2em;");
             gp.add(la, j, k++, 2, 1);
         } else {
@@ -156,7 +160,7 @@ class MetadataOverview extends StackPane {
         }
 
         // Show author information.
-        Collection<? extends Responsibility> contacts = this.METADATA.getContacts();
+        Collection<? extends Responsibility> contacts = this.metadata.getContacts();
         if (!contacts.isEmpty()) {
             Responsibility contact = contacts.iterator().next();
             Collection<? extends Party> parties = contact.getParties();
@@ -165,6 +169,7 @@ class MetadataOverview extends StackPane {
                 if (party.getName() != null) {
                     Label partyType = new Label("Party");
                     Label partyValue = new Label(party.getName().toString());
+                    partyValue.setWrapText(true);
                     if (party instanceof DefaultOrganisation) {
                         partyType.setText("Organisation");
                     } else if (party instanceof DefaultIndividual) {
@@ -182,9 +187,8 @@ class MetadataOverview extends StackPane {
 
         comboBox.setOnAction(e -> {
             gpi.getChildren().clear();
-            Identification id = m.get(comboBox.getValue().toString());
-
-            if (comboBox.getValue().toString().equals("No data to show")) {
+            Identification id = m.get(comboBox.getValue());
+            if (comboBox.getValue().equals("No data to show")) {
                 return;
             }
 
@@ -193,7 +197,8 @@ class MetadataOverview extends StackPane {
             if (ab != null) {
                 InternationalString abs = (InternationalString) ab;
                 Label crd = new Label("Abstract");
-                Label crdValue = new Label(abs.toString(LOCALE));
+                Label crdValue = new Label(abs.toString(locale));
+                crdValue.setWrapText(true);
                 gpi.add(crd, 0, 1);
                 gpi.add(crdValue, 1, 1);
             } else {
@@ -202,6 +207,7 @@ class MetadataOverview extends StackPane {
                     InternationalString credit = credits.iterator().next();
                     Label crd = new Label("Credit");
                     Label crdValue = new Label(credit.toString());
+                    crdValue.setWrapText(true);
                     gpi.add(crd, 0, 1);
                     gpi.add(crdValue, 1, 1);
                 }
@@ -212,19 +218,21 @@ class MetadataOverview extends StackPane {
                 TopicCategory tc = tcs.iterator().next();
                 Label topicC = new Label("Topic Category");
                 Label topicValue = new Label(tc.toString());
+                topicValue.setWrapText(true);
                 gpi.add(topicC, 0, 2);
                 gpi.add(topicValue, 1, 2);
             }
 
             if (!id.getCitation().getDates().isEmpty()) {
                 CitationDate dateAndType = id.getCitation().getDates().iterator().next();
-                DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, LOCALE);
+                DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, locale);
                 String dateStr = dateFormat.format(dateAndType.getDate());
                 String s = dateAndType.getDateType().toString();
                 s = s.replace("DateType[", "");
                 s = s.replace("]", "");
                 Label dt = new Label("Date type: " + s.toLowerCase());
                 Label dtValue = new Label(dateStr);
+                dtValue.setWrapText(true);
                 gpi.add(dt, 0, 3);
                 gpi.add(dtValue, 1, 3);
             }
@@ -232,11 +240,13 @@ class MetadataOverview extends StackPane {
             if (id instanceof DataIdentification) {
                 Label topicC = new Label("Object type");
                 Label topicValue = new Label("Data");
+                topicValue.setWrapText(true);
                 gpi.add(topicC, 0, 4);
                 gpi.add(topicValue, 1, 4);
             } else {
                 Label topicC = new Label("Object type");
                 Label topicValue = new Label("Service");
+                topicValue.setWrapText(true);
                 gpi.add(topicC, 0, 4);
                 gpi.add(topicValue, 1, 4);
             }
@@ -246,10 +256,11 @@ class MetadataOverview extends StackPane {
             String typeList = "Spatial representation type: ";
             while (its.hasNext()) {
                 SpatialRepresentationType spatialRepresentationType = its.next();
-                typeList += spatialRepresentationType.toString().toLowerCase(LOCALE).replace("spatialrepresentationtype[", "").replace(']', '\0') + ", ";
+                typeList += spatialRepresentationType.toString().toLowerCase(locale).replace("spatialrepresentationtype[", "").replace(']', '\0') + ", ";
             }
             if (!typeList.equals("Spatial representation type: ")) {
                 Label list = new Label(typeList.substring(0, typeList.length() - 2));
+                list.setWrapText(true);
                 gpi.add(list, 0, 5, 2, 1);
             }
 
@@ -262,6 +273,7 @@ class MetadataOverview extends StackPane {
                     GeographicExtent ge = it.next();
                     Label geoEx = new Label("Zone");
                     Label geoExValue = new Label(ge.toString());
+                    geoExValue.setWrapText(true);
                     if (ge instanceof GeographicBoundingBox) {
                         geoEx.setText("");
                         GeographicBoundingBox gbd = (GeographicBoundingBox) ge;
@@ -281,10 +293,9 @@ class MetadataOverview extends StackPane {
                     }
                 }
             }
-
         });
 
-        Event.fireEvent(comboBox, new Event(ACTION));
+        Event.fireEvent(comboBox, new ActionEvent());
         gp.add(gpi, j, k++, 2, 1);
 
         int ind = 0;
@@ -295,25 +306,18 @@ class MetadataOverview extends StackPane {
                 n.setStyle("-fx-padding: 0 0 10 0; -fx-font-weight: bold; -fx-font-size: 2em;");
             }
         }
-
-        for (Node n : gpi.getChildren()) {
-            n.setStyle("-fx-padding: 0 0 10 0;");
-        }
+        gpi.getChildren().forEach(n -> n.setStyle("-fx-padding: 0 0 10 0;"));
 
         return gp;
     }
 
     private Canvas createMap(double north, double east, double south, double west) {
         Canvas can = new Canvas();
-        final File file = new File("/home/admin/Documents/WorldMap360*180.png");
-        Image image;
-        String localUrl;
-        try {
-            localUrl = file.toURI().toURL().toString();
-            image = new Image(localUrl);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(MetadataOverview.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+        Image image = null;
+        try (InputStream in = MetadataOverview.class.getResourceAsStream("WorldMap360x180.png")) {
+            image = new Image(in);
+        } catch (IOException e) {
+            // TODO
         }
         if (image.errorProperty().getValue()) {
             return null;
@@ -354,21 +358,19 @@ class MetadataOverview extends StackPane {
         gp.setVgap(10.00);
         int j = 0, k = 1;
 
-        Collection<? extends ReferenceSystem> referenceSystemInfos = METADATA.getReferenceSystemInfo();
+        Collection<? extends ReferenceSystem> referenceSystemInfos = metadata.getReferenceSystemInfo();
         if (!referenceSystemInfos.isEmpty()) {
             ReferenceSystem referenceSystemInfo = referenceSystemInfos.iterator().next();
             Label rsiValue = new Label("Reference system infos: " + referenceSystemInfo.getName().toString());
+            rsiValue.setWrapText(true);
             gp.add(rsiValue, j, k++);
         }
 
-        Collection<? extends SpatialRepresentation> sris = this.METADATA.getSpatialRepresentationInfo();
+        Collection<? extends SpatialRepresentation> sris = this.metadata.getSpatialRepresentationInfo();
         if (sris.isEmpty()) {
-            Label noData = new Label("No data found.");
-            noData.setStyle("-fx-text-fill: red;");
-            gp.add(noData, ++j, k++, 2, 1);
             return gp;
         }
-        NumberFormat numberFormat = getIntegerInstance(LOCALE);
+        NumberFormat numberFormat = NumberFormat.getIntegerInstance(locale);
         for (SpatialRepresentation sri : sris) {
             String currentValue = "• ";
             if (sri instanceof DefaultGridSpatialRepresentation) {
@@ -377,14 +379,15 @@ class MetadataOverview extends StackPane {
                 Iterator<? extends Dimension> it = sr.getAxisDimensionProperties().iterator();
                 while (it.hasNext()) {
                     Dimension dim = it.next();
-                    currentValue += numberFormat.format(dim.getDimensionSize()) + " " + getCodeTitle(dim.getDimensionName()) + " * ";
+                    currentValue += numberFormat.format(dim.getDimensionSize()) + " " + Types.getCodeTitle(dim.getDimensionName()) + " * ";
                 }
                 currentValue = currentValue.substring(0, currentValue.length() - 3);
                 Label spRep = new Label(currentValue);
                 gp.add(spRep, j, k++, 2, 1);
                 if (sr.getCellGeometry() != null) {
                     Label cellGeo = new Label("Cell geometry:");
-                    Label cellGeoValue = new Label(getCodeTitle(sr.getCellGeometry()).toString());
+                    Label cellGeoValue = new Label(Types.getCodeTitle(sr.getCellGeometry()).toString());
+                    cellGeoValue.setWrapText(true);
                     gp.add(cellGeo, j, k);
                     gp.add(cellGeoValue, ++j, k++);
                     j = 0;
@@ -394,9 +397,9 @@ class MetadataOverview extends StackPane {
         return gp;
     }
 
-    private ComboBox createComboBox(HashMap<String, Identification> m) {
-        ComboBox cb = new ComboBox();
-        Collection<? extends Identification> ids = this.METADATA.getIdentificationInfo();
+    private ComboBox<String> createComboBox(final Map<String, Identification> m) {
+        ComboBox<String> cb = new ComboBox<>();
+        Collection<? extends Identification> ids = this.metadata.getIdentificationInfo();
         ObservableList<String> options = FXCollections.observableArrayList();
         int i = 1;
         if (ids.size() > 1) {
@@ -424,9 +427,4 @@ class MetadataOverview extends StackPane {
         }
         return cb;
     }
-
-    public final String getFromFile() {
-        return FROMFILE;
-    }
-
 }

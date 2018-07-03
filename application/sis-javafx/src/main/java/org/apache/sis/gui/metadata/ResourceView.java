@@ -21,13 +21,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DataFormat;
@@ -38,12 +41,14 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import org.apache.sis.gui.dataset.FeatureTable;
 import org.apache.sis.internal.storage.folder.FolderStoreProvider;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 
@@ -51,16 +56,27 @@ import org.apache.sis.storage.StorageConnector;
 /**
  * Show resources available in data files.
  *
- * @author Smaniotto Enzo
+ * @author  Smaniotto Enzo
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
 public class ResourceView {
 
     private final TreeItem<Label> root = new TreeItem<>(new Label("Files"));
+
+    // Those variables are used to temporary fix a bug while the FeatureTable is open (the root item erase his childrens so their disappear of the TreeView). this will have to be corrected later.
+    private final ObservableList<TreeItem<Label>> temporarySauv;
+
+    private List<TreeItem<Label>> temp = new ArrayList<>();
+
     public final SplitPane pane = new SplitPane();
+
+    //This map link the respective Tree Items to their own Label in order to keep the informations of the document's name and of it location (stocked in the Label) to the item in the TreeView. Usefull to know which element is selected.
     private final Map<Label, TreeItem<?>> labelToItem = new HashMap<>();
 
-    // TODO: What is that?
-    private final List<String> LABINTRV = new ArrayList<>();
+    // This List contain all the elements present in the TreeView, referenced by their id (set to the specific location of each file). Used to know if a file is already open.
+    private final List<String> labToTrv = new ArrayList<>();
 
     private Label sauvLabel, parent;
 
@@ -91,7 +107,7 @@ public class ResourceView {
                 if (db.hasFiles()) {
                     success = true;
                 }
-                List<?> fileList = (List<?>) db.getContent(DataFormat.FILES);
+                List<?> fileList = (List<?>) db.getContent(DataFormat.FILES); // To open multiple files in one drop.
                 for (Object item : fileList) {
                     File f = (File) item;
                     openFile(f);
@@ -100,19 +116,31 @@ public class ResourceView {
             event.setDropCompleted(success);
             event.consume();
         });
+
+        // Link to the temporary varaible see above. This is a temporary part.
+        temporarySauv = root.getChildren();
+        temporarySauv.addListener((ListChangeListener.Change<? extends TreeItem<Label>> c) -> {
+            c.next();
+            if (c.wasRemoved()) {
+                temp.addAll(c.getRemoved());
+            }
+        });
+
         pane.getItems().add(resources);
     }
 
-    private MetadataOverview getContent() {
+    // Get the view of the opened element, return null otherwise.
+    private Object getContent() {
         final ObservableList<Node> items = pane.getItems();
         if (items.size() >= 2) {
-            return (MetadataOverview) items.get(1);
+            return items.get(1);
         } else {
             return null;
         }
     }
 
-    private void setContent(final MetadataOverview content) {
+    // Set the view of the opened element.
+    private void setContent(final Node content) {
         final ObservableList<Node> items = pane.getItems();
         if (items.size() >= 2) {
             items.set(1, content);
@@ -126,18 +154,41 @@ public class ResourceView {
         close.setOnAction(ac -> {
             root.getChildren().remove(labelToItem.get(lab));
             labelToItem.remove(lab);
-            LABINTRV.remove(lab.getId());
-            final MetadataOverview content = getContent();
-            if (content != null) {
-                if (lab.getId().equals(content.getFromFile())) {
-                    setContent(null);
-                }
+            labToTrv.remove(lab.getId());
+            final Object content = getContent();
+            if (content != null && content instanceof FeatureTable) {
+                pane.getItems().remove(1);
+            }
+            if (content != null && content instanceof MetadataOverview) {
+                if (lab.getId().equals(((MetadataOverview) content).fromFile)) {
+                    setContent(new Label("   Please choose a file to open   "));
+               }
             }
         });
-        ContextMenu cm = new ContextMenu(close);
+        MenuItem feature = new MenuItem("Open Feature");
+        feature.setOnAction(ac -> {
+            try {
+                DataStore ds = DataStores.open(lab.getId());
+                if (ds instanceof FeatureSet) {
+                    root.getChildren().remove(labelToItem.get(lab));
+                    addFeaturePanel(lab.getId());
+                }
+            } catch (DataStoreException ex) {
+                final Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("An error has occurred");
+                lab.setWrapText(true);
+                lab.setMaxWidth(650);
+                VBox vb = new VBox();
+                vb.getChildren().add(lab);
+                alert.getDialogPane().setContent(vb);
+                alert.show();
+            }
+        });
+        ContextMenu cm = new ContextMenu(feature, close);
         lab.setContextMenu(cm);
     }
 
+    // Define what happens when an element of the TreeView is clicked.
     private void setOnClick(Label lab) {
         addContextMenu(lab);
         lab.setOnMouseClicked(click -> {
@@ -145,42 +196,22 @@ public class ResourceView {
                 if (sauvLabel != null) {
                     sauvLabel.setTextFill(Color.BLACK);
                 }
-                addMetadatPanel(lab.getId());
+                addMetadatPanel(null, lab.getId());
                 sauvLabel = lab;
                 lab.setTextFill(Color.RED);
             }
         });
     }
 
-    private boolean checkMetaPanel(String filePath) {
-        MetadataOverview meta;
+    private void addFeaturePanel(String filePath) {
         try {
             DataStore ds = DataStores.open(filePath);
-            meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), filePath);
-            return true;
+            setContent(new FeatureTable(ds, 18));
+            root.getChildren().addAll(temp);
+            temp.clear();
         } catch (DataStoreException e) {
             final Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("An error was occur");
-            Label lab = new Label(e.getMessage());
-            lab.setWrapText(true);
-            lab.setMaxWidth(650);
-            VBox vb = new VBox();
-            vb.getChildren().add(lab);
-            alert.getDialogPane().setContent(vb);
-            alert.show();
-            return false;
-        }
-    }
-
-    private void addMetadatPanel(String filePath) {
-        MetadataOverview meta;
-        try {
-            DataStore ds = DataStores.open(filePath);
-            meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), filePath);
-            setContent(meta);
-        } catch (DataStoreException e) {
-            final Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("An error was occur");
+            alert.setTitle("An error has occurred");
             Label lab = new Label(e.getMessage());
             lab.setWrapText(true);
             lab.setMaxWidth(650);
@@ -192,21 +223,42 @@ public class ResourceView {
     }
 
     private void addMetadatPanel(Resource res, String filePath) {
-        MetadataOverview meta;
-        try {
-            meta = new MetadataOverview(((DefaultMetadata) res.getMetadata()), filePath);
+        Task<MetadataOverview> task = new Task<MetadataOverview>() {
+            @Override
+            protected MetadataOverview call() throws DataStoreException {
+                MetadataOverview meta;
+                if (res != null) {
+                    meta = new MetadataOverview(((DefaultMetadata) res.getMetadata()), filePath);
+                } else {
+                    DataStore ds = DataStores.open(filePath);
+                    meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), filePath);
+                }
+                return meta;
+            }
+        };
+        task.setOnSucceeded(wse -> {
+            final MetadataOverview meta = task.getValue();
             setContent(meta);
-        } catch (DataStoreException e) {
+        });
+        task.setOnRunning(wse -> {
+            ProgressIndicator p = new ProgressIndicator(-1);
+            p.setPrefSize(17, 18);
+            setContent(p);
+        });
+        task.setOnFailed(wse -> {
             final Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("An error was occur");
-            Label lab = new Label(e.getMessage());
+            Label lab = new Label(task.getException().getMessage());
             lab.setWrapText(true);
             lab.setMaxWidth(650);
             VBox vb = new VBox();
             vb.getChildren().add(lab);
             alert.getDialogPane().setContent(vb);
             alert.show();
-        }
+        });
+        final Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public void open(final List<File> files) {
@@ -220,10 +272,19 @@ public class ResourceView {
     }
 
     private void openFile(File f) {
-        if (checkMetaPanel(f.getAbsolutePath())) {
+        Task<Void> t = new Task<Void>() {
+            @Override
+            protected Void call() throws DataStoreException {
+                MetadataOverview meta;
+                DataStore ds = DataStores.open(f.getAbsolutePath());
+                meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), f.getAbsolutePath());
+                return null;
+            }
+        };
+        t.setOnSucceeded(ac -> {
             Label label = new Label(f.getName());
             label.setId(f.getAbsolutePath());
-            if (LABINTRV.contains(f.getAbsolutePath())) {
+            if (labToTrv.contains(f.getAbsolutePath())) {
                 for (Label elem : labelToItem.keySet()) {
                     if (elem.getId().equals(f.getAbsolutePath())) {
                         Event.fireEvent(elem, new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, MouseButton.PRIMARY, 1, true, true, true, true, true, true, true, true, true, true, null));
@@ -233,19 +294,34 @@ public class ResourceView {
                 setOnClick(label);
                 TreeItem<Label> tItem = new TreeItem<>(label);
                 labelToItem.put(label, tItem);
-                LABINTRV.add(f.getAbsolutePath());
+                labToTrv.add(f.getAbsolutePath());
                 root.getChildren().add(tItem);
             }
-        }
+        });
+        t.setOnFailed(ac -> {
+            final Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("An error was occur");
+            Label lab = new Label(t.getException().getMessage());
+            lab.setWrapText(true);
+            lab.setMaxWidth(650);
+            VBox vb = new VBox();
+            vb.getChildren().add(lab);
+            alert.getDialogPane().setContent(vb);
+            alert.show();
+        });
+        final Thread thread = new Thread(t);
+        thread.setDaemon(true);
+        thread.start();
     }
 
+    // For the directory, the methods "setOnClick" and "addContextMenu" are redefine inside.
     private void openDirectory(File firstFile) {
-        if (!LABINTRV.contains("[Aggregate] " + firstFile.getName())) {
+        if (!labToTrv.contains("[Aggregate] " + firstFile.getName())) {
             DataStore resource = null;
             try {
                 resource = FolderStoreProvider.INSTANCE.open(new StorageConnector(firstFile));
             } catch (DataStoreException ex) {
-                ex.getMessage();
+                ex.getMessage();                    // TODO: needs better handling.
             }
             if (resource instanceof Aggregate) {
                 parent = new Label("[Aggregate] " + firstFile.getName());
@@ -262,11 +338,14 @@ public class ResourceView {
                 close.setOnAction(ac -> {
                     root.getChildren().remove(labelToItem.get(cl));
                     labelToItem.remove(cl);
-                    LABINTRV.remove(parent.getText());
-                    final MetadataOverview content = getContent();
-                    if (content != null) {
-                        if (parent.getId().equals(content.getFromFile())) {
-                            setContent(null);
+                    labToTrv.remove(parent.getText());
+                    final Object content = getContent();
+                    if (content != null && content instanceof FeatureTable) {
+                        pane.getItems().remove(1);
+                    }
+                    if (content != null && content instanceof MetadataOverview) {
+                        if (parent.getId().equals(((MetadataOverview) content).fromFile)) {
+                            setContent(new Label("   Please choose a file to open   "));
                         }
                     }
                 });
@@ -290,13 +369,21 @@ public class ResourceView {
                         ti.getChildren().add(tiChild);
                     }
                 } catch (DataStoreException ex) {
-                    System.out.println(ex.getMessage());        // TODO: NO!!!!!
+                    final Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("An error was occur");
+                    Label lab = new Label(ex.getMessage());
+                    lab.setWrapText(true);
+                    lab.setMaxWidth(650);
+                    VBox vb = new VBox();
+                    vb.getChildren().add(lab);
+                    alert.getDialogPane().setContent(vb);
+                    alert.show();
                 }
                 root.getChildren().add(ti);
-                LABINTRV.add(parent.getText());
+                labToTrv.add(parent.getText());
                 labelToItem.put(parent, ti);
             }
-        } else { // If the file is already open.
+        } else {                                                // If the file is already open.
             if (sauvLabel != null) {
                 sauvLabel.setTextFill(Color.BLACK);
             }
@@ -306,7 +393,7 @@ public class ResourceView {
                     elem.getValue().setTextFill(Color.RED);
                 }
             });
-            setContent(null);
+            setContent(new Label("   Please choose a file to open   "));
         }
     }
 }
