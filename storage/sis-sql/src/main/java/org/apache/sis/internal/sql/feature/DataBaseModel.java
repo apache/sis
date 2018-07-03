@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.reverse;
+package org.apache.sis.internal.sql.feature;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -45,9 +45,7 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.sql.Dialect;
-import org.apache.sis.internal.sql.SingleAttributeTypeBuilder;
-import org.apache.sis.internal.sql.reverse.MetaDataConstants.*;
+import org.apache.sis.internal.sql.feature.MetaDataConstants.*;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;

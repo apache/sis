@@ -24,7 +24,7 @@ import org.apache.sis.storage.StorageConnector;
 
 
 /**
- * Parent store class for {@code DataStore} implementations using JDBC backend.
+ * A data store capable to read and create features from a database.
  *
  * <div class="warning">This is an experimental class,
  * not yet target for any Apache SIS release at this time.</div>

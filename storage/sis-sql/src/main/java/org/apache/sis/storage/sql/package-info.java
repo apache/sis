@@ -17,7 +17,7 @@
 
 
 /**
- * Data stores that create features from a JDBC connection to a database.
+ * Data store capable to read and create features from a JDBC connection to a database.
  *
  * <div class="warning">This is an experimental package,
  * not yet target for any Apache SIS release at this time.</div>

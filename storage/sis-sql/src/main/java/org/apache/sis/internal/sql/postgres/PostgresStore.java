@@ -23,8 +23,8 @@ import org.apache.sis.storage.sql.SQLQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.internal.sql.reverse.DataBaseModel;
-import org.apache.sis.internal.sql.reverse.QueryFeatureSet;
+import org.apache.sis.internal.sql.feature.DataBaseModel;
+import org.apache.sis.internal.sql.feature.QueryFeatureSet;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 

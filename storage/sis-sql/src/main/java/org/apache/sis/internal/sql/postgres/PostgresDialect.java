@@ -23,10 +23,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.sql.SingleAttributeTypeBuilder;
-import org.apache.sis.internal.sql.reverse.ColumnMetaModel;
+import org.apache.sis.internal.sql.feature.SingleAttributeTypeBuilder;
+import org.apache.sis.internal.sql.feature.ColumnMetaModel;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.internal.sql.Dialect;
+import org.apache.sis.internal.sql.feature.Dialect;
 
 
 /**

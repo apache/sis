@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.reverse;
-
-import org.opengis.feature.Feature;
 
 
 /**
- * When inserting a complex feature in base. it must be divided in smaller elements.
- * Those flat insertions and relations are represented by this class.
+ * A set of helper classes for the SIS implementation of SQL data stores.
+ *
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class InsertRelation {
-    Feature parent;
-    Feature child;
-    RelationMetaModel relation;
-}
+package org.apache.sis.internal.sql.feature;

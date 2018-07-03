@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql.reverse;
+package org.apache.sis.internal.sql.feature;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.apache.sis.internal.sql.Dialect;
 import org.apache.sis.storage.DataStoreException;
 
 

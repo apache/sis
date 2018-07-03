@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql;
+package org.apache.sis.internal.sql.feature;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +44,7 @@ import static org.apache.sis.feature.AbstractIdentifiedType.*;
  *
  * @todo Is this class really needed?
  */
-public class SingleAttributeTypeBuilder {
+public final class SingleAttributeTypeBuilder {
     /**
      * Properties (name, description, …) to give to the attribute type constructor.
      */

@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.sql;
+package org.apache.sis.internal.sql.feature;
 
 import java.util.Map;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.sql.reverse.ColumnMetaModel;
 import org.apache.sis.storage.DataStoreException;
 
 
