@@ -66,7 +66,6 @@ import org.apache.sis.xml.NilReason;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_TemporalExtent_Type")
 @XmlRootElement(name = "EX_TemporalExtent")
 @XmlSeeAlso(DefaultSpatialTemporalExtent.class)

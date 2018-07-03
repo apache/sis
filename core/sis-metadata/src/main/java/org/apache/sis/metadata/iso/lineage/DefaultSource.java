@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 
@@ -91,7 +91,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
@@ -437,13 +436,16 @@ public class DefaultSource extends ISOMetadata implements Source {
     public Collection<Extent> getSourceExtents() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             Scope scope = getScope();
-            if (!(scope instanceof DefaultScope)) {
-                if (isModifiable()) {
-                    scope = new DefaultScope(scope);
-                    this.scope = scope;
-                } else {
-                    return Collections.singleton(scope.getExtent());
+            if (scope != null) {
+                if (!(scope instanceof DefaultScope)) {
+                    if (super.state() != State.FINAL) {
+                        scope = new DefaultScope(scope);
+                        this.scope = scope;
+                    } else {
+                        return Collections.singleton(scope.getExtent());
+                    }
                 }
+                return ((DefaultScope) scope).getExtents();
             }
         }
         return null;

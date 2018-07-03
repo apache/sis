@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
@@ -561,7 +560,6 @@ public class ConverterRegistry {
      *
      * @return a string representation of registered converters.
      */
-    @Debug
     @Override
     public String toString() {
         final TreeTable table = Column.createTable();

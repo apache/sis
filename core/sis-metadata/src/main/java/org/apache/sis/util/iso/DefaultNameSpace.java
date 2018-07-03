@@ -28,7 +28,6 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -491,7 +490,6 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *
      * @see Names#toExpandedString(GenericName)
      */
-    @Debug
     @Override
     public String toString() {
         return new StringBuilder(name.length() + 2).append('{').append(name).append('}').toString();

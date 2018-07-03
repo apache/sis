@@ -78,7 +78,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {

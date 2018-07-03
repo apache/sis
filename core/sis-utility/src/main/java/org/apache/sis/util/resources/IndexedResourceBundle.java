@@ -741,7 +741,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      *
      * @return a string representation of this resources bundle.
      */
-    @Debug
     @Override
     public synchronized String toString() {
         return getClass().getSimpleName() + '[' + getLocale() + ']';

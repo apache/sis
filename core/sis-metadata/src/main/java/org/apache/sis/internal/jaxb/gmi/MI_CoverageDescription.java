@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_CoverageDescription_Type", namespace = Namespaces.MRC)
 @XmlRootElement(name = "MI_CoverageDescription", namespace = Namespaces.MRC)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_CoverageDescription extends DefaultCoverageDescription {
     /**
      * For cross-version compatibility.

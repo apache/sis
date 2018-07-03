@@ -21,73 +21,49 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
+import java.lang.reflect.Constructor;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CodeListSet;
 
 
 /**
- * Performs deep copies of given metadata instances. This class performs a <em>copies</em>, not clones,
+ * Performs deep copies of given metadata instances. This class performs <em>copies</em>, not clones,
  * since the copied metadata may not be instances of the same class than the original metadata.
  * This class performs the following steps:
  *
  * <ul>
  *   <li>Get the {@linkplain MetadataStandard#getImplementation implementation class} of the given metadata instance.</li>
- *   <li>Create a {@linkplain Class#newInstance() new instance} of the implementation class using the public no-argument constructor.</li>
+ *   <li>Create a {@linkplain Constructor#newInstance new instance} of the implementation class using the public no-argument constructor.</li>
  *   <li>Invoke all non-deprecated setter methods on the new instance with the corresponding value from the given metadata.</li>
  *   <li>If any of the values copied in above step is itself a metadata, recursively performs deep copy on those metadata instances too.</li>
  * </ul>
  *
- * This class supports cyclic graphs in the metadata tree. It may return the given {@code metadata} object directly
- * if the {@linkplain MetadataStandard#getImplementation implementation class} does not provide any setter method.
+ * This copier may be used for converting metadata tree of unknown implementations (for example the result of a call to
+ * {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}) into instances of {@link AbstractMetadata}.
+ * The copier may also be used if a {@linkplain ModifiableMetadata.State#EDITABLE modifiable} metadata is desired after
+ * the original metadata has been made {@linkplain ModifiableMetadata.State#FINAL final}.
+ *
+ * <p>Default implementation copies all copiable children, regardless their {@linkplain ModifiableMetadata#state() state}.
+ * Static factory methods allow to construct some variants, for example skipping the copy of unmodifiable metadata instances
+ * since they can be safely shared.</p>
+ *
+ * <p>This class supports cyclic graphs in the metadata tree. It may return the given {@code metadata} object directly
+ * if the {@linkplain MetadataStandard#getImplementation implementation class} does not provide any setter method.</p>
  *
  * <p>This class is not thread-safe.
  * In multi-threads environment, each thread should use its own {@code MetadataCopier} instance.</p>
  *
- * <div class="note"><b>Recommended alternative:</b>
- * deep metadata copies are sometime useful when using an existing metadata as a template.
- * But the {@link ModifiableMetadata#unmodifiable()} method may provide a better way to use a metadata as a template,
- * as it returns a snapshot and allows the caller to continue to modify the original metadata object and create new
- * snapshots. Example:
- *
- * {@preformat java
- *   // Prepare a Citation to be used as a template.
- *   DefaultCitation citation = new DefaultCitation();
- *   citation.getCitedResponsibleParties(someAuthor);
- *
- *   // Set the title and get a first snapshot.
- *   citation.setTitle(new SimpleInternationalString("A title"));
- *   Citation myFirstCitation = (Citation) citation.unmodifiable();
- *
- *   // Change the title and get another snapshot.
- *   citation.setTitle(new SimpleInternationalString("Another title"));
- *   Citation mySecondCitation = (Citation) citation.unmodifiable();
- * }
- *
- * This approach allows sharing the children that have the same content, thus reducing memory usage. In above example,
- * the {@code someAuthor} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getCitedResponsibleParties()
- * cited responsible party} is the same instance in both citations. In comparison, deep copy operations unconditionally
- * duplicate everything, no matter if it was needed or not. Nevertheless deep copies are still sometime useful,
- * for example when we do not have the original {@link ModifiableMetadata} instance anymore.
- *
- * <p>{@code MetadataCopier} is also useful for converting a metadata tree of unknown implementations (for example the
- * result of a call to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}) into instances of the
- * public {@link AbstractMetadata} subclasses. But note that shallow copies as provided by the {@code castOrCopy(…)}
- * static methods in each {@code AbstractMetadata} subclass are sometime sufficient.</p>
- * </div>
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- *
- * @see ModifiableMetadata#unmodifiable()
- *
- * @since 0.8
+ * @version 1.0
+ * @since   0.8
  * @module
 */
-public class MetadataCopier {
+public class MetadataCopier extends MetadataVisitor<Object> {
     /**
      * The default metadata standard to use for object that are not {@link AbstractMetadata} instances,
      * or {@code null} if none.
@@ -95,10 +71,16 @@ public class MetadataCopier {
     private final MetadataStandard standard;
 
     /**
-     * The metadata objects that have been copied so far.
-     * This is used for resolving cyclic graphs.
+     * The current metadata instance where to copy the property values.
      */
-    final Map<Object,Object> copies;
+    private Object target;
+
+    /**
+     * Creates a new {@code MetadataCopier} instance.
+     */
+    private MetadataCopier() {
+        standard = null;
+    }
 
     /**
      * Creates a new metadata copier.
@@ -108,7 +90,32 @@ public class MetadataCopier {
      */
     public MetadataCopier(final MetadataStandard standard) {
         this.standard = standard;
-        copies = new IdentityHashMap<>();
+    }
+
+    /**
+     * Creates a new metadata copier which avoid copying unmodifiable metadata.
+     * More specifically, any {@link ModifiableMetadata} instance in
+     * {@linkplain ModifiableMetadata.State#FINAL final state} will be kept <i>as-is</i>;
+     * those final metadata will not be copied since they can be safely shared.
+     *
+     * @param  standard  the default metadata standard to use for object that are not {@link AbstractMetadata} instances,
+     *                   or {@code null} if none.
+     * @return a metadata copier which skip the copy of unmodifiable metadata.
+     *
+     * @since 1.0
+     */
+    public static MetadataCopier forModifiable(final MetadataStandard standard) {
+        return new MetadataCopier(standard) {
+            @Override protected Object copyRecursively(final Class<?> type, final Object metadata) {
+                if (metadata instanceof ModifiableMetadata) {
+                    final ModifiableMetadata.State state = ((ModifiableMetadata) metadata).state();
+                    if (state == ModifiableMetadata.State.FINAL) {
+                        return metadata;
+                    }
+                }
+                return super.copyRecursively(type, metadata);
+            }
+        };
     }
 
     /**
@@ -121,11 +128,7 @@ public class MetadataCopier {
      *         or an implementation class does not provide a public default constructor.
      */
     public Object copy(final Object metadata) {
-        try {
-            return copyRecursively(null, metadata);
-        } finally {
-            copies.clear();
-        }
+        return copyRecursively(null, metadata);
     }
 
     /**
@@ -141,11 +144,7 @@ public class MetadataCopier {
      */
     public <T> T copy(final Class<T> type, final T metadata) {
         ArgumentChecks.ensureNonNull("type", type);
-        try {
-            return type.cast(copyRecursively(type, metadata));
-        } finally {
-            copies.clear();
-        }
+        return type.cast(copyRecursively(type, metadata));
     }
 
     /**
@@ -169,19 +168,9 @@ public class MetadataCopier {
                 std = ((AbstractMetadata) metadata).getStandard();
             }
             if (std != null) {
-                final PropertyAccessor accessor = std.getAccessor(new CacheKey(metadata.getClass(), type), false);
-                if (accessor != null) try {
-                    return accessor.copy(metadata, this);
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    /*
-                     * In our PropertyAccessor.copy(…) implementation, checked exceptions can only be thrown
-                     * by the constructor.   Note that Class.newInstance() may throw more checked exceptions
-                     * than the ones declared in its method signature,  so we really need to catch Exception
-                     * (ReflectiveOperationException is not sufficient).
-                     */
-                    throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type), e);
+                final Object result = walk(std, type, metadata, false);
+                if (result != null) {
+                    return result;
                 }
             }
         }
@@ -189,11 +178,40 @@ public class MetadataCopier {
     }
 
     /**
+     * Invoked before the properties of a metadata instance are visited. This method creates a new instance,
+     * to be returned by {@link #result()}, and returns {@link Filter#WRITABLE_RESULT} for notifying the caller
+     * that write operations need to be performed on that {@code result} object.
+     */
+    @Override
+    final Filter preVisit(final PropertyAccessor accessor) {
+        if (accessor.isWritable()) try {
+            target = accessor.implementation.getConstructor().newInstance();
+            return Filter.WRITABLE_RESULT;
+        } catch (ReflectiveOperationException e) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type), Exceptions.unwrap(e));
+        } else {
+            target = null;
+            return Filter.NONE;
+        }
+    }
+
+    /**
+     * Returns the metadata instance resulting from the copy. This method is invoked <strong>before</strong>
+     * metadata properties are visited. The returned value is a new, initially empty, metadata instance
+     * created by {@link #preVisit(PropertyAccessor)}.
+     */
+    @Override
+    final Object result() {
+        return target;
+    }
+
+    /**
      * Verifies if the given metadata value is a map or a collection before to invoke
      * {@link #copyRecursively(Class, Object)} for metadata elements.  This method is
-     * invoked by {@link PropertyAccessor#copy(Object, MetadataCopier)}.
+     * invoked by {@link PropertyAccessor#walkWritable(MetadataVisitor, Object, Object)}.
      */
-    final Object copyAny(final Class<?> type, final Object metadata) {
+    @Override
+    final Object visit(final Class<?> type, final Object metadata) {
         if (!type.isInstance(metadata)) {
             if (metadata instanceof Collection<?>) {
                 Collection<?> c = (Collection<?>) metadata;
@@ -226,5 +244,23 @@ public class MetadataCopier {
             }
         }
         return copyRecursively(type, metadata);
+    }
+
+    /**
+     * Returns the path to the currently copied property.
+     * Each element in the list is the UML identifier of a property.
+     * Element at index 0 is the name of the property of the root metadata object being copied.
+     * Element at index 1 is the name of a property which is a children of above property, <i>etc.</i>
+     *
+     * <p>The returned list is valid only during {@link #copyRecursively(Class, Object)} method execution.
+     * The content of this list become undetermined after the {@code copyRecursively} method returned.</p>
+     *
+     * @return the path to the currently copied property.
+     *
+     * @since 1.0
+     */
+    @Override
+    protected List<String> getCurrentPropertyPath() {
+        return super.getCurrentPropertyPath();
     }
 }

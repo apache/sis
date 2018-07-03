@@ -23,6 +23,7 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.lineage.Source;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.internal.jaxb.gco.Multiplicity;
 import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
 import org.apache.sis.internal.jaxb.gmi.LE_Source;
 import org.apache.sis.internal.jaxb.gmi.MI_Band;
@@ -42,7 +43,7 @@ import org.opengis.metadata.spatial.Georeferenceable;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -53,6 +54,7 @@ public final class MetadataTypes extends TypeRegistration {
     @Override
     protected void getTypes(final Collection<Class<?>> addTo) {
         addTo.add(DefaultMetadata.class);
+        addTo.add(Multiplicity.class);          // Not used directly by ISO 19115 metadata, but used by Feature Catalog.
     }
 
     /**

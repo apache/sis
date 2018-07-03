@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.gml;
 
 import java.net.URISyntaxException;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

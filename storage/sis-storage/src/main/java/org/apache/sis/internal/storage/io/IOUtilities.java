@@ -84,9 +84,9 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns the filename extension from a {@link Path}, {@link File}, {@link URL}, {@link URI} or
-     * {@link CharSequence} instance. If no extension is found, returns an empty string. If the given
-     * object is of unknown type, return {@code null}.
+     * Returns the filename extension (without leading dot) from a {@link Path}, {@link File}, {@link URL},
+     * {@link URI} or {@link CharSequence} instance. If no extension is found, returns an empty string.
+     * If the given object is of unknown type, return {@code null}.
      *
      * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
      * @return the extension in the given path, or an empty string if none, or {@code null}

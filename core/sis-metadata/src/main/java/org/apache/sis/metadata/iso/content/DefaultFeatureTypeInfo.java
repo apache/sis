@@ -63,7 +63,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "featureTypeName")
 @XmlType(name = "MD_FeatureTypeInfo_Type", propOrder = {
     "featureTypeName",

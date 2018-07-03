@@ -35,7 +35,6 @@ import javax.measure.quantity.Length;
 
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.CellGeometry;
-import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
@@ -63,7 +62,6 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
@@ -84,7 +82,6 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
@@ -135,7 +132,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see GeoKeys
  *
@@ -206,7 +203,7 @@ final class CRSBuilder {
      * so we can easily detect at the end of the parsing process which GeoTIFF keys were
      * unrecognized or ignored.
      */
-    private final Map<Short,Object> geoKeys = new HashMap<>();
+    private final Map<Short,Object> geoKeys;
 
     /**
      * Factory for creating geodetic objects from EPSG codes, or {@code null} if not yet fetched.
@@ -250,6 +247,19 @@ final class CRSBuilder {
     private Identifier lastName;
 
     /**
+     * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
+     * This is computed by {@link #build(Vector, Vector, String)} and made available as additional information to the caller.
+     */
+    public String description;
+
+    /**
+     * {@code POINT} if {@link GeoKeys#RasterType} is {@link GeoCodes#RasterPixelIsPoint},
+     * {@code AREA} if it is {@link GeoCodes#RasterPixelIsArea}, or null if unspecified.
+     * This is computed by {@link #build(Vector, Vector, String)} and made available to the caller.
+     */
+    public CellGeometry cellGeometry;
+
+    /**
      * {@code true} when an exception has been thrown but this {@code CRSBuilder} already reported a warning,
      * so there is no need for the caller to report a warning again. {@code CRSBuilder} sometime reports warnings
      * itself when it can provide a better warning message than what the caller can do.
@@ -263,6 +273,7 @@ final class CRSBuilder {
      */
     CRSBuilder(final Reader reader) {
         this.reader = reader;
+        geoKeys = new HashMap<>(32);
     }
 
     /**
@@ -283,6 +294,7 @@ final class CRSBuilder {
      * The factory is fetched when first needed.
      *
      * @return the EPSG factory (never {@code null}).
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
      */
     private GeodeticAuthorityFactory epsgFactory() throws FactoryException {
         if (epsgFactory == null) {
@@ -296,6 +308,7 @@ final class CRSBuilder {
      * The factory is fetched when first needed.
      *
      * @return the object factory (never {@code null}).
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
      */
     private GeodeticObjectFactory objectFactory() {
         if (objectFactory == null) {
@@ -309,6 +322,7 @@ final class CRSBuilder {
      * The factory is fetched when first needed.
      *
      * @return the operation factory (never {@code null}).
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
      */
     private DefaultCoordinateOperationFactory operationFactory() {
         if (operationFactory == null) {
@@ -460,7 +474,7 @@ final class CRSBuilder {
      */
     private double getMandatoryDouble(final short key) {
         final double value = getAsDouble(key);
-        if (!Double.isNaN(value)) {
+        if (Double.isFinite(value)) {
             return value;
         }
         alreadyReported = true;
@@ -486,7 +500,7 @@ final class CRSBuilder {
 
     /**
      * Verifies that a value found in the GeoTIFF file is approximatively equal to the expected value.
-     * This method is invoked when a CRS component is defined both explicitely and by EPSG code,
+     * This method is invoked when a CRS component is defined both explicitly and by EPSG code,
      * in which case we expect the given value to be equal to the value fetched from the EPSG database.
      * If the values do not match, a warning is reported and the caller should use the EPSG value.
      *
@@ -557,11 +571,13 @@ final class CRSBuilder {
     /**
      * Decodes all the given GeoTIFF keys, then creates a coordinate reference system.
      * An overview of the key directory structure is given in {@linkplain CRSBuilder class javadoc}.
+     * The {@link #description} and {@link #cellGeometry} fields are set as a side-effect.
+     * A warning is emitted if any GeoTIFF tags were ignored.
      *
      * @param  keyDirectory       the GeoTIFF keys to be associated to values. Can not be null.
      * @param  numericParameters  a vector of {@code double} parameters, or {@code null} if none.
      * @param  asciiParameters    the sequence of characters from which to build strings, or {@code null} if none.
-     * @return the coordinate reference system created from the given GeoTIFF keys.
+     * @return the coordinate reference system created from the given GeoTIFF keys, or {@code null} if undefined.
      *
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
@@ -569,7 +585,7 @@ final class CRSBuilder {
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
     @SuppressWarnings("null")
-    final CoordinateReferenceSystem build(final Vector keyDirectory, final Vector numericParameters, final String asciiParameters)
+    public CoordinateReferenceSystem build(final Vector keyDirectory, final Vector numericParameters, final String asciiParameters)
             throws FactoryException
     {
         final int numberOfKeys;
@@ -706,80 +722,46 @@ final class CRSBuilder {
             geoKeys.put(key, value);
         }
         /*
-         * At this point we finished copying all GeoTIFF keys in 'CRSBuilder.geoKeys' map.
+         * At this point we finished copying all GeoTIFF keys in the 'geoKeys' map. Before to create the CRS,
+         * store a few metadata. The first one is an ASCII reference to published documentation on the overall
+         * configuration of the GeoTIFF file. In practice it seems to be often the projected CRS name, despite
+         * GeoKeys.PCSCitation being already for that purpose.
+         */
+        description = getAsString(GeoKeys.Citation);
+        int code = getAsInteger(GeoKeys.RasterType);
+        switch (code) {
+            case GeoCodes.undefined: break;
+            case GeoCodes.RasterPixelIsArea:  cellGeometry = CellGeometry.AREA;  break;
+            case GeoCodes.RasterPixelIsPoint: cellGeometry = CellGeometry.POINT; break;
+            default: invalidValue(GeoKeys.RasterType, code); break;
+        }
+        /*
          * First create the main coordinate reference system, as determined by 'ModelType'.
          * Then if a vertical CRS exists and the main CRS is not geocentric (in which case
          * adding a vertical CRS would make no sense), create a three-dimensional compound CRS.
          */
-        CoordinateReferenceSystem crs;
+        CoordinateReferenceSystem crs = null;
         final int crsType = getAsInteger(GeoKeys.ModelType);
         switch (crsType) {
-            case GeoCodes.undefined:           return null;
-            case GeoCodes.ModelTypeProjected:  crs = createProjectedCRS(); break;
-            case GeoCodes.ModelTypeGeocentric: return createGeocentricCRS();        // Ignore vertical CRS.
-            case GeoCodes.ModelTypeGeographic: {
-                crs = createGeographicCRS(true,
-                        createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE));
-                break;
+            case GeoCodes.undefined:           break;
+            case GeoCodes.ModelTypeProjected:  crs = createProjectedCRS();  break;
+            case GeoCodes.ModelTypeGeocentric: crs = createGeocentricCRS(); break;
+            case GeoCodes.ModelTypeGeographic: crs = createGeographicCRS(); break;
+            default: warning(Resources.Keys.UnsupportedCoordinateSystemKind_1, crsType); break;
+        }
+        if (crsType != GeoCodes.ModelTypeGeocentric) {
+            final VerticalCRS vertical = createVerticalCRS();
+            if (vertical != null) {
+                if (crs == null) {
+                    missingValue(GeoKeys.GeographicType);
+                } else {
+                    crs = objectFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                }
             }
-            default: {
-                warning(Resources.Keys.UnsupportedCoordinateSystemKind_1, crsType);
-                return null;
-            }
-        }
-        final VerticalCRS vertical = createVerticalCRS();
-        if (vertical != null) {
-            crs = objectFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
-        }
-        return crs;
-    }
-
-    /**
-     * Completes ISO 19115 metadata with some GeoTIFF values that are for documentation purposes.
-     * Those values do not participate directly to the construction of the Coordinate Reference System objects.
-     *
-     * <p><b>Pre-requite:</b></p>
-     * <ul>
-     *   <li>{@link #build(Vector, Vector, String)} must have been invoked before this method.</li>
-     *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
-     *   <li>{@link MetadataBuilder#newGridRepresentation(MetadataBuilder.GridType)} should have been invoked
-     *       with the appropriate {@code GEORECTIFIED} or {@code GEOREFERENCEABLE} type.</li>
-     * </ul>
-     *
-     * After execution, this method emits a warning for unprocessed GeoTIFF tags.
-     *
-     * @param  metadata  the helper class where to write metadata values.
-     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
-     */
-    final void complete(final MetadataBuilder metadata) {
-        /*
-         * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
-         * Often the projected CRS name, despite GeoKeys.PCSCitation being already for that purpose.
-         * Checked first because this code is unlikely to throw an exception, while other parsings may
-         * interrupt this method with an exception.
-         */
-        final String title = getAsString(GeoKeys.Citation);
-        if (title != null) {
-            metadata.setGridToCRS(title);
         }
         /*
-         * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
-         * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated to
-         * GeoKeys.RasterType, which can be GeoCodes.RasterPixelIsArea or GeoCodes.RasterPixelIsPoint.
-         */
-        CellGeometry     cg = null;
-        PixelOrientation po = null;
-        int code = getAsInteger(GeoKeys.RasterType);
-        switch (code) {
-            case GeoCodes.undefined: break;
-            case GeoCodes.RasterPixelIsArea:  cg = CellGeometry.AREA;  po = PixelOrientation.CENTER;     break;
-            case GeoCodes.RasterPixelIsPoint: cg = CellGeometry.POINT; po = PixelOrientation.UPPER_LEFT; break;
-            default: invalidValue(GeoKeys.RasterType, code); break;
-        }
-        metadata.setCellGeometry(cg);
-        metadata.setPointInPixel(po);
-        /*
-         * Build a list of remaining GeoKeys.
+         * At this point we finished parsing all GeoTIFF tags, both for metadata purpose or for CRS construction.
+         * Emit a warning for unprocessed GeoTIFF tags. A single warning is emitted for all ignored tags.
          */
         if (!geoKeys.isEmpty()) {
             final StringJoiner joiner = new StringJoiner(", ");
@@ -788,6 +770,7 @@ final class CRSBuilder {
             }
             warning(Resources.Keys.IgnoredGeoKeys_1, joiner.toString());
         }
+        return crs;
     }
 
     /**
@@ -871,6 +854,15 @@ final class CRSBuilder {
             case GeoCodes.userDefined: {
                 if (scaleKey == 0) return defaultValue;
                 return defaultValue.getSystemUnit().multiply(getMandatoryDouble(scaleKey));
+            }
+            case GeoCodes.missing & 0xFFFF: {
+                if (scaleKey != 0) {
+                    final double scale = getAsDouble(scaleKey);
+                    if (Double.isFinite(scale)) {
+                        return defaultValue.getSystemUnit().multiply(scale);
+                    }
+                }
+                return defaultValue;
             }
             default: {
                 /*
@@ -1207,6 +1199,13 @@ final class CRSBuilder {
             }
         }
         return c;
+    }
+
+    /**
+     * Creates the main CRS in the case where that CRS is geographic.
+     */
+    private GeographicCRS createGeographicCRS() throws FactoryException {
+        return createGeographicCRS(true, createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE));
     }
 
     /**
@@ -1707,7 +1706,6 @@ final class CRSBuilder {
     /**
      * Returns a string representation of the keys and associated values in this {@code CRSBuilder}.
      */
-    @Debug
     @Override
     public final String toString() {
         final StringBuilder buffer = new StringBuilder("GeoTIFF keys ").append(majorRevision).append('.')

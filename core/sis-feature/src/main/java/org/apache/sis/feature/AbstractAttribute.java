@@ -28,7 +28,6 @@ import java.io.IOException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -462,7 +461,6 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      *
      * @return a string representation of this attribute for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = FieldType.toString(isDeprecated(type), "Attribute", type.getName(),

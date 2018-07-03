@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * Wraps integer values in {@code <gco:Integer>} element.
+ * Wraps an integer value in an {@code <gco:Integer>} element.
  * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
  * @version 1.0
  *
  * @see GO_Integer64
+ * @see GO_UnlimitedInteger
  *
  * @since 0.3
  * @module
@@ -72,7 +73,7 @@ public class GO_Integer extends PropertyType<GO_Integer, Integer> {
      *         by {@code <gco:Integer>} element.
      */
     @Override
-    public GO_Integer wrap(final Integer value) {
+    protected GO_Integer wrap(final Integer value) {
         return new GO_Integer(value);
     }
 
@@ -110,7 +111,7 @@ public class GO_Integer extends PropertyType<GO_Integer, Integer> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public GO_Integer wrap(final Integer value) {
+        @Override protected GO_Integer wrap(final Integer value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

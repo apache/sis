@@ -45,11 +45,14 @@ import org.opengis.metadata.citation.*;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
@@ -213,13 +216,14 @@ final class MetadataReader extends MetadataBuilder {
     }
 
     /**
-     * Returns the localized error resource bundle for the locale given by
-     * {@link org.apache.sis.util.logging.WarningListeners#getLocale()}.
+     * Logs a warning using the localized error resource bundle for the locale given by
+     * {@link WarningListeners#getLocale()}.
      *
-     * @return the localized error resource bundle.
+     * @param  key  one of {@link Errors.Keys} values.
      */
-    private Errors errors() {
-        return Errors.getResources(decoder.listeners.getLocale());
+    private void warning(final short key, final Object p1, final Object p2, final Exception e) {
+        final WarningListeners<DataStore> listeners = decoder.listeners;
+        listeners.warning(Errors.getResources(listeners.getLocale()).getString(key, p1, p2), e);
     }
 
     /**
@@ -284,11 +288,23 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Returns the given string as an {@code InternationalString} if non-null, or {@code null} otherwise.
-     * This method does not trim leading or trailing spaces, since this is often already done by the caller.
+     * Reads the numeric value for the given value, or returns {@code NaN} if none.
      */
-    private static InternationalString toInternationalString(final String value) {
-        return (value != null) ? new SimpleInternationalString(value) : null;
+    private double numericValue(final String name) {
+        final Number v = decoder.numericValue(name);
+        return (v != null) ? v.doubleValue() : Double.NaN;
+    }
+
+    /**
+     * Returns the enumeration constant for the given name, or {@code null} if the given name is not recognized.
+     * In the later case, this method emits a warning.
+     */
+    private <T extends Enum<T>> T forEnumName(final Class<T> enumType, final String name) {
+        final T code = Types.forEnumName(enumType, name);
+        if (code == null && name != null) {
+            warning(Errors.Keys.UnknownEnumValue_2, enumType, name, null);
+        }
+        return code;
     }
 
     /**
@@ -302,7 +318,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * CodeLists are not enums, but using the error message for enums is not completly wrong since
              * if we did not allowed CodeList to create new elements, then we are using it like an enum.
              */
-            decoder.listeners.warning(errors().getString(Errors.Keys.UnknownEnumValue_2, codeType, name), null);
+            warning(Errors.Keys.UnknownEnumValue_2, codeType, name, null);
         }
         return code;
     }
@@ -613,14 +629,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addCitedResponsibleParty(contributor, null);
             }
             final ResponsibleParty r = createResponsibleParty(PUBLISHER, false);
-            if (r != null) {
+            if (r instanceof DefaultResponsibility) {
                 addDistributor(r);
-                /*
-                 * TODO: There is some transfert option, etc. that we could set there.
-                 * See UnidataDD2MI.xsl for options for OPeNDAP, THREDDS, etc.
-                 */
-                publisher = addIfNonNull(publisher, r.getOrganisationName());
-                publisher = addIfNonNull(publisher, toInternationalString(r.getIndividualName()));
+                for (final AbstractParty party : ((DefaultResponsibility) r).getParties()) {
+                    publisher = addIfNonNull(publisher, party.getName());
+                }
             }
         }
         decoder.setSearchPath(searchPath);
@@ -703,10 +716,31 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
             final AttributeNames.Dimension attributeNames = axis.attributeNames;
             if (attributeNames != null) {
-                setAxisName(dim, attributeNames.DEFAULT_NAME_TYPE);
-                final Number value = decoder.numericValue(attributeNames.RESOLUTION);
-                if (value != null) {
-                    setAxisResolution(dim, value.doubleValue());
+                final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
+                setAxisName(dim, name);
+                final String res = stringValue(attributeNames.RESOLUTION);
+                if (res != null) try {
+                    /*
+                     * ACDD convention recommends to write units after the resolution.
+                     * Examples: "100 meters", "0.1 degree".
+                     */
+                    final int s = res.indexOf(' ');
+                    final double value;
+                    Unit<?> units = null;
+                    if (s < 0) {
+                        value = numericValue(attributeNames.RESOLUTION);
+                    } else {
+                        value = Double.parseDouble(res.substring(0, s).trim());
+                        final String symbol = res.substring(s+1).trim();
+                        if (!symbol.isEmpty()) try {
+                            units = Units.valueOf(symbol);
+                        } catch (ParserException e) {
+                            warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
+                        }
+                    }
+                    setAxisResolution(dim, value, units);
+                } catch (NumberFormatException e) {
+                    warning(e);
                 }
             }
         }
@@ -721,35 +755,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      */
     private boolean addExtent() {
         addExtent(stringValue(GEOGRAPHIC_IDENTIFIER));
+        final double[] extent = new double[4];
         /*
-         * If at least one geographic ordinates is available, add a GeographicBoundingBox.
+         * If at least one geographic coordinate is available, add a GeographicBoundingBox.
          */
-        final Number xmin = decoder.numericValue(LONGITUDE.MINIMUM);
-        final Number xmax = decoder.numericValue(LONGITUDE.MAXIMUM);
-        final Number ymin = decoder.numericValue(LATITUDE .MINIMUM);
-        final Number ymax = decoder.numericValue(LATITUDE .MAXIMUM);
-        final Number zmin = decoder.numericValue(VERTICAL .MINIMUM);
-        final Number zmax = decoder.numericValue(VERTICAL .MAXIMUM);
-        boolean hasExtent = (xmin != null || xmax != null || ymin != null || ymax != null);
+        boolean hasExtent;
+        hasExtent  = fillExtent(LONGITUDE, Units.DEGREE, AxisDirection.EAST,  extent, 0);
+        hasExtent |= fillExtent(LATITUDE,  Units.DEGREE, AxisDirection.NORTH, extent, 2);
         if (hasExtent) {
-            final UnitConverter xConv = getConverterTo(decoder.unitValue(LONGITUDE.UNITS), Units.DEGREE);
-            final UnitConverter yConv = getConverterTo(decoder.unitValue(LATITUDE .UNITS), Units.DEGREE);
-            addExtent(new double[] {valueOf(xmin, xConv), valueOf(xmax, xConv),
-                                    valueOf(ymin, yConv), valueOf(ymax, yConv)}, 0);
+            addExtent(extent, 0);
+            hasExtent = true;
         }
         /*
-         * If at least one vertical ordinates above is available, add a VerticalExtent.
+         * If at least one vertical coordinate is available, add a VerticalExtent.
          */
-        if (zmin != null || zmax != null) {
-            final UnitConverter c = getConverterTo(decoder.unitValue(VERTICAL.UNITS), Units.METRE);
-            double min = valueOf(zmin, c);
-            double max = valueOf(zmax, c);
-            if (CF.POSITIVE_DOWN.equals(stringValue(VERTICAL.POSITIVE))) {
-                final double tmp = min;
-                min = -max;
-                max = -tmp;
-            }
-            addVerticalExtent(min, max, VERTICAL_CRS);
+        if (fillExtent(VERTICAL, Units.METRE, null, extent, 0)) {
+            addVerticalExtent(extent[0], extent[1], VERTICAL_CRS);
             hasExtent = true;
         }
         /*
@@ -771,8 +792,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             }
         }
         /*
-         * If at least one time values above is available, add a temporal extent.
-         * This operation requires the the sis-temporal module. If not available,
+         * If at least one time value above is available, add a temporal extent.
+         * This operation requires the sis-temporal module. If not available,
          * we will report a warning and leave the temporal extent missing.
          */
         if (startTime != null || endTime != null) try {
@@ -785,31 +806,49 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Returns the converter from the given source unit (which may be {@code null}) to the
-     * given target unit, or {@code null} if none or incompatible.
+     * Fills one dimension of the geographic bounding box or vertical extent.
+     * The extent values are written in the given {@code extent} array.
+     *
+     * @param  dim         the dimension for which to get the extent.
+     * @param  targetUnit  the destination unit of the extent.
+     * @param  positive    the direction considered positive, or {@code null} if the unit symbol is not expected to contain a direction.
+     * @param  extent      where to store the minimum and maximum values.
+     * @param  index       index where to store the minimum value in {@code extent}. The maximum value is stored at {@code index+1}.
+     * @return {@code true} if a minimum or a maximum value has been found.
      */
-    private UnitConverter getConverterTo(final Unit<?> source, final Unit<?> target) {
-        if (source != null) try {
-            return source.getConverterToAny(target);
-        } catch (IncommensurableException e) {
-            warning(e);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the values of the given number if non-null, or NaN if null. If the given
-     * converter is non-null, it is applied.
-     */
-    private static double valueOf(final Number value, final UnitConverter converter) {
-        double n = Double.NaN;
-        if (value != null) {
-            n = value.doubleValue();
-            if (converter != null) {
-                n = converter.convert(n);
+    private boolean fillExtent(final AttributeNames.Dimension dim, final Unit<?> targetUnit, final AxisDirection positive,
+                               final double[] extent, final int index)
+    {
+        double min = numericValue(dim.MINIMUM);
+        double max = numericValue(dim.MAXIMUM);
+        boolean hasExtent = !Double.isNaN(min) || !Double.isNaN(max);
+        if (hasExtent) {
+            final String symbol = stringValue(dim.UNITS);
+            if (symbol != null) {
+                try {
+                    final UnitConverter c = Units.valueOf(symbol).getConverterToAny(targetUnit);
+                    min = c.convert(min);
+                    max = c.convert(max);
+                } catch (ParserException | IncommensurableException e) {
+                    warning(e);
+                }
+                boolean reverse = false;
+                if (positive != null) {
+                    reverse = Axis.direction(symbol, positive) < 0;
+                } else if (dim.POSITIVE != null) {
+                    // For now, only the vertical axis have a "positive" attribute.
+                    reverse = CF.POSITIVE_DOWN.equals(stringValue(dim.POSITIVE));
+                }
+                if (reverse) {
+                    final double tmp = min;
+                    min = -max;
+                    max = -tmp;
+                }
             }
         }
-        return n;
+        extent[index  ] = min;
+        extent[index+1] = max;
+        return hasExtent;
     }
 
     /**
@@ -908,8 +947,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String units = variable.getUnitsString();
         if (units != null) try {
             setSampleUnits(Units.valueOf(units));
-        } catch (ClassCastException | ParserException e) {
-            decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
+        } catch (ParserException e) {
+            warning(Errors.Keys.CanNotAssignUnitToVariable_2, name, units, e);
         }
         double scale  = Double.NaN;
         double offset = Double.NaN;

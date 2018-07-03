@@ -27,7 +27,7 @@ import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.code.CI_TelephoneTypeCode;
 import org.apache.sis.internal.metadata.Dependencies;
@@ -83,7 +83,6 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Telephone_Type", propOrder = {
     "number",           // New in ISO 19115:2014
     "numberType",       // Ibid.
@@ -307,7 +306,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     final Collection<Telephone> getOwner() {
        if (owner == null) {
-           if (isModifiable()) {
+           if (super.state() != State.FINAL) {
                owner = new ArrayList<>(4);
                owner.add(this);
            } else {

@@ -25,7 +25,6 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 import org.apache.sis.internal.feature.Resources;
 
 
@@ -151,7 +150,6 @@ final class PropertyView {
     /**
      * Returns a string representation of this property for debugging purposes.
      */
-    @Debug
     static String toString(final Class<?> classe, final Class<?> valueClass, final GenericName name, final Collection<?> values) {
         return FieldType.toString(false, classe.getSimpleName(), name,
                 Classes.getShortName(valueClass), values.iterator()).toString();

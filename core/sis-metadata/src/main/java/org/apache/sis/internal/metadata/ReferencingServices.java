@@ -71,7 +71,7 @@ import org.opengis.util.NoSuchIdentifierException;
  * <cite>"referencing by coordinates"</cite> but needed by metadata.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -287,6 +287,20 @@ public class ReferencingServices extends OptionalDependency {
      * @since 0.8
      */
     public DirectPosition geographic(final double λ, final double φ) {
+        throw moduleNotFound();
+    }
+
+    /**
+     * Returns an identifier for the given object, giving precedence to EPSG identifier if available.
+     * The returned string should be of the form {@code "AUTHORITY:CODE"} if possible (no guarantees).
+     *
+     * @param  object  the object for which to get an identifier.
+     * @return an identifier for the given object, with preference given to EPSG codes.
+     * @throws FactoryException if an error occurred while searching for the EPSG code.
+     *
+     * @since 1.0
+     */
+    public String getPreferredIdentifier(final IdentifiedObject object) throws FactoryException {
         throw moduleNotFound();
     }
 

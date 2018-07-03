@@ -28,7 +28,7 @@ import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.metadata.SV_OperationMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.Names;
@@ -67,14 +67,13 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "scopedName",               // ISO 19115-3:2016 way to write scoped name
     "resourceReference",        // New in ISO 19115:2014
     "resource",                 // Ibid.
     "operation",                // Ibid.
     "operationName",            // Legacy ISO 19139:2007
-    "identifier",               // Ibid.
+    "id",                       // Ibid.
     "legacyName"                // Legacy ISO 19139:2007 way to write scoped name
 })
 @XmlRootElement(name = "SV_CoupledResource", namespace = Namespaces.SRV)
@@ -287,7 +286,7 @@ public class DefaultCoupledResource extends ISOMetadata {
      * the XML to declare {@code <srv:operationName>} instead.
      */
     @XmlElement(name = "identifier", namespace = LegacyNamespaces.SRV)
-    private String getIdentifier() {
+    private String getId() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
             final ScopedName name = getScopedName();
             if (name != null) {

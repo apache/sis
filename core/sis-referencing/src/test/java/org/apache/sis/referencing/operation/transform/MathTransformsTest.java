@@ -70,7 +70,7 @@ public final strictfp class MathTransformsTest extends TestCase {
         swap.m00 = 0; swap.m01 = 1;
         swap.m10 = 1; swap.m11 = 0;
         MathTransform tr = ExponentialTransform1D.create(10, 1);
-        tr = PassThroughTransform.create(1, tr, 1);
+        tr = MathTransforms.passThrough(1, tr, 1);
         tr = new ConcatenatedTransformDirect(MathTransforms.linear(scale), tr);     // See "implementation note" above.
         tr = new ConcatenatedTransformDirect(tr, MathTransforms.linear(swap));
         return tr;

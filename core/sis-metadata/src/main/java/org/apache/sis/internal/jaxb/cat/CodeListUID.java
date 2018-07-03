@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.xml.Schemas;
 
 
 /**

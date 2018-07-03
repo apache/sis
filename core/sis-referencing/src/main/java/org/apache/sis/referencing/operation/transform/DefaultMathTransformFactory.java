@@ -1347,7 +1347,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         lastMethod.remove();
         final MathTransform tr;
         try {
-            tr = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+            tr = MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }

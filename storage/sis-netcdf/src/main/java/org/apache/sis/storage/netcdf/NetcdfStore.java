@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Collection;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.util.Debug;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
@@ -221,7 +220,6 @@ public class NetcdfStore extends DataStore implements Aggregate {
      *
      * @return a string representation of this data store for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return getClass().getSimpleName() + '[' + decoder + ']';

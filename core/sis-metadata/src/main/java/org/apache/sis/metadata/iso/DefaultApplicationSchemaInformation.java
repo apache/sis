@@ -55,7 +55,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ApplicationSchemaInformation_Type", namespace = Namespaces.MAS, propOrder = {
     "name",
     "schemaLanguage",

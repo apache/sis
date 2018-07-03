@@ -39,7 +39,6 @@ import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 
-import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
@@ -391,7 +390,7 @@ parse:  while (i < length) {
         final int dimension = getDimension();
         int code = 1;
         for (int i=0; i<dimension; i++) {
-            code = code*31 + Numerics.hashCode(doubleToLongBits(getOrdinate(i)));
+            code = code*31 + Double.hashCode(getOrdinate(i));
         }
         return code + Objects.hashCode(getCoordinateReferenceSystem());
     }

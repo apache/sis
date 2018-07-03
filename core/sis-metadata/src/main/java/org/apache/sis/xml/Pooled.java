@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 

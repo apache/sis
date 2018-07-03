@@ -70,7 +70,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
-@SuppressWarnings({"CloneableClassWithoutClone", "deprecation"})    // ModifiableMetadata needs shallow clones.
+@SuppressWarnings("deprecation")
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
     "role",
     "extent",

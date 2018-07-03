@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.XmlUtilities;
+import org.apache.sis.internal.xml.XmlUtilities;
 
 // Branch-dependent imports
 import org.apache.sis.internal.geoapi.temporal.Instant;

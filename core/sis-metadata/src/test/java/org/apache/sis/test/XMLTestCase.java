@@ -31,8 +31,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.Namespaces;
@@ -122,9 +122,10 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
-     * Returns the default XML (un)marshaller pool potentially shared by test methods in all sub-classes.
-     * The (un)marshallers locale is set to {@link Locale#UK} (the language of ISO standards) and their
-     * timezone is arbitrarily set to CET (<cite>Central European Time</cite>).
+     * Returns the XML (un)marshaller for the tests in this class. The default implementation
+     * returns a XML (un)marshaller pool potentially shared by test methods in all sub-classes.
+     * The (un)marshallers locale is set to {@link Locale#UK} (the language of ISO standards)
+     * and their timezone is arbitrarily set to CET (<cite>Central European Time</cite>).
      *
      * <div class="note"><b>Note:</b>
      * We intentionally use a timezone different than UTC in order to have an error of one or two hours
@@ -133,15 +134,17 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * @return the shared (un)marshaller pool.
      * @throws JAXBException if an error occurred while creating the JAXB marshaller.
      */
-    protected static synchronized MarshallerPool getMarshallerPool() throws JAXBException {
-        if (defaultPool == null) {
-            final Map<String,Object> properties = new HashMap<>(4);
-            assertNull(properties.put(XML.LOCALE, Locale.UK));
-            assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
-            assertNull(properties.put(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
-            defaultPool = new MarshallerPool(properties);
+    protected MarshallerPool getMarshallerPool() throws JAXBException {
+        synchronized (XMLTestCase.class) {
+            if (defaultPool == null) {
+                final Map<String,Object> properties = new HashMap<>(4);
+                assertNull(properties.put(XML.LOCALE, Locale.UK));
+                assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
+                assertNull(properties.put(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
+                defaultPool = new MarshallerPool(properties);
+            }
+            return defaultPool;
         }
-        return defaultPool;
     }
 
     /**

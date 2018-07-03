@@ -55,20 +55,20 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
     private Random random;
 
     /**
-     * Verifies argument validation performed by {@link PassThroughTransform#create(int, MathTransform, int)}.
+     * Verifies argument validation performed by {@link MathTransforms#passThrough(int, MathTransform, int)}.
      */
     @Test
     public void testIllegalArgument() {
         final MathTransform subTransform = MathTransforms.identity(1);
         try {
-            PassThroughTransform.create(-1, subTransform, 0);
+            MathTransforms.passThrough(-1, subTransform, 0);
             fail("An illegal argument should have been detected");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("firstAffectedOrdinate"));
         }
         try {
-            PassThroughTransform.create(0, subTransform, -1);
+            MathTransforms.passThrough(0, subTransform, -1);
             fail("An illegal argument should have been detected");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
@@ -133,7 +133,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
         for (int firstAffectedOrdinate=0; firstAffectedOrdinate<=3; firstAffectedOrdinate++) {
             for (int numTrailingOrdinates=0; numTrailingOrdinates<=3; numTrailingOrdinates++) {
                 final int numAdditionalOrdinates = firstAffectedOrdinate + numTrailingOrdinates;
-                transform = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+                transform = MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
                 if (numAdditionalOrdinates == 0) {
                     assertSame("Failed to recognize that no passthrough was needed.", subTransform, transform);
                     continue;

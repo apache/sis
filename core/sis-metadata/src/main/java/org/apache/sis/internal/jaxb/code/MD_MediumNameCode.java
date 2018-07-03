@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumName;
 import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**

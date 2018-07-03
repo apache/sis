@@ -53,6 +53,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
@@ -97,6 +98,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.iso.DefaultNameSpace;
 
 // Branch-dependent imports
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -112,7 +114,7 @@ import org.opengis.referencing.datum.DatumFactory;
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -418,6 +420,34 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public DirectPosition geographic(final double λ, final double φ) {
         return new DirectPosition2D(CommonCRS.defaultGeographic(), λ, φ);
+    }
+
+    /**
+     * Returns an identifier for the given object, giving precedence to EPSG identifier if available.
+     * The returned string should be of the form {@code "AUTHORITY:CODE"} if possible (no guarantees).
+     *
+     * @param  object  the object for which to get an identifier.
+     * @return an identifier for the given object, with preference given to EPSG codes.
+     * @throws FactoryException if an error occurred while searching for the EPSG code.
+     *
+     * @since 1.0
+     */
+    @Override
+    public String getPreferredIdentifier(final IdentifiedObject object) throws FactoryException {
+        final Integer code = IdentifiedObjects.lookupEPSG(object);
+        if (code != null) {
+            return Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+        }
+        /*
+         * If above code did not found an EPSG code, discard EPSG codes that
+         * we may find in the loop below because they are probably invalid.
+         */
+        for (final ReferenceIdentifier id : object.getIdentifiers()) {
+            if (!Constants.EPSG.equalsIgnoreCase(id.getCodeSpace())) {
+                return IdentifiedObjects.toString(id);
+            }
+        }
+        return IdentifiedObjects.getSimpleNameOrIdentifier(object);
     }
 
 

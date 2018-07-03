@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.constraint;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 

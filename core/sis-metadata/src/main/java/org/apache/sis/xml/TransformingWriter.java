@@ -39,7 +39,7 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -215,10 +215,13 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
 
     /**
      * Returns the map loaded by {@link #load(String, int)}.
+     *
+     * @param  namespace  the namespace URI for which to get the substitution map.
+     * @return the substitution map for the given namespace.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final Map<String, Map<String,String>> renamingMap() {
+    final Map<String, Map<String,String>> renamingMap(final String namespace) {
         return NAMESPACES;
     }
 
@@ -276,8 +279,14 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
         notify(namespace);
         String uri = namespace.getNamespaceURI();
         if (uri != null && !uri.isEmpty()) {
-            final String exported = relocate(removeTrailingSlash(uri));
-            if (exported != uri) {
+            /*
+             * Ignore trailing slash when checking if there is a namespace change.
+             * But if we do not find a namespace change, keep the trailing slash as
+             * given in the Namespace since that slash may be intentional.
+             */
+            final String trimed = removeTrailingSlash(uri);
+            final String exported = relocate(trimed);
+            if (exported != trimed) {
                 return uniqueNamespaces.computeIfAbsent(exported, (k) -> {
                     return new TransformedEvent.NS(namespace, Namespaces.getPreferredPrefix(k, namespace.getPrefix()), k);
                     /*

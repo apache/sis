@@ -56,7 +56,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.geometry.Shapes2D;
@@ -1271,7 +1270,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * Returns a string representation of this iterator for debugging purpose.
          */
-        @Debug
         @Override
         public String toString() {
             return org.apache.sis.internal.util.Utilities.toString(getClass(), "zone", encoder.crsZone,

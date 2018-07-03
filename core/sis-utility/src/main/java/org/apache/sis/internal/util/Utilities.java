@@ -207,7 +207,7 @@ public final class Utilities extends Static {
                 n = Character.charCount(value.codePointAt(i));
             }
         }
-        // Double check since length() is faster than codePointCount(...).
+        // Double check since length() is faster than codePointCount(…).
         if (width > length && (width -= value.codePointCount(0, length)) > 0) {
             format = "%s%s";
             args = new Object[] {value, value};

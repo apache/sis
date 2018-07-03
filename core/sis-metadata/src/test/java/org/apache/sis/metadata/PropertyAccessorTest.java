@@ -63,7 +63,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.PropertyAccessor.APPEND;
@@ -616,28 +615,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         final Object value = accessor.get(index, citation);
         assertNotNull("Should have replaced null by an empty collection.", value);
         assertTrue("Should have replaced null by an empty collection.", ((Collection<?>) value).isEmpty());
-    }
-
-    /**
-     * Tests {@link PropertyAccessor#hashCode(Object)}.
-     */
-    @Test
-    public void testHashCode() {
-        final DefaultCitation  instance = new DefaultCitation();
-        final PropertyAccessor accessor = createPropertyAccessor();
-        final int              baseCode = Citation.class.hashCode();
-        int hashCode = accessor.hashCode(instance);
-        assertEquals("Empty metadata.", baseCode, hashCode);
-
-        final InternationalString title = new SimpleInternationalString("Some title");
-        instance.setTitle(title);
-        hashCode = accessor.hashCode(instance);
-        assertEquals("Metadata with a single value.", baseCode + title.hashCode(), hashCode);
-
-        final InternationalString alternateTitle = new SimpleInternationalString("An other title");
-        instance.setAlternateTitles(singleton(alternateTitle));
-        hashCode = accessor.hashCode(instance);
-        assertEquals("Metadata with two values.", baseCode + title.hashCode() + Arrays.asList(alternateTitle).hashCode(), hashCode);
     }
 
     /**

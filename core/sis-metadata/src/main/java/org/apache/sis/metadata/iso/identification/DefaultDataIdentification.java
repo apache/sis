@@ -30,7 +30,7 @@ import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.util.CollectionsExt;
 
@@ -71,7 +71,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "language",                 // Legacy ISO 19115:2003
     "characterSets",            // Legacy ISO 19115:2003

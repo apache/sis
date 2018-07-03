@@ -31,8 +31,7 @@ import org.apache.sis.test.DependsOn;
 
 /**
  * Tests the {@link ChannelDecoder} implementation. This test shall be executed only if the
- * {@link ChannelDecoder} tests, which use the UCAR library has a reference implementation,
- * passed.
+ * {@link DecoderTest}, which use the UCAR library has a reference implementation, passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

@@ -44,7 +44,6 @@ import org.opengis.metadata.spatial.VectorSpatialRepresentation;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_VectorSpatialRepresentation_Type", propOrder = {
     "topologyLevel",
     "geometricObjects"

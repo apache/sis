@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import javax.xml.namespace.NamespaceContext;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

@@ -282,6 +282,6 @@ public final class Matrix1 extends MatrixSIS {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(m00) ^ serialVersionUID);
+        return Long.hashCode(Double.doubleToLongBits(m00) ^ serialVersionUID);
     }
 }

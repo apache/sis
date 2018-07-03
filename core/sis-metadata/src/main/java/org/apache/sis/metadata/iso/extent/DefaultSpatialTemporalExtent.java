@@ -60,7 +60,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_SpatialTemporalExtent_Type")
 @XmlRootElement(name = "EX_SpatialTemporalExtent")
 public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implements SpatialTemporalExtent {

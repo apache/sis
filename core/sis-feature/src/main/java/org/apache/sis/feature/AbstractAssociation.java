@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.feature.Resources;
 
@@ -225,7 +224,6 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      *
      * @return a string representation of this association for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         final String pt = DefaultAssociationRole.getTitleProperty(role);

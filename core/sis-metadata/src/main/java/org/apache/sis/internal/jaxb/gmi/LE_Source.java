@@ -34,7 +34,6 @@ import org.apache.sis.xml.Namespaces;
  */
 @XmlType(name = "LE_Source_Type", namespace = Namespaces.MRL)
 @XmlRootElement(name = "LE_Source", namespace = Namespaces.MRL)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class LE_Source extends DefaultSource {
     /**
      * For cross-version compatibility.

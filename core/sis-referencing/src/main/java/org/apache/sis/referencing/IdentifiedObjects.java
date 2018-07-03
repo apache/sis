@@ -58,7 +58,7 @@ import static org.apache.sis.internal.util.Citations.identifierMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
@@ -284,7 +284,7 @@ public final class IdentifiedObjects extends Static {
             final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final Identifier identifier = it.next();
-                if (identifier != null) { // Paranoiac check.
+                if (identifier != null) {                           // Paranoiac check.
                     if (authority == null || identifierMatches(authority, identifier.getAuthority())) {
                         return identifier;
                     }
@@ -320,12 +320,12 @@ public final class IdentifiedObjects extends Static {
             final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final String code = toString(it.next());
-                if (code != null) { // Paranoiac check.
+                if (code != null) {                                 // Paranoiac check.
                     return code;
                 }
             }
             final String name = toString(object.getName());
-            if (name != null) { // Paranoiac check.
+            if (name != null) {                                     // Paranoiac check.
                 return name;
             }
         }
@@ -333,8 +333,8 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Returns the first name, alias or identifier which is a
-     * {@linkplain CharSequences#isUnicodeIdentifier(CharSequence) valid Unicode identifier}.
+     * Returns the first name, alias or identifier which is a valid Unicode identifier. This method considers a
+     * name or identifier as valid if {@link CharSequences#isUnicodeIdentifier(CharSequence)} returns {@code true}.
      * This method performs the search in the following order:
      *
      * <ul>
@@ -347,13 +347,15 @@ public final class IdentifiedObjects extends Static {
      * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier
-     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
-     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
+     * @see Citations#getUnicodeIdentifier(Citation)
+     * @see CharSequences#isUnicodeIdentifier(CharSequence)
+     *
+     * @since 1.0
      */
-    public static String getUnicodeIdentifier(final IdentifiedObject object) {
+    public static String getSimpleNameOrIdentifier(final IdentifiedObject object) {
         if (object != null) {
             Identifier identifier = object.getName();
-            if (identifier != null) { // Paranoiac check.
+            if (identifier != null) {                               // Paranoiac check.
                 final String code = identifier.getCode();
                 if (CharSequences.isUnicodeIdentifier(code)) {
                     return code;
@@ -372,7 +374,7 @@ public final class IdentifiedObjects extends Static {
             final Iterator<? extends Identifier> id = iterator(object.getIdentifiers());
             if (id != null) while (id.hasNext()) {
                 identifier = id.next();
-                if (identifier != null) { // Paranoiac check.
+                if (identifier != null) {                           // Paranoiac check.
                     final String code = identifier.getCode();
                     if (CharSequences.isUnicodeIdentifier(code)) {
                         return code;
@@ -381,6 +383,14 @@ public final class IdentifiedObjects extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * @deprecated Renamed {@link #getSimpleNameOrIdentifier(IdentifiedObject)}.
+     */
+    @Deprecated
+    public static String getUnicodeIdentifier(final IdentifiedObject object) {
+        return getSimpleNameOrIdentifier(object);
     }
 
     /**
@@ -773,7 +783,7 @@ public final class IdentifiedObjects extends Static {
             cs = ((ReferenceIdentifier) identifier).getCodeSpace();
         }
         if (cs == null || cs.isEmpty()) {
-            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority(), true);
+            cs = Citations.getUnicodeIdentifier(identifier.getAuthority());
         }
         if (cs != null) {
             return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;

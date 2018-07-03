@@ -790,7 +790,7 @@
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -908,7 +908,7 @@
         <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.4.7.v20170914</version>
+          <version>9.4.11.v20180605</version>
         </plugin>
       </plugins>
     </pluginManagement>

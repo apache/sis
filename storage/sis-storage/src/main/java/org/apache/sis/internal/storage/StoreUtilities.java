@@ -17,9 +17,9 @@
 package org.apache.sis.internal.storage;
 
 import java.util.EnumSet;
+import java.util.stream.Stream;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
-import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;

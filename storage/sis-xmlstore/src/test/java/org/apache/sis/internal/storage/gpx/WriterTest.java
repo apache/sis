@@ -27,7 +27,6 @@ import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.Debug;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -94,7 +93,6 @@ public final strictfp class WriterTest extends TestCase {
      *
      * @return the XML document written by the test case.
      */
-    @Debug
     @Override
     public String toString() {
         try {

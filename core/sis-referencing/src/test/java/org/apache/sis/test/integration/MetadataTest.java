@@ -60,7 +60,7 @@ import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.NamedIdentifier;

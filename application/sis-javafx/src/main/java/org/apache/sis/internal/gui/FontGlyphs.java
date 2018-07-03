@@ -30,14 +30,18 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * Internal image tool to generate icons for javafx widgets.
  *
- * @author Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
+ *
+ * @deprecated This introduces a dependency to AWT, which we wish to avoid at this early stage.
  */
+@Deprecated
 public final class FontGlyphs {
 
     private static Font FONT;
@@ -120,7 +124,6 @@ public final class FontGlyphs {
             g.setPaint(gradiant);
             g.fill(rect);
         }
-
         int x = border + insets.left + additionalLeftInset;
 
         //draw text
@@ -135,8 +138,6 @@ public final class FontGlyphs {
             g.setColor(Color.BLACK);
             g.draw(rect);
         }
-
         return img;
     }
-
 }

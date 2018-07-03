@@ -68,7 +68,6 @@ import org.apache.sis.xml.NilReason;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_VerticalExtent_Type", propOrder = {
     "minimumValue",
     "maximumValue",

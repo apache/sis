@@ -52,7 +52,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_EnvironmentalRecord_Type", propOrder = {
     "averageAirTemperature",
     "maxRelativeHumidity",

@@ -294,13 +294,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
     {
-        ensureDimensionMatches("crs", getDimension(), crs);
-        /*
-         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates)
-         * except that it may verify only a subset of the ordinate array and throws a different kind
-         * of exception in caseo of failure.
-         */
         if (crs != null) {
+            ensureDimensionMatches("crs", getDimension(), crs);
+            /*
+             * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates)
+             * except that it may verify only a subset of the ordinate array and throws a different kind
+             * of exception in case of failure.
+             */
             final int beginIndex = beginIndex();
             final int endIndex = endIndex();
             final int d = ordinates.length >>> 1;

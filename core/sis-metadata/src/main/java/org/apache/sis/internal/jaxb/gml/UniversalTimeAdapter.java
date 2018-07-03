@@ -25,9 +25,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.XmlUtilities;
-
-import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
+import org.apache.sis.internal.xml.XmlUtilities;
 
 
 /**
@@ -81,7 +79,7 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
             final GregorianCalendar calendar = new GregorianCalendar(UTC, Locale.ROOT);
             calendar.setTime(value);
             try {
-                final XMLGregorianCalendar gc = getDatatypeFactory().newXMLGregorianCalendar(calendar);
+                final XMLGregorianCalendar gc = XmlUtilities.getDatatypeFactory().newXMLGregorianCalendar(calendar);
                 if (gc.getMillisecond() == 0) {
                     gc.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
                 }

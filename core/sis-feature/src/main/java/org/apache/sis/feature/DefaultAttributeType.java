@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InvalidObjectException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.util.Numerics;
 
@@ -363,7 +362,6 @@ public class DefaultAttributeType<V> extends FieldType {
      *
      * @return a string representation of this attribute type for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return toString(deprecated, "AttributeType", getName(), Classes.getShortName(valueClass)).toString();

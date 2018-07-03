@@ -44,7 +44,7 @@ public final class TemporalUtilities extends Static {
      *
      * This constant will be removed after SIS release a sis-temporal module.
      *
-     * @see <a href="http://sis.apache.org/branches.html#master">Differences between SIS master and branches</a>
+     * @see <a href="http://sis.apache.org/source.html#master">Differences between SIS master and branches</a>
      */
     public static final boolean REPORT_MISSING_MODULE = false;
 

@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -58,7 +60,9 @@ import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.quality.Element;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -108,10 +112,13 @@ import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -131,7 +138,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -1877,6 +1884,73 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds and populates a "spatial representation info" node using the given grid geometry.
+     * If this method invokes implicitly {@link #newGridRepresentation(GridType)}, unless this
+     * method returns {@code false} in which case nothing has been done.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/transformationDimensionDescription}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/transformationParameterAvailability}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionName}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/resolution}</li>
+     *   <li>{@code metadata/identificationInfo/spatialRepresentationType}</li>
+     *   <li>{@code metadata/referenceSystemInfo}</li>
+     * </ul>
+     *
+     * @param  description    a general description of the "grid to CRS" transformation, or {@code null} if none.
+     * @param  grid           the grid extent, "grid to CRS" transform and target CRS, or {@code null} if none.
+     * @param  addResolution  whether to declare the resolutions. Callers should set this argument to {@code false} if they intend
+     *                        to provide the resolution themselves, or if grid axes are not in the same order than CRS axes.
+     * @return whether a "spatial representation info" node has been added.
+     */
+    public final boolean addSpatialRepresentation(final String description, final GridGeometry grid, final boolean addResolution) {
+        final GridType type;
+        if (grid == null) {
+            if (description == null) {
+                return false;
+            }
+            type = GridType.UNSPECIFIED;
+        } else {
+            type = grid.isConversionLinear(0, 1) ? GridType.GEORECTIFIED : GridType.GEOREFERENCEABLE;
+        }
+        addSpatialRepresentation(SpatialRepresentationType.GRID);
+        newGridRepresentation(type);
+        setGridToCRS(description);
+        if (grid != null) {
+            setGeoreferencingAvailability(grid.isDefined(GridGeometry.GRID_TO_CRS), false, false);
+            CoordinateSystem cs = null;
+            if (grid.isDefined(GridGeometry.CRS)) {
+                final CoordinateReferenceSystem crs = grid.getCoordinateReferenceSystem();
+                cs = crs.getCoordinateSystem();
+                addReferenceSystem(crs);
+            }
+            if (grid.isDefined(GridGeometry.EXTENT)) {
+                final GridExtent extent = grid.getExtent();
+                final int dimension = extent.getDimension();
+                for (int i=0; i<dimension; i++) {
+                    final Optional<DimensionNameType> axisType = extent.getAxisType(i);
+                    if (axisType.isPresent()) {
+                        setAxisName(i, axisType.get());
+                    }
+                    final long size = extent.getSize(i);
+                    if (size >= 0 && size <= Integer.MAX_VALUE) {
+                        setAxisLength(i, (int) size);
+                    }
+                }
+            }
+            if (addResolution && grid.isDefined(GridGeometry.RESOLUTION)) {
+                final double[] resolution = grid.getResolution(false);
+                for (int i=0; i<resolution.length; i++) {
+                    setAxisResolution(i, resolution[i], (cs != null) ? cs.getAxis(i).getUnit() : null);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Adds a linear resolution in metres.
      * Storage location is:
      *
@@ -2018,7 +2092,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
+     * Sets a general description of the transformation from grid coordinates to "real world" coordinates.
      * Storage location is:
      *
      * <ul>
@@ -2083,6 +2157,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets the degree of detail in the given dimension.
+     * This method does nothing if the given resolution if NaN or infinite.
      * Storage location is:
      *
      * <ul>
@@ -2091,9 +2166,18 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  dimension   the axis dimension.
      * @param  resolution  the degree of detail in the grid dataset, or NaN for no-operation.
+     * @param  unit        the resolution unit, of {@code null} if unknown.
      */
-    public final void setAxisResolution(final int dimension, final double resolution) {
-        if (!Double.isNaN(resolution)) {
+    public final void setAxisResolution(final int dimension, double resolution, final Unit<?> unit) {
+        if (Double.isFinite(resolution)) {
+            /*
+             * Value should be a Quantity<?>. Since GeoAPI does not yet allow that,
+             * we convert to metres for now. Future version should store the value
+             * as-is with its unit of measurement (TODO).
+             */
+            if (Units.isLinear(unit)) {
+                resolution = unit.asType(Length.class).getConverterTo(Units.METRE).convert(resolution);
+            }
             axis(dimension).setResolution(shared(resolution));
         }
     }

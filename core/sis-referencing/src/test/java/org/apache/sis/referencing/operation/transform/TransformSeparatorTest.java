@@ -210,7 +210,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
     public void testPassThroughTransform() throws FactoryException {
         final MathTransform nonLinear = new EllipsoidToCentricTransform(6378137, 6356752.314245179,
                 Units.METRE, false, EllipsoidToCentricTransform.TargetType.CARTESIAN);
-        final TransformSeparator s = new TransformSeparator(PassThroughTransform.create(2, nonLinear, 3));
+        final TransformSeparator s = new TransformSeparator(MathTransforms.passThrough(2, nonLinear, 3));
         /*
          * Trivial case: no dimension specified, we should get the transform unchanged.
          */

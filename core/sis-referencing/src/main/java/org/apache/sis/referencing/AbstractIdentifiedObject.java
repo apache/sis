@@ -44,7 +44,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.UseLegacyMetadata;
 import org.apache.sis.internal.jaxb.referencing.Code;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -804,13 +803,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     public final int hashCode() {                       // No need to synchronize; ok if invoked twice.
         int hash = hashCode;
         if (hash == 0) {
-            hash = Numerics.hashCode(computeHashCode());
+            hash = Long.hashCode(computeHashCode());
             if (hash == 0) {
                 hash = -1;
             }
             hashCode = hash;
         }
-        assert hash == -1 || hash == Numerics.hashCode(computeHashCode()) : hash;
+        assert hash == -1 || hash == Long.hashCode(computeHashCode()) : hash;
         return hash;
     }
 

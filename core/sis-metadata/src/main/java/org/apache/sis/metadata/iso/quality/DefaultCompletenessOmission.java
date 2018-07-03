@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.CompletenessOmission;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_CompletenessOmission_Type")
 @XmlRootElement(name = "DQ_CompletenessOmission")
 public class DefaultCompletenessOmission extends AbstractCompleteness implements CompletenessOmission {

@@ -18,7 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.HashSet;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 
 
@@ -78,7 +77,6 @@ final class ObjectPair {
     /**
      * Returns a string representation of the object pair for debugging purpose only.
      */
-    @Debug
     @Override
     public String toString() {
         return '(' + Classes.getShortClassName(o1) + ", " + Classes.getShortClassName(o2) + ')';

@@ -40,8 +40,8 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public strictfp class DefaultIteratorTest extends TestCase {

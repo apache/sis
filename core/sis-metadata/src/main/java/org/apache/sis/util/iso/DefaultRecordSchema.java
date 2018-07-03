@@ -29,7 +29,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.RecordSchema;
 import org.opengis.util.RecordType;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -249,7 +248,6 @@ public class DefaultRecordSchema implements RecordSchema {
     /**
      * Returns a string representation of this schema for debugging purpose only.
      */
-    @Debug
     @Override
     public String toString() {
         return "RecordSchema[“" + getSchemaName() + "”]";

@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_Metadata_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "MI_Metadata", namespace = LegacyNamespaces.GMI)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Metadata extends DefaultMetadata {
     /**
      * For cross-version compatibility.

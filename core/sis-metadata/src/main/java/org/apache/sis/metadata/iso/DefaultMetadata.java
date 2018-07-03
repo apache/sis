@@ -66,7 +66,7 @@ import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
@@ -135,7 +135,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
     "metadataIdentifier",
@@ -195,11 +194,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 7337533776231004504L;
-
-    /**
-     * Unique identifier for this metadata record, or {@code null} if none.
-     */
-    private Identifier metadataIdentifier;
 
     /**
      * Language(s) used for documenting metadata.
@@ -368,7 +362,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             acquisitionInformation        = copyCollection(object.getAcquisitionInformation(),        AcquisitionInformation.class);
             if (object instanceof DefaultMetadata) {
                 final DefaultMetadata c = (DefaultMetadata) object;
-                metadataIdentifier            = c.getMetadataIdentifier();
+                identifiers                   = singleton(c.getMetadataIdentifier(), Identifier.class);
                 parentMetadata                = c.getParentMetadata();
                 languages                     = copyCollection(c.getLanguages(),                     Locale.class);
                 characterSets                 = copyCollection(c.getCharacterSets(),                 Charset.class);
@@ -448,7 +442,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     @UML(identifier="metadataIdentifier", obligation=OPTIONAL, specification=ISO_19115)
     public Identifier getMetadataIdentifier() {
-        return metadataIdentifier;
+        return super.getIdentifier();
     }
 
     /**
@@ -459,8 +453,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     public void setMetadataIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        metadataIdentifier = newValue;
+        super.setIdentifier(newValue);
     }
 
     /**
@@ -492,7 +485,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setFileIdentifier(final String newValue) {
-        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(metadataIdentifier); // See "Note about deprecated methods implementation"
+        // See "Note about deprecated methods implementation"
+        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(super.getIdentifier());
         if (identifier == null) {
             if (newValue == null) return;
             identifier = new DefaultIdentifier();

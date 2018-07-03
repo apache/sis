@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 
 
 /**
- * Surrounds long values by {@code <gco:Integer>}.
+ * Wraps a long value in an {@code <gco:Integer>} element.
  * The ISO 19115-3 standard requires most types to be wrapped by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
@@ -66,7 +66,7 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      *         by {@code <gco:Integer>} element.
      */
     @Override
-    public GO_Integer64 wrap(final Long value) {
+    protected GO_Integer64 wrap(final Long value) {
         return new GO_Integer64(value);
     }
 

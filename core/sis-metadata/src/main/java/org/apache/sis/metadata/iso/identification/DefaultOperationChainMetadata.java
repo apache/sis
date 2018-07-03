@@ -68,7 +68,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "name",

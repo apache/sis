@@ -51,7 +51,6 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_BoundingPolygon_Type")
 @XmlRootElement(name = "EX_BoundingPolygon")
 public class DefaultBoundingPolygon extends AbstractGeographicExtent implements BoundingPolygon {

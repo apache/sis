@@ -120,12 +120,10 @@ public final strictfp class DefaultRepresentativeFractionTest extends XMLTestCas
     public void testFreeze() {
         final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(1000);
         final DefaultResolution resolution = new DefaultResolution(fraction);
-        resolution.freeze();
-        final DefaultRepresentativeFraction clone = (DefaultRepresentativeFraction) resolution.getEquivalentScale();
-        assertEquals ("Fraction should have the same value.",      fraction, clone);
-        assertNotSame("Should have copied the fraction instance.", fraction, clone);
+        resolution.apply(DefaultResolution.State.FINAL);
+        assertSame(fraction, resolution.getEquivalentScale());
         try {
-            clone.setDenominator(10);
+            fraction.setDenominator(10);
             fail("Shall not be allowed to modify an unmodifiable fraction.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.

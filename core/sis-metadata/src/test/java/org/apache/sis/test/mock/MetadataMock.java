@@ -22,7 +22,7 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.xml.Namespaces;

@@ -30,7 +30,7 @@ import org.opengis.metadata.content.Band;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 
@@ -61,7 +61,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",

@@ -50,7 +50,6 @@ import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_LegalConstraints_Type")
 @XmlRootElement(name="FRA_LegalConstraints")
 public class LegalConstraints extends DefaultLegalConstraints {

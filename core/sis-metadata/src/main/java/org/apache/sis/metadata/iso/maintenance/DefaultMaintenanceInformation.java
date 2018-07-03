@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -72,7 +72,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
     "maintenanceDate",                          // New in ISO 19115:2014

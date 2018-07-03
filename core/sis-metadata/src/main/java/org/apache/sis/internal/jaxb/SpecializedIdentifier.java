@@ -27,7 +27,6 @@ import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -254,7 +253,6 @@ public final class SpecializedIdentifier<T> implements ReferenceIdentifier, Clon
      *
      * @see IdentifierMapAdapter#toString()
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60).append("Identifier[");

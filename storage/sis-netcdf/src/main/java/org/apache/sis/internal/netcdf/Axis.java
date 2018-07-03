@@ -17,9 +17,12 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
-import org.apache.sis.util.ArraysExt;
+import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -29,7 +32,7 @@ import org.apache.sis.storage.DataStoreException;
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see GridGeometry#getAxes()
  *
@@ -95,5 +98,27 @@ public final class Axis {
                 ArraysExt.swap(sourceDimensions, 0, 1);
             }
         }
+    }
+
+    /**
+     * Returns the axis direction for the given unit of measurement as a sign relative to the given direction.
+     * This method performs the second half of the work of parsing "degrees_east" or "degrees_west" units.
+     *
+     * @param  unit      the string representation of the netCDF unit, or {@code null}.
+     * @param  positive  the direction to take as positive value: {@link AxisDirection#EAST} or {@link AxisDirection#NORTH}.
+     * @return the axis direction as a sign relative to the positive direction, or 0 if unrecognized.
+     */
+    public static int direction(final String unit, final AxisDirection positive) {
+        if (unit != null) {
+            final int s = unit.indexOf('_');
+            if (s > 0) {
+                final AxisDirection dir = Types.forCodeName(AxisDirection.class, unit.substring(s+1), false);
+                if (dir != null) {
+                    if (dir.equals(positive)) return +1;
+                    if (dir.equals(AxisDirections.opposite(positive))) return -1;
+                }
+            }
+        }
+        return 0;
     }
 }

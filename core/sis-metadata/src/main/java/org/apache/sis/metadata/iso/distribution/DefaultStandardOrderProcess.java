@@ -59,7 +59,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
     "fees",
     "plannedAvailableDateTime",

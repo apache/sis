@@ -25,7 +25,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Event;
 import org.opengis.metadata.acquisition.PlatformPass;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
@@ -51,7 +50,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_PlatformPass_Type", propOrder = {
     "identifier",
     "extent",
@@ -131,7 +129,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -139,10 +137,9 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      *
      * @param  newValue  the new identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**

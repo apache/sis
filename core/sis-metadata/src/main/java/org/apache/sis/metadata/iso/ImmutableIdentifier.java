@@ -194,6 +194,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * get the code, codespace, authority and version from the given identifier.
      *
      * @param identifier  the identifier to copy.
+     *
+     * @see #castOrCopy(ReferenceIdentifier)
      */
     public ImmutableIdentifier(final ReferenceIdentifier identifier) {
         ensureNonNull("identifier", identifier);

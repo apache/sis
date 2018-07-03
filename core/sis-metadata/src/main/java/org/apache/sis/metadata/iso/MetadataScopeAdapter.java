@@ -63,7 +63,7 @@ abstract class MetadataScopeAdapter<L> extends LegacyPropertyAdapter<L,DefaultMe
              * But if the metadata is not modifiable, then we will need to clone it and replaces the element in
              * the collection.
              */
-            if (!scope.isModifiable()) {
+            if (scope.state() == DefaultMetadataScope.State.FINAL) {
                 scope = new DefaultMetadataScope(scope);
                 if (elements instanceof List<?>) {
                     ((List<DefaultMetadataScope>) elements).set(n, scope);

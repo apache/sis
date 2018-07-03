@@ -36,8 +36,8 @@ import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.Schemas;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.Schemas;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -65,7 +65,6 @@ import junit.framework.AssertionFailedError;
  * </ul>
  *
  * This class does not verify JAXB annotations against a XSD file.
- * For such verification, see {@link SchemaCompliance}.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -218,7 +217,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * with a hard-coded list of exceptions to the general rule.
      * Subclasses shall override this method if they need to support more namespaces.</p>
      *
-     * <p>Note that a more complete verification is done by {@link SchemaCompliance}.
+     * <p>Note that a more complete verification is done by {@code SchemaCompliance}.
      * But the test done in this {@link AnnotationConsistencyCheck} class can be run without network access.</p>
      *
      * <p>The prefix for the given namespace will be fetched by

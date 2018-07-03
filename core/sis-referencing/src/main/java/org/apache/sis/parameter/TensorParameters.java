@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
+import java.security.AccessController;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -41,6 +41,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
@@ -837,11 +838,9 @@ public class TensorParameters<E> implements Serializable {
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         try {
-            final Field field = TensorParameters.class.getDeclaredField("parameters");
-            field.setAccessible(true);
-            field.set(this, createCache());
+            AccessController.doPrivileged(new FinalFieldSetter<>(TensorParameters.class, "parameters")).set(this, createCache());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw FinalFieldSetter.readFailure(e);
         }
     }
 }

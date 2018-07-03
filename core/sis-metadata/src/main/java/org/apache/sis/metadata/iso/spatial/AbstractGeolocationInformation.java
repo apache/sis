@@ -46,7 +46,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMI_GeolocationInformation_Type")
 @XmlRootElement(name = "AbstractMI_GeolocationInformation")
 @XmlSeeAlso(DefaultGCPCollection.class)

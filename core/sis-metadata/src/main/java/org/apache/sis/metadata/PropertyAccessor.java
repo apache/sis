@@ -31,7 +31,6 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -64,8 +63,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
- *       Those properties are the only one accessible by most methods in this class,
- *       except {@link #equals(Object, Object, ComparisonMode)} and {@link #freeze(Object)}.</li>
+ *       Those properties are the only ones accessible by most methods in this class, except
+ *       {@link #equals(Object, Object, ComparisonMode)} and {@link #walkWritable(MetadataVisitor, Object, Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115-1 model, but appears in ISO 19115-3 XML marshalling. So we
@@ -80,7 +79,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * {@link ModifiableMetadata} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -95,7 +94,7 @@ class PropertyAccessor {
      * Enumeration constants for the {@code mode} argument
      * in the {@link #set(int, Object, Object, int)} method.
      */
-    static final int RETURN_NULL=0, RETURN_PREVIOUS=1, APPEND=2;
+    static final int RETURN_NULL=0, RETURN_PREVIOUS=1, APPEND=2, IGNORE_READ_ONLY=3;
 
     /**
      * Additional getter to declare in every list of getter methods that do not already provide
@@ -355,6 +354,10 @@ class PropertyAccessor {
             Class<?> elementType = getter.getReturnType();
             if (Collection.class.isAssignableFrom(elementType)) {
                 elementType = Classes.boundOfParameterizedProperty(getter);
+                if (elementType == null) {
+                    // Subclass has erased parameterized type. Use method declared in the interface.
+                    elementType = Classes.boundOfParameterizedProperty(getters[i]);
+                }
             }
             elementTypes[i] = Numbers.primitiveToWrapper(elementType);
         }
@@ -664,6 +667,13 @@ class PropertyAccessor {
     }
 
     /**
+     * Returns {@code true} if the {@link #implementation} class has at least one setter method.
+     */
+    final boolean isWritable() {
+        return setters != null;
+    }
+
+    /**
      * Returns {@code true} if the property at the given index is writable.
      */
     final boolean isWritable(final int index) {
@@ -741,15 +751,17 @@ class PropertyAccessor {
      * {@link #RETURN_PREVIOUS}. The {@code mode} argument can be one of the following:
      *
      * <ul>
-     *   <li>RETURN_NULL:     Set the value and returns {@code null}.</li>
-     *   <li>RETURN_PREVIOUS: Set the value and returns the previous value. If the previous value was a
-     *                        collection or a map, then that value is copied in a new collection or map
-     *                        before the new value is set because the setter methods typically copy the
-     *                        new collection in their existing instance.</li>
-     *   <li>APPEND:          Set the value only if it doesn't overwrite an existing value, then returns
-     *                        {@link Boolean#TRUE} if the metadata changed as a result of this method call,
-     *                        {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
-     *                        value can not be set because an other value already exists.</li>
+     *   <li>RETURN_NULL:      Set the value and returns {@code null}.</li>
+     *   <li>RETURN_PREVIOUS:  Set the value and returns the previous value. If the previous value was a
+     *                         collection or a map, then that value is copied in a new collection or map
+     *                         before the new value is set because the setter methods typically copy the
+     *                         new collection in their existing instance.</li>
+     *   <li>APPEND:           Set the value only if it does not overwrite an existing value, then returns
+     *                         {@link Boolean#TRUE} if the metadata changed as a result of this method call,
+     *                         {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
+     *                         value can not be set because an other value already exists.</li>
+     *   <li>IGNORE_READ_ONLY: Set the value and returns {@code null} on success. If the property is read-only,
+     *                         do not throw an exception; returns exception class instead.</li>
      * </ul>
      *
      * <p>The {@code APPEND} mode has an additional side effect: it sets the {@code append} argument to
@@ -766,8 +778,8 @@ class PropertyAccessor {
      * @param  metadata  the metadata object on which to set the value.
      * @param  value     the new value.
      * @param  mode      whether this method should first fetches the old value,
-     *                   as one of the {@code RETURN_*} constants.
-     * @return the old value, or {@code null} if {@code returnValue} was {@code RETURN_NULL}.
+     *                   as one of the constants listed in this method javadoc.
+     * @return the old value, or {@code null} if {@code mode} was {@code RETURN_NULL} or {@code IGNORE_READ_ONLY}.
      * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
@@ -785,6 +797,7 @@ class PropertyAccessor {
                 final Object oldValue;
                 final Object snapshot;                      // Copy of oldValue before modification.
                 switch (mode) {
+                    case IGNORE_READ_ONLY:
                     case RETURN_NULL: {
                         oldValue = null;
                         snapshot = null;
@@ -823,8 +836,8 @@ class PropertyAccessor {
                 final Object[] newValues = new Object[] {value};
                 Boolean changed = convert(getter, metadata, oldValue, newValues, elementTypes[index], mode == APPEND);
                 if (changed == null) {
-                    changed = (mode == RETURN_NULL) || (newValues[0] != oldValue);
-                    if (changed && mode == APPEND && !ValueExistencePolicy.isNullOrEmpty(oldValue)) {
+                    changed = (mode == RETURN_NULL) || (mode == IGNORE_READ_ONLY) || (newValues[0] != oldValue);
+                    if (changed && mode == APPEND && !isNullOrEmpty(oldValue)) {
                         /*
                          * If 'convert' did not added the value in a collection and if a value already
                          * exists, do not modify the existing value. Exit now with "no change" status.
@@ -838,7 +851,11 @@ class PropertyAccessor {
                 return (mode == APPEND) ? changed : snapshot;
             }
         }
-        throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, names[index]));
+        if (mode == IGNORE_READ_ONLY) {
+            return UnmodifiableMetadataException.class;
+        }
+        throw new UnmodifiableMetadataException(Errors.format(
+                Errors.Keys.CanNotSetPropertyValue_1, type.getSimpleName() + '.' + names[index]));
     }
 
     /**
@@ -1175,108 +1192,81 @@ class PropertyAccessor {
     }
 
     /**
-     * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
+     * Invokes {@link MetadataVisitor#visit(Class, Object)} for all non-null properties in the given metadata.
+     * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
      *
-     * @throws BackingStoreException if the implementation threw a checked exception.
+     * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
+     * @param  metadata  the metadata instance for which to visit the non-null properties.
+     * @throws Exception if an error occurred while visiting a property.
      */
-    final void freeze(final Object metadata) throws BackingStoreException {
-        assert implementation.isInstance(metadata) : metadata;
-        if (setters != null) try {
-            final Object[] arguments = new Object[1];
-            final Freezer freezer = new Freezer();
-            for (int i=0; i<allCount; i++) {
-                final Method setter = setters[i];
-                if (setter != null) {
-                    if (setter.isAnnotationPresent(Deprecated.class)) {
-                        /*
-                         * We need to skip deprecated setter methods, because those methods may delegate
-                         * their work to other setter methods in different objects and those objects may
-                         * have been made unmodifiable by previous iteration in this loop.  If we do not
-                         * skip them, we get an UnmodifiableMetadataException in the call to set(…).
-                         *
-                         * Note that in some cases, only the setter method is deprecated, not the getter.
-                         * This happen when Apache SIS classes represent a more recent ISO standard than
-                         * the GeoAPI interfaces.
-                         */
-                        continue;
-                    }
-                    final Method getter = getters[i];
-                    final Object source = get(getter, metadata);
-                    final Object target = freezer.clone(source);
-                    if (source != target) {
-                        arguments[0] = target;
-                        set(setter, metadata, arguments);
-                        /*
-                         * We invoke the set(…) method variant that do not perform type conversion
-                         * because we don't want it to replace the immutable collection created
-                         * by ModifiableMetadata.unmodifiable(source). Conversion should not be
-                         * required anyway because the getter method should have returned a value
-                         * compatible with the setter method - this contract is ensured by the
-                         * way the PropertyAccessor constructor selected the setter methods.
-                         */
-                    }
-                }
-            }
-        } catch (CloneNotSupportedException e) {
-            throw new UnsupportedOperationException(e);
-        }
-    }
-
-    /**
-     * Returns a potentially deep copy of the given metadata object.
-     *
-     * @param  metadata   the metadata object to copy.
-     * @param  copier     contains a map of metadata objects already copied.
-     * @return a copy of the given metadata object, or {@code metadata} itself if there is
-     *         no known implementation class or that implementation has no setter method.
-     * @throws Exception if an error occurred while creating the copy. This include any
-     *         checked checked exception that the no-argument constructor may throw.
-     */
-    final Object copy(final Object metadata, final MetadataCopier copier) throws Exception {
-        if (setters == null) {
-            return metadata;
-        }
-        Object copy = copier.copies.get(metadata);
-        if (copy == null) {
-            copy = implementation.newInstance();
-            copier.copies.put(metadata, copy);              // Need to be first in case of cyclic graphs.
-            final Object[] arguments = new Object[1];
-            for (int i=0; i<allCount; i++) {
-                final Method setter = setters[i];
-                if (setter != null && !setter.isAnnotationPresent(Deprecated.class)) {
-                    Object value = get(getters[i], metadata);
-                    if (value != null) {
-                        value = copier.copyAny(elementTypes[i], value);
-                        if (value != null) {
-                            arguments[0] = value;
-                            set(setter, copy, arguments);
-                        }
-                    }
-                }
-            }
-        }
-        return copy;
-    }
-
-    /**
-     * Computes a hash code for the specified metadata. The hash code is defined as the sum
-     * of hash code values of all non-empty properties, plus the hash code of the interface.
-     * This is a similar contract than {@link java.util.Set#hashCode()} (except for the interface)
-     * and ensures that the hash code value is insensitive to the ordering of properties.
-     *
-     * @throws BackingStoreException if the implementation threw a checked exception.
-     */
-    public int hashCode(final Object metadata) throws BackingStoreException {
+    final void walkReadable(final MetadataVisitor<?> visitor, final Object metadata) throws Exception {
         assert type.isInstance(metadata) : metadata;
-        int code = type.hashCode();
         for (int i=0; i<standardCount; i++) {
+            visitor.setCurrentProperty(names[i]);
             final Object value = get(getters[i], metadata);
-            if (!isNullOrEmpty(value)) {
-                code += value.hashCode();
+            if (value != null) {
+                final Object result = visitor.visit(elementTypes[i], value);
+                if (result != value) {
+                    if (result == MetadataVisitor.SKIP_SIBLINGS) break;
+                    set(i, metadata, result, IGNORE_READ_ONLY);
+                }
             }
         }
-        return code;
+    }
+
+    /**
+     * Invokes {@link MetadataVisitor#visit(Class, Object)} for all writable properties in the given metadata.
+     * This method is not recursive, i.e. it does not traverse the children of the elements in the given metadata.
+     *
+     * <p><b>Constraint:</b> in current implementation, if {@code source} and {@code target} are not the same,
+     * then {@code target} is assumed empty. The intent is to skip easily null or empty properties.</p>
+     *
+     * @param  visitor   the object on which to invoke {@link MetadataVisitor#visit(Class, Object)}.
+     * @param  source    the metadata from which to read properties. May be the same than {@code target}.
+     * @param  target    the metadata instance where to write properties.
+     * @throws Exception if an error occurred while visiting a property.
+     */
+    final void walkWritable(final MetadataVisitor<?> visitor, final Object source, final Object target) throws Exception {
+        assert type.isInstance(source) : source;
+        assert type.isInstance(target) : target;
+        if (setters == null || !implementation.isInstance(target)) {
+            return;
+        }
+        final Object[] arguments = new Object[1];
+        for (int i=0; i<allCount; i++) {
+            visitor.setCurrentProperty(names[i]);
+            final Method setter = setters[i];
+            if (setter != null) {
+                if (setter.isAnnotationPresent(Deprecated.class)) {
+                    /*
+                     * We need to skip deprecated setter methods, because those methods may delegate
+                     * their work to other setter methods in different objects and those objects may
+                     * have been made unmodifiable by previous iteration in this loop.  If we do not
+                     * skip them, we may get an UnmodifiableMetadataException in the call to set(…).
+                     *
+                     * Note that in some cases, only the setter method is deprecated, not the getter.
+                     * This happen when Apache SIS classes represent a more recent ISO standard than
+                     * the GeoAPI interfaces.
+                     */
+                    continue;
+                }
+                final Object value = get(getters[i], source);
+                final Object result = visitor.visit(elementTypes[i], value);
+                if (source == target ? (result != value) : !isNullOrEmpty(result)) {    // See "constraint" in Javadoc
+                    if (result == MetadataVisitor.SKIP_SIBLINGS) break;
+                    arguments[0] = result;
+                    set(setter, target, arguments);
+                    /*
+                     * We invoke the set(…) method variant that do not perform type conversion
+                     * because we do not want it to replace the immutable collections created
+                     * by ModifiableMetadata.unmodifiable(source). Conversions should not be
+                     * required anyway because the getter method should have returned a value
+                     * compatible with the setter method - this contract is ensured by the
+                     * way the PropertyAccessor constructor selected the setter methods.
+                     */
+                }
+            }
+        }
     }
 
     /**
@@ -1287,7 +1277,6 @@ class PropertyAccessor {
      *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]
      * }
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60);
