@@ -34,8 +34,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
@@ -68,7 +67,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "identifier",           // New in ISO 19115-3
@@ -377,7 +375,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @XmlElement(name = "identifier")
     @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -387,9 +385,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @since 0.5
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 }

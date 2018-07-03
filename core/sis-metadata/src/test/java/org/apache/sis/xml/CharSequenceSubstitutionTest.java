@@ -22,7 +22,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.InitiativeType;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.SensorType;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.test.DependsOnMethod;
@@ -80,17 +80,17 @@ public final strictfp class CharSequenceSubstitutionTest extends XMLTestCase {
     @DependsOnMethod("testAnchor")
     public void testAnchorForString() throws JAXBException {
         final String expected =
-                "<mdb:MD_Identifier xmlns:mdb=\""   + Namespaces.MDB + '"' +
+                "<mcc:MD_Identifier xmlns:mcc=\""   + Namespaces.MCC + '"' +
                                   " xmlns:gcx=\""   + Namespaces.GCX + '"' +
                                   " xmlns:gco=\""   + Namespaces.GCO + '"' +
                                   " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-                "  <mdb:code>\n" +
+                "  <mcc:code>\n" +
                 "    <gcx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gcx:Anchor>\n" +
-                "  </mdb:code>\n" +
-                "  <mdb:codeSpace>\n" +
+                "  </mcc:code>\n" +
+                "  <mcc:codeSpace>\n" +
                 "    <gco:CharacterString>L101</gco:CharacterString>\n" +
-                "  </mdb:codeSpace>\n" +
-                "</mdb:MD_Identifier>";
+                "  </mcc:codeSpace>\n" +
+                "</mcc:MD_Identifier>";
 
         final Identifier id = unmarshal(Identifier.class, expected);
         assertEquals("codespace", "L101", id.getCodeSpace());

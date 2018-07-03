@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Objects;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -70,7 +69,6 @@ final class AxisName {
     /**
      * Returns a string representation of this object, for debugging purpose only.
      */
-    @Debug
     @Override
     public String toString() {
         return name;

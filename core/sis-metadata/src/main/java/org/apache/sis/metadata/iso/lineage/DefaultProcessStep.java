@@ -36,7 +36,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gml.TM_Primitive;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.util.TemporalUtilities;
@@ -68,7 +68,6 @@ import org.apache.sis.internal.util.TemporalUtilities;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",

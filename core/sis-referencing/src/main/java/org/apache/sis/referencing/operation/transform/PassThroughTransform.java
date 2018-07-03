@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 /**
  * Transform which passes through a subset of ordinates to another transform.
- * This allows transforms to operate on a subset of ordinates.
+ * This allows transforms to operate on a subset of coordinate values.
  *
  * <div class="note"><b>Example:</b> giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
  * {@code PassThroughTransform} can convert the height values from feet to meters without affecting the latitude and
@@ -45,7 +45,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * {@preformat java
  *     MathTransform feetToMetres = MathTransforms.linear(0.3048, 0);       // One-dimensional conversion.
- *     MathTransform tr = PassThroughTransform.create(2, feetToMetres, 0);  // Three-dimensional conversion.
+ *     MathTransform tr = MathTransforms.passThrough(2, feetToMetres, 0);   // Three-dimensional conversion.
  * }
  * </div>
  *
@@ -58,8 +58,9 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  *
+ * @see MathTransforms#passThrough(int, MathTransform, int)
  * @see MathTransforms#compound(MathTransform...)
  *
  * @since 0.5
@@ -99,7 +100,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
 
     /**
      * Constructor for sub-classes.
-     * Users should invoke the static {@link #create(int, MathTransform, int)} factory method instead,
+     * Users should invoke the static {@link MathTransforms#passThrough(int, MathTransform, int)} factory method instead,
      * since the most optimal pass-through transform for the given {@code subTransform} is not necessarily
      * a {@code PassThroughTransform} instance.
      *
@@ -107,7 +108,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param subTransform           the sub-transform to apply on modified coordinates.
      * @param numTrailingOrdinates   number of trailing ordinates to pass through.
      *
-     * @see #create(int, MathTransform, int)
+     * @see MathTransforms#passThrough(int, MathTransform, int)
      */
     protected PassThroughTransform(final int firstAffectedOrdinate,
                                    final MathTransform subTransform,
@@ -143,40 +144,35 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  subTransform           the sub-transform to apply on modified coordinates.
      * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
      * @return a pass-through transform, not necessarily a {@code PassThroughTransform} instance.
+     *
+     * @deprecated Moved to {@link MathTransforms#passThrough(int, MathTransform, int)}.
      */
+    @Deprecated
     public static MathTransform create(final int firstAffectedOrdinate,
                                        final MathTransform subTransform,
                                        final int numTrailingOrdinates)
     {
-        ensureNonNull ("subTransform",          subTransform);
-        ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
-        ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
-        if (firstAffectedOrdinate == 0 && numTrailingOrdinates == 0) {
-            return subTransform;
-        }
-        /*
-         * Optimizes the "Identity transform" case.
-         */
-        if (subTransform.isIdentity()) {
-            final int dimension = subTransform.getSourceDimensions();
-            if (dimension == subTransform.getTargetDimensions()) {
-                return IdentityTransform.create(firstAffectedOrdinate + dimension + numTrailingOrdinates);
-            }
-        }
-        /*
-         * Special case for transformation backed by a matrix. Is is possible to use a
-         * new matrix for such transform, instead of wrapping the sub-transform into a
-         * PassThroughTransform object. It is faster and easier to concatenate.
-         */
-        Matrix matrix = MathTransforms.getMatrix(subTransform);
-        if (matrix != null) {
-            matrix = expand(MatrixSIS.castOrCopy(matrix), firstAffectedOrdinate, numTrailingOrdinates, 1);
-            return MathTransforms.linear(matrix);
-        }
-        /*
-         * Constructs the general PassThroughTransform object. An optimization is done right in
-         * the constructor for the case where the sub-transform is already a PassThroughTransform.
-         */
+        return MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+    }
+
+    /**
+     * Special case for transformation backed by a matrix. Is is possible to use a new matrix for such transform,
+     * instead of wrapping the sub-transform into a {@code PassThroughTransform} object. It is faster and easier
+     * to concatenate.
+     */
+    static Matrix asMatrix(final int firstAffectedOrdinate, final Matrix subTransform, final int numTrailingOrdinates) {
+        return expand(MatrixSIS.castOrCopy(subTransform), firstAffectedOrdinate, numTrailingOrdinates, 1);
+    }
+
+    /**
+     * Constructs the general {@code PassThroughTransform} object. An optimization is done right in
+     * the constructor for the case where the sub-transform is already a {@code PassThroughTransform}.
+     * It is caller's responsibility to ensure that the argument values are valid.
+     */
+    static PassThroughTransform newInstance(final int firstAffectedOrdinate,
+                                            final MathTransform subTransform,
+                                            final int numTrailingOrdinates)
+    {
         int dim = subTransform.getSourceDimensions();
         if (subTransform.getTargetDimensions() == dim) {
             dim += firstAffectedOrdinate + numTrailingOrdinates;

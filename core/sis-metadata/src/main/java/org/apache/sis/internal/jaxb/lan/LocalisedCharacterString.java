@@ -21,7 +21,6 @@ import java.util.Objects;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -135,7 +134,6 @@ final class LocalisedCharacterString {
      *
      * @see TextGroup#toString()
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(80)

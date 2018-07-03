@@ -46,7 +46,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MetadataExtensionInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "extensionOnLineResource",
     "extendedElementInformation"

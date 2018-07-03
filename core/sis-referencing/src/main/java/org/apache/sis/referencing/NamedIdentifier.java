@@ -86,7 +86,7 @@ import org.apache.sis.util.ArgumentChecks;
  * any public {@code NamedIdentifier} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see org.apache.sis.metadata.iso.DefaultIdentifier
  * @see org.apache.sis.util.iso.AbstractName
@@ -122,6 +122,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
      * to that name.</p>
      *
      * @param  identifier  the identifier to copy.
+     *
+     * @see #castOrCopy(Identifier)
      */
     public NamedIdentifier(final Identifier identifier) {
         super(identifier);
@@ -137,6 +139,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
      * {@link #head()} and {@link #scope()} will delegate to the given name.
      *
      * @param  name  the name to wrap.
+     *
+     * @see #castOrCopy(GenericName)
      */
     public NamedIdentifier(final GenericName name) {
         super(name instanceof Identifier ? (Identifier) name : new NameToIdentifier(name));
@@ -326,6 +330,60 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
         } else {
             return factory.createLocalName(null, code);
         }
+    }
+
+    /**
+     * Returns a SIS identifier implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code NamedIdentifier}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code NamedIdentifier} instance is created using the
+     *       {@linkplain #NamedIdentifier(Identifier) copy constructor} and returned.
+     *       Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     *
+     * @since 1.0
+     */
+    public static NamedIdentifier castOrCopy(final Identifier object) {
+        if (object == null || object instanceof NamedIdentifier) {
+            return (NamedIdentifier) object;
+        }
+        return new NamedIdentifier(object);
+    }
+
+    /**
+     * Returns a SIS name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code NamedIdentifier}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code NamedIdentifier} instance is created using the
+     *       {@linkplain #NamedIdentifier(GenericName) copy constructor} and returned.
+     *       Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     *
+     * @since 1.0
+     */
+    public static NamedIdentifier castOrCopy(final GenericName object) {
+        if (object == null || object instanceof NamedIdentifier) {
+            return (NamedIdentifier) object;
+        }
+        return new NamedIdentifier(object);
     }
 
     /**

@@ -46,12 +46,12 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
      * The locales to use for the tests. For better test coverage we need at least:
      *
      * <ul>
-     *   <li>One locale which is a language without specifying the country</li>
+     *   <li>One locale which is a language without specifying the country.</li>
      *   <li>At least two different countries for the same language.</li>
      * </ul>
      */
-    private static final Locale[] LOCALES = {
-            Locale.ENGLISH, Locale.JAPANESE, Locale.CANADA, Locale.FRANCE, Locale.CANADA_FRENCH
+    private final Locale[] locales = {
+        Locale.ENGLISH, Locale.JAPANESE, Locale.CANADA, Locale.FRANCE, Locale.CANADA_FRENCH
     };
 
     /**
@@ -64,7 +64,7 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
             throws JAXBException
     {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setLanguages(Arrays.asList(LOCALES));
+        metadata.setLanguages(Arrays.asList(locales));
         assertMarshalEqualsFile(filename, metadata, version, STRICT, ignoredNodes,
                 new String[] {"xmlns:*", "xsi:*"});
     }
@@ -99,7 +99,7 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, XML2016+FILENAME);
-        assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
+        assertArrayEquals(locales, metadata.getLanguages().toArray());
     }
 
     /**
@@ -110,6 +110,6 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
     @Test
     public void testUnmarshallingLegacy() throws JAXBException {
         final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, XML2007+FILENAME);
-        assertArrayEquals(LOCALES, metadata.getLanguages().toArray());
+        assertArrayEquals(locales, metadata.getLanguages().toArray());
     }
 }

@@ -77,7 +77,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Scope;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",
     "scope",                    // New in ISO 19115:2014

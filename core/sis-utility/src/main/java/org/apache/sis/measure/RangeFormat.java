@@ -31,11 +31,13 @@ import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.security.AccessController;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.internal.util.FinalFieldSetter;
 
 
 /**
@@ -1030,23 +1032,11 @@ public class RangeFormat extends Format {
     public RangeFormat clone() {
         final RangeFormat f = (RangeFormat) super.clone();
         try {
-            f.setFinal("elementFormat", elementFormat);
-            f.setFinal("unitFormat",    unitFormat);
+            AccessController.doPrivileged(new FinalFieldSetter<>(RangeFormat.class, "elementFormat", "unitFormat"))
+                            .set(f, elementFormat.clone(), unitFormat.clone());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
+            throw FinalFieldSetter.cloneFailure(e);
         }
         return f;
-    }
-
-    /**
-     * Sets final field to a clone of the given format.
-     */
-    private void setFinal(final String name, Format value) throws ReflectiveOperationException {
-        if (value != null) {
-            value = (Format) value.clone();
-            java.lang.reflect.Field f = RangeFormat.class.getDeclaredField(name);
-            f.setAccessible(true);
-            f.set(this, value);
-        }
     }
 }

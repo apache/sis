@@ -28,7 +28,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 /*
  * We really want to use doubleToRawLongBits, not doubleToLongBits, because the
@@ -350,7 +349,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     protected int computeHashCode() {
-        return Numerics.hashCode(doubleToRawLongBits(offset) + 31*doubleToRawLongBits(scale)) ^ super.computeHashCode();
+        return Long.hashCode(doubleToRawLongBits(offset) + 31*doubleToRawLongBits(scale)) ^ super.computeHashCode();
     }
 
     /**

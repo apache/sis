@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "LE_ProcessStep_Type", namespace = Namespaces.MRL)
 @XmlRootElement(name = "LE_ProcessStep", namespace = Namespaces.MRL)
-@SuppressWarnings("CloneableClassWithoutClone")
 public class LE_ProcessStep extends DefaultProcessStep {
     /**
      * For cross-version compatibility.

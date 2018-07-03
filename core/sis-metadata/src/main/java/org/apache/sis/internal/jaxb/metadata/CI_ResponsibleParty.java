@@ -30,8 +30,8 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 
 
 /**
- * JAXB adapter mapping implementing class to the GeoAPI interface. See
- * package documentation for more information about JAXB and interface.
+ * JAXB adapter mapping implementing class to a legacy GeoAPI interface.
+ * See package documentation for more information about JAXB and interface.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

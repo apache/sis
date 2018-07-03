@@ -215,6 +215,10 @@ public final class Exceptions extends Static {
      *       in other {@code SQLException} without additional information.</li>
      * </ul>
      *
+     * <div class="note"><b>Note:</b>
+     * {@link java.security.PrivilegedActionException} is also a wrapper exception, but is not included in above list
+     * because it is used in very specific contexts.</div>
+     *
      * This method uses only the exception class as criterion;
      * it does not verify if the exception messages are the same.
      *

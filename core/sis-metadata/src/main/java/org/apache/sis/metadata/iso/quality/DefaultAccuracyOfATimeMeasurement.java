@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_AccuracyOfATimeMeasurement_Type")
 @XmlRootElement(name = "DQ_AccuracyOfATimeMeasurement")
 public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalAccuracy

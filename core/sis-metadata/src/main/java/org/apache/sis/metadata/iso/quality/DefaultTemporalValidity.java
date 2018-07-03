@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.TemporalValidity;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_TemporalValidity_Type")
 @XmlRootElement(name = "DQ_TemporalValidity")
 public class DefaultTemporalValidity extends AbstractTemporalAccuracy implements TemporalValidity {

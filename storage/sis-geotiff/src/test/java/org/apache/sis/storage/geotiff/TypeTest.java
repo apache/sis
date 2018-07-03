@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -26,11 +27,31 @@ import static org.junit.Assert.*;
  * Tests the {@link Type} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
 public final strictfp class TypeTest extends TestCase {
+    /**
+     * Verifies that all enumeration values override either {@link Type#readLong(ChannelDataInput, long)}
+     * or {@link Type#readDouble(ChannelDataInput, long)}.Failing to do so may cause stack overflow.
+     *
+     * @throws NoSuchMethodException if a reflective operation failed.
+     */
+    @Test
+    public void testOverride() throws NoSuchMethodException {
+        final Class<?>[] parameters = {
+            ChannelDataInput.class,
+            Long.TYPE
+        };
+        for (final Type type : Type.values()) {
+            final Class<?> c = type.getClass();
+            final boolean readLong   = c.getMethod("readLong",   parameters).getDeclaringClass() == Type.class;
+            final boolean readDouble = c.getMethod("readDouble", parameters).getDeclaringClass() == Type.class;
+            assertFalse(type.name(), readLong & readDouble);
+        }
+    }
+
     /**
      * Tests {@link Type#valueOf(int)}.
      */

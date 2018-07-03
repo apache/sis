@@ -58,7 +58,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
@@ -1811,7 +1810,6 @@ public class Formatter implements Localized {
      *
      * @return a string representation of this formatter.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder b = new StringBuilder(Classes.getShortClassName(this));

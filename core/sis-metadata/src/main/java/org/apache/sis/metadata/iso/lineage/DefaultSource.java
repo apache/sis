@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 
@@ -85,7 +85,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
@@ -428,7 +427,7 @@ public class DefaultSource extends ISOMetadata implements Source {
             Scope scope = getScope();
             if (scope != null) {
                 if (!(scope instanceof DefaultScope)) {
-                    if (isModifiable()) {
+                    if (super.state() != State.FINAL) {
                         scope = new DefaultScope(scope);
                         this.scope = scope;
                     } else {

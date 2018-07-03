@@ -26,7 +26,6 @@ import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
@@ -290,7 +289,6 @@ final class AuthorityFactoryIdentifier {
     /**
      * Returns a string representation of this identifier for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();

@@ -25,7 +25,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -609,7 +608,6 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * This string representation uses one line per element instead of formatting
      * everything on a single line.
      */
-    @Debug
     @Override
     public String toString() {
         final String lineSeparator = System.lineSeparator();

@@ -53,7 +53,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {
     "specification",
     "explanation",

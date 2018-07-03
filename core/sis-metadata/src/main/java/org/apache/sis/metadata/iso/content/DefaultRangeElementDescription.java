@@ -51,7 +51,6 @@ import org.apache.sis.metadata.TitleProperty;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "MI_RangeElementDescription_Type", propOrder = {
     "name",

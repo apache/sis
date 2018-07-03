@@ -21,7 +21,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.XmlUtilities;
+import org.apache.sis.internal.xml.XmlUtilities;
 
 
 /**

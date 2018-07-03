@@ -22,6 +22,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.util.StreamReaderDelegate;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
@@ -42,7 +43,11 @@ import org.apache.sis.util.Static;
  */
 final class InputFactory extends Static {
     /**
-     * The SIS-wide factory.
+     * The SIS-wide factory. This factory can be specified by the user, for example using the
+     * {@code javax.xml.stream.XMLInputFactory} system property.
+     *
+     * <div class="note"><b>Note:</b>
+     * {@code XMLInputFactory} has an {@code newDefaultFactory()} method which bypass user settings.</div>
      */
     private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
 
@@ -59,6 +64,8 @@ final class InputFactory extends Static {
 
     /**
      * Creates a new reader for the given stream.
+     * It is caller's responsibility to close the given input stream after usage
+     * (it will <strong>not</strong> be done by {@link XMLEventReader#close()}).
      *
      * @param  in  where to read from.
      * @return the reader.
@@ -70,6 +77,8 @@ final class InputFactory extends Static {
 
     /**
      * Creates a new reader for the given stream.
+     * It is caller's responsibility to close the given reader after usage
+     * (it will <strong>not</strong> be done by {@link XMLEventReader#close()}).
      *
      * @param  in  where to read from.
      * @return the reader.
@@ -97,17 +106,6 @@ final class InputFactory extends Static {
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
-    public static XMLEventReader createXMLEventReader(final XMLStreamReader in) throws XMLStreamException {
-        return FACTORY.createXMLEventReader(in);
-    }
-
-    /**
-     * Creates a new reader for the given source.
-     *
-     * @param  in  where to read from.
-     * @return the reader.
-     * @throws XMLStreamException if the reader can not be created.
-     */
     public static XMLEventReader createXMLEventReader(final Node in) throws XMLStreamException {
         return FACTORY.createXMLEventReader(new DOMSource(in));
     }
@@ -121,5 +119,22 @@ final class InputFactory extends Static {
      */
     public static XMLEventReader createXMLEventReader(final Source in) throws XMLStreamException {
         return FACTORY.createXMLEventReader(in);
+    }
+
+    /**
+     * Creates a new reader for the given source.
+     * It is caller's responsibility to close the given stream reader after usage
+     * (it will <strong>not</strong> be done by {@link XMLEventReader#close()}).
+     *
+     * @param  in  where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
+     */
+    public static XMLEventReader createXMLEventReader(final XMLStreamReader in) throws XMLStreamException {
+        return FACTORY.createXMLEventReader(new StreamReaderDelegate(in) {
+            @Override public void close() throws XMLStreamException {
+                // Do not close the XMLStreamReader because user may continue reading from it.
+            }
+        });
     }
 }

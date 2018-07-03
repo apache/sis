@@ -44,7 +44,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Releasability_Type", propOrder = {
     "addressees",
     "statement",

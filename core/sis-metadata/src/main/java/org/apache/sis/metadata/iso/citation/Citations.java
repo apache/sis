@@ -684,7 +684,7 @@ public final class Citations extends Static {
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier
-     * @see org.apache.sis.referencing.IdentifiedObjects#getUnicodeIdentifier(IdentifiedObject)
+     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
      * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
      *
      * @since 0.6

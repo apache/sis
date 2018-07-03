@@ -283,7 +283,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      */
     @Override
     protected int computeHashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(base)
+        return Long.hashCode(Double.doubleToLongBits(base)
                 + 31 * Double.doubleToLongBits(scale)) ^ super.computeHashCode();
     }
 

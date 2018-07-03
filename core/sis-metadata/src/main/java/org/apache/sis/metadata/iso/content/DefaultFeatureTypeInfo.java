@@ -50,7 +50,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "featureTypeName")
 @XmlType(name = "MD_FeatureTypeInfo_Type", propOrder = {
     "featureTypeName",

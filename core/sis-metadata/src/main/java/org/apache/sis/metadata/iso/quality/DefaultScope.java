@@ -48,7 +48,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  */
 @Deprecated
 @XmlTransient
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.DefaultScope implements Scope {
     /**
      * Serial number for inter-operability with different versions.

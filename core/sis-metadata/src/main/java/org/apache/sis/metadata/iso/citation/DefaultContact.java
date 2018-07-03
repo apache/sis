@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
@@ -60,7 +60,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",
     "phoneList",

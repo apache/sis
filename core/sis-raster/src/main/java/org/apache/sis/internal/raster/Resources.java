@@ -30,8 +30,8 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public final class Resources extends IndexedResourceBundle {
@@ -42,7 +42,7 @@ public final class Resources extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
+     * @since   1.0
      * @module
      */
     @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
@@ -62,6 +62,11 @@ public final class Resources extends IndexedResourceBundle {
          * The ({0}, {1}) pixel coordinate is outside iterator domain.
          */
         public static final short CoordinateOutsideDomain_2 = 1;
+
+        /**
+         * Illegal grid envelope [{1} … {2}] for dimension {0}.
+         */
+        public static final short IllegalGridEnvelope_3 = 8;
 
         /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
@@ -92,6 +97,21 @@ public final class Resources extends IndexedResourceBundle {
          * The two images have different tile grid.
          */
         public static final short MismatchedTileGrid = 7;
+
+        /**
+         * Coordinate reference system is unspecified.
+         */
+        public static final short UnspecifiedCRS = 9;
+
+        /**
+         * Grid extent is unspecified.
+         */
+        public static final short UnspecifiedGridExtent = 10;
+
+        /**
+         * Coordinates transform is unspecified.
+         */
+        public static final short UnspecifiedTransform = 11;
     }
 
     /**
@@ -166,5 +186,24 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg1) throws MissingResourceException
     {
         return forLocale(null).getString(key, arg0, arg1);
+    }
+
+    /**
+     * Gets a string for the given key are replace all occurrence of "{0}",
+     * "{1}", with values of {@code arg0}, {@code arg1}, etc.
+     *
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @param  arg2  value to substitute to "{2}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
+     */
+    public static String format(final short  key,
+                                final Object arg0,
+                                final Object arg1,
+                                final Object arg2) throws MissingResourceException
+    {
+        return forLocale(null).getString(key, arg0, arg1, arg2);
     }
 }

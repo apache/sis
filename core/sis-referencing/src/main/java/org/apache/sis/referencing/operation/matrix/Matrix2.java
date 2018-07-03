@@ -309,7 +309,7 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(serialVersionUID ^
+        return Long.hashCode(serialVersionUID ^
                 (((Double.doubleToLongBits(m00)  +
               31 * Double.doubleToLongBits(m01)) +
               31 * Double.doubleToLongBits(m10)) +

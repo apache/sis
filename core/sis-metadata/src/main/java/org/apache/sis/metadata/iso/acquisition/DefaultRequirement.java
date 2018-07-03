@@ -29,7 +29,6 @@ import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
@@ -69,7 +68,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Requirement_Type", propOrder = {
     "citation",
     "identifier",
@@ -207,7 +205,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -215,10 +213,9 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param  newValue  the new identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**

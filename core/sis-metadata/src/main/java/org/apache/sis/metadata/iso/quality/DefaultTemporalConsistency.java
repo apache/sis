@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.TemporalConsistency;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_TemporalConsistency_Type")
 @XmlRootElement(name = "DQ_TemporalConsistency")
 public class DefaultTemporalConsistency extends AbstractTemporalAccuracy implements TemporalConsistency {

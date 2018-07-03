@@ -34,11 +34,11 @@
  * ISO 19123 <cite>"domain"</cite>, the netCDF coordinate system <cite>"domain"</cite> is closer to
  * ISO 19123 <cite>"grid envelope"</cite> and the ISO 19123 <cite>"range"</cite> is rather related
  * to the netCDF variable minimum and maximum values. Trying to use OGC/ISO and netCDF objects in
- * the same code appears to be <strong>very</strong> confusing. This isolation layer allows our code
- * to use a more consistent vocabulary (compared to the rest of Apache SIS).</p>
+ * the same code appears to be very confusing. This isolation layer allows our code to use a more
+ * consistent vocabulary (more similar to the rest of Apache SIS).</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

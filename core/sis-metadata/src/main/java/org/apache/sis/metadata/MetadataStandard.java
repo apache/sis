@@ -26,11 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
+import java.io.InvalidClassException;
+import java.security.AccessController;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
@@ -39,6 +39,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.util.FinalFieldSetter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -89,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see AbstractMetadata
  *
@@ -916,19 +917,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
-     *
-     * @throws ClassCastException if the specified implementation class do
-     *         not implements a metadata interface of the expected package.
-     *
-     * @see ModifiableMetadata#freeze()
-     */
-    final void freeze(final Object metadata) throws ClassCastException {
-        getAccessor(new CacheKey(metadata.getClass()), true).freeze(metadata);
-    }
-
-    /**
      * Compares the two specified metadata objects.
      * The two metadata arguments shall be implementations of a metadata interface defined by
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
@@ -1023,24 +1011,14 @@ public class MetadataStandard implements Serializable {
      */
     public int hashCode(final Object metadata) throws ClassCastException {
         if (metadata != null) {
-            final Map<Object,Object> inProgress = RecursivityGuard.HASH_CODES.get();
-            if (inProgress.put(metadata, Boolean.TRUE) == null) {
-                // See comment in 'equals(…) about NULL_COLLECTION semaphore purpose.
-                final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
-                try {
-                    return getAccessor(new CacheKey(metadata.getClass()), true).hashCode(metadata);
-                } finally {
-                    inProgress.remove(metadata);
-                    if (!allowNull) {
-                        Semaphores.clear(Semaphores.NULL_COLLECTION);
-                    }
-                }
-            }
+            final Integer hash = HashCode.getOrCreate().walk(this, null, metadata, true);
+            if (hash != null) return hash;
             /*
-             * If we get there, a cycle has been found. We can not compute a hash code value for that metadata.
-             * However it should not be a problem since this metadata is part of a bigger metadata object, and
-             * that enclosing object has other properties for computing its hash code. We just need the result
-             * to be consistent, wich should be the case if properties ordering is always the same.
+             * 'hash' may be null if a cycle has been found. Example: A depends on B which depends on A,
+             * in which case the null value is returned for the second occurrence of A (not the first one).
+             * We can not compute a hash code value here, but it should be okay since that metadata is part
+             * of a bigger metadata object, and that enclosing object should have other properties for computing
+             * its hash code.
              */
         }
         return 0;
@@ -1050,7 +1028,6 @@ public class MetadataStandard implements Serializable {
      * Returns a string representation of this metadata standard.
      * This is for debugging purpose only and may change in any future version.
      */
-    @Debug
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
@@ -1060,13 +1037,13 @@ public class MetadataStandard implements Serializable {
      * Assigns a {@link ConcurrentMap} instance to the given field.
      * Used on deserialization only.
      */
-    final void setMapForField(final Class<?> classe, final String name) {
+    static <T extends MetadataStandard> void setMapForField(final Class<T> classe, final T instance, final String name)
+            throws InvalidClassException
+    {
         try {
-            final Field field = classe.getDeclaredField(name);
-            field.setAccessible(true);
-            field.set(this, new ConcurrentHashMap<>());
+            AccessController.doPrivileged(new FinalFieldSetter<>(classe, name)).set(instance, new ConcurrentHashMap<>());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);                // Should never happen (tested by MetadataStandardTest).
+            throw FinalFieldSetter.readFailure(e);
         }
     }
 
@@ -1079,6 +1056,6 @@ public class MetadataStandard implements Serializable {
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        setMapForField(MetadataStandard.class, "accessors");
+        setMapForField(MetadataStandard.class, this, "accessors");
     }
 }

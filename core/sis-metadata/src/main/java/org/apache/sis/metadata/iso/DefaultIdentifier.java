@@ -92,7 +92,6 @@ import org.apache.sis.xml.Namespaces;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", namespace = Namespaces.MCC, propOrder = {
     "authority",

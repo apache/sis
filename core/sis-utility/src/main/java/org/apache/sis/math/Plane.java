@@ -590,7 +590,7 @@ public class Plane implements Cloneable, Serializable {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(serialVersionUID
+        return Long.hashCode(serialVersionUID
                      ^ (Double.doubleToLongBits(z0)
                 + 31 * (Double.doubleToLongBits(sx)
                 + 31 * (Double.doubleToLongBits(sy)))));

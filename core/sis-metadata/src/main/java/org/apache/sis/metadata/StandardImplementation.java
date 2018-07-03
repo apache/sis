@@ -179,7 +179,7 @@ final class StandardImplementation extends MetadataStandard {
          * newer version of the Apache SIS library. The newer version could contains constants
          * not yet declared in this older SIS version, so we have to use this instance.
          */
-        setMapForField(StandardImplementation.class, "implementations");
+        setMapForField(StandardImplementation.class, this, "implementations");
         return this;
     }
 }

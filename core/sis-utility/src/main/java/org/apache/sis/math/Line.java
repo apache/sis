@@ -412,7 +412,7 @@ public class Line implements Cloneable, Serializable {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(serialVersionUID ^ (doubleToLongBits(slope) + 31*doubleToLongBits(y0)));
+        return Long.hashCode(serialVersionUID ^ (doubleToLongBits(slope) + 31*doubleToLongBits(y0)));
     }
 
     /**

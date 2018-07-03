@@ -43,7 +43,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = Namespaces.GMD)     // TODO: renamed NonQuantitativeAttributeCorrectness
 @XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy", namespace = Namespaces.GMD)
 public class DefaultNonQuantitativeAttributeAccuracy extends AbstractThematicAccuracy

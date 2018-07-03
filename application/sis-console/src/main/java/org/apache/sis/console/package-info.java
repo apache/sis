@@ -21,7 +21,7 @@
  *
  * <div class="section">SIS installation on remote machines</div>
  * Some sub-commands can operate on SIS installation on remote machines, provided that Apache SIS
- * has been <a href="http://sis.apache.org/branches.html#master">compiled with MBeans enabled</a>
+ * has been <a href="http://sis.apache.org/source.html#master">compiled with MBeans enabled</a>
  * and that the remote Java Virtual Machine has been started with the following options:
  *
  * {@preformat shell

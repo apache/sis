@@ -34,7 +34,7 @@ import org.opengis.util.RecordType;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
 
@@ -62,7 +62,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
     "attributeDescription",
     "processingLevelCode",          // New in ISO 19115:2014

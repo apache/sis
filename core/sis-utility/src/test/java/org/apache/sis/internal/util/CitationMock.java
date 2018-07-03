@@ -31,7 +31,6 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -100,7 +99,6 @@ final strictfp class CitationMock implements Citation, ReferenceIdentifier {
     /**
      * Returns a string representation of this citation for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         return "Citation[“" + title + "”]";

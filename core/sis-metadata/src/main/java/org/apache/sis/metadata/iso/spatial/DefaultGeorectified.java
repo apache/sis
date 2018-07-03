@@ -71,7 +71,6 @@ import org.apache.sis.util.resources.Messages;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Georectified_Type", propOrder = {
     "checkPointAvailable",
     "checkPointDescription",

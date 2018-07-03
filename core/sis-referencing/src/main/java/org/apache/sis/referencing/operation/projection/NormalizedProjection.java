@@ -911,7 +911,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 c = c*31 + Double.doubleToLongBits(parameters[i]);
             }
         }
-        return super.computeHashCode() ^ Numerics.hashCode(c);
+        return super.computeHashCode() ^ Long.hashCode(c);
     }
 
     /**

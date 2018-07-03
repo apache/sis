@@ -33,7 +33,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * instead.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -84,14 +84,7 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, Identifier>
      */
     @XmlElementRef
     public ImmutableIdentifier getElement() {
-        final Identifier metadata = this.metadata;
-        if (metadata == null) {
-            return null;
-        } else if (metadata instanceof ImmutableIdentifier) {
-            return (ImmutableIdentifier) metadata;
-        } else {
-            return new ImmutableIdentifier(metadata);
-        }
+        return ImmutableIdentifier.castOrCopy(metadata);
     }
 
     /**

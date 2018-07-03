@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 import org.apache.sis.util.resources.Errors;

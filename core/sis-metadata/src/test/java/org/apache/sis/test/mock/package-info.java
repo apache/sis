@@ -34,7 +34,9 @@
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "mdb", namespaceURI = Namespaces.MDB),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
+    @XmlNs(prefix = "gfc", namespaceURI = LegacyNamespaces.GFC)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
@@ -50,4 +52,5 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;

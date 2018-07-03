@@ -21,9 +21,6 @@ import java.util.Objects;
 import java.util.Collection;
 import java.io.Closeable;
 import java.io.IOException;
-import javax.measure.Unit;
-import javax.measure.format.ParserException;
-import org.apache.sis.measure.Units;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -37,7 +34,7 @@ import org.apache.sis.util.logging.WarningListeners;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -152,26 +149,6 @@ public abstract class Decoder implements Closeable {
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
     public abstract Date dateValue(final String name);
-
-    /**
-     * Returns the value of the attribute of the given name as a unit of measurement, or {@code null} if none.
-     *
-     * @param  name  the name of the attribute to search, or {@code null}.
-     * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
-     *
-     * @todo Current Units.valueOf(String) implementation ignore direction in "degrees_east" or "degrees_west".
-     *       We may need to take that in account (with "degrees_west" to "degrees_east" converter that reverse
-     *       the sign).
-     */
-    public final Unit<?> unitValue(final String name) {
-        final String unit = stringValue(name);
-        if (unit != null) try {
-            return Units.valueOf(unit);
-        } catch (ParserException e) {
-            listeners.warning(null, e);
-        }
-        return null;
-    }
 
     /**
      * Converts the given numerical values to date, using the information provided in the given unit symbol.

@@ -29,6 +29,7 @@ import javax.xml.transform.stax.StAXResult;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.apache.sis.util.Static;
+import org.apache.sis.internal.xml.StreamWriterDelegate;
 
 
 /**
@@ -43,7 +44,11 @@ import org.apache.sis.util.Static;
  */
 final class OutputFactory extends Static {
     /**
-     * The SIS-wide factory.
+     * The SIS-wide factory. This factory can be specified by the user, for example using the
+     * {@code javax.xml.stream.XMLOutputFactory} system property.
+     *
+     * <div class="note"><b>Note:</b>
+     * {@code XMLOutputFactory} has an {@code newDefaultFactory()} method which bypass user settings.</div>
      */
     private static final XMLOutputFactory FACTORY = XMLOutputFactory.newInstance();
 
@@ -60,6 +65,8 @@ final class OutputFactory extends Static {
 
     /**
      * Creates a new writer for the given stream.
+     * It is caller's responsibility to close the given output stream after usage
+     * (it will <strong>not</strong> be done by {@link XMLEventWriter#close()}).
      *
      * @param  out       where to write to.
      * @param  encoding  the document encoding (usually {@code "UTF-8"}).
@@ -72,6 +79,8 @@ final class OutputFactory extends Static {
 
     /**
      * Creates a new writer for the given stream.
+     * It is caller's responsibility to close the given writer after usage
+     * (it will <strong>not</strong> be done by {@link XMLEventWriter#close()}).
      *
      * @param  out  where to write to.
      * @return the writer.
@@ -113,19 +122,31 @@ final class OutputFactory extends Static {
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLEventWriter createXMLEventWriter(final XMLStreamWriter out) throws XMLStreamException {
-        return FACTORY.createXMLEventWriter(new StAXResult(out));
+    public static XMLEventWriter createXMLEventWriter(final Result out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(out);
     }
 
     /**
      * Creates a new writer for the JAXP result.
      * Note that this method is identified as <em>optional</em> in JSE javadoc.
+     * It is caller's responsibility to close the given stream writer after usage
+     * (it will <strong>not</strong> be done by {@link XMLEventWriter#close()}).
      *
      * @param  out  where to write to.
      * @return the writer.
      * @throws XMLStreamException if the writer can not be created.
      */
-    public static XMLEventWriter createXMLEventWriter(final Result out) throws XMLStreamException {
-        return FACTORY.createXMLEventWriter(out);
+    public static XMLEventWriter createXMLEventWriter(final XMLStreamWriter out) throws XMLStreamException {
+        return FACTORY.createXMLEventWriter(new StAXResult(new StreamWriterDelegate(out) {
+            @Override public void close() throws XMLStreamException {
+                /*
+                 * Do not close the XMLStreamWriter because user may continue writing to it.
+                 * Do not flush neither; the default XMLStreamWriterImpl does nothing more
+                 * than forwarding to java.io.Writer.flush() and flushing an output stream
+                 * have a performance impact. If the user really wants to flush, (s)he can
+                 * invoke XMLStreamWriter.flush() himself.
+                 */
+            }
+        }));
     }
 }

@@ -303,8 +303,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public int hashCode() {
-        int code =  31 + Numerics.hashCode(doubleToLongBits(x));
-        code = code*31 + Numerics.hashCode(doubleToLongBits(y));
+        int code =  31 + java.lang.Double.hashCode(x);
+        code = code*31 + java.lang.Double.hashCode(y);
         return code + Objects.hashCode(crs);
     }
 

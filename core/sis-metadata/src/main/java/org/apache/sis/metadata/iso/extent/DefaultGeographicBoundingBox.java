@@ -114,7 +114,6 @@ import static java.lang.Double.doubleToLongBits;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",
     "eastBoundLongitude",
