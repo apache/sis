@@ -35,6 +35,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -240,7 +241,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         try (Connection c = ds.getConnection()) {
             try (ResultSet r = c.getMetaData().getTables(null, null, "Coordinate Reference System", null)) {
                 while (r.next()) {
-                    final String schema = r.getString("TABLE_SCHEM");
+                    final String schema = r.getString(Reflection.TABLE_SCHEM);
                     assertTrue(schema, "EPSG".equalsIgnoreCase(schema));
                     count++;
                 }

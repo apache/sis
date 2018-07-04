@@ -41,6 +41,13 @@ import java.sql.DatabaseMetaData;
  */
 public final class Reflection {
     /**
+     * The {@value} key for getting a catalog name. This column appears in all reflection
+     * operations (listing schemas, tables, columns, constraints, <i>etc.</i>) used by SIS.
+     * The value in that column may be null.
+     */
+    public static final String TABLE_CAT = "TABLE_CAT";
+
+    /**
      * The {@value} key for getting a schema name. This column appears in all reflection
      * operations (listing schemas, tables, columns, constraints, <i>etc.</i>) used by SIS.
      * The value in that column may be null.
@@ -86,14 +93,6 @@ public final class Reflection {
     public static final String COLUMN_SIZE = "COLUMN_SIZE";
 
     /**
-     * The {@value} key for the number of fractional digits.
-     * Null is returned for data types where {@code DECIMAL_DIGITS} is not applicable.
-     *
-     * <p>Values in this column are integers ({@code int}) rather than {@code String}.</p>
-     */
-    public static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
-
-    /**
      * The {@value} key for the nullability of a column. Possible values are {@code "YES"} if
      * the parameter can include NULLs, {@code "NO"} if the parameter cannot include NULLs,
      * and empty string if the nullability for the parameter is unknown.
@@ -118,6 +117,12 @@ public final class Reflection {
      * Values in this column may be null.
      */
     public static final String PK_NAME = "PK_NAME";
+
+    /**
+     * The {@value} key for the primary key table catalog being imported.
+     * Values in this column may be null.
+     */
+    public static final String PKTABLE_CAT = "PKTABLE_CAT";
 
     /**
      * The {@value} key for the primary key table schema being imported.

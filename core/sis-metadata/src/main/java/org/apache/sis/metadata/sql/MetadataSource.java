@@ -56,6 +56,7 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -792,7 +793,7 @@ public class MetadataSource implements AutoCloseable {
             final DatabaseMetaData md = connection().getMetaData();
             try (ResultSet rs = md.getColumns(catalog, schema, table, null)) {
                 while (rs.next()) {
-                    if (!columns.add(rs.getString("COLUMN_NAME"))) {
+                    if (!columns.add(rs.getString(Reflection.COLUMN_NAME))) {
                         // Paranoiac check, but should never happen.
                         throw new SQLNonTransientException(table);
                     }
