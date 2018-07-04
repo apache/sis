@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.storage.DataStoreException;
 
 
@@ -42,16 +43,6 @@ public abstract class Dialect {
     }
 
     /**
-     * Indicates if the JDBC driver support global metadata.
-     * Some drivers force specifying a schema or table to return results.
-     * This prevent us from loading all metadata in one request and
-     * makes us loop on all tables.
-     *
-     * @return whether global JDBC metadata are available.
-     */
-    public abstract boolean supportGlobalMetadata();
-
-    /**
      * Indicates whether a table will be used as a {@code FeatureType}.
      *
      * @param  name  database table name.
@@ -69,23 +60,6 @@ public abstract class Dialect {
      * @todo What happen if there is no match?
      */
     public abstract Class<?> getJavaType(int sqlType, String sqlTypeName);
-
-    /**
-     * Encodes the column name part of a SQL query.
-     *
-     * @param sql   where to write the SQL statement.
-     * @param name  column name to write, not null.
-     */
-    public abstract void encodeColumnName(StringBuilder sql, String name);
-
-    /**
-     * Encodes the schema and table name parts of a SQL query.
-     *
-     * @param sql     where to write the SQL statement.
-     * @param schema  database schema to write, or null if none.
-     * @param table   database table to write, not null.
-     */
-    public abstract void encodeSchemaAndTableName(StringBuilder sql, String schema, String table);
 
     /**
      * If a column is an auto-increment or has a sequence, tries to extract next value.
@@ -122,7 +96,7 @@ public abstract class Dialect {
      * @param  column    name of the database column.
      * @throws SQLException if a JDBC error occurred while executing a statement.
      */
-    public abstract void decodeColumnType(final SingleAttributeTypeBuilder atb, final Connection cx,
+    public abstract void decodeColumnType(final AttributeTypeBuilder<?> atb, final Connection cx,
             final String typeName, final int datatype, final String schema,
             final String table, final String column) throws SQLException;
 
@@ -136,7 +110,7 @@ public abstract class Dialect {
      * @param  customquery  {@code true} if the request is a custom query.
      * @throws SQLException if a JDBC error occurred while executing a statement.
      */
-    public abstract void decodeGeometryColumnType(final SingleAttributeTypeBuilder atb, final Connection cx,
+    public abstract void decodeGeometryColumnType(final AttributeTypeBuilder<?> atb, final Connection cx,
             final ResultSet rs, final int columnIndex, boolean customquery) throws SQLException;
 
     /**

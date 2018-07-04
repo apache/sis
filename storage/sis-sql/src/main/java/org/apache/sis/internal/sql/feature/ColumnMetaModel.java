@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.opengis.feature.AttributeType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
 
 
 /**
@@ -161,13 +162,14 @@ public final class ColumnMetaModel {
             // Generate value if possible.
             if (Number.class.isAssignableFrom(clazz)) {
                 // Get the maximum value in the database and increment it
-                final StringBuilder sql = new StringBuilder();
-                sql.append("SELECT 1 + MAX(");
-                dialect.encodeColumnName(sql, name);
-                sql.append(") FROM ");
-                dialect.encodeSchemaAndTableName(sql, schema, table);
+                final String sql = new SQLBuilder(cx.getMetaData(), true)
+                        .append("SELECT 1 + MAX(")
+                        .appendIdentifier(name)
+                        .append(") FROM ")
+                        .appendIdentifier(schema, table)
+                        .toString();
                 try (Statement st = cx.createStatement();
-                    ResultSet rs = st.executeQuery(sql.toString())) {
+                    ResultSet rs = st.executeQuery(sql)) {
                     rs.next();
                     next = rs.getObject(1);
                 }

@@ -44,8 +44,8 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.sql.feature.MetaDataConstants.*;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -63,17 +63,11 @@ import org.apache.sis.util.logging.WarningListeners;
  * @module
  */
 public final class DataBaseModel {
-    /**
-     * @todo Does not seem to be used yet.
-     */
-    private static final String ASSOCIATION_SEPARATOR = "→";
 
-    /**
-     * The native SRID associated to a certain descriptor
-     *
-     * @todo Does not seem to be used yet.
-     */
-    private static final String JDBC_NATIVE_SRID = "nativeSRID";
+    private static final String TYPE_TABLE = "TABLE";
+    private static final String TYPE_VIEW  = "VIEW";
+    private static final String VALUE_YES = "YES";
+    private static final String VALUE_NO = "NO";
 
     /**
      * Feature type used to mark types which are sub-types of others.
@@ -99,7 +93,6 @@ public final class DataBaseModel {
 
     //various cache while analyzing model
     private DatabaseMetaData metadata;
-    private CachedResultSet cacheSchemas;
     private CachedResultSet cacheTables;
     private CachedResultSet cacheColumns;
     private CachedResultSet cachePrimaryKeys;
@@ -135,8 +128,7 @@ public final class DataBaseModel {
     }
 
     /**
-     * Clear the model cache. A new database analyze will be made the next time
-     * it is needed.
+     * Clear the model cache. A new database analyze will be made the next time it is needed.
      */
     private synchronized void clearCache() {
         pkIndex   = new FeatureNaming<>();
@@ -191,87 +183,59 @@ public final class DataBaseModel {
         requieredSchemas = new HashSet<>();
 
         try (Connection cx = store.getDataSource().getConnection()) {
-
             metadata = cx.getMetaData();
-
-            // Cache all metadata informations, we will loop on them plenty of times ////////
-            cacheSchemas = new CachedResultSet(metadata.getSchemas(),
-                    Schema.TABLE_SCHEM);
+            /*
+             * Schema names available in the database:
+             * 1. TABLE_SCHEM   : String  =>  schema name
+             * 2. TABLE_CATALOG : String  =>  catalog name (may be null)
+             */
+            final CachedResultSet cacheSchemas = new CachedResultSet(metadata.getSchemas(),
+                    Reflection.TABLE_SCHEM);
+            /*
+             * Description of the tables available:
+             * 1. TABLE_SCHEM : String  =>  table schema (may be null)
+             * 2. TABLE_NAME  : String  =>  table name
+             * 3. TABLE_TYPE  : String  =>  table type (typically "TABLE" or "VIEW").
+             */
             cacheTables = new CachedResultSet(
-                    metadata.getTables(null,null,null,new String[]{Table.VALUE_TYPE_TABLE, Table.VALUE_TYPE_VIEW}),
-                    Table.TABLE_SCHEM,
-                    Table.TABLE_NAME,
-                    Table.TABLE_TYPE);
-            cacheColumns = new CachedResultSet(metadata.getColumns(null, null, null, "%"),
-                    Column.TABLE_SCHEM,
-                    Column.TABLE_NAME,
-                    Column.COLUMN_NAME,
-                    Column.COLUMN_SIZE,
-                    Column.DATA_TYPE,
-                    Column.TYPE_NAME,
-                    Column.IS_NULLABLE,
-                    Column.IS_AUTOINCREMENT,
-                    Column.REMARKS);
-            if (dialect.supportGlobalMetadata()) {
-                cachePrimaryKeys = new CachedResultSet(metadata.getPrimaryKeys(null, null, null),
-                        Column.TABLE_SCHEM,
-                        Column.TABLE_NAME,
-                        Column.COLUMN_NAME);
-                cacheImportedKeys = new CachedResultSet(metadata.getImportedKeys(null, null, null),
-                        ImportedKey.PK_NAME,
-                        ImportedKey.FK_NAME,
-                        ImportedKey.FKTABLE_SCHEM,
-                        ImportedKey.FKTABLE_NAME,
-                        ImportedKey.FKCOLUMN_NAME,
-                        ImportedKey.PKTABLE_SCHEM,
-                        ImportedKey.PKTABLE_NAME,
-                        ImportedKey.PKCOLUMN_NAME,
-                        ImportedKey.DELETE_RULE);
-                cacheExportedKeys = new CachedResultSet(metadata.getExportedKeys(null, null, null),
-                        ExportedKey.PK_NAME,
-                        ExportedKey.FK_NAME,
-                        ExportedKey.PKTABLE_SCHEM,
-                        ExportedKey.PKTABLE_NAME,
-                        ExportedKey.PKCOLUMN_NAME,
-                        ExportedKey.FKTABLE_SCHEM,
-                        ExportedKey.FKTABLE_NAME,
-                        ExportedKey.FKCOLUMN_NAME,
-                        ExportedKey.DELETE_RULE);
-            } else {
-                //we have to loop ourself on all schema and tables to collect informations
-                cachePrimaryKeys = new CachedResultSet();
-                cacheImportedKeys = new CachedResultSet();
-                cacheExportedKeys = new CachedResultSet();
-
-                final Iterator<Map<String,Object>> ite = cacheSchemas.records.iterator();
-                while (ite.hasNext()) {
-                    final String schemaName = (String) ite.next().get(Schema.TABLE_SCHEM);
-                    for (Map<String,Object> info : cacheTables.records) {
-                        if (!Objects.equals(info.get(Table.TABLE_SCHEM),schemaName)) continue;
-                        cachePrimaryKeys.append(metadata.getPrimaryKeys(null, schemaName, (String) info.get(Table.TABLE_NAME)),
-                            Column.TABLE_SCHEM,
-                            Column.TABLE_NAME,
-                            Column.COLUMN_NAME);
-                        cacheImportedKeys.append(metadata.getImportedKeys(null, schemaName, (String) info.get(Table.TABLE_NAME)),
-                            ImportedKey.FKTABLE_SCHEM,
-                            ImportedKey.FKTABLE_NAME,
-                            ImportedKey.FKCOLUMN_NAME,
-                            ImportedKey.PKTABLE_SCHEM,
-                            ImportedKey.PKTABLE_NAME,
-                            ImportedKey.PKCOLUMN_NAME,
-                            ImportedKey.DELETE_RULE);
-                        cacheExportedKeys.append(metadata.getExportedKeys(null, schemaName, (String) info.get(Table.TABLE_NAME)),
-                            ImportedKey.PKTABLE_SCHEM,
-                            ImportedKey.PKTABLE_NAME,
-                            ExportedKey.PKCOLUMN_NAME,
-                            ExportedKey.FKTABLE_SCHEM,
-                            ExportedKey.FKTABLE_NAME,
-                            ExportedKey.FKCOLUMN_NAME,
-                            ImportedKey.DELETE_RULE);
-                    }
-                }
-            }
-
+                    metadata.getTables(null, null, null, new String[] {TYPE_TABLE, TYPE_VIEW}),   // TODO: use metadata.getTableTypes()
+                    Reflection.TABLE_SCHEM,
+                    Reflection.TABLE_NAME,
+                    Reflection.TABLE_TYPE);
+            cacheColumns = new CachedResultSet(metadata.getColumns(null, null, null, null),
+                    Reflection.TABLE_SCHEM,
+                    Reflection.TABLE_NAME,
+                    Reflection.COLUMN_NAME,
+                    Reflection.COLUMN_SIZE,
+                    Reflection.DATA_TYPE,
+                    Reflection.TYPE_NAME,
+                    Reflection.IS_NULLABLE,
+                    Reflection.IS_AUTOINCREMENT,
+                    Reflection.REMARKS);
+            cachePrimaryKeys = new CachedResultSet(metadata.getPrimaryKeys(null, null, null),
+                    Reflection.TABLE_SCHEM,
+                    Reflection.TABLE_NAME,
+                    Reflection.COLUMN_NAME);
+            cacheImportedKeys = new CachedResultSet(metadata.getImportedKeys(null, null, null),
+                    Reflection.PK_NAME,
+                    Reflection.FK_NAME,
+                    Reflection.FKTABLE_SCHEM,
+                    Reflection.FKTABLE_NAME,
+                    Reflection.FKCOLUMN_NAME,
+                    Reflection.PKTABLE_SCHEM,
+                    Reflection.PKTABLE_NAME,
+                    Reflection.PKCOLUMN_NAME,
+                    Reflection.DELETE_RULE);
+            cacheExportedKeys = new CachedResultSet(metadata.getExportedKeys(null, null, null),
+                    Reflection.PK_NAME,
+                    Reflection.FK_NAME,
+                    Reflection.PKTABLE_SCHEM,
+                    Reflection.PKTABLE_NAME,
+                    Reflection.PKCOLUMN_NAME,
+                    Reflection.FKTABLE_SCHEM,
+                    Reflection.FKTABLE_NAME,
+                    Reflection.FKCOLUMN_NAME,
+                    Reflection.DELETE_RULE);
 
             ////////////////////////////////////////////////////////////////////////////////
 
@@ -280,7 +244,7 @@ public final class DataBaseModel {
             } else {
                 final Iterator<Map<String,Object>> ite = cacheSchemas.records.iterator();
                 while (ite.hasNext()) {
-                    requieredSchemas.add((String) ite.next().get(Schema.TABLE_SCHEM));
+                    requieredSchemas.add((String) ite.next().get(Reflection.TABLE_SCHEM));
                 }
             }
 
@@ -298,7 +262,6 @@ public final class DataBaseModel {
         } catch (SQLException e) {
             throw new DataStoreException("Error occurred analyzing database model.\n" + e.getMessage(), e);
         } finally {
-            cacheSchemas = null;
             cacheTables = null;
             cacheColumns = null;
             cachePrimaryKeys = null;
@@ -343,279 +306,267 @@ public final class DataBaseModel {
 
     }
 
-    private SchemaMetaModel analyzeSchema(final String schemaName, final Connection cx) throws DataStoreException {
+    private SchemaMetaModel analyzeSchema(final String schemaName, final Connection cx) throws SQLException {
         final SchemaMetaModel schema = new SchemaMetaModel(schemaName);
-        try {
-            for (Map<String,Object> info : cacheTables.records) {
-                if (!Objects.equals(info.get(Table.TABLE_SCHEM), schemaName)) continue;
-                if (databaseTable != null && !databaseTable.isEmpty() && !Objects.equals(info.get(Table.TABLE_NAME),databaseTable)) continue;
-                final TableMetaModel table = analyzeTable(info,cx);
-                schema.tables.put(table.name, table);
-            }
-        } catch (SQLException e) {
-            throw new DataStoreException("Error occurred analyzing database model.", e);
+        for (Map<String,Object> info : cacheTables.records) {
+            if (!Objects.equals(info.get(Reflection.TABLE_SCHEM), schemaName)) continue;
+            if (databaseTable != null && !databaseTable.isEmpty() && !Objects.equals(info.get(Reflection.TABLE_NAME), databaseTable)) continue;
+            final TableMetaModel table = analyzeTable(info, cx);
+            schema.tables.put(table.name, table);
         }
         return schema;
     }
 
-    private TableMetaModel analyzeTable(final Map tableSet, final Connection cx) throws DataStoreException, SQLException {
-        final String schemaName = (String) tableSet.get(Table.TABLE_SCHEM);
-        final String tableName  = (String) tableSet.get(Table.TABLE_NAME);
-        final String tableType  = (String) tableSet.get(Table.TABLE_TYPE);
-
+    private TableMetaModel analyzeTable(final Map<String,Object> tableSet, final Connection cx) throws SQLException {
+        final String schemaName = (String) tableSet.get(Reflection.TABLE_SCHEM);
+        final String tableName  = (String) tableSet.get(Reflection.TABLE_NAME);
+        final String tableType  = (String) tableSet.get(Reflection.TABLE_TYPE);
         final TableMetaModel table = new TableMetaModel(tableName,tableType);
-
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        try {
+        // Explore all columns ----------------------------------------------
+        final Predicate<Map<String,Object>> tableFilter = (Map<String,Object> info) -> {
+            return Objects.equals(info.get(Reflection.TABLE_SCHEM), schemaName)
+                && Objects.equals(info.get(Reflection.TABLE_NAME), tableName);
+        };
 
-            // Explore all columns ----------------------------------------------
-            final Predicate<Map<String,Object>> tableFilter = (Map<String,Object> info) -> {
-                return Objects.equals(info.get(Table.TABLE_SCHEM), schemaName)
-                    && Objects.equals(info.get(Table.TABLE_NAME), tableName);
+        final Iterator<Map<String,Object>> ite1 = cacheColumns.records.stream().filter(tableFilter).iterator();
+        while (ite1.hasNext()) {
+            analyzeColumn(ite1.next(), cx, ftb.addAttribute(Object.class));
+        }
+
+        // Find primary key -------------------------------------------------
+        final List<ColumnMetaModel> cols = new ArrayList<>();
+        final Iterator<Map<String,Object>> pkIte = cachePrimaryKeys.records.stream().filter(tableFilter).iterator();
+        while (pkIte.hasNext()) {
+            final Map<String,Object> result = pkIte.next();
+            final String columnName = (String) result.get(Reflection.COLUMN_NAME);
+
+            final Predicate<Map<String,Object>> colFilter = (Map<String,Object> info) -> {
+                return Objects.equals(info.get(Reflection.COLUMN_NAME), columnName);
             };
+            final Iterator<Map<String,Object>> cite = cacheColumns.records.stream().filter(tableFilter.and(colFilter)).iterator();
+            final Map<String,Object> column = cite.next();
 
-            final Iterator<Map<String,Object>> ite1 = cacheColumns.records.stream().filter(tableFilter).iterator();
-            while (ite1.hasNext()) {
-                ftb.addAttribute(analyzeColumn(ite1.next(),cx));
+            final int sqlType = ((Number) column.get(Reflection.DATA_TYPE)).intValue();
+            final String sqlTypeName = (String) column.get(Reflection.TYPE_NAME);
+            Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
+
+            if (columnType == null) {
+                listeners.warning("No class for SQL type " + sqlType, null);
+                columnType = Object.class;
             }
 
-            // Find primary key -------------------------------------------------
-            final List<ColumnMetaModel> cols = new ArrayList<>();
-            final Iterator<Map<String,Object>> pkIte = cachePrimaryKeys.records.stream().filter(tableFilter).iterator();
-            while (pkIte.hasNext()) {
-                final Map<String,Object> result = pkIte.next();
-                final String columnName = (String) result.get(Column.COLUMN_NAME);
+            ColumnMetaModel col = null;
 
-                final Predicate<Map<String,Object>> colFilter = (Map<String,Object> info) -> {
-                    return Objects.equals(info.get(Column.COLUMN_NAME), columnName);
-                };
-                final Iterator<Map<String,Object>> cite = cacheColumns.records.stream().filter(tableFilter.and(colFilter)).iterator();
-                final Map<String,Object> column = cite.next();
-
-                final int sqlType = ((Number) column.get(Column.DATA_TYPE)).intValue();
-                final String sqlTypeName = (String) column.get(Column.TYPE_NAME);
-                Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
-
-                if (columnType == null) {
-                    listeners.warning("No class for SQL type " + sqlType, null);
-                    columnType = Object.class;
-                }
-
-                ColumnMetaModel col = null;
-
-                final String str = (String) column.get(Column.IS_AUTOINCREMENT);
-                if (Column.VALUE_YES.equalsIgnoreCase(str)) {
-                    col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.AUTO, null);
+            final String str = (String) column.get(Reflection.IS_AUTOINCREMENT);
+            if (VALUE_YES.equalsIgnoreCase(str)) {
+                col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.AUTO, null);
+            } else {
+                // TODO: need to distinguish "NO" and empty string.
+                final String sequenceName = dialect.getColumnSequence(cx,schemaName, tableName, columnName);
+                if (sequenceName != null) {
+                    col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType,
+                            sqlTypeName, columnType, ColumnMetaModel.Type.SEQUENCED,sequenceName);
                 } else {
-                    final String sequenceName = dialect.getColumnSequence(cx,schemaName, tableName, columnName);
-                    if (sequenceName != null) {
-                        col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType,
-                                sqlTypeName, columnType, ColumnMetaModel.Type.SEQUENCED,sequenceName);
-                    } else {
-                        col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType,
-                                sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
+                    col = new ColumnMetaModel(schemaName, tableName, columnName, sqlType,
+                            sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
+                }
+            }
+            cols.add(col);
+        }
+        /*
+         * Search indexes, they provide informations such as:
+         * - Unique indexes may indicate 1:1 relations in complexe features
+         * - Unique indexes can be used as primary key if no primary key are defined
+         */
+        final boolean pkEmpty = cols.isEmpty();
+        final List<String> names = new ArrayList<>();
+        final Map<String,List<String>> uniqueIndexes = new HashMap<>();
+        String indexname = null;
+        // We can't cache this one, seems to be a bug in the driver, it won't find anything for table name like '%'
+        cacheIndexInfos = new CachedResultSet(metadata.getIndexInfo(null, schemaName, tableName, true, false),
+                Reflection.TABLE_SCHEM,
+                Reflection.TABLE_NAME,
+                Reflection.COLUMN_NAME,
+                Reflection.INDEX_NAME);
+        final Iterator<Map<String,Object>> indexIte = cacheIndexInfos.records.stream().filter(tableFilter).iterator();
+        while (indexIte.hasNext()) {
+            final Map<String,Object> result = indexIte.next();
+            final String columnName = (String) result.get(Reflection.COLUMN_NAME);
+            final String idxName = (String) result.get(Reflection.INDEX_NAME);
+
+            List<String> lst = uniqueIndexes.get(idxName);
+            if (lst == null) {
+                lst = new ArrayList<>();
+                uniqueIndexes.put(idxName, lst);
+            }
+            lst.add(columnName);
+
+            if (pkEmpty) {
+                // We use a single index columns set as primary key
+                // We must not mix with other potential indexes.
+                if (indexname == null) {
+                    indexname = idxName;
+                } else if (!indexname.equals(idxName)) {
+                    continue;
+                }
+                names.add(columnName);
+            }
+        }
+
+        // For each unique index composed of one column add a flag on the property descriptor
+        for (Entry<String,List<String>> entry : uniqueIndexes.entrySet()) {
+            final List<String> columns = entry.getValue();
+            if (columns.size() == 1) {
+                String columnName = columns.get(0);
+                for (PropertyTypeBuilder desc : ftb.properties()) {
+                    if (desc.getName().tip().toString().equals(columnName)) {
+                        final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
+                        atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_UNIQUE).setDefaultValue(Boolean.TRUE);
                     }
                 }
+            }
+        }
+
+        if (pkEmpty && !names.isEmpty()) {
+            // Build a primary key from unique index
+            final Iterator<Map<String,Object>> ite = cacheColumns.records.stream().filter(tableFilter).iterator();
+            while (ite.hasNext()) {
+                final Map<String,Object> result = ite.next();
+                final String columnName = (String) result.get(Reflection.COLUMN_NAME);
+                if (!names.contains(columnName)) {
+                    continue;
+                }
+
+                final int sqlType = ((Number) result.get(Reflection.DATA_TYPE)).intValue();
+                final String sqlTypeName = (String) result.get(Reflection.TYPE_NAME);
+                final Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
+                final ColumnMetaModel col = new ColumnMetaModel(schemaName, tableName, columnName,
+                        sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
                 cols.add(col);
-            }
-            /*
-             * Search indexes, they provide informations such as:
-             * - Unique indexes may indicate 1:1 relations in complexe features
-             * - Unique indexes can be used as primary key if no primary key are defined
-             */
-            final boolean pkEmpty = cols.isEmpty();
-            final List<String> names = new ArrayList<>();
-            final Map<String,List<String>> uniqueIndexes = new HashMap<>();
-            String indexname = null;
-            // We can't cache this one, seems to be a bug in the driver, it won't find anything for table name like '%'
-            cacheIndexInfos = new CachedResultSet(metadata.getIndexInfo(null, schemaName, tableName, true, false),
-                    Index.TABLE_SCHEM,
-                    Index.TABLE_NAME,
-                    Index.COLUMN_NAME,
-                    Index.INDEX_NAME);
-            final Iterator<Map<String,Object>> indexIte = cacheIndexInfos.records.stream().filter(tableFilter).iterator();
-            while (indexIte.hasNext()) {
-                final Map<String,Object> result = indexIte.next();
-                final String columnName = (String) result.get(Index.COLUMN_NAME);
-                final String idxName = (String) result.get(Index.INDEX_NAME);
 
-                List<String> lst = uniqueIndexes.get(idxName);
-                if (lst == null) {
-                    lst = new ArrayList<>();
-                    uniqueIndexes.put(idxName, lst);
-                }
-                lst.add(columnName);
-
-                if (pkEmpty) {
-                    // We use a single index columns set as primary key
-                    // We must not mix with other potential indexes.
-                    if (indexname == null) {
-                        indexname = idxName;
-                    } else if (!indexname.equals(idxName)) {
-                        continue;
-                    }
-                    names.add(columnName);
-                }
-            }
-
-            // For each unique index composed of one column add a flag on the property descriptor
-            for (Entry<String,List<String>> entry : uniqueIndexes.entrySet()) {
-                final List<String> columns = entry.getValue();
-                if (columns.size() == 1) {
-                    String columnName = columns.get(0);
-                    for (PropertyTypeBuilder desc : ftb.properties()) {
-                        if (desc.getName().tip().toString().equals(columnName)) {
-                            final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
-                            atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_UNIQUE).setDefaultValue(Boolean.TRUE);
-                        }
-                    }
-                }
-            }
-
-            if (pkEmpty && !names.isEmpty()) {
-                // Build a primary key from unique index
-                final Iterator<Map<String,Object>> ite = cacheColumns.records.stream().filter(tableFilter).iterator();
-                while (ite.hasNext()) {
-                    final Map<String,Object> result = ite.next();
-                    final String columnName = (String) result.get(Column.COLUMN_NAME);
-                    if (!names.contains(columnName)) {
-                        continue;
-                    }
-
-                    final int sqlType = ((Number) result.get(Column.DATA_TYPE)).intValue();
-                    final String sqlTypeName = (String) result.get(Column.TYPE_NAME);
-                    final Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
-                    final ColumnMetaModel col = new ColumnMetaModel(schemaName, tableName, columnName,
-                            sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
-                    cols.add(col);
-
-                    // Set as identifier
-                    for (PropertyTypeBuilder desc : ftb.properties()) {
-                        if (desc.getName().tip().toString().equals(columnName)) {
-                            final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
-                            atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
-                            break;
-                        }
-                    }
-                }
-            }
-
-
-            if (cols.isEmpty()) {
-                if (Table.VALUE_TYPE_TABLE.equals(tableType)) {
-                    listeners.warning("No primary key found for " + tableName, null);
-                }
-            }
-            table.key = new PrimaryKey(tableName, cols);
-
-            // Mark primary key columns
-            for (PropertyTypeBuilder desc : ftb.properties()) {
-                for (ColumnMetaModel col : cols) {
-                    if (desc.getName().tip().toString().equals(col.name)) {
+                // Set as identifier
+                for (PropertyTypeBuilder desc : ftb.properties()) {
+                    if (desc.getName().tip().toString().equals(columnName)) {
                         final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
                         atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
                         break;
                     }
                 }
             }
+        }
 
 
-            // Find imported keys -----------------------------------------------
-            final Predicate<Map<String,Object>> fkFilter = (Map<String,Object> info) -> {
-                return Objects.equals(info.get(ImportedKey.FKTABLE_SCHEM), schemaName)
-                    && Objects.equals(info.get(ImportedKey.FKTABLE_NAME), tableName);
-            };
-            Iterator<Map<String,Object>> ite = cacheImportedKeys.records.stream().filter(fkFilter).iterator();
-            while (ite.hasNext()) {
-                final Map<String,Object> result = ite.next();
-                String relationName = (String) result.get(ImportedKey.PK_NAME);
-                if (relationName == null) relationName = (String) result.get(ImportedKey.FK_NAME);
-                final String localColumn = (String) result.get(ImportedKey.FKCOLUMN_NAME);
-                final String refSchemaName = (String) result.get(ImportedKey.PKTABLE_SCHEM);
-                final String refTableName = (String) result.get(ImportedKey.PKTABLE_NAME);
-                final String refColumnName = (String) result.get(ImportedKey.PKCOLUMN_NAME);
-                final int deleteRule = ((Number) result.get(ImportedKey.DELETE_RULE)).intValue();
-                final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
-                final RelationMetaModel relation = new RelationMetaModel(relationName,localColumn,
-                        refSchemaName, refTableName, refColumnName, true, deleteCascade);
-                table.importedKeys.add(relation);
+        if (cols.isEmpty()) {
+            if (TYPE_TABLE.equals(tableType)) {
+                listeners.warning("No primary key found for " + tableName, null);
+            }
+        }
+        table.key = new PrimaryKey(tableName, cols);
 
-                if (refSchemaName!=null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
-
-                // Set the information
-                for (PropertyTypeBuilder desc : ftb.properties()) {
-                    if (desc.getName().tip().toString().equals(localColumn)) {
-                        final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
-                        atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_RELATION).setDefaultValue(relation);
-                        break;
-                    }
+        // Mark primary key columns
+        for (PropertyTypeBuilder desc : ftb.properties()) {
+            for (ColumnMetaModel col : cols) {
+                if (desc.getName().tip().toString().equals(col.name)) {
+                    final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
+                    atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+                    break;
                 }
             }
-
-            // Find exported keys -----------------------------------------------
-            final Predicate<Map<String,Object>> ekFilter = (Map<String,Object> info) -> {
-                return Objects.equals(info.get(ImportedKey.PKTABLE_SCHEM), schemaName)
-                    && Objects.equals(info.get(ImportedKey.PKTABLE_NAME), tableName);
-            };
-            ite = cacheExportedKeys.records.stream().filter(ekFilter).iterator();
-            while (ite.hasNext()) {
-                final Map<String,Object> result = ite.next();
-                String relationName = (String) result.get(ExportedKey.FKCOLUMN_NAME);
-                if (relationName == null) relationName = (String) result.get(ExportedKey.FK_NAME);
-                final String localColumn = (String) result.get(ExportedKey.PKCOLUMN_NAME);
-                final String refSchemaName = (String) result.get(ExportedKey.FKTABLE_SCHEM);
-                final String refTableName = (String) result.get(ExportedKey.FKTABLE_NAME);
-                final String refColumnName = (String) result.get(ExportedKey.FKCOLUMN_NAME);
-                final int deleteRule = ((Number) result.get(ImportedKey.DELETE_RULE)).intValue();
-                final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
-                table.exportedKeys.add(new RelationMetaModel(relationName, localColumn,
-                        refSchemaName, refTableName, refColumnName, false, deleteCascade));
-
-                if (refSchemaName != null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
-            }
-
-            // Find parent table if any -----------------------------------------
-//            if(handleSuperTableMetadata == null || handleSuperTableMetadata){
-//                try{
-//                    result = metadata.getSuperTables(null, schemaName, tableName);
-//                    while (result.next()) {
-//                        final String parentTable = result.getString(SuperTable.SUPERTABLE_NAME);
-//                        table.parents.add(parentTable);
-//                    }
-//                }catch(final SQLException ex){
-//                    //not implemented by database
-//                    handleSuperTableMetadata = Boolean.FALSE;
-//                    store.getLogger().log(Level.INFO, "Database does not handle getSuperTable, feature type hierarchy will be ignored.");
-//                }finally{
-//                    closeSafe(store.getLogger(),result);
-//                }
-//            }
-
-        } catch (SQLException e) {
-            throw new DataStoreException("Error occurred analyzing table: " + tableName, e);
         }
+
+
+        // Find imported keys -----------------------------------------------
+        final Predicate<Map<String,Object>> fkFilter = (Map<String,Object> info) -> {
+            return Objects.equals(info.get(Reflection.FKTABLE_SCHEM), schemaName)
+                && Objects.equals(info.get(Reflection.FKTABLE_NAME), tableName);
+        };
+        Iterator<Map<String,Object>> ite = cacheImportedKeys.records.stream().filter(fkFilter).iterator();
+        while (ite.hasNext()) {
+            final Map<String,Object> result = ite.next();
+            String relationName = (String) result.get(Reflection.PK_NAME);
+            if (relationName == null) relationName = (String) result.get(Reflection.FK_NAME);
+            final String localColumn = (String) result.get(Reflection.FKCOLUMN_NAME);
+            final String refSchemaName = (String) result.get(Reflection.PKTABLE_SCHEM);
+            final String refTableName = (String) result.get(Reflection.PKTABLE_NAME);
+            final String refColumnName = (String) result.get(Reflection.PKCOLUMN_NAME);
+            final int deleteRule = ((Number) result.get(Reflection.DELETE_RULE)).intValue();
+            final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
+            final RelationMetaModel relation = new RelationMetaModel(relationName,localColumn,
+                    refSchemaName, refTableName, refColumnName, true, deleteCascade);
+            table.importedKeys.add(relation);
+
+            if (refSchemaName!=null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
+
+            // Set the information
+            for (PropertyTypeBuilder desc : ftb.properties()) {
+                if (desc.getName().tip().toString().equals(localColumn)) {
+                    final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
+                    atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_RELATION).setDefaultValue(relation);
+                    break;
+                }
+            }
+        }
+
+        // Find exported keys -----------------------------------------------
+        final Predicate<Map<String,Object>> ekFilter = (Map<String,Object> info) -> {
+            return Objects.equals(info.get(Reflection.PKTABLE_SCHEM), schemaName)
+                && Objects.equals(info.get(Reflection.PKTABLE_NAME), tableName);
+        };
+        ite = cacheExportedKeys.records.stream().filter(ekFilter).iterator();
+        while (ite.hasNext()) {
+            final Map<String,Object> result = ite.next();
+            String relationName = (String) result.get(Reflection.FKCOLUMN_NAME);
+            if (relationName == null) relationName = (String) result.get(Reflection.FK_NAME);
+            final String localColumn = (String) result.get(Reflection.PKCOLUMN_NAME);
+            final String refSchemaName = (String) result.get(Reflection.FKTABLE_SCHEM);
+            final String refTableName = (String) result.get(Reflection.FKTABLE_NAME);
+            final String refColumnName = (String) result.get(Reflection.FKCOLUMN_NAME);
+            final int deleteRule = ((Number) result.get(Reflection.DELETE_RULE)).intValue();
+            final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
+            table.exportedKeys.add(new RelationMetaModel(relationName, localColumn,
+                    refSchemaName, refTableName, refColumnName, false, deleteCascade));
+
+            if (refSchemaName != null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
+        }
+
+        // Find parent table if any -----------------------------------------
+//        if (handleSuperTableMetadata == null || handleSuperTableMetadata) {
+//            try {
+//                result = metadata.getSuperTables(null, schemaName, tableName);
+//                while (result.next()) {
+//                    final String parentTable = result.getString(SuperTable.SUPERTABLE_NAME);
+//                    table.parents.add(parentTable);
+//                }
+//            } catch (SQLException ex) {
+//                //not implemented by database
+//                handleSuperTableMetadata = Boolean.FALSE;
+//                store.getLogger().log(Level.INFO, "Database does not handle getSuperTable, feature type hierarchy will be ignored.");
+//            } finally {
+//                closeSafe(store.getLogger(),result);
+//            }
+//        }
+
         ftb.setName(tableName);
         table.tableType = ftb;
         return table;
     }
 
-    private AttributeType<?> analyzeColumn(final Map<String,Object> columnSet, final Connection cx) throws SQLException, DataStoreException{
-        final String schemaName     = (String)  columnSet.get(Column.TABLE_SCHEM);
-        final String tableName      = (String)  columnSet.get(Column.TABLE_NAME);
-        final String columnName     = (String)  columnSet.get(Column.COLUMN_NAME);
-        final int columnSize        = ((Number) columnSet.get(Column.COLUMN_SIZE)).intValue();
-        final int columnDataType    = ((Number) columnSet.get(Column.DATA_TYPE)).intValue();
-        final String columnTypeName = (String)  columnSet.get(Column.TYPE_NAME);
-        final String columnNullable = (String)  columnSet.get(Column.IS_NULLABLE);
-        final SingleAttributeTypeBuilder atb = new SingleAttributeTypeBuilder();
+    private AttributeType<?> analyzeColumn(final Map<String,Object> columnSet, final Connection cx, final AttributeTypeBuilder<?> atb)
+            throws SQLException
+    {
+        final String schemaName     = (String)  columnSet.get(Reflection.TABLE_SCHEM);
+        final String tableName      = (String)  columnSet.get(Reflection.TABLE_NAME);
+        final String columnName     = (String)  columnSet.get(Reflection.COLUMN_NAME);
+        final int columnSize        = ((Number) columnSet.get(Reflection.COLUMN_SIZE)).intValue();
+        final int columnDataType    = ((Number) columnSet.get(Reflection.DATA_TYPE)).intValue();
+        final String columnTypeName = (String)  columnSet.get(Reflection.TYPE_NAME);
+        final String columnNullable = (String)  columnSet.get(Reflection.IS_NULLABLE);
         atb.setName(columnName);
-        atb.setLength(columnSize);
-        try {
-            dialect.decodeColumnType(atb, cx, columnTypeName, columnDataType, schemaName, tableName, columnName);
-        } catch (SQLException e) {
-            throw new DataStoreException("Error occurred analyzing column: " + columnName, e);
-        }
-        atb.setMinimumOccurs(Column.VALUE_NO.equalsIgnoreCase(columnNullable) ? 1 : 0);
+        atb.setMaximalLength(columnSize);
+        dialect.decodeColumnType(atb, cx, columnTypeName, columnDataType, schemaName, tableName, columnName);
+        // TODO: need to distinguish "YES" and empty string?
+        atb.setMinimumOccurs(VALUE_NO.equalsIgnoreCase(columnNullable) ? 1 : 0);
         atb.setMaximumOccurs(1);
         return atb.build();
     }
@@ -623,7 +574,7 @@ public final class DataBaseModel {
     /**
      * Analyze the metadata of the ResultSet to rebuild a feature type.
      */
-    public FeatureType analyzeResult(final ResultSet result, final String name) throws SQLException, DataStoreException{
+    final FeatureType analyzeResult(final ResultSet result, final String name) throws SQLException, DataStoreException {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName(name);
 
@@ -652,15 +603,16 @@ public final class DataBaseModel {
                     }
                 }
             }
-
-            if (desc == null) {
-                //could not find the original type
-                //this column must be calculated
-                final SingleAttributeTypeBuilder atb = new SingleAttributeTypeBuilder();
+            if (desc != null) {
+                ftb.addProperty(desc);
+            } else {
+                // could not find the original type
+                // this column must be calculated
+                final AttributeTypeBuilder<?> atb = ftb.addAttribute(Object.class);
 
                 final int nullable = metadata.isNullable(i);
                 atb.setName(columnLabel);
-                atb.setMinimumOccurs(nullable == metadata.columnNullable ? 0 : 1);
+                atb.setMinimumOccurs(nullable == ResultSetMetaData.columnNullable ? 0 : 1);
                 atb.setMaximumOccurs(1);
                 atb.setName(columnLabel);
 
@@ -676,9 +628,7 @@ public final class DataBaseModel {
                 } catch (SQLException e) {
                     throw new DataStoreException("Error occurred analyzing column : " + columnName, e);
                 }
-                desc = atb.build();
             }
-            ftb.addProperty(desc);
         }
         return ftb.build();
     }
@@ -709,9 +659,9 @@ public final class DataBaseModel {
                     if (Geometries.isKnownType(binding)) {
 
                         final Predicate<Map<?,?>> colFilter = (Map<?,?> info) -> {
-                            return Objects.equals(info.get(Table.TABLE_SCHEM), schema.name)
-                                && Objects.equals(info.get(Table.TABLE_NAME), tableName)
-                                && Objects.equals(info.get(Column.COLUMN_NAME), name);
+                            return Objects.equals(info.get(Reflection.TABLE_SCHEM), schema.name)
+                                && Objects.equals(info.get(Reflection.TABLE_NAME), tableName)
+                                && Objects.equals(info.get(Reflection.COLUMN_NAME), name);
                         };
                         final Map<String,Object> metas = cacheColumns.records.stream().filter(colFilter).findFirst().get();
 
@@ -730,9 +680,9 @@ public final class DataBaseModel {
                         }
                     } else if (Coverage.class.isAssignableFrom(binding)) {
                         final Predicate<Map<String,Object>> colFilter = (Map<String,Object> info) -> {
-                            return Objects.equals(info.get(Table.TABLE_SCHEM), schema.name)
-                                && Objects.equals(info.get(Table.TABLE_NAME), tableName)
-                                && Objects.equals(info.get(Column.COLUMN_NAME), name);
+                            return Objects.equals(info.get(Reflection.TABLE_SCHEM), schema.name)
+                                && Objects.equals(info.get(Reflection.TABLE_NAME), tableName)
+                                && Objects.equals(info.get(Reflection.COLUMN_NAME), name);
                         };
                         final Map<String,Object> metas = cacheColumns.records.stream().filter(colFilter).findFirst().get();
 

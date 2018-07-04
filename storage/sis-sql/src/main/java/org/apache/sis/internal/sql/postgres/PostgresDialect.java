@@ -23,16 +23,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.sql.feature.SingleAttributeTypeBuilder;
 import org.apache.sis.internal.sql.feature.ColumnMetaModel;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.sql.feature.Dialect;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
  * Implements PostgreSQL-specific functionalities.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -51,27 +51,12 @@ final class PostgresDialect extends Dialect {
     }
 
     @Override
-    public boolean supportGlobalMetadata() {
-        return true;
-    }
-
-    @Override
     public boolean isTableIgnored(String name) {
         return IGNORE_TABLES.contains(name.toLowerCase());
     }
 
     @Override
     public Class<?> getJavaType(int sqlType, String sqlTypeName) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void encodeColumnName(StringBuilder sql, String name) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void encodeSchemaAndTableName(StringBuilder sql, String databaseSchema, String tableName) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -86,12 +71,12 @@ final class PostgresDialect extends Dialect {
     }
 
     @Override
-    public void decodeColumnType(SingleAttributeTypeBuilder atb, Connection cx, String typeName, int datatype, String schemaName, String tableName, String columnName) throws SQLException {
+    public void decodeColumnType(AttributeTypeBuilder<?> atb, Connection cx, String typeName, int datatype, String schemaName, String tableName, String columnName) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void decodeGeometryColumnType(SingleAttributeTypeBuilder atb, Connection cx, ResultSet rs, int columnIndex, boolean customquery) throws SQLException {
+    public void decodeGeometryColumnType(AttributeTypeBuilder<?> atb, Connection cx, ResultSet rs, int columnIndex, boolean customquery) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
