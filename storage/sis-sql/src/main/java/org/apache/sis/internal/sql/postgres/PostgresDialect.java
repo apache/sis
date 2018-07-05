@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.sql.feature.ColumnMetaModel;
@@ -81,12 +80,7 @@ final class PostgresDialect extends Dialect {
     }
 
     @Override
-    public Integer getGeometrySRID(String schemaName, String tableName, String columnName, Map<String, Object> metas, Connection cx) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public CoordinateReferenceSystem createCRS(int srid, Connection cx) throws SQLException {
+    public CoordinateReferenceSystem createGeometryCRS(ResultSet reflect) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

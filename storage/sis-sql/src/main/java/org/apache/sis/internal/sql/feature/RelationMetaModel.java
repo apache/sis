@@ -22,7 +22,7 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * Description of a relation between two tables.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module

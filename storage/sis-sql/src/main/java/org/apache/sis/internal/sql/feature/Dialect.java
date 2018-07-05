@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Map;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.storage.DataStoreException;
@@ -114,27 +114,13 @@ public abstract class Dialect {
             final ResultSet rs, final int columnIndex, boolean customquery) throws SQLException;
 
     /**
-     * Gets the geometric field SRID.
+     * Creates the CRS associated to the the geometry SRID of a given column. The {@code reflect} argument
+     * is the result of a call to {@link DatabaseMetaData#getColumns(String, String, String, String)
+     * DatabaseMetaData.getColumns(…)} with the cursor positioned on the row to process.
      *
-     * @param  schema  name of the database schema.
-     * @param  table   name of the database table.
-     * @param  column  name of the database column.
-     * @param  cx      connection to the database.
+     * @param  reflect  the result of {@link DatabaseMetaData#getColumns DatabaseMetaData.getColumns(…)}.
      * @return CoordinateReferenceSystem ID in the database
      * @throws SQLException if a JDBC error occurred while executing a statement.
      */
-    public abstract Integer getGeometrySRID(final String schema, final String table,
-            final String column, Map<String,Object> metas, final Connection cx) throws SQLException;
-
-    /**
-     * Gets a coordinate reference system from database SRID.
-     *
-     * @param  srid  Coordinate Reference System identifier in the database.
-     * @param  cx    connection to the database.
-     * @return The coordinate reference system for the given identifier.
-     * @throws SQLException if a JDBC error occurred while executing a statement.
-     *
-     * @todo what happen if no CRS is found for the given identifier?
-     */
-    public abstract CoordinateReferenceSystem createCRS(final int srid, final Connection cx) throws SQLException;
+    public abstract CoordinateReferenceSystem createGeometryCRS(ResultSet reflect) throws SQLException;
 }

@@ -38,13 +38,6 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
  */
 public final class ColumnMetaModel {
     /**
-     * Description of the attribute holding native SRID associated to a certain descriptor.
-     */
-    static final AttributeType<Integer> JDBC_PROPERTY_SRID = new DefaultAttributeType<>(
-            Collections.singletonMap(DefaultAttributeType.NAME_KEY, "nativeSRID"),
-            Integer.class, 1, 1, null);
-
-    /**
      * Description of the attribute telling whether a field is unique in the database.
      */
     static final AttributeType<Boolean> JDBC_PROPERTY_UNIQUE = new DefaultAttributeType<>(
