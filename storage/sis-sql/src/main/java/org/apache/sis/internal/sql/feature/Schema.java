@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.TreeTable;
 
 
 /**
@@ -29,17 +31,17 @@ import java.util.Map;
  * @since   1.0
  * @module
  */
-final class SchemaMetaModel extends MetaModel {
+final class Schema extends MetaModel {
     /**
      * The tables in the schema.
      */
-    final Map<String,TableMetaModel> tables;
+    final Map<String,Table> tables;
 
     /**
      * Creates a new schema of the given name.
      * It is caller responsibility to populate the {@link #tables} map.
      */
-    SchemaMetaModel(final String name) {
+    Schema(final String name) {
         super(name);
         tables = new HashMap<>();
     }
@@ -47,24 +49,27 @@ final class SchemaMetaModel extends MetaModel {
     /**
      * Returns all tables in this schema.
      */
-    Collection<TableMetaModel> getTables() {
+    Collection<Table> getTables() {
         return tables.values();
     }
 
     /**
      * Returns the table of the given name, or {@code null} if none.
      */
-    TableMetaModel getTable(final String name){
+    Table getTable(final String name){
         return tables.get(name);
     }
 
     /**
-     * Returns a string representation of this schema for debugging purposes.
+     * Creates a tree representation of this object for debugging purpose.
+     *
+     * @param  parent  the parent node where to add the tree representation.
      */
+    @Debug
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder(100);
-        appendTree(name, getTables(), sb, System.lineSeparator());
-        return sb.toString();
+    TreeTable.Node appendTo(final TreeTable.Node parent) {
+        final TreeTable.Node node = super.appendTo(parent);
+        appendAll(parent, null, getTables());
+        return node;
     }
 }

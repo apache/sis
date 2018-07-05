@@ -41,18 +41,18 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.storage.sql.SQLStore;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureNaming;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * Represent the structure of the database.
+ * Represent the structure of features in the database.
  * The work done here is similar to reverse engineering.
  *
  * @author  Johann Sorel (Geomatys)
@@ -60,12 +60,13 @@ import org.apache.sis.util.logging.WarningListeners;
  * @since   1.0
  * @module
  */
-public final class DataBaseModel {
-
-    private static final String TYPE_TABLE = "TABLE";
-    private static final String TYPE_VIEW  = "VIEW";
-    private static final String VALUE_YES = "YES";
-    private static final String VALUE_NO = "NO";
+public final class Database {
+    /**
+     * Possible value for the {@value Reflection#TABLE_TYPE} column in the {@link ResultSet}
+     * returned by {@link DatabaseMetaData#getTables(String, String, String, String[])}.
+     * Also a possible value for the last argument of above-cited method.
+     */
+    private static final String TABLE = "TABLE", VIEW = "VIEW";
 
     /**
      * Feature type used to mark types which are sub-types of others.
@@ -78,113 +79,57 @@ public final class DataBaseModel {
         SUBTYPE = ftb.build();
     }
 
-    private final SQLStore store;
-    private final Dialect dialect;
-    private final String databaseSchema;
-    private final String databaseTable;
+    private final SpatialFunctions functions;
+    private final FeatureNaming<PrimaryKey> pkIndex;
+    private final FeatureNaming<FeatureType> typeIndex;
+    private final Map<String,Schema> schemas;
 
-    private FeatureNaming<PrimaryKey> pkIndex = new FeatureNaming<>();
-    private Set<GenericName> typeNames = new HashSet<>();
-    private FeatureNaming<FeatureType> typeIndex = new FeatureNaming<>();
-    private Map<String,SchemaMetaModel> schemas;
-    private Set<GenericName> nameCache;
-
-    //various cache while analyzing model
-    private DatabaseMetaData metadata;
-    //this set contains schema names which are needed to rebuild relations
-    private Set<String> visitedSchemas;
-    private Set<String> requieredSchemas;
-
-    private final WarningListeners<DataStore> listeners;
-
-    public DataBaseModel(final SQLStore store, final Dialect dialect, final String schema, final String table, final WarningListeners<DataStore> listeners) {
+    public Database(final SQLStore store, final SpatialFunctions functions, final String schema, final String table,
+            final List<String> addWarningsTo) throws SQLException, IllegalNameException
+    {
         if (table != null) {
             ArgumentChecks.ensureNonEmpty("table", table);
         }
-        this.store          = store;
-        this.dialect        = dialect;
-        this.databaseSchema = schema;
-        this.databaseTable  = table;
-        this.listeners      = listeners;
+        this.functions = functions;
+        pkIndex = new FeatureNaming<>();
+        typeIndex = new FeatureNaming<>();
+        schemas = new HashMap<>();
+        analyze(store, schema, table, addWarningsTo);
     }
 
-    private Collection<SchemaMetaModel> getSchemaMetaModels() throws SQLException, DataStoreException {
-        if (schemas == null) {
-            analyze();
-        }
+    private Collection<Schema> getSchemaMetaModels() {
         return schemas.values();
     }
 
-    private SchemaMetaModel getSchemaMetaModel(String name) throws SQLException, DataStoreException {
-        if (schemas == null) {
-            analyze();
-        }
+    private Schema getSchemaMetaModel(String name) {
         return schemas.get(name);
     }
 
-    /**
-     * Clear the model cache. A new database analyze will be made the next time it is needed.
-     */
-    private synchronized void clearCache() {
-        pkIndex   = new FeatureNaming<>();
-        typeIndex = new FeatureNaming<>();
-        typeNames = new HashSet<>();
-        nameCache = null;
-        schemas   = null;
-    }
-
-    private PrimaryKey getPrimaryKey(final String featureTypeName) throws SQLException, DataStoreException {
-        if (schemas == null) {
-            analyze();
-        }
+    private PrimaryKey getPrimaryKey(final SQLStore store, final String featureTypeName) throws IllegalNameException {
         return pkIndex.get(store, featureTypeName);
     }
 
-    private synchronized Set<GenericName> getNames() throws SQLException, DataStoreException {
-        Set<GenericName> ref = nameCache;
-        if (ref == null) {
-            analyze();
-            final Set<GenericName> names = new HashSet<>();
-            for (GenericName name : typeNames) {
-                final FeatureType type = typeIndex.get(store, name.toString());
-                if (SUBTYPE.isAssignableFrom(type)) continue;
-                if (dialect.isTableIgnored(name.tip().toString())) continue;
-                names.add(name);
-            }
-            ref = Collections.unmodifiableSet(names);
-            nameCache = ref;
-        }
-        return ref;
-    }
-
-    public FeatureType getFeatureType(final String typeName) throws SQLException, DataStoreException {
-        if (schemas == null) {
-            analyze();
-        }
+    public FeatureType getFeatureType(final SQLStore store, final String typeName) throws IllegalNameException {
         return typeIndex.get(store, typeName);
     }
 
     /**
      * Explores all tables and views then recreate a complex feature model from relations.
      */
-    private synchronized void analyze() throws SQLException, DataStoreException {
-        if (schemas != null) {
-            return;                         // Already analyzed
-        }
-        clearCache();
-        schemas = new HashMap<>();
-        visitedSchemas = new HashSet<>();
-        requieredSchemas = new HashSet<>();
-
+    private synchronized void analyze(final SQLStore store, final String schemaName, final String tableName, final List<String> addWarningsTo)
+            throws SQLException, IllegalNameException
+    {
         try (Connection cx = store.getDataSource().getConnection()) {
-            metadata = cx.getMetaData();
+            final DatabaseMetaData metadata = cx.getMetaData();
+            final Set<String> requieredSchemas = new HashSet<>();
+            final Set<String> visitedSchemas = new HashSet<>();
             /*
              * Schema names available in the database:
              * 1. TABLE_SCHEM   : String  =>  schema name
              * 2. TABLE_CATALOG : String  =>  catalog name (may be null)
              */
-            if (databaseSchema != null) {
-                requieredSchemas.add(databaseSchema);
+            if (schemaName != null) {
+                requieredSchemas.add(schemaName);
             } else try (ResultSet reflect = metadata.getSchemas()) {
                 while (reflect.next()) {
                     requieredSchemas.add(reflect.getString(Reflection.TABLE_SCHEM));        // TODO: use schemas in getTables instead.
@@ -198,41 +143,35 @@ public final class DataBaseModel {
                 visitedSchemas.add(sn);
                 requieredSchemas.remove(sn);
                 // TODO: escape with metadata.getSearchStringEscape().
-                final SchemaMetaModel schema = analyzeSchema(sn, databaseTable);
+                final Schema schema = analyzeSchema(metadata, sn, tableName, requieredSchemas, visitedSchemas, addWarningsTo);
                 schemas.put(schema.name, schema);
             }
-            reverseSimpleFeatureTypes();
-        } finally {
-            metadata = null;
-            visitedSchemas = null;
-            requieredSchemas = null;
+            reverseSimpleFeatureTypes(metadata);
         }
         /*
          * Build indexes.
          */
-        final String baseSchemaName = databaseSchema;
-        final Collection<SchemaMetaModel> candidates;
-        if (baseSchemaName == null) {
+        final Collection<Schema> candidates;
+        if (schemaName == null) {
             candidates = getSchemaMetaModels();             // Take all schemas.
         } else {
-            candidates = Collections.singleton(getSchemaMetaModel(baseSchemaName));
+            candidates = Collections.singleton(getSchemaMetaModel(schemaName));
         }
-        for (SchemaMetaModel schema : candidates) {
+        for (Schema schema : candidates) {
            if (schema != null) {
-                for (TableMetaModel table : schema.getTables()) {
+                for (Table table : schema.getTables()) {
 
-                    final FeatureTypeBuilder ft = table.getType(TableMetaModel.View.SIMPLE_FEATURE_TYPE);
+                    final FeatureTypeBuilder ft = table.getType(Table.View.SIMPLE_FEATURE_TYPE);
                     final GenericName name = ft.getName();
                     pkIndex.add(store, name, table.key);
                     if (table.isSubType()) {
                         // We don't show subtype, they are part of other feature types, add a flag to identify then
                         ft.setSuperTypes(SUBTYPE);
                     }
-                    typeNames.add(name);
                     typeIndex.add(store, name, ft.build());
                  }
             } else {
-                throw new DataStoreException("Specifed schema " + baseSchemaName + " does not exist.");
+                throw new SQLException("Specifed schema " + schemaName + " does not exist.");
             }
         }
     }
@@ -240,41 +179,47 @@ public final class DataBaseModel {
     /**
      * @param  schemaPattern  schema name with "%" and "_" interpreted as wildcards, or {@code null} for all schemas.
      */
-    private SchemaMetaModel analyzeSchema(final String schemaPattern, final String tableNamePattern) throws SQLException, DataStoreException {
-        final SchemaMetaModel schema = new SchemaMetaModel(schemaPattern);
+    private Schema analyzeSchema(final DatabaseMetaData metadata, final String schemaPattern, final String tableNamePattern,
+            final Set<String> requieredSchemas, final Set<String> visitedSchemas, final List<String> addWarningsTo)
+            throws SQLException, IllegalNameException
+    {
+        final Schema schema = new Schema(schemaPattern);
         /*
          * Description of the tables available:
          * 1. TABLE_SCHEM : String  =>  table schema (may be null)
          * 2. TABLE_NAME  : String  =>  table name
          * 3. TABLE_TYPE  : String  =>  table type (typically "TABLE" or "VIEW").
          */
-        try (ResultSet reflect = metadata.getTables(null, schemaPattern, tableNamePattern, new String[] {TYPE_TABLE, TYPE_VIEW})) {   // TODO: use metadata.getTableTypes()
+        try (ResultSet reflect = metadata.getTables(null, schemaPattern, tableNamePattern, new String[] {TABLE, VIEW})) {   // TODO: use metadata.getTableTypes()
             while (reflect.next()) {
-                final TableMetaModel table = analyzeTable(reflect);
+                final Table table = analyzeTable(metadata, reflect, requieredSchemas, visitedSchemas, addWarningsTo);
                 schema.tables.put(table.name, table);
             }
         }
         return schema;
     }
 
-    private TableMetaModel analyzeTable(final ResultSet tableSet) throws SQLException, DataStoreException {
+    private Table analyzeTable(final DatabaseMetaData metadata, final ResultSet tableSet,
+            final Set<String> requieredSchemas, final Set<String> visitedSchemas, final List<String> addWarningsTo)
+            throws SQLException, IllegalNameException
+    {
         final String schemaName = tableSet.getString(Reflection.TABLE_SCHEM);
         final String tableName  = tableSet.getString(Reflection.TABLE_NAME);
         final String tableType  = tableSet.getString(Reflection.TABLE_TYPE);
-        final TableMetaModel table = new TableMetaModel(tableName, tableType);
+        final Table table = new Table(tableName, tableType);
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         /*
          * Explore all columns.
          */
         try (ResultSet reflect = metadata.getColumns(null, schemaName, tableName, null)) {
             while (reflect.next()) {
-                analyzeColumn(reflect, ftb.addAttribute(Object.class));
+                analyzeColumn(metadata, reflect, ftb.addAttribute(Object.class));
             }
         }
         /*
          * Find primary keys.
          */
-        final List<ColumnMetaModel> cols = new ArrayList<>();
+        final List<Column> cols = new ArrayList<>();
         try (ResultSet rp = metadata.getPrimaryKeys(null, schemaName, tableName)) {
             while (rp.next()) {
                 final String columnNamePattern = rp.getString(Reflection.COLUMN_NAME);
@@ -283,24 +228,24 @@ public final class DataBaseModel {
                     while (reflect.next()) {                                        // Should loop exactly once.
                         final int sqlType = reflect.getInt(Reflection.DATA_TYPE);
                         final String sqlTypeName = reflect.getString(Reflection.TYPE_NAME);
-                        Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
+                        Class<?> columnType = functions.getJavaType(sqlType, sqlTypeName);
                         if (columnType == null) {
-                            listeners.warning("No class for SQL type " + sqlType, null);
+                            addWarningsTo.add("No class for SQL type " + sqlType);
                             columnType = Object.class;
                         }
-                        ColumnMetaModel col;
-                        final String str = reflect.getString(Reflection.IS_AUTOINCREMENT);
-                        if (VALUE_YES.equalsIgnoreCase(str)) {
-                            col = new ColumnMetaModel(schemaName, tableName, columnNamePattern, sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.AUTO, null);
+                        Column col;
+                        final Boolean b = SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT));
+                        if (b != null && b) {
+                            col = new Column(schemaName, tableName, columnNamePattern, sqlType, sqlTypeName, columnType, Column.Type.AUTO, null);
                         } else {
                             // TODO: need to distinguish "NO" and empty string.
-                            final String sequenceName = dialect.getColumnSequence(metadata.getConnection(), schemaName, tableName, columnNamePattern);
+                            final String sequenceName = functions.getColumnSequence(metadata.getConnection(), schemaName, tableName, columnNamePattern);
                             if (sequenceName != null) {
-                                col = new ColumnMetaModel(schemaName, tableName, columnNamePattern, sqlType,
-                                        sqlTypeName, columnType, ColumnMetaModel.Type.SEQUENCED,sequenceName);
+                                col = new Column(schemaName, tableName, columnNamePattern, sqlType,
+                                        sqlTypeName, columnType, Column.Type.SEQUENCED,sequenceName);
                             } else {
-                                col = new ColumnMetaModel(schemaName, tableName, columnNamePattern, sqlType,
-                                        sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
+                                col = new Column(schemaName, tableName, columnNamePattern, sqlType,
+                                        sqlTypeName, columnType, Column.Type.PROVIDED, null);
                             }
                         }
                         cols.add(col);
@@ -352,7 +297,7 @@ public final class DataBaseModel {
                 for (PropertyTypeBuilder desc : ftb.properties()) {
                     if (desc.getName().tip().toString().equals(columnName)) {
                         final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
-                        atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_UNIQUE).setDefaultValue(Boolean.TRUE);
+                        atb.addCharacteristic(Column.JDBC_PROPERTY_UNIQUE).setDefaultValue(Boolean.TRUE);
                     }
                 }
             }
@@ -367,9 +312,9 @@ public final class DataBaseModel {
                     if (names.contains(columnName)) {
                         final int sqlType = reflect.getInt(Reflection.DATA_TYPE);
                         final String sqlTypeName = reflect.getString(Reflection.TYPE_NAME);
-                        final Class<?> columnType = dialect.getJavaType(sqlType, sqlTypeName);
-                        final ColumnMetaModel col = new ColumnMetaModel(schemaName, tableName, columnName,
-                                sqlType, sqlTypeName, columnType, ColumnMetaModel.Type.PROVIDED, null);
+                        final Class<?> columnType = functions.getJavaType(sqlType, sqlTypeName);
+                        final Column col = new Column(schemaName, tableName, columnName,
+                                sqlType, sqlTypeName, columnType, Column.Type.PROVIDED, null);
                         cols.add(col);
                         /*
                          * Set as identifier
@@ -386,8 +331,8 @@ public final class DataBaseModel {
             }
         }
         if (cols.isEmpty()) {
-            if (TYPE_TABLE.equals(tableType)) {
-                listeners.warning("No primary key found for " + tableName, null);
+            if (TABLE.equals(tableType)) {
+                addWarningsTo.add("No primary key found for " + tableName);
             }
         }
         table.key = new PrimaryKey(tableName, cols);
@@ -395,7 +340,7 @@ public final class DataBaseModel {
          * Mark primary key columns.
          */
         for (PropertyTypeBuilder desc : ftb.properties()) {
-            for (ColumnMetaModel col : cols) {
+            for (Column col : cols) {
                 if (desc.getName().tip().toString().equals(col.name)) {
                     final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
                     atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
@@ -416,14 +361,14 @@ public final class DataBaseModel {
                 final String refColumnName = reflect.getString(Reflection.PKCOLUMN_NAME);
                 final int deleteRule = reflect.getInt(Reflection.DELETE_RULE);
                 final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
-                final RelationMetaModel relation = new RelationMetaModel(relationName,localColumn,
+                final Relation relation = new Relation(relationName,localColumn,
                         refSchemaName, refTableName, refColumnName, true, deleteCascade);
                 table.importedKeys.add(relation);
                 if (refSchemaName!=null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
                 for (PropertyTypeBuilder desc : ftb.properties()) {
                     if (desc.getName().tip().toString().equals(localColumn)) {
                         final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
-                        atb.addCharacteristic(ColumnMetaModel.JDBC_PROPERTY_RELATION).setDefaultValue(relation);
+                        atb.addCharacteristic(Column.JDBC_PROPERTY_RELATION).setDefaultValue(relation);
                         break;
                     }
                 }
@@ -442,7 +387,7 @@ public final class DataBaseModel {
                 final String refColumnName = reflect.getString(Reflection.FKCOLUMN_NAME);
                 final int deleteRule = reflect.getInt(Reflection.DELETE_RULE);
                 final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
-                table.exportedKeys.add(new RelationMetaModel(relationName, localColumn,
+                table.exportedKeys.add(new Relation(relationName, localColumn,
                         refSchemaName, refTableName, refColumnName, false, deleteCascade));
 
                 if (refSchemaName != null && !visitedSchemas.contains(refSchemaName)) {
@@ -455,7 +400,7 @@ public final class DataBaseModel {
         return table;
     }
 
-    private AttributeType<?> analyzeColumn(final ResultSet columnSet, final AttributeTypeBuilder<?> atb) throws SQLException {
+    private AttributeType<?> analyzeColumn(final DatabaseMetaData metadata, final ResultSet columnSet, final AttributeTypeBuilder<?> atb) throws SQLException {
         final String schemaName     = columnSet.getString(Reflection.TABLE_SCHEM);
         final String tableName      = columnSet.getString(Reflection.TABLE_NAME);
         final String columnName     = columnSet.getString(Reflection.COLUMN_NAME);
@@ -465,9 +410,10 @@ public final class DataBaseModel {
         final String columnNullable = columnSet.getString(Reflection.IS_NULLABLE);
         atb.setName(columnName);
         atb.setMaximalLength(columnSize);
-        dialect.decodeColumnType(atb, metadata.getConnection(), columnTypeName, columnDataType, schemaName, tableName, columnName);
+        functions.decodeColumnType(atb, metadata.getConnection(), columnTypeName, columnDataType, schemaName, tableName, columnName);
         // TODO: need to distinguish "YES" and empty string?
-        atb.setMinimumOccurs(VALUE_NO.equalsIgnoreCase(columnNullable) ? 1 : 0);
+        final Boolean b = SQLUtilities.parseBoolean(columnNullable);
+        atb.setMinimumOccurs(b != null && !b ? 1 : 0);
         atb.setMaximumOccurs(1);
         return atb.build();
     }
@@ -490,12 +436,12 @@ public final class DataBaseModel {
 
             // Search if we already have this property
             PropertyType desc = null;
-            final SchemaMetaModel schema = getSchemaMetaModel(schemaName);
+            final Schema schema = getSchemaMetaModel(schemaName);
             if (schema != null) {
-                TableMetaModel table = schema.getTable(tableName);
+                Table table = schema.getTable(tableName);
                 if (table != null) {
                     try {
-                        desc = table.getType(TableMetaModel.View.SIMPLE_FEATURE_TYPE).build().getProperty(columnName);
+                        desc = table.getType(Table.View.SIMPLE_FEATURE_TYPE).build().getProperty(columnName);
                     } catch (PropertyNotFoundException ex) {
                         // ok
                     }
@@ -512,7 +458,7 @@ public final class DataBaseModel {
                 atb.setMinimumOccurs(nullable == ResultSetMetaData.columnNullable ? 0 : 1);
                 atb.setMaximumOccurs(1);
                 atb.setName(columnLabel);
-                atb.setValueClass(dialect.getJavaType(sqlType, sqlTypeName));
+                atb.setValueClass(functions.getJavaType(sqlType, sqlTypeName));
             }
         }
         return ftb.build();
@@ -521,9 +467,9 @@ public final class DataBaseModel {
     /**
      * Rebuild simple feature types for each table.
      */
-    private void reverseSimpleFeatureTypes() throws SQLException {
-        for (final SchemaMetaModel schema : schemas.values()) {
-            for (final TableMetaModel table : schema.getTables()) {
+    private void reverseSimpleFeatureTypes(final DatabaseMetaData metadata) throws SQLException {
+        for (final Schema schema : schemas.values()) {
+            for (final Table table : schema.getTables()) {
                 final FeatureTypeBuilder ftb = new FeatureTypeBuilder(table.tableType.build());
                 final String featureName = ftb.getName().tip().toString();
                 ftb.setName(featureName);
@@ -542,7 +488,7 @@ public final class DataBaseModel {
                         // TODO: escape columnNamePattern with metadata.getSearchStringEscape().
                         try (ResultSet reflect = metadata.getColumns(null, schema.name, table.name, name)) {
                             while (reflect.next()) {        // Should loop exactly once.
-                                CoordinateReferenceSystem crs = dialect.createGeometryCRS(reflect);
+                                CoordinateReferenceSystem crs = functions.createGeometryCRS(reflect);
                                 atb.setCRS(crs);
                                 if (isGeometry & !defaultGeomSet) {
                                     atb.addRole(AttributeRole.DEFAULT_GEOMETRY);

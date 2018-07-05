@@ -2549,7 +2549,7 @@ next:               while (r.next()) {
                             b = r.getBoolean(1);
                             if (r.wasNull()) b = null;
                         } else {
-                            b = SQLUtilities.toBoolean(r.getString(1));     // May throw SQLException - see above comment.
+                            b = SQLUtilities.parseBoolean(r.getString(1));  // May throw SQLException - see above comment.
                         }
                         if (b != null) {
                             isReversible = b ? SignReversalComment.OPPOSITE : SignReversalComment.SAME;

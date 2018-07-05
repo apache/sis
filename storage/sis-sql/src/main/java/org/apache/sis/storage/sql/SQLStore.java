@@ -17,6 +17,8 @@
 package org.apache.sis.storage.sql;
 
 import javax.sql.DataSource;
+import org.apache.sis.internal.sql.feature.Database;
+import org.apache.sis.internal.sql.feature.QueryFeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -24,7 +26,8 @@ import org.apache.sis.storage.StorageConnector;
 
 
 /**
- * A data store capable to read and create features from a database.
+ * A data store capable to read and create features from a spatial database.
+ * An example of spatial database is PostGIS.
  *
  * <div class="warning">This is an experimental class,
  * not yet target for any Apache SIS release at this time.</div>
@@ -41,9 +44,14 @@ public abstract class SQLStore extends DataStore {
     private final DataSource source;
 
     /**
+     * The result of inspecting database schema for deriving {@link org.opengis.feature.FeatureType}s.
+     * Created when first needed. May be discarded and recreated if the store needs a refresh.
+     */
+    private Database model;
+
+    /**
      * Creates a new instance for the given storage.
-     * The {@code provider} argument is an optional information.
-     * The {@code connector} argument is mandatory.
+     * The given {@code connector} shall contain a {@link DataSource}.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (JDBC data source, <i>etc</i>).
@@ -69,5 +77,7 @@ public abstract class SQLStore extends DataStore {
      * @param  query the query to execute (can not be null).
      * @return the features obtained by the given given query.
      */
-    public abstract FeatureSet query(SQLQuery query);
+    public FeatureSet query(final SQLQuery query) {
+        return new QueryFeatureSet(this, model, query);
+    }
 }

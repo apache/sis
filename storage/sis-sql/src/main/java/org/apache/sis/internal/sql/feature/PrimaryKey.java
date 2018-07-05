@@ -36,9 +36,9 @@ import org.apache.sis.storage.DataStoreException;
 final class PrimaryKey {
 
     final String table;
-    final List<ColumnMetaModel> columns;
+    final List<Column> columns;
 
-    PrimaryKey(final String table, List<ColumnMetaModel> columns) {
+    PrimaryKey(final String table, List<Column> columns) {
         this.table = table;
         if (columns == null) {
             columns = Collections.emptyList();
@@ -93,7 +93,7 @@ final class PrimaryKey {
      * @throws SQLException if a JDBC error occurred while executing a statement.
      * @throws DataStoreException if another error occurred while fetching the next value.
      */
-    Object[] nextValues(final Dialect dialect, final Connection cx) throws SQLException, DataStoreException {
+    Object[] nextValues(final SpatialFunctions dialect, final Connection cx) throws SQLException, DataStoreException {
         final Object[] parts = new Object[columns.size()];
         for (int i=0; i<parts.length; i++) {
             parts[i] = columns.get(i).nextValue(dialect, cx);

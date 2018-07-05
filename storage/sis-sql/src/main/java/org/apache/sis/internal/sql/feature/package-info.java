@@ -17,7 +17,8 @@
 
 
 /**
- * A set of helper classes for the SIS implementation of SQL data stores.
+ * Build {@link org.opengis.feature.FeatureType}s by inspection of a database schema.
+ * The work done here is similar to reverse engineering.
  *
  * <STRONG>Do not use!</STRONG>
  *

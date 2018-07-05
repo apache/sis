@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import org.apache.sis.util.ArgumentChecks;
-
 
 /**
  * Description of a relation between two tables.
@@ -27,9 +25,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   1.0
  * @module
  */
-final class RelationMetaModel {
+final class Relation extends MetaModel {
 
-    final String  relationName;
     final String  currentColumn;
     final String  foreignSchema;
     final String  foreignTable;
@@ -37,15 +34,11 @@ final class RelationMetaModel {
     final boolean isImported;
     final boolean cascadeOnDelete;
 
-    RelationMetaModel(final String relationName, final String currentColumn, final String foreignSchema,
+    Relation(final String name, final String currentColumn, final String foreignSchema,
             final String foreignTable, final String foreignColumn,
             final boolean isImported, final boolean cascadeOnDelete)
     {
-        ArgumentChecks.ensureNonNull("relationName",  relationName);
-        ArgumentChecks.ensureNonNull("currentColumn", currentColumn);
-        ArgumentChecks.ensureNonNull("foreignTable",  foreignTable);
-        ArgumentChecks.ensureNonNull("foreignColumn", foreignColumn);
-        this.relationName    = relationName;
+        super(name);
         this.currentColumn   = currentColumn;
         this.foreignSchema   = foreignSchema;
         this.foreignTable    = foreignTable;
@@ -57,7 +50,7 @@ final class RelationMetaModel {
     @Override
     public String toString() {
         return new StringBuilder(currentColumn)
-                .append((isImported) ? " → " : " ← ")
+                .append(isImported ? " → " : " ← ")
                 .append(foreignSchema).append('.')
                 .append(foreignTable).append('.').append(foreignColumn)
                 .toString();

@@ -16,12 +16,18 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Iterator;
-import org.apache.sis.util.CharSequences;
+import java.util.Collection;
+import java.sql.DatabaseMetaData;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.DefaultTreeTable;
 
 
 /**
- * Base class of descriptions about a database entity (table or schema).
+ * Description about a database entity (schema, table, relation, <i>etc</i>).
+ * The information provided by subclasses are inferred from {@link DatabaseMetaData}
+ * and stored as structures from the {@link org.apache.sis.feature} package.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -30,50 +36,75 @@ import org.apache.sis.util.CharSequences;
  */
 abstract class MetaModel {
     /**
-     * The schema or table name.
+     * The entity (schema, table, <i>etc</i>) name.
      */
     final String name;
 
     /**
-     * Creates a new object describing a database table or a schema.
+     * Creates a new object describing a database entity (schema, table, <i>etc</i>).
      *
-     * @param  name  the schema or table name.
+     * @param  name  the database entity name.
      */
     MetaModel(final String name) {
         this.name = name;
     }
 
     /**
-     * Formats a graphical representation of the specified objects. This representation can be
-     * printed to the {@linkplain System#out standard output stream} (for example) if it uses
-     * a monospaced font and supports Unicode.
+     * Creates a tree representation of this object for debugging purpose.
+     * The default implementation adds a single node with the {@link #name} of this entity
+     * and returns that node. Subclasses can override for appending additional information.
      *
-     * @param  root     the root name of the tree to format, or {@code null} if none.
-     * @param  objects  the objects to format as root children, or {@code null} if none.
-     * @param  sb       where to format the tree.
+     * @param  parent  the parent node where to add the tree representation.
+     * @return the node added by this method.
      */
-    static void appendTree(final String root, final Iterable<?> objects, final StringBuilder sb, final String lineSeparator) {
-        if (root != null) {
-            sb.append(root);
-        }
-        if (objects != null) {
-            final Iterator<?> it = objects.iterator();
-            boolean hasNext;
-            if (it.hasNext()) do {
-                sb.append(lineSeparator);
-                final Object next = it.next();
-                hasNext = it.hasNext();
-                sb.append(hasNext ? "├─ " : "└─ ");
+    @Debug
+    TreeTable.Node appendTo(final TreeTable.Node parent) {
+        return newChild(parent, name);
+    }
 
-                final CharSequence[] parts = CharSequences.splitOnEOL(String.valueOf(next));
-                sb.append(parts[0]);
-                for (int k=1; k < parts.length; k++) {
-                    sb.append(lineSeparator)
-                      .append(hasNext ? '│' : ' ')
-                      .append("  ")
-                      .append(parts[k]);
-                }
-            } while (hasNext);
+    /**
+     * Add a child of the given name to the given node.
+     *
+     * @param  parent  the node where to add a child.
+     * @param  name    the name to assign to the child.
+     * @return the child node.
+     */
+    @Debug
+    private static TreeTable.Node newChild(final TreeTable.Node parent, final String name) {
+        final TreeTable.Node child = parent.newChild();
+        child.setValue(TableColumn.NAME, name);
+        return child;
+    }
+
+    /**
+     * Appends all children to the given parent. The children are added under a node of the given name.
+     * If the collection of children is empty, then no node of the given {@code name} is inserted.
+     *
+     * @param  parent    the node where to add children.
+     * @param  name      the name of a node to insert between the parent and the children, or {@code null} if none.
+     * @param  children  the children to add, or an empty collection if none.
+     */
+    @Debug
+    static void appendAll(TreeTable.Node parent, final String name, final Collection<? extends MetaModel> children) {
+        if (!children.isEmpty()) {
+            if (name != null) {
+                parent = newChild(parent, name);
+            }
+            for (final MetaModel child : children) {
+                child.appendTo(parent);
+            }
         }
+    }
+
+    /**
+     * Formats a graphical representation of this object for debugging purpose. This representation can
+     * be printed to the {@linkplain System#out standard output stream} (for example) if the output device
+     * uses a monospaced font and supports Unicode.
+     */
+    @Override
+    public String toString() {
+        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
+        appendTo(table.getRoot());
+        return table.toString();
     }
 }

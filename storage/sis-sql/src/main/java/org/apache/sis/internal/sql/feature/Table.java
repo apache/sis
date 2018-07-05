@@ -18,6 +18,8 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 
@@ -29,7 +31,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
  * @since   1.0
  * @module
  */
-final class TableMetaModel extends MetaModel {
+final class Table extends MetaModel {
     enum View {
         TABLE,
         SIMPLE_FEATURE_TYPE,
@@ -49,19 +51,19 @@ final class TableMetaModel extends MetaModel {
     /**
      * those are 0:1 relations
      */
-    final Collection<RelationMetaModel> importedKeys = new ArrayList<>();
+    final Collection<Relation> importedKeys = new ArrayList<>();
 
     /**
      * those are 0:N relations
      */
-    final Collection<RelationMetaModel> exportedKeys = new ArrayList<>();
+    final Collection<Relation> exportedKeys = new ArrayList<>();
 
     /**
      * inherited tables
      */
     final Collection<String> parents = new ArrayList<>();
 
-    TableMetaModel(final String name, final String type) {
+    Table(final String name, final String type) {
         super(name);
         this.type = type;
     }
@@ -78,7 +80,7 @@ final class TableMetaModel extends MetaModel {
      * @todo a subtype of what?
      */
     boolean isSubType() {
-        for (RelationMetaModel relation : importedKeys) {
+        for (Relation relation : importedKeys) {
             if (relation.cascadeOnDelete) {
                 return true;
             }
@@ -97,20 +99,16 @@ final class TableMetaModel extends MetaModel {
     }
 
     /**
-     * Returns a string representation of this schema for debugging purposes.
+     * Creates a tree representation of this object for debugging purpose.
+     *
+     * @param  parent  the parent node where to add the tree representation.
      */
+    @Debug
     @Override
-    public String toString() {
-        final String lineSeparator = System.lineSeparator();
-        final StringBuilder sb = new StringBuilder(100).append(name);
-        if (!importedKeys.isEmpty()) {
-            appendTree(" Imported Keys", importedKeys, sb.append(lineSeparator), lineSeparator);
-            sb.append(lineSeparator);
-        }
-        if (!exportedKeys.isEmpty()) {
-            appendTree(" Exported Keys", exportedKeys, sb.append(lineSeparator), lineSeparator);
-            sb.append(lineSeparator);
-        }
-        return sb.toString();
+    TreeTable.Node appendTo(final TreeTable.Node parent) {
+        final TreeTable.Node node = super.appendTo(parent);
+        appendAll(parent, "Imported Keys", importedKeys);
+        appendAll(parent, "Exported Keys", exportedKeys);
+        return node;
     }
 }

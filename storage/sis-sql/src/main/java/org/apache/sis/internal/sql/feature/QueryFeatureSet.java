@@ -43,12 +43,12 @@ import org.opengis.metadata.Metadata;
  */
 public final class QueryFeatureSet implements FeatureSet {
 
-    private final DataBaseModel model;
+    private final Database model;
     private final SQLStore store;
     private final SQLQuery query;
     private FeatureType type;
 
-    public QueryFeatureSet(final SQLStore store, final DataBaseModel model, final SQLQuery query) {
+    public QueryFeatureSet(final SQLStore store, final Database model, final SQLQuery query) {
         this.store = store;
         this.model = model;
         this.query = query;

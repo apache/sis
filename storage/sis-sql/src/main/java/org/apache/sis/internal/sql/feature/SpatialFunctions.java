@@ -16,39 +16,74 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Locale;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.storage.DataStoreException;
 
 
 /**
- * Description or handling of syntax elements specific to a database.
- * The dialect provides descriptions and methods implementing the different
- * functionalities required by the data store to generate SQL statements.
+ * Access to functions provided by geospatial databases.
+ * Those functions may depend on the actual database product (PostGIS, etc).
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public abstract class Dialect {
+abstract class SpatialFunctions {
     /**
-     * For subclass constructors.
+     * The tables to be ignored when inspecting the tables in a database schema.
+     * Those tables are used for database (e.g. PostGIS) internal working.
      */
-    protected Dialect() {
+    private final Set<String> ignoredTables;
+
+    /**
+     * Creates a new accessor to geospatial functions for the database described by given metadata.
+     */
+    SpatialFunctions(final DatabaseMetaData metadata) throws SQLException {
+        ignoredTables = new HashSet<>(4);
+        /*
+         * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
+         * Note that the standard specified those names in upper-case letters, which is also
+         * the default case specified by the SQL standard.  However some databases use lower
+         * cases instead.
+         */
+        String crs  = "SPATIAL_REF_SYS";
+        String geom = "GEOMETRY_COLUMNS";
+        if (metadata.storesLowerCaseIdentifiers()) {
+            crs  = crs .toLowerCase(Locale.US).intern();
+            geom = geom.toLowerCase(Locale.US).intern();
+        }
+        ignoredTables.add(crs);
+        ignoredTables.add(geom);
+        final Dialect dialect = Dialect.guess(metadata);
+        if (dialect == Dialect.POSTGRESQL) {
+            ignoredTables.add("geography_columns");     // Postgis 1+
+            ignoredTables.add("raster_columns");        // Postgis 2
+            ignoredTables.add("raster_overviews");
+        }
     }
 
     /**
-     * Indicates whether a table will be used as a {@code FeatureType}.
+     * Indicates whether a table is reserved for the database internal working.
+     * If this method returns {@code false}, then the given table is a candidate
+     * for use as a {@code FeatureType}.
      *
-     * @param  name  database table name.
+     * @param  name  database table name to test.
      * @return {@code true} if the named table should be ignored when looking for feature types.
      */
-    public abstract boolean isTableIgnored(String name);
+    final boolean isIgnoredTable(final String name) {
+        return ignoredTables.contains(name);
+    }
 
     /**
      * Gets the Java class mapped to a given SQL type.
@@ -70,7 +105,7 @@ public abstract class Dialect {
      * @throws SQLException if a JDBC error occurred while executing a statement.
      * @throws DataStoreException if another error occurred while fetching the next value.
      */
-    public abstract Object nextValue(ColumnMetaModel column, Connection cx) throws SQLException, DataStoreException;
+    public abstract Object nextValue(Column column, Connection cx) throws SQLException, DataStoreException;
 
     /**
      * Gets the value sequence name used by a column.
