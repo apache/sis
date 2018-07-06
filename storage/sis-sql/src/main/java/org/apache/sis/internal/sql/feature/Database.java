@@ -25,11 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Map;
-import java.util.Set;
 import org.opengis.util.GenericName;
 import org.opengis.coverage.Coverage;
 import org.opengis.feature.AttributeType;
@@ -69,23 +67,21 @@ public final class Database {
     private static final String TABLE = "TABLE", VIEW = "VIEW";
 
     /**
-     * Feature type used to mark types which are sub-types of others.
+     * Abstract type used to mark features that are components of other features.
+     *
+     * @deprecated replace by scoped name (TODO).
      */
-    private static final FeatureType SUBTYPE;
-    static {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder()
-                .setName("SubType")
-                .setAbstract(true);
-        SUBTYPE = ftb.build();
-    }
+    @Deprecated
+    private static final FeatureType COMPONENT = new FeatureTypeBuilder().setName("Component").setAbstract(true).build();
 
     private final SpatialFunctions functions;
     private final FeatureNaming<PrimaryKey> pkIndex;
     private final FeatureNaming<FeatureType> typeIndex;
     private final Map<String,Schema> schemas;
 
-    public Database(final SQLStore store, final SpatialFunctions functions, final String schema, final String table,
-            final List<String> addWarningsTo) throws SQLException, IllegalNameException
+    public Database(final SQLStore store, final SpatialFunctions functions, final String catalog,
+            final String schema, final String table, final List<String> addWarningsTo)
+            throws SQLException, DataStoreException
     {
         if (table != null) {
             ArgumentChecks.ensureNonEmpty("table", table);
@@ -94,19 +90,7 @@ public final class Database {
         pkIndex = new FeatureNaming<>();
         typeIndex = new FeatureNaming<>();
         schemas = new HashMap<>();
-        analyze(store, schema, table, addWarningsTo);
-    }
-
-    private Collection<Schema> getSchemaMetaModels() {
-        return schemas.values();
-    }
-
-    private Schema getSchemaMetaModel(String name) {
-        return schemas.get(name);
-    }
-
-    private PrimaryKey getPrimaryKey(final SQLStore store, final String featureTypeName) throws IllegalNameException {
-        return pkIndex.get(store, featureTypeName);
+        analyze(store, catalog, schema, table, addWarningsTo);
     }
 
     public FeatureType getFeatureType(final SQLStore store, final String typeName) throws IllegalNameException {
@@ -116,35 +100,45 @@ public final class Database {
     /**
      * Explores all tables and views then recreate a complex feature model from relations.
      */
-    private synchronized void analyze(final SQLStore store, final String schemaName, final String tableName, final List<String> addWarningsTo)
-            throws SQLException, IllegalNameException
+    private synchronized void analyze(final SQLStore store, final String catalog, final String schemaName,
+            final String tableName, final List<String> addWarningsTo)
+            throws SQLException, DataStoreException
     {
         try (Connection cx = store.getDataSource().getConnection()) {
             final DatabaseMetaData metadata = cx.getMetaData();
-            final Set<String> requieredSchemas = new HashSet<>();
-            final Set<String> visitedSchemas = new HashSet<>();
+            /*
+             * Keep trace of the schemas that we need to visit, and the schema already visited.
+             * The boolean value tells whether the schema has already been visited or not.
+             * New schemas to visit may be added when following the relation established by foreigner keys.
+             */
+            final Map<String,Boolean> requiredSchemas = new HashMap<>();
             /*
              * Schema names available in the database:
              * 1. TABLE_SCHEM   : String  =>  schema name
              * 2. TABLE_CATALOG : String  =>  catalog name (may be null)
              */
             if (schemaName != null) {
-                requieredSchemas.add(schemaName);
+                requiredSchemas.put(schemaName, Boolean.FALSE);
             } else try (ResultSet reflect = metadata.getSchemas()) {
+                // TODO: use schemas in getTables instead.
                 while (reflect.next()) {
-                    requieredSchemas.add(reflect.getString(Reflection.TABLE_SCHEM));        // TODO: use schemas in getTables instead.
+                    requiredSchemas.put(reflect.getString(Reflection.TABLE_SCHEM), Boolean.FALSE);
                 }
             }
             /*
-             * We need to analyze requiered schema references.
+             * Iterate over all schemas that we need to process. We may need to stop iteration and recreate
+             * a new iterator because the methods invoked in this loop may alter the map content.
+             *
+             * TODO: use a boolean return value telling us if we need to recreate the iterator.
              */
-            while (!requieredSchemas.isEmpty()) {
-                final String sn = requieredSchemas.iterator().next();
-                visitedSchemas.add(sn);
-                requieredSchemas.remove(sn);
-                // TODO: escape with metadata.getSearchStringEscape().
-                final Schema schema = analyzeSchema(metadata, sn, tableName, requieredSchemas, visitedSchemas, addWarningsTo);
-                schemas.put(schema.name, schema);
+            Iterator<Map.Entry<String,Boolean>> it;
+            while ((it = requiredSchemas.entrySet().iterator()).hasNext()) {
+                final Map.Entry<String,Boolean> sn = it.next();
+                if (!sn.setValue(Boolean.TRUE)) {
+                    // TODO: escape with metadata.getSearchStringEscape().
+                    final Schema schema = analyzeSchema(metadata, catalog, sn.getKey(), tableName, requiredSchemas, addWarningsTo);
+                    schemas.put(schema.name, schema);
+                }
             }
             reverseSimpleFeatureTypes(metadata);
         }
@@ -153,35 +147,33 @@ public final class Database {
          */
         final Collection<Schema> candidates;
         if (schemaName == null) {
-            candidates = getSchemaMetaModels();             // Take all schemas.
+            candidates = schemas.values();             // Take all schemas.
         } else {
-            candidates = Collections.singleton(getSchemaMetaModel(schemaName));
+            candidates = Collections.singleton(schemas.get(schemaName));
         }
         for (Schema schema : candidates) {
-           if (schema != null) {
-                for (Table table : schema.getTables()) {
-
-                    final FeatureTypeBuilder ft = table.getType(Table.View.SIMPLE_FEATURE_TYPE);
-                    final GenericName name = ft.getName();
-                    pkIndex.add(store, name, table.key);
-                    if (table.isSubType()) {
-                        // We don't show subtype, they are part of other feature types, add a flag to identify then
-                        ft.setSuperTypes(SUBTYPE);
-                    }
-                    typeIndex.add(store, name, ft.build());
-                 }
-            } else {
+            if (schema == null) {
                 throw new SQLException("Specifed schema " + schemaName + " does not exist.");
             }
+            for (Table table : schema.getTables()) {
+                final FeatureTypeBuilder ft = table.featureType;
+                final GenericName name = ft.getName();
+                pkIndex.add(store, name, table.key);
+                if (table.isComponent()) {
+                    // We don't show subtype, they are part of other feature types, add a flag to identify then
+                    ft.setSuperTypes(COMPONENT);
+                }
+                typeIndex.add(store, name, ft.build());
+             }
         }
     }
 
     /**
      * @param  schemaPattern  schema name with "%" and "_" interpreted as wildcards, or {@code null} for all schemas.
      */
-    private Schema analyzeSchema(final DatabaseMetaData metadata, final String schemaPattern, final String tableNamePattern,
-            final Set<String> requieredSchemas, final Set<String> visitedSchemas, final List<String> addWarningsTo)
-            throws SQLException, IllegalNameException
+    private Schema analyzeSchema(final DatabaseMetaData metadata, final String catalog, final String schemaPattern,
+            final String tableNamePattern, final Map<String,Boolean> requiredSchemas,
+            final List<String> addWarningsTo) throws SQLException, DataStoreException
     {
         final Schema schema = new Schema(schemaPattern);
         /*
@@ -190,28 +182,28 @@ public final class Database {
          * 2. TABLE_NAME  : String  =>  table name
          * 3. TABLE_TYPE  : String  =>  table type (typically "TABLE" or "VIEW").
          */
-        try (ResultSet reflect = metadata.getTables(null, schemaPattern, tableNamePattern, new String[] {TABLE, VIEW})) {   // TODO: use metadata.getTableTypes()
+        try (ResultSet reflect = metadata.getTables(catalog, schemaPattern, tableNamePattern, new String[] {TABLE, VIEW})) {   // TODO: use metadata.getTableTypes()
             while (reflect.next()) {
-                final Table table = analyzeTable(metadata, reflect, requieredSchemas, visitedSchemas, addWarningsTo);
-                schema.tables.put(table.name, table);
+                schema.addTable(analyzeTable(metadata, reflect, requiredSchemas, addWarningsTo));
             }
         }
         return schema;
     }
 
     private Table analyzeTable(final DatabaseMetaData metadata, final ResultSet tableSet,
-            final Set<String> requieredSchemas, final Set<String> visitedSchemas, final List<String> addWarningsTo)
-            throws SQLException, IllegalNameException
+            final Map<String,Boolean> requiredSchemas, final List<String> addWarningsTo)
+            throws SQLException, DataStoreException
     {
+        final String catalog    = tableSet.getString(Reflection.TABLE_CAT);
         final String schemaName = tableSet.getString(Reflection.TABLE_SCHEM);
         final String tableName  = tableSet.getString(Reflection.TABLE_NAME);
         final String tableType  = tableSet.getString(Reflection.TABLE_TYPE);
-        final Table table = new Table(tableName, tableType);
+        final Table table = new Table(tableName);
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         /*
          * Explore all columns.
          */
-        try (ResultSet reflect = metadata.getColumns(null, schemaName, tableName, null)) {
+        try (ResultSet reflect = metadata.getColumns(catalog, schemaName, tableName, null)) {
             while (reflect.next()) {
                 analyzeColumn(metadata, reflect, ftb.addAttribute(Object.class));
             }
@@ -220,11 +212,11 @@ public final class Database {
          * Find primary keys.
          */
         final List<Column> cols = new ArrayList<>();
-        try (ResultSet rp = metadata.getPrimaryKeys(null, schemaName, tableName)) {
+        try (ResultSet rp = metadata.getPrimaryKeys(catalog, schemaName, tableName)) {
             while (rp.next()) {
                 final String columnNamePattern = rp.getString(Reflection.COLUMN_NAME);
                 // TODO: escape columnNamePattern with metadata.getSearchStringEscape().
-                try (ResultSet reflect = metadata.getColumns(null, schemaName, tableName, columnNamePattern)) {
+                try (ResultSet reflect = metadata.getColumns(catalog, schemaName, tableName, columnNamePattern)) {
                     while (reflect.next()) {                                        // Should loop exactly once.
                         final int sqlType = reflect.getInt(Reflection.DATA_TYPE);
                         final String sqlTypeName = reflect.getString(Reflection.TYPE_NAME);
@@ -263,7 +255,7 @@ public final class Database {
         final Map<String,List<String>> uniqueIndexes = new HashMap<>();
         String indexname = null;
         // We can't cache this one, seems to be a bug in the driver, it won't find anything for table name like '%'
-        try (ResultSet reflect = metadata.getIndexInfo(null, schemaName, tableName, true, false)) {
+        try (ResultSet reflect = metadata.getIndexInfo(catalog, schemaName, tableName, true, false)) {
             while (reflect.next()) {
                 final String columnName = reflect.getString(Reflection.COLUMN_NAME);
                 final String idxName = reflect.getString(Reflection.INDEX_NAME);
@@ -290,7 +282,7 @@ public final class Database {
         /*
          * For each unique index composed of one column add a flag on the property descriptor.
          */
-        for (Entry<String,List<String>> entry : uniqueIndexes.entrySet()) {
+        for (Map.Entry<String,List<String>> entry : uniqueIndexes.entrySet()) {
             final List<String> columns = entry.getValue();
             if (columns.size() == 1) {
                 String columnName = columns.get(0);
@@ -306,7 +298,7 @@ public final class Database {
             /*
              * Build a primary key from unique index.
              */
-            try (ResultSet reflect = metadata.getColumns(null, schemaName, tableName, null)) {
+            try (ResultSet reflect = metadata.getColumns(catalog, schemaName, tableName, null)) {
                 while (reflect.next()) {
                     final String columnName = reflect.getString(Reflection.COLUMN_NAME);
                     if (names.contains(columnName)) {
@@ -349,49 +341,31 @@ public final class Database {
             }
         }
         /*
-         * Find imported keys.
+         * Creates a list of associations between the table read by this method and other tables.
+         * The associations are defined by the foreigner keys referencing primary keys. Note that
+         * the table relations can be defined in both ways:  the foreigner keys of this table may
+         * be referencing the primary keys of other tables (Direction.IMPORT) or the primary keys
+         * of this table may be referenced by the foreigner keys of other tables (Direction.EXPORT).
+         * However in both case, we will translate that into associations from this table to the
+         * other tables. We can not rely on IMPORT versus EXPORT for determining the association
+         * navigability because the database designer's choice may be driven by the need to support
+         * multi-occurrences.
          */
-        try (ResultSet reflect = metadata.getImportedKeys(null, schemaName, tableName)) {
-            while (reflect.next()) {
-                String relationName = reflect.getString(Reflection.PK_NAME);
-                if (relationName == null) relationName = reflect.getString(Reflection.FK_NAME);
-                final String localColumn   = reflect.getString(Reflection.FKCOLUMN_NAME);
-                final String refSchemaName = reflect.getString(Reflection.PKTABLE_SCHEM);
-                final String refTableName  = reflect.getString(Reflection.PKTABLE_NAME);
-                final String refColumnName = reflect.getString(Reflection.PKCOLUMN_NAME);
-                final int deleteRule = reflect.getInt(Reflection.DELETE_RULE);
-                final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
-                final Relation relation = new Relation(relationName,localColumn,
-                        refSchemaName, refTableName, refColumnName, true, deleteCascade);
+        try (ResultSet reflect = metadata.getImportedKeys(catalog, schemaName, tableName)) {
+            while (!reflect.isClosed()) {
+                final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
                 table.importedKeys.add(relation);
-                if (refSchemaName!=null && !visitedSchemas.contains(refSchemaName)) requieredSchemas.add(refSchemaName);
-                for (PropertyTypeBuilder desc : ftb.properties()) {
-                    if (desc.getName().tip().toString().equals(localColumn)) {
-                        final AttributeTypeBuilder<?> atb = (AttributeTypeBuilder) desc;
-                        atb.addCharacteristic(Column.JDBC_PROPERTY_RELATION).setDefaultValue(relation);
-                        break;
-                    }
+                if (relation.schema != null) {
+                    requiredSchemas.putIfAbsent(relation.schema, Boolean.FALSE);
                 }
             }
         }
-        /*
-         * Find exported keys.
-         */
-        try (ResultSet reflect = metadata.getExportedKeys(null, schemaName, tableName)) {
-            while (reflect.next()) {
-                String relationName = reflect.getString(Reflection.FKCOLUMN_NAME);
-                if (relationName == null) relationName = reflect.getString(Reflection.FK_NAME);
-                final String localColumn   = reflect.getString(Reflection.PKCOLUMN_NAME);
-                final String refSchemaName = reflect.getString(Reflection.FKTABLE_SCHEM);
-                final String refTableName  = reflect.getString(Reflection.FKTABLE_NAME);
-                final String refColumnName = reflect.getString(Reflection.FKCOLUMN_NAME);
-                final int deleteRule = reflect.getInt(Reflection.DELETE_RULE);
-                final boolean deleteCascade = DatabaseMetaData.importedKeyCascade == deleteRule;
-                table.exportedKeys.add(new Relation(relationName, localColumn,
-                        refSchemaName, refTableName, refColumnName, false, deleteCascade));
-
-                if (refSchemaName != null && !visitedSchemas.contains(refSchemaName)) {
-                    requieredSchemas.add(refSchemaName);
+        try (ResultSet reflect = metadata.getExportedKeys(catalog, schemaName, tableName)) {
+            while (!reflect.isClosed()) {
+                final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
+                table.exportedKeys.add(relation);
+                if (relation.schema != null) {
+                    requiredSchemas.putIfAbsent(relation.schema, Boolean.FALSE);
                 }
             }
         }
@@ -436,12 +410,12 @@ public final class Database {
 
             // Search if we already have this property
             PropertyType desc = null;
-            final Schema schema = getSchemaMetaModel(schemaName);
+            final Schema schema = schemas.get(schemaName);
             if (schema != null) {
                 Table table = schema.getTable(tableName);
                 if (table != null) {
                     try {
-                        desc = table.getType(Table.View.SIMPLE_FEATURE_TYPE).build().getProperty(columnName);
+                        desc = table.featureType.build().getProperty(columnName);
                     } catch (PropertyNotFoundException ex) {
                         // ok
                     }
@@ -498,7 +472,7 @@ public final class Database {
                         }
                     }
                 }
-                table.simpleFeatureType = ftb;
+                table.featureType = ftb;
             }
         }
     }

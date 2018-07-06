@@ -19,6 +19,7 @@ package org.apache.sis.internal.sql.feature;
 import java.util.Collection;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -26,24 +27,26 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 
 /**
  * Description about a database entity (schema, table, relation, <i>etc</i>).
- * The information provided by subclasses are inferred from {@link DatabaseMetaData}
- * and stored as structures from the {@link org.apache.sis.feature} package.
+ * Information provided by subclasses are inferred from {@link DatabaseMetaData}
+ * and stored as {@link org.apache.sis.feature} classes.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 abstract class MetaModel {
     /**
-     * The entity (schema, table, <i>etc</i>) name.
+     * The entity name (schema, table, <i>etc</i>).
+     * May be null, for example if this is the primary key name and that name is unspecified.
      */
     final String name;
 
     /**
      * Creates a new object describing a database entity (schema, table, <i>etc</i>).
      *
-     * @param  name  the database entity name.
+     * @param  name  the database entity name, or {@code null} if unspecified.
      */
     MetaModel(final String name) {
         this.name = name;
@@ -52,7 +55,8 @@ abstract class MetaModel {
     /**
      * Creates a tree representation of this object for debugging purpose.
      * The default implementation adds a single node with the {@link #name} of this entity
-     * and returns that node. Subclasses can override for appending additional information.
+     * and returns that node. Subclasses can override this method for appending additional
+     * information.
      *
      * @param  parent  the parent node where to add the tree representation.
      * @return the node added by this method.
@@ -63,22 +67,23 @@ abstract class MetaModel {
     }
 
     /**
-     * Add a child of the given name to the given node.
+     * Adds a child of the given name to the given parent node.
+     * This is a convenience method for {@link #appendTo(TreeTable.Node)} implementations.
      *
      * @param  parent  the node where to add a child.
      * @param  name    the name to assign to the child.
-     * @return the child node.
+     * @return the child added to the parent.
      */
     @Debug
-    private static TreeTable.Node newChild(final TreeTable.Node parent, final String name) {
+    static TreeTable.Node newChild(final TreeTable.Node parent, final String name) {
         final TreeTable.Node child = parent.newChild();
-        child.setValue(TableColumn.NAME, name);
+        child.setValue(TableColumn.NAME, (name != null) ? name : Vocabulary.format(Vocabulary.Keys.Unnamed));
         return child;
     }
 
     /**
      * Appends all children to the given parent. The children are added under a node of the given name.
-     * If the collection of children is empty, then no node of the given {@code name} is inserted.
+     * If the children collection is empty, then this method does nothing.
      *
      * @param  parent    the node where to add children.
      * @param  name      the name of a node to insert between the parent and the children, or {@code null} if none.
@@ -102,7 +107,7 @@ abstract class MetaModel {
      * uses a monospaced font and supports Unicode.
      */
     @Override
-    public String toString() {
+    public final String toString() {
         final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
         appendTo(table.getRoot());
         return table.toString();

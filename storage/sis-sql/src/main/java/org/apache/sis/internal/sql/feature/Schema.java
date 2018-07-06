@@ -17,33 +17,56 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
  * Description of a database schema.
+ * Each schema contains a collection of {@link Table}s.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 final class Schema extends MetaModel {
     /**
-     * The tables in the schema.
+     * The tables in this schema.
      */
-    final Map<String,Table> tables;
+    private final Map<String,Table> tables;
 
     /**
-     * Creates a new schema of the given name.
-     * It is caller responsibility to populate the {@link #tables} map.
+     * Creates a new, initially empty, schema of the given name.
+     *
+     * @param  schemaName  name of this schema.
      */
-    Schema(final String name) {
-        super(name);
-        tables = new HashMap<>();
+    Schema(final String schemaName) {
+        super(schemaName);
+        tables = new LinkedHashMap<>();
+    }
+
+    /**
+     * Adds a table in this schema.
+     *
+     * @param  table  the table to add.
+     * @throws DataStoreContentException if a table of the same name has already been added.
+     */
+    void addTable(final Table table) throws DataStoreContentException {
+        if (tables.putIfAbsent(table.name, table) != null) {
+            throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedEntity_2, "Table", table.name));
+        }
+    }
+
+    /**
+     * Returns the table of the given name, or {@code null} if none.
+     */
+    Table getTable(final String name) {
+        return tables.get(name);
     }
 
     /**
@@ -54,16 +77,7 @@ final class Schema extends MetaModel {
     }
 
     /**
-     * Returns the table of the given name, or {@code null} if none.
-     */
-    Table getTable(final String name){
-        return tables.get(name);
-    }
-
-    /**
-     * Creates a tree representation of this object for debugging purpose.
-     *
-     * @param  parent  the parent node where to add the tree representation.
+     * Creates a tree representation of this schema with the list of all tables.
      */
     @Debug
     @Override

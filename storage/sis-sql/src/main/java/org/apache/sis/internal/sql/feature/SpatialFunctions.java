@@ -41,8 +41,8 @@ import org.apache.sis.storage.DataStoreException;
  */
 abstract class SpatialFunctions {
     /**
-     * The tables to be ignored when inspecting the tables in a database schema.
-     * Those tables are used for database (e.g. PostGIS) internal working.
+     * Names of tables to ignore when inspecting a database schema.
+     * Those tables are used for database internal working (for example by PostGIS).
      */
     private final Set<String> ignoredTables;
 
@@ -74,7 +74,7 @@ abstract class SpatialFunctions {
     }
 
     /**
-     * Indicates whether a table is reserved for the database internal working.
+     * Returns whether a table is reserved for database internal working.
      * If this method returns {@code false}, then the given table is a candidate
      * for use as a {@code FeatureType}.
      *

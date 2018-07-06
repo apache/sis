@@ -24,7 +24,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 
 /**
- * Description of a database table.
+ * Description of a table in the database. The description is provided as a {@code FeatureType}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -32,70 +32,59 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
  * @module
  */
 final class Table extends MetaModel {
-    enum View {
-        TABLE,
-        SIMPLE_FEATURE_TYPE,
-        COMPLEX_FEATURE_TYPE,
-        ALL_COMPLEX
-    }
-
-    String type;
-
+    /**
+     * @deprecated to be replaced by {@link #featureType} only (TODO).
+     */
+    @Deprecated
     FeatureTypeBuilder tableType;
-    FeatureTypeBuilder simpleFeatureType;
-    FeatureTypeBuilder complexFeatureType;
-    FeatureTypeBuilder allTypes;
 
+    /**
+     * A temporary object used for building the {@code FeatureType}.
+     */
+    FeatureTypeBuilder featureType;
+
+    /**
+     * The primary key of this table.
+     */
     PrimaryKey key;
 
     /**
-     * those are 0:1 relations
+     * The primary keys of other tables that are referenced by this table foreign key columns.
+     * They are 0:1 relations.
      */
-    final Collection<Relation> importedKeys = new ArrayList<>();
+    final Collection<Relation> importedKeys;
 
     /**
-     * those are 0:N relations
+     * The foreign keys of other tables that reference this table primary key columns.
+     * They are 0:N relations
      */
-    final Collection<Relation> exportedKeys = new ArrayList<>();
+    final Collection<Relation> exportedKeys;
 
     /**
-     * inherited tables
+     * Creates a new table of the given name.
      */
-    final Collection<String> parents = new ArrayList<>();
-
-    Table(final String name, final String type) {
+    Table(final String name) {
         super(name);
-        this.type = type;
+        importedKeys = new ArrayList<>();
+        exportedKeys = new ArrayList<>();
     }
 
     /**
-     * Determines if given type is a subtype. Conditions are:
+     * Determines if this table is a component of another table. Conditions are:
      * <ul>
      *   <li>having a relation toward another type</li>
      *   <li>relation must be cascading.</li>
      * </ul>
      *
-     * @return true is type is a subtype.
-     *
-     * @todo a subtype of what?
+     * @return whether this table is a component of another table.
      */
-    boolean isSubType() {
+    boolean isComponent() {
         for (Relation relation : importedKeys) {
             if (relation.cascadeOnDelete) {
                 return true;
             }
         }
         return false;
-    }
-
-    FeatureTypeBuilder getType(final View view) {
-        switch (view) {
-            case TABLE:                return tableType;
-            case SIMPLE_FEATURE_TYPE:  return simpleFeatureType;
-            case COMPLEX_FEATURE_TYPE: return complexFeatureType;
-            case ALL_COMPLEX:          return allTypes;
-            default: throw new IllegalArgumentException("Unknown view type: " + view);
-        }
     }
 
     /**

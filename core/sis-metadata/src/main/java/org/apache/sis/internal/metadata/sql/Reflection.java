@@ -147,6 +147,12 @@ public final class Reflection {
     public static final String FK_NAME = "FK_NAME";
 
     /**
+     * The {@value} key for the foreigner key table catalog.
+     * Values in this column may be null.
+     */
+    public static final String FKTABLE_CAT = "FKTABLE_CAT";
+
+    /**
      * The {@value} key for the foreign key table schema.
      * Values in this column may be null.
      */
