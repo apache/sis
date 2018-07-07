@@ -115,7 +115,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
             final MetadataReader reader = new MetadataReader(decoder);
             metadata = reader.read();
             if (metadata instanceof ModifiableMetadata) {
-                ((ModifiableMetadata) metadata).freeze();
+                ((ModifiableMetadata) metadata).apply(ModifiableMetadata.State.FINAL);
             }
         } catch (IOException e) {
             throw new DataStoreException(e);
