@@ -16,75 +16,214 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.feature.builder.AttributeRole;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.util.CollectionsExt;
+
+// Branch-dependent imports
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
- * Description of a table in the database. The description is provided as a {@code FeatureType}.
+ * Description of a table in the database, including columns, primary keys and foreigner keys.
+ * This class contains a {@link FeatureType} inferred from the table structure. The {@link FeatureType}
+ * contains an {@link AttributeType} for each table column, except foreigner keys which are represented
+ * by {@link FeatureAssociationRole}s.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 final class Table extends MetaModel {
     /**
-     * @deprecated to be replaced by {@link #featureType} only (TODO).
+     * The structure of this table represented as a feature. Each feature attribute is a table column,
+     * except synthetic attributes like "sis:identifier". The feature may also contain associations
+     * inferred from foreigner keys that are not immediately apparent in the table.
      */
-    @Deprecated
-    FeatureTypeBuilder tableType;
+    final FeatureType featureType;
 
     /**
-     * A temporary object used for building the {@code FeatureType}.
+     * The primary key of this table. The boolean values tells whether the column
+     * uses auto-increment, with null value meaning that we don't know.
      */
-    FeatureTypeBuilder featureType;
-
-    /**
-     * The primary key of this table.
-     */
-    PrimaryKey key;
+    private final Map<String,Boolean> primaryKeys;
 
     /**
      * The primary keys of other tables that are referenced by this table foreign key columns.
      * They are 0:1 relations.
      */
-    final Collection<Relation> importedKeys;
+    private final List<Relation> importedKeys;
 
     /**
      * The foreign keys of other tables that reference this table primary key columns.
      * They are 0:N relations
      */
-    final Collection<Relation> exportedKeys;
+    private final List<Relation> exportedKeys;
 
     /**
-     * Creates a new table of the given name.
-     */
-    Table(final String name) {
-        super(name);
-        importedKeys = new ArrayList<>();
-        exportedKeys = new ArrayList<>();
-    }
-
-    /**
-     * Determines if this table is a component of another table. Conditions are:
-     * <ul>
-     *   <li>having a relation toward another type</li>
-     *   <li>relation must be cascading.</li>
-     * </ul>
+     * Creates a description of the table of the given name.
+     * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
+     * The catalog and schema parts are optional and can be null, but the table is mandatory.
      *
-     * @return whether this table is a component of another table.
+     * <p>The {@link TableName#name} field is opportunistically used for storing optional remarks
+     * (this may change in any future version).</p>
+     *
+     * @param  analyzer  helper functions, e.g. for converting SQL types to Java types.
+     * @param  id        the catalog, schema and table name of the table to analyze.
      */
-    boolean isComponent() {
-        for (Relation relation : importedKeys) {
-            if (relation.cascadeOnDelete) {
-                return true;
+    Table(final Analyzer analyzer, final TableName id) throws SQLException, DataStoreContentException {
+        super(id.table);
+        final String tableEsc  = analyzer.escape(id.table);
+        final String schemaEsc = analyzer.escape(id.schema);
+        /*
+         * Get a list of primary keys. We need to know them before to create the attributes,
+         * in order to detect which attributes are used as components of Feature identifiers.
+         * In the 'primaryKeys' map, the boolean tells whether the column uses auto-increment,
+         * with null value meaning that we don't know.
+         *
+         * Note: when a table contains no primary keys, we could still look for index columns
+         * with unique constraint using metadata.getIndexInfo(catalog, schema, table, true).
+         * We don't do that for now because of uncertainties (which index to use if there is
+         * many? If they are suitable as identifiers why they are not primary keys?).
+         */
+        final Map<String,Boolean> primaryKeys = new HashMap<>();
+        try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
+            while (reflect.next()) {
+                primaryKeys.put(reflect.getString(Reflection.COLUMN_NAME), null);
+                // The actual Boolean value will be fetched in the loop on columns later.
             }
         }
-        return false;
+        /*
+         * Creates a list of associations between the table read by this method and other tables.
+         * The associations are defined by the foreigner keys referencing primary keys. Note that
+         * the table relations can be defined in both ways:  the foreigner keys of this table may
+         * be referencing the primary keys of other tables (Direction.IMPORT) or the primary keys
+         * of this table may be referenced by the foreigner keys of other tables (Direction.EXPORT).
+         * However in both case, we will translate that into associations from this table to the
+         * other tables. We can not rely on IMPORT versus EXPORT for determining the association
+         * navigability because the database designer's choice may be driven by the need to support
+         * multi-occurrences.
+         */
+        final List<Relation> importedKeys = new ArrayList<>();
+        final List<Relation> exportedKeys = new ArrayList<>();
+        final Set<String> foreignerKeys = new HashSet<>();
+        try (ResultSet reflect = analyzer.metadata.getImportedKeys(id.catalog, id.schema, id.table)) {
+            if (reflect.next()) do {
+                final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
+                relation.getForeignerKeys(foreignerKeys);
+                analyzer.addDependency(relation);
+                importedKeys.add(relation);
+            } while (!reflect.isClosed());
+        }
+        try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
+            if (reflect.next()) do {
+                final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
+                analyzer.addDependency(relation);
+                exportedKeys.add(relation);
+            } while (!reflect.isClosed());
+        }
+        /*
+         * For each column in the table that is not a foreigner key, create an AttributeType of the same name.
+         * The Java type is inferred from the SQL type, and the attribute cardinality in inferred from the SQL
+         * nullability.
+         */
+        boolean hasGeometry = false;
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
+            while (reflect.next()) {
+                final String column = reflect.getString(Reflection.COLUMN_NAME);
+                if (foreignerKeys.contains(column)) {
+                    // TODO: create association.
+                    continue;
+                }
+                final String typeName = reflect.getString(Reflection.TYPE_NAME);
+                Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
+                if (type == null) {
+                    analyzer.warning(Resources.Keys.UnknownType_1, typeName);
+                    type = Object.class;
+                }
+                final AttributeTypeBuilder<?> atb = ftb.addAttribute(type).setName(column);
+                final int size = reflect.getInt(Reflection.COLUMN_SIZE);
+                if (!reflect.wasNull()) {
+                    atb.setMaximalLength(size);
+                }
+                final Boolean nullable = SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE));
+                if (nullable == null || nullable) {
+                    atb.setMinimumOccurs(0);
+                }
+                /*
+                 * Some columns have special purposes: components of primary keys will be used for creating
+                 * identifiers, some columns may contain a geometric object. Adding a role on those columns
+                 * may create synthetic columns, for example "sis:identifier".
+                 */
+                if (primaryKeys.containsKey(column)) {
+                    atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+                    if (primaryKeys.put(column, SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT))) != null) {
+                        throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedEntity_2, "Column", column));
+                    }
+                }
+                if (Geometries.isKnownType(type)) {
+                    final CoordinateReferenceSystem crs = analyzer.functions.createGeometryCRS(reflect);
+                    if (crs != null) {
+                        atb.setCRS(crs);
+                    }
+                    if (!hasGeometry) {
+                        hasGeometry = true;
+                        atb.addRole(AttributeRole.DEFAULT_GEOMETRY);
+                    }
+                }
+            }
+        }
+        /*
+         * Global information on the feature type (name, remarks).
+         * The remarks are opportunistically stored in id.name if available by the caller.
+         * An empty string means that the caller has checked for remarks and found none.
+         */
+        if (id.schema != null) {
+            ftb.setNameSpace(id.schema);
+        }
+        ftb.setName(id.table);
+        String remarks = id.name;
+        if (remarks == null) {
+            try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
+                while (reflect.next()) {
+                    remarks = reflect.getString(Reflection.REMARKS);
+                    if (remarks != null) {
+                        remarks = remarks.trim();
+                        if (remarks.isEmpty()) {
+                            remarks = null;
+                        } else break;
+                    }
+                }
+            }
+        }
+        if (remarks != null && !remarks.isEmpty()) {
+            ftb.setDescription(remarks);
+        }
+        this.featureType  = ftb.build();
+        this.primaryKeys  = CollectionsExt.compact(primaryKeys);
+        this.importedKeys = CollectionsExt.compact(importedKeys);
+        this.exportedKeys = CollectionsExt.compact(exportedKeys);
     }
 
     /**

@@ -111,9 +111,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.esri.geometry</groupId>
-      <artifactId>esri-geometry-api</artifactId>
-      <optional>false</optional>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

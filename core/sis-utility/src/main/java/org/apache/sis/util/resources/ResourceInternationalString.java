@@ -121,6 +121,8 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
 
     /**
      * Compares this international string with the specified object for equality.
+     * Two {@code ResourceInternationalString} are considered equal if they are
+     * of the same class and have been constructed with equal arguments.
      *
      * @param  object  the object to compare with this international string.
      * @return {@code true} if the given object is equal to this string.

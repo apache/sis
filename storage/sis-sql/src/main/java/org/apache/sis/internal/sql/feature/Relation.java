@@ -18,6 +18,8 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Collection;
+import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
@@ -49,7 +51,7 @@ import org.apache.sis.storage.DataStoreContentException;
  * @since   1.0
  * @module
  */
-final class Relation extends MetaModel {
+final class Relation extends TableName {
     /**
      * Whether another table is <em>using</em> or is <em>used by</em> the table containing the {@link Relation}.
      */
@@ -71,6 +73,13 @@ final class Relation extends MetaModel {
          */
         EXPORT(Reflection.FK_NAME, Reflection.FKTABLE_CAT, Reflection.FKTABLE_SCHEM,
                Reflection.FKTABLE_NAME, Reflection.FKCOLUMN_NAME, Reflection.PKCOLUMN_NAME);
+
+        /*
+         * Note: another possible type of relation is the one provided by getCrossReference​(…).
+         * Inconvenient is that it requires to know the tables on both side of the relation.
+         * But advantage is that it work with any set of columns having unique values
+         * (not necessarily the primary key).
+         */
 
         /**
          * The database {@link Reflection} key to use for fetching the name of a relation.
@@ -108,11 +117,6 @@ final class Relation extends MetaModel {
     }
 
     /**
-     * The catalog, schema and table name of the other table.
-     */
-    final String catalog, schema, table;
-
-    /**
      * The columns of the other table that constitute a primary or foreigner key. Keys are the columns of the
      * other table and values are columns of the table containing this {@code Relation}.
      */
@@ -143,10 +147,11 @@ final class Relation extends MetaModel {
      * least one row, unless an exception occurs.</p>
      */
     Relation(final Direction dir, final ResultSet reflect) throws SQLException, DataStoreContentException {
-        super(reflect.getString(dir.name));
-        catalog = reflect.getString(dir.catalog);
-        schema  = reflect.getString(dir.schema);
-        table   = reflect.getString(dir.table);
+        super(reflect.getString(dir.name),
+              reflect.getString(dir.catalog),
+              reflect.getString(dir.schema),
+              reflect.getString(dir.table));
+
         final Map<String,String> m = new LinkedHashMap<>();
         boolean cascade = false;
         do {
@@ -161,12 +166,21 @@ final class Relation extends MetaModel {
                 reflect.close();
                 break;
             }
-        } while (reflect.getString(dir.table)   == table &&
-                 reflect.getString(dir.schema)  == schema &&
-                 reflect.getString(dir.catalog) == catalog);
+        } while (table.equals(reflect.getString(dir.table)) &&                  // Table name is mandatory.
+                 Objects.equals(schema,  reflect.getString(dir.schema)) &&      // Schema and catalog may be null.
+                 Objects.equals(catalog, reflect.getString(dir.catalog)));
 
         columns = CollectionsExt.compact(m);
         cascadeOnDelete = cascade;
+    }
+
+    /**
+     * Adds to the given collection the foreigner keys of the table that contains this relation.
+     * This method adds only the foreigner keys known to this relation; this is not necessarily
+     * all the table foreigner keys.
+     */
+    final void getForeignerKeys(final Collection<String> addTo) {
+        addTo.addAll(columns.values());
     }
 
     /**

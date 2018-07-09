@@ -635,6 +635,28 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns a more compact representation of the given list. This method is similar to
+     * {@link #unmodifiableOrCopy(Collection)} except that it does not wrap the list in an unmodifiable view.
+     * The intend is to avoid one level of indirection for performance and memory reasons.
+     * This is okay only if the list is kept in a private field and never escape outside that class.
+     *
+     * @param  <E>   the type of elements in the list.
+     * @param  list  the list to compact, or {@code null}.
+     * @return a unmodifiable version of the given list, or {@code null} if the given list was null.
+     *
+     * @see #unmodifiableOrCopy(Collection)
+     */
+    public static <E> List<E> compact(final List<E> list) {
+        if (list != null) {
+            switch (list.size()) {
+                case 0: return Collections.emptyList();
+                case 1: return Collections.singletonList(list.get(0));
+            }
+        }
+        return list;
+    }
+
+    /**
      * Returns a snapshot of the given list. The returned list will not be affected by changes
      * in the given list after this method call. This method makes no guaranteed about whether
      * the returned list is modifiable or not.

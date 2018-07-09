@@ -16,22 +16,25 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Locale;
-import java.sql.Connection;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.OffsetTime;
+import java.time.OffsetDateTime;
+import java.sql.Types;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.internal.metadata.sql.Dialect;
-import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.metadata.sql.Reflection;
 
 
 /**
  * Access to functions provided by geospatial databases.
  * Those functions may depend on the actual database product (PostGIS, etc).
+ * Protected methods in this class can be overridden in subclasses
+ * for handling database-specific features.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -39,123 +42,92 @@ import org.apache.sis.storage.DataStoreException;
  * @since   1.0
  * @module
  */
-abstract class SpatialFunctions {
+class SpatialFunctions {
     /**
-     * Names of tables to ignore when inspecting a database schema.
-     * Those tables are used for database internal working (for example by PostGIS).
+     * Whether {@link Types#TINYINT} is an unsigned integer. Both conventions (-128 … 127 range and
+     * 0 … 255 range) are found on the web. If unspecified, we conservatively assume unsigned bytes.
+     * All other integer types are presumed signed.
      */
-    private final Set<String> ignoredTables;
+    private final boolean isByteUnsigned;
 
     /**
      * Creates a new accessor to geospatial functions for the database described by given metadata.
      */
     SpatialFunctions(final DatabaseMetaData metadata) throws SQLException {
-        ignoredTables = new HashSet<>(4);
         /*
-         * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
-         * Note that the standard specified those names in upper-case letters, which is also
-         * the default case specified by the SQL standard.  However some databases use lower
-         * cases instead.
+         * Get information about whether byte are unsigned.
+         * According JDBC specification, the rows shall be ordered by DATA_TYPE.
+         * But the PostgreSQL driver 42.2.2 still provides rows in random order.
          */
-        String crs  = "SPATIAL_REF_SYS";
-        String geom = "GEOMETRY_COLUMNS";
-        if (metadata.storesLowerCaseIdentifiers()) {
-            crs  = crs .toLowerCase(Locale.US).intern();
-            geom = geom.toLowerCase(Locale.US).intern();
+        boolean unsigned = true;
+        try (ResultSet reflect = metadata.getTypeInfo()) {
+            while (reflect.next()) {
+                if (reflect.getInt(Reflection.DATA_TYPE) == Types.TINYINT) {
+                    unsigned = reflect.getBoolean(Reflection.UNSIGNED_ATTRIBUTE);
+                    if (unsigned) break;        // Give precedence to "true" value.
+                }
+            }
         }
-        ignoredTables.add(crs);
-        ignoredTables.add(geom);
-        final Dialect dialect = Dialect.guess(metadata);
-        if (dialect == Dialect.POSTGRESQL) {
-            ignoredTables.add("geography_columns");     // Postgis 1+
-            ignoredTables.add("raster_columns");        // Postgis 2
-            ignoredTables.add("raster_overviews");
-        }
+        isByteUnsigned = unsigned;
     }
 
     /**
-     * Returns whether a table is reserved for database internal working.
-     * If this method returns {@code false}, then the given table is a candidate
-     * for use as a {@code FeatureType}.
+     * Maps a given SQL type to a Java class.
+     * This method shall not return primitive types; their wrappers shall be used instead.
+     * It may return array of primitive types however.
+     * If no match is found, then this method returns {@code null}.
      *
-     * @param  name  database table name to test.
-     * @return {@code true} if the named table should be ignored when looking for feature types.
-     */
-    final boolean isIgnoredTable(final String name) {
-        return ignoredTables.contains(name);
-    }
-
-    /**
-     * Gets the Java class mapped to a given SQL type.
+     * <p>The default implementation handles the types declared in {@link Types} class.
+     * Subclasses should handle the geometry types declared by spatial extensions.</p>
      *
      * @param  sqlType      SQL type code as one of {@link java.sql.Types} constants.
-     * @param  sqlTypeName  name of {@code sqlType}.
-     * @return corresponding java type.
-     *
-     * @todo What happen if there is no match?
+     * @param  sqlTypeName  data source dependent type name. For User Defined Type (UDT) the name is fully qualified.
+     * @return corresponding java type, or {@code null} if unknown.
      */
-    public abstract Class<?> getJavaType(int sqlType, String sqlTypeName);
+    @SuppressWarnings("fallthrough")
+    protected Class<?> toJavaType(final int sqlType, final String sqlTypeName) {
+        switch (sqlType) {
+            case Types.BIT:
+            case Types.BOOLEAN:                 return Boolean.class;
+            case Types.TINYINT:                 if (!isByteUnsigned) return Byte.class;         // else fallthrough.
+            case Types.SMALLINT:                return Short.class;
+            case Types.INTEGER:                 return Integer.class;
+            case Types.BIGINT:                  return Long.class;
+            case Types.REAL:                    return Float.class;
+            case Types.FLOAT:                   // Despite the name, this is implemented as DOUBLE in major databases.
+            case Types.DOUBLE:                  return Double.class;
+            case Types.NUMERIC:                 // Similar to DECIMAL except that it uses exactly the specified precision.
+            case Types.DECIMAL:                 return BigDecimal.class;
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.LONGVARCHAR:             return String.class;
+            case Types.DATE:                    return LocalDate.class;
+            case Types.TIME:                    return LocalTime.class;
+            case Types.TIMESTAMP:               return LocalDateTime.class;
+            case Types.TIME_WITH_TIMEZONE:      return OffsetTime.class;
+            case Types.TIMESTAMP_WITH_TIMEZONE: return OffsetDateTime.class;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:           return byte[].class;
+            case Types.ARRAY:                   return Object[].class;
+            case Types.OTHER:                   // Database-specific accessed via getObject and setObject.
+            case Types.JAVA_OBJECT:             return Object.class;
+            default:                            return null;
+        }
+    }
 
     /**
-     * If a column is an auto-increment or has a sequence, tries to extract next value.
+     * Creates the Coordinate Reference System associated to the the geometry SRID of a given column.
+     * The {@code reflect} argument is the result of a call to {@link DatabaseMetaData#getColumns
+     * DatabaseMetaData.getColumns(…)} with the cursor positioned on the row describing the column.
      *
-     * @param  column  description of the database column for which to get the next value.
-     * @param  cx      connection to the database.
-     * @return column value or null if none.
-     * @throws SQLException if a JDBC error occurred while executing a statement.
-     * @throws DataStoreException if another error occurred while fetching the next value.
-     */
-    public abstract Object nextValue(Column column, Connection cx) throws SQLException, DataStoreException;
-
-    /**
-     * Gets the value sequence name used by a column.
-     *
-     * @param  cx      connection to the database.
-     * @param  schema  name of the database schema.
-     * @param  table   name of the database table.
-     * @param  column  name of the database column.
-     * @return sequence name or null if none.
-     * @throws SQLException if a JDBC error occurred while executing a statement.
-     */
-    public abstract String getColumnSequence(Connection cx, String schema, String table, String column) throws SQLException;
-
-    /**
-     * Builds column attribute type.
-     *
-     * @param  atb       builder for the attribute being created.
-     * @param  cx        connection to the database.
-     * @param  typeName  column data type name.
-     * @param  datatype  column data type code.
-     * @param  schema    name of the database schema.
-     * @param  table     name of the database table.
-     * @param  column    name of the database column.
-     * @throws SQLException if a JDBC error occurred while executing a statement.
-     */
-    public abstract void decodeColumnType(final AttributeTypeBuilder<?> atb, final Connection cx,
-            final String typeName, final int datatype, final String schema,
-            final String table, final String column) throws SQLException;
-
-    /**
-     * Builds geometry column attribute type.
-     *
-     * @param  atb          builder for the attribute being created.
-     * @param  cx           connection to the database.
-     * @param  rs           connection result set.
-     * @param  columnIndex  geometric column index.
-     * @param  customquery  {@code true} if the request is a custom query.
-     * @throws SQLException if a JDBC error occurred while executing a statement.
-     */
-    public abstract void decodeGeometryColumnType(final AttributeTypeBuilder<?> atb, final Connection cx,
-            final ResultSet rs, final int columnIndex, boolean customquery) throws SQLException;
-
-    /**
-     * Creates the CRS associated to the the geometry SRID of a given column. The {@code reflect} argument
-     * is the result of a call to {@link DatabaseMetaData#getColumns(String, String, String, String)
-     * DatabaseMetaData.getColumns(…)} with the cursor positioned on the row to process.
+     * <p>The default implementation returns {@code null}. Subclasses may override.</p>
      *
      * @param  reflect  the result of {@link DatabaseMetaData#getColumns DatabaseMetaData.getColumns(…)}.
-     * @return CoordinateReferenceSystem ID in the database
+     * @return Coordinate Reference System in the database for the given column, or {@code null} if unknown.
      * @throws SQLException if a JDBC error occurred while executing a statement.
      */
-    public abstract CoordinateReferenceSystem createGeometryCRS(ResultSet reflect) throws SQLException;
+    protected CoordinateReferenceSystem createGeometryCRS(ResultSet reflect) throws SQLException {
+        return null;
+    }
 }

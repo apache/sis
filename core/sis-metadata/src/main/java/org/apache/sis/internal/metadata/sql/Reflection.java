@@ -93,6 +93,12 @@ public final class Reflection {
     public static final String COLUMN_SIZE = "COLUMN_SIZE";
 
     /**
+     * Whether an integer type is unsigned.
+     * Values in this column are integers ({@code boolean}) rather than {@code String}.
+     */
+    public static final String UNSIGNED_ATTRIBUTE = "UNSIGNED_ATTRIBUTE";
+
+    /**
      * The {@value} key for the nullability of a column. Possible values are {@code "YES"} if
      * the parameter can include NULLs, {@code "NO"} if the parameter cannot include NULLs,
      * and empty string if the nullability for the parameter is unknown.

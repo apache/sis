@@ -18,7 +18,7 @@ package org.apache.sis.storage.sql;
 
 import javax.sql.DataSource;
 import org.apache.sis.internal.sql.feature.Database;
-import org.apache.sis.internal.sql.feature.QueryFeatureSet;
+import org.apache.sis.internal.sql.feature.QueriedFeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -78,6 +78,6 @@ public abstract class SQLStore extends DataStore {
      * @return the features obtained by the given given query.
      */
     public FeatureSet query(final SQLQuery query) {
-        return new QueryFeatureSet(this, model, query);
+        return new QueriedFeatureSet(this, model, query);
     }
 }

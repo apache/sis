@@ -20,8 +20,10 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import javax.annotation.Generated;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
@@ -62,6 +64,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unexpected duplication of “{0}” entity named “{1}”.
          */
         public static final short DuplicatedEntity_2 = 1;
+
+        /**
+         * No mapping from SQL type “{0}” to a Java class.
+         */
+        public static final short UnknownType_1 = 2;
     }
 
     /**
@@ -136,5 +143,44 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg1) throws MissingResourceException
     {
         return forLocale(null).getString(key, arg0, arg1);
+    }
+
+    /**
+     * The international string to be returned by {@link formatInternational}.
+     */
+    private static final class International extends ResourceInternationalString {
+        private static final long serialVersionUID = 7325356372249131588L;
+
+        International(short key)                           {super(key);}
+        International(short key, Object args)              {super(key, args);}
+        @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
+            return forLocale(locale);
+        }
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key  the key for the desired string.
+     * @return an international string for the given key.
+     */
+    public static InternationalString formatInternational(final short key) {
+        return new International(key);
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key   the key for the desired string.
+     * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
+     * @return an international string for the given key.
+     */
+    public static InternationalString formatInternational(final short key, final Object... args) {
+        return new International(key, args);
     }
 }
