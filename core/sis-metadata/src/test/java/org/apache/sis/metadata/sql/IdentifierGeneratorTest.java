@@ -18,7 +18,6 @@ package org.apache.sis.metadata.sql;
 
 import java.sql.Statement;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.metadata.MetadataStandard;
@@ -32,7 +31,7 @@ import static org.junit.Assert.*;
  * Creates an empty database and insert automatically-generated keys.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -59,9 +58,9 @@ public final strictfp class IdentifierGeneratorTest extends TestCase {
      */
     @Test
     public void testSequence() throws Exception {
-        final DataSource ds = TestDatabase.create("IdentifierGenerator");
-        try {
-            final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, null, null);
+        try (TestDatabase db = TestDatabase.create("IdentifierGenerator");
+             MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, null, null))
+        {
             synchronized (source) {
                 stmt = source.connection().createStatement();
                 stmt.executeUpdate("CREATE TABLE \"" + TABLE + "\" (ID VARCHAR(6) NOT NULL PRIMARY KEY)");
@@ -81,8 +80,6 @@ public final strictfp class IdentifierGeneratorTest extends TestCase {
                 generator.close();
                 source.close();
             }
-        } finally {
-            TestDatabase.drop(ds);
         }
     }
 

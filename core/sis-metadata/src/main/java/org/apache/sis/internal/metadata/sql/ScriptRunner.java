@@ -281,7 +281,7 @@ public class ScriptRunner implements AutoCloseable {
      * @param  maxRowsPerInsert  maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
-    protected ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
+    public ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
@@ -456,7 +456,7 @@ public class ScriptRunner implements AutoCloseable {
      * @param  loader    the class to use for loading the SQL script.
      * @param  filename  the SQL script filename, relative to the {@code loader} package.
      * @return the number of rows added or modified as a result of the statement execution.
-     * @throws IOException if an error occurred while reading the input (should never happen).
+     * @throws IOException if an error occurred while reading the input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public final int run(final Class<?> loader, final String filename) throws IOException, SQLException {

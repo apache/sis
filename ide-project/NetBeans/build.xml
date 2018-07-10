@@ -248,6 +248,9 @@
         <include name="**/*.gpx"/>
         <include name="**/*.xml"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-sql/src/test/resources">
+        <include name="**/*.sql"/>
+      </fileset>
       <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
         <include name="**/*.txt"/>
       </fileset>

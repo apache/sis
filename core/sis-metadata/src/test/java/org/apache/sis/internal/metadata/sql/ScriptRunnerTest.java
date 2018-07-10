@@ -18,7 +18,6 @@ package org.apache.sis.internal.metadata.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.test.sql.TestDatabase;
@@ -31,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests {@link ScriptRunner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -44,13 +43,12 @@ public final strictfp class ScriptRunnerTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws SQLException {
-        final DataSource ds = TestDatabase.create("ScriptRunner");
-        try (Connection c = ds.getConnection()) {
+        try (TestDatabase db = TestDatabase.create("ScriptRunner");
+             Connection c = db.source.getConnection())
+        {
             final ScriptRunner sr = new ScriptRunner(c, 3);
             testSupportedFlags(sr);
             testRegularExpressions(sr);
-        } finally {
-            TestDatabase.drop(ds);
         }
     }
 
