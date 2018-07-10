@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.test.xml;
 
 import java.util.Map;
 import java.util.Set;
@@ -73,16 +73,16 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
  *
- * @see XMLTestCase
- * @see MetadataAssert#assertXmlEquals(Object, Object, String[])
+ * @see TestCase
+ * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
  *
  * @since 0.3
  * @module
  */
-public strictfp class XMLComparator {
+public strictfp class DocumentComparator {
     /**
      * Commonly used prefixes for namespaces. Used as shorthands for calls to
-     * {@link MetadataAssert#assertXmlEquals(Object, Object, String[])}.
+     * {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}.
      *
      * @see #substitutePrefix(String)
      */
@@ -145,8 +145,8 @@ public strictfp class XMLComparator {
      *       {@code "http://www.w3.org/2001/XMLSchema-instance"}.</li>
      * </ul>
      *
-     * <p>{@code XMLComparator} is namespace aware. The second case in the above-cited choice may happen only
-     * if the user provided {@link Node} instances to the constructor. In such case, {@code XMLComparator} has
+     * <p>{@code DocumentComparator} is namespace aware. The second case in the above-cited choice may happen only
+     * if the user provided {@link Node} instances to the constructor. In such case, {@code DocumentComparator} has
      * no control on whether the nodes contain namespaces or not.</p>
      *
      * <p>For example in order to ignore the namespace, type and schema location declaration,
@@ -158,8 +158,8 @@ public strictfp class XMLComparator {
      *   "http://www.w3.org/2001/XMLSchema-instance:type"
      * }
      *
-     * Note that for convenience, the {@link MetadataAssert#assertXmlEquals(Object, Object, String[])} method
-     * automatically replaces some widely used prefixes by their full URL.
+     * Note that for convenience, the {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}
+     * method automatically replaces some widely used prefixes by their full URL.
      */
     public final Set<String> ignoredAttributes;
 
@@ -200,7 +200,7 @@ public strictfp class XMLComparator {
      * @throws ParserConfigurationException if a {@link DocumentBuilder} can not be created.
      * @throws SAXException if an error occurred while parsing the XML document.
      */
-    public XMLComparator(final Object expected, final Object actual)
+    public DocumentComparator(final Object expected, final Object actual)
             throws IOException, ParserConfigurationException, SAXException
     {
         ArgumentChecks.ensureNonNull("expected", expected);
@@ -255,8 +255,16 @@ public strictfp class XMLComparator {
     /**
      * If the given attribute name begins with one of the well known prefixes,
      * substitutes the prefix by the full URL. Otherwise returns the name unchanged.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the given attribute is {@code xmlns:gml}, then this method returns
+     * {@code "http://www.w3.org/2000/xmlns:gml"}.
+     * </div>
+     *
+     * @param  attribute  the attribute.
+     * @return the given attribute, possibly with prefix replaced by URL.
      */
-    static String substitutePrefix(final String attribute) {
+    public static String substitutePrefix(final String attribute) {
         final int s = attribute.lastIndexOf(':');
         if (s >= 0) {
             final String url = PREFIX_URL.get(attribute.substring(0, s));

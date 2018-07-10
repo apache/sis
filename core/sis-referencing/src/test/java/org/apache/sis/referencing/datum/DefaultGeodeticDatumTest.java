@@ -29,7 +29,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestStep;
@@ -52,7 +52,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
     DefaultEllipsoidTest.class,
     BursaWolfParametersTest.class
 })
-public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
+public final strictfp class DefaultGeodeticDatumTest extends TestCase {
     /**
      * An XML file in this package containing a geodetic datum definition.
      */

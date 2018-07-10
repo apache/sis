@@ -20,7 +20,7 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

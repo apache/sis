@@ -17,29 +17,29 @@
 package org.apache.sis.internal.test;
 
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.XMLComparator;
+import org.apache.sis.test.xml.DocumentComparator;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link XMLComparator} class.
+ * Tests the {@link DocumentComparator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
  * @module
  */
-public final strictfp class XMLComparatorTest extends TestCase {
+public final strictfp class DocumentComparatorTest extends TestCase {
     /**
-     * Tests the {@link XMLComparator#ignoredAttributes} and {@link XMLComparator#ignoredNodes} sets.
+     * Tests the {@link DocumentComparator#ignoredAttributes} and {@link DocumentComparator#ignoredNodes} sets.
      *
      * @throws Exception if an error occurred while reading the XML.
      */
     @Test
     public void testIgnore() throws Exception {
-        final XMLComparator cmp = new XMLComparator(
+        final DocumentComparator cmp = new DocumentComparator(
             "<body>\n" +
             "  <form id=\"MyForm\">\n" +
             "    <table cellpading=\"1\">\n" +
@@ -85,7 +85,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
      */
     @Test
     public void testNamespaceAware() throws Exception {
-        XMLComparator cmp = new XMLComparator(
+        DocumentComparator cmp = new DocumentComparator(
             "<ns1:body xmlns:ns1=\"http://myns1\" xmlns:ns2=\"http://myns2\">\n" +
             "  <ns1:table ns2:cellpading=\"1\"/>\n" +
             "</ns1:body>",
@@ -101,7 +101,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
          * Opposite case: same prefix, but different URL.
          * The XML comparison is expected to fail.
          */
-        cmp = new XMLComparator(
+        cmp = new DocumentComparator(
             "<ns1:body xmlns:ns1=\"http://myns1\" xmlns:ns2=\"http://myns2\">\n" +
             "  <ns1:table ns2:cellpading=\"1\"/>\n" +
             "</ns1:body>",
@@ -116,14 +116,14 @@ public final strictfp class XMLComparatorTest extends TestCase {
     }
 
     /**
-     * Ensures that the call to {@link XMLComparator#compare()} fails. This method is
+     * Ensures that the call to {@link DocumentComparator#compare()} fails. This method is
      * invoked in order to test that the comparator rightly detected an error that we
      * were expected to detect.
      *
      * @param  message  the message for JUnit if the comparison does not fail.
-     * @param  cmp      the comparator on which to invoke {@link XMLComparator#compare()}.
+     * @param  cmp      the comparator on which to invoke {@link DocumentComparator#compare()}.
      */
-    private static void assertFail(final String message, final XMLComparator cmp) {
+    private static void assertFail(final String message, final DocumentComparator cmp) {
         try {
             cmp.compare();
         } catch (AssertionError e) {

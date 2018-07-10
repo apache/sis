@@ -40,7 +40,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
 // Test dependencies
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

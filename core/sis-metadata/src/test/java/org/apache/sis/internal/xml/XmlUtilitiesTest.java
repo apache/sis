@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Locale;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -35,7 +35,7 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * @since   0.3
  * @module
  */
-public final strictfp class XmlUtilitiesTest extends XMLTestCase {
+public final strictfp class XmlUtilitiesTest extends TestCase {
     /**
      * Tests the {@link XmlUtilities#toXML} method.
      * This test arbitrarily uses the CET timezone.

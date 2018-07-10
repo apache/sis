@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 
 import static org.junit.Assert.assertEquals;
 

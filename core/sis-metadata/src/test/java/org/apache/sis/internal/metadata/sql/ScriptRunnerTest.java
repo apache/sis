@@ -17,9 +17,11 @@
 package org.apache.sis.internal.metadata.sql;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
+import org.apache.sis.test.sql.TestDatabase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -38,10 +40,10 @@ public final strictfp class ScriptRunnerTest extends TestCase {
      * Tests {@link ScriptRunner} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
      *
-     * @throws Exception if an error occurred while executing the script runner.
+     * @throws SQLException if an error occurred while executing the script runner.
      */
     @Test
-    public void testOnDerby() throws Exception {
+    public void testOnDerby() throws SQLException {
         final DataSource ds = TestDatabase.create("ScriptRunner");
         try (Connection c = ds.getConnection()) {
             final ScriptRunner sr = new ScriptRunner(c, 3);

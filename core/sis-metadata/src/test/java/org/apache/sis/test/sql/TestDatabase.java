@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata.sql;
+package org.apache.sis.test.sql;
 
-import java.sql.SQLException;
 import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.util.Debug;
-
-import static org.junit.Assume.*;
 
 
 /**
- * Utility methods for creating temporary databases with Derby.
- * The databases are in-memory only.
+ * Utility methods for creating temporary databases for testing purpose.
+ * The databases are in-memory only when the database supports this mode.
  *
- * <div class="section">Inspecting the database content in a debugger</div>
+ * <div class="section">Inspecting the Derby database content in a debugger</div>
  * Make sure that the classpath contains the {@code derbynet.jar} file in addition to {@code derby.jar}.
  * Then, specify the following options to the JVM (replace the 1527 port number by something else if needed):
  *
@@ -51,7 +52,7 @@ import static org.junit.Assume.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -79,20 +80,16 @@ public final strictfp class TestDatabase {
      *
      * @param  name  the database name (without {@code "memory:"} prefix).
      * @return the data source.
-     * @throws Exception if an error occurred while creating the database.
+     * @throws SQLException if an error occurred while creating the database.
      */
-    public static DataSource create(final String name) throws Exception {
+    public static DataSource create(final String name) throws SQLException {
         if (TEST_DATABASE != null) {
             return TEST_DATABASE;
         }
-        final DataSource ds;
-        try {
-            ds = Initializer.forJavaDB("memory:" + name);
-        } catch (ClassNotFoundException e) {
-            assumeNoException("No Derby driver has been found.", e);
-            throw e;
-        }
-        ds.getClass().getMethod("setCreateDatabase", String.class).invoke(ds, "create");
+        final EmbeddedDataSource ds = new EmbeddedDataSource();
+        ds.setDatabaseName("memory:" + name);
+        ds.setDataSourceName("Apache SIS spatial metadata");
+        ds.setCreateDatabase("create");
         return ds;
     }
 
@@ -100,20 +97,25 @@ public final strictfp class TestDatabase {
      * Drops an in-memory Derby database after usage.
      *
      * @param  ds  the data source created by {@link #create(String)}.
-     * @throws Exception if an error occurred while dropping the database.
+     * @throws SQLException if an error occurred while dropping the database.
      */
-    public static void drop(final DataSource ds) throws Exception {
+    public static void drop(final DataSource ds) throws SQLException {
         if (ds == TEST_DATABASE) {
             return;
         }
-        ds.getClass().getMethod("setCreateDatabase", String.class).invoke(ds, "no");
-        ds.getClass().getMethod("setConnectionAttributes", String.class).invoke(ds, "drop=true");
-        try {
-            ds.getConnection().close();
-        } catch (SQLException e) {                          // This is the expected exception.
-            if (!Initializer.isSuccessfulShutdown(e)) {
-                throw e;
+        if (ds instanceof EmbeddedDataSource) {
+            final EmbeddedDataSource db = (EmbeddedDataSource) ds;
+            db.setCreateDatabase("no");
+            db.setConnectionAttributes("drop=true");
+            try {
+                ds.getConnection().close();
+            } catch (SQLException e) {                          // This is the expected exception.
+                if (!Initializer.isSuccessfulShutdown(e)) {
+                    throw e;
+                }
             }
+        } else {
+            throw new SQLFeatureNotSupportedException("Unknown data source: " + ds.getClass());
         }
     }
 }

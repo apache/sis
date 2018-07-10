@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.test.xml;
 
 import java.net.URL;
 import java.util.Map;
@@ -59,12 +59,12 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  *
- * @see XMLComparator
+ * @see DocumentComparator
  *
  * @since 0.3
  * @module
  */
-public abstract strictfp class XMLTestCase extends TestCase {
+public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     /**
      * Miscellaneous version constants used for ISO standards.
      */
@@ -118,7 +118,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
     /**
      * Creates a new test case.
      */
-    protected XMLTestCase() {
+    protected TestCase() {
     }
 
     /**
@@ -135,7 +135,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      * @throws JAXBException if an error occurred while creating the JAXB marshaller.
      */
     protected MarshallerPool getMarshallerPool() throws JAXBException {
-        synchronized (XMLTestCase.class) {
+        synchronized (TestCase.class) {
             if (defaultPool == null) {
                 final Map<String,Object> properties = new HashMap<>(4);
                 assertNull(properties.put(XML.LOCALE, Locale.UK));
@@ -191,7 +191,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
             final URL resource = c.getResource(filename);
             if (resource != null) return resource;
             c = c.getSuperclass();
-        } while (!c.equals(XMLTestCase.class));
+        } while (!c.equals(TestCase.class));
         throw new AssertionError("Test resource not found: " + filename);
     }
 

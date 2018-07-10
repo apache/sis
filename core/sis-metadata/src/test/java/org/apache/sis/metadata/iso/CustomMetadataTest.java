@@ -40,7 +40,7 @@ import org.opengis.temporal.Duration;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.XML;
 import org.junit.Test;
 
@@ -59,7 +59,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
-public final strictfp class CustomMetadataTest extends XMLTestCase {
+public final strictfp class CustomMetadataTest extends TestCase {
     /**
      * Tests the marshalling of a metadata implemented by {@link Proxy}.
      *

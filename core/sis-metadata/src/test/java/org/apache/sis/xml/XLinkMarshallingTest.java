@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -45,7 +45,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
-public final strictfp class XLinkMarshallingTest extends XMLTestCase {
+public final strictfp class XLinkMarshallingTest extends TestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.
      */

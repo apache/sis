@@ -14,35 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.xml;
-
-import org.apache.sis.test.xml.TestCase;
-
 
 /**
- * Base class of tests which contain some XML (un)marshalling of metadata as ISO 19115-3 compliant documents.
- * Tests use the the files provided in the {@code "2007/"} or {@code "2016/"} sub-directories, depending on
- * whether ISO 19139:2007 or ISO 19115-3:2016 schema is used.
+ * Utility methods for testing SQL databases.
+ *
+ * <p>Objects defined in this package are only for SIS testing purpose any many change
+ * in any future version without notice.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public abstract strictfp class TestUsingFile extends TestCase {
-    /**
-     * The sub-directory of XML files encoded according the ISO 19115-3:2016 schema.
-     */
-    protected static final String XML2016 = "2016/";
-
-    /**
-     * The sub-directory of XML files encoded according the ISO 19139:2007 schema.
-     */
-    protected static final String XML2007 = "2007/";
-
-    /**
-     * For sub-class constructors only.
-     */
-    protected TestUsingFile() {
-    }
-}
+package org.apache.sis.test.sql;

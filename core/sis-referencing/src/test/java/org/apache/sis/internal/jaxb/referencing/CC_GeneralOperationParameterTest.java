@@ -27,7 +27,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(org.apache.sis.parameter.DefaultParameterDescriptorTest.class)
-public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase {
+public final strictfp class CC_GeneralOperationParameterTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testGroupMergeBecauseExtraParameter()}.
      * This rule is used by test methods for verifying that the log message contains the expected information.

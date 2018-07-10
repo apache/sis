@@ -17,7 +17,7 @@
 package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.JAXBException;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  * @module
  */
-public final strictfp class DataIdentificationTest extends XMLTestCase {
+public final strictfp class DataIdentificationTest extends TestCase {
     /**
      * Tests marshalling and unmarshalling of a XML fragment.
      *

@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;

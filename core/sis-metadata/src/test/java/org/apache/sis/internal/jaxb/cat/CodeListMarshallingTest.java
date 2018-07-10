@@ -33,7 +33,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -51,7 +51,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since 0.3
  * @module
  */
-public final strictfp class CodeListMarshallingTest extends XMLTestCase {
+public final strictfp class CodeListMarshallingTest extends TestCase {
     /**
      * Returns a XML string to use for testing purpose.
      * Note that responsible party exists only in legacy ISO 19115:2003 model.
