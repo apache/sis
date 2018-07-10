@@ -36,7 +36,7 @@
            Module Description
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
-  <artifactId>sis-sql</artifactId>
+  <artifactId>sis-sqlstore</artifactId>
   <name>Apache SIS SQL storage</name>
   <description>
     Read and write features from SQL databases.

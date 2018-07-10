@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
- * Warning and error messages that are specific to the {@code sis-sql} module.
+ * Warning and error messages that are specific to the {@code sis-sqlstore} module.
  * Resources in this file should not be used by any other module. For resources shared by
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
