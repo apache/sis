@@ -18,10 +18,9 @@ package org.apache.sis.storage.sql;
 
 import javax.sql.DataSource;
 import org.apache.sis.internal.sql.feature.Database;
-import org.apache.sis.internal.sql.feature.QueriedFeatureSet;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 
 
@@ -29,15 +28,12 @@ import org.apache.sis.storage.StorageConnector;
  * A data store capable to read and create features from a spatial database.
  * An example of spatial database is PostGIS.
  *
- * <div class="warning">This is an experimental class,
- * not yet target for any Apache SIS release at this time.</div>
- *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public abstract class SQLStore extends DataStore {
+public abstract class SQLStore extends DataStore implements Aggregate {
     /**
      * The data source to use for obtaining connections to the database.
      */
@@ -69,15 +65,5 @@ public abstract class SQLStore extends DataStore {
      */
     public DataSource getDataSource() {
         return source;
-    }
-
-    /**
-     * Executes a query directly on the database.
-     *
-     * @param  query the query to execute (can not be null).
-     * @return the features obtained by the given given query.
-     */
-    public FeatureSet query(final SQLQuery query) {
-        return new QueriedFeatureSet(this, model, query);
     }
 }

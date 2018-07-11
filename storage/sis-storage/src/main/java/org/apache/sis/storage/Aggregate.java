@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 import java.util.Collection;
 
 /**
- * A collection of resources. An aggregate can have two or more components.
+ * A collection of resources. An aggregate can have any number of components.
  * Each component can be another aggregate, thus forming a tree of resources.
  * Different kinds of aggregate may exist for various reasons, for example (adapted from ISO 19115):
  *

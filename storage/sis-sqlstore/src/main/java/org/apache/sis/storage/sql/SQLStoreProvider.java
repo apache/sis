@@ -22,9 +22,6 @@ import org.apache.sis.storage.DataStoreProvider;
 /**
  * Provider of {@code SQLStore} instances.
  *
- * <div class="warning">This is an experimental class,
- * not yet target for any Apache SIS release at this time.</div>
- *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0

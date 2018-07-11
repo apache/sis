@@ -77,12 +77,16 @@ public final class Database {
         for (final String tablePattern : tablePatterns) {
             try (ResultSet reflect = analyzer.metadata.getTables(catalog, schemaPattern, tablePattern, tableTypes)) {
                 while (reflect.next()) {
+                    final String table = reflect.getString(Reflection.TABLE_NAME);
+                    if (analyzer.isIgnoredTable(table)) {
+                        continue;
+                    }
                     String remarks = reflect.getString(Reflection.REMARKS);
                     remarks = (remarks != null) ? remarks.trim() : "";      // Empty string means that we verified that there is no remarks.
                     analyzer.addDependency(new TableName(remarks,           // Opportunistically use the 'name' field for storing remarks.
                             reflect.getString(Reflection.TABLE_CAT),
                             reflect.getString(Reflection.TABLE_SCHEM),
-                            reflect.getString(Reflection.TABLE_NAME)));
+                            table));
                 }
             }
         }
