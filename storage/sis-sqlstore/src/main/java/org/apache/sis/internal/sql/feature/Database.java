@@ -22,19 +22,23 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.opengis.util.LocalName;
+import org.opengis.util.GenericName;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.IllegalNameException;
-
-// Branch-dependent imports
-import org.opengis.feature.FeatureType;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
  * Represent the structure of features in the database.
  * The work done here is similar to reverse engineering.
+ * Instances of this class are thread-safe after construction;
+ * if the database schema changes, then a new {@code Database} instance shall be created.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,9 +48,15 @@ import org.opengis.feature.FeatureType;
  */
 public final class Database {
     /**
-     * All tables known to this {@code Database}. Each table contains a {@link Table#featureType}.
+     * The SQL wildcard for any characters. A string containing only this wildcard
+     * means "any value" and can sometime be replaced by {@code null}.
      */
-    private final FeatureNaming<Table> tables;
+    public static final String WILDCARD = "%";
+
+    /**
+     * All tables known to this {@code Database}.
+     */
+    public final FeatureNaming<FeatureSet> tables;
 
     /**
      * Functions that may be specific to the geospatial database in use.
@@ -59,23 +69,35 @@ public final class Database {
      * but this list should not include the dependencies; this constructor
      * will follow foreigner keys automatically.
      *
-     * @param  store          the data store for which we are creating a model. Used only in case of error.
-     * @param  connection     connection to the database.
-     * @param  catalog        name of a catalog as it is stored in the database, or {@code null} for any catalog.
-     * @param  schemaPattern  pattern (with {@code '_'} and {@code '%'} wildcards) of a schema, or {@code null} for any.
-     * @param  tablePatterns  pattern (with {@code '_'} and {@code '%'} wildcards) of tables to include in the model.
+     * <p>The table names shall be qualified names of 1, 2 or 3 components.
+     * The components are {@code <catalog>.<schema pattern>.<table pattern>} where:</p>
+     *
+     * <ul>
+     *   <li>{@code <catalog>}, if present, shall be the name of a catalog as it is stored in the database.</li>
+     *   <li>{@code <schema pattern>}, if present, shall be the pattern of a schema.
+     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
+     *   <li>{@code <table pattern>} (mandatory) shall be the pattern of a table.
+     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
+     * </ul>
+     *
+     * @param  store        the data store for which we are creating a model. Used only in case of error.
+     * @param  connection   connection to the database.
+     * @param  tableNames   qualified name of the tables.
+     * @param  listeners    where to send the warnings.
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
-    public Database(final SQLStore store, final Connection connection, final String catalog,
-            final String schemaPattern, final String[] tablePatterns)
-            throws SQLException, DataStoreException
+    public Database(final SQLStore store, final Connection connection, final GenericName[] tableNames,
+            final WarningListeners<DataStore> listeners) throws SQLException, DataStoreException
     {
         tables = new FeatureNaming<>();
-        final Analyzer analyzer = new Analyzer(connection.getMetaData());
+        final Analyzer analyzer = new Analyzer(connection.getMetaData(), listeners);
         final String[] tableTypes = getTableTypes(analyzer.metadata);
-        for (final String tablePattern : tablePatterns) {
-            try (ResultSet reflect = analyzer.metadata.getTables(catalog, schemaPattern, tablePattern, tableTypes)) {
+        for (final GenericName tableName : tableNames) {
+            String[] names = tableName.getParsedNames().stream().map(LocalName::toString).toArray(String[]::new);
+            ArraysExt.reverse(names);               // Reorganize in (catalog, schemaPattern, tablePattern) order.
+            names = ArraysExt.resize(names, 3);     // Pad with null values if necessary.
+            try (ResultSet reflect = analyzer.metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
                     final String table = reflect.getString(Reflection.TABLE_NAME);
                     if (analyzer.isIgnoredTable(table)) {
@@ -83,17 +105,17 @@ public final class Database {
                     }
                     String remarks = reflect.getString(Reflection.REMARKS);
                     remarks = (remarks != null) ? remarks.trim() : "";      // Empty string means that we verified that there is no remarks.
-                    analyzer.addDependency(new TableName(remarks,           // Opportunistically use the 'name' field for storing remarks.
+                    analyzer.addDependency(new TableReference(
                             reflect.getString(Reflection.TABLE_CAT),
                             reflect.getString(Reflection.TABLE_SCHEM),
-                            table));
+                            table, remarks));
                 }
             }
         }
-        TableName dependency;
+        TableReference dependency;
         while ((dependency = analyzer.nextDependency()) != null) {
             final Table table = new Table(analyzer, dependency);
-            tables.add(store, table.featureType.getName(), table);
+            tables.add(store, table.getType().getName(), table);
         }
         functions = analyzer.functions;
     }
@@ -112,17 +134,5 @@ public final class Database {
             }
         }
         return types.toArray(new String[types.size()]);
-    }
-
-    /**
-     * Returns the feature type of the given name.
-     *
-     * @param  store  the data store for which we are created the model. Used only in case of error.
-     * @param  name   name of the feature type to fetch.
-     * @return the feature type of the given name.
-     * @throws IllegalNameException if the given name is unknown or ambiguous.
-     */
-    public FeatureType getFeatureType(final SQLStore store, final String name) throws IllegalNameException {
-        return tables.get(store, name).featureType;
     }
 }

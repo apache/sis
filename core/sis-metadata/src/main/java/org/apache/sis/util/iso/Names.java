@@ -72,7 +72,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultNameFactory
  * @see DefaultNameSpace
@@ -114,7 +114,7 @@ public final class Names extends Static {
      * around the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}, which is {@code ":"}.
      *
      * @param  namespace   the namespace, or {@code null} for the global namespace.
-     * @param  separator   the separator between the namespace and the scoped name, or {@code null}
+     * @param  separator   the separator between the namespace and the generic name, or {@code null}
      *                     for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
      * @param  scopedName  the name to parse using {@code ':'} as the separator between components.
      * @return a local or scoped name in the given namespace.
@@ -128,7 +128,26 @@ public final class Names extends Static {
     }
 
     /**
-     * Constructs a scoped name as the concatenation of the given generic name with a single character sequence.
+     * Creates a local or scoped name from an array of parsed names. This method returns a local name if the
+     * length of the {@code parsedNames} array is 1, or a scoped named if the length of the array is 2 or more.
+     *
+     * @param  namespace    the namespace, or {@code null} for the global namespace.
+     * @param  separator    the separator between the namespace and the generic name, or {@code null}
+     *                      for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  parsedNames  the local names as an array of {@link String} or {@link InternationalString} instances.
+     *                      This array shall contain at least one element.
+     * @return the generic name for the given parsed names.
+     *
+     * @since 1.0
+     */
+    public static GenericName createGenericName(final CharSequence namespace, final String separator, final CharSequence... parsedNames) {
+        ensureNonNull("parsedNames", parsedNames);
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        return factory.createGenericName(createNameSpace(factory, namespace, separator), parsedNames);
+    }
+
+    /**
+     * Creates a scoped name as the concatenation of the given generic name with a single character sequence.
      * The scope of the new name will be the scope of the {@code path} argument.
      * The tail is a local name created from the given character sequence.
      *

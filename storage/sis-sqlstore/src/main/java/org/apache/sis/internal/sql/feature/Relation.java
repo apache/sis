@@ -23,11 +23,13 @@ import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -51,7 +53,7 @@ import org.apache.sis.storage.DataStoreContentException;
  * @since   1.0
  * @module
  */
-final class Relation extends TableName {
+final class Relation extends TableReference {
     /**
      * Whether another table is <em>using</em> or is <em>used by</em> the table containing the {@link Relation}.
      */
@@ -147,10 +149,10 @@ final class Relation extends TableName {
      * least one row, unless an exception occurs.</p>
      */
     Relation(final Direction dir, final ResultSet reflect) throws SQLException, DataStoreContentException {
-        super(reflect.getString(dir.name),
-              reflect.getString(dir.catalog),
+        super(reflect.getString(dir.catalog),
               reflect.getString(dir.schema),
-              reflect.getString(dir.table));
+              reflect.getString(dir.table),
+              reflect.getString(dir.name));
 
         final Map<String,String> m = new LinkedHashMap<>();
         boolean cascade = false;
@@ -184,15 +186,44 @@ final class Relation extends TableName {
     }
 
     /**
-     * Creates a tree representation of this relation for debugging purpose.
+     * Adds a child of the given name to the given parent node.
+     * This is a convenience method for {@code toString()} implementations.
+     *
+     * @param  parent  the node where to add a child.
+     * @param  name    the name to assign to the child.
+     * @return the child added to the parent.
      */
     @Debug
-    @Override
+    static TreeTable.Node newChild(final TreeTable.Node parent, final String name) {
+        final TreeTable.Node child = parent.newChild();
+        child.setValue(TableColumn.NAME, name);
+        return child;
+    }
+
+    /**
+     * Creates a tree representation of this relation for debugging purpose.
+     *
+     * @param  parent  the parent node where to add the tree representation.
+     * @return the node added by this method.
+     */
+    @Debug
     TreeTable.Node appendTo(final TreeTable.Node parent) {
-        final TreeTable.Node node = super.appendTo(parent);
+        final TreeTable.Node node = newChild(parent, remarks);
         for (final Map.Entry<String,String> e : columns.entrySet()) {
             newChild(node, e.getValue() + " → " + e.getKey());
         }
         return node;
+    }
+
+    /**
+     * Formats a graphical representation of this object for debugging purpose. This representation can
+     * be printed to the {@linkplain System#out standard output stream} (for example) if the output device
+     * uses a monospaced font and supports Unicode.
+     */
+    @Override
+    public String toString() {
+        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
+        appendTo(table.getRoot());
+        return table.toString();
     }
 }

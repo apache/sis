@@ -61,14 +61,29 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Provider of connections to the database.
+         */
+        public static final short DataSource = 1;
+
+        /**
          * Unexpected duplication of “{0}” entity named “{1}”.
          */
-        public static final short DuplicatedEntity_2 = 1;
+        public static final short DuplicatedEntity_2 = 5;
+
+        /**
+         * “{0}” is not a valid qualified name for a table.
+         */
+        public static final short IllegalQualifiedName_1 = 3;
+
+        /**
+         * Table names, optionally with their schemas and catalogs.
+         */
+        public static final short QualifiedTableNames = 2;
 
         /**
          * No mapping from SQL type “{0}” to a Java class.
          */
-        public static final short UnknownType_1 = 2;
+        public static final short UnknownType_1 = 4;
     }
 
     /**

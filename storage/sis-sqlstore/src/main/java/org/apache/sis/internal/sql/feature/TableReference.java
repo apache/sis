@@ -17,11 +17,11 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Objects;
+import org.apache.sis.storage.sql.SQLStoreProvider;
 
 
 /**
  * A (catalog, schema, table) name tuple, which can be used as keys in hash map.
- * The {@link #name} field is for informative purpose only and ignored by this class.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -29,7 +29,7 @@ import java.util.Objects;
  * @since   1.0
  * @module
  */
-class TableName extends MetaModel {
+class TableReference {
     /**
      * The catalog, schema and table name of a table.
      * The table name is mandatory, but the schema and catalog names may be null.
@@ -37,28 +37,33 @@ class TableName extends MetaModel {
     final String catalog, schema, table;
 
     /**
+     * Ignored by this class; reserved for caller and subclasses usage.
+     */
+    final String remarks;
+
+    /**
      * Creates a new tuple with the give names.
      */
-    TableName(final String name, final String catalog, final String schema, final String table) {
-        super(name);
+    TableReference(final String catalog, final String schema, final String table, final String remarks) {
         this.catalog = catalog;
         this.schema  = schema;
         this.table   = table;
+        this.remarks = remarks;
     }
 
     /**
-     * Returns {@code true} if the given object is a {@code Relation} with equal table, schema and catalog names.
-     * All other properties (column names, action on delete…) are ignored; this method is <strong>not</strong> for
-     * testing if two {@code Relation} are fully equal. The purpose of this method is only to use {@code Relation}
-     * as keys in {@link Analyzer#dependencies} map for remembering full coordinates of tables that may need to be
-     * analyzed later.
+     * Returns {@code true} if the given object is a {@code TableReference} with equal table, schema and catalog names.
+     * All other properties that may be defined in subclasses (column names, action on delete, etc.) are ignored; this
+     * method is <strong>not</strong> for testing if two {@link Relation} are fully equal. The purpose of this method
+     * is only to use {@code TableReference} as keys in {@link Analyzer#dependencies} map for remembering full
+     * coordinates of tables that may need to be analyzed later.
      */
     @Override
     public final boolean equals(final Object obj) {
-        if (obj instanceof TableName) {
-            final TableName other = (TableName) obj;
+        if (obj instanceof TableReference) {
+            final TableReference other = (TableReference) obj;
             return table.equals(other.table) && Objects.equals(schema, other.schema) && Objects.equals(catalog, other.catalog);
-            // Other properties (columns, cascadeOnDelete) intentionally omitted.
+            // Other properties (remarks, columns, cascadeOnDelete) intentionally omitted.
         }
         return false;
     }
@@ -70,5 +75,13 @@ class TableName extends MetaModel {
     @Override
     public final int hashCode() {
         return table.hashCode() + 31*Objects.hashCode(schema) + 37*Objects.hashCode(catalog);
+    }
+
+    /**
+     * Formats a string representation of this object for debugging purpose.
+     */
+    @Override
+    public String toString() {
+        return SQLStoreProvider.createTableName(catalog, schema, table).toString();
     }
 }

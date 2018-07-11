@@ -20,6 +20,7 @@
  * Data store capable to read and create features from a JDBC connection to a database.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage.sql;
 
-import java.sql.Connection;
-import org.apache.sis.internal.sql.feature.Database;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.sql.TestDatabase;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 
@@ -41,8 +41,11 @@ public final strictfp class SQLStoreTest extends TestCase {
     public void testReadStructure() throws Exception {
         try (TestDatabase tmp = TestDatabase.createOnPostgreSQL("features", true)) {
             tmp.executeSQL(SQLStoreTest.class, "Features.sql");
-            try (Connection c = tmp.source.getConnection()) {
-                final Database db = new Database(null, c, null, "features", new String[] {"Cities"});
+            try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
+                    SQLStoreProvider.createTableName(null, "features", "Cities")))
+            {
+                final FeatureSet cities = (FeatureSet) store.findResource("Cities");
+                System.out.println(cities.getType());
             }
         }
     }

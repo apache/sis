@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.DataStore;
 
 
 /**
@@ -70,14 +72,14 @@ final class Analyzer {
      * The value tells whether the table in the relation has already been analyzed.
      * Only the catalog, schema and table names are taken in account for the keys in this map.
      */
-    private final Map<TableName,Boolean> dependencies;
+    private final Map<TableReference,Boolean> dependencies;
 
     /**
      * Iterator over {@link #dependencies} entries, or {@code null} if none.
      * This field may be set to {@code null} in the middle of an iteration if
      * the {@link #dependencies} map is modified concurrently.
      */
-    private Iterator<Map.Entry<TableName,Boolean>> depIter;
+    private Iterator<Map.Entry<TableReference,Boolean>> depIter;
 
     /**
      * Warnings found while analyzing a database structure. Duplicated warnings are omitted.
@@ -85,10 +87,16 @@ final class Analyzer {
     private final Set<InternationalString> warnings;
 
     /**
+     * Where to send warnings after we finished to collect them, or when reading the feature instances.
+     */
+    final WarningListeners<DataStore> listeners;
+
+    /**
      * Creates a new analyzer for the database described by given metadata.
      */
-    Analyzer(final DatabaseMetaData metadata) throws SQLException {
+    Analyzer(final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners) throws SQLException {
         this.metadata  = metadata;
+        this.listeners = listeners;
         this.escape    = metadata.getSearchStringEscape();
         this.functions = new SpatialFunctions(metadata);
         /*
@@ -166,7 +174,7 @@ final class Analyzer {
      * table has already been analyzed, then this method does nothing. Otherwise if the table has not yet
      * been analyzed, then this method remembers that the foreigner table will need to be analyzed later.
      */
-    final void addDependency(final TableName foreigner) {
+    final void addDependency(final TableReference foreigner) {
         if (dependencies.putIfAbsent(foreigner, Boolean.FALSE) == null) {
             depIter = null;         // Will need to fetch a new iterator.
         }
@@ -175,12 +183,12 @@ final class Analyzer {
     /**
      * Returns the next table to visit, or {@code null} if there is no more.
      */
-    final TableName nextDependency() {
+    final TableReference nextDependency() {
         if (depIter == null) {
             depIter = dependencies.entrySet().iterator();
         }
         while (depIter.hasNext()) {
-            final Map.Entry<TableName,Boolean> e = depIter.next();
+            final Map.Entry<TableReference,Boolean> e = depIter.next();
             if (!e.setValue(Boolean.TRUE)) {
                 return e.getKey();
             }

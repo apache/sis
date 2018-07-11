@@ -22,11 +22,11 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.stream.Stream;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -34,12 +34,19 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -54,13 +61,13 @@ import org.opengis.feature.FeatureAssociationRole;
  * @since   1.0
  * @module
  */
-final class Table extends MetaModel {
+final class Table extends AbstractFeatureSet {
     /**
      * The structure of this table represented as a feature. Each feature attribute is a table column,
      * except synthetic attributes like "sis:identifier". The feature may also contain associations
      * inferred from foreigner keys that are not immediately apparent in the table.
      */
-    final FeatureType featureType;
+    private final FeatureType featureType;
 
     /**
      * The primary key of this table. The boolean values tells whether the column
@@ -85,14 +92,11 @@ final class Table extends MetaModel {
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
      *
-     * <p>The {@link TableName#name} field is opportunistically used for storing optional remarks
-     * (this may change in any future version).</p>
-     *
      * @param  analyzer  helper functions, e.g. for converting SQL types to Java types.
      * @param  id        the catalog, schema and table name of the table to analyze.
      */
-    Table(final Analyzer analyzer, final TableName id) throws SQLException, DataStoreContentException {
-        super(id.table);
+    Table(final Analyzer analyzer, final TableReference id) throws SQLException, DataStoreContentException {
+        super(analyzer.listeners);
         final String tableEsc  = analyzer.escape(id.table);
         final String schemaEsc = analyzer.escape(id.schema);
         /*
@@ -203,7 +207,7 @@ final class Table extends MetaModel {
             ftb.setNameSpace(id.schema);
         }
         ftb.setName(id.table);
-        String remarks = id.name;
+        String remarks = id.remarks;
         if (remarks == null) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
                 while (reflect.next()) {
@@ -227,16 +231,65 @@ final class Table extends MetaModel {
     }
 
     /**
-     * Creates a tree representation of this object for debugging purpose.
+     * Appends all children to the given parent. The children are added under a node of the given name.
+     * If the children collection is empty, then this method does nothing.
+     *
+     * @param  parent    the node where to add children.
+     * @param  name      the name of a node to insert between the parent and the children.
+     * @param  children  the children to add, or an empty collection if none.
+     */
+    @Debug
+    private static void appendAll(TreeTable.Node parent, final String name, final Collection<Relation> children) {
+        if (!children.isEmpty()) {
+            parent = Relation.newChild(parent, name);
+            for (final Relation child : children) {
+                child.appendTo(parent);
+            }
+        }
+    }
+
+    /**
+     * Creates a tree representation of this table for debugging purpose.
      *
      * @param  parent  the parent node where to add the tree representation.
      */
     @Debug
-    @Override
-    TreeTable.Node appendTo(final TreeTable.Node parent) {
-        final TreeTable.Node node = super.appendTo(parent);
+    final TreeTable.Node appendTo(final TreeTable.Node parent) {
+        final TreeTable.Node node = Relation.newChild(parent, featureType.getName().toString());
         appendAll(parent, "Imported Keys", importedKeys);
         appendAll(parent, "Exported Keys", exportedKeys);
         return node;
+    }
+
+    /**
+     * Formats a graphical representation of this object for debugging purpose. This representation can
+     * be printed to the {@linkplain System#out standard output stream} (for example) if the output device
+     * uses a monospaced font and supports Unicode.
+     */
+    @Override
+    public String toString() {
+        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
+        appendTo(table.getRoot());
+        return table.toString();
+    }
+
+    /**
+     * Returns the feature type inferred from the database structure analysis.
+     */
+    @Override
+    public FeatureType getType() {
+        return featureType;
+    }
+
+    /**
+     * Returns a stream of all features contained in this dataset.
+     *
+     * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
+     * @return all features contained in this dataset.
+     * @throws DataStoreException if an error occurred while creating the stream.
+     */
+    @Override
+    public Stream<Feature> features(boolean parallel) throws DataStoreException {
+        throw new UnsupportedOperationException("Not supported yet.");  // TODO
     }
 }
