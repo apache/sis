@@ -24,10 +24,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.sql.SQLStore;
@@ -111,9 +110,7 @@ public final class Database {
         final Analyzer analyzer = new Analyzer(connection.getMetaData(), listeners, store.getLocale());
         final String[] tableTypes = getTableTypes(analyzer.metadata);
         for (final GenericName tableName : tableNames) {
-            String[] names = tableName.getParsedNames().stream().map(LocalName::toString).toArray(String[]::new);
-            ArraysExt.reverse(names);               // Reorganize in (catalog, schemaPattern, tablePattern) order.
-            names = ArraysExt.resize(names, 3);     // Pad with null values if necessary.
+            final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = analyzer.metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
                     final String table = reflect.getString(Reflection.TABLE_NAME);
@@ -160,6 +157,20 @@ public final class Database {
             }
         }
         return types.toArray(new String[types.size()]);
+    }
+
+    /**
+     * Lists the tables in the given metadata.
+     *
+     * @param  metadata  information about the database.
+     * @param  builder   where to add information about the tables.
+     * @throws SQLException if an error occurred while fetching table information.
+     */
+    public final void listTables(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+        for (final Table table : tables) {
+            final long n = table.countRows(metadata, false);
+            builder.addFeatureType(table.getType(), (n > 0 && n <= Integer.MAX_VALUE) ? (int) n : null);
+        }
     }
 
     /**

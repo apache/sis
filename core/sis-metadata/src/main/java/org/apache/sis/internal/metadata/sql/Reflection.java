@@ -195,6 +195,20 @@ public final class Reflection {
     public static final String INDEX_NAME = "INDEX_NAME";
 
     /**
+     * Index type: statistics, clustered, hashed or other.
+     *
+     * <p>Values in this column are short integers ({@code short}) rather than {@code String}.</p>
+     */
+    public static final String TYPE = "TYPE";
+
+    /**
+     * Number of rows in the table, or number of unique values in the index.
+     *
+     * <p>Values in this column are long integers ({@code long}) rather than {@code String}.</p>
+     */
+    public static final String CARDINALITY = "CARDINALITY";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Reflection() {

@@ -21,10 +21,12 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.opengis.util.LocalName;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 
 
@@ -71,9 +73,19 @@ public class TableReference {
     }
 
     /**
+     * Splits the given name in (catalog, schema, table) tuple.
+     * Those components are returned in an array of length 3, in reverse order.
+     */
+    static String[] splitName(final GenericName name) {
+        String[] parts = name.getParsedNames().stream().map(LocalName::toString).toArray(String[]::new);
+        ArraysExt.reverse(parts);               // Reorganize in (catalog, schemaPattern, tablePattern) order.
+        return ArraysExt.resize(parts, 3);      // Pad with null values if necessary.
+    }
+
+    /**
      * Creates a name for the feature type backed by this table.
      */
-    final LocalName getName(final Analyzer analyzer) {
+    final GenericName getName(final Analyzer analyzer) {
         return analyzer.nameFactory.createLocalName(analyzer.namespace(catalog, schema), table);
     }
 

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.stream.Stream;
@@ -290,6 +291,33 @@ final class Table extends AbstractFeatureSet {
     @Override
     public FeatureType getType() {
         return featureType;
+    }
+
+    /**
+     * Returns the number of rows, or -1 if unknown. Note that some database drivers returns 0,
+     * so it is better to consider 0 as "unknown" too.
+     *
+     * @param  metadata     information about the database.
+     * @param  approximate  whether approximative or outdated values are acceptable.
+     * @return number of rows (may be approximative), or -1 if unknown.
+     */
+    final long countRows(final DatabaseMetaData metadata, final boolean approximate) throws SQLException {
+        long count = -1;
+        final String[] names = TableReference.splitName(featureType.getName());
+        try (ResultSet reflect = metadata.getIndexInfo(names[2], names[1], names[0], false, approximate)) {
+            while (reflect.next()) {
+                final long n = reflect.getLong(Reflection.CARDINALITY);
+                if (!reflect.wasNull()) {
+                    if (reflect.getShort(Reflection.TYPE) == DatabaseMetaData.tableIndexStatistic) {
+                        return n;       // "Index statistic" type provides the number of rows in the table.
+                    }
+                    if (n > count) {    // Other index types may be inaccurate.
+                        count = n;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     /**

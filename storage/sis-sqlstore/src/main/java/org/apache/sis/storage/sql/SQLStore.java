@@ -24,7 +24,6 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -147,6 +146,19 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the database model, analyzing the database schema when first needed.
+     * This method performs the same work than {@link #model()}, but using an existing connection.
+     *
+     * @param c  connection to the database.
+     */
+    private synchronized Database model(final Connection c) throws DataStoreException, SQLException {
+        if (model == null) {
+            model = new Database(this, c, tableNames, listeners);
+        }
+        return model;
+    }
+
+    /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the list of feature types.
      *
@@ -156,16 +168,16 @@ public class SQLStore extends DataStore implements Aggregate {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            final Database model = model();
             final MetadataBuilder builder = new MetadataBuilder();
             builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
-            if (model.hasGeometry) {
-                builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
-            }
-            for (final Resource r : model.tables()) {
-                if (r instanceof FeatureSet) {
-                    builder.addFeatureType(((FeatureSet) r).getType(), null);
+            try (Connection c = source.getConnection()) {
+                final Database model = model(c);
+                if (model.hasGeometry) {
+                    builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
                 }
+                model.listTables(c.getMetaData(), builder);
+            } catch (SQLException e) {
+                throw new DataStoreException(Exceptions.unwrap(e));
             }
             metadata = builder.build(true);
         }
