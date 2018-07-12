@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -33,12 +35,16 @@ import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.internal.sql.feature.Database;
 import org.apache.sis.internal.sql.feature.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Exceptions;
 
 
 /**
  * A data store capable to read and create features from a spatial database.
- * An example of spatial database is PostGIS.
+ * {@code SQLStore} requires a {@link DataSource} to be specified (indirectly) at construction time.
+ * The {@code DataSource} should provide pooled connections, since connections will be frequently
+ * opened and closed.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -62,6 +68,11 @@ public class SQLStore extends DataStore implements Aggregate {
      * Fully qualified names (including catalog and schema) of the tables to include in this store.
      */
     private final GenericName[] tableNames;
+
+    /**
+     * The metadata, created when first requested.
+     */
+    private Metadata metadata;
 
     /**
      * Creates a new instance for the given storage.
@@ -124,10 +135,12 @@ public class SQLStore extends DataStore implements Aggregate {
     /**
      * Returns the database model, analyzing the database schema when first needed.
      */
-    private synchronized Database model() throws DataStoreException, SQLException {
+    private synchronized Database model() throws DataStoreException {
         if (model == null) {
             try (Connection c = source.getConnection()) {
                 model = new Database(this, c, tableNames, listeners);
+            } catch (SQLException e) {
+                throw new DataStoreException(Exceptions.unwrap(e));
             }
         }
         return model;
@@ -135,30 +148,47 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
-     * such as the spatiotemporal extent of the dataset.
+     * such as the list of feature types.
      *
      * @return information about the dataset.
      * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (metadata == null) {
+            final Database model = model();
+            final MetadataBuilder builder = new MetadataBuilder();
+            builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
+            if (model.hasGeometry) {
+                builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
+            }
+            for (final Resource r : model.tables()) {
+                if (r instanceof FeatureSet) {
+                    builder.addFeatureType(((FeatureSet) r).getType(), null);
+                }
+            }
+            metadata = builder.build(true);
+        }
+        return metadata;
     }
 
     /**
      * Returns the resources (features or coverages) in this SQL store.
+     * The list contains only the tables explicitly named at construction time.
      *
      * @return children resources that are components of this SQL store.
      * @throws DataStoreException if an error occurred while fetching the components.
      */
     @Override
     public Collection<Resource> components() throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO
+        return model().tables();
     }
 
     /**
      * Searches for a resource identified by the given identifier.
-     * The given identifier should match one of the table name.
+     * The given identifier should match one of the table names.
+     * It may be one of the tables named at construction time, or one of the dependencies.
+     * The given name may be qualified with the schema name, or may be only the table name if there is no ambiguity.
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
      * @return resource associated to the given identifier (never {@code null}).
@@ -167,11 +197,7 @@ public class SQLStore extends DataStore implements Aggregate {
      */
     @Override
     public Resource findResource(final String identifier) throws DataStoreException {
-        try {
-            return model().tables.get(this, identifier);
-        } catch (SQLException e) {
-            throw new DataStoreException(e);
-        }
+        return model().findTable(this, identifier);
     }
 
     /**

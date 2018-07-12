@@ -18,6 +18,7 @@
 
 /**
  * Data store capable to read and create features from a JDBC connection to a database.
+ * An example of spatial database is PostGIS.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

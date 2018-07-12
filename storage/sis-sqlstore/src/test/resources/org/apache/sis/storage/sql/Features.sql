@@ -11,32 +11,32 @@
 --   "Parks" through exported keys ("Cities" is referenced by "Parks").
 
 CREATE TABLE features."Countries" (
-    code           CHARACTER(3)          NOT NULL,
-    "native name"  CHARACTER VARYING(20) NOT NULL,
+    code         CHARACTER(3)          NOT NULL,
+    native_name  CHARACTER VARYING(20) NOT NULL,
 
     CONSTRAINT "PK_Country" PRIMARY KEY (code)
 );
 
 
 CREATE TABLE features."Cities" (
-    country        CHARACTER(3)          NOT NULL,
-    "native name"  CHARACTER VARYING(20) NOT NULL,
-    "translation"  CHARACTER VARYING(20) NOT NULL,
-    population     INTEGER,
+    country      CHARACTER(3)          NOT NULL,
+    native_name  CHARACTER VARYING(20) NOT NULL,
+    translation  CHARACTER VARYING(20),
+    population   INTEGER,
 
-    CONSTRAINT "PK_City"    PRIMARY KEY (country, "native name"),
+    CONSTRAINT "PK_City"    PRIMARY KEY (country, native_name),
     CONSTRAINT "FK_Country" FOREIGN KEY (country) REFERENCES features."Countries"(code)
 );
 
 
 CREATE TABLE features."Parks" (
-    country        CHARACTER(3)          NOT NULL,
-    city           CHARACTER VARYING(20) NOT NULL,
-    "native name"  CHARACTER VARYING(20) NOT NULL,
-    "translation"  CHARACTER VARYING(20) NOT NULL,
+    country      CHARACTER(3)          NOT NULL,
+    city         CHARACTER VARYING(20) NOT NULL,
+    native_name  CHARACTER VARYING(20) NOT NULL,
+    translation  CHARACTER VARYING(20),
 
-    CONSTRAINT "PK_Park" PRIMARY KEY (country, city, "native name"),
-    CONSTRAINT "FK_City" FOREIGN KEY (country, city) REFERENCES features."Cities"(country, "native name") ON DELETE CASCADE
+    CONSTRAINT "PK_Park" PRIMARY KEY (country, city, native_name),
+    CONSTRAINT "FK_City" FOREIGN KEY (country, city) REFERENCES features."Cities"(country, native_name) ON DELETE CASCADE
 );
 
 
@@ -49,18 +49,18 @@ COMMENT ON TABLE features."Parks"     IS 'Parks in cities.';
 -- Add enough data for having at least two parks for a city.
 -- The data intentionally use ideograms for testing encoding.
 
-INSERT INTO features."Countries" (code, "native name") VALUES
+INSERT INTO features."Countries" (code, native_name) VALUES
     ('CAN', 'Canada'),
     ('FRA', 'France'),
     ('JPN', '日本');
 
-INSERT INTO features."Cities" (country, "native name", "translation", population) VALUES
+INSERT INTO features."Cities" (country, native_name, translation, population) VALUES
     ('CAN', 'Montréal', 'Montreal', 1704694),       -- Population in 2016
     ('CAN', 'Québec',   'Quebec',    531902),       -- Population in 2016
     ('FRA', 'Paris',    'Paris',    2206488),       -- Population in 2017
     ('JPN', '東京',     'Tōkyō',   13622267);       -- Population in 2016
 
-INSERT INTO features."Parks" (country, city, "native name", "translation") VALUES
+INSERT INTO features."Parks" (country, city, native_name, translation) VALUES
     ('CAN', 'Montréal', 'Mont Royal',           'Mount Royal'),
     ('FRA', 'Paris',    'Jardin des Tuileries', 'Tuileries Garden'),
     ('FRA', 'Paris',    'Jardin du Luxembourg', 'Luxembourg Garden'),

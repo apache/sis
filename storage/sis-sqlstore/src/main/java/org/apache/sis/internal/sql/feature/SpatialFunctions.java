@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.setup.GeometryLibrary;
 
 
 /**
@@ -51,6 +52,11 @@ class SpatialFunctions {
     private final boolean isByteUnsigned;
 
     /**
+     * The library to use for creating geometric objects, or {@code null} for the default.
+     */
+    final GeometryLibrary library;
+
+    /**
      * Creates a new accessor to geospatial functions for the database described by given metadata.
      */
     SpatialFunctions(final DatabaseMetaData metadata) throws SQLException {
@@ -69,6 +75,11 @@ class SpatialFunctions {
             }
         }
         isByteUnsigned = unsigned;
+        /*
+         * The library to use depends on the database implementation.
+         * For now use the default library.
+         */
+        library = null;
     }
 
     /**

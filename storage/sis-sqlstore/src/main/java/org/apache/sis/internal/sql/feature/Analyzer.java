@@ -23,10 +23,15 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStore;
 
@@ -53,6 +58,11 @@ final class Analyzer {
      * Functions that may be specific to the geospatial database in use.
      */
     final SpatialFunctions functions;
+
+    /**
+     * The factory for creating {@code FeatureType} names.
+     */
+    final NameFactory nameFactory;
 
     /**
      * The string to insert before wildcard characters ({@code '_'} or {@code '%'}) to escape.
@@ -92,13 +102,33 @@ final class Analyzer {
     final WarningListeners<DataStore> listeners;
 
     /**
+     * The locale for warning messages.
+     */
+    final Locale locale;
+
+    /**
+     * The last catalog and schema used for creating {@link #namespace}.
+     * Used for determining if {@link #namespace} is still valid.
+     */
+    private transient String catalog, schema;
+
+    /**
+     * The namespace created with {@link #catalog} and {@link #schema}.
+     */
+    private transient NameSpace namespace;
+
+    /**
      * Creates a new analyzer for the database described by given metadata.
      */
-    Analyzer(final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners) throws SQLException {
-        this.metadata  = metadata;
-        this.listeners = listeners;
-        this.escape    = metadata.getSearchStringEscape();
-        this.functions = new SpatialFunctions(metadata);
+    Analyzer(final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners, final Locale locale)
+            throws SQLException
+    {
+        this.metadata    = metadata;
+        this.listeners   = listeners;
+        this.locale      = locale;
+        this.escape      = metadata.getSearchStringEscape();
+        this.functions   = new SpatialFunctions(metadata);
+        this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         /*
          * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
          * Note that the standard specified those names in upper-case letters, which is also
@@ -166,6 +196,28 @@ final class Analyzer {
      */
     final boolean isIgnoredTable(final String name) {
         return ignoredTables.contains(name);
+    }
+
+    /**
+     * Returns a namespace for the given catalog and schema names.
+     */
+    final NameSpace namespace(final String catalog, final String schema) {
+        if (!Objects.equals(this.schema, schema) || !Objects.equals(this.catalog, catalog)) {
+            if (schema != null) {
+                final GenericName name;
+                if (catalog == null) {
+                    name = nameFactory.createLocalName(null, schema);
+                } else {
+                    name = nameFactory.createGenericName(null, catalog, schema);
+                }
+                namespace = nameFactory.createNameSpace(name, TableReference.NAMESPACE_PROPERTIES);
+            } else {
+                namespace = null;
+            }
+            this.catalog = catalog;
+            this.schema  = schema;
+        }
+        return namespace;
     }
 
     /**

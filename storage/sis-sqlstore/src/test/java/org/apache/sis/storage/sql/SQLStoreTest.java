@@ -44,6 +44,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
                     SQLStoreProvider.createTableName(null, "features", "Cities")))
             {
+                System.out.println(store.getMetadata());
                 final FeatureSet cities = (FeatureSet) store.findResource("Cities");
                 System.out.println(cities.getType());
             }

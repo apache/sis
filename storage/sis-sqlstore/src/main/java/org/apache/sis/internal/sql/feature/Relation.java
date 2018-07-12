@@ -26,8 +26,6 @@ import java.sql.DatabaseMetaData;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.util.collection.DefaultTreeTable;
-import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
 
@@ -186,44 +184,25 @@ final class Relation extends TableReference {
     }
 
     /**
-     * Adds a child of the given name to the given parent node.
-     * This is a convenience method for {@code toString()} implementations.
-     *
-     * @param  parent  the node where to add a child.
-     * @param  name    the name to assign to the child.
-     * @return the child added to the parent.
-     */
-    @Debug
-    static TreeTable.Node newChild(final TreeTable.Node parent, final String name) {
-        final TreeTable.Node child = parent.newChild();
-        child.setValue(TableColumn.NAME, name);
-        return child;
-    }
-
-    /**
      * Creates a tree representation of this relation for debugging purpose.
      *
      * @param  parent  the parent node where to add the tree representation.
-     * @return the node added by this method.
      */
     @Debug
-    TreeTable.Node appendTo(final TreeTable.Node parent) {
+    void appendTo(final TreeTable.Node parent) {
         final TreeTable.Node node = newChild(parent, remarks);
         for (final Map.Entry<String,String> e : columns.entrySet()) {
             newChild(node, e.getValue() + " → " + e.getKey());
         }
-        return node;
     }
 
     /**
-     * Formats a graphical representation of this object for debugging purpose. This representation can
+     * Formats a graphical representation of this relation for debugging purpose. This representation can
      * be printed to the {@linkplain System#out standard output stream} (for example) if the output device
      * uses a monospaced font and supports Unicode.
      */
     @Override
     public String toString() {
-        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
-        appendTo(table.getRoot());
-        return table.toString();
+        return toString((n) -> appendTo(n));
     }
 }

@@ -37,8 +37,6 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.collection.DefaultTreeTable;
-import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
 
@@ -86,6 +84,11 @@ final class Table extends AbstractFeatureSet {
      * They are 0:N relations
      */
     private final List<Relation> exportedKeys;
+
+    /**
+     * {@code true} if this table contains at least one geometry column.
+     */
+    final boolean hasGeometry;
 
     /**
      * Creates a description of the table of the given name.
@@ -152,61 +155,71 @@ final class Table extends AbstractFeatureSet {
          * nullability.
          */
         boolean hasGeometry = false;
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
                 final String column = reflect.getString(Reflection.COLUMN_NAME);
-                if (foreignerKeys.contains(column)) {
-                    // TODO: create association.
-                    continue;
-                }
-                final String typeName = reflect.getString(Reflection.TYPE_NAME);
-                Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
-                if (type == null) {
-                    analyzer.warning(Resources.Keys.UnknownType_1, typeName);
-                    type = Object.class;
-                }
-                final AttributeTypeBuilder<?> atb = ftb.addAttribute(type).setName(column);
-                final int size = reflect.getInt(Reflection.COLUMN_SIZE);
-                if (!reflect.wasNull()) {
-                    atb.setMaximalLength(size);
-                }
-                final Boolean nullable = SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE));
-                if (nullable == null || nullable) {
-                    atb.setMinimumOccurs(0);
+                final boolean isPrimaryKey = primaryKeys.containsKey(column);
+                final boolean isForeignKey = foreignerKeys.contains(column);
+                if (isPrimaryKey | !isForeignKey) {
+                    /*
+                     * Foreign keys are excluded (they will be replaced by association), except if the column is
+                     * also a primary key. In the later case we need to keep that column because it is needed for
+                     * building the feature identifier.
+                     */
+                    final String typeName = reflect.getString(Reflection.TYPE_NAME);
+                    Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
+                    if (type == null) {
+                        analyzer.warning(Resources.Keys.UnknownType_1, typeName);
+                        type = Object.class;
+                    }
+                    final AttributeTypeBuilder<?> atb = ftb.addAttribute(type).setName(column);
+                    if (CharSequence.class.isAssignableFrom(type)) {
+                        final int size = reflect.getInt(Reflection.COLUMN_SIZE);
+                        if (!reflect.wasNull()) {
+                            atb.setMaximalLength(size);
+                        }
+                    }
+                    final Boolean nullable = SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE));
+                    if (nullable == null || nullable) {
+                        atb.setMinimumOccurs(0);
+                    }
+                    /*
+                     * Some columns have special purposes: components of primary keys will be used for creating
+                     * identifiers, some columns may contain a geometric object. Adding a role on those columns
+                     * may create synthetic columns, for example "sis:identifier".
+                     */
+                    if (isPrimaryKey) {
+                        atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+                        if (primaryKeys.put(column, SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT))) != null) {
+                            throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedEntity_2, "Column", column));
+                        }
+                    }
+                    if (Geometries.isKnownType(type)) {
+                        final CoordinateReferenceSystem crs = analyzer.functions.createGeometryCRS(reflect);
+                        if (crs != null) {
+                            atb.setCRS(crs);
+                        }
+                        if (!hasGeometry) {
+                            hasGeometry = true;
+                            atb.addRole(AttributeRole.DEFAULT_GEOMETRY);
+                        }
+                    }
                 }
                 /*
-                 * Some columns have special purposes: components of primary keys will be used for creating
-                 * identifiers, some columns may contain a geometric object. Adding a role on those columns
-                 * may create synthetic columns, for example "sis:identifier".
+                 * If the column is a foreigner key, insert an association to another feature instead.
                  */
-                if (primaryKeys.containsKey(column)) {
-                    atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
-                    if (primaryKeys.put(column, SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT))) != null) {
-                        throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedEntity_2, "Column", column));
-                    }
-                }
-                if (Geometries.isKnownType(type)) {
-                    final CoordinateReferenceSystem crs = analyzer.functions.createGeometryCRS(reflect);
-                    if (crs != null) {
-                        atb.setCRS(crs);
-                    }
-                    if (!hasGeometry) {
-                        hasGeometry = true;
-                        atb.addRole(AttributeRole.DEFAULT_GEOMETRY);
-                    }
+                if (isForeignKey) {
+                    // TODO
                 }
             }
         }
         /*
          * Global information on the feature type (name, remarks).
-         * The remarks are opportunistically stored in id.name if available by the caller.
+         * The remarks are opportunistically stored in id.remarks if available by the caller.
          * An empty string means that the caller has checked for remarks and found none.
          */
-        if (id.schema != null) {
-            ftb.setNameSpace(id.schema);
-        }
-        ftb.setName(id.table);
+        ftb.setName(id.getName(analyzer));
         String remarks = id.remarks;
         if (remarks == null) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
@@ -228,6 +241,7 @@ final class Table extends AbstractFeatureSet {
         this.primaryKeys  = CollectionsExt.compact(primaryKeys);
         this.importedKeys = CollectionsExt.compact(importedKeys);
         this.exportedKeys = CollectionsExt.compact(exportedKeys);
+        this.hasGeometry  = hasGeometry;
     }
 
     /**
@@ -254,23 +268,20 @@ final class Table extends AbstractFeatureSet {
      * @param  parent  the parent node where to add the tree representation.
      */
     @Debug
-    final TreeTable.Node appendTo(final TreeTable.Node parent) {
-        final TreeTable.Node node = Relation.newChild(parent, featureType.getName().toString());
+    final void appendTo(TreeTable.Node parent) {
+        parent = Relation.newChild(parent, featureType.getName().toString());
         appendAll(parent, "Imported Keys", importedKeys);
         appendAll(parent, "Exported Keys", exportedKeys);
-        return node;
     }
 
     /**
-     * Formats a graphical representation of this object for debugging purpose. This representation can
-     * be printed to the {@linkplain System#out standard output stream} (for example) if the output device
-     * uses a monospaced font and supports Unicode.
+     * Formats a graphical representation of this table for debugging purpose. This representation
+     * can be printed to the {@linkplain System#out standard output stream} (for example) if the
+     * output device uses a monospaced font and supports Unicode.
      */
     @Override
     public String toString() {
-        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
-        appendTo(table.getRoot());
-        return table.toString();
+        return TableReference.toString((n) -> appendTo(n));
     }
 
     /**
