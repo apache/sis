@@ -20,7 +20,7 @@ import java.io.ObjectStreamException;
 
 
 /**
- * The global namespace. Only one instance of this class is allowed to exists. We do not expose
+ * The global namespace. Only one instance of this class is allowed to exist. We do not expose
  * any global namespace in public API since ISO 19103 does not define them and users should not
  * need to handle them explicitely.
  *

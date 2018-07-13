@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.opengis.util.LocalName;
@@ -39,18 +37,7 @@ import org.apache.sis.util.Debug;
  * @since   1.0
  * @module
  */
-public class TableReference {
-    /**
-     * Properties to give to {@code NameFactory.createNameSpace(…)} for specifying the separators.
-     */
-    public static final Map<String,String> NAMESPACE_PROPERTIES;
-    static {
-        final Map<String,String> properties = new HashMap<>(4);     // TODO: use Map.of with JDK9.
-        properties.put("separator",      ".");
-        properties.put("separator.head", ":");
-        NAMESPACE_PROPERTIES = properties;
-    }
-
+class TableReference {
     /**
      * The catalog, schema and table name of a table.
      * The table name is mandatory, but the schema and catalog names may be null.
@@ -78,7 +65,7 @@ public class TableReference {
      */
     static String[] splitName(final GenericName name) {
         String[] parts = name.getParsedNames().stream().map(LocalName::toString).toArray(String[]::new);
-        ArraysExt.reverse(parts);               // Reorganize in (catalog, schemaPattern, tablePattern) order.
+        ArraysExt.reverse(parts);               // Reorganize in (table, schema, catalog) order.
         return ArraysExt.resize(parts, 3);      // Pad with null values if necessary.
     }
 
@@ -93,8 +80,8 @@ public class TableReference {
      * Returns {@code true} if the given object is a {@code TableReference} with equal table, schema and catalog names.
      * All other properties that may be defined in subclasses (column names, action on delete, etc.) are ignored; this
      * method is <strong>not</strong> for testing if two {@link Relation} are fully equal. The purpose of this method
-     * is only to use {@code TableReference} as keys in {@link Analyzer#dependencies} map for remembering full
-     * coordinates of tables that may need to be analyzed later.
+     * is only to use {@code TableReference} as keys in a {@code HashSet} for remembering full coordinates of tables
+     * that may need to be analyzed later.
      *
      * @return whether the given object is another {@code TableReference} for the same table.
      */

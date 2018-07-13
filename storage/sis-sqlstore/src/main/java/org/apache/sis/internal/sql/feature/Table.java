@@ -18,18 +18,18 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Stream;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.stream.Stream;
+import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.feature.Geometries;
@@ -96,10 +96,10 @@ final class Table extends AbstractFeatureSet {
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
      *
-     * @param  analyzer  helper functions, e.g. for converting SQL types to Java types.
-     * @param  id        the catalog, schema and table name of the table to analyze.
+     * @param  analyzer      helper functions, e.g. for converting SQL types to Java types.
+     * @param  id            the catalog, schema and table name of the table to analyze.
      */
-    Table(final Analyzer analyzer, final TableReference id) throws SQLException, DataStoreContentException {
+    Table(final Analyzer analyzer, final TableReference id) throws SQLException, DataStoreException {
         super(analyzer.listeners);
         final String tableEsc  = analyzer.escape(id.table);
         final String schemaEsc = analyzer.escape(id.schema);
@@ -134,20 +134,17 @@ final class Table extends AbstractFeatureSet {
          */
         final List<Relation> importedKeys = new ArrayList<>();
         final List<Relation> exportedKeys = new ArrayList<>();
-        final Set<String> foreignerKeys = new HashSet<>();
+        final Map<String, List<Relation>> foreignerKeys = new HashMap<>();
         try (ResultSet reflect = analyzer.metadata.getImportedKeys(id.catalog, id.schema, id.table)) {
             if (reflect.next()) do {
                 final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
                 relation.getForeignerKeys(foreignerKeys);
-                analyzer.addDependency(relation);
                 importedKeys.add(relation);
             } while (!reflect.isClosed());
         }
         try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
             if (reflect.next()) do {
-                final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
-                analyzer.addDependency(relation);
-                exportedKeys.add(relation);
+                exportedKeys.add(new Relation(Relation.Direction.IMPORT, reflect));
             } while (!reflect.isClosed());
         }
         /*
@@ -156,13 +153,14 @@ final class Table extends AbstractFeatureSet {
          * nullability.
          */
         boolean hasGeometry = false;
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
+        final FeatureTypeBuilder feature = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
-                final String column = reflect.getString(Reflection.COLUMN_NAME);
-                final boolean isPrimaryKey = primaryKeys.containsKey(column);
-                final boolean isForeignKey = foreignerKeys.contains(column);
-                if (isPrimaryKey | !isForeignKey) {
+                final String         column       = reflect.getString(Reflection.COLUMN_NAME);
+                final boolean        mandatory    = Boolean.FALSE.equals(SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE)));
+                final boolean        isPrimaryKey = primaryKeys.containsKey(column);
+                final List<Relation> dependencies = foreignerKeys.get(column);
+                if (isPrimaryKey || dependencies == null) {
                     /*
                      * Foreign keys are excluded (they will be replaced by association), except if the column is
                      * also a primary key. In the later case we need to keep that column because it is needed for
@@ -174,16 +172,15 @@ final class Table extends AbstractFeatureSet {
                         analyzer.warning(Resources.Keys.UnknownType_1, typeName);
                         type = Object.class;
                     }
-                    final AttributeTypeBuilder<?> atb = ftb.addAttribute(type).setName(column);
+                    final AttributeTypeBuilder<?> attribute = feature.addAttribute(type).setName(column);
                     if (CharSequence.class.isAssignableFrom(type)) {
                         final int size = reflect.getInt(Reflection.COLUMN_SIZE);
                         if (!reflect.wasNull()) {
-                            atb.setMaximalLength(size);
+                            attribute.setMaximalLength(size);
                         }
                     }
-                    final Boolean nullable = SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE));
-                    if (nullable == null || nullable) {
-                        atb.setMinimumOccurs(0);
+                    if (!mandatory) {
+                        attribute.setMinimumOccurs(0);
                     }
                     /*
                      * Some columns have special purposes: components of primary keys will be used for creating
@@ -191,7 +188,7 @@ final class Table extends AbstractFeatureSet {
                      * may create synthetic columns, for example "sis:identifier".
                      */
                     if (isPrimaryKey) {
-                        atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+                        attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
                         if (primaryKeys.put(column, SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT))) != null) {
                             throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedEntity_2, "Column", column));
                         }
@@ -199,19 +196,37 @@ final class Table extends AbstractFeatureSet {
                     if (Geometries.isKnownType(type)) {
                         final CoordinateReferenceSystem crs = analyzer.functions.createGeometryCRS(reflect);
                         if (crs != null) {
-                            atb.setCRS(crs);
+                            attribute.setCRS(crs);
                         }
                         if (!hasGeometry) {
                             hasGeometry = true;
-                            atb.addRole(AttributeRole.DEFAULT_GEOMETRY);
+                            attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
                         }
                     }
                 }
                 /*
                  * If the column is a foreigner key, insert an association to another feature instead.
+                 * If the foreigner key uses more than one column, only one of those columns will become
+                 * an association and other columns will be omitted from the FeatureType (but there will
+                 * still be used in SQL queries). Note that columns may be used by more than one relation.
                  */
-                if (isForeignKey) {
-                    // TODO
+                if (dependencies != null) {
+                    for (final Relation dependency : dependencies) {
+                        if (dependency != null) {
+                            final AssociationRoleBuilder association;
+                            final GenericName name = dependency.getName(analyzer);
+                            final Table table = analyzer.analyze(dependency, name);
+                            if (table != null) {
+                                association = feature.addAssociation(table.featureType);
+                            } else {
+                                association = feature.addAssociation(name);        // May happen in case of cyclic dependency.
+                            }
+                            association.setName(name);
+                            if (!mandatory) {
+                                association.setMinimumOccurs(0);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -220,9 +235,9 @@ final class Table extends AbstractFeatureSet {
          * The remarks are opportunistically stored in id.remarks if available by the caller.
          * An empty string means that the caller has checked for remarks and found none.
          */
-        ftb.setName(id.getName(analyzer));
+        feature.setName(id.getName(analyzer));
         String remarks = id.remarks;
-        if (remarks == null) {
+        if (id instanceof Relation) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
                 while (reflect.next()) {
                     remarks = reflect.getString(Reflection.REMARKS);
@@ -235,10 +250,10 @@ final class Table extends AbstractFeatureSet {
                 }
             }
         }
-        if (remarks != null && !remarks.isEmpty()) {
-            ftb.setDescription(remarks);
+        if (remarks != null && !(remarks = remarks.trim()).isEmpty()) {
+            feature.setDescription(remarks);
         }
-        this.featureType  = ftb.build();
+        this.featureType  = feature.build();
         this.primaryKeys  = CollectionsExt.compact(primaryKeys);
         this.importedKeys = CollectionsExt.compact(importedKeys);
         this.exportedKeys = CollectionsExt.compact(exportedKeys);
@@ -295,7 +310,8 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Returns the number of rows, or -1 if unknown. Note that some database drivers returns 0,
-     * so it is better to consider 0 as "unknown" too.
+     * so it is better to consider 0 as "unknown" too. We do not cache this count because it may
+     * change at any time.
      *
      * @param  metadata     information about the database.
      * @param  approximate  whether approximative or outdated values are acceptable.

@@ -18,22 +18,28 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.resources.ResourceInternationalString;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -78,23 +84,15 @@ final class Analyzer {
     private final Set<String> ignoredTables;
 
     /**
-     * Relations to other tables found while doing introspection on a table.
-     * The value tells whether the table in the relation has already been analyzed.
-     * Only the catalog, schema and table names are taken in account for the keys in this map.
+     * All tables created by analysis of the database structure. A {@code null} value means that the table
+     * is in process of being created. This may happen if there is cyclic dependencies between tables.
      */
-    private final Map<TableReference,Boolean> dependencies;
-
-    /**
-     * Iterator over {@link #dependencies} entries, or {@code null} if none.
-     * This field may be set to {@code null} in the middle of an iteration if
-     * the {@link #dependencies} map is modified concurrently.
-     */
-    private Iterator<Map.Entry<TableReference,Boolean>> depIter;
+    private final Map<GenericName,Table> tables;
 
     /**
      * Warnings found while analyzing a database structure. Duplicated warnings are omitted.
      */
-    private final Set<InternationalString> warnings;
+    private final Set<ResourceInternationalString> warnings;
 
     /**
      * Where to send warnings after we finished to collect them, or when reading the feature instances.
@@ -153,7 +151,7 @@ final class Analyzer {
         /*
          * Information to be collected during table analysis.
          */
-        dependencies = new LinkedHashMap<>();
+        tables   = new HashMap<>();
         warnings = new LinkedHashSet<>();
     }
 
@@ -199,7 +197,8 @@ final class Analyzer {
     }
 
     /**
-     * Returns a namespace for the given catalog and schema names.
+     * Returns a namespace for the given catalog and schema names, or {@code null} if all arguments are null.
+     * The namespace sets the name separator to {@code '.'} instead of {@code ':'}.
      */
     final NameSpace namespace(final String catalog, final String schema) {
         if (!Objects.equals(this.schema, schema) || !Objects.equals(this.catalog, catalog)) {
@@ -210,7 +209,7 @@ final class Analyzer {
                 } else {
                     name = nameFactory.createGenericName(null, catalog, schema);
                 }
-                namespace = nameFactory.createNameSpace(name, TableReference.NAMESPACE_PROPERTIES);
+                namespace = nameFactory.createNameSpace(name, Collections.singletonMap("separator", "."));
             } else {
                 namespace = null;
             }
@@ -221,31 +220,28 @@ final class Analyzer {
     }
 
     /**
-     * Declares that a relation to a foreigner table has been found. Only the catalog, schema and table names
-     * are taken in account. If a dependency for the same table has already been declared before or if that
-     * table has already been analyzed, then this method does nothing. Otherwise if the table has not yet
-     * been analyzed, then this method remembers that the foreigner table will need to be analyzed later.
+     * Returns the feature of the given name if it exists, or creates it otherwise.
+     * This method may be invoked recursively if the table to create as a dependency
+     * to another table. If a cyclic dependency is detected, then this method return
+     * {@code null} for one of the tables.
+     *
+     * @param  id    identification of the table to create.
+     * @param  name  the value of {@code id.getName(analyzer)}
+     *               (as an argument for avoiding re-computation when already known by the caller).
+     * @return the table, or {@code null} if there is a cyclic dependency and the table of the given
+     *         name is already in process of being created.
      */
-    final void addDependency(final TableReference foreigner) {
-        if (dependencies.putIfAbsent(foreigner, Boolean.FALSE) == null) {
-            depIter = null;         // Will need to fetch a new iterator.
-        }
-    }
-
-    /**
-     * Returns the next table to visit, or {@code null} if there is no more.
-     */
-    final TableReference nextDependency() {
-        if (depIter == null) {
-            depIter = dependencies.entrySet().iterator();
-        }
-        while (depIter.hasNext()) {
-            final Map.Entry<TableReference,Boolean> e = depIter.next();
-            if (!e.setValue(Boolean.TRUE)) {
-                return e.getKey();
+    final Table analyze(final TableReference id, final GenericName name) throws SQLException, DataStoreException {
+        Table table = tables.get(name);
+        if (table == null && !tables.containsKey(name)) {
+            tables.put(name, null);                       // Mark the feature as in process of being created.
+            table = new Table(this, id);
+            if (tables.put(name, table) != null) {
+                // Should never happen. If thrown, we have a bug (e.g. synchronization) in this package.
+                throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedChange_1, name));
             }
         }
-        return null;
+        return table;
     }
 
     /**
@@ -256,5 +252,19 @@ final class Analyzer {
      */
     final void warning(final short key, final Object argument) {
         warnings.add(Resources.formatInternational(key, argument));
+    }
+
+    /**
+     * Invoked after we finished to create all tables. This method flush the warnings
+     * (omitting duplicated warnings), then returns all tables including dependencies.
+     */
+    final Collection<Table> finish() {
+        for (final ResourceInternationalString warning : warnings) {
+            final LogRecord record = warning.toLogRecord(Level.WARNING);
+            record.setSourceClassName(SQLStore.class.getName());
+            record.setSourceMethodName("components");                // Main public API trigging the database analysis.
+            listeners.warning(record);
+        }
+        return tables.values();
     }
 }

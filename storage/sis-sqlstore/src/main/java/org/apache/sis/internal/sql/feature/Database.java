@@ -19,6 +19,7 @@ package org.apache.sis.internal.sql.feature;
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.ArrayList;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,8 +29,8 @@ import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
@@ -38,6 +39,8 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
 
 
 /**
@@ -67,6 +70,7 @@ public final class Database {
 
     /**
      * All tables known to this {@code Database} in declaration order.
+     * This table contains only the tables specified at construction time, not the dependencies.
      */
     private final Table[] tables;
 
@@ -109,6 +113,7 @@ public final class Database {
     {
         final Analyzer analyzer = new Analyzer(connection.getMetaData(), listeners, store.getLocale());
         final String[] tableTypes = getTableTypes(analyzer.metadata);
+        final Set<TableReference> declared = new LinkedHashSet<>();
         for (final GenericName tableName : tableNames) {
             final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = analyzer.metadata.getTables(names[2], names[1], names[0], tableTypes)) {
@@ -117,26 +122,34 @@ public final class Database {
                     if (analyzer.isIgnoredTable(table)) {
                         continue;
                     }
-                    String remarks = reflect.getString(Reflection.REMARKS);
-                    remarks = (remarks != null) ? remarks.trim() : "";      // Empty string means that we verified that there is no remarks.
-                    analyzer.addDependency(new TableReference(
+                    declared.add(new TableReference(
                             reflect.getString(Reflection.TABLE_CAT),
                             reflect.getString(Reflection.TABLE_SCHEM),
-                            table, remarks));
+                            table, reflect.getString(Reflection.REMARKS)));
                 }
             }
         }
-        final List<Table> tableList = new ArrayList<>(tableNames.length);
-        tablesByNames = new FeatureNaming<>();
+        /*
+         * At this point we got the list of tables requested by the user. Now create the Table objects for each
+         * specified name. During this iteration, we may discover new tables to analyze because of dependencies
+         * (foreigner keys).
+         */
+        final List<Table> tableList;
+        tableList = new ArrayList<>(tableNames.length);
+        for (final TableReference reference : declared) {
+            // Adds only the table explicitly required by the user.
+            tableList.add(analyzer.analyze(reference, reference.getName(analyzer)));
+        }
+        /*
+         * At this point we finished to create the table explicitly requested by the users.
+         * Register all tables only at this point, because other tables (dependencies) may
+         * have been analyzed as a side-effect of above loop.
+         */
         boolean hasGeometry = false;
-        TableReference dependency;
-        while ((dependency = analyzer.nextDependency()) != null) {
-            final Table table = new Table(analyzer, dependency);
-            hasGeometry |= table.hasGeometry;
+        tablesByNames = new FeatureNaming<>();
+        for (final Table table : analyzer.finish()) {
             tablesByNames.add(store, table.getType().getName(), table);
-            if (!(dependency instanceof Relation)) {
-                tableList.add(table);                   // Adds only the table explicitly required by the user.
-            }
+            hasGeometry |= table.hasGeometry;
         }
         this.tables = tableList.toArray(new Table[tableList.size()]);
         this.functions = analyzer.functions;
@@ -160,7 +173,8 @@ public final class Database {
     }
 
     /**
-     * Lists the tables in the given metadata.
+     * Stores information about tables in the given metadata.
+     * Only tables explicitely requested by the user are listed.
      *
      * @param  metadata  information about the database.
      * @param  builder   where to add information about the tables.
@@ -185,6 +199,7 @@ public final class Database {
 
     /**
      * Returns the table for the given name.
+     * The given name may be one of the tables specified at construction time, or one of its dependencies.
      *
      * @param  store  the data store for which we are fetching a table. Used only in case of error.
      * @param  name   name of the table to fetch.

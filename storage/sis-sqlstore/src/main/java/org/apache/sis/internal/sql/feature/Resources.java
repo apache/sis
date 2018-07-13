@@ -195,7 +195,7 @@ public final class Resources extends IndexedResourceBundle {
      * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
      * @return an international string for the given key.
      */
-    public static InternationalString formatInternational(final short key, final Object... args) {
+    public static ResourceInternationalString formatInternational(final short key, final Object... args) {
         return new International(key, args);
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -28,7 +30,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.sql.feature.Resources;
-import org.apache.sis.internal.sql.feature.TableReference;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -143,7 +144,10 @@ public class SQLStoreProvider extends DataStoreProvider {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         NameSpace ns = tableNS;
         if (ns == null) {
-            tableNS = ns = factory.createNameSpace(factory.createLocalName(null, "JDBC"), TableReference.NAMESPACE_PROPERTIES);
+            final Map<String,String> properties = new HashMap<>(4);     // TODO: use Map.of with JDK9.
+            properties.put("separator",      ".");
+            properties.put("separator.head", ":");
+            tableNS = ns = factory.createNameSpace(factory.createLocalName(null, "database"), properties);
         }
         return factory.createGenericName(ns, names);
     }

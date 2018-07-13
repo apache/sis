@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.Collection;
 import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -175,12 +175,24 @@ final class Relation extends TableReference {
     }
 
     /**
-     * Adds to the given collection the foreigner keys of the table that contains this relation.
+     * Adds to the given map the foreigner keys of the table that contains this relation.
      * This method adds only the foreigner keys known to this relation; this is not necessarily
-     * all the table foreigner keys.
+     * all the table foreigner keys. Some columns may be used in more than one relation.
+     *
+     * <p>This method puts {@code this} relation in the values of the map. However if this relation describes a
+     * foreigner key using more than one column, then only one of the column will be associated to {@code this}
+     * and all other columns will be associated to {@code null}. For example if a foreigner key uses 3 columns,
+     * then we want to replace only one of those columns by an association, not create 3 identical associations.</p>
+     *
+     * @param  addTo  the map where to add the foreigner keys. After this method returns, the set of map keys
+     *                will contain the column names and exactly one of the values will be this relation.
      */
-    final void getForeignerKeys(final Collection<String> addTo) {
-        addTo.addAll(columns.values());
+    final void getForeignerKeys(final Map<String, List<Relation>> addTo) {
+        Relation rel = this;
+        for (final String column : columns.values()) {
+            CollectionsExt.addToMultiValuesMap(addTo, column, rel);
+            rel = null;     // Only the first column will be associated.
+        }
     }
 
     /**
