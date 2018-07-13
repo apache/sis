@@ -88,7 +88,7 @@ import org.opengis.feature.Operation;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -357,6 +357,13 @@ public class FeatureFormat extends TabularFormat<Object> {
             for (final FeatureType parent : featureType.getSuperTypes()) {
                 toAppendTo.append(separator).append(toString(parent.getName()));
                 separator = SEPARATOR;
+            }
+            final InternationalString definition = featureType.getDefinition();
+            if (definition != null) {
+                String text = definition.toString(displayLocale);
+                if (text != null && !(text = text.trim()).isEmpty()) {
+                    toAppendTo.append(getLineSeparator()).append(text);
+                }
             }
         }
         toAppendTo.append(getLineSeparator());

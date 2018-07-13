@@ -231,7 +231,7 @@ final class Analyzer {
      * @return the table, or {@code null} if there is a cyclic dependency and the table of the given
      *         name is already in process of being created.
      */
-    final Table analyze(final TableReference id, final GenericName name) throws SQLException, DataStoreException {
+    final Table table(final TableReference id, final GenericName name) throws SQLException, DataStoreException {
         Table table = tables.get(name);
         if (table == null && !tables.containsKey(name)) {
             tables.put(name, null);                       // Mark the feature as in process of being created.

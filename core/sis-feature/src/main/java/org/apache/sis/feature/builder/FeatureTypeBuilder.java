@@ -101,7 +101,7 @@ import org.opengis.feature.Operation;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  *
@@ -353,7 +353,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
          */
         if (!propertyRoles.isEmpty()) {
             for (final Map.Entry<String,Set<AttributeRole>> entry : propertyRoles.entrySet()) {
-                final PropertyTypeBuilder property = forName(properties, entry.getKey());
+                final PropertyTypeBuilder property = forName(properties, entry.getKey(), true);
                 if (property instanceof AttributeTypeBuilder<?>) {
                     ((AttributeTypeBuilder<?>) property).roles().addAll(entry.getValue());
                 }
@@ -627,6 +627,20 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Returns {@code true} if a property of the given name is defined or if the given name is ambiguous.
+     * Invoking this method is equivalent to testing if {@code getProperty(name) != null} except that this
+     * method does not throw exception if the given name is ambiguous.
+     *
+     * @param  name  the name to test.
+     * @return {@code true} if the given name is used by another property or is ambiguous.
+     *
+     * @since 1.0
+     */
+    public boolean isNameUsed(final String name) {
+        return forName(properties, name, false) != null;
+    }
+
+    /**
      * Returns the builder for the property of the given name. The given name does not need to contains all elements
      * of a {@link org.opengis.util.ScopedName}; it is okay to specify only the tip (for example {@code "myName"}
      * instead of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
@@ -638,7 +652,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @see #addProperty(PropertyType)
      */
     public PropertyTypeBuilder getProperty(final String name) {
-        return forName(properties, name);
+        return forName(properties, name, true);
     }
 
     /**

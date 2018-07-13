@@ -47,16 +47,22 @@ class TableReference {
     /**
      * Ignored by this class; reserved for caller and subclasses usage.
      */
-    final String remarks;
+    final String freeText;
 
     /**
      * Creates a new tuple with the give names.
      */
-    TableReference(final String catalog, final String schema, final String table, final String remarks) {
-        this.catalog = catalog;
-        this.schema  = schema;
-        this.table   = table;
-        this.remarks = remarks;
+    TableReference(final String catalog, final String schema, final String table, String freeText) {
+        if (freeText != null) {
+            freeText = freeText.trim();
+            if (freeText.isEmpty()) {
+                freeText = null;
+            }
+        }
+        this.catalog  = catalog;
+        this.schema   = schema;
+        this.table    = table;
+        this.freeText = freeText;
     }
 
     /**
@@ -90,7 +96,7 @@ class TableReference {
         if (obj instanceof TableReference) {
             final TableReference other = (TableReference) obj;
             return table.equals(other.table) && Objects.equals(schema, other.schema) && Objects.equals(catalog, other.catalog);
-            // Other properties (remarks, columns, cascadeOnDelete) intentionally omitted.
+            // Other properties (freeText, columns, cascadeOnDelete) intentionally omitted.
         }
         return false;
     }
@@ -126,9 +132,11 @@ class TableReference {
      * can be printed to the {@linkplain System#out standard output stream} (for example)
      * if the output device uses a monospaced font and supports Unicode.
      */
-    static String toString(final Consumer<TreeTable.Node> appender) {
+    static String toString(final Object owner, final Consumer<TreeTable.Node> appender) {
         final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME);
-        appender.accept(table.getRoot());
+        final TreeTable.Node root = table.getRoot();
+        root.setValue(TableColumn.NAME, owner.getClass().getSimpleName());
+        appender.accept(root);
         return table.toString();
     }
 

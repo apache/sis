@@ -138,7 +138,7 @@ public final class Database {
         tableList = new ArrayList<>(tableNames.length);
         for (final TableReference reference : declared) {
             // Adds only the table explicitly required by the user.
-            tableList.add(analyzer.analyze(reference, reference.getName(analyzer)));
+            tableList.add(analyzer.table(reference, reference.getName(analyzer)));
         }
         /*
          * At this point we finished to create the table explicitly requested by the users.
@@ -216,8 +216,7 @@ public final class Database {
      * @param  parent  the parent node where to add the tree representation.
      */
     @Debug
-    final void appendTo(TreeTable.Node parent) {
-        parent = Relation.newChild(parent, "Database");
+    final void appendTo(final TreeTable.Node parent) {
         for (final Table child : tables) {
             child.appendTo(parent);
         }
@@ -232,6 +231,6 @@ public final class Database {
      */
     @Override
     public String toString() {
-        return TableReference.toString((n) -> appendTo(n));
+        return TableReference.toString(this, (n) -> appendTo(n));
     }
 }

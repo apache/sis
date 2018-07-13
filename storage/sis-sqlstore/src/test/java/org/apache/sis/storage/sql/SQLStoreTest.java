@@ -22,6 +22,13 @@ import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
+
 
 /**
  * Tests {@link SQLStore}.
@@ -44,9 +51,28 @@ public final strictfp class SQLStoreTest extends TestCase {
             try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
                     SQLStoreProvider.createTableName(null, "features", "Cities")))
             {
-                System.out.println(store.getMetadata());
                 final FeatureSet cities = (FeatureSet) store.findResource("Cities");
-                System.out.println(cities.getType());
+                final String[] expectedNames = {"sis:identifier", "pk:country", "country",   "native_name", "translation", "population",  "parks"};
+                final Object[] expectedTypes = {null,             String.class, "Countries", String.class,  String.class,  Integer.class, "Parks"};
+                int i = 0;
+                for (PropertyType pt : cities.getType().getProperties(false)) {
+                    assertEquals("name", expectedNames[i], pt.getName().toString());
+                    final Object expectedType = expectedTypes[i];
+                    if (expectedType != null) {
+                        final String label;
+                        final Object value;
+                        if (expectedType instanceof Class<?>) {
+                            label = "attribute type";
+                            value = ((AttributeType<?>) pt).getValueClass();
+                        } else {
+                            label = "association type";
+                            value = ((FeatureAssociationRole) pt).getValueType().getName().toString();
+                        }
+                        assertEquals(label, expectedType, value);
+                    }
+                    i++;
+                }
+                assertEquals("count", expectedNames.length, i);
             }
         }
     }

@@ -62,8 +62,8 @@ final class Relation extends TableReference {
          *
          * @see DatabaseMetaData#getImportedKeys(String, String, String)
          */
-        IMPORT(Reflection.PK_NAME, Reflection.PKTABLE_CAT, Reflection.PKTABLE_SCHEM,
-               Reflection.PKTABLE_NAME, Reflection.PKCOLUMN_NAME, Reflection.FKCOLUMN_NAME),
+        IMPORT(Reflection.PKTABLE_CAT, Reflection.PKTABLE_SCHEM, Reflection.PKTABLE_NAME,
+               Reflection.PKCOLUMN_NAME, Reflection.FKCOLUMN_NAME),
 
         /**
          * Foreigner keys of other tables are referencing the primary keys of the table containing the {@code Relation}.
@@ -71,21 +71,15 @@ final class Relation extends TableReference {
          *
          * @see DatabaseMetaData#getExportedKeys(String, String, String)
          */
-        EXPORT(Reflection.FK_NAME, Reflection.FKTABLE_CAT, Reflection.FKTABLE_SCHEM,
-               Reflection.FKTABLE_NAME, Reflection.FKCOLUMN_NAME, Reflection.PKCOLUMN_NAME);
+        EXPORT(Reflection.FKTABLE_CAT, Reflection.FKTABLE_SCHEM, Reflection.FKTABLE_NAME,
+               Reflection.FKCOLUMN_NAME, Reflection.PKCOLUMN_NAME);
 
         /*
-         * Note: another possible type of relation is the one provided by getCrossReference​(…).
+         * Note: another possible type of relation is the one provided by getCrossReference(…).
          * Inconvenient is that it requires to know the tables on both side of the relation.
          * But advantage is that it work with any set of columns having unique values
          * (not necessarily the primary key).
          */
-
-        /**
-         * The database {@link Reflection} key to use for fetching the name of a relation.
-         * The name is used only for informative purpose and may be {@code null}.
-         */
-        final String name;
 
         /**
          * The database {@link Reflection} key to use for fetching the name of other table column.
@@ -104,10 +98,9 @@ final class Relation extends TableReference {
         /**
          * Creates a new {@code Direction} enumeration value.
          */
-        private Direction(final String name, final String catalog, final String schema,
-                          final String table, final String column, final String containerColumn)
+        private Direction(final String catalog, final String schema, final String table,
+                          final String column, final String containerColumn)
         {
-            this.name            = name;
             this.catalog         = catalog;
             this.schema          = schema;
             this.table           = table;
@@ -150,7 +143,7 @@ final class Relation extends TableReference {
         super(reflect.getString(dir.catalog),
               reflect.getString(dir.schema),
               reflect.getString(dir.table),
-              reflect.getString(dir.name));
+              reflect.getString(Reflection.FK_NAME));
 
         final Map<String,String> m = new LinkedHashMap<>();
         boolean cascade = false;
@@ -199,12 +192,13 @@ final class Relation extends TableReference {
      * Creates a tree representation of this relation for debugging purpose.
      *
      * @param  parent  the parent node where to add the tree representation.
+     * @param  arrow   the symbol to use for relating the columns of two tables in a foreigner key.
      */
     @Debug
-    void appendTo(final TreeTable.Node parent) {
-        final TreeTable.Node node = newChild(parent, remarks);
+    void appendTo(final TreeTable.Node parent, final String arrow) {
+        final TreeTable.Node node = newChild(parent, freeText);
         for (final Map.Entry<String,String> e : columns.entrySet()) {
-            newChild(node, e.getValue() + " → " + e.getKey());
+            newChild(node, e.getValue() + arrow + e.getKey());
         }
     }
 
@@ -215,6 +209,6 @@ final class Relation extends TableReference {
      */
     @Override
     public String toString() {
-        return toString((n) -> appendTo(n));
+        return toString(this, (n) -> appendTo(n, " — "));
     }
 }

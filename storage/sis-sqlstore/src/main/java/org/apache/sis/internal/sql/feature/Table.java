@@ -39,13 +39,15 @@ import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.Feature;
 
 
 /**
@@ -144,7 +146,7 @@ final class Table extends AbstractFeatureSet {
         }
         try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
             if (reflect.next()) do {
-                exportedKeys.add(new Relation(Relation.Direction.IMPORT, reflect));
+                exportedKeys.add(new Relation(Relation.Direction.EXPORT, reflect));
             } while (!reflect.isClosed());
         }
         /*
@@ -153,6 +155,7 @@ final class Table extends AbstractFeatureSet {
          * nullability.
          */
         boolean hasGeometry = false;
+        int startWithLowerCase = 0;
         final FeatureTypeBuilder feature = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
@@ -160,19 +163,32 @@ final class Table extends AbstractFeatureSet {
                 final boolean        mandatory    = Boolean.FALSE.equals(SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE)));
                 final boolean        isPrimaryKey = primaryKeys.containsKey(column);
                 final List<Relation> dependencies = foreignerKeys.get(column);
+                /*
+                 * Heuristic rule for determining if the column names starts with lower case or upper case.
+                 * Words that are all upper-case are ignored on the assumption that they are acronyms.
+                 */
+                if (!column.isEmpty()) {
+                    final int firstLetter = column.codePointAt(0);
+                    if (Character.isLowerCase(firstLetter)) {
+                        startWithLowerCase++;
+                    } else if (Character.isUpperCase(firstLetter) && !CharSequences.isUpperCase(column)) {
+                        startWithLowerCase--;
+                    }
+                }
+                /*
+                 * Add the column as an attribute. Foreign keys are excluded (they will be replaced by associations),
+                 * except if the column is also a primary key. In the later case we need to keep that column because
+                 * it is needed for building the feature identifier.
+                 */
+                AttributeTypeBuilder<?> attribute = null;
                 if (isPrimaryKey || dependencies == null) {
-                    /*
-                     * Foreign keys are excluded (they will be replaced by association), except if the column is
-                     * also a primary key. In the later case we need to keep that column because it is needed for
-                     * building the feature identifier.
-                     */
                     final String typeName = reflect.getString(Reflection.TYPE_NAME);
                     Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
                     if (type == null) {
                         analyzer.warning(Resources.Keys.UnknownType_1, typeName);
                         type = Object.class;
                     }
-                    final AttributeTypeBuilder<?> attribute = feature.addAttribute(type).setName(column);
+                    attribute = feature.addAttribute(type).setName(column);
                     if (CharSequence.class.isAssignableFrom(type)) {
                         final int size = reflect.getInt(Reflection.COLUMN_SIZE);
                         if (!reflect.wasNull()) {
@@ -211,32 +227,77 @@ final class Table extends AbstractFeatureSet {
                  * still be used in SQL queries). Note that columns may be used by more than one relation.
                  */
                 if (dependencies != null) {
+                    int count = 0;
                     for (final Relation dependency : dependencies) {
                         if (dependency != null) {
+                            final GenericName typeName = dependency.getName(analyzer);
+                            final Table table = analyzer.table(dependency, typeName);
                             final AssociationRoleBuilder association;
-                            final GenericName name = dependency.getName(analyzer);
-                            final Table table = analyzer.analyze(dependency, name);
                             if (table != null) {
                                 association = feature.addAssociation(table.featureType);
                             } else {
-                                association = feature.addAssociation(name);        // May happen in case of cyclic dependency.
+                                association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
                             }
-                            association.setName(name);
                             if (!mandatory) {
                                 association.setMinimumOccurs(0);
                             }
+                            /*
+                             * If the column is also used in the primary key, then we have a name clash.
+                             * Rename the primary key column with the addition of a "pk:" scope. We rename
+                             * the primary key column instead than this association because the primary key
+                             * column should rarely be used directly.
+                             */
+                            if (attribute != null) {
+                                attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column));
+                                attribute = null;
+                            }
+                            association.setName((count == 0) ? column : column + '-' + count);
+                            count++;
                         }
                     }
                 }
             }
         }
         /*
+         * Add the associations created by other tables having foreigner keys to this table.
+         * We infer the column name from the target type. We may have a name clash with other
+         * columns, in which case an arbitrary name change is applied.
+         */
+        int count = 0;
+        for (final Relation dependency : exportedKeys) {
+            if (dependency != null) {
+                final GenericName typeName = dependency.getName(analyzer);
+                String name = typeName.tip().toString();
+                if (startWithLowerCase > 0) {
+                    final CharSequence words = CharSequences.camelCaseToWords(name, true);
+                    final int first = Character.codePointAt(words, 0);
+                    name = new StringBuilder(words.length())
+                            .appendCodePoint(Character.toLowerCase(first))
+                            .append(words, Character.charCount(first), words.length())
+                            .toString();
+                }
+                final String base = name;
+                while (feature.isNameUsed(name)) {
+                    name = base + '-' + ++count;
+                }
+                final Table table = analyzer.table(dependency, typeName);
+                final AssociationRoleBuilder association;
+                if (table != null) {
+                    association = feature.addAssociation(table.featureType);
+                } else {
+                    association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
+                }
+                association.setName(name)
+                           .setMinimumOccurs(0)
+                           .setMaximumOccurs(Integer.MAX_VALUE);
+            }
+        }
+        /*
          * Global information on the feature type (name, remarks).
-         * The remarks are opportunistically stored in id.remarks if available by the caller.
-         * An empty string means that the caller has checked for remarks and found none.
+         * The remarks are opportunistically stored in id.freeText if known by the caller.
          */
         feature.setName(id.getName(analyzer));
-        String remarks = id.remarks;
+        String remarks = id.freeText;
         if (id instanceof Relation) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
                 while (reflect.next()) {
@@ -250,8 +311,8 @@ final class Table extends AbstractFeatureSet {
                 }
             }
         }
-        if (remarks != null && !(remarks = remarks.trim()).isEmpty()) {
-            feature.setDescription(remarks);
+        if (remarks != null) {
+            feature.setDefinition(remarks);
         }
         this.featureType  = feature.build();
         this.primaryKeys  = CollectionsExt.compact(primaryKeys);
@@ -261,20 +322,17 @@ final class Table extends AbstractFeatureSet {
     }
 
     /**
-     * Appends all children to the given parent. The children are added under a node of the given name.
+     * Appends all children to the given parent. The children are added under the given node.
      * If the children collection is empty, then this method does nothing.
      *
      * @param  parent    the node where to add children.
-     * @param  name      the name of a node to insert between the parent and the children.
      * @param  children  the children to add, or an empty collection if none.
+     * @param  arrow     the symbol to use for relating the columns of two tables in a foreigner key.
      */
     @Debug
-    private static void appendAll(TreeTable.Node parent, final String name, final Collection<Relation> children) {
-        if (!children.isEmpty()) {
-            parent = Relation.newChild(parent, name);
-            for (final Relation child : children) {
-                child.appendTo(parent);
-            }
+    private static void appendAll(final TreeTable.Node parent, final Collection<Relation> children, final String arrow) {
+        for (final Relation child : children) {
+            child.appendTo(parent, arrow);
         }
     }
 
@@ -286,8 +344,13 @@ final class Table extends AbstractFeatureSet {
     @Debug
     final void appendTo(TreeTable.Node parent) {
         parent = Relation.newChild(parent, featureType.getName().toString());
-        appendAll(parent, "Imported Keys", importedKeys);
-        appendAll(parent, "Exported Keys", exportedKeys);
+        for (PropertyType p : featureType.getProperties(false)) {
+            if (p instanceof AttributeType) {
+                TableReference.newChild(parent, p.getName().tip().toString());
+            }
+        }
+        appendAll(parent, importedKeys,  " → ");
+        appendAll(parent, exportedKeys,  " ← ");
     }
 
     /**
@@ -297,7 +360,7 @@ final class Table extends AbstractFeatureSet {
      */
     @Override
     public String toString() {
-        return TableReference.toString((n) -> appendTo(n));
+        return TableReference.toString(this, (n) -> appendTo(n));
     }
 
     /**
