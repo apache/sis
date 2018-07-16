@@ -566,6 +566,7 @@ public final class Namespaces extends Static {
         p.put("http://www.opengis.net/sensorML/1.0.1",                    "sml");
         p.put("http://www.opengis.net/swe/1.0",                          "swe1");
         p.put("http://www.opengis.net/cat/csw/3.0",                       "csw");
+        p.put("http://www.opengis.net/cat/csw/2.0.2",                    "csw2");
         p.put("http://www.opengis.net/ows/2.0",                           "ows");
         p.put("http://www.opengis.net/cat/wrs/1.0",                       "wrs");
         p.put("http://www.opengis.net/cat/wrs",                         "wrs09");
