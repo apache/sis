@@ -76,6 +76,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalQualifiedName_1 = 3;
 
         /**
+         * Unexpected error while analyzing the database schema.
+         */
+        public static final short InternalError = 6;
+
+        /**
          * Table names, optionally with their schemas and catalogs.
          */
         public static final short QualifiedTableNames = 2;

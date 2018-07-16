@@ -42,8 +42,8 @@ import org.apache.sis.util.Exceptions;
 /**
  * A data store capable to read and create features from a spatial database.
  * {@code SQLStore} requires a {@link DataSource} to be specified (indirectly) at construction time.
- * The {@code DataSource} should provide pooled connections, since connections will be frequently
- * opened and closed.
+ * The {@code DataSource} should provide pooled connections, because {@code SQLStore} will frequently
+ * opens and closes them.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -137,7 +137,7 @@ public class SQLStore extends DataStore implements Aggregate {
     private synchronized Database model() throws DataStoreException {
         if (model == null) {
             try (Connection c = source.getConnection()) {
-                model = new Database(this, c, tableNames, listeners);
+                model = new Database(this, c, source, tableNames, listeners);
             } catch (SQLException e) {
                 throw new DataStoreException(Exceptions.unwrap(e));
             }
@@ -153,7 +153,7 @@ public class SQLStore extends DataStore implements Aggregate {
      */
     private synchronized Database model(final Connection c) throws DataStoreException, SQLException {
         if (model == null) {
-            model = new Database(this, c, tableNames, listeners);
+            model = new Database(this, c, source, tableNames, listeners);
         }
         return model;
     }

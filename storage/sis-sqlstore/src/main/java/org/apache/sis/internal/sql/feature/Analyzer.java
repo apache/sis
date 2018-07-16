@@ -22,13 +22,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
-import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -39,7 +40,6 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.ResourceInternationalString;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -54,6 +54,13 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 final class Analyzer {
+    /**
+     * Provider of (pooled) connections to the database. This is the main argument provided by users
+     * when creating a {@link org.apache.sis.storage.sql.SQLStore}. This data source should be pooled,
+     * because {@code SQLStore} will frequently opens and closes connections.
+     */
+    final DataSource source;
+
     /**
      * Information about the database as a whole.
      * Used for fetching tables, columns, primary keys <i>etc.</i>
@@ -117,10 +124,16 @@ final class Analyzer {
 
     /**
      * Creates a new analyzer for the database described by given metadata.
+     *
+     * @param  source     the data source, usually given by user at {@code SQLStore} creation time.
+     * @param  metadata   Value of {@code source.getConnection().getMetaData()}.
+     * @param  listeners  Value of {@code SQLStore.listeners}.
+     * @param  locale     Value of {@code SQLStore.getLocale()}.
      */
-    Analyzer(final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners, final Locale locale)
-            throws SQLException
+    Analyzer(final DataSource source, final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners,
+             final Locale locale) throws SQLException
     {
+        this.source      = source;
         this.metadata    = metadata;
         this.listeners   = listeners;
         this.locale      = locale;
@@ -225,20 +238,24 @@ final class Analyzer {
      * to another table. If a cyclic dependency is detected, then this method return
      * {@code null} for one of the tables.
      *
-     * @param  id    identification of the table to create.
-     * @param  name  the value of {@code id.getName(analyzer)}
-     *               (as an argument for avoiding re-computation when already known by the caller).
+     * @param  id            identification of the table to create.
+     * @param  name          the value of {@code id.getName(analyzer)}
+     *                       (as an argument for avoiding re-computation when already known by the caller).
+     * @param  isDependency  {@code false} if this table has been explicitly requested by the user,
+     *                       or {@code true} if this is a dependency discovered while analyzing.
      * @return the table, or {@code null} if there is a cyclic dependency and the table of the given
      *         name is already in process of being created.
      */
-    final Table table(final TableReference id, final GenericName name) throws SQLException, DataStoreException {
+    final Table table(final TableReference id, final GenericName name, final boolean isDependency)
+            throws SQLException, DataStoreException
+    {
         Table table = tables.get(name);
         if (table == null && !tables.containsKey(name)) {
             tables.put(name, null);                       // Mark the feature as in process of being created.
-            table = new Table(this, id);
+            table = new Table(this, id, isDependency);
             if (tables.put(name, table) != null) {
                 // Should never happen. If thrown, we have a bug (e.g. synchronization) in this package.
-                throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedChange_1, name));
+                throw new DataStoreException(Resources.format(Resources.Keys.InternalError));
             }
         }
         return table;

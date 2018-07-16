@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -39,8 +40,6 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
-
-// Branch-dependent imports
 
 
 /**
@@ -102,16 +101,18 @@ public final class Database {
      * </ul>
      *
      * @param  store        the data store for which we are creating a model. Used only in case of error.
-     * @param  connection   connection to the database.
-     * @param  tableNames   qualified name of the tables.
-     * @param  listeners    where to send the warnings.
+     * @param  connection   connection to the database. Sometime the caller already has a connection at hand.
+     * @param  source       provider of (pooled) connections to the database. Specified by users at construction time.
+     * @param  tableNames   qualified name of the tables. Specified by users at construction time.
+     * @param  listeners    where to send the warnings. This is the value of {@code store.listeners}.
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
-    public Database(final SQLStore store, final Connection connection, final GenericName[] tableNames,
-            final WarningListeners<DataStore> listeners) throws SQLException, DataStoreException
+    public Database(final SQLStore store, final Connection connection, final DataSource source,
+            final GenericName[] tableNames, final WarningListeners<DataStore> listeners)
+            throws SQLException, DataStoreException
     {
-        final Analyzer analyzer = new Analyzer(connection.getMetaData(), listeners, store.getLocale());
+        final Analyzer analyzer = new Analyzer(source, connection.getMetaData(), listeners, store.getLocale());
         final String[] tableTypes = getTableTypes(analyzer.metadata);
         final Set<TableReference> declared = new LinkedHashSet<>();
         for (final GenericName tableName : tableNames) {
@@ -138,7 +139,7 @@ public final class Database {
         tableList = new ArrayList<>(tableNames.length);
         for (final TableReference reference : declared) {
             // Adds only the table explicitly required by the user.
-            tableList.add(analyzer.table(reference, reference.getName(analyzer)));
+            tableList.add(analyzer.table(reference, reference.getName(analyzer), false));
         }
         /*
          * At this point we finished to create the table explicitly requested by the users.
@@ -148,7 +149,7 @@ public final class Database {
         boolean hasGeometry = false;
         tablesByNames = new FeatureNaming<>();
         for (final Table table : analyzer.finish()) {
-            tablesByNames.add(store, table.getType().getName(), table);
+            tablesByNames.add(store, table.featureType.getName(), table);
             hasGeometry |= table.hasGeometry;
         }
         this.tables = tableList.toArray(new Table[tableList.size()]);
@@ -183,7 +184,7 @@ public final class Database {
     public final void listTables(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
         for (final Table table : tables) {
             final long n = table.countRows(metadata, false);
-            builder.addFeatureType(table.getType(), (n > 0 && n <= Integer.MAX_VALUE) ? (int) n : null);
+            builder.addFeatureType(table.featureType, (n > 0 && n <= Integer.MAX_VALUE) ? (int) n : null);
         }
     }
 

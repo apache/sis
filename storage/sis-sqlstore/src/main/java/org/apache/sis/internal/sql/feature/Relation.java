@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,6 +26,7 @@ import java.sql.DatabaseMetaData;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
 
@@ -122,6 +123,17 @@ final class Relation extends TableReference {
     final boolean cascadeOnDelete;
 
     /**
+     * The other table which is related to the table containing this relation.
+     * This is set during {@link Table} construction and should not be modified after that point.
+     */
+    private Table related;
+
+    /**
+     * The name of the feature property where the association to {@link #related} table will be stored.
+     */
+    private String propertyName;
+
+    /**
      * Creates a new relation for an imported key. The given {@code ResultSet} must be positioned
      * on the first row of {@code DatabaseMetaData.getImportedKeys​(catalog, schema, table)} result,
      * and the result must be sorted in the order of the given keys:
@@ -168,24 +180,46 @@ final class Relation extends TableReference {
     }
 
     /**
-     * Adds to the given map the foreigner keys of the table that contains this relation.
-     * This method adds only the foreigner keys known to this relation; this is not necessarily
-     * all the table foreigner keys. Some columns may be used in more than one relation.
-     *
-     * <p>This method puts {@code this} relation in the values of the map. However if this relation describes a
-     * foreigner key using more than one column, then only one of the column will be associated to {@code this}
-     * and all other columns will be associated to {@code null}. For example if a foreigner key uses 3 columns,
-     * then we want to replace only one of those columns by an association, not create 3 identical associations.</p>
-     *
-     * @param  addTo  the map where to add the foreigner keys. After this method returns, the set of map keys
-     *                will contain the column names and exactly one of the values will be this relation.
+     * Invoked after construction for setting the target table.
+     * Shall be invoked exactly once.
      */
-    final void getForeignerKeys(final Map<String, List<Relation>> addTo) {
-        Relation rel = this;
-        for (final String column : columns.values()) {
-            CollectionsExt.addToMultiValuesMap(addTo, column, rel);
-            rel = null;     // Only the first column will be associated.
+    final void setRelatedTable(final Table table, final String property) throws DataStoreException {
+        if (related != null) {
+            throw new DataStoreException(Resources.format(Resources.Keys.InternalError));     // Should never happen.
         }
+        related = table;
+        propertyName = property;
+    }
+
+    /**
+     * Returns the other table which is related to the table containing this relation.
+     * See {@link Direction} for more details about the relation.
+     */
+    final Table getRelatedTable() {
+        return related;
+    }
+
+    /**
+     * Returns the name of the feature property where the association to {@link #related} table will be stored.
+     */
+    final String getPropertyName() {
+        return propertyName;
+    }
+
+    /**
+     * Returns the primary keys of the table related by the foreigner keys.
+     */
+    final Collection<String> getPrimaryKeys() {
+        return columns.keySet();
+    }
+
+    /**
+     * Returns the foreigner keys of the table that contains this relation. This method returns only
+     * the foreigner keys known to this relation; this is not necessarily all the table foreigner keys.
+     * Some columns may be used in more than one relation.
+     */
+    final Collection<String> getForeignerKeys() {
+        return columns.values();
     }
 
     /**

@@ -18,13 +18,18 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.sql.DatabaseMetaData;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.builder.AttributeRole;
@@ -40,12 +45,12 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
 
@@ -64,29 +69,47 @@ import org.opengis.feature.FeatureAssociationRole;
  */
 final class Table extends AbstractFeatureSet {
     /**
+     * Provider of (pooled) connections to the database.
+     */
+    private final DataSource source;
+
+    /**
      * The structure of this table represented as a feature. Each feature attribute is a table column,
      * except synthetic attributes like "sis:identifier". The feature may also contain associations
      * inferred from foreigner keys that are not immediately apparent in the table.
      */
-    private final FeatureType featureType;
+    final FeatureType featureType;
 
     /**
-     * The primary key of this table. The boolean values tells whether the column
-     * uses auto-increment, with null value meaning that we don't know.
+     * The name in the database of this {@code Table} object, together with its schema.
      */
-    private final Map<String,Boolean> primaryKeys;
+    final String schema, table;
+
+    /**
+     * Name of attributes in feature instances, excluding operations and associations to other tables.
+     * Those names are in the order of columns declared in the {@code SELECT <columns} statement.
+     * This array shall not be modified after construction.
+     */
+    private final String[] attributeNames;
+
+    /**
+     * Name of columns corresponding to each {@link #attributeNames}. This is often a reference to the
+     * same array than {@link #attributeNames}, but may be different if some attributes have been renamed
+     * for avoiding name collisions.
+     */
+    private final String[] attributeColumns;
 
     /**
      * The primary keys of other tables that are referenced by this table foreign key columns.
-     * They are 0:1 relations.
+     * They are 0:1 relations. May be {@code null} if there is no imported keys.
      */
-    private final List<Relation> importedKeys;
+    private final Relation[] importedKeys;
 
     /**
      * The foreign keys of other tables that reference this table primary key columns.
-     * They are 0:N relations
+     * They are 0:N relations. May be {@code null} if there is no exported keys.
      */
-    private final List<Relation> exportedKeys;
+    private final Relation[] exportedKeys;
 
     /**
      * {@code true} if this table contains at least one geometry column.
@@ -100,11 +123,18 @@ final class Table extends AbstractFeatureSet {
      *
      * @param  analyzer      helper functions, e.g. for converting SQL types to Java types.
      * @param  id            the catalog, schema and table name of the table to analyze.
+     * @param  isDependency  {@code false} if this table has been explicitly requested by the user,
+     *                       or {@code true} if this is a dependency discovered while analyzing.
      */
-    Table(final Analyzer analyzer, final TableReference id) throws SQLException, DataStoreException {
+    Table(final Analyzer analyzer, final TableReference id, final boolean isDependency)
+            throws SQLException, DataStoreException
+    {
         super(analyzer.listeners);
-        final String tableEsc  = analyzer.escape(id.table);
-        final String schemaEsc = analyzer.escape(id.schema);
+        this.source = analyzer.source;
+        this.schema = id.schema;
+        this.table  = id.table;
+        final String tableEsc  = analyzer.escape(table);
+        final String schemaEsc = analyzer.escape(schema);
         /*
          * Get a list of primary keys. We need to know them before to create the attributes,
          * in order to detect which attributes are used as components of Feature identifiers.
@@ -116,7 +146,7 @@ final class Table extends AbstractFeatureSet {
          * We don't do that for now because of uncertainties (which index to use if there is
          * many? If they are suitable as identifiers why they are not primary keys?).
          */
-        final Map<String,Boolean> primaryKeys = new HashMap<>();
+        final Map<String,Boolean> primaryKeys = new LinkedHashMap<>();
         try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
             while (reflect.next()) {
                 primaryKeys.put(reflect.getString(Reflection.COLUMN_NAME), null);
@@ -135,27 +165,38 @@ final class Table extends AbstractFeatureSet {
          * multi-occurrences.
          */
         final List<Relation> importedKeys = new ArrayList<>();
-        final List<Relation> exportedKeys = new ArrayList<>();
         final Map<String, List<Relation>> foreignerKeys = new HashMap<>();
         try (ResultSet reflect = analyzer.metadata.getImportedKeys(id.catalog, id.schema, id.table)) {
             if (reflect.next()) do {
-                final Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
-                relation.getForeignerKeys(foreignerKeys);
+                Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
                 importedKeys.add(relation);
+                for (final String column : relation.getForeignerKeys()) {
+                    CollectionsExt.addToMultiValuesMap(foreignerKeys, column, relation);
+                    relation = null;     // Only the first column will be associated.
+                }
             } while (!reflect.isClosed());
         }
-        try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
-            if (reflect.next()) do {
-                exportedKeys.add(new Relation(Relation.Direction.EXPORT, reflect));
-            } while (!reflect.isClosed());
+        final List<Relation> exportedKeys;
+        if (isDependency) {
+            exportedKeys = Collections.emptyList();
+        } else {
+            exportedKeys = new ArrayList<>();
+            try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
+                if (reflect.next()) do {
+                    exportedKeys.add(new Relation(Relation.Direction.EXPORT, reflect));
+                } while (!reflect.isClosed());
+            }
         }
         /*
          * For each column in the table that is not a foreigner key, create an AttributeType of the same name.
          * The Java type is inferred from the SQL type, and the attribute cardinality in inferred from the SQL
-         * nullability.
+         * nullability. Attribute names are added in the 'attributeNames' and 'attributeColumns' list. Those
+         * names are usually the same, except when a column is used both as a primary key and as foreigner key.
          */
         boolean hasGeometry = false;
         int startWithLowerCase = 0;
+        final List<String> attributeNames = new ArrayList<>();
+        final List<String> attributeColumns = new ArrayList<>();
         final FeatureTypeBuilder feature = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
@@ -182,6 +223,8 @@ final class Table extends AbstractFeatureSet {
                  */
                 AttributeTypeBuilder<?> attribute = null;
                 if (isPrimaryKey || dependencies == null) {
+                    attributeNames.add(column);
+                    attributeColumns.add(column);
                     final String typeName = reflect.getString(Reflection.TYPE_NAME);
                     Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
                     if (type == null) {
@@ -231,13 +274,16 @@ final class Table extends AbstractFeatureSet {
                     for (final Relation dependency : dependencies) {
                         if (dependency != null) {
                             final GenericName typeName = dependency.getName(analyzer);
-                            final Table table = analyzer.table(dependency, typeName);
+                            final Table table = analyzer.table(dependency, typeName, true);
+                            final String propertyName = (count++ == 0) ? column : column + '-' + count;
                             final AssociationRoleBuilder association;
                             if (table != null) {
+                                dependency.setRelatedTable(table, propertyName);
                                 association = feature.addAssociation(table.featureType);
                             } else {
                                 association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
                             }
+                            association.setName(propertyName);
                             if (!mandatory) {
                                 association.setMinimumOccurs(0);
                             }
@@ -249,10 +295,9 @@ final class Table extends AbstractFeatureSet {
                              */
                             if (attribute != null) {
                                 attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column));
+                                attributeNames.set(attributeNames.size() - 1, attribute.getName().toString());
                                 attribute = null;
                             }
-                            association.setName((count == 0) ? column : column + '-' + count);
-                            count++;
                         }
                     }
                 }
@@ -267,27 +312,28 @@ final class Table extends AbstractFeatureSet {
         for (final Relation dependency : exportedKeys) {
             if (dependency != null) {
                 final GenericName typeName = dependency.getName(analyzer);
-                String name = typeName.tip().toString();
+                String propertyName = typeName.tip().toString();
                 if (startWithLowerCase > 0) {
-                    final CharSequence words = CharSequences.camelCaseToWords(name, true);
+                    final CharSequence words = CharSequences.camelCaseToWords(propertyName, true);
                     final int first = Character.codePointAt(words, 0);
-                    name = new StringBuilder(words.length())
+                    propertyName = new StringBuilder(words.length())
                             .appendCodePoint(Character.toLowerCase(first))
                             .append(words, Character.charCount(first), words.length())
                             .toString();
                 }
-                final String base = name;
-                while (feature.isNameUsed(name)) {
-                    name = base + '-' + ++count;
+                final String base = propertyName;
+                while (feature.isNameUsed(propertyName)) {
+                    propertyName = base + '-' + ++count;
                 }
-                final Table table = analyzer.table(dependency, typeName);
+                final Table table = analyzer.table(dependency, typeName, true);
                 final AssociationRoleBuilder association;
                 if (table != null) {
+                    dependency.setRelatedTable(table, propertyName);
                     association = feature.addAssociation(table.featureType);
                 } else {
                     association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
                 }
-                association.setName(name)
+                association.setName(propertyName)
                            .setMinimumOccurs(0)
                            .setMaximumOccurs(Integer.MAX_VALUE);
             }
@@ -314,25 +360,37 @@ final class Table extends AbstractFeatureSet {
         if (remarks != null) {
             feature.setDefinition(remarks);
         }
-        this.featureType  = feature.build();
-        this.primaryKeys  = CollectionsExt.compact(primaryKeys);
-        this.importedKeys = CollectionsExt.compact(importedKeys);
-        this.exportedKeys = CollectionsExt.compact(exportedKeys);
-        this.hasGeometry  = hasGeometry;
+        this.featureType      = feature.build();
+        this.importedKeys     = toArray(importedKeys);
+        this.exportedKeys     = toArray(exportedKeys);
+        this.hasGeometry      = hasGeometry;
+        this.attributeNames   = attributeNames.toArray(new String[attributeNames.size()]);
+        this.attributeColumns = attributeColumns.equals(attributeNames) ? this.attributeNames
+                              : attributeColumns.toArray(new String[attributeColumns.size()]);
+    }
+
+    /**
+     * Returns the given relations as an array, or {@code null} if none.
+     */
+    private static Relation[] toArray(final Collection<Relation> relations) {
+        final int size = relations.size();
+        return (size != 0) ? relations.toArray(new Relation[size]) : null;
     }
 
     /**
      * Appends all children to the given parent. The children are added under the given node.
-     * If the children collection is empty, then this method does nothing.
+     * If the children array is null, then this method does nothing.
      *
      * @param  parent    the node where to add children.
-     * @param  children  the children to add, or an empty collection if none.
+     * @param  children  the children to add, or {@code null} if none.
      * @param  arrow     the symbol to use for relating the columns of two tables in a foreigner key.
      */
     @Debug
-    private static void appendAll(final TreeTable.Node parent, final Collection<Relation> children, final String arrow) {
-        for (final Relation child : children) {
-            child.appendTo(parent, arrow);
+    private static void appendAll(final TreeTable.Node parent, final Relation[] children, final String arrow) {
+        if (children != null) {
+            for (final Relation child : children) {
+                child.appendTo(parent, arrow);
+            }
         }
     }
 
@@ -344,13 +402,11 @@ final class Table extends AbstractFeatureSet {
     @Debug
     final void appendTo(TreeTable.Node parent) {
         parent = Relation.newChild(parent, featureType.getName().toString());
-        for (PropertyType p : featureType.getProperties(false)) {
-            if (p instanceof AttributeType) {
-                TableReference.newChild(parent, p.getName().tip().toString());
-            }
+        for (final String attribute : attributeNames) {
+            TableReference.newChild(parent, attribute);
         }
-        appendAll(parent, importedKeys,  " → ");
-        appendAll(parent, exportedKeys,  " ← ");
+        appendAll(parent, importedKeys, " → ");
+        appendAll(parent, exportedKeys, " ← ");
     }
 
     /**
@@ -407,7 +463,28 @@ final class Table extends AbstractFeatureSet {
      * @throws DataStoreException if an error occurred while creating the stream.
      */
     @Override
-    public Stream<Feature> features(boolean parallel) throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");  // TODO
+    public Stream<Feature> features(final boolean parallel) throws DataStoreException {
+        DataStoreException ex;
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+            final Features iter = features(connection, null);
+            return StreamSupport.stream(iter, parallel).onClose(iter);
+        } catch (SQLException cause) {
+            ex = new DataStoreException(Exceptions.unwrap(cause));
+        }
+        if (connection != null) try {
+            connection.close();
+        } catch (SQLException e) {
+            ex.addSuppressed(e);
+        }
+        throw ex;
+    }
+
+    /**
+     * Returns an iterator over the features.
+     */
+    final Features features(final Connection connection, final Relation componentOf) throws SQLException {
+        return new Features(this, connection, attributeNames, attributeColumns, importedKeys, componentOf);
     }
 }
