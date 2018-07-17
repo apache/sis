@@ -43,9 +43,12 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
@@ -81,7 +84,7 @@ final class Table extends AbstractFeatureSet {
     final FeatureType featureType;
 
     /**
-     * The name in the database of this {@code Table} object, together with its schema.
+     * The name in the database of this {@code Table} object, as a table name and a schema name.
      */
     final String schema, table;
 
@@ -100,6 +103,11 @@ final class Table extends AbstractFeatureSet {
     private final String[] attributeColumns;
 
     /**
+     * The columns that constitute the primary key, or {@code null} if there is no primary key.
+     */
+    private final String[] primaryKeys;
+
+    /**
      * The primary keys of other tables that are referenced by this table foreign key columns.
      * They are 0:1 relations. May be {@code null} if there is no imported keys.
      */
@@ -110,6 +118,24 @@ final class Table extends AbstractFeatureSet {
      * They are 0:N relations. May be {@code null} if there is no exported keys.
      */
     private final Relation[] exportedKeys;
+
+    /**
+     * The class of primary key values, or {@code null} if there is no primary keys.
+     * If the primary keys use more than one column, then this field is the class of
+     * an array; it may be an array of primitive type.
+     */
+    final Class<?> primaryKeyClass;
+
+    /**
+     * Feature instances already created for given primary keys. This map is used only when requesting feature
+     * instances by identifiers (not for iterating over all features) and those identifiers are primary keys.
+     * We create this map only for tables referenced by foreigner keys of other tables as enumerated by the
+     * {@link Relation.Direction#IMPORT} and {@link Relation.Direction#EXPORT} cases; not for arbitrary
+     * cross-reference cases. Values are usually {@code Feature} instances, but may also be {@code Collection<Feature>}.
+     *
+     * @see #instanceForPrimaryKeys()
+     */
+    private WeakValueHashMap<?,Object> instanceForPrimaryKeys;
 
     /**
      * {@code true} if this table contains at least one geometry column.
@@ -149,10 +175,11 @@ final class Table extends AbstractFeatureSet {
         final Map<String,Boolean> primaryKeys = new LinkedHashMap<>();
         try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
             while (reflect.next()) {
-                primaryKeys.put(reflect.getString(Reflection.COLUMN_NAME), null);
+                primaryKeys.put(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME), null);
                 // The actual Boolean value will be fetched in the loop on columns later.
             }
         }
+        this.primaryKeys = primaryKeys.isEmpty() ? null : primaryKeys.keySet().toArray(new String[primaryKeys.size()]);
         /*
          * Creates a list of associations between the table read by this method and other tables.
          * The associations are defined by the foreigner keys referencing primary keys. Note that
@@ -168,7 +195,7 @@ final class Table extends AbstractFeatureSet {
         final Map<String, List<Relation>> foreignerKeys = new HashMap<>();
         try (ResultSet reflect = analyzer.metadata.getImportedKeys(id.catalog, id.schema, id.table)) {
             if (reflect.next()) do {
-                Relation relation = new Relation(Relation.Direction.IMPORT, reflect);
+                Relation relation = new Relation(analyzer, Relation.Direction.IMPORT, reflect);
                 importedKeys.add(relation);
                 for (final String column : relation.getForeignerKeys()) {
                     CollectionsExt.addToMultiValuesMap(foreignerKeys, column, relation);
@@ -183,7 +210,7 @@ final class Table extends AbstractFeatureSet {
             exportedKeys = new ArrayList<>();
             try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
                 if (reflect.next()) do {
-                    exportedKeys.add(new Relation(Relation.Direction.EXPORT, reflect));
+                    exportedKeys.add(new Relation(analyzer, Relation.Direction.EXPORT, reflect));
                 } while (!reflect.isClosed());
             }
         }
@@ -193,14 +220,16 @@ final class Table extends AbstractFeatureSet {
          * nullability. Attribute names are added in the 'attributeNames' and 'attributeColumns' list. Those
          * names are usually the same, except when a column is used both as a primary key and as foreigner key.
          */
-        boolean hasGeometry = false;
-        int startWithLowerCase = 0;
+        Class<?> primaryKeyClass   = null;
+        boolean  primaryKeyNonNull = true;
+        boolean  hasGeometry       = false;
+        int startWithLowerCase     = 0;
         final List<String> attributeNames = new ArrayList<>();
         final List<String> attributeColumns = new ArrayList<>();
         final FeatureTypeBuilder feature = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
-                final String         column       = reflect.getString(Reflection.COLUMN_NAME);
+                final String         column       = analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME);
                 final boolean        mandatory    = Boolean.FALSE.equals(SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE)));
                 final boolean        isPrimaryKey = primaryKeys.containsKey(column);
                 final List<Relation> dependencies = foreignerKeys.get(column);
@@ -248,8 +277,11 @@ final class Table extends AbstractFeatureSet {
                      */
                     if (isPrimaryKey) {
                         attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+                        primaryKeyNonNull &= mandatory;
+                        primaryKeyClass = Classes.findCommonClass(primaryKeyClass, type);
                         if (primaryKeys.put(column, SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT))) != null) {
-                            throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedEntity_2, "Column", column));
+                            throw new DataStoreContentException(Resources.forLocale(analyzer.locale)
+                                    .getString(Resources.Keys.DuplicatedColumn_1, column));
                         }
                     }
                     if (Geometries.isKnownType(type)) {
@@ -275,10 +307,22 @@ final class Table extends AbstractFeatureSet {
                         if (dependency != null) {
                             final GenericName typeName = dependency.getName(analyzer);
                             final Table table = analyzer.table(dependency, typeName, true);
-                            final String propertyName = (count++ == 0) ? column : column + '-' + count;
+                            /*
+                             * Use the column name as the association name, provided that the foreigner key
+                             * use only that column. If the foreigner key use more than one column, then we
+                             * do not know which column describes better the association (often there is none).
+                             * In such case we use the foreigner key name as a fallback.
+                             */
+                            String propertyName = null;
+                            if (dependency.getKeySize() > 1) {
+                                propertyName = dependency.freeText;             // Foreigner key name (may be null).
+                            }
+                            if (propertyName == null) {
+                                propertyName = (count++ == 0) ? column : column + '-' + count;
+                            }
                             final AssociationRoleBuilder association;
                             if (table != null) {
-                                dependency.setRelatedTable(table, propertyName);
+                                dependency.setSearchTable(analyzer, table, propertyName, table.primaryKeys, Relation.Direction.IMPORT);
                                 association = feature.addAssociation(table.featureType);
                             } else {
                                 association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
@@ -328,7 +372,7 @@ final class Table extends AbstractFeatureSet {
                 final Table table = analyzer.table(dependency, typeName, true);
                 final AssociationRoleBuilder association;
                 if (table != null) {
-                    dependency.setRelatedTable(table, propertyName);
+                    dependency.setSearchTable(analyzer, table, propertyName, this.primaryKeys, Relation.Direction.EXPORT);
                     association = feature.addAssociation(table.featureType);
                 } else {
                     association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
@@ -339,6 +383,16 @@ final class Table extends AbstractFeatureSet {
             }
         }
         /*
+         * If the primary keys uses more than one column, we will need an array to store it.
+         * If all columns are non-null numbers, use primitive arrays instead than array of wrappers.
+         */
+        if (primaryKeys.size() > 1) {
+            if (primaryKeyNonNull) {
+                primaryKeyClass = Numbers.wrapperToPrimitive(primaryKeyClass);
+            }
+            primaryKeyClass = Classes.changeArrayDimension(primaryKeyClass, 1);
+        }
+        /*
          * Global information on the feature type (name, remarks).
          * The remarks are opportunistically stored in id.freeText if known by the caller.
          */
@@ -347,7 +401,7 @@ final class Table extends AbstractFeatureSet {
         if (id instanceof Relation) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
                 while (reflect.next()) {
-                    remarks = reflect.getString(Reflection.REMARKS);
+                    remarks = analyzer.getUniqueString(reflect, Reflection.REMARKS);
                     if (remarks != null) {
                         remarks = remarks.trim();
                         if (remarks.isEmpty()) {
@@ -363,6 +417,7 @@ final class Table extends AbstractFeatureSet {
         this.featureType      = feature.build();
         this.importedKeys     = toArray(importedKeys);
         this.exportedKeys     = toArray(exportedKeys);
+        this.primaryKeyClass  = primaryKeyClass;
         this.hasGeometry      = hasGeometry;
         this.attributeNames   = attributeNames.toArray(new String[attributeNames.size()]);
         this.attributeColumns = attributeColumns.equals(attributeNames) ? this.attributeNames
@@ -423,8 +478,22 @@ final class Table extends AbstractFeatureSet {
      * Returns the feature type inferred from the database structure analysis.
      */
     @Override
-    public FeatureType getType() {
+    public final FeatureType getType() {
         return featureType;
+    }
+
+    /**
+     * Returns a cache for fetching feature instances by identifier. The map is created when this method is
+     * first invoked. Keys are primary key values, typically as {@code String} or {@code Integer} instances
+     * or arrays of those if the keys use more than one column. Values are usually {@code Feature} instances,
+     * but may also be {@code Collection<Feature>}.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final synchronized WeakValueHashMap<?,Object> instanceForPrimaryKeys() {
+        if (instanceForPrimaryKeys == null) {
+            instanceForPrimaryKeys = new WeakValueHashMap<>(primaryKeyClass);
+        }
+        return instanceForPrimaryKeys;
     }
 
     /**

@@ -30,6 +30,7 @@ import java.util.logging.LogRecord;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -76,6 +77,15 @@ final class Analyzer {
      * The factory for creating {@code FeatureType} names.
      */
     final NameFactory nameFactory;
+
+    /**
+     * A pool of strings read from database metadata. Those strings are mostly catalog, schema and column names.
+     * The same names are repeated often (in primary keys, foreigner keys, <i>etc.</i>), and using a pool allows
+     * us to replace equal character strings by the same {@link String} instances.
+     *
+     * @see #getUniqueString(ResultSet, String)
+     */
+    private final Map<String,String> strings;
 
     /**
      * The string to insert before wildcard characters ({@code '_'} or {@code '%'}) to escape.
@@ -137,6 +147,7 @@ final class Analyzer {
         this.metadata    = metadata;
         this.listeners   = listeners;
         this.locale      = locale;
+        this.strings     = new HashMap<>();
         this.escape      = metadata.getSearchStringEscape();
         this.functions   = new SpatialFunctions(metadata);
         this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
@@ -198,6 +209,25 @@ final class Analyzer {
     }
 
     /**
+     * Reads a string from the given result set and return a unique instance of that string.
+     * This method should be invoked only for {@code String} instances that are going to be
+     * stored in {@link Table} or {@link Relation} structures; there is no point to invoke
+     * this method for example before to parse the string as a boolean.
+     *
+     * @param  reflect  the result set from which to read a string.
+     * @param  column   the column to read.
+     * @return the value in the given column, returned as a unique string.
+     */
+    final String getUniqueString(final ResultSet reflect, final String column) throws SQLException {
+        String value = reflect.getString(column);
+        if (value != null) {
+            final String p = strings.putIfAbsent(value, value);
+            if (p != null) value = p;
+        }
+        return value;
+    }
+
+    /**
      * Returns whether a table is reserved for database internal working.
      * If this method returns {@code false}, then the given table is a candidate
      * for use as a {@code FeatureType}.
@@ -255,10 +285,18 @@ final class Analyzer {
             table = new Table(this, id, isDependency);
             if (tables.put(name, table) != null) {
                 // Should never happen. If thrown, we have a bug (e.g. synchronization) in this package.
-                throw new DataStoreException(Resources.format(Resources.Keys.InternalError));
+                throw new DataStoreException(internalError());
             }
         }
         return table;
+    }
+
+    /**
+     * Returns a message for unexpected errors. Those errors are caused by a bug in this
+     * {@code org.apache.sis.internal.sql.feature} package instead than a database issue.
+     */
+    final String internalError() {
+        return Resources.forLocale(locale).getString(Resources.Keys.InternalError);
     }
 
     /**

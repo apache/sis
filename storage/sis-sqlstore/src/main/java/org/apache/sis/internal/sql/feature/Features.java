@@ -26,7 +26,9 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.lang.reflect.Array;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.BackingStoreException;
 
 // Branch-dependent imports
@@ -87,6 +89,25 @@ final class Features implements Spliterator<Feature>, Runnable {
     private ResultSet result;
 
     /**
+     * Feature instances already created, or {@code null} if the features created by this iterator are not cached.
+     * This map is used when requesting a feature by identifier, not when iterating over all features (note: we
+     * could perform an opportunistic check in a future SIS version). The same map may be shared by all iterators
+     * on the same {@link Table}, but {@link WeakValueHashMap} already provides the required synchronizations.
+     *
+     * <p>This {@code Features} class does not require the identifiers to be built from primary key columns.
+     * However if this map has been provided by {@link Table#instanceForPrimaryKeys()}, then the identifiers
+     * need to be primary keys with columns in the exact same order for allowing the same map to be shared.</p>
+     */
+    private final WeakValueHashMap<?,Object> instances;
+
+    /**
+     * The component class of the keys in the {@link #instances} map, or {@code null} if the keys are not array.
+     * For example if a primary key is made of two columns of type {@code String}, then this field may be set to
+     * {@code String}.
+     */
+    private final Class<?> keyComponentClass;
+
+    /**
      * Estimated number of rows, or {@literal <= 0} if unknown.
      */
     private final long estimatedSize;
@@ -127,7 +148,7 @@ final class Features implements Spliterator<Feature>, Runnable {
             for (int i=0; i<n;) {
                 final Relation dependency = importedKeys[i];
                 associationNames[i] = dependency.getPropertyName();
-                importedFeatures[i] = dependency.getRelatedTable().features(connection, dependency);
+                importedFeatures[i] = dependency.getSearchTable().features(connection, dependency);
                 for (final String column : dependency.getForeignerKeys()) {
                     if (count != 0) sql.append(',');
                     sql.append(' ').append(column);
@@ -141,21 +162,44 @@ final class Features implements Spliterator<Feature>, Runnable {
             foreignerKeyIndices = null;
         }
         /*
-         * Create a Statement if we don't need any condition, or a PreparedStatement
-         * if we need to add a "WHERE" clause.
+         * Create a Statement if we don't need any condition, or a PreparedStatement if we need to add
+         * a "WHERE" clause. In the later case, we will cache the features already created if there is
+         * a possibility that many rows reference the same feature instance.
          */
         sql.append(" FROM ").appendIdentifier(table.schema, table.table);
         if (componentOf == null) {
             statement = null;
+            instances = null;       // A future SIS version could use the map opportunistically if it exists.
+            keyComponentClass = null;
             result = connection.createStatement().executeQuery(sql.toString());
         } else {
             String separator = " WHERE ";
-            for (String primaryKey : componentOf.getPrimaryKeys()) {
+            for (String primaryKey : componentOf.getSearchColumns()) {
                 sql.append(separator).append(primaryKey).append("=?");
                 separator = " AND ";
             }
             statement = connection.prepareStatement(sql.toString());
+            /*
+             * Following assumes that the foreigner key references the primary key of this table,
+             * in which case 'table.primaryKeyClass' should never be null. This assumption may not
+             * hold if the relation has been defined by DatabaseMetaData.getCrossReference(…) instead.
+             */
+            if (componentOf.isFullKey()) {
+                instances = table.instanceForPrimaryKeys();
+                keyComponentClass = table.primaryKeyClass.getComponentType();
+            } else {
+                instances = new WeakValueHashMap<>(Object.class);       // Can not share the table cache.
+                keyComponentClass = Object.class;
+            }
         }
+    }
+
+    /**
+     * Returns an array of the given length capable to hold the identifier,
+     * or {@code null} if there is no need for an array.
+     */
+    private Object identifierArray(final int columnCount) {
+        return (columnCount > 1) ? Array.newInstance(keyComponentClass, columnCount) : null;
     }
 
     /**
@@ -224,55 +268,100 @@ final class Features implements Spliterator<Feature>, Runnable {
             if (importedFeatures != null) {
                 for (int i=0; i < importedFeatures.length; i++) {
                     final Features dependency = importedFeatures[i];
-                    final int last = foreignerKeyIndices[i+1];
-                    for (int p=1, c = foreignerKeyIndices[i]; ++c <= last; p++) {
-                        dependency.statement.setObject(p, result.getObject(c));
+                    int columnIndice = foreignerKeyIndices[i];
+                    final int columnCount = foreignerKeyIndices[i+1] - columnIndice;
+                    /*
+                     * If the foreigner key uses only one column, we will store the foreigner key value
+                     * in the 'key' variable without creating array. But if the foreigner key uses more
+                     * than one column, then we need to create an array holding all values.
+                     */
+                    final Object keys = dependency.identifierArray(columnCount);
+                    Object key = null;
+                    for (int p=0; p < columnCount;) {
+                        key = result.getObject(++columnIndice);
+                        if (keys != null) Array.set(keys, p, key);
+                        dependency.statement.setObject(++p, key);
                     }
-                    final Object value = dependency.fetchReferenced();
+                    if (keys != null) key = keys;
+                    final Object value = dependency.fetchReferenced(key);
                     feature.setPropertyValue(associationNames[i], value);
                 }
             }
             action.accept(feature);
-            if (!all) {
-                return true;
-            }
+            if (!all) return true;
         }
         return false;
     }
 
     /**
      * Executes the current {@link #statement} and stores all features in a list.
-     * Returns {@code null} if there is no feature, the feature instance if there
-     * is only one, and a list of features otherwise.
+     * Returns {@code null} if there is no feature, or returns the feature instance
+     * if there is only one such instance, or returns a list of features otherwise.
      */
-    private Object fetchReferenced() throws SQLException {
-        final List<Feature> instances = new ArrayList<>();
+    private Object fetchReferenced(final Object key) throws SQLException {
+        if (key != null) {
+            Object existing = instances.get(key);
+            if (existing != null) {
+                return existing;
+            }
+        }
+        final List<Feature> features = new ArrayList<>();
         try (ResultSet r = statement.executeQuery()) {
             result = r;
-            fetch(instances::add, true);
+            fetch(features::add, true);
+        } finally {
+            result = null;
         }
-        switch (instances.size()) {
-            case 0:  return null;
-            case 1:  return instances.get(0);
-            default: return instances;
+        Object feature;
+        switch (features.size()) {
+            case 0:  feature = null; break;
+            case 1:  feature = features.get(0); break;
+            default: feature = features; break;
+        }
+        if (key != null) {
+            @SuppressWarnings("unchecked")          // Check is performed by putIfAbsent(…).
+            final Object previous = ((WeakValueHashMap) instances).putIfAbsent(key, feature);
+            if (previous != null) {
+                feature = previous;
+            }
+        }
+        return feature;
+    }
+
+    /**
+     * Closes the (pooled) connection, including the statements of all dependencies.
+     */
+    private void close() throws SQLException {
+        /*
+         * Only one of 'statement' and 'result' should be non-null. The connection should be closed
+         * by the 'Features' instance having a non-null 'result' because it is the main one created
+         * by 'Table.features(boolean)' method. The other 'Features' instances are dependencies.
+         */
+        if (statement != null) {
+            statement.close();
+        }
+        final ResultSet r = result;
+        if (r != null) {
+            result = null;
+            final Statement s = r.getStatement();
+            try (Connection c = s.getConnection()) {
+                r.close();      // Implied by s.close() according JDBC javadoc, but we are paranoiac.
+                s.close();
+                for (final Features dependency : importedFeatures) {
+                    dependency.close();
+                }
+            }
         }
     }
 
     /**
-     * Closes the (pooled) connection.
+     * Closes the (pooled) connection, including the statements of all dependencies.
+     * This is a handler to be invoked by {@link java.util.stream.Stream#close()}.
      */
     @Override
     public void run() {
         try {
-            final Statement s = result.getStatement();
-            try (Connection c = s.getConnection()) {
-                result.close();
-                s.close();
-                for (final Features dependency : importedFeatures) {
-                    dependency.statement.close();
-                }
-                // No need to close this.statement because it is null.
-            }
+            close();
         } catch (SQLException e) {
             throw new BackingStoreException(e);
         }

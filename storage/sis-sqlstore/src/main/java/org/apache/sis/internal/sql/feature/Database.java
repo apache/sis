@@ -119,14 +119,14 @@ public final class Database {
             final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = analyzer.metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
-                    final String table = reflect.getString(Reflection.TABLE_NAME);
+                    final String table = analyzer.getUniqueString(reflect, Reflection.TABLE_NAME);
                     if (analyzer.isIgnoredTable(table)) {
                         continue;
                     }
                     declared.add(new TableReference(
-                            reflect.getString(Reflection.TABLE_CAT),
-                            reflect.getString(Reflection.TABLE_SCHEM),
-                            table, reflect.getString(Reflection.REMARKS)));
+                            analyzer.getUniqueString(reflect, Reflection.TABLE_CAT),
+                            analyzer.getUniqueString(reflect, Reflection.TABLE_SCHEM), table,
+                            analyzer.getUniqueString(reflect, Reflection.REMARKS)));
                 }
             }
         }
