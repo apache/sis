@@ -57,7 +57,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.MergerTest.class,
 
     // XML marshalling.
-    org.apache.sis.internal.test.XMLComparatorTest.class,
+    org.apache.sis.internal.test.DocumentComparatorTest.class,
     org.apache.sis.xml.NamespacesTest.class,
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,

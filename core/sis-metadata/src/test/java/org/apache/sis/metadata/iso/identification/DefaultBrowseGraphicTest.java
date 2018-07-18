@@ -29,7 +29,7 @@ import org.apache.sis.util.Version;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
@@ -46,7 +46,7 @@ import static java.util.Collections.singletonMap;
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultBrowseGraphicTest extends XMLTestCase {
+public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     /**
      * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
      */

@@ -23,7 +23,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.After;
 import org.junit.Rule;
@@ -42,7 +42,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
-public final strictfp class DefaultResolutionTest extends XMLTestCase {
+public final strictfp class DefaultResolutionTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).

@@ -27,7 +27,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
@@ -43,7 +43,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
+public final strictfp class DefaultVerticalDatumTest extends TestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */

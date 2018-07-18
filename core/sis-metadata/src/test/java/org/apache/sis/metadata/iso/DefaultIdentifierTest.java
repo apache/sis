@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.*;
 
@@ -36,7 +36,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @module
  */
 @DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)
-public final strictfp class DefaultIdentifierTest extends XMLTestCase {
+public final strictfp class DefaultIdentifierTest extends TestCase {
     /**
      * The expected XML representation for this test.
      */

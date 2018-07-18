@@ -24,7 +24,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ReferenceResolverMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class)
-public final strictfp class PropertyTypeTest extends XMLTestCase {
+public final strictfp class PropertyTypeTest extends TestCase {
     /**
      * The pseudo-metadata object to wrap for testing purpose.
      */
@@ -127,7 +127,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.UUID, uuid);
         if (useReferenceResolverMock) {
             context = ReferenceResolverMock.begin(true);
-            // XMLTestCase.clearContext() will dispose the context.
+            // TestCase.clearContext() will dispose the context.
         }
         final PropertyTypeMock property = marshal();
         if (!useReferenceResolverMock) {
@@ -183,7 +183,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, link);
         if (useReferenceResolverMock) {
             context = ReferenceResolverMock.begin(true);
-            // XMLTestCase.clearContext() will dispose the context.
+            // TestCase.clearContext() will dispose the context.
         }
         final PropertyTypeMock property = marshal();
         if (!useReferenceResolverMock) {

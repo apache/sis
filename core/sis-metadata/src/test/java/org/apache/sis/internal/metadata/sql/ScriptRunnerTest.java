@@ -17,9 +17,10 @@
 package org.apache.sis.internal.metadata.sql;
 
 import java.sql.Connection;
-import javax.sql.DataSource;
+import java.sql.SQLException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
+import org.apache.sis.test.sql.TestDatabase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -29,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests {@link ScriptRunner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -38,17 +39,16 @@ public final strictfp class ScriptRunnerTest extends TestCase {
      * Tests {@link ScriptRunner} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
      *
-     * @throws Exception if an error occurred while executing the script runner.
+     * @throws SQLException if an error occurred while executing the script runner.
      */
     @Test
-    public void testOnDerby() throws Exception {
-        final DataSource ds = TestDatabase.create("ScriptRunner");
-        try (Connection c = ds.getConnection()) {
+    public void testOnDerby() throws SQLException {
+        try (TestDatabase db = TestDatabase.create("ScriptRunner");
+             Connection c = db.source.getConnection())
+        {
             final ScriptRunner sr = new ScriptRunner(c, 3);
             testSupportedFlags(sr);
             testRegularExpressions(sr);
-        } finally {
-            TestDatabase.drop(ds);
         }
     }
 

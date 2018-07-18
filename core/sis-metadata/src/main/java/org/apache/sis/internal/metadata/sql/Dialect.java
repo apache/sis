@@ -88,9 +88,10 @@ public enum Dialect {
 
     /**
      * Returns the presumed SQL dialect.
+     * If this method can not guess the dialect, than {@link #ANSI} is presumed.
      *
      * @param  metadata  the database metadata.
-     * @return the presumed SQL dialect.
+     * @return the presumed SQL dialect (never {@code null}).
      * @throws SQLException if an error occurred while querying the metadata.
      */
     public static Dialect guess(final DatabaseMetaData metadata) throws SQLException {

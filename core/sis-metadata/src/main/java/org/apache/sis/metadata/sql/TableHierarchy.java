@@ -25,7 +25,10 @@ import org.apache.sis.util.iso.Types;
  * Utility methods for handling the inheritance between tables.
  * This features is partially supported in PostgreSQL database.
  *
- * @author desruisseaux
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
 final class TableHierarchy {
     /**
@@ -52,6 +55,7 @@ final class TableHierarchy {
     static {
         add("CI_Individual",                  "ind");
         add("CI_Organisation",                "org");
+        add("CI_ResponsibleParty",            "rp");
         add("MD_VectorSpatialRepresentation", "vec");
         add("MD_GridSpatialRepresentation",   "grd");
         add("MD_Georectified",                "rtf");

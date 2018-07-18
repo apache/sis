@@ -257,6 +257,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Details = 33;
 
         /**
+         * Digital elevation model
+         */
+        public static final short DigitalElevationModel = 146;
+
+        /**
          * Dimensions
          */
         public static final short Dimensions = 34;

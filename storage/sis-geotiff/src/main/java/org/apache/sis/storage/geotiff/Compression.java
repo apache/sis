@@ -22,11 +22,11 @@ package org.apache.sis.storage.geotiff;
  * Data compression applies only to raster image data. All other TIFF fields are unaffected.
  *
  * <p>Except otherwise noted, field names in this class are upper-case variant of the names
- * used in Coverage Web Services (CSW) as specified in the following specification:</p>
+ * used in Web Coverage Service (WCS) as specified in the following specification:</p>
  *
  * <blockquote>OGC 12-100: GML Application Schema - Coverages - GeoTIFF Coverage Encoding Profile</blockquote>
  *
- * The main exception is {@code CCITT}, which has different name in CSW query and response.
+ * The main exception is {@code CCITT}, which has different name in WCS query and response.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -39,8 +39,8 @@ enum Compression {
      * No compression, but pack data into bytes as tightly as possible, leaving no unused bits except
      * potentially at the end of rows. The component values are stored as an array of type byte.
      * <ul>
-     *   <li>Name in CSW query:    "None"</li>
-     *   <li>Name in CSW response: "None"</li>
+     *   <li>Name in WCS query:    "None"</li>
+     *   <li>Name in WCS response: "None"</li>
      * </ul>
      */
     NONE(1),
@@ -48,8 +48,8 @@ enum Compression {
     /**
      * CCITT Group 3, 1-Dimensional Modified Huffman run length encoding.
      * <ul>
-     *   <li>Name in CSW query:    "Huffman"</li>
-     *   <li>Name in CSW response: "CCITTRLE"</li>
+     *   <li>Name in WCS query:    "Huffman"</li>
+     *   <li>Name in WCS response: "CCITTRLE"</li>
      * </ul>
      */
     CCITTRLE(2),
@@ -57,8 +57,8 @@ enum Compression {
     /**
      * PackBits compression, a simple byte-oriented run length scheme.
      * <ul>
-     *   <li>Name in CSW query:    "PackBits"</li>
-     *   <li>Name in CSW response: "PackBits"</li>
+     *   <li>Name in WCS query:    "PackBits"</li>
+     *   <li>Name in WCS response: "PackBits"</li>
      * </ul>
      */
     PACKBITS(32773),
@@ -68,8 +68,8 @@ enum Compression {
     /**
      * LZW compression.
      * <ul>
-     *   <li>Name in CSW query:    "LZW"</li>
-     *   <li>Name in CSW response: "LZW"</li>
+     *   <li>Name in WCS query:    "LZW"</li>
+     *   <li>Name in WCS response: "LZW"</li>
      * </ul>
      */
     LZW(5),
@@ -78,8 +78,8 @@ enum Compression {
      * Deflate compression, like ZIP format. This is sometime named {@code "ADOBE_DEFLATE"},
      * withe the {@code "DEFLATE"} name used for another compression method with code 32946.
      * <ul>
-     *   <li>Name in CSW query:    "Deflate"</li>
-     *   <li>Name in CSW response: "Deflate"</li>
+     *   <li>Name in WCS query:    "Deflate"</li>
+     *   <li>Name in WCS response: "Deflate"</li>
      *   <li>Other name:           "ADOBE_DEFLATE"</li>
      * </ul>
      */
@@ -88,8 +88,8 @@ enum Compression {
     /**
      * JPEG compression.
      * <ul>
-     *   <li>Name in CSW query:    "JPEG"</li>
-     *   <li>Name in CSW response: "JPEG"</li>
+     *   <li>Name in WCS query:    "JPEG"</li>
+     *   <li>Name in WCS response: "JPEG"</li>
      *   <li>Name of old JPEG:     "OJPEG" (code 6)</li>
      * </ul>
      */

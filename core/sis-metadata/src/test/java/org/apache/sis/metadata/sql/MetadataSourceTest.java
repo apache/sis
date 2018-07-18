@@ -17,11 +17,10 @@
 package org.apache.sis.metadata.sql;
 
 import java.util.Collections;
-import javax.sql.DataSource;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
@@ -38,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -52,13 +51,12 @@ public final strictfp class MetadataSourceTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws Exception {
-        final DataSource ds = TestDatabase.create("MetadataSource");
-        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null)) {
+        try (TestDatabase db = TestDatabase.create("MetadataSource");
+             MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null))
+        {
             source.install();
             verifyFormats(source);
             testSearch(source);
-        } finally {
-            TestDatabase.drop(ds);
         }
     }
 

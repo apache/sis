@@ -110,6 +110,9 @@ import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
+import org.apache.sis.metadata.iso.lineage.DefaultSource;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
+import org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -138,6 +141,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @version 1.0
  * @since   0.8
  * @module
@@ -927,19 +931,36 @@ public class MetadataBuilder {
      * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
+     *   <li>{@code metadata/identificationInfo/resourceFormat}</li>
      * </ul>
+     *
+     * This method should be invoked <strong>before</strong> any other method writing in the
+     * {@code identificationInfo/resourceFormat} node. If this exception throws an exception,
+     * than that exception should be reported as a warning. Example:
+     *
+     * {@preformat java
+     *     try {
+     *         metadata.setFormat("MyFormat");
+     *     } catch (MetadataStoreException e) {
+     *         metadata.addFormatName("MyFormat");
+     *         listeners.warning(null, e);
+     *     }
+     *     metadata.addCompression("decompression technique");
+     * }
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
      * @throws MetadataStoreException  if this method can not connect to the {@code jdbc/SpatialMetadata} database.
      *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
      *
      * @see #addCompression(CharSequence)
+     * @see #addFormatName(CharSequence)
      */
     public final void setFormat(final String abbreviation) throws MetadataStoreException {
         if (abbreviation != null && abbreviation.length() != 0) {
             if (format == null) {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
+            } else {
+                addFormatName(abbreviation);
             }
         }
     }
@@ -2411,11 +2432,16 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets an identifier for the level of processing that has been applied to the coverage.
+     * For image descriptions, this is the image distributor's code that identifies the level
+     * of radiometric and geometric processing that has been applied.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/processingLevelCode}</li>
      * </ul>
+     *
+     * Note that another storage location exists at {@code metadata/identificationInfo/processingLevel}
+     * but is currently not used.
      *
      * @param  authority        identifies which controlled list of code is used, or {@code null} if none.
      * @param  processingLevel  identifier for the level of processing that has been applied to the resource,
@@ -2605,6 +2631,64 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds a general explanation of the data producer's knowledge about the lineage of a dataset.
+     * If a statement already exists, the new one will be appended after a new line.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/statement}</li>
+     * </ul>
+     *
+     * @param statement  explanation of the data producer's knowledge about the lineage, or {@code null} for no-operation.
+     *
+     * @see #addProcessDescription(CharSequence)
+     */
+    public final void addLineage(final CharSequence statement) {
+        final InternationalString i18n = trim(statement);
+        if (i18n != null) {
+            final DefaultLineage lineage = lineage();
+            lineage.setStatement(append(lineage.getStatement(), i18n));
+        }
+    }
+
+    /**
+     * Adds information about a source of data used for producing the resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/source/description}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/levelDescription/features}</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * if a Landsat image uses the "GTOPO30" digital elevation model, then it can declare the source
+     * with "GTOPO30" description, {@link ScopeCode#MODEL} and feature "Digital Elevation Model".</div>
+     *
+     * @param  description  a detailed description of the level of the source data, or {@code null} if none.
+     * @param  level        hierarchical level of the source (e.g. model), or {@code null} if unspecified.
+     * @param  feature      more detailed name for {@code level}, or {@code null} if none.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addProcessDescription(CharSequence)
+     */
+    public final void addSource(final CharSequence description, final ScopeCode level, final CharSequence feature) {
+        final InternationalString i18n = trim(description);
+        if (i18n != null) {
+            final DefaultSource source = new DefaultSource(description);
+            if (level != null || feature != null) {
+                DefaultScope scope = new DefaultScope(level);
+                if (feature != null) {
+                    final DefaultScopeDescription sd = new DefaultScopeDescription();
+                    sd.getFeatures().add(new org.apache.sis.metadata.iso.maintenance.LegacyFeatureType(feature));
+                    scope.getLevelDescription().add(sd);
+                }
+            }
+            addIfNotPresent(lineage().getSources(), source);
+        }
+    }
+
+    /**
      * Adds information about the procedure, process and algorithm applied in a process step.
      * If a processing was already defined with a different identifier, then a new processing
      * instance will be created. Storage location is:
@@ -2618,6 +2702,8 @@ parse:      for (int i = 0; i < length;) {
      *
      * @see #addSoftwareReference(CharSequence)
      * @see #addHostComputer(CharSequence)
+     * @see #addProcessDescription(CharSequence)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addProcessing(final CharSequence authority, String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
@@ -2647,6 +2733,9 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  title  title of the document that describe the software, or {@code null} for no-operation.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addSoftwareReference(final CharSequence title) {
         final InternationalString i18n = trim(title);
@@ -2665,6 +2754,9 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  platform  name of the system on which the processing has been executed, or {@code null} for no-operation.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addHostComputer(final CharSequence platform) {
         InternationalString i18n = trim(platform);
@@ -2685,12 +2777,46 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  description  additional details about the process step, or {@code null} for no-operation.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
+     * @see #addLineage(CharSequence)
      */
     public final void addProcessDescription(final CharSequence description) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
             final DefaultProcessStep ps = processStep();
             ps.setDescription(append(ps.getDescription(), i18n));
+        }
+    }
+
+    /**
+     * Adds a name to the resource format. Note that this method does not add a new format,
+     * but only an alternative name to current format. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
+     * </ul>
+     *
+     * If this method is used together with {@link #setFormat(String)},
+     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     *
+     * @param value  the format name, or {@code null} for no-operation.
+     *
+     * @see #setFormat(String)
+     * @see #addCompression(CharSequence)
+     */
+    public final void addFormatName(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            final DefaultFormat format = format();
+            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (citation == null) {
+                citation = new DefaultCitation(i18n);
+            } else {
+                addIfNotPresent(citation.getAlternateTitles(), i18n);
+            }
+            format.setFormatSpecificationCitation(citation);
         }
     }
 
@@ -2702,9 +2828,13 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
      * </ul>
      *
+     * If this method is used together with {@link #setFormat(String)},
+     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     *
      * @param value  the compression name, or {@code null} for no-operation.
      *
      * @see #setFormat(String)
+     * @see #addFormatName(CharSequence)
      */
     public final void addCompression(final CharSequence value) {
         final InternationalString i18n = trim(value);
@@ -2738,8 +2868,8 @@ parse:      for (int i = 0; i < length;) {
      * Returns the metadata (optionally as an unmodifiable object), or {@code null} if none.
      * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
      *
-     * @param  freeze  {@code true} if this method should {@linkplain DefaultMetadata#freeze() freeze}
-     *                 the metadata instance before to return it.
+     * @param  freeze  {@code true} if this method should set the returned metadata to
+     *                 {@link DefaultMetadata.State#FINAL}, or {@code false} for leaving the metadata editable.
      * @return the metadata, or {@code null} if none.
      */
     public final DefaultMetadata build(final boolean freeze) {
@@ -2749,10 +2879,11 @@ parse:      for (int i = 0; i < length;) {
         newCoverage(false);
         newAcquisition();
         newDistribution();
+        newLineage();
         final DefaultMetadata md = metadata;
         metadata = null;
         if (freeze && md != null) {
-            md.freeze();
+            md.apply(DefaultMetadata.State.FINAL);
         }
         return md;
     }
