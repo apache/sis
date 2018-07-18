@@ -39,6 +39,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
@@ -268,24 +269,24 @@ final class Analyzer {
      * to another table. If a cyclic dependency is detected, then this method return
      * {@code null} for one of the tables.
      *
-     * @param  id            identification of the table to create.
-     * @param  name          the value of {@code id.getName(analyzer)}
-     *                       (as an argument for avoiding re-computation when already known by the caller).
-     * @param  isDependency  {@code false} if this table has been explicitly requested by the user,
-     *                       or {@code true} if this is a dependency discovered while analyzing.
+     * @param  id          identification of the table to create.
+     * @param  name        the value of {@code id.getName(analyzer)}
+     *                     (as an argument for avoiding re-computation when already known by the caller).
+     * @param  importedBy  if this table is imported by the foreigner keys of another table,
+     *                     the parent table. Otherwise {@code null}.
      * @return the table, or {@code null} if there is a cyclic dependency and the table of the given
      *         name is already in process of being created.
      */
-    final Table table(final TableReference id, final GenericName name, final boolean isDependency)
+    final Table table(final TableReference id, final GenericName name, final TableReference importedBy)
             throws SQLException, DataStoreException
     {
         Table table = tables.get(name);
         if (table == null && !tables.containsKey(name)) {
             tables.put(name, null);                       // Mark the feature as in process of being created.
-            table = new Table(this, id, isDependency);
+            table = new Table(this, id, importedBy);
             if (tables.put(name, table) != null) {
                 // Should never happen. If thrown, we have a bug (e.g. synchronization) in this package.
-                throw new DataStoreException(internalError());
+                throw new InternalDataStoreException(internalError());
             }
         }
         return table;
@@ -313,7 +314,10 @@ final class Analyzer {
      * Invoked after we finished to create all tables. This method flush the warnings
      * (omitting duplicated warnings), then returns all tables including dependencies.
      */
-    final Collection<Table> finish() {
+    final Collection<Table> finish() throws DataStoreException {
+        for (final Table table : tables.values()) {
+            table.setDeferredSearchTables(this, tables);
+        }
         for (final ResourceInternationalString warning : warnings) {
             final LogRecord record = warning.toLogRecord(Level.WARNING);
             record.setSourceClassName(SQLStore.class.getName());

@@ -18,6 +18,9 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.sql.Connection;
@@ -28,8 +31,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.lang.reflect.Array;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -46,6 +51,11 @@ import org.opengis.feature.FeatureType;
  */
 final class Features implements Spliterator<Feature>, Runnable {
     /**
+     * An empty array of iterators, used when there is no dependency.
+     */
+    private static final Features[] EMPTY = new Features[0];
+
+    /**
      * The type of features to create.
      */
     private final FeatureType featureType;
@@ -59,22 +69,37 @@ final class Features implements Spliterator<Feature>, Runnable {
 
     /**
      * Name of the properties where are stored associations in feature instances.
+     * The length of this array shall be equal to the {@link #dependencies} array length.
+     * Imported or exported features read by {@code dependencies[i]} will be stored in
+     * the association named {@code associationNames[i]}.
      */
     private final String[] associationNames;
 
     /**
-     * The feature sets referenced through foreigner keys. The length of this array shall be the same as
-     * {@link #associationNames} array length. Imported features are index <var>i</var> will be stored in
-     * the association named {@code associationNames[i]}.
+     * Name of the property where to store the association that we can not handle with other {@link #dependencies}.
+     * This deferred association may exist because of circular dependency.
      */
-    private final Features[] importedFeatures;
+    private final String deferredAssociation;
 
     /**
-     * Zero-based index of the first column to query for each {@link #importedFeatures}.
-     * The length of this array shall be one more than {@link #importedFeatures}, with
-     * the last value set to the zero-based index after the last column.
+     * The feature sets referenced through foreigner keys, or {@link #EMPTY} if none.
+     * This includes the associations inferred from both the imported and exported keys.
+     * The first {@link #importCount} iterators are for imported keys, and the remaining
+     * iterators are for the exported keys.
      */
-    private final int[] foreignerKeyIndices;
+    private final Features[] dependencies;
+
+    /**
+     * Number of entries in {@link #dependencies} for {@link Relation.Direction#IMPORT}.
+     * The entries immediately following the first {@code importCount} entries are for
+     * {@link Relation.Direction#EXPORT}.
+     */
+    private final int importCount;
+
+    /**
+     * One-based indices of the columns to query for each {@link #dependencies} entry.
+     */
+    private final int[][] foreignerKeyIndices;
 
     /**
      * If this iterator returns only the feature matching some condition (typically a primary key value),
@@ -84,7 +109,9 @@ final class Features implements Spliterator<Feature>, Runnable {
     private final PreparedStatement statement;
 
     /**
-     * The result of executing the SQL query for a {@link Table}.
+     * The result of executing the SQL query for a {@link Table}. If {@link #statement} is null,
+     * then a single {@code ResultSet} is used for all the lifetime of this {@code Features} instance.
+     * Otherwise an arbitrary amount of {@code ResultSet}s may be created from the statement.
      */
     private ResultSet result;
 
@@ -114,65 +141,109 @@ final class Features implements Spliterator<Feature>, Runnable {
 
     /**
      * Creates a new iterator over the feature instances.
+     *
+     * @param table             the table for which we are creating an iterator.
+     * @param connection        connection to the database.
+     * @param attributeNames    value of {@link Table#attributeNames}:   where to store simple values.
+     * @param attributeColumns  value of {@link Table#attributeColumns}: often the same as attribute names.
+     * @param importedKeys      value of {@link Table#importedKeys}:     targets of this table foreign keys.
+     * @param exportedKeys      value of {@link Table#exportedKeys}:     foreigner keys of other tables.
+     * @param following         the relations that we are following. Used for avoiding never ending loop.
+     * @param noFollow          relation to not follow, or {@code null} if none.
      */
     Features(final Table table, final Connection connection, final String[] attributeNames, final String[] attributeColumns,
-             final Relation[] importedKeys, final Relation componentOf) throws SQLException
+             final Relation[] importedKeys, final Relation[] exportedKeys, final List<Relation> following, final Relation noFollow)
+             throws SQLException, InternalDataStoreException
     {
         this.featureType = table.featureType;
         this.attributeNames = attributeNames;
         final DatabaseMetaData metadata = connection.getMetaData();
-        estimatedSize = (componentOf == null) ? table.countRows(metadata, true) : 0;
+        estimatedSize = following.isEmpty() ? table.countRows(metadata, true) : 0;
         final SQLBuilder sql = new SQLBuilder(metadata, true).append("SELECT");
+        final Map<String,Integer> columnIndices = new HashMap<>();
         /*
          * Create a SELECT clause with all columns that are ordinary attributes.
          * Order matter, since 'Features' iterator will map the columns to the
          * attributes listed in the 'attributeNames' array in that order.
          */
-        int count = 0;
         for (String column : attributeColumns) {
-            if (count != 0) sql.append(',');
-            sql.append(' ').append(column);
-            count++;
+            appendColumn(sql, column, columnIndices);
         }
         /*
-         * Append columns required for all relations to other tables.
-         * A column appended here may duplicate a columns appended in above loop
-         * if the same column is used both as primary key and foreigner key.
+         * Collect information about associations in local arrays before to assign
+         * them to the final fields, because some array lengths may be adjusted.
          */
-        if (importedKeys != null) {
-            final int n = importedKeys.length;
-            associationNames    = new String[n];
-            importedFeatures    = new Features[n];
-            foreignerKeyIndices = new int[n + 1];
-            foreignerKeyIndices[0] = count;
-            for (int i=0; i<n;) {
-                final Relation dependency = importedKeys[i];
-                associationNames[i] = dependency.getPropertyName();
-                importedFeatures[i] = dependency.getSearchTable().features(connection, dependency);
-                for (final String column : dependency.getForeignerKeys()) {
-                    if (count != 0) sql.append(',');
-                    sql.append(' ').append(column);
-                    count++;
-                }
-                foreignerKeyIndices[++i] = count;
-            }
-        } else {
+        int importCount = (importedKeys != null) ? importedKeys.length : 0;
+        int exportCount = (exportedKeys != null) ? exportedKeys.length : 0;
+        int totalCount  = importCount + exportCount;
+        if (totalCount == 0) {
+            dependencies        = EMPTY;
             associationNames    = null;
-            importedFeatures    = null;
             foreignerKeyIndices = null;
+            deferredAssociation = null;
+        } else {
+            String deferredAssociation = null;
+            final Features[]     dependencies = new Features[totalCount];
+            final String[]   associationNames = new String  [totalCount];
+            final int[][] foreignerKeyIndices = new int     [totalCount][];
+            /*
+             * For each foreigner key to another table, append all columns of that foreigner key
+             * and the name of the single feature property where the association will be stored.
+             */
+            if (importCount != 0) {
+                importCount = 0;                                                    // We will recount.
+                for (final Relation dependency : importedKeys) {
+                    if (dependency != noFollow) {
+                        dependency.startFollowing(following);                       // Safety against never-ending recursivity.
+                        associationNames   [importCount] = dependency.propertyName;
+                        foreignerKeyIndices[importCount] = getColumnIndices(sql, dependency.getForeignerKeys(), columnIndices);
+                        dependencies       [importCount] = dependency.getSearchTable().features(connection, following, noFollow);
+                        dependency.endFollowing(following);
+                        importCount++;
+                    } else {
+                        deferredAssociation = dependency.propertyName;
+                    }
+                }
+            }
+            /*
+             * Create iterators for other tables that reference the primary keys of this table. For example
+             * if we have a "City" feature with attributes for the city name, population, etc. and a "Parks"
+             * feature referencing the city where the park is located, in order to populate the "City.parks"
+             * associations we need to iterate over all "Parks" rows referencing the city.
+             */
+            if (exportCount != 0) {
+                int i = importCount;
+                for (final Relation dependency : exportedKeys) {
+                    dependency.startFollowing(following);                   // Safety against never-ending recursivity.
+                    final Table foreigner  = dependency.getSearchTable();
+                    final Relation inverse = foreigner.getInverseOf(dependency, table.name);
+                    associationNames   [i] = dependency.propertyName;
+                    foreignerKeyIndices[i] = getColumnIndices(sql, dependency.getForeignerKeys(), columnIndices);
+                    dependencies       [i] = foreigner.features(connection, following, inverse);
+                    dependency.endFollowing(following);
+                    i++;
+                }
+            }
+            totalCount = importCount + exportCount;
+            this.dependencies        = ArraysExt.resize(dependencies,        totalCount);
+            this.associationNames    = ArraysExt.resize(associationNames,    totalCount);
+            this.foreignerKeyIndices = ArraysExt.resize(foreignerKeyIndices, totalCount);
+            this.deferredAssociation = deferredAssociation;
         }
+        this.importCount = importCount;
         /*
          * Create a Statement if we don't need any condition, or a PreparedStatement if we need to add
          * a "WHERE" clause. In the later case, we will cache the features already created if there is
          * a possibility that many rows reference the same feature instance.
          */
-        sql.append(" FROM ").appendIdentifier(table.schema, table.table);
-        if (componentOf == null) {
+        sql.append(" FROM ").appendIdentifier(table.name.catalog, table.name.schema, table.name.table);
+        if (following.isEmpty()) {
             statement = null;
             instances = null;       // A future SIS version could use the map opportunistically if it exists.
             keyComponentClass = null;
             result = connection.createStatement().executeQuery(sql.toString());
         } else {
+            final Relation componentOf = following.get(following.size() - 1);
             String separator = " WHERE ";
             for (String primaryKey : componentOf.getSearchColumns()) {
                 sql.append(separator).append(primaryKey).append("=?");
@@ -184,7 +255,7 @@ final class Features implements Spliterator<Feature>, Runnable {
              * in which case 'table.primaryKeyClass' should never be null. This assumption may not
              * hold if the relation has been defined by DatabaseMetaData.getCrossReference(…) instead.
              */
-            if (componentOf.isFullKey()) {
+            if (componentOf.useFullKey()) {
                 instances = table.instanceForPrimaryKeys();
                 keyComponentClass = table.primaryKeyClass.getComponentType();
             } else {
@@ -192,6 +263,35 @@ final class Features implements Spliterator<Feature>, Runnable {
                 keyComponentClass = Object.class;
             }
         }
+    }
+
+    /**
+     * Appends a columns in the given builder and remember the column indices.
+     * An exception is thrown if the column has already been added (should never happen).
+     */
+    private static int appendColumn(final SQLBuilder sql, final String column,
+            final Map<String,Integer> columnIndices) throws InternalDataStoreException
+    {
+        int columnCount = columnIndices.size();
+        if (columnCount != 0) sql.append(',');
+        sql.append(' ').append(column);
+        if (columnIndices.put(column, ++columnCount) == null) return columnCount;
+        throw new InternalDataStoreException(Resources.format(Resources.Keys.DuplicatedColumn_1, column));
+    }
+
+    /**
+     * Computes the 1-based indices of given columns, adding the columns in the given builder if necessary.
+     */
+    private static int[] getColumnIndices(final SQLBuilder sql, final Collection<String> columns,
+            final Map<String,Integer> columnIndices) throws InternalDataStoreException
+    {
+        int i = 0;
+        final int[] indices = new int[columns.size()];
+        for (final String column : columns) {
+            final Integer pos = columnIndices.get(column);
+            indices[i++] = (pos != null) ? pos : appendColumn(sql, column, columnIndices);
+        }
+        return indices;
     }
 
     /**
@@ -255,6 +355,10 @@ final class Features implements Spliterator<Feature>, Runnable {
     /**
      * Gives at least the next feature to the given consumer.
      * Gives all remaining features if {@code all} is {@code true}.
+     *
+     * @param  action  the action to execute for each {@link Feature} instances fetched by this method.
+     * @param  all     {@code true} for reading all remaining feature instances, or {@code false} for only the next one.
+     * @return {@code true} if we have read an instance and {@code all} is {@code false} (so there is maybe other instances).
      */
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws SQLException {
         while (result.next()) {
@@ -265,27 +369,44 @@ final class Features implements Spliterator<Feature>, Runnable {
                     feature.setPropertyValue(attributeNames[i], value);
                 }
             }
-            if (importedFeatures != null) {
-                for (int i=0; i < importedFeatures.length; i++) {
-                    final Features dependency = importedFeatures[i];
-                    int columnIndice = foreignerKeyIndices[i];
-                    final int columnCount = foreignerKeyIndices[i+1] - columnIndice;
+            for (int i=0; i < dependencies.length; i++) {
+                final Features dependency = dependencies[i];
+                final int[] columnIndices = foreignerKeyIndices[i];
+                final Object value;
+                if (i < importCount) {
                     /*
+                     * Relation.Direction.IMPORT: this table contains the foreigner keys.
+                     *
                      * If the foreigner key uses only one column, we will store the foreigner key value
                      * in the 'key' variable without creating array. But if the foreigner key uses more
                      * than one column, then we need to create an array holding all values.
                      */
-                    final Object keys = dependency.identifierArray(columnCount);
                     Object key = null;
-                    for (int p=0; p < columnCount;) {
-                        key = result.getObject(++columnIndice);
+                    final Object keys = dependency.identifierArray(columnIndices.length);
+                    for (int p=0; p < columnIndices.length;) {
+                        key = result.getObject(columnIndices[p]);
                         if (keys != null) Array.set(keys, p, key);
                         dependency.statement.setObject(++p, key);
                     }
                     if (keys != null) key = keys;
-                    final Object value = dependency.fetchReferenced(key);
-                    feature.setPropertyValue(associationNames[i], value);
+                    value = dependency.fetchReferenced(key, null);
+                } else {
+                    /*
+                     * Relation.Direction.EXPORT: another table references this table.
+                     *
+                     * 'key' must stay null because we do not cache those dependencies.
+                     * The reason is that this direction can return a lot of instances,
+                     * contrarily to Direction.IMPORT which return only one instance.
+                     * Furthermore instances fetched from Direction.EXPORT can not be
+                     * shared by feature instances, so caching would be useless here.
+                     */
+                    for (int p=0; p < columnIndices.length;) {
+                        final Object k = result.getObject(columnIndices[p]);
+                        dependency.statement.setObject(++p, k);
+                    }
+                    value = dependency.fetchReferenced(null, feature);
                 }
+                feature.setPropertyValue(associationNames[i], value);
             }
             action.accept(feature);
             if (!all) return true;
@@ -297,8 +418,12 @@ final class Features implements Spliterator<Feature>, Runnable {
      * Executes the current {@link #statement} and stores all features in a list.
      * Returns {@code null} if there is no feature, or returns the feature instance
      * if there is only one such instance, or returns a list of features otherwise.
+     *
+     * @param  key    the key to use for referencing the feature in the cache, or {@code null} for no caching.
+     * @param  owner  if the features to fetch are components of another feature, that container feature instance.
+     * @return the feature as a singleton {@code Feature} or as a {@code Collection<Feature>}.
      */
-    private Object fetchReferenced(final Object key) throws SQLException {
+    private Object fetchReferenced(final Object key, final Feature owner) throws SQLException {
         if (key != null) {
             Object existing = instances.get(key);
             if (existing != null) {
@@ -311,6 +436,11 @@ final class Features implements Spliterator<Feature>, Runnable {
             fetch(features::add, true);
         } finally {
             result = null;
+        }
+        if (owner != null && deferredAssociation != null) {
+            for (final Feature feature : features) {
+                feature.setPropertyValue(deferredAssociation, owner);
+            }
         }
         Object feature;
         switch (features.size()) {
@@ -347,7 +477,7 @@ final class Features implements Spliterator<Feature>, Runnable {
             try (Connection c = s.getConnection()) {
                 r.close();      // Implied by s.close() according JDBC javadoc, but we are paranoiac.
                 s.close();
-                for (final Features dependency : importedFeatures) {
+                for (final Features dependency : dependencies) {
                     dependency.close();
                 }
             }

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -28,9 +29,11 @@ import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 
@@ -115,6 +118,24 @@ final class Relation extends TableReference {
         }
     }
 
+    /*
+     * Whether this relation is importing from or exporting to another table.
+     *
+     * This field is not stored because it is implied by the list where the relation is stored:
+     * Table.importedKeys or Table.exportedKeys. Instead this information is passed in argument
+     * when needed, with a "this.direction" comment.
+     */
+//  private final Direction direction;
+
+    /*
+     * The table that contains this relation.
+     *
+     * This field is not stored because it is implied by the list where the relation is stored:
+     * Table.importedKeys or Table.exportedKeys. Instead this information is passed in argument
+     * when needed, with a "this.owner" comment.
+     */
+//  private final Table owner;
+
     /**
      * The columns of the other table that constitute a primary or foreigner key. Keys are the columns of the
      * other table and values are columns of the table containing this {@code Relation}.
@@ -129,17 +150,18 @@ final class Relation extends TableReference {
 
     /**
      * The name of the feature property where the association to {@link #searchTable} table will be stored.
+     * Shall be set exactly once.
      */
-    private String propertyName;
+    String propertyName;
 
     /**
      * Whether the {@link #columns} map include all primary key columns. This field is set to {@code false}
      * if the foreigner key uses only a subset of the primary key columns, in which case the referenced rows
      * may not be unique.
      *
-     * @see #isFullKey()
+     * @see #useFullKey()
      */
-    private boolean isFullKey;
+    private boolean useFullKey;
 
     /**
      * Creates a new relation for an imported key. The given {@code ResultSet} must be positioned
@@ -184,46 +206,57 @@ final class Relation extends TableReference {
     }
 
     /**
+     * Invoked after construction for setting the name of the feature property of the enclosing table where to
+     * store association to the feature instances read from the {@linkplain #getSearchTable() search table}.
+     * If the foreigner key use exactly one column, we can use the name of that column. Otherwise we don't know
+     * which column has the most appropriate name (often there is none), so we fallback on the foreigner key name.
+     *
+     * @param  column  a foreigner key column.
+     * @param  count   number of names previously created from that column.
+     */
+    final void setPropertyName(final String column, final int count) {
+        if (columns.size() > 1) {
+            propertyName = freeText;        // Foreigner key name (may be null).
+        }
+        if (propertyName == null) {
+            propertyName = (count == 0) ? column : column + '-' + count;
+        }
+    }
+
+    /**
      * Invoked after construction for setting the table identified by {@link #catalog}, {@link #schema}
      * and {@link #table} names. Shall be invoked exactly once.
      *
      * @param  search       the other table containing the primary key ({@link Direction#IMPORT})
      *                      or the foreigner key ({@link Direction#EXPORT}) of this relation.
-     * @param  property     name of the property of the enclosing {@code Table.featureType}
-     *                      where to store the feature instances read from the other table.
      * @param  primaryKeys  the primary key columns of the relation. May be the primary key columns of this table
      *                      or the primary key columns of the other table, depending on {@link Direction}.
-     * @param  direction    the direction of this {@code Relation}.
+     * @param  direction    {@code this.direction} (see comment in field declarations).
      */
-    final void setSearchTable(final Analyzer analyzer, final Table search, final String property,
-                              final String[] primaryKeys, final Direction direction) throws DataStoreException
+    final void setSearchTable(final Analyzer analyzer, final Table search, final String[] primaryKeys,
+                              final Direction direction) throws DataStoreException
     {
         /*
-         * Sanity check (could be assertion): name of the given table
-         * must match the name expected by this relation.
+         * Sanity check (could be assertion): name of the given table must match
+         * the name expected by this relation. This check below should never fail.
          */
-        String expected, actual;    // Identity comparison okay because of Analyzer.getUniqueString(…)
-        if ((expected = table)  != (actual = search.table)  ||
-            (expected = schema) != (actual = search.schema) || searchTable != null)
-        {
-            String message = analyzer.internalError();                                  // Should never happen.
-            if (expected != actual) message += ' ' + actual + " ≠ " + expected;
-            throw new DataStoreException(message);
+        final boolean isDefined = (searchTable != null);
+        if (isDefined || !equals(search.name)) {
+            throw new InternalDataStoreException(isDefined ? analyzer.internalError() : super.toString());
         }
         /*
-         * Store the specified table and property name, and verify if this relation
+         * Store the specified table and verify if this relation
          * contains all columns required by the primary key.
          */
-        searchTable  = search;
-        propertyName = property;
+        searchTable = search;
         final Collection<String> referenced;        // Primary key components referenced by this relation.
         switch (direction) {
             case IMPORT: referenced = columns.keySet(); break;
             case EXPORT: referenced = columns.values(); break;
             default: throw new AssertionError(direction);
         }
-        isFullKey = referenced.containsAll(Arrays.asList(primaryKeys));
-        if (isFullKey && getKeySize() >= 2) {
+        useFullKey = referenced.containsAll(Arrays.asList(primaryKeys));
+        if (useFullKey && columns.size() >= 2) {
             /*
              * Sort the columns in the order expected by the primary key.  This is required because we need
              * a consistent order in the cache provided by Table.instanceForPrimaryKeys() even if different
@@ -253,7 +286,7 @@ final class Relation extends TableReference {
                     }
                 }
                 if (key == null || value == null || columns.put(key, value) != null) {
-                    throw new DataStoreException(analyzer.internalError());
+                    throw new InternalDataStoreException(analyzer.internalError());
                 }
             }
             if (!copy.isEmpty()) {
@@ -271,11 +304,18 @@ final class Relation extends TableReference {
      *
      * <pre>{@code SELECT * FROM <search table> WHERE <search columns> = ...}</pre>
      */
-    final Table getSearchTable() {
+    final Table getSearchTable() throws InternalDataStoreException {
         if (searchTable != null) {
             return searchTable;
         }
-        throw new IllegalStateException(super.toString());              // Should not happen.
+        throw new InternalDataStoreException(super.toString());                 // Should not happen.
+    }
+
+    /**
+     * Returns whether {@link #setSearchTable setSearchTable(…)} has been invoked.
+     */
+    final boolean isSearchTableDefined() {
+        return searchTable != null;
     }
 
     /**
@@ -299,26 +339,54 @@ final class Relation extends TableReference {
     }
 
     /**
-     * Returns the number of columns used by the foreigner key.
-     */
-    final int getKeySize() {
-        return columns.size();
-    }
-
-    /**
      * Returns {@code true} if this relation includes all required primary key columns. Returns {@code false}
      * if the foreigner key uses only a subset of the primary key columns, in which case the referenced rows
      * may not be unique.
      */
-    final boolean isFullKey() {
-        return isFullKey;
+    final boolean useFullKey() {
+        return useFullKey;
     }
 
     /**
-     * Returns the name of the feature property where the association to {@link #searchTable} table will be stored.
+     * Returns {@code true} if this relation is the inverse of the given relation.
+     * If two relations are inverse, then following those relations recursively would result in an infinite loop.
+     *
+     * <p>This method tests only the column names; the table names shall be verified by the caller.
+     * Table names can be verified as below (see comment in field declarations for meaning of "owner"):</p>
+     * <ul>
+     *   <li>{@code this.equals(other.owner.name)}: the target of this relation is the source of other relation.</li>
+     *   <li>{@code this.owner.name.equals(other)}: the source of this relation is the target of other relation.</li>
+     * </ul>
+     *
+     * @param  other  the other relation to check for inverse relationship.
      */
-    final String getPropertyName() {
-        return propertyName;
+    final boolean isInverseOf(final Relation other) {
+        return columns.size() == other.columns.size() &&
+               columns.keySet().containsAll(other.columns.values()) &&
+               other.columns.keySet().containsAll(columns.values());
+    }
+
+    /**
+     * Adds this relation to the given list, making sure that the relation has not already been added.
+     * The check for previous existence of {@code this} relation is for preventing infinite recursivity.
+     */
+    final void startFollowing(final List<Relation> following) throws InternalDataStoreException {
+        for (int i = following.size(); --i >= 0;) {
+            if (following.get(i) == this) {
+                throw new InternalDataStoreException(Errors.format(Errors.Keys.CircularReference));
+            }
+        }
+        following.add(this);
+    }
+
+    /**
+     * Removes this relation from the given list, making sure that this relation was at the tail.
+     */
+    final void endFollowing(final List<Relation> following) throws InternalDataStoreException {
+        final int last = following.size() - 1;
+        if (last < 0 || following.remove(last) != this) {
+            throw new InternalDataStoreException();
+        }
     }
 
     /**
@@ -329,7 +397,11 @@ final class Relation extends TableReference {
      */
     @Debug
     void appendTo(final TreeTable.Node parent, final String arrow) {
-        final TreeTable.Node node = newChild(parent, freeText);
+        String label = super.toString();
+        if (freeText != null) {
+            label = freeText + " ⟶ " + label;
+        }
+        final TreeTable.Node node = newChild(parent, label);
         for (final Map.Entry<String,String> e : columns.entrySet()) {
             newChild(node, e.getValue() + arrow + e.getKey());
         }

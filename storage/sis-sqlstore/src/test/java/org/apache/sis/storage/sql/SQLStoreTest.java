@@ -18,6 +18,9 @@ package org.apache.sis.storage.sql;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Stream;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
@@ -25,7 +28,7 @@ import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -57,28 +60,35 @@ public final strictfp class SQLStoreTest extends TestCase {
     private Feature canada;
 
     /**
-     * Tests reading an existing schema. The schema is created and populated by the {@code Features.sql} script.
+     * Tests on PostgreSQL.
      *
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
-    public void testReadStructure() throws Exception {
-        try (TestDatabase tmp = TestDatabase.createOnPostgreSQL("features", true)) {
+    public void testOnPostgreSQL() throws Exception {
+        test(TestDatabase.createOnPostgreSQL("features", true));
+    }
+
+    /**
+     * Tests reading an existing schema. The schema is created and populated by the {@code Features.sql} script.
+     */
+    private void test(final TestDatabase database) throws Exception {
+        try (TestDatabase tmp = database) {
             tmp.executeSQL(SQLStoreTest.class, "Features.sql");
             try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
                     SQLStoreProvider.createTableName(null, "features", "Cities")))
             {
                 final FeatureSet cities = (FeatureSet) store.findResource("Cities");
                 verifyFeatureType(cities.getType(),
-                        new String[] {"sis:identifier", "pk:country", "country",   "native_name", "translation", "population",  "parks"},
-                        new Object[] {null,             String.class, "Countries", String.class,  String.class,  Integer.class, "Parks"});
+                        new String[] {"sis:identifier", "pk:country", "country",   "native_name", "english_name", "population",  "parks"},
+                        new Object[] {null,             String.class, "Countries", String.class,  String.class,   Integer.class, "Parks"});
 
                 verifyFeatureType(((FeatureSet) store.findResource("Countries")).getType(),
                         new String[] {"sis:identifier", "code",       "native_name"},
                         new Object[] {null,             String.class, String.class});
 
                 verifyFeatureType(((FeatureSet) store.findResource("Parks")).getType(),
-                        new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "translation"},
+                        new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"},
                         new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class});
 
                 try (Stream<Feature> features = cities.features(false)) {
@@ -123,38 +133,43 @@ public final strictfp class SQLStoreTest extends TestCase {
      */
     private void verifyContent(final Feature feature) {
         final String city = feature.getPropertyValue("native_name").toString();
-        final String country, countryName, cityLatin;
+        final String country, countryName, englishName;
+        final String[] parks;
         final int population;
         boolean isCanada = false;
         switch (city) {
             case "東京": {
-                cityLatin   = "Tōkyō";
+                englishName = "Tōkyō";
                 country     = "JPN";
                 countryName = "日本";
                 population  = 13622267;         // In 2016.
+                parks       = new String[] {"Yoyogi-kōen", "Shinjuku Gyoen"};
                 break;
             }
             case "Paris": {
-                cityLatin   = "Paris";
+                englishName = "Paris";
                 country     = "FRA";
                 countryName = "France";
                 population  = 2206488;          // In 2017.
+                parks       = new String[] {"Tuileries Garden", "Luxembourg Garden"};
                 break;
             }
             case "Montréal": {
-                cityLatin   = "Montreal";
+                englishName = "Montreal";
                 country     = "CAN";
                 countryName = "Canada";
                 population  = 1704694;          // In 2016.
                 isCanada    = true;
+                parks       = new String[] {"Mount Royal"};
                 break;
             }
             case "Québec": {
-                cityLatin   = "Quebec";
+                englishName = "Quebec";
                 country     = "CAN";
                 countryName = "Canada";
                 population  = 531902;           // In 2016.
                 isCanada    = true;
+                parks = new String[] {};
                 break;
             }
             default: {
@@ -162,16 +177,18 @@ public final strictfp class SQLStoreTest extends TestCase {
                 return;
             }
         }
-        // Attributes
+        /*
+         * Verify attributes. They are the easiest properties to read.
+         */
         assertEquals("pk:country",     country,              feature.getPropertyValue("pk:country"));
         assertEquals("sis:identifier", country + ':' + city, feature.getPropertyValue("sis:identifier"));
-        assertEquals("translation",    cityLatin,            feature.getPropertyValue("translation"));
+        assertEquals("english_name",   englishName,          feature.getPropertyValue("english_name"));
         assertEquals("population",     population,           feature.getPropertyValue("population"));
-
-        // Associations
+        /*
+         * Associations using Relation.Direction.IMPORT.
+         * Those associations should be cached; we verify with "Canada" case.
+         */
         assertEquals("country", countryName, getIndirectPropertyValue(feature, "country", "native_name"));
-
-        // Caching
         if (isCanada) {
             final Feature f = (Feature) feature.getPropertyValue("country");
             if (canada == null) {
@@ -181,6 +198,28 @@ public final strictfp class SQLStoreTest extends TestCase {
             }
         }
         countryCount.merge(country, 1, (o, n) -> n+1);
+        /*
+         * Associations using Relation.Direction.EXPORT.
+         * Contrarily to the IMPORT case, those associations can contain many values.
+         */
+        final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
+        assertNotNull("parks", actualParks);
+        assertEquals("parks.length", parks.length, actualParks.size());
+        final Collection<String> expectedParks = new HashSet<>(Arrays.asList(parks));
+        for (final Object park : actualParks) {
+            final Feature pf = (Feature) park;
+            final String npn = (String) pf.getPropertyValue("native_name");
+            final String epn = (String) pf.getPropertyValue("english_name");
+            assertNotNull("park.native_name",  npn);
+            assertNotNull("park.english_name", epn);
+            assertNotEquals("park.names", npn, epn);
+            assertTrue("park.english_name", expectedParks.remove(epn));
+            /*
+             * Verify the reverse association form Parks to Cities.
+             * This create a cyclic graph, but SQLStore is capable to handle it.
+             */
+            assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+        }
     }
 
     /**

@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.sql.DatabaseMetaData;
@@ -36,13 +35,14 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
@@ -84,9 +84,9 @@ final class Table extends AbstractFeatureSet {
     final FeatureType featureType;
 
     /**
-     * The name in the database of this {@code Table} object, as a table name and a schema name.
+     * The name in the database of this {@code Table} object, together with its schema and catalog.
      */
-    final String schema, table;
+    final TableReference name;
 
     /**
      * Name of attributes in feature instances, excluding operations and associations to other tables.
@@ -147,20 +147,19 @@ final class Table extends AbstractFeatureSet {
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
      *
-     * @param  analyzer      helper functions, e.g. for converting SQL types to Java types.
-     * @param  id            the catalog, schema and table name of the table to analyze.
-     * @param  isDependency  {@code false} if this table has been explicitly requested by the user,
-     *                       or {@code true} if this is a dependency discovered while analyzing.
+     * @param  analyzer    helper functions, e.g. for converting SQL types to Java types.
+     * @param  id          the catalog, schema and table name of the table to analyze.
+     * @param  importedBy  if this table is imported by the foreigner keys of another table,
+     *                     the parent table. Otherwise {@code null}.
      */
-    Table(final Analyzer analyzer, final TableReference id, final boolean isDependency)
+    Table(final Analyzer analyzer, final TableReference id, final TableReference importedBy)
             throws SQLException, DataStoreException
     {
         super(analyzer.listeners);
         this.source = analyzer.source;
-        this.schema = id.schema;
-        this.table  = id.table;
-        final String tableEsc  = analyzer.escape(table);
-        final String schemaEsc = analyzer.escape(schema);
+        this.name   = id;
+        final String tableEsc  = analyzer.escape(id.table);
+        final String schemaEsc = analyzer.escape(id.schema);
         /*
          * Get a list of primary keys. We need to know them before to create the attributes,
          * in order to detect which attributes are used as components of Feature identifiers.
@@ -203,16 +202,14 @@ final class Table extends AbstractFeatureSet {
                 }
             } while (!reflect.isClosed());
         }
-        final List<Relation> exportedKeys;
-        if (isDependency) {
-            exportedKeys = Collections.emptyList();
-        } else {
-            exportedKeys = new ArrayList<>();
-            try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
-                if (reflect.next()) do {
-                    exportedKeys.add(new Relation(analyzer, Relation.Direction.EXPORT, reflect));
-                } while (!reflect.isClosed());
-            }
+        final List<Relation> exportedKeys = new ArrayList<>();
+        try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
+            if (reflect.next()) do {
+                final Relation export = new Relation(analyzer, Relation.Direction.EXPORT, reflect);
+                if (!export.equals(importedBy)) {
+                    exportedKeys.add(export);
+                }
+            } while (!reflect.isClosed());
         }
         /*
          * For each column in the table that is not a foreigner key, create an AttributeType of the same name.
@@ -306,28 +303,22 @@ final class Table extends AbstractFeatureSet {
                     for (final Relation dependency : dependencies) {
                         if (dependency != null) {
                             final GenericName typeName = dependency.getName(analyzer);
-                            final Table table = analyzer.table(dependency, typeName, true);
+                            final Table table = analyzer.table(dependency, typeName, id);
                             /*
                              * Use the column name as the association name, provided that the foreigner key
                              * use only that column. If the foreigner key use more than one column, then we
                              * do not know which column describes better the association (often there is none).
                              * In such case we use the foreigner key name as a fallback.
                              */
-                            String propertyName = null;
-                            if (dependency.getKeySize() > 1) {
-                                propertyName = dependency.freeText;             // Foreigner key name (may be null).
-                            }
-                            if (propertyName == null) {
-                                propertyName = (count++ == 0) ? column : column + '-' + count;
-                            }
+                            dependency.setPropertyName(column, count++);
                             final AssociationRoleBuilder association;
                             if (table != null) {
-                                dependency.setSearchTable(analyzer, table, propertyName, table.primaryKeys, Relation.Direction.IMPORT);
+                                dependency.setSearchTable(analyzer, table, table.primaryKeys, Relation.Direction.IMPORT);
                                 association = feature.addAssociation(table.featureType);
                             } else {
                                 association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
                             }
-                            association.setName(propertyName);
+                            association.setName(dependency.propertyName);
                             if (!mandatory) {
                                 association.setMinimumOccurs(0);
                             }
@@ -369,10 +360,11 @@ final class Table extends AbstractFeatureSet {
                 while (feature.isNameUsed(propertyName)) {
                     propertyName = base + '-' + ++count;
                 }
-                final Table table = analyzer.table(dependency, typeName, true);
+                dependency.propertyName = propertyName;
+                final Table table = analyzer.table(dependency, typeName, null);   // 'null' because exported, not imported.
                 final AssociationRoleBuilder association;
                 if (table != null) {
-                    dependency.setSearchTable(analyzer, table, propertyName, this.primaryKeys, Relation.Direction.EXPORT);
+                    dependency.setSearchTable(analyzer, table, this.primaryKeys, Relation.Direction.EXPORT);
                     association = feature.addAssociation(table.featureType);
                 } else {
                     association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
@@ -433,6 +425,49 @@ final class Table extends AbstractFeatureSet {
     }
 
     /**
+     * Sets the search tables on all {@link Relation} instances for which this operation has been deferred.
+     * This happen when a table could not be obtained because of circular dependency. This method is invoked
+     * after all tables have been created in order to fill such holes.
+     *
+     * @param  tables  all tables created.
+     */
+    final void setDeferredSearchTables(final Analyzer analyzer, final Map<GenericName,Table> tables) throws DataStoreException {
+        for (final Relation.Direction direction : Relation.Direction.values()) {
+            final Relation[] relations;
+            switch (direction) {
+                case IMPORT: relations = importedKeys; break;
+                case EXPORT: relations = exportedKeys; break;
+                default: continue;
+            }
+            if (relations != null) {
+                for (final Relation relation : relations) {
+                    if (!relation.isSearchTableDefined()) {
+                        // A ClassCastException below would be a bug since 'relation.propertyName' shall be for an association.
+                        FeatureAssociationRole association = (FeatureAssociationRole) featureType.getProperty(relation.propertyName);
+                        final Table table = tables.get(association.getValueType().getName());
+                        if (table == null) {
+                            throw new InternalDataStoreException(association.toString());
+                        }
+                        final String[] referenced;
+                        switch (direction) {
+                            case IMPORT: referenced = table.primaryKeys; break;
+                            case EXPORT: referenced =  this.primaryKeys; break;
+                            default: throw new AssertionError(direction);
+                        }
+                        relation.setSearchTable(analyzer, table, referenced, direction);
+                    }
+                }
+            }
+        }
+    }
+
+
+    // ────────────────────────────────────────────────────────────────────────────────────────
+    //     End of table construction. Next methods are for visualizing the table structure.
+    // ────────────────────────────────────────────────────────────────────────────────────────
+
+
+    /**
      * Appends all children to the given parent. The children are added under the given node.
      * If the children array is null, then this method does nothing.
      *
@@ -474,12 +509,37 @@ final class Table extends AbstractFeatureSet {
         return TableReference.toString(this, (n) -> appendTo(n));
     }
 
+
+    // ────────────────────────────────────────────────────────────────────────────────────────
+    //     End of table structure visualization. Next methods are for fetching features.
+    // ────────────────────────────────────────────────────────────────────────────────────────
+
+
     /**
      * Returns the feature type inferred from the database structure analysis.
      */
     @Override
     public final FeatureType getType() {
         return featureType;
+    }
+
+    /**
+     * If this table imports the inverse of the given relation, returns the imported relation.
+     * Otherwise returns {@code null}. This method is used for preventing infinite recursivity.
+     *
+     * @param  exported       the relation exported by another table.
+     * @param  exportedOwner  {@code exported.owner.name}: table that contains the {@code exported} relation.
+     * @return the inverse of the given relation, or {@code null} if none.
+     */
+    final Relation getInverseOf(final Relation exported, final TableReference exportedOwner) {
+        if (importedKeys != null && name.equals(exported)) {
+            for (final Relation relation : importedKeys) {
+                if (relation.equals(exportedOwner) && relation.isInverseOf(exported)) {
+                    return relation;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -537,7 +597,7 @@ final class Table extends AbstractFeatureSet {
         Connection connection = null;
         try {
             connection = source.getConnection();
-            final Features iter = features(connection, null);
+            final Features iter = features(connection, new ArrayList<>(), null);
             return StreamSupport.stream(iter, parallel).onClose(iter);
         } catch (SQLException cause) {
             ex = new DataStoreException(Exceptions.unwrap(cause));
@@ -552,8 +612,14 @@ final class Table extends AbstractFeatureSet {
 
     /**
      * Returns an iterator over the features.
+     *
+     * @param connection  connection to the database.
+     * @param following   the relations that we are following. Used for avoiding never ending loop.
+     * @param noFollow    relation to not follow, or {@code null} if none.
      */
-    final Features features(final Connection connection, final Relation componentOf) throws SQLException {
-        return new Features(this, connection, attributeNames, attributeColumns, importedKeys, componentOf);
+    final Features features(final Connection connection, final List<Relation> following, final Relation noFollow)
+            throws SQLException, InternalDataStoreException
+    {
+        return new Features(this, connection, attributeNames, attributeColumns, importedKeys, exportedKeys, following, noFollow);
     }
 }

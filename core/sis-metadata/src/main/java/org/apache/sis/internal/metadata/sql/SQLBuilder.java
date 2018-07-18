@@ -179,6 +179,24 @@ public class SQLBuilder {
     }
 
     /**
+     * Appends an identifier for an element in the given schema and catalog.
+     *
+     * @param  catalog     the catalog, or {@code null} if none.
+     * @param  schema      the schema, or {@code null} if none.
+     * @param  identifier  the identifier to append.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendIdentifier(final String catalog, String schema, final String identifier) {
+        if (catalog != null) {
+            appendIdentifier(catalog);
+            if (schema == null) {
+                return appendIdentifier("").appendIdentifier(identifier);
+            }
+        }
+        return appendIdentifier(schema, identifier);
+    }
+
+    /**
      * Appends a value in a {@code SELECT} statement.
      * The {@code "="} string will be inserted before the value.
      *

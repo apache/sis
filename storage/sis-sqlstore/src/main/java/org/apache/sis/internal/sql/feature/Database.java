@@ -139,7 +139,7 @@ public final class Database {
         tableList = new ArrayList<>(tableNames.length);
         for (final TableReference reference : declared) {
             // Adds only the table explicitly required by the user.
-            tableList.add(analyzer.table(reference, reference.getName(analyzer), false));
+            tableList.add(analyzer.table(reference, reference.getName(analyzer), null));
         }
         /*
          * At this point we finished to create the table explicitly requested by the users.
