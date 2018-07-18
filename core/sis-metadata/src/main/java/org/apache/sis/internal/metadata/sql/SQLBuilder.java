@@ -187,8 +187,9 @@ public class SQLBuilder {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendIdentifier(final String catalog, String schema, final String identifier) {
-        if (catalog != null) {
+        if (catalog != null && !catalog.isEmpty()) {
             appendIdentifier(catalog);
+            buffer.append('.');
             if (schema == null) {
                 return appendIdentifier("").appendIdentifier(identifier);
             }

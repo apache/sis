@@ -246,7 +246,7 @@ final class Features implements Spliterator<Feature>, Runnable {
             final Relation componentOf = following.get(following.size() - 1);
             String separator = " WHERE ";
             for (String primaryKey : componentOf.getSearchColumns()) {
-                sql.append(separator).append(primaryKey).append("=?");
+                sql.append(separator).appendIdentifier(primaryKey).append("=?");
                 separator = " AND ";
             }
             statement = connection.prepareStatement(sql.toString());
@@ -274,7 +274,7 @@ final class Features implements Spliterator<Feature>, Runnable {
     {
         int columnCount = columnIndices.size();
         if (columnCount != 0) sql.append(',');
-        sql.append(' ').append(column);
+        sql.append(' ').appendIdentifier(column);
         if (columnIndices.put(column, ++columnCount) == null) return columnCount;
         throw new InternalDataStoreException(Resources.format(Resources.Keys.DuplicatedColumn_1, column));
     }

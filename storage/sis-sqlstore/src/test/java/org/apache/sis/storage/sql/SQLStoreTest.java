@@ -48,6 +48,11 @@ import org.opengis.feature.FeatureAssociationRole;
  */
 public final strictfp class SQLStoreTest extends TestCase {
     /**
+     * The schema where will be stored the features to test.
+     */
+    private static final String SCHEMA = "features";
+
+    /**
      * Number of time that the each country has been seen while iterating over the cities.
      */
     private final Map<String,Integer> countryCount = new HashMap<>();
@@ -60,23 +65,54 @@ public final strictfp class SQLStoreTest extends TestCase {
     private Feature canada;
 
     /**
+     * Tests on Derby.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnDerby() throws Exception {
+        test(TestDatabase.create("SQLStore"), true);
+    }
+
+    /**
+     * Tests on HSQLDB.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnHSQLDB() throws Exception {
+        test(TestDatabase.createOnHSQLDB("SQLStore", true), true);
+    }
+
+    /**
      * Tests on PostgreSQL.
      *
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
     public void testOnPostgreSQL() throws Exception {
-        test(TestDatabase.createOnPostgreSQL("features", true));
+        test(TestDatabase.createOnPostgreSQL(SCHEMA, true), false);
     }
 
     /**
      * Tests reading an existing schema. The schema is created and populated by the {@code Features.sql} script.
+     *
+     * @param  inMemory  where the test database is in memory. If {@code true}, then the database is presumed
+     *                   initially empty: a schema will be created, and we assume that there is no ambiguity
+     *                   if we don't specify the schema in {@link SQLStore} constructor.
      */
-    private void test(final TestDatabase database) throws Exception {
+    private void test(final TestDatabase database, final boolean inMemory) throws Exception {
+        final String[] scripts = {
+            "CREATE SCHEMA " + SCHEMA + ';',
+            "file:Features.sql"
+        };
+        if (!inMemory) {
+            scripts[0] = null;      // Erase the "CREATE SCHEMA" statement if the schema already exists.
+        }
         try (TestDatabase tmp = database) {
-            tmp.executeSQL(SQLStoreTest.class, "Features.sql");
+            tmp.executeSQL(SQLStoreTest.class, scripts);
             try (SQLStore store = new SQLStore(new SQLStoreProvider(), new StorageConnector(tmp.source),
-                    SQLStoreProvider.createTableName(null, "features", "Cities")))
+                    SQLStoreProvider.createTableName(null, inMemory ? null : SCHEMA, "Cities")))
             {
                 final FeatureSet cities = (FeatureSet) store.findResource("Cities");
                 verifyFeatureType(cities.getType(),

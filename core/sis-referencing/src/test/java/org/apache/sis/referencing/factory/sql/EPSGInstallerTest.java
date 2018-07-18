@@ -144,7 +144,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Test
     public void testCreationOnHSQLDB() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        try (TestDatabase db = TestDatabase.createOnHSQLDB("EPSGInstaller")) {
+        try (TestDatabase db = TestDatabase.createOnHSQLDB("EPSGInstaller", false)) {
             createAndTest(db.source, scripts);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:EPSGInstaller");
