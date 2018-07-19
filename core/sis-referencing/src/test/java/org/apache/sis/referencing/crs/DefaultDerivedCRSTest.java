@@ -34,7 +34,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
@@ -52,7 +52,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.
     DefaultConversionTest.class
 })
-public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
+public final strictfp class DefaultDerivedCRSTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

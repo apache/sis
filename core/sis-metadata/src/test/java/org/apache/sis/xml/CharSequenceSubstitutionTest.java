@@ -26,7 +26,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.SensorType;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -44,7 +44,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @since   0.3
  * @module
  */
-public final strictfp class CharSequenceSubstitutionTest extends XMLTestCase {
+public final strictfp class CharSequenceSubstitutionTest extends TestCase {
     /**
      * Tests unmarshalling of {@code "RS_Identifier"} element. This element was defined in legacy ISO 19139:2007
      * but has been removed in ISO 19115-3. That element is extensively used for Coordinate Reference Systems in

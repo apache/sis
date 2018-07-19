@@ -424,13 +424,14 @@ public abstract class TypeBuilder implements Localized {
      * all elements of a {@link ScopedName}; it can be only the tip (for example {@code "myName"} instead
      * of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
      *
-     * @param  types  the collection where to search for an element of the given name.
-     * @param  name   name of the element to search.
+     * @param  types         the collection where to search for an element of the given name.
+     * @param  name          name of the element to search.
+     * @param  nonAmbiguous  whether to throw an exception if the given name is ambiguous.
      * @return element of the given name, or {@code null} if none were found.
      * @throws IllegalArgumentException if the given name is ambiguous.
      */
     @SuppressWarnings("null")
-    final <E extends TypeBuilder> E forName(final List<E> types, final String name) {
+    final <E extends TypeBuilder> E forName(final List<E> types, final String name, final boolean nonAmbiguous) {
         E best      = null;                     // Best type found so far.
         E ambiguity = null;                     // If two types are found at the same depth, the other type.
         int depth   = Integer.MAX_VALUE;        // Number of path elements that we had to ignore in the GenericName.
@@ -453,7 +454,7 @@ public abstract class TypeBuilder implements Localized {
                 candidate = ((ScopedName) candidate).tail();
             }
         }
-        if (ambiguity != null) {
+        if (ambiguity != null && nonAmbiguous) {
             throw new IllegalArgumentException(errors().getString(
                     Errors.Keys.AmbiguousName_3, best.getName(), ambiguity.getName(), name));
         }

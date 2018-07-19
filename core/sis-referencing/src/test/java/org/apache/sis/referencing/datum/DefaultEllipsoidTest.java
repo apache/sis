@@ -23,7 +23,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -44,7 +44,7 @@ import static org.apache.sis.test.MetadataAssert.*;
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class
 })
-public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
+public final strictfp class DefaultEllipsoidTest extends TestCase {
     /**
      * An XML file in this package containing an ellipsoid definition.
      */

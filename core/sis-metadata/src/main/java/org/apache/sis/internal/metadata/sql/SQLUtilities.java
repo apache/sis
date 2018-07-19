@@ -63,14 +63,17 @@ public final class SQLUtilities extends Static {
     /**
      * Converts the given string to a boolean value, or returns {@code null} if the value is unrecognized.
      * This method recognizes "true", "false", "yes", "no", "t", "f", 0 and 1 (case insensitive).
+     * An empty string is interpreted as {@code null}.
      *
      * @param  text  the characters to convert to a boolean value, or {@code null}.
      * @return the given characters as a boolean value, or {@code null} if the given text was null or empty.
      * @throws SQLDataException if the given text is non-null and non-empty but not recognized.
      *
+     * @see Boolean#parseBoolean(String)
+     *
      * @since 0.8
      */
-    public static Boolean toBoolean(final String text) throws SQLException {
+    public static Boolean parseBoolean(final String text) throws SQLException {
         if (text == null) {
             return null;
         }

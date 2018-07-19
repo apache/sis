@@ -38,7 +38,7 @@ final class FeatureTypeAdapter extends XmlAdapter<GO_CharacterString, FeatureTyp
      */
     @Override
     public FeatureType unmarshal(GO_CharacterString value) {
-        return new LegacyType(LegacyType.ADAPTER.unmarshal(value));
+        return new LegacyFeatureType(LegacyFeatureType.ADAPTER.unmarshal(value));
     }
 
     /**
@@ -47,6 +47,6 @@ final class FeatureTypeAdapter extends XmlAdapter<GO_CharacterString, FeatureTyp
      */
     @Override
     public GO_CharacterString marshal(FeatureType value) {
-        return LegacyType.ADAPTER.marshal(LegacyType.wrap(value));
+        return LegacyFeatureType.ADAPTER.marshal(LegacyFeatureType.wrap(value));
     }
 }

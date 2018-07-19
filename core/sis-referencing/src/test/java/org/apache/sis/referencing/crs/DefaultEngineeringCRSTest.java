@@ -25,7 +25,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.6
  * @module
  */
-public final strictfp class DefaultEngineeringCRSTest extends XMLTestCase {
+public final strictfp class DefaultEngineeringCRSTest extends TestCase {
     /**
      * Creates an engineering CRS using a two-dimensional Cartesian coordinate system.
      */

@@ -30,7 +30,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -53,7 +53,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
-public final strictfp class DefaultMetadataTest extends XMLTestCase {
+public final strictfp class DefaultMetadataTest extends TestCase {
     /**
      * A flag for tracing workarounds for allowing some tests to pass despite regression.
      * This boolean should be set to {@code false} and removed after the following issues has been fixed:

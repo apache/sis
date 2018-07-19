@@ -50,16 +50,13 @@ import org.opengis.referencing.crs.VerticalCRS;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
-import org.apache.sis.metadata.iso.lineage.DefaultSource;
-import org.apache.sis.metadata.iso.lineage.DefaultLineage;
-import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
@@ -109,6 +106,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @version 1.0
  * @since   0.3
  * @module
@@ -321,18 +319,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             warning(Errors.Keys.UnknownEnumValue_2, codeType, name, null);
         }
         return code;
-    }
-
-    /**
-     * Adds the given element in the given collection if the element is not already present in the collection.
-     * We define this method because the metadata API uses collections while the SIS implementation uses lists.
-     * The lists are usually very short (typically 0 or 1 element), so the call to {@link List#contains(Object)}
-     * should be cheap.
-     */
-    private static <T> void addIfAbsent(final Collection<T> collection, final T element) {
-        if (!collection.contains(element)) {
-            collection.add(element);
-        }
     }
 
     /**
@@ -645,10 +631,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      *
      * @param  publisher   the publisher names, built by the caller in an opportunist way.
      */
-    private void addIdentificationInfo(final Set<InternationalString> publisher) {
-        boolean     hasExtent = false;
-        Set<String> project   = null;
-        Set<String> standard  = null;
+    private void addIdentificationInfo(final Set<InternationalString> publisher) throws IOException, DataStoreException {
+        boolean     hasExtent   = false;
+        Set<String> project     = null;
+        Set<String> standard    = null;
+        boolean     hasDataType = false;
         final Set<String> keywords = new LinkedHashSet<>();
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
@@ -659,7 +646,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addAccessConstraint(forCodeName(Restriction.class, keyword));
             }
             addTopicCategory(forCodeName(TopicCategory.class, stringValue(TOPIC_CATEGORY)));
-            addSpatialRepresentation(forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE)));
+            SpatialRepresentationType dt = forCodeName(SpatialRepresentationType.class, stringValue(DATA_TYPE));
+            addSpatialRepresentation(dt);
+            hasDataType |= (dt != null);
             if (!hasExtent) {
                 /*
                  * Takes only ONE extent, because a netCDF file may declare many time the same
@@ -668,6 +657,14 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                  */
                 hasExtent = addExtent();
             }
+        }
+        /*
+         * Add spatial representation type only if it was not explicitly given in the metadata.
+         * The call to getGridGeometries() may be relatively costly, so we don't want to invoke
+         * it without necessity.
+         */
+        if (!hasDataType && decoder.getGridGeometries().length != 0) {
+            addSpatialRepresentation(SpatialRepresentationType.GRID);
         }
         /*
          * For the following properties, use only the first non-empty attribute value found on the search path.
@@ -691,6 +688,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         if (wkt != null) {
             addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
+        }
+        try {
+            setFormat("NetCDF");
+        } catch (MetadataStoreException e) {
+            addFormatName("NetCDF");
+            warning(e);
         }
     }
 
@@ -1045,31 +1048,17 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         addFileIdentifier();
         /*
-         * Add history in Metadata.dataQualityInfo.lineage.statement as specified by UnidataDD2MI.xsl.
-         * However Metadata.resourceLineage.statement could be a more appropriate place.
+         * Deperture: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
+         * However since ISO 19115:2014, Metadata.resourceLineage.statement seems a more appropriate place.
          * See https://issues.apache.org/jira/browse/SIS-361
          */
-        final DefaultMetadata metadata = build(false);
         for (final String path : searchPath) {
             decoder.setSearchPath(path);
-            DefaultLineage lineage = null;
-            String value = stringValue(HISTORY);
-            if (value != null) {
-                lineage = new DefaultLineage();
-                lineage.setStatement(new SimpleInternationalString(value));
-            }
-            value = stringValue(SOURCE);
-            if (value != null) {
-                if (lineage == null) lineage = new DefaultLineage();
-                addIfAbsent(lineage.getSources(), new DefaultSource(value));
-            }
-            if (lineage != null) {
-                final DefaultDataQuality quality = new DefaultDataQuality(ScopeCode.DATASET);
-                quality.setLineage(lineage);
-                addIfAbsent(metadata.getDataQualityInfo(), quality);
-            }
+            addLineage(stringValue(HISTORY));
+            addSource(stringValue(SOURCE), null, null);
         }
         decoder.setSearchPath(searchPath);
+        final DefaultMetadata metadata = build(false);
         metadata.setMetadataStandards(Citations.ISO_19115);
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
         return metadata;

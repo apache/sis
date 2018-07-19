@@ -46,6 +46,14 @@ public class SQLBuilder {
     private final String quote;
 
     /**
+     * Whether the schema name should be written between quotes. If {@code false},
+     * we will let the database engine uses its default lower case / upper case policy.
+     *
+     * @see #appendIdentifier(String, String)
+     */
+    private final boolean quoteSchema;
+
+    /**
      * The string that can be used to escape wildcard characters.
      * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
      */
@@ -55,14 +63,6 @@ public class SQLBuilder {
      * The buffer where the SQL query is to be created.
      */
     private final StringBuilder buffer = new StringBuilder();
-
-    /**
-     * Whether the schema name should be written between quotes. If {@code false},
-     * we will let the database engine uses its default lower case / upper case policy.
-     *
-     * @see #appendIdentifier(String, String)
-     */
-    private final boolean quoteSchema;
 
     /**
      * Creates a new {@code SQLBuilder} initialized from the given database metadata.
@@ -176,6 +176,25 @@ public class SQLBuilder {
             buffer.append('.');
         }
         return appendIdentifier(identifier);
+    }
+
+    /**
+     * Appends an identifier for an element in the given schema and catalog.
+     *
+     * @param  catalog     the catalog, or {@code null} if none.
+     * @param  schema      the schema, or {@code null} if none.
+     * @param  identifier  the identifier to append.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendIdentifier(final String catalog, String schema, final String identifier) {
+        if (catalog != null && !catalog.isEmpty()) {
+            appendIdentifier(catalog);
+            buffer.append('.');
+            if (schema == null) {
+                return appendIdentifier("").appendIdentifier(identifier);
+            }
+        }
+        return appendIdentifier(schema, identifier);
     }
 
     /**

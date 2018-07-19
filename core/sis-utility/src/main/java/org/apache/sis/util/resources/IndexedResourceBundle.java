@@ -394,7 +394,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arguments  the object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.
      */
-    private Object[] toArray(final Object arguments) {
+    final Object[] toArray(final Object arguments) {
         Object[] array;
         if (arguments instanceof Object[]) {
             array = (Object[]) arguments;

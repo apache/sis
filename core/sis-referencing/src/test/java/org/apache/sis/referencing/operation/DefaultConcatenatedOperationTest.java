@@ -32,7 +32,7 @@ import org.apache.sis.io.wkt.Convention;
 
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -51,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     DefaultTransformationTest.class,
     SingleOperationMarshallingTest.class
 })
-public final strictfp class DefaultConcatenatedOperationTest extends XMLTestCase {
+public final strictfp class DefaultConcatenatedOperationTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

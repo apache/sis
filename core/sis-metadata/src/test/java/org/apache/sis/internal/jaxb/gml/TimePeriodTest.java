@@ -28,7 +28,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.xml.XmlUtilities;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -47,7 +47,7 @@ import static org.apache.sis.test.TestUtilities.format;
  * @since   0.3
  * @module
  */
-public final strictfp class TimePeriodTest extends XMLTestCase {
+public final strictfp class TimePeriodTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */

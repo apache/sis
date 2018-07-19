@@ -24,7 +24,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @since   0.5
  * @module
  */
-public final strictfp class DefaultContactTest extends XMLTestCase implements WarningListener<Object> {
+public final strictfp class DefaultContactTest extends TestCase implements WarningListener<Object> {
     /**
      * The resource key for the message of the warning that occurred, or {@code null} if none.
      */

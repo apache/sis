@@ -43,7 +43,6 @@ import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.KeywordType;
 import org.opengis.metadata.identification.Keywords;
-import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.extent.Extent;
@@ -352,9 +351,14 @@ public class AttributeNames {
      * This is a character array with a line for each invocation of a program that has modified the dataset.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getDataQualityInfo() dataQualityInfo} /
-     * {@link DataQuality#getLineage() lineage} /
+     * {@link Metadata#getResourceLineages() resourceLineage} /
      * {@link Lineage#getStatement() statement}</li></ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * located in "{@link Metadata#getDataQualityInfo() dataQualityInfo} /
+     * {@link org.opengis.metadata.quality.DataQuality#getLineage() lineage}" instead of "{@code resourceLineage}"
+     * in {@code UnidataDD2MI.xsl} file (retrieved in 2017).
+     * See <a href="https://issues.apache.org/jira/browse/SIS-361">SIS-361</a>.</div>
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#history">ESIP reference</a>
      */
@@ -364,10 +368,15 @@ public class AttributeNames {
      * The {@value} attribute name for the method of production of the original data (<em>Recommended</em>).
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getDataQualityInfo() dataQualityInfo} /
-     * {@link DataQuality#getLineage() lineage} /
+     * {@link Metadata#getResourceLineages() resourceLineage} /
      * {@link Lineage#getSources() source} /
      * {@link Source#getDescription() description}</li></ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * located in "{@link Metadata#getDataQualityInfo() dataQualityInfo} /
+     * {@link org.opengis.metadata.quality.DataQuality#getLineage() lineage}" instead of "{@code resourceLineage}"
+     * in {@code UnidataDD2MI.xsl} file (retrieved in 2017).
+     * See <a href="https://issues.apache.org/jira/browse/SIS-361">SIS-361</a>.</div>
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#source">ESIP reference</a>
      *

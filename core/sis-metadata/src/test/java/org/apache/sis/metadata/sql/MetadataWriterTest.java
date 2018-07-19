@@ -17,22 +17,19 @@
 package org.apache.sis.metadata.sql;
 
 import java.util.Collections;
-import javax.sql.DataSource;
-import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Telephone;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -45,7 +42,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * Creates a metadata database, stores a few elements and read them back.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -66,16 +63,16 @@ public final strictfp class MetadataWriterTest extends TestCase {
      */
     @Test
     public void testDerby() throws Exception {
-        final DataSource ds = TestDatabase.create("MetadataWriter");
-        source = new MetadataWriter(MetadataStandard.ISO_19115, ds, null, null);
-        try {
-            write();
-            search();
-            read();
-            readWriteDeprecated();
-            source.close();
-        } finally {
-            TestDatabase.drop(ds);
+        try (final TestDatabase db = TestDatabase.create("MetadataWriter")) {
+            source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, null, null);
+            try {
+                write();
+                search();
+                read();
+                readWriteDeprecated();
+            } finally {
+                source.close();
+            }
         }
     }
 
@@ -86,19 +83,17 @@ public final strictfp class MetadataWriterTest extends TestCase {
      * @throws Exception if an error occurred while writing or reading the database.
      */
     @Test
-    @Ignore("This test need to be run manually on a machine having a local PostgreSQL database.")
     public void testPostgreSQL() throws Exception {
-        final PGSimpleDataSource ds = new PGSimpleDataSource();
-        ds.setServerName("localhost");
-        ds.setDatabaseName("SpatialMetadataTest");
-        source = new MetadataWriter(MetadataStandard.ISO_19115, ds, "metadata", null);
-        try {
-            write();
-            search();
-            read();
-            readWriteDeprecated();
-        } finally {
-            source.close();
+        try (final TestDatabase db = TestDatabase.createOnPostgreSQL("MetadataWriter", true)) {
+            source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, "MetadataWriter", null);
+            try {
+                write();
+                search();
+                read();
+                readWriteDeprecated();
+            } finally {
+                source.close();
+            }
         }
     }
 

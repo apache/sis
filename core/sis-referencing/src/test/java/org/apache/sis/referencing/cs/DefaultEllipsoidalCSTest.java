@@ -22,7 +22,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(AbstractCSTest.class)
-public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
+public final strictfp class DefaultEllipsoidalCSTest extends TestCase {
     /**
      * An XML file in this package containing an ellipsoidal coordinate system definition.
      */

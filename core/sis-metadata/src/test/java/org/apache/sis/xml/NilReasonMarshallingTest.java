@@ -23,7 +23,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -40,7 +40,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since 0.3
  * @module
  */
-public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
+public final strictfp class NilReasonMarshallingTest extends TestCase {
     /**
      * Tests a simple case for a missing data.
      *

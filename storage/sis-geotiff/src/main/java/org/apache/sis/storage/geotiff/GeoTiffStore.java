@@ -122,6 +122,7 @@ public class GeoTiffStore extends DataStore {
             try {
                 builder.setFormat(Constants.GEOTIFF);
             } catch (MetadataStoreException e) {
+                builder.addFormatName(Constants.GEOTIFF);
                 warning(null, e);
             }
             builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);

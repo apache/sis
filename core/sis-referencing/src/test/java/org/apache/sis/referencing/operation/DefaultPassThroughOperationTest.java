@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -43,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
     DefaultTransformationTest.class,
     SingleOperationMarshallingTest.class
 })
-public final strictfp class DefaultPassThroughOperationTest extends XMLTestCase {
+public final strictfp class DefaultPassThroughOperationTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

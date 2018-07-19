@@ -28,7 +28,7 @@ import org.apache.sis.referencing.datum.DefaultImageDatum;
 import org.apache.sis.referencing.cs.DefaultAffineCS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.6
  * @module
  */
-public final strictfp class DefaultImageCRSTest extends XMLTestCase {
+public final strictfp class DefaultImageCRSTest extends TestCase {
     /**
      * Creates an image CRS using a two-dimensional affine or Cartesian coordinate system.
      *

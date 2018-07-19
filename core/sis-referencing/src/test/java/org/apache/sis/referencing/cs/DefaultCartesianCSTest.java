@@ -24,7 +24,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -47,7 +47,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DirectionAlongMeridianTest.class,
     AbstractCSTest.class
 })
-public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
+public final strictfp class DefaultCartesianCSTest extends TestCase {
     /**
      * An XML file in this package containing a Cartesian coordinate system definition.
      */

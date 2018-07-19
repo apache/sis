@@ -52,6 +52,7 @@ import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.xml.IdentifiedObject;
 
 // Branch-dependent imports
@@ -447,12 +448,12 @@ public class MetadataWriter extends MetadataSource {
                                     referencedTables = new HashMap<>();
                                     try (ResultSet rs = stmt.getConnection().getMetaData().getImportedKeys(catalog, schema(), table)) {
                                         while (rs.next()) {
-                                            if ((schema() == null || schema().equals(rs.getString("PKTABLE_SCHEM"))) &&
-                                                (catalog  == null || catalog.equals(rs.getString("PKTABLE_CAT"))))
+                                            if ((schema() == null || schema().equals(rs.getString(Reflection.PKTABLE_SCHEM))) &&
+                                                (catalog  == null || catalog.equals(rs.getString(Reflection.PKTABLE_CAT))))
                                             {
-                                                referencedTables.put(rs.getString("FKCOLUMN_NAME"),
-                                                            new FKey(rs.getString("PKTABLE_NAME"), null,
-                                                                     rs.getString("FK_NAME")));
+                                                referencedTables.put(rs.getString(Reflection.FKCOLUMN_NAME),
+                                                            new FKey(rs.getString(Reflection.PKTABLE_NAME), null,
+                                                                     rs.getString(Reflection.FK_NAME)));
                                             }
                                         }
                                     }

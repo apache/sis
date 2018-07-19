@@ -20,7 +20,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.util.MemberName;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -35,7 +35,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.5
  * @module
  */
-public final strictfp class ServiceParameterTest extends XMLTestCase {
+public final strictfp class ServiceParameterTest extends TestCase {
     /**
      * Creates the parameter to use for testing purpose.
      *

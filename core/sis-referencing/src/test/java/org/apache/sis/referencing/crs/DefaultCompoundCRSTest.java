@@ -32,7 +32,7 @@ import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
@@ -53,7 +53,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultGeographicCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
+public final strictfp class DefaultCompoundCRSTest extends TestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
      */

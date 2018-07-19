@@ -196,7 +196,7 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     /**
      * Sets the maximum number of associations. If the given number is less than the
      * {@linkplain #getMinimumOccurs() minimal number} of associations, than the minimum
-     * is also set to that value.
+     * is also set to that value. {@link Integer#MAX_VALUE} means that there is no maximum.
      *
      * @param  occurs  the new maximum number of associations.
      * @return {@code this} for allowing method calls chaining.

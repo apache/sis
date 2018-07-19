@@ -30,7 +30,7 @@ import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -52,7 +52,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @since   0.3
  * @module
  */
-public final strictfp class LanguageCodeTest extends XMLTestCase {
+public final strictfp class LanguageCodeTest extends TestCase {
     /**
      * XML fragment using the {@code <gco:CharacterString>} construct.
      */

@@ -27,6 +27,7 @@ import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 // Branch-specific imports
@@ -178,7 +179,7 @@ public strictfp class MetadataAssert extends Assert {
      * For convenience, this method replaces some well known prefixes in the {@code ignoredAttributes}
      * array by their full namespace URLs. For example this method replaces{@code "xsi:schemaLocation"}
      * by {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.
-     * If such substitution is not desired, consider using {@link XMLComparator} directly instead.
+     * If such substitution is not desired, consider using {@link DocumentComparator} directly instead.
      *
      * <p>The current substitution map is as below (may be expanded in any future SIS version):</p>
      *
@@ -207,7 +208,7 @@ public strictfp class MetadataAssert extends Assert {
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
      *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      *
-     * @see XMLComparator
+     * @see DocumentComparator
      */
     public static void assertXmlEquals(final Object expected, final Object actual, final String... ignoredAttributes) {
         assertXmlEquals(expected, actual, TestCase.STRICT, null, ignoredAttributes);
@@ -227,14 +228,14 @@ public strictfp class MetadataAssert extends Assert {
      * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
      *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      *
-     * @see XMLComparator
+     * @see DocumentComparator
      */
     public static void assertXmlEquals(final Object expected, final Object actual,
             final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes)
     {
-        final XMLComparator comparator;
+        final DocumentComparator comparator;
         try {
-            comparator = new XMLComparator(expected, actual);
+            comparator = new DocumentComparator(expected, actual);
         } catch (IOException | ParserConfigurationException | SAXException e) {
             // We don't throw directly those exceptions since failing to parse the XML file can
             // be considered as part of test failures and the JUnit exception for such failures
@@ -246,12 +247,12 @@ public strictfp class MetadataAssert extends Assert {
         comparator.ignoreComments = true;
         if (ignoredNodes != null) {
             for (final String node : ignoredNodes) {
-                comparator.ignoredNodes.add(XMLComparator.substitutePrefix(node));
+                comparator.ignoredNodes.add(DocumentComparator.substitutePrefix(node));
             }
         }
         if (ignoredAttributes != null) {
             for (final String attribute : ignoredAttributes) {
-                comparator.ignoredAttributes.add(XMLComparator.substitutePrefix(attribute));
+                comparator.ignoredAttributes.add(DocumentComparator.substitutePrefix(attribute));
             }
         }
         comparator.compare();

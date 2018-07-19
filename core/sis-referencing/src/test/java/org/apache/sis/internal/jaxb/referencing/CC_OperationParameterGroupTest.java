@@ -31,7 +31,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.Units;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.Namespaces;
@@ -55,7 +55,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(CC_GeneralOperationParameterTest.class)
-public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
+public final strictfp class CC_OperationParameterGroupTest extends TestCase {
     /**
      * The remark to associate to the "Latitude of natural origin" parameter.
      * Should be different than the comment stored in {@link Mercator1SP} in

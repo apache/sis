@@ -102,28 +102,6 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns information about the dataset as a whole. The returned metadata object can contain information
-     * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
-     * data quality, usage constraints and more.
-     *
-     * @return information about the dataset.
-     * @throws DataStoreException if an error occurred while reading the data.
-     */
-    @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) try {
-            final MetadataReader reader = new MetadataReader(decoder);
-            metadata = reader.read();
-            if (metadata instanceof ModifiableMetadata) {
-                ((ModifiableMetadata) metadata).freeze();
-            }
-        } catch (IOException e) {
-            throw new DataStoreException(e);
-        }
-        return metadata;
-    }
-
-    /**
      * Returns the parameters used to open this netCDF data store.
      * If non-null, the parameters are described by {@link NetcdfStoreProvider#getOpenParameters()} and contains at
      * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
@@ -159,9 +137,31 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the resources (features or coverages) in this netCDF file.
+     * Returns information about the dataset as a whole. The returned metadata object can contain information
+     * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
+     * data quality, usage constraints and more.
      *
-     * @return children resources that are components of this netCDF.
+     * @return information about the dataset.
+     * @throws DataStoreException if an error occurred while reading the data.
+     */
+    @Override
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (metadata == null) try {
+            final MetadataReader reader = new MetadataReader(decoder);
+            metadata = reader.read();
+            if (metadata instanceof ModifiableMetadata) {
+                ((ModifiableMetadata) metadata).apply(ModifiableMetadata.State.FINAL);
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        return metadata;
+    }
+
+    /**
+     * Returns the resources (features or coverages) in this netCDF store.
+     *
+     * @return children resources that are components of this netCDF store.
      * @throws DataStoreException if an error occurred while fetching the components.
      *
      * @since 0.8

@@ -42,7 +42,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
@@ -63,7 +63,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     CC_OperationParameterGroupTest.class,
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
-public final strictfp class SingleOperationMarshallingTest extends XMLTestCase {
+public final strictfp class SingleOperationMarshallingTest extends TestCase {
     /**
      * Creates the test operation method.
      */

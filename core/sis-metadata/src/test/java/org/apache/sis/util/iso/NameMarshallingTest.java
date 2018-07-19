@@ -32,7 +32,7 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.AfterClass;
@@ -51,7 +51,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)
-public final strictfp class NameMarshallingTest extends XMLTestCase {
+public final strictfp class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      *

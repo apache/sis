@@ -22,7 +22,7 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -40,7 +40,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @module
  */
 @DependsOn(NilReasonMarshallingTest.class)
-public final strictfp class UUIDMarshallingTest extends XMLTestCase {
+public final strictfp class UUIDMarshallingTest extends TestCase {
     /**
      * A random UUID for the tests in this class.
      */
