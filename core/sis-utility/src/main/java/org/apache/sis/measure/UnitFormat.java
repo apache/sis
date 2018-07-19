@@ -40,6 +40,7 @@ import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Localized;
@@ -647,12 +648,27 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1,
                         "?⋅" + Style.OPEN + unit.getSystemUnit() + Style.CLOSE));
             }
-            final String text = Double.toString(scale);
-            int length = text.length();
-            if (text.endsWith(".0")) {
-                length -= 2;
+            boolean asFloatingPoint = (style == Style.UCUM);
+            if (!asFloatingPoint) {
+                double power = Math.log10(scale);
+                if (2*Math.ulp(power) >= Math.abs(power - (power = Math.round(power)))) {
+                    asFloatingPoint = false;
+                    toAppendTo.append("10");
+                    final String text = Integer.toString((int) power);
+                    for (int i=0; i<text.length(); i++) {
+                        toAppendTo.append(Characters.toSuperScript(text.charAt(i)));
+                    }
+                }
             }
-            toAppendTo.append(text, 0, length).append(style.multiply);
+            if (asFloatingPoint) {
+                final String text = Double.toString(scale);
+                int length = text.length();
+                if (text.endsWith(".0")) {
+                    length -= 2;
+                }
+                toAppendTo.append(text, 0, length);
+            }
+            toAppendTo.append(style.multiply);
         }
         Map<? extends Unit<?>, ? extends Number> components;
         if (unit instanceof AbstractUnit<?>) {
@@ -755,6 +771,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * Appends the symbol for the given base unit of base dimension, or "?" if no symbol was found.
+     * If the given object is a unit, then it should be an instance of {@link SystemUnit}.
      *
      * @param  base        the base unit or base dimension to format.
      * @param  style       whether to allow Unicode characters.
@@ -1194,11 +1211,13 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                     /*
                      * If the first character is a digit, presume that the term is a multiplication factor.
                      * The "*" character is used for raising the number on the left to the power on the right.
-                     * Example: "10*6" is equal to one million.
+                     * Example: "10*6" is equal to one million. SIS also handles the "^" character as "*".
                      *
                      * In principle, spaces are not allowed in unit symbols (in particular, UCUM specifies that
                      * spaces should not be interpreted as multication operators).  However in practice we have
                      * sometime units written in a form like "100 feet".
+                     *
+                     * If the last character is a super-script, then we assume a notation like "10⁻⁴".
                      */
                     final char c = uom.charAt(0);
                     if (isDigit(c) || isSign(c)) {
@@ -1212,14 +1231,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                     return parseTerm(uom, s, length).multiply(multiplier);
                                 }
                             }
-                            s = uom.lastIndexOf(Style.EXPONENT_OR_MULTIPLY);      // Check standard UCUM symbol first.
-                            if (s >= 0 || (s = uom.lastIndexOf(Style.EXPONENT)) >= 0) {
-                                final int base = Integer.parseInt(uom.substring(0, s));
-                                final int exp  = Integer.parseInt(uom.substring(s+1));
-                                multiplier = Math.pow(base, exp);
-                            } else {
-                                multiplier = Double.parseDouble(uom);
-                            }
+                            multiplier = parseMultiplicationFactor(uom);
                         } catch (NumberFormatException e) {
                             throw (ParserException) new ParserException(Errors.format(
                                     Errors.Keys.UnknownUnit_1, uom), symbols, lower).initCause(e);
@@ -1298,6 +1310,35 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
             }
         }
         return unit;
+    }
+
+    /**
+     * Parses a multiplication factor, which may be a single number or a base raised to an exponent.
+     * For example all the following strings are equivalent: "1000", "1000.0", "1E3", "10*3", "10^3", "10³".
+     */
+    private static double parseMultiplicationFactor(final String term) throws NumberFormatException {
+        final String exponent;
+        int s = term.lastIndexOf(Style.EXPONENT_OR_MULTIPLY);        // Check standard UCUM symbol first.
+        if (s >= 0 || (s = term.lastIndexOf(Style.EXPONENT)) >= 0) {
+            exponent = term.substring(s + 1);
+        } else {
+            s = term.length();
+            int c = term.codePointBefore(s);
+            if (!Characters.isSuperScript(c)) {
+                return Double.parseDouble(term);                     // No exponent symbol and no superscript found.
+            }
+            // Example: "10⁻⁴". Split in base and exponent.
+            final StringBuilder buffer = new StringBuilder(s);
+            do {
+                buffer.append(Characters.toNormalScript((char) c));  // This API does not support code points yet.
+                if ((s -= Character.charCount(c)) <= 0) break;
+                c = term.codePointBefore(s);
+            } while (Characters.isSuperScript(c));
+            exponent = buffer.reverse().toString();
+        }
+        final int base = Integer.parseInt(term.substring(0, s));
+        final int exp  = Integer.parseInt(exponent);
+        return (base == 10) ? MathFunctions.pow10(exp) : Math.pow(base, exp);
     }
 
     /**
