@@ -18,7 +18,18 @@
 
 /**
  * Data store capable to read and create features from a JDBC connection to a database.
- * An example of spatial database is PostGIS.
+ * {@link org.apache.sis.storage.sql.SQLStore} takes a one or more tables at construction time.
+ * Each enumerated table is represented by a {@link org.opengis.feature.FeatureType}.
+ * Each relation defined by a foreigner key is represented by an {@link org.opengis.feature.FeatureAssociationRole}
+ * to another feature (with transitive dependencies automatically resolved), and the other columns are represented
+ * by {@link org.opengis.feature.AttributeType}.
+ *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Current implementation does not yet map geometric objects (e.g. PostGIS types).</li>
+ *   <li>If a parent feature contains association to other features, those other features are created
+ *       in same time than the parent feature (no lazy instantiation yet).</li>
+ * </ul>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
