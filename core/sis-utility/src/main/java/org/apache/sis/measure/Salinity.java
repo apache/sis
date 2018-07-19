@@ -26,7 +26,7 @@ import javax.measure.Quantity;
  * However Apache SIS uses the "psu" symbol for avoiding confusion with other dimensionless units.
  *
  * <p>Most quantity types are defined in the {@link javax.measure.quantity}.
- * This {@code AngularVelocity} type is an extension to the standard types.</p>
+ * This {@code Salinity} type is an extension to the standard types.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -34,6 +34,7 @@ import javax.measure.Quantity;
  * @module
  *
  * @see Units#PSU
+ * @see AngularVelocity
  */
 public interface Salinity extends Quantity<Salinity> {
 }
