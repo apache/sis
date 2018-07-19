@@ -17,7 +17,7 @@
 
 
 /**
- * Build {@link org.opengis.feature.FeatureType}s by inspection of database schemas.
+ * Build {@link org.apache.sis.feature.DefaultFeatureType}s by inspection of database schemas.
  * The work done here is similar to reverse engineering.
  *
  * <STRONG>Do not use!</STRONG>

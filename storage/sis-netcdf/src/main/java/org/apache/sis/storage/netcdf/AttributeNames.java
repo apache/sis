@@ -351,7 +351,7 @@ public class AttributeNames {
      * This is a character array with a line for each invocation of a program that has modified the dataset.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getResourceLineages() resourceLineage} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getResourceLineages() resourceLineage} /
      * {@link Lineage#getStatement() statement}</li></ul>
      *
      * <div class="note"><b>Note:</b>
@@ -368,7 +368,7 @@ public class AttributeNames {
      * The {@value} attribute name for the method of production of the original data (<em>Recommended</em>).
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
-     * {@link Metadata#getResourceLineages() resourceLineage} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getResourceLineages() resourceLineage} /
      * {@link Lineage#getSources() source} /
      * {@link Source#getDescription() description}</li></ul>
      *

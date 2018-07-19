@@ -61,7 +61,7 @@ import org.apache.sis.feature.DefaultAssociationRole;
  * Description of a table in the database, including columns, primary keys and foreigner keys.
  * This class contains a {@code FeatureType} inferred from the table structure. The {@code FeatureType}
  * contains an {@code AttributeType} for each table column, except foreigner keys which are represented
- * by {@link FeatureAssociationRole}s.
+ * by {@link DefaultAssociationRole}s.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

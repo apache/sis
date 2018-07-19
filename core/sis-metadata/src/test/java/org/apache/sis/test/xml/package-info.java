@@ -18,7 +18,7 @@
 /**
  * Utility methods for testing XML files or JAXB annotations.
  * {@link org.apache.sis.test.xml.AnnotationConsistencyCheck} and
- * {@link org.apache.sis.test.xml.SchemaCompliance} verifies JAXB annotations.
+ * {@code SchemaCompliance} verifies JAXB annotations.
  * {@link org.apache.sis.test.xml.DocumentComparator} compares an actual XML document with the expected one.
  *
  * <p>Objects defined in this package are only for SIS testing purpose any many change

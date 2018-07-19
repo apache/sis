@@ -58,7 +58,7 @@ public class SQLStore extends DataStore implements Aggregate {
     private final DataSource source;
 
     /**
-     * The result of inspecting database schema for deriving {@link org.opengis.feature.FeatureType}s.
+     * The result of inspecting database schema for deriving {@link org.apache.sis.feature.DefaultFeatureType}s.
      * Created when first needed. May be discarded and recreated if the store needs a refresh.
      */
     private Database model;
