@@ -13,7 +13,7 @@ COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
 -- Those declarations will be omitted on databases that do
 -- no support enumerations; VARCHAR is used instead.
 --
-CREATE TYPE metadata."CI_PresentationFormCode" AS ENUM (
+CREATE TYPE metadata."PresentationFormCode" AS ENUM (
   'documentDigital', 'documentHardcopy',
   'imageDigital',    'imageHardcopy',
   'mapDigital',      'mapHardcopy',
@@ -22,19 +22,19 @@ CREATE TYPE metadata."CI_PresentationFormCode" AS ENUM (
   'tableDigital',    'tableHardcopy',
   'videoDigital',    'videoHardcopy');
 
-CREATE TYPE metadata."CI_RoleCode" AS ENUM (
+CREATE TYPE metadata."RoleCode" AS ENUM (
   'resourceProvider', 'custodian', 'owner', 'user', 'distributor', 'originator', 'pointOfContact',
   'principalInvestigator', 'processor', 'publisher', 'author', 'sponsor', 'coAuthor', 'collaborator',
   'editor', 'mediator', 'rightsHolder', 'contributor', 'funder', 'stakeholder');
 
-CREATE TYPE metadata."CI_DateTypeCode" AS ENUM (
+CREATE TYPE metadata."DateTypeCode" AS ENUM (
   'creation', 'publication', 'revision', 'expiry', 'lastUpdate', 'lastRevision', 'nextUpdate',
   'unavailable', 'inForce', 'adopted', 'deprecated', 'superseded', 'validityBegins', 'validityExpires',
   'released', 'distribution');
 
-CREATE CAST (VARCHAR AS metadata."CI_PresentationFormCode") WITH INOUT AS ASSIGNMENT;
-CREATE CAST (VARCHAR AS metadata."CI_RoleCode")             WITH INOUT AS ASSIGNMENT;
-CREATE CAST (VARCHAR AS metadata."CI_DateTypeCode")         WITH INOUT AS ASSIGNMENT;
+CREATE CAST (VARCHAR AS metadata."PresentationFormCode") WITH INOUT AS ASSIGNMENT;
+CREATE CAST (VARCHAR AS metadata."RoleCode")             WITH INOUT AS ASSIGNMENT;
+CREATE CAST (VARCHAR AS metadata."DateTypeCode")         WITH INOUT AS ASSIGNMENT;
 
 
 --
@@ -45,44 +45,44 @@ CREATE CAST (VARCHAR AS metadata."CI_DateTypeCode")         WITH INOUT AS ASSIGN
 -- VARCHAR(15) are for primary keys or foreigner keys.
 -- VARCHAR(120) are for character sequences.
 --
-CREATE TABLE metadata."MD_Identifier" (
+CREATE TABLE metadata."Identifier" (
   ID          VARCHAR(15) NOT NULL PRIMARY KEY,
   "authority" VARCHAR(15),
   "code"      VARCHAR(120),
   "codeSpace" VARCHAR(120),
   "version"   VARCHAR(120));
 
-CREATE TABLE metadata."CI_Party" (
+CREATE TABLE metadata."Party" (
   ID     VARCHAR(15) NOT NULL PRIMARY KEY,
   "name" VARCHAR(120));
 
-CREATE TABLE metadata."CI_Responsibility" (
+CREATE TABLE metadata."Responsibility" (
   ID      VARCHAR(15) NOT NULL PRIMARY KEY,
-  "role"  metadata."CI_RoleCode",
-  "party" VARCHAR(15) REFERENCES metadata."CI_Party" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT);
+  "role"  metadata."RoleCode",
+  "party" VARCHAR(15) REFERENCES metadata."Party" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT);
 
-CREATE TABLE metadata."CI_Date" (
+CREATE TABLE metadata."Date" (
   ID         VARCHAR(15) NOT NULL PRIMARY KEY,
   "date"     TIMESTAMP,
-  "dateType" metadata."CI_DateTypeCode");
+  "dateType" metadata."DateTypeCode");
 
-CREATE TABLE metadata."CI_Citation" (
+CREATE TABLE metadata."Citation" (
   ID                      VARCHAR(15) NOT NULL PRIMARY KEY,
   "title"                 VARCHAR(120),
   "alternateTitle"        VARCHAR(120),
-  "date"                  VARCHAR(15) REFERENCES metadata."CI_Date" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "date"                  VARCHAR(15) REFERENCES metadata."Date" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
   "edition"               VARCHAR(120),
   "editionDate"           TIMESTAMP,
-  "identifier"            VARCHAR(15) REFERENCES metadata."MD_Identifier"     (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "citedResponsibleParty" VARCHAR(15) REFERENCES metadata."CI_Responsibility" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "presentationForm"      metadata."CI_PresentationFormCode");
+  "identifier"            VARCHAR(15) REFERENCES metadata."Identifier"     (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "citedResponsibleParty" VARCHAR(15) REFERENCES metadata."Responsibility" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "presentationForm"      metadata."PresentationFormCode");
 
-ALTER TABLE metadata."MD_Identifier" ADD CONSTRAINT fk_identifier_citation
-FOREIGN KEY ("authority") REFERENCES metadata."CI_Citation" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT;
+ALTER TABLE metadata."Identifier" ADD CONSTRAINT fk_identifier_citation
+FOREIGN KEY ("authority") REFERENCES metadata."Citation" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
-CREATE TABLE metadata."MD_Format" (
+CREATE TABLE metadata."Format" (
   ID                            VARCHAR(15) NOT NULL PRIMARY KEY,
-  "formatSpecificationCitation" VARCHAR(15) REFERENCES metadata."CI_Citation" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "formatSpecificationCitation" VARCHAR(15) REFERENCES metadata."Citation" (ID) ON UPDATE RESTRICT ON DELETE RESTRICT,
   "amendmentNumber"             VARCHAR(120),
   "fileDecompressionTechnique"  VARCHAR(120));
 
@@ -91,21 +91,21 @@ CREATE TABLE metadata."MD_Format" (
 -- Metadata about organizations.
 --
 
-INSERT INTO metadata."CI_Party" (ID, "name") VALUES
+INSERT INTO metadata."Party" (ID, "name") VALUES
   ('Apache', 'The Apache Software Foundation'),
   ('OGC',    'Open Geospatial Consortium'),
   ('ISO',    'International Organization for Standardization'),
   ('IOGP',   'International Association of Oil & Gas producers'),
   ('NATO',   'North Atlantic Treaty Organization');
 
-INSERT INTO metadata."CI_Responsibility" (ID, "party", "role") VALUES
+INSERT INTO metadata."Responsibility" (ID, "party", "role") VALUES
   ('Apache', 'Apache', 'principalInvestigator'),
   ('OGC',    'OGC',    'principalInvestigator'),
   ('ISO',    'ISO',    'principalInvestigator'),
   ('IOGP',   'IOGP',   'principalInvestigator'),
   ('NATO',   'NATO',   'principalInvestigator');
 
-INSERT INTO metadata."CI_Citation" (ID, "edition", "citedResponsibleParty", "title") VALUES
+INSERT INTO metadata."Citation" (ID, "edition", "citedResponsibleParty", "title") VALUES
   ('SIS',         NULL,                  'Apache',  'Apache Spatial Information System'),
   ('ISO 19115-1', 'ISO 19115-1:2014(E)', 'ISO',     'Geographic Information — Metadata Part 1: Fundamentals'),
   ('ISO 19115-2', 'ISO 19115-2:2009(E)', 'ISO',     'Geographic Information — Metadata Part 2: Extensions for imagery and gridded data'),
@@ -116,7 +116,7 @@ INSERT INTO metadata."CI_Citation" (ID, "edition", "citedResponsibleParty", "tit
 --
 -- Metadata about file formats.
 --
-INSERT INTO metadata."CI_Citation" (ID, "alternateTitle", "title") VALUES
+INSERT INTO metadata."Citation" (ID, "alternateTitle", "title") VALUES
   ('GeoTIFF', 'GeoTIFF', 'GeoTIFF Coverage Encoding Profile'),
   ('NetCDF',  'NetCDF',  'NetCDF Classic and 64-bit Offset Format'),
   ('PNG',     'PNG',     'PNG (Portable Network Graphics) Specification'),
@@ -124,7 +124,7 @@ INSERT INTO metadata."CI_Citation" (ID, "alternateTitle", "title") VALUES
   ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
   ('GPX',     'GPX',     'GPS Exchange Format');
 
-INSERT INTO metadata."MD_Format" (ID, "formatSpecificationCitation") VALUES
+INSERT INTO metadata."Format" (ID, "formatSpecificationCitation") VALUES
   ('GeoTIFF', 'GeoTIFF'),
   ('NetCDF',  'NetCDF'),
   ('PNG',     'PNG'),

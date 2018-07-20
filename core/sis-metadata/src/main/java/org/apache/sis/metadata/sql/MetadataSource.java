@@ -86,7 +86,7 @@ import org.apache.sis.util.iso.Types;
  *   Format format = source.lookup(Format.class, "PNG");
  * }
  *
- * where {@code id} is the primary key value for the desired record in the {@code MD_Format} table.
+ * where {@code id} is the primary key value for the desired record in the {@code Format} table.
  *
  * <div class="section">Properties</div>
  * The constructor expects three Java arguments (the {@linkplain MetadataStandard metadata standard},
@@ -456,7 +456,7 @@ public class MetadataSource implements AutoCloseable {
             schema = schema.toLowerCase(Locale.US);
         }
         quoteSchema = false;
-        try (ResultSet result = md.getTables(catalog, schema, "CI_Citation", null)) {
+        try (ResultSet result = md.getTables(catalog, schema, "Citation", null)) {
             if (result.next()) {
                 return;
             }
@@ -571,8 +571,10 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Returns the table name for the specified class.
-     * This is usually the ISO 19115 name.
+     * Returns the table name for the specified class. This is usually the ISO 19115 name,
+     * but we fallback on the simple class name if the ISO name is not available.
+     * The package prefix is omitted (e.g. {@code "CI_"} in {@code "CI_Citation"}
+     * since newer ISO standards tend to drop it.
      */
     static String getTableName(final Class<?> type) {
         final UML annotation = type.getAnnotation(UML.class);
@@ -580,7 +582,14 @@ public class MetadataSource implements AutoCloseable {
             return type.getSimpleName();
         }
         final String name = annotation.identifier();
-        return name.substring(name.lastIndexOf('.') + 1);
+        int s = name.lastIndexOf('.') + 1;
+        /*
+         * Drop package prefix if present (e.g. "CI_" in "CI_Citation").
+         */
+        if (name.length() > s+3 && name.charAt(s+2) == '_' && Character.isUpperCase(name.charAt(1))) {
+            s += 3;
+        }
+        return name.substring(s);
     }
 
     /**
@@ -899,7 +908,7 @@ public class MetadataSource implements AutoCloseable {
             throws SQLException, MetadataStoreException
     {
         /*
-         * If the identifier is prefixed with a table name as in "{CI_Organisation}identifier",
+         * If the identifier is prefixed with a table name as in "{Organisation}identifier",
          * the name between bracket is a subtype of the given 'type' argument.
          */
         final Class<?> type           = TableHierarchy.subType(info.getMetadataType(), toSearch.identifier);

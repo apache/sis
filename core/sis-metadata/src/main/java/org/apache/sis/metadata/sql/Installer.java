@@ -28,7 +28,7 @@ import org.apache.sis.util.StringBuilders;
  * Executes the installation scripts for the "metadata" schema in the "SpatialMetadata" database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -60,9 +60,9 @@ final class Installer extends ScriptRunner {
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
         if (!isEnumTypeSupported && CharSequences.startsWith(sql, "CREATE TABLE", true)) {
-            StringBuilders.replace(sql, "metadata.\"CI_RoleCode\"", "VARCHAR(25)");
-            StringBuilders.replace(sql, "metadata.\"CI_DateTypeCode\"", "VARCHAR(25)");
-            StringBuilders.replace(sql, "metadata.\"CI_PresentationFormCode\"", "VARCHAR(25)");
+            StringBuilders.replace(sql, "metadata.\"RoleCode\"", "VARCHAR(25)");
+            StringBuilders.replace(sql, "metadata.\"DateTypeCode\"", "VARCHAR(25)");
+            StringBuilders.replace(sql, "metadata.\"PresentationFormCode\"", "VARCHAR(25)");
         }
         return super.execute(sql);
     }
