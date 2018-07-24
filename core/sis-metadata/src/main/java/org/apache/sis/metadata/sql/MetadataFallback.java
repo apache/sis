@@ -17,11 +17,20 @@
 package org.apache.sis.metadata.sql;
 
 import org.opengis.util.ControlledVocabulary;
+import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.metadata.ServicesForUtility;
+import org.opengis.metadata.citation.PresentationForm;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.xml.NilReason;
+
+import static java.util.Collections.singleton;
 
 
 /**
@@ -76,14 +85,133 @@ final class MetadataFallback extends MetadataSource {
         } else {
             value = null;
             if (type == Citation.class) {
-                // TODO: move ServicesForUtility code here.
-                value = ServicesForUtility.createCitation(identifier);
+                value = createCitation(identifier);
             }
             if (value == null) {
                 return NilReason.MISSING.createNilObject(type);
             }
         }
         return type.cast(value);
+    }
+
+    /**
+     * Returns the build-in citation for the given primary key, or {@code null}.
+     * The content in this method should be consistent with the content provided
+     * in the {@code "Create.sql"} script (this is verified by JUnit tests).
+     *
+     * @param  key  the primary key of the desired citation.
+     * @return the requested citation, or {@code null} if unknown.
+     */
+    static Citation createCitation(final String key) {
+        CharSequence     title;
+        CharSequence     alternateTitle        = null;
+        CharSequence     edition               = null;
+        String           code                  = null;
+        String           codeSpace             = null;
+        String           version               = null;
+        CharSequence     citedResponsibleParty = null;
+        PresentationForm presentationForm      = null;
+        String           copyFrom              = null;      // Copy citedResponsibleParty from those citations.
+        switch (key) {
+            case "ISO 19115-1": {
+                title     = "Geographic Information — Metadata Part 1: Fundamentals";
+                edition   = "ISO 19115-1:2014(E)";
+                code      = "19115-1";
+                codeSpace = "ISO";
+                version   = "2014(E)";
+                citedResponsibleParty = "International Organization for Standardization";
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case "ISO 19115-2": {
+                title     = "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data";
+                edition   = "ISO 19115-2:2009(E)";
+                code      = "19115-2";
+                codeSpace = "ISO";
+                version   = "2009(E)";
+                copyFrom  = "ISO 19115-1";
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case "WMS": {
+                title             = "Web Map Server";
+                alternateTitle    = "WMS";
+                edition = version = "1.3";
+                code              = "WMS";      // Note: OGC internal code is 06-042.
+                codeSpace         = "OGC";
+                copyFrom          = "OGC";
+                presentationForm  = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case "OGC": {
+                title                 = "OGC Naming Authority";
+                code                  = Constants.OGC;
+                citedResponsibleParty = "Open Geospatial Consortium";
+                presentationForm      = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case "IOGP": {          // Not in public API (see Citations.IOGP javadoc)
+                title = "IOGP Surveying and Positioning Guidance Note 7";
+                code             = Constants.IOGP;
+                copyFrom         = Constants.EPSG;
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case Constants.EPSG: {
+                title                 = "EPSG Geodetic Parameter Dataset";
+                alternateTitle        = "EPSG Dataset";
+                code                  = Constants.EPSG;
+                codeSpace             = Constants.IOGP;
+                citedResponsibleParty = "International Association of Oil & Gas producers";
+                presentationForm      = PresentationForm.TABLE_DIGITAL;
+                break;
+            }
+            case Constants.SIS: {
+                title     = "Apache Spatial Information System";
+                code      = key;
+                codeSpace = "Apache";
+                break;
+            }
+            case "ISBN": {
+                title = "International Standard Book Number";
+                alternateTitle = key;
+                break;
+            }
+            case "ISSN": {
+                title = "International Standard Serial Number";
+                alternateTitle = key;
+                break;
+            }
+            case Constants.PROJ4: {
+                title = "Proj";
+                break;
+            }
+            case "IHO S-57": {
+                title = "S-57";
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            default: return null;
+        }
+        /*
+         * Do not use the 'c.getFoo().add(foo)' pattern below. Use the 'c.setFoo(singleton(foo))' pattern instead.
+         * This is because this method may be invoked during XML serialization, in which case some getter methods
+         * may return null (for preventing JAXB to marshal some empty elements).
+         */
+        final DefaultCitation c = new DefaultCitation(title);
+        if (alternateTitle        != null) c.setAlternateTitles(singleton(Types.toInternationalString(alternateTitle)));
+        if (edition               != null) c.setEdition(Types.toInternationalString(edition));
+        if (code                  != null) c.setIdentifiers(singleton(new ImmutableIdentifier(null, codeSpace, code, version, null)));
+        if (presentationForm      != null) c.setPresentationForms(singleton(presentationForm));
+        if (citedResponsibleParty != null) {
+            c.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null,
+                    new DefaultOrganisation(citedResponsibleParty, null, null, null))));
+        }
+        if (copyFrom != null) {
+            c.setCitedResponsibleParties(createCitation(copyFrom).getCitedResponsibleParties());
+        }
+        c.apply(DefaultCitation.State.FINAL);
+        return c;
     }
 
     /**

@@ -714,7 +714,7 @@ public class MetadataWriter extends MetadataSource {
             }
         }
         if (identifier == null && metadata instanceof Citation) {
-            identifier = nonEmpty(Citations.getIdentifier((Citation) metadata));
+            identifier = nonEmpty(Citations.toCodeSpace((Citation) metadata));
         }
         if (identifier == null) {
             final TitleProperty tp = metadata.getClass().getAnnotation(TitleProperty.class);

@@ -227,7 +227,7 @@ class CoordinateOperationRegistry {
             if (registry instanceof GeodeticAuthorityFactory) {
                 codeFinder = ((GeodeticAuthorityFactory) registry).newIdentifiedObjectFinder();
             } else try {
-                codeFinder = IdentifiedObjects.newFinder(Citations.getIdentifier(registry.getAuthority()));
+                codeFinder = IdentifiedObjects.newFinder(Citations.toCodeSpace(registry.getAuthority()));
             } catch (NoSuchAuthorityFactoryException e) {
                 Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                         CoordinateOperationRegistry.class, "<init>", e);

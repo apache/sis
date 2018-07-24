@@ -34,6 +34,12 @@ import org.apache.sis.util.StringBuilders;
  */
 final class Installer extends ScriptRunner {
     /**
+     * List of enumeration types to replace by {@code VARCHAR}
+     * on implementations that do not support {@code ENUM} type.
+     */
+    private final String[] enumTypes;
+
+    /**
      * Creates a new installer for the metadata database.
      *
      * @param  connection  connection to the metadata database.
@@ -41,6 +47,16 @@ final class Installer extends ScriptRunner {
      */
     Installer(final Connection connection) throws SQLException {
         super(connection, 100);
+        if (isEnumTypeSupported) {
+            enumTypes = null;
+        } else {
+            enumTypes = new String[] {
+                "RoleCode", "DateTypeCode", "PresentationFormCode", "OnLineFunctionCode"
+            };
+            for (int i=0; i<enumTypes.length; i++) {
+                enumTypes[i] = "metadata.\"" + enumTypes[i] + '"';
+            }
+        }
     }
 
     /**
@@ -52,17 +68,14 @@ final class Installer extends ScriptRunner {
 
     /**
      * Invoked for each line of the SQL installation script to execute.
-     * If the database does not support enumerations, replace enumeration columns by {@code VARCHAR}.
-     *
-     * @todo The hard-coded checks performed in this method should disappear after we replaced the
-     *       "CREATE TABLE" statement by usage of {@code MetadataWriter}.
+     * If the database does not support enumerations, replaces enumeration columns by {@code VARCHAR}.
      */
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
         if (!isEnumTypeSupported && CharSequences.startsWith(sql, "CREATE TABLE", true)) {
-            StringBuilders.replace(sql, "metadata.\"RoleCode\"", "VARCHAR(25)");
-            StringBuilders.replace(sql, "metadata.\"DateTypeCode\"", "VARCHAR(25)");
-            StringBuilders.replace(sql, "metadata.\"PresentationFormCode\"", "VARCHAR(25)");
+            for (final String type : enumTypes) {
+                StringBuilders.replace(sql, type, "VARCHAR(25)");
+            }
         }
         return super.execute(sql);
     }

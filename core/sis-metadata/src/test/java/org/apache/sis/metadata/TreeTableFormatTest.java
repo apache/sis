@@ -86,10 +86,6 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         assertMultilinesEquals(
             "Citation……………………………………………………………………………… Undercurrent\n" +
             "  ├─Alternate title………………………………………………… Andākarento\n" +
-            "  ├─Identifier……………………………………………………………… 9782505004509\n" +
-            "  │   ├─Authority……………………………………………………… International Standard Book Number\n" +
-            "  │   │   └─Alternate title…………………………… ISBN\n" +
-            "  │   └─Code space…………………………………………………… ISBN\n"+
             "  ├─Cited responsible party (1 of 2)\n" +
             "  │   ├─Role…………………………………………………………………… Author\n" +
             "  │   └─Individual…………………………………………………… Testsuya Toyoda\n" +

@@ -453,7 +453,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              *    Description:  EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
              *
              * TODO: A future version should use Citations.EPSG as a template.
-             *       See the "EPSG" case in ServiceForUtility.createCitation(String).
              */
             final DatabaseMetaData metadata  = connection.getMetaData();
 addURIs:    for (int i=0; ; i++) {
@@ -487,7 +486,7 @@ addURIs:    for (int i=0; ; i++) {
         } catch (SQLException exception) {
             unexpectedException("getAuthority", exception);
         } finally {
-            c.freeze();
+            c.apply(DefaultCitation.State.FINAL);
         }
         return c;
     }

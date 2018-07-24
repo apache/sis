@@ -121,8 +121,7 @@ public class MetadataSource implements AutoCloseable {
     static final KeyNamePolicy NAME_POLICY = KeyNamePolicy.UML_IDENTIFIER;
 
     /**
-     * The column name used for the identifiers. We do not quote this identifier;
-     * we will let the database uses its own lower-case / upper-case convention.
+     * The column name used for the identifiers.
      */
     static final String ID_COLUMN = "ID";
 

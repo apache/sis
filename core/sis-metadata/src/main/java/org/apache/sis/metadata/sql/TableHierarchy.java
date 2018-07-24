@@ -25,6 +25,14 @@ import org.apache.sis.util.iso.Types;
  * Utility methods for handling the inheritance between tables.
  * This features is partially supported in PostgreSQL database.
  *
+ * <p>This class is a work around for databases that support table inheritances,
+ * but not yet index inheritance. For example in PostgreSQL 9.5.13, we can not yet declare
+ * a foreigner key to the super table and find the entries in inherited tables that way.</p>
+ *
+ * <p>An alternative to current workaround would be to repeat a search in all child tables.
+ * We could use {@link java.sql.DatabaseMetaData#getSuperTables(String, String, String)} for
+ * getting the list of child tables.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0

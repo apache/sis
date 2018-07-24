@@ -108,6 +108,15 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
     }
 
     /**
+     * Returns {@code true} if this authority is for ISBN or ISSN identifiers.
+     *
+     * @return whether this authority is for ISBN or ISSN identifiers.
+     */
+    public boolean isBookOrSerialNumber() {
+        return ordinal == ISBN || ordinal == ISSN;
+    }
+
+    /**
      * Returns the first marshallable identifier from the given collection. This method omits
      * "special" identifiers (ISO 19115-3 attributes, ISBN codes…), which are recognized by
      * the implementation class of their authority.

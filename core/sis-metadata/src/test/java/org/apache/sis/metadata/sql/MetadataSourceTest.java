@@ -57,6 +57,26 @@ public final strictfp class MetadataSourceTest extends TestCase {
             source.install();
             verifyFormats(source);
             testSearch(source);
+
+            // Opportunistic verification using the database we have at hand.
+            MetadataFallbackVerifier.compare(source);
+        }
+    }
+
+    /**
+     * Tests {@link MetadataSource} with a PostgreSQL database if available.
+     *
+     * @throws Exception if an error occurred while executing the script runner.
+     */
+    @Test
+    public void testOnPostgreSQL() throws Exception {
+        try (TestDatabase db = TestDatabase.createOnPostgreSQL("metadata", false);
+             MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null))
+        {
+            source.install();
+            verifyFormats(source);
+            testSearch(source);
+            MetadataFallbackVerifier.compare(source);
         }
     }
 
