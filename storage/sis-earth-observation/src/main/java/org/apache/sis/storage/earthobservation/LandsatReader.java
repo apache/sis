@@ -107,6 +107,10 @@ final class LandsatReader {
     /**
      * Names of Landsat bands.
      *
+     * @todo Those names and the wavelength could be moved to the {@code SpatialMetadata} database,
+     *       as described in <a href="https://issues.apache.org/jira/browse/SIS-338">SIS-338</a>.
+     *       It would make easier to enrich the metadata with more information.
+     *
      * @see #bands
      * @see #band(String, int)
      */
