@@ -3,127 +3,20 @@
 -- http://www.apache.org/licenses/LICENSE-2.0
 --
 
+--
+-- This script creates some tables needed for SIS pre-defined Citation constants.
+-- We do not need to create all tables or all table columns here; missing tables
+-- and columns will be added on-the-fly by SIS as needed. Enumeration values are
+-- replaced by VARCHAR on databases that do not support the ENUM type.
+--
+-- In this schema, the following arbitrary lengths are used:
+--
+--   VARCHAR(15)  for primary keys or foreigner keys.
+--   VARCHAR(120) for character sequences.
+--
 CREATE SCHEMA metadata;
 GRANT USAGE ON SCHEMA metadata TO PUBLIC;
 COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
-
-
---
--- CodeLists are represented as enumeration on PostgreSQL.
--- Those declarations will be omitted on databases that do
--- no support enumerations; VARCHAR is used instead.
---
-CREATE TYPE metadata."PresentationFormCode" AS ENUM (
-  'documentDigital', 'documentHardcopy',
-  'imageDigital',    'imageHardcopy',
-  'mapDigital',      'mapHardcopy',
-  'modelDigital',    'modelHardcopy',
-  'profileDigital',  'profileHardcopy',
-  'tableDigital',    'tableHardcopy',
-  'videoDigital',    'videoHardcopy');
-
-CREATE TYPE metadata."RoleCode" AS ENUM (
-  'resourceProvider', 'custodian', 'owner', 'user', 'distributor', 'originator', 'pointOfContact',
-  'principalInvestigator', 'processor', 'publisher', 'author', 'sponsor', 'coAuthor', 'collaborator',
-  'editor', 'mediator', 'rightsHolder', 'contributor', 'funder', 'stakeholder');
-
-CREATE TYPE metadata."DateTypeCode" AS ENUM (
-  'creation', 'publication', 'revision', 'expiry', 'lastUpdate', 'lastRevision', 'nextUpdate',
-  'unavailable', 'inForce', 'adopted', 'deprecated', 'superseded', 'validityBegins', 'validityExpires',
-  'released', 'distribution');
-
-CREATE TYPE metadata."OnLineFunctionCode" AS ENUM (
-  'download', 'information', 'offlineAccess', 'order', 'search', 'completeMetadata', 'browseGraphic',
-  'upload', 'emailService', 'browsing', 'fileAccess');
-
-CREATE TYPE metadata."TransferFunctionTypeCode" AS ENUM (
-  'linear', 'logarithmic', 'exponential');
-
-
-
---
--- This script creates some tables needed for SIS pre-defined metadata.
--- We do not need to create all tables or all columns in tables here.
--- Missing tables and columns will be added on-the-fly by SIS as needed.
---
--- VARCHAR(15) are for primary keys or foreigner keys.
--- VARCHAR(120) are for character sequences.
---
-CREATE TABLE metadata."Identifier" (
-  "ID"        VARCHAR(15) NOT NULL PRIMARY KEY,
-  "authority" VARCHAR(15),
-  "code"      VARCHAR(120),
-  "codeSpace" VARCHAR(120),
-  "version"   VARCHAR(120));
-
-
-
-CREATE TABLE metadata."Party" (
-  "ID"   VARCHAR(15) NOT NULL PRIMARY KEY,
-  "name" VARCHAR(120));
-
-
-
---
--- "ID" and "name" columns are inherited from the "Party" parent table.
--- But we nevertheless repeat them for databases that do not support table inheritance.
--- On PostgreSQL, those duplicated declarations are merged in single columns.
---
-CREATE TABLE metadata."Organisation" (
-  "ID"   VARCHAR(15) NOT NULL PRIMARY KEY,
-  "name" VARCHAR(120))
-INHERITS (metadata."Party");
-
-
-
---
--- Foreigner key should reference the "Party" parent table, but it does not yet work on PostgreSQL
--- (tested on 9.5.13). For the purpose of this file, we need to reference "Organisation" only.
--- This constraint can be dropped at end of this script.
---
-CREATE TABLE metadata."Responsibility" (
-  "ID"    VARCHAR(15) NOT NULL PRIMARY KEY,
-  "role"  metadata."RoleCode",
-  "party" VARCHAR(15) REFERENCES metadata."Organisation" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT);
-
-
-
-CREATE TABLE metadata."Date" (
-  "ID"       VARCHAR(15) NOT NULL PRIMARY KEY,
-  "date"     TIMESTAMP,
-  "dateType" metadata."DateTypeCode");
-
-
-
-CREATE TABLE metadata."OnlineResource" (
-  "ID"       VARCHAR(15) NOT NULL PRIMARY KEY,
-  "linkage"  VARCHAR(120),
-  "function" metadata."OnLineFunctionCode");
-
-
-
-CREATE TABLE metadata."Citation" (
-  "ID"                    VARCHAR(15) NOT NULL PRIMARY KEY,
-  "title"                 VARCHAR(120),
-  "alternateTitle"        VARCHAR(120),
-  "date"                  VARCHAR(15) REFERENCES metadata."Date" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "edition"               VARCHAR(120),
-  "editionDate"           TIMESTAMP,
-  "identifier"            VARCHAR(15) REFERENCES metadata."Identifier"     ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "citedResponsibleParty" VARCHAR(15) REFERENCES metadata."Responsibility" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "presentationForm"      metadata."PresentationFormCode",
-  "onlineResource"        VARCHAR(15) REFERENCES metadata."OnlineResource" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT);
-
-ALTER TABLE metadata."Identifier" ADD CONSTRAINT fk_identifier_citation
-FOREIGN KEY ("authority") REFERENCES metadata."Citation" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT;
-
-
-
-CREATE TABLE metadata."Format" (
-  "ID"                          VARCHAR(15) NOT NULL PRIMARY KEY,
-  "formatSpecificationCitation" VARCHAR(15) REFERENCES metadata."Citation" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
-  "amendmentNumber"             VARCHAR(120),
-  "fileDecompressionTechnique"  VARCHAR(120));
 
 
 
@@ -131,6 +24,15 @@ CREATE TABLE metadata."Format" (
 -- All URLs referenced in this SQL file. Unless otherwise specified, the function of all those URLs
 -- is 'information'. URLs may appear in citations or in contact information of responsible parties.
 --
+CREATE TYPE metadata."OnLineFunctionCode" AS ENUM (
+  'download', 'information', 'offlineAccess', 'order', 'search', 'completeMetadata', 'browseGraphic',
+  'upload', 'emailService', 'browsing', 'fileAccess');
+
+CREATE TABLE metadata."OnlineResource" (
+  "ID"       VARCHAR(15) NOT NULL PRIMARY KEY,
+  "linkage"  VARCHAR(120),
+  "function" metadata."OnLineFunctionCode");
+
 INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('EPSG',    'http://www.epsg.org/'),
   ('ESRI',    'http://www.esri.com/'),
@@ -151,6 +53,40 @@ INSERT INTO metadata."OnlineResource" ("ID", "linkage") VALUES
   ('WMS',     'http://www.opengeospatial.org/standards/wms');
 
 UPDATE metadata."OnlineResource" SET "function" = 'information';
+
+
+
+--
+-- The "ID" and "name" columns in "Organisation" table are inherited from the "Party" parent table.
+-- But we nevertheless repeat those columns for databases that do not support table inheritance.
+-- On PostgreSQL, those duplicated declarations are merged in single columns.
+--
+CREATE TABLE metadata."Party" (
+  "ID"   VARCHAR(15) NOT NULL PRIMARY KEY,
+  "name" VARCHAR(120));
+
+CREATE TABLE metadata."Organisation" (
+  "ID"   VARCHAR(15) NOT NULL PRIMARY KEY,
+  "name" VARCHAR(120))
+INHERITS (metadata."Party");
+
+CREATE TYPE metadata."RoleCode" AS ENUM (
+  'resourceProvider', 'custodian', 'owner', 'user', 'distributor', 'originator', 'pointOfContact',
+  'principalInvestigator', 'processor', 'publisher', 'author', 'sponsor', 'coAuthor', 'collaborator',
+  'editor', 'mediator', 'rightsHolder', 'contributor', 'funder', 'stakeholder');
+
+
+
+--
+-- Foreigner key should reference the "Party" parent table, but it does not yet work on PostgreSQL
+-- (tested on 9.5.13). For the purpose of this file, we need to reference "Organisation" only.
+-- This constraint can be dropped at end of the installation scripts.
+--
+CREATE TABLE metadata."Responsibility" (
+  "ID"    VARCHAR(15) NOT NULL PRIMARY KEY,
+  "role"  metadata."RoleCode",
+  "party" VARCHAR(15) REFERENCES metadata."Organisation" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT);
+
 
 
 --
@@ -183,6 +119,52 @@ INSERT INTO metadata."Responsibility" ("ID", "party", "role") VALUES
   ('NATO',    '{org}NATO',   'principalInvestigator'),
   ('OGC',     '{org}OGC',    'principalInvestigator'),
   ('OSGeo',   '{org}OSGeo',  'resourceProvider');
+
+
+
+--
+-- Definition of the Citations and its dependencies.
+--
+CREATE TYPE metadata."DateTypeCode" AS ENUM (
+  'creation', 'publication', 'revision', 'expiry', 'lastUpdate', 'lastRevision', 'nextUpdate',
+  'unavailable', 'inForce', 'adopted', 'deprecated', 'superseded', 'validityBegins', 'validityExpires',
+  'released', 'distribution');
+
+CREATE TABLE metadata."Date" (
+  "ID"       VARCHAR(15) NOT NULL PRIMARY KEY,
+  "date"     TIMESTAMP,
+  "dateType" metadata."DateTypeCode");
+
+CREATE TYPE metadata."PresentationFormCode" AS ENUM (
+  'documentDigital', 'documentHardcopy',
+  'imageDigital',    'imageHardcopy',
+  'mapDigital',      'mapHardcopy',
+  'modelDigital',    'modelHardcopy',
+  'profileDigital',  'profileHardcopy',
+  'tableDigital',    'tableHardcopy',
+  'videoDigital',    'videoHardcopy');
+
+CREATE TABLE metadata."Identifier" (
+  "ID"        VARCHAR(15) NOT NULL PRIMARY KEY,
+  "authority" VARCHAR(15),
+  "code"      VARCHAR(120),
+  "codeSpace" VARCHAR(120),
+  "version"   VARCHAR(120));
+
+CREATE TABLE metadata."Citation" (
+  "ID"                    VARCHAR(15) NOT NULL PRIMARY KEY,
+  "title"                 VARCHAR(120),
+  "alternateTitle"        VARCHAR(120),
+  "date"                  VARCHAR(15) REFERENCES metadata."Date" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "edition"               VARCHAR(120),
+  "editionDate"           TIMESTAMP,
+  "identifier"            VARCHAR(15) REFERENCES metadata."Identifier"     ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "citedResponsibleParty" VARCHAR(15) REFERENCES metadata."Responsibility" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT,
+  "presentationForm"      metadata."PresentationFormCode",
+  "onlineResource"        VARCHAR(15) REFERENCES metadata."OnlineResource" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT);
+
+ALTER TABLE metadata."Identifier" ADD CONSTRAINT fk_identifier_citation
+FOREIGN KEY ("authority") REFERENCES metadata."Citation" ("ID") ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 
@@ -224,6 +206,8 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedRespon
   ('Proj4',      'Proj4', NULL,                 'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
   ('SIS',        'SIS',   NULL,                 'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
 
+
+
 --
 -- Citations for organizations. They should not be citations; they are "responsible parties" instead.
 -- But we have to declare some organizations as "citations" because this is the kind of object required
@@ -242,24 +226,3 @@ INSERT INTO metadata."Citation" ("ID", "onlineResource", "citedResponsibleParty"
   ('IOGP', 'IOGP',  'IOGP', 'documentDigital', 'IOGP Surveying and Positioning Guidance Note 7');
 
 UPDATE metadata."Citation" SET "identifier" = "ID" WHERE "ID"<>'ISBN' AND "ID"<>'ISSN' AND "ID"<>'MGRS';
-
-
-
---
--- File formats. Those entries are referenced by DataStore implementations.
---
-INSERT INTO metadata."Citation" ("ID", "alternateTitle", "title") VALUES
-  ('GeoTIFF', 'GeoTIFF', 'GeoTIFF Coverage Encoding Profile'),
-  ('NetCDF',  'NetCDF',  'NetCDF Classic and 64-bit Offset Format'),
-  ('PNG',     'PNG',     'PNG (Portable Network Graphics) Specification'),
-  ('CSV',     'CSV',     'Common Format and MIME Type for Comma-Separated Values (CSV) Files'),
-  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
-  ('GPX',     'GPX',     'GPS Exchange Format');
-
-INSERT INTO metadata."Format" ("ID", "formatSpecificationCitation") VALUES
-  ('GeoTIFF', 'GeoTIFF'),
-  ('NetCDF',  'NetCDF'),
-  ('PNG',     'PNG'),
-  ('CSV',     'CSV'),
-  ('CSV-MF',  'CSV-MF'),
-  ('GPX',     'GPX');

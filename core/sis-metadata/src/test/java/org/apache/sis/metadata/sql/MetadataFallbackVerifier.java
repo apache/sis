@@ -35,7 +35,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
- * Compares the {@link MetadataFallback} hard-coded values with the {@code Create.sql} content.
+ * Compares the {@link MetadataFallback} hard-coded values with the {@code Citations.sql} content.
  * This test is actually invoked by {@link MetadataSourceTest} in order to opportunistically use
  * the database created by the later (i.e. for avoiding to recreate the same database many times).
  *

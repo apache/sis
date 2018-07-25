@@ -97,7 +97,7 @@ final class MetadataFallback extends MetadataSource {
     /**
      * Returns the build-in citation for the given primary key, or {@code null}.
      * The content in this method should be consistent with the content provided
-     * in the {@code "Create.sql"} script (this is verified by JUnit tests).
+     * in the {@code "Citations.sql"} script (this is verified by JUnit tests).
      *
      * @param  key  the primary key of the desired citation.
      * @return the requested citation, or {@code null} if unknown.

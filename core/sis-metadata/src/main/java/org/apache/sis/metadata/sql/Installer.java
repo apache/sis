@@ -51,7 +51,7 @@ final class Installer extends ScriptRunner {
             enumTypes = null;
         } else {
             enumTypes = new String[] {
-                "RoleCode", "DateTypeCode", "PresentationFormCode", "OnLineFunctionCode"
+                "RoleCode", "DateTypeCode", "PresentationFormCode", "OnLineFunctionCode", "TransferFunctionTypeCode"
             };
             for (int i=0; i<enumTypes.length; i++) {
                 enumTypes[i] = "metadata.\"" + enumTypes[i] + '"';
@@ -60,10 +60,11 @@ final class Installer extends ScriptRunner {
     }
 
     /**
-     * Runs the installation script.
+     * Runs the installation scripts.
      */
     public void run() throws IOException, SQLException {
-        run(Installer.class, "Create.sql");
+        run(Installer.class, "Citations.sql");
+        run(Installer.class, "Contents.sql");
     }
 
     /**
