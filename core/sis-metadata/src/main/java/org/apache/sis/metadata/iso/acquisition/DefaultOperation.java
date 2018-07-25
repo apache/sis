@@ -204,7 +204,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -225,7 +225,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 
@@ -267,7 +267,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new status value.
      */
     public void setStatus(final Progress newValue) {
-        checkWritePermission();
+        checkWritePermission(status);
         status = newValue;
     }
 
@@ -288,7 +288,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new type value.
      */
     public void setType(final OperationType newValue) {
-        checkWritePermission();
+        checkWritePermission(type);
         type = newValue;
     }
 
@@ -349,7 +349,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new parent operation value.
      */
     public void setParentOperation(final Operation newValue) {
-        checkWritePermission();
+        checkWritePermission(parentOperation);
         parentOperation = newValue;
     }
 
@@ -370,7 +370,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new plan value.
      */
     public void setPlan(final Plan newValue) {
-        checkWritePermission();
+        checkWritePermission(plan);
         plan = newValue;
     }
 

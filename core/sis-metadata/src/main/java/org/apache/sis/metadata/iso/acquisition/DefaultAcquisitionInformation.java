@@ -212,7 +212,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param  newValue  the new environmental record value.
      */
     public void setEnvironmentalConditions(final EnvironmentalRecord newValue) {
-        checkWritePermission();
+        checkWritePermission(environmentalConditions);
         environmentalConditions = newValue;
     }
 

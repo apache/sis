@@ -142,7 +142,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @param  newValue  the new name value.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -163,7 +163,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -184,7 +184,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * @param  newValue  the new file type value.
      */
     public void setFileType(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(fileType);
         fileType = newValue;
     }
 }

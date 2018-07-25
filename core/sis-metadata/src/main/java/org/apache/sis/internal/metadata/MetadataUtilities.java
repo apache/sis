@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.Utilities;
  * Miscellaneous utility methods for metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  *
@@ -65,6 +65,28 @@ public final class MetadataUtilities extends Static {
      */
     public static Date toDate(final long value) {
         return (value != Long.MIN_VALUE) ? new Date(value) : null;
+    }
+
+    /**
+     * Returns {@link Boolean#TRUE} if the given value is a valid date, or {@code null} otherwise.
+     * This method is used for calls to {@code checkWritePermission(Object)}. The use of a boolean
+     * as return type is for avoiding to create new {@link Date} instances.
+     *
+     * @param  value  the time in milliseconds.
+     * @return {@code Boolean.TRUE} if the given value is a valid date.
+     */
+    public static Boolean isDateDefined(final long value) {
+        return (value != Long.MIN_VALUE) ? Boolean.TRUE : null;
+    }
+
+    /**
+     * Returns {@link Boolean#TRUE} if the given value is a valid double, or {@code null} if NaN.
+     *
+     * @param  value  the numeric value.
+     * @return {@code Boolean.TRUE} if the given value is non-NaN.
+     */
+    public static Boolean isDefined(final double value) {
+        return Double.isNaN(value) ? null : Boolean.TRUE;
     }
 
     /**

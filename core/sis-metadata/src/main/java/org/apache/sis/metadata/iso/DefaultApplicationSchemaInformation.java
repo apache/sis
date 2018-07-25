@@ -193,7 +193,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new name.
      */
     public void setName(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -214,7 +214,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new schema language.
      */
     public void setSchemaLanguage(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(schemaLanguage);
         schemaLanguage = newValue;
     }
 
@@ -235,7 +235,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new constraint language.
      */
     public void setConstraintLanguage(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(constraintLanguage);
         constraintLanguage = newValue;
     }
 
@@ -257,7 +257,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new ASCII file.
      */
     public void setSchemaAscii(final CharSequence newValue) {
-        checkWritePermission();
+        checkWritePermission(schemaAscii);
         schemaAscii = newValue;
     }
 
@@ -279,7 +279,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new graphics file.
      */
     public void setGraphicsFile(final OnlineResource newValue) {
-        checkWritePermission();
+        checkWritePermission(graphicsFile);
         graphicsFile = newValue;
     }
 
@@ -301,7 +301,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new software development file.
      */
     public void setSoftwareDevelopmentFile(final OnlineResource newValue) {
-        checkWritePermission();
+        checkWritePermission(softwareDevelopmentFile);
         softwareDevelopmentFile = newValue;
     }
 
@@ -322,7 +322,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata implements 
      * @param  newValue  the new software development file format.
      */
     public void setSoftwareDevelopmentFileFormat(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(softwareDevelopmentFileFormat);
         softwareDevelopmentFileFormat = newValue;
     }
 }

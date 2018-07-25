@@ -220,7 +220,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param  newValue  the new priority value.
      */
     public void setPriority(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(priority);
         priority = newValue;
     }
 

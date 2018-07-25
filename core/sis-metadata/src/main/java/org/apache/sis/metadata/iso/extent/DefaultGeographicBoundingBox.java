@@ -37,6 +37,7 @@ import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.xml.NilReason;
 
 import static java.lang.Double.doubleToLongBits;
+import static org.apache.sis.internal.metadata.MetadataUtilities.isDefined;
 
 
 /**
@@ -298,7 +299,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setWestBoundLongitude(double newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(westBoundLongitude));
         if (newValue != Longitude.MAX_VALUE) {                  // Do not normalize +180° to -180°.
             newValue = Longitude.normalize(newValue);
         }
@@ -331,7 +332,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setEastBoundLongitude(double newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(eastBoundLongitude));
         if (newValue != Longitude.MAX_VALUE) {                      // Do not normalize +180° to -180°.
             newValue = Longitude.normalize(newValue);
         }
@@ -363,7 +364,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setSouthBoundLatitude(final double newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(southBoundLatitude));
         southBoundLatitude = Latitude.clamp(newValue);
         if (southBoundLatitude > northBoundLatitude) {
             northBoundLatitude = Double.NaN;
@@ -395,7 +396,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *         or {@linkplain Double#NaN NaN} to undefine.
      */
     public void setNorthBoundLatitude(final double newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(northBoundLatitude));
         northBoundLatitude = Latitude.clamp(newValue);
         if (northBoundLatitude < southBoundLatitude) {
             southBoundLatitude = Double.NaN;
@@ -488,7 +489,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
                           final double northBoundLatitude)
             throws IllegalArgumentException
     {
-        checkWritePermission();
+        checkWritePermission(isNonEmpty());
         verifyBounds(southBoundLatitude, northBoundLatitude);
         this.westBoundLongitude = westBoundLongitude;
         this.eastBoundLongitude = eastBoundLongitude;
@@ -521,7 +522,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void setBounds(final Envelope envelope) throws TransformException {
         ArgumentChecks.ensureNonNull("envelope", envelope);
-        checkWritePermission();
+        checkWritePermission(isNonEmpty());
         ReferencingServices.getInstance().setBounds(envelope, this);
         setInclusion(Boolean.TRUE);                                     // Set only on success.
     }
@@ -648,7 +649,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @see org.apache.sis.geometry.GeneralEnvelope#add(Envelope)
      */
     public void add(final GeographicBoundingBox box) {
-        checkWritePermission();
+        checkWritePermission(isNonEmpty());
         ArgumentChecks.ensureNonNull("box", box);
         double λmin = box.getWestBoundLongitude();
         double λmax = box.getEastBoundLongitude();
@@ -706,7 +707,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      */
     public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
-        checkWritePermission();
+        checkWritePermission(isNonEmpty());
         ArgumentChecks.ensureNonNull("box", box);
         if (getInclusion(getInclusion()) != getInclusion(box.getInclusion())) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "inclusion"));
@@ -736,6 +737,18 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
+     * Returns an arbitrary non-null value if this bounding box is non-empty.
+     * The return value can be given to {@link #checkWritePermission(Object)}
+     * before to set the bounds of this geographic extent.
+     */
+    private Boolean isNonEmpty() {
+        return Double.isNaN(eastBoundLongitude) &&
+               Double.isNaN(westBoundLongitude) &&
+               Double.isNaN(northBoundLatitude) &&
+               Double.isNaN(southBoundLatitude) ? null : Boolean.TRUE;
+    }
+
+    /**
      * Returns {@code true} if this metadata is empty. This metadata is considered empty if
      * every bound values are {@linkplain Double#NaN NaN}. Note that this is different than
      * the <cite>Java2D</cite> or <cite>envelope</cite> definition of "emptiness", since we
@@ -748,10 +761,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     @Override
     public boolean isEmpty() {
-        return Double.isNaN(eastBoundLongitude) &&
-               Double.isNaN(westBoundLongitude) &&
-               Double.isNaN(northBoundLatitude) &&
-               Double.isNaN(southBoundLatitude);
+        return isNonEmpty() == null;
     }
 
     /**

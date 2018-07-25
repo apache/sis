@@ -179,8 +179,8 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @param  newValue  the new identifier of the resource.
      */
     public void setScopedName(final ScopedName newValue) {
-        checkWritePermission();
-        this.scopedName = newValue;
+        checkWritePermission(scopedName);
+        scopedName = newValue;
     }
 
     /**
@@ -241,8 +241,8 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * @param  newValue  the new service operation.
      */
     public void setOperation(final OperationMetadata newValue) {
-        checkWritePermission();
-        this.operation = newValue;
+        checkWritePermission(operation);
+        operation = newValue;
     }
 
 

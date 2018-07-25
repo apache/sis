@@ -204,7 +204,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @since 0.5
      */
     public void setFormatSpecificationCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         formatSpecificationCitation = newValue;
     }
 
@@ -262,7 +262,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Deprecated
     public void setSpecification(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) -> citation.setTitle(value), newValue);
     }
 
@@ -301,7 +301,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Deprecated
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) ->
                 citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value)), newValue);
     }
@@ -340,7 +340,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Deprecated
     public void setVersion(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) -> citation.setEdition(value), newValue);
     }
 
@@ -361,7 +361,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @param  newValue  the new amendment number.
      */
     public void setAmendmentNumber(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(amendmentNumber);
         amendmentNumber = newValue;
     }
 
@@ -385,7 +385,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @param  newValue  the new file decompression technique.
      */
     public void setFileDecompressionTechnique(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(fileDecompressionTechnique);
         fileDecompressionTechnique = newValue;
     }
 

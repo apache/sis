@@ -32,6 +32,7 @@ import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.MetadataUtilities.isDateDefined;
 
 
 /**
@@ -203,7 +204,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param  newValue  the new specific usage.
      */
     public void setSpecificUsage(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(specificUsage);
         specificUsage = newValue;
     }
 
@@ -224,7 +225,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param  newValue  the new usage date.
      */
     public void setUsageDate(final Date newValue)  {
-        checkWritePermission();
+        checkWritePermission(isDateDefined(usageDate));
         usageDate = toMilliseconds(newValue);
     }
 
@@ -245,8 +246,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param  newValue  the new user determined limitations.
      */
     public void setUserDeterminedLimitations(final InternationalString newValue) {
-        checkWritePermission();
-        this.userDeterminedLimitations = newValue;
+        checkWritePermission(userDeterminedLimitations);
+        userDeterminedLimitations = newValue;
     }
 
     /**

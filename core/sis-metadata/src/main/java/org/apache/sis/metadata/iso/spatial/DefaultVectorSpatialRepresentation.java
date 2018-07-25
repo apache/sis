@@ -132,7 +132,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      * @param  newValue  the new topology level.
      */
     public void setTopologyLevel(final TopologyLevel newValue) {
-        checkWritePermission();
+        checkWritePermission(topologyLevel);
         topologyLevel = newValue;
     }
 

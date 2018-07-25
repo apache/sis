@@ -27,6 +27,7 @@ import org.apache.sis.metadata.TitleProperty;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.MetadataUtilities.isDateDefined;
 
 
 /**
@@ -151,7 +152,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(isDateDefined(date));
         date = toMilliseconds(newValue);
     }
 
@@ -172,7 +173,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new event.
      */
     public void setDateType(final DateType newValue) {
-        checkWritePermission();
+        checkWritePermission(dateType);
         dateType = newValue;
     }
 }

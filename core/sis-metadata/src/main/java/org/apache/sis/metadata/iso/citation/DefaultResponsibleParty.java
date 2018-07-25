@@ -188,7 +188,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @return {@code true} if the name has been set, or {@code false} otherwise.
      */
     private boolean setName(final Class<? extends Party> type, final boolean position, final InternationalString name) {
-        checkWritePermission();
+        checkWritePermission(null);
         final Iterator<Party> it = getParties().iterator();
         while (it.hasNext()) {
             final Party party = it.next();
@@ -370,7 +370,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setContactInfo(final Contact newValue) {
-        checkWritePermission();
+        checkWritePermission(null);
         final Iterator<Party> it = getParties().iterator();
         while (it.hasNext()) {
             final Party party = it.next();

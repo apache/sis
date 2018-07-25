@@ -219,7 +219,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @param  newValue  the new value.
      */
     private void setProperty(final byte code, final Object newValue) {
-        checkWritePermission();
+        checkWritePermission(value);
         if (value != null && property != code) {
             if (newValue == null) {
                 return;                                     // Do not erase the other property.

@@ -206,7 +206,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * @since 1.0
      */
     protected void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(identifiers);
         identifiers = nonNullCollection(identifiers, Identifier.class);
         identifiers = writeCollection(NonMarshalledAuthority.setMarshallable(identifiers, newValue), identifiers, Identifier.class);
     }

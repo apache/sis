@@ -193,7 +193,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param  newValue  the new value type.
      */
     public void setValueType(final RecordType newValue) {
-        checkWritePermission();
+        checkWritePermission(valueType);
         valueType = newValue;
     }
 
@@ -214,7 +214,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param  newValue  the new value unit.
      */
     public void setValueUnit(final Unit<?> newValue) {
-        checkWritePermission();
+        checkWritePermission(valueUnit);
         valueUnit = newValue;
     }
 
@@ -237,7 +237,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param  newValue  the new error statistic.
      */
     public void setErrorStatistic(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(errorStatistic);
         errorStatistic = newValue;
     }
 }

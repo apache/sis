@@ -295,7 +295,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param  newValue  the new dataset.
      */
     public void setDataset(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(value);
         if (newValue != null || property == DATASET) {
             warningOnOverwrite(DATASET);
             property = DATASET;
@@ -461,7 +461,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValue Other class of information.
      */
     public void setOther(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(value);
         if (newValue != null || property == OTHER) {
             warningOnOverwrite(OTHER);
             property = OTHER;

@@ -158,7 +158,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * @param  newValue  the new administrative area.
      */
     public void setAdministrativeArea(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(administrativeArea);
         administrativeArea = newValue;
     }
 
@@ -179,7 +179,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * @param  newValue  the new city, or {@code null} if none.
      */
     public void setCity(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(city);
         city = newValue;
     }
 
@@ -200,7 +200,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * @param  newValue  the new country, or {@code null} if none.
      */
     public void setCountry(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(country);
         country = newValue;
     }
 
@@ -261,7 +261,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * @param  newValue  the new postal code, or {@code null} if none.
      */
     public void setPostalCode(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(postalCode);
         postalCode = newValue;
     }
 }

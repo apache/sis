@@ -135,8 +135,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata implements 
      * @param  newValue  the new extension online resource.
      */
     public void setExtensionOnLineResource(final OnlineResource newValue) {
-        checkWritePermission();
-        this.extensionOnLineResource = newValue;
+        checkWritePermission(extensionOnLineResource);
+        extensionOnLineResource = newValue;
     }
 
     /**

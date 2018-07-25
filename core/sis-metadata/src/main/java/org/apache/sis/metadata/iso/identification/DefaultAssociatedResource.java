@@ -172,7 +172,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @param  newValue  the new citation information, or {@code null}.
      */
     public void setName(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -194,7 +194,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @param  newValue  the new type of relation.
      */
     public void setAssociationType(final AssociationType newValue) {
-        checkWritePermission();
+        checkWritePermission(associationType);
         associationType = newValue;
     }
 
@@ -216,7 +216,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @param  newValue  the new type of initiative.
      */
     public void setInitiativeType(final InitiativeType newValue) {
-        checkWritePermission();
+        checkWritePermission(initiativeType);
         initiativeType = newValue;
     }
 
@@ -238,7 +238,7 @@ public class DefaultAssociatedResource extends ISOMetadata implements Associated
      * @param  newValue  the new reference to the metadata.
      */
     public void setMetadataReference(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(metadataReference);
         metadataReference = newValue;
     }
 }

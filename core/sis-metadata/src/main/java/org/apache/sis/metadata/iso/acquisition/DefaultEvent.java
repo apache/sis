@@ -206,7 +206,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param  newValue  the new trigger value.
      */
     public void setTrigger(final Trigger newValue) {
-        checkWritePermission();
+        checkWritePermission(trigger);
         trigger = newValue;
     }
 
@@ -227,7 +227,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param  newValue  the new context value.
      */
     public void setContext(final Context newValue) {
-        checkWritePermission();
+        checkWritePermission(context);
         context = newValue;
     }
 
@@ -248,7 +248,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param  newValue  the new sequence value.
      */
     public void setSequence(final Sequence newValue) {
-        checkWritePermission();
+        checkWritePermission(sequence);
         sequence = newValue;
     }
 
@@ -269,7 +269,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param  newValue  the new time value.
      */
     public void setTime(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(time);
         time = toMilliseconds(newValue);
     }
 

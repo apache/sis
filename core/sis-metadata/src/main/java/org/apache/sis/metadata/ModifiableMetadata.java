@@ -98,9 +98,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private static final byte EDITABLE = 0;
 
     /**
-     * A bitmask for {@link #state} meaning that {@code apply(State.FINAL)} has been invoked.
+     * The {@link #state} value meaning that missing properties can be set,
+     * but no existing properties can be modified (including collections).
      */
-    private static final byte FINAL = 1;
+    private static final byte COMPLETABLE = 1;
 
     /**
      * See https://issues.apache.org/jira/browse/SIS-81 - not yet committed.
@@ -109,8 +110,15 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
 
     /**
      * A value for {@link #state} meaning that execution of {@code apply(State.FINAL)} is in progress.
+     * Must be greater than all other values except {@link #FINAL}.
      */
-    private static final byte FREEZING = FINAL | STAGED;
+    private static final byte FREEZING = 3;
+
+    /**
+     * A value for {@link #state} meaning that {@code apply(State.FINAL)} has been invoked.
+     * Must be greater than all other values.
+     */
+    private static final byte FINAL = 4;
 
     /**
      * Whether this metadata has been made unmodifiable, as one of {@link #EDITABLE}, {@link #FREEZING}
@@ -163,6 +171,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         EDITABLE,
 
         /**
+         * The metadata allows missing values to be set, but does not allow existing values to be modified.
+         * This state is not appendable, i.e. it does not allow adding elements in a collection.
+         */
+        COMPLETABLE,
+
+        /**
          * The metadata is unmodifiable.
          * When a metadata is final, it can not be moved back to an editable state
          * (but it is still possible to create a modifiable copy with {@link MetadataCopier}).
@@ -176,12 +190,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
          * A mapping exists because {@code ModifiableMetadata} does not use the same set of enumeration values
          * (e.g. it has an internal {@link #FREEZING} value), and because future versions may use a bitmask.
          */
-        private static final State[] VALUES = new State[ModifiableMetadata.FREEZING + 1];
+        private static final State[] VALUES = new State[ModifiableMetadata.FINAL + 1];
         static {
-            VALUES[ModifiableMetadata.EDITABLE] = EDITABLE;
-            VALUES[ModifiableMetadata.STAGED]   = EDITABLE;
-            VALUES[ModifiableMetadata.FREEZING] = FINAL;
-            VALUES[ModifiableMetadata.FINAL]    = FINAL;
+            VALUES[ModifiableMetadata.EDITABLE]    = EDITABLE;
+            VALUES[ModifiableMetadata.COMPLETABLE] = COMPLETABLE;
+            VALUES[ModifiableMetadata.STAGED]      = EDITABLE;
+            VALUES[ModifiableMetadata.FREEZING]    = FINAL;
+            VALUES[ModifiableMetadata.FINAL]       = FINAL;
         }
     }
 
@@ -246,11 +261,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     public boolean transition(final State target) {
         switch (target) {
             case EDITABLE: {
-                if ((state & FINAL) == 0) break;
+                if (state == EDITABLE) break;
                 throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
             }
             case FINAL: {
-                if ((state & FINAL) != 0) break;
+                if (state >= FREEZING) break;
                 byte result = state;
                 try {
                     state = FREEZING;
@@ -279,7 +294,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     @Deprecated
     public final boolean isModifiable() {
-        return (state & FINAL) == 0;
+        return state < FREEZING;
     }
 
     /**
@@ -317,7 +332,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     @Deprecated
     public AbstractMetadata unmodifiable() {
-        if ((state & FINAL) != 0) {
+        if (!isModifiable()) {
             unmodifiable = this;
         }
         /*
@@ -358,13 +373,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
-     * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
-     * shall invoke this method (directly or indirectly) before to apply any change.
+     * @deprecated Replaced by {@link #checkWritePermission(Object)}.
      *
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
-     *
-     * @see #state()
      */
+    @Deprecated
     protected void checkWritePermission() throws UnmodifiableMetadataException {
         if (state == FINAL) {
             throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
@@ -374,11 +387,29 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
+     * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
+     * shall invoke this method (directly or indirectly) before to apply any change.
+     * The current property value should be specified in argument.
+     *
+     * @param  current  the current value, or {@code null} if none.
+     * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
+     *
+     * @see #state()
+     */
+    protected void checkWritePermission(final Object current) throws UnmodifiableMetadataException {
+        if (state != COMPLETABLE) {
+            checkWritePermission();
+        } else if (current != null) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        }
+    }
+
+    /**
      * Writes the content of the {@code source} collection into the {@code target} list,
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link List}.</li>
@@ -405,7 +436,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             if (state == FREEZING) {
                 return (List<E>) source;
             }
-            checkWritePermission();
+            checkWritePermission(target);
             if (isNullOrEmpty(source)) {
                 target = null;
             } else {
@@ -425,7 +456,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set}.</li>
@@ -452,7 +483,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             if (state == FREEZING) {
                 return (Set<E>) source;
             }
-            checkWritePermission();
+            checkWritePermission(target);
             if (isNullOrEmpty(source)) {
                 target = null;
             } else {
@@ -472,7 +503,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
@@ -515,7 +546,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;
             }
-            checkWritePermission();
+            checkWritePermission(target);
             if (isNullOrEmpty(source)) {
                 target = null;
             } else {
@@ -658,7 +689,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (emptyCollectionAsNull()) {
             return null;
         }
-        if ((state & FINAL) == 0) {
+        if (state < FREEZING) {
             /*
              * Do not specify an initial capacity, because the list will stay empty in a majority of cases
              * (i.e. the users will want to iterate over the list elements more often than they will want
@@ -687,7 +718,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (emptyCollectionAsNull()) {
             return null;
         }
-        if ((state & FINAL) == 0) {
+        if (state < FREEZING) {
             return createSet(elementType, INITIAL_CAPACITY);
         }
         return Collections.emptySet();
@@ -717,7 +748,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (emptyCollectionAsNull()) {
             return null;
         }
-        final boolean isModifiable = (state & FINAL) == 0;
+        final boolean isModifiable = (state < FREEZING);
         if (useSet(elementType)) {
             if (isModifiable) {
                 return createSet(elementType, INITIAL_CAPACITY);

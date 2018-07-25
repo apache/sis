@@ -430,7 +430,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValue  the new measure identification.
      */
     public void setMeasureIdentification(final Identifier newValue)  {
-        checkWritePermission();
+        checkWritePermission(measureIdentification);
         measureIdentification = newValue;
     }
 
@@ -453,7 +453,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValue  the new measure description.
      */
     public void setMeasureDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(measureDescription);
         measureDescription = newValue;
     }
 
@@ -476,7 +476,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValue  the new evaluation method type.
      */
     public void setEvaluationMethodType(final EvaluationMethodType newValue)  {
-        checkWritePermission();
+        checkWritePermission(evaluationMethodType);
         evaluationMethodType = newValue;
     }
 
@@ -499,7 +499,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValue  the new evaluation method description.
      */
     public void setEvaluationMethodDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(evaluationMethodDescription);
         evaluationMethodDescription = newValue;
     }
 
@@ -522,7 +522,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValue  the new evaluation procedure.
      */
     public void setEvaluationProcedure(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(evaluationProcedure);
         evaluationProcedure = newValue;
     }
 
@@ -553,7 +553,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValues  the new dates, or {@code null}.
      */
     public void setDates(final Collection<? extends Date> newValues) {
-        checkWritePermission();
+        checkWritePermission(dates);
         if (newValues != dates) {               // Mandatory check for avoiding the call to 'dates.clear()'.
             writeDates(newValues);
         }

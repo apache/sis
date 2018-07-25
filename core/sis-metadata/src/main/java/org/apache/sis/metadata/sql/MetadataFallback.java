@@ -183,11 +183,15 @@ final class MetadataFallback extends MetadataSource {
                 break;
             }
             case Constants.PROJ4: {
-                title = "Proj";
+                title     = "Proj";
+                code      = "Proj4";
+                codeSpace = "OSGeo";
                 break;
             }
             case "IHO S-57": {
-                title = "S-57";
+                title = code     = "S-57";
+                codeSpace        = "IHO";
+                version          = "3.1";
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }

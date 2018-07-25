@@ -42,6 +42,7 @@ import org.apache.sis.xml.IdentifierMap;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+import static org.apache.sis.internal.metadata.MetadataUtilities.isDateDefined;
 
 
 /**
@@ -264,7 +265,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new title, or {@code null} if none.
      */
     public void setTitle(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(title);
         title = newValue;
     }
 
@@ -327,7 +328,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new edition, or {@code null} if none.
      */
     public void setEdition(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(edition);
         edition = newValue;
     }
 
@@ -348,7 +349,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new edition date, or {@code null} if none.
      */
     public void setEditionDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(isDateDefined(editionDate));
         editionDate = toMilliseconds(newValue);
     }
 
@@ -456,7 +457,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new series.
      */
     public void setSeries(final Series newValue) {
-        checkWritePermission();
+        checkWritePermission(series);
         series = newValue;
     }
 
@@ -504,8 +505,15 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Deprecated
     public void setCollectiveTitle(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(collectiveTitle);
         collectiveTitle = newValue;
+    }
+
+    /**
+     * Returns the ISBN or ISSN identifier for the given authority, or {@code null} if none.
+     */
+    private String getIdentifier(final Citation authority) {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(authority);
     }
 
     /**
@@ -524,7 +532,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISBN")
     public String getISBN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(Citations.ISBN);
+        return getIdentifier(Citations.ISBN);
     }
 
     /**
@@ -541,7 +549,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see Citations#ISBN
      */
     public void setISBN(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(getIdentifier(Citations.ISBN));
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
         }
@@ -563,7 +571,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISSN")
     public String getISSN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(Citations.ISSN);
+        return getIdentifier(Citations.ISSN);
     }
 
     /**
@@ -580,7 +588,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see Citations#ISSN
      */
     public void setISSN(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(getIdentifier(Citations.ISSN));
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
         }

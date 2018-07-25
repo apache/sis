@@ -175,7 +175,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param  newValue  the new compliance value.
      */
     public void setCompliant(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(compliant);
         compliant = newValue;
     }
 
@@ -216,7 +216,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param  newValue  {@code true} if the feature catalogue is included.
      */
     public void setIncludedWithDataset(final boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(includedWithDataset ? Boolean.TRUE : null);
         includedWithDataset = newValue;
     }
 
@@ -288,7 +288,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Deprecated
     public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
-        checkWritePermission();
+        checkWritePermission(featureTypes);
         ((LegacyPropertyAdapter<GenericName,?>) getFeatureTypes()).setValues(newValues);
     }
 

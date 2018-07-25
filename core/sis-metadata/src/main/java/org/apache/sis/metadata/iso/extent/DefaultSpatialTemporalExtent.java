@@ -181,7 +181,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * @since 0.5
      */
     public void setVerticalExtent(final VerticalExtent newValue) {
-        checkWritePermission();
+        checkWritePermission(verticalExtent);
         verticalExtent = newValue;
     }
 
@@ -221,7 +221,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      */
     @Override
     public void setBounds(final Envelope envelope) throws TransformException {
-        checkWritePermission();
+        checkWritePermission(spatialExtent);
         ReferencingServices.getInstance().setBounds(envelope, this);
     }
 }

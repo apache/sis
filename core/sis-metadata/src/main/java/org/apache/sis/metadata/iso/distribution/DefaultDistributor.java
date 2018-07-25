@@ -169,7 +169,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * @param  newValue  the new distributor contact.
      */
     public void setDistributorContact(final Responsibility newValue) {
-        checkWritePermission();
+        checkWritePermission(distributorContact);
         distributorContact = newValue;
     }
 
