@@ -38,10 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
- *
- * @since 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})

@@ -44,7 +44,6 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * @see PropertyType
  * @see <a href="ObjectIdentification.html">ObjectIdentification</a>
  * @see <a href="http://schemas.opengis.net/iso/19139/20070417/gco/gcoBase.xsd">OGC schema</a>
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
  *
  * @since 0.3
  * @module

@@ -71,7 +71,6 @@ import javax.xml.bind.annotation.XmlElement;
  * @version 1.0
  *
  * @see LocalisedCharacterString
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
  *
  * @since 0.3
  * @module

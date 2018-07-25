@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
 public final strictfp class DefaultCitationDateTest extends TestCase {
     /**
      * Tests the copy constructor.
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-170">GEOTK-170</a>
      */
     @Test
     public void testCopyConstructor() {
