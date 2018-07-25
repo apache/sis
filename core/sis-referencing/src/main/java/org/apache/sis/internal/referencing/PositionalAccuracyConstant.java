@@ -108,12 +108,11 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
             final InternationalString evaluationMethodDescription, final boolean pass)
     {
         DefaultConformanceResult result = new DefaultConformanceResult(Citations.SIS, evaluationMethodDescription, pass);
-        result.freeze();
         setResults(Collections.singleton(result));
         setMeasureDescription(measureDescription);
         setEvaluationMethodDescription(evaluationMethodDescription);
         setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
-        freeze();
+        transition(State.FINAL);
     }
 
     /**

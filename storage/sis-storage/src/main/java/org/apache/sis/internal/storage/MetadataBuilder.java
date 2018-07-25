@@ -2876,7 +2876,7 @@ parse:      for (int i = 0; i < length;) {
         final DefaultMetadata md = metadata;
         metadata = null;
         if (freeze && md != null) {
-            md.apply(DefaultMetadata.State.FINAL);
+            md.transition(DefaultMetadata.State.FINAL);
         }
         return md;
     }

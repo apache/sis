@@ -79,8 +79,8 @@ import org.apache.sis.util.ArgumentChecks;
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
- * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()
- * DefaultCitation.freeze()} before passing the arguments to the constructor.
+ * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transition
+ * DefaultCitation.transition(DefaultCitation.State.FINAL)} before passing the arguments to the constructor.
  * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
  * any public {@code NamedIdentifier} state.
  *

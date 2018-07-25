@@ -319,8 +319,8 @@ class PropertyAccessor {
                  * be a parent type.
                  *
                  * It is a necessary condition that the type returned by the getter is assignable
-                 * to the type expected by the setter.  This contract is required by the 'freeze'
-                 * method among others.
+                 * to the type expected by the setter.  This contract is required by the 'FINAL'
+                 * state among others.
                  */
                 try {
                     getter = implementation.getMethod(getter.getName(), (Class<?>[]) null);

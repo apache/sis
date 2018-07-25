@@ -142,7 +142,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Whether the metadata is still editable or has been made final.
      * New {@link ModifiableMetadata} instances are initially {@link #EDITABLE}
-     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#apply(State)}.
+     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transition(State)}.
      *
      * <div class="note"><b>Note:</b>
      * more states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
@@ -188,7 +188,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Tells whether this instance of metadata is editable.
      * This is initially {@link State#EDITABLE} for new {@code ModifiableMetadata} instances,
-     * but can be changed by a call to {@link #apply(State)}.
+     * but can be changed by a call to {@link #transition(State)}.
      *
      * <p>{@link State#FINAL} implies that all properties are also final.
      * This recursivity does not necessarily apply to other states. For example {@link State#EDITABLE}
@@ -209,9 +209,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
-     * Applies a state transition on this metadata instance and (potentially) all its children.
-     * The action performed by this method depends on the {@linkplain #state() current state},
-     * as listed in the following table:
+     * Requests this metadata instance and (potentially) all its children to transition to a new state.
+     * The action performed by this method depends on the {@linkplain #state() source state} and the
+     * given target state, as listed in the following table:
      *
      * <table class="sis">
      *   <caption>State transitions</caption>
@@ -243,7 +243,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @since 1.0
      */
-    public boolean apply(final State target) {
+    public boolean transition(final State target) {
         switch (target) {
             case EDITABLE: {
                 if ((state & FINAL) == 0) break;
@@ -354,7 +354,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     @Deprecated
     public void freeze() {
-        apply(State.FINAL);
+        transition(State.FINAL);
     }
 
     /**

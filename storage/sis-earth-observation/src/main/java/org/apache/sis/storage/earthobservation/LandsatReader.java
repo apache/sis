@@ -980,7 +980,7 @@ final class LandsatReader {
                 }
             }
             result.setMetadataStandards(Citations.ISO_19115);
-            result.apply(DefaultMetadata.State.FINAL);
+            result.transition(DefaultMetadata.State.FINAL);
         }
         return result;
     }

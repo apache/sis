@@ -486,7 +486,7 @@ addURIs:    for (int i=0; ; i++) {
         } catch (SQLException exception) {
             unexpectedException("getAuthority", exception);
         } finally {
-            c.apply(DefaultCitation.State.FINAL);
+            c.transition(DefaultCitation.State.FINAL);
         }
         return c;
     }
@@ -2049,7 +2049,7 @@ addURIs:    for (int i=0; ; i++) {
                 }
                 if (description != null || bbox != null) {
                     DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
-                    extent.freeze();
+                    extent.transition(DefaultExtent.State.FINAL);
                     returnValue = ensureSingleton(extent, returnValue, code);
                 }
             }

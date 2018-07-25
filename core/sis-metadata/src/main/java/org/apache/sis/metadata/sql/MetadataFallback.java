@@ -210,7 +210,7 @@ final class MetadataFallback extends MetadataSource {
         if (copyFrom != null) {
             c.setCitedResponsibleParties(createCitation(copyFrom).getCitedResponsibleParties());
         }
-        c.apply(DefaultCitation.State.FINAL);
+        c.transition(DefaultCitation.State.FINAL);
         return c;
     }
 

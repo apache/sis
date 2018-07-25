@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 
 /**
- * Invokes {@link ModifiableMetadata#apply(ModifiableMetadata.State)} recursively on metadata elements.
+ * Invokes {@link ModifiableMetadata#transition(ModifiableMetadata.State)} recursively on metadata elements.
  *
  * As of Apache SIS 1.0, this class is used only for {@link ModifiableMetadata.State#FINAL}.
  * But a future version may use this object for other states too.
@@ -122,7 +122,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
      *
      * <ul>
      *   <li>If the specified object is an instance of {@code ModifiableMetadata}, then
-     *       {@link ModifiableMetadata#apply(ModifiableMetadata.State)} is invoked on that object.</li>
+     *       {@link ModifiableMetadata#transition(ModifiableMetadata.State)} is invoked on that object.</li>
      *   <li>Otherwise, if the object is a {@linkplain Collection collection}, then the
      *       content is copied into a new collection of similar type, with values replaced
      *       by their unmodifiable variant.</li>
@@ -140,7 +140,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
          *          It may have its own algorithm for changing its state.
          */
         if (object instanceof ModifiableMetadata) {
-            ((ModifiableMetadata) object).apply(target);
+            ((ModifiableMetadata) object).transition(target);
             return object;
         }
         if (target != ModifiableMetadata.State.FINAL) {

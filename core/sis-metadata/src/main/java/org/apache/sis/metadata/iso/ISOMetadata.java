@@ -219,9 +219,9 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@inheritDoc}
      */
     @Override
-    public boolean apply(final State target) {
+    public boolean transition(final State target) {
         final Collection<Identifier> p = identifiers;
-        final boolean changed = super.apply(target);
+        final boolean changed = super.transition(target);
         if (changed) {
             /*
              * The 'identifiers' collection will have been replaced by an unmodifiable collection if
