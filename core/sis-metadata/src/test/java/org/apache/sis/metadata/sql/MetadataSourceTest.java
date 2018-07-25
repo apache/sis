@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Collection;
 import java.util.Collections;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
@@ -51,15 +52,8 @@ public final strictfp class MetadataSourceTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws Exception {
-        try (TestDatabase db = TestDatabase.create("MetadataSource");
-             MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null))
-        {
-            source.install();
-            verifyFormats(source);
-            testSearch(source);
-
-            // Opportunistic verification using the database we have at hand.
-            MetadataFallbackVerifier.compare(source);
+        try (TestDatabase db = TestDatabase.create("MetadataSource")) {
+            testAll(db);
         }
     }
 
@@ -70,12 +64,23 @@ public final strictfp class MetadataSourceTest extends TestCase {
      */
     @Test
     public void testOnPostgreSQL() throws Exception {
-        try (TestDatabase db = TestDatabase.createOnPostgreSQL("metadata", false);
-             MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null))
-        {
+        try (TestDatabase db = TestDatabase.createOnPostgreSQL("metadata", false)) {
+            testAll(db);
+        }
+    }
+
+    /**
+     * Runs all public tests declared in this class.
+     * Also opportunistically run tests declared in {@link MetadataFallbackVerifier}.
+     */
+    private static void testAll(final TestDatabase db) throws Exception {
+        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null)) {
             source.install();
             verifyFormats(source);
             testSearch(source);
+            testEmptyCollection(source);
+
+            // Opportunistic verification using the database we have at hand.
             MetadataFallbackVerifier.compare(source);
         }
     }
@@ -126,5 +131,20 @@ public final strictfp class MetadataSourceTest extends TestCase {
         assertEquals("PNG", source.search(format));
         specification.setTitle(null);
         assertNull(source.search(format));
+    }
+
+    /**
+     * Verifies that empty collections are empty, not-null.
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void testEmptyCollection(final MetadataSource source) throws MetadataStoreException {
+        final Citation c = source.lookup(Citation.class, "SIS");
+        final Collection<?> details = c.getOtherCitationDetails();
+        assertNotNull("Empty collection should not be null.", details);
+        assertTrue("Expected an empty collection.", details.isEmpty());
+        assertSame("Collection shall be unmodifiable.", Collections.EMPTY_LIST, details);
     }
 }

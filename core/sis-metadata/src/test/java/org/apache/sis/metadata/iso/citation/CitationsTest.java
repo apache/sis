@@ -29,6 +29,7 @@ import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -45,6 +46,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.6
  * @module
  */
+@DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
 public final strictfp class CitationsTest extends TestCase {
     /**
      * Verifies that {@link Citations#values()} is complete by comparing with the list
