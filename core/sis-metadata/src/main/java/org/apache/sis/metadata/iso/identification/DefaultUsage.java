@@ -32,7 +32,6 @@ import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
-import static org.apache.sis.internal.metadata.MetadataUtilities.isDateDefined;
 
 
 /**
@@ -225,7 +224,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param  newValue  the new usage date.
      */
     public void setUsageDate(final Date newValue)  {
-        checkWritePermission(isDateDefined(usageDate));
+        checkWritePermission(toDate(usageDate));
         usageDate = toMilliseconds(newValue);
     }
 

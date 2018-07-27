@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
@@ -248,6 +249,21 @@ public final strictfp class CitationsTest extends TestCase {
     }
 
     /**
+     * Verifies that citation constants are unmodifiable.
+     */
+    @Test
+    public void ensureUnmodifiable() {
+        final Collection<? extends Identifier> identifiers = Citations.EPSG.getIdentifiers();
+        assertNotNull(identifiers);
+        try {
+            identifiers.add(null);
+            fail("Pre-defined metadata shall be unmodifiable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+        }
+    }
+
+    /**
      * Test serialization.
      *
      * @throws IllegalAccessException should never happen since we asked only for public fields.
@@ -255,7 +271,7 @@ public final strictfp class CitationsTest extends TestCase {
     @Test
     @DependsOnMethod("testFromName")
     public void testSerialization() throws IllegalAccessException {
-        for (final Field field : Citations.class.getFields()) {
+        for (final Field field : Citations.class.getDeclaredFields()) {
             if (CitationConstant.class.isAssignableFrom(field.getType())) {
                 final Object c = field.get(null);
                 assertSame(field.getName(), c, assertSerializedEquals(c));

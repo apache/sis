@@ -194,7 +194,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      */
     @Deprecated
     public void setAggregateDataSetIdentifier(final Identifier newValue) {
-        checkWritePermission(null);
+        checkWritePermission(super.getName());
         Citation name = getAggregateDataSetName();
         if (newValue != null) {
             if (!(name instanceof DefaultCitation)) {

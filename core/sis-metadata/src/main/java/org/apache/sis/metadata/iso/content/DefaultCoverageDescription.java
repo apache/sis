@@ -37,6 +37,8 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Information about the content of a grid data cell.
@@ -276,7 +278,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Deprecated
     public void setContentType(final CoverageContentType newValue) {
-        checkWritePermission(attributeGroups);
+        checkWritePermission(valueIfDefined(attributeGroups));
         final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
         Collection<AttributeGroup> groups = attributeGroups;
         if (groups != null) {
@@ -346,7 +348,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Deprecated
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {
-        checkWritePermission(attributeGroups);
+        checkWritePermission(valueIfDefined(attributeGroups));
         ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
 

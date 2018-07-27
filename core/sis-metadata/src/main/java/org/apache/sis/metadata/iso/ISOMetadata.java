@@ -16,7 +16,10 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.Set;
+import java.util.List;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -39,6 +42,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.Containers;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -206,7 +210,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * @since 1.0
      */
     protected void setIdentifier(final Identifier newValue) {
-        checkWritePermission(identifiers);
+        checkWritePermission(valueIfDefined(identifiers));
         identifiers = nonNullCollection(identifiers, Identifier.class);
         identifiers = writeCollection(NonMarshalledAuthority.setMarshallable(identifiers, newValue), identifiers, Identifier.class);
     }
@@ -228,8 +232,14 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
              * subclass has an "identifiers" property. If this is not the case, then the collection
              * is unchanged (or null) so we have to make it unmodifiable here.
              */
-            if (p == identifiers) {
-                identifiers = CollectionsExt.unmodifiableOrCopy(p);                     // Null safe.
+            if (p != null && p == identifiers) {
+                if (p instanceof Set<?>) {
+                    identifiers = CollectionsExt.unmodifiableOrCopy((Set<Identifier>) p);
+                } else if (p instanceof List<?>) {
+                    identifiers = CollectionsExt.unmodifiableOrCopy((List<Identifier>) p);
+                } else {
+                    identifiers = Collections.unmodifiableCollection(p);
+                }
             }
         }
         return changed;

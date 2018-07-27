@@ -143,9 +143,6 @@ final class StateChanger extends MetadataVisitor<Boolean> {
             ((ModifiableMetadata) object).transition(target);
             return object;
         }
-        if (target != ModifiableMetadata.State.FINAL) {
-            return object;
-        }
         if (object instanceof DefaultRepresentativeFraction) {
             ((DefaultRepresentativeFraction) object).freeze();
             return object;

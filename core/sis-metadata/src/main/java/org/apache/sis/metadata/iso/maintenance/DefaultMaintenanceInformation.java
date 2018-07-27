@@ -40,6 +40,8 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Information about the scope and frequency of updating.
@@ -262,7 +264,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setDateOfNextUpdate(final Date newValue) {
-        checkWritePermission(maintenanceDates);
+        checkWritePermission(valueIfDefined(maintenanceDates));
         Collection<CitationDate> dates = maintenanceDates;
         if (dates != null) {
             final Iterator<CitationDate> it = dates.iterator();
@@ -383,7 +385,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission(maintenanceScopes);
+        checkWritePermission(valueIfDefined(maintenanceScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
 
@@ -438,7 +440,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
-        checkWritePermission(maintenanceScopes);
+        checkWritePermission(valueIfDefined(maintenanceScopes));
         ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }
 

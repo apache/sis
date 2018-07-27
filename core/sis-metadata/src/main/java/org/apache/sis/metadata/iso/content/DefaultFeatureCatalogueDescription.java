@@ -32,6 +32,8 @@ import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Information identifying the feature catalogue or the conceptual schema.
@@ -288,7 +290,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Deprecated
     public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
-        checkWritePermission(featureTypes);
+        checkWritePermission(valueIfDefined(featureTypes));
         ((LegacyPropertyAdapter<GenericName,?>) getFeatureTypes()).setValues(newValues);
     }
 

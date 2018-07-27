@@ -32,7 +32,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
-import static org.apache.sis.internal.metadata.MetadataUtilities.isDateDefined;
 
 
 /**
@@ -318,7 +317,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param  newValue  the new expiry date.
      */
     public void setExpiryDate(final Date newValue) {
-        checkWritePermission(isDateDefined(expiryDate));
+        checkWritePermission(toDate(expiryDate));
         expiryDate = toMilliseconds(newValue);
     }
 

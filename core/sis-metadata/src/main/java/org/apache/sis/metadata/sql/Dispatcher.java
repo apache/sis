@@ -25,6 +25,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
@@ -54,7 +55,7 @@ import org.apache.sis.internal.metadata.Dependencies;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -230,11 +231,15 @@ final class Dispatcher implements InvocationHandler {
                             if (impl == null) {
                                 return value;
                             }
-                            this.cache = cache = impl.newInstance();
+                            cache = impl.newInstance();
+                            if (cache instanceof ModifiableMetadata) {
+                                ((ModifiableMetadata) cache).transition(ModifiableMetadata.State.COMPLETABLE);
+                            }
                             /*
                              * We do not use AtomicReference because it is okay if the cache is instantiated twice.
                              * It would cause us to query the database twice, but we should get the same information.
                              */
+                            this.cache = cache;
                         }
                         final Map<String, Object> map = source.standard.asValueMap(cache, type,
                                     KeyNamePolicy.METHOD_NAME, ValueExistencePolicy.ALL);

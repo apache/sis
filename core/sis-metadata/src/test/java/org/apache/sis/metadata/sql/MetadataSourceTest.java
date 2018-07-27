@@ -18,6 +18,7 @@ package org.apache.sis.metadata.sql;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
@@ -79,6 +80,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
             verifyFormats(source);
             testSearch(source);
             testEmptyCollection(source);
+            ensureReadOnly(source);
 
             // Opportunistic verification using the database we have at hand.
             MetadataFallbackVerifier.compare(source);
@@ -146,5 +148,26 @@ public final strictfp class MetadataSourceTest extends TestCase {
         assertNotNull("Empty collection should not be null.", details);
         assertTrue("Expected an empty collection.", details.isEmpty());
         assertSame("Collection shall be unmodifiable.", Collections.EMPTY_LIST, details);
+    }
+
+    /**
+     * Verifies that instances created by {@link MetadataSource} are read-only.
+     * In particular, it should not be possible to add elements in the collection.
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void ensureReadOnly(final MetadataSource source) throws MetadataStoreException {
+        final Citation c = source.lookup(Citation.class, "SIS");
+        @SuppressWarnings("unchecked")                                  // Cheat or the purpose of this test.
+        final Collection<InternationalString> titles = (Collection<InternationalString>) c.getAlternateTitles();
+        final InternationalString more = new SimpleInternationalString("An open source project.");
+        try {
+            titles.add(more);
+            fail("Pre-defined metadata should be unmodifiable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+        }
     }
 }

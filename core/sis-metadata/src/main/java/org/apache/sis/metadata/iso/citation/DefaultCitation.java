@@ -42,7 +42,6 @@ import org.apache.sis.xml.IdentifierMap;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
-import static org.apache.sis.internal.metadata.MetadataUtilities.isDateDefined;
 
 
 /**
@@ -349,7 +348,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new edition date, or {@code null} if none.
      */
     public void setEditionDate(final Date newValue) {
-        checkWritePermission(isDateDefined(editionDate));
+        checkWritePermission(toDate(editionDate));
         editionDate = toMilliseconds(newValue);
     }
 

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
+import java.util.Collection;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -68,25 +69,14 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Returns {@link Boolean#TRUE} if the given value is a valid date, or {@code null} otherwise.
-     * This method is used for calls to {@code checkWritePermission(Object)}. The use of a boolean
-     * as return type is for avoiding to create new {@link Date} instances.
+     * Returns the given collection if non-null and non-empty, or {@code null} otherwise.
+     * This method is used for calls to {@code checkWritePermission(Object)}.
      *
-     * @param  value  the time in milliseconds.
-     * @return {@code Boolean.TRUE} if the given value is a valid date.
+     * @param  value  the collection.
+     * @return the given collection if non-empty, or {@code null} otherwise.
      */
-    public static Boolean isDateDefined(final long value) {
-        return (value != Long.MIN_VALUE) ? Boolean.TRUE : null;
-    }
-
-    /**
-     * Returns {@link Boolean#TRUE} if the given value is a valid double, or {@code null} if NaN.
-     *
-     * @param  value  the numeric value.
-     * @return {@code Boolean.TRUE} if the given value is non-NaN.
-     */
-    public static Boolean isDefined(final double value) {
-        return Double.isNaN(value) ? null : Boolean.TRUE;
+    public static Collection<?> valueIfDefined(final Collection<?> value) {
+        return (value == null) || value.isEmpty() ? null : value;
     }
 
     /**

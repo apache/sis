@@ -294,6 +294,18 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
+     * Returns a key for use in {@link #getAccessor(CacheKey, boolean)} for the given type.
+     * The type may be an interface (typically a GeoAPI interface) or an implementation class.
+     */
+    private CacheKey createCacheKey(Class<?> type) {
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new CacheKey(type);
+    }
+
+    /**
      * Returns the accessor for the specified implementation class, or {@code null} if none.
      * The given class shall not be the standard interface, unless the metadata is read-only.
      * More specifically, the given {@code type} shall be one of the following:
@@ -607,6 +619,30 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
+     * Returns a value of the "title" property of the given metadata object.
+     * The title property is defined by {@link TitleProperty} annotation on the implementation class.
+     *
+     * @param  metadata  the metadata for which to get the title property, or {@code null}.
+     * @return the title property value of the given metadata, or {@code null} if none.
+     *
+     * @see TitleProperty
+     * @see ValueExistencePolicy#COMPACT
+     */
+    final Object getTitle(final Object metadata) {
+        if (metadata != null) {
+            final Class<?> type = metadata.getClass();
+            final PropertyAccessor accessor = getAccessor(createCacheKey(type), false);
+            if (accessor != null) {
+                TitleProperty an = type.getAnnotation(TitleProperty.class);
+                if (an != null || (an = accessor.implementation.getAnnotation(TitleProperty.class)) != null) {
+                    return accessor.get(accessor.indexOf(an.name(), false), metadata);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the names of all properties defined in the given metadata type.
      * The property names appears both as keys and as values, but may be written differently.
      * The names may be {@linkplain KeyNamePolicy#UML_IDENTIFIER standard identifiers} (e.g.
@@ -636,17 +672,13 @@ public class MetadataStandard implements Serializable {
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
-    public Map<String,String> asNameMap(Class<?> type, final KeyNamePolicy keyPolicy,
+    public Map<String,String> asNameMap(final Class<?> type, final KeyNamePolicy keyPolicy,
             final KeyNamePolicy valuePolicy) throws ClassCastException
     {
         ensureNonNull("type",        type);
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new NameMap(getAccessor(new CacheKey(type), true), keyPolicy, valuePolicy);
+        return new NameMap(getAccessor(createCacheKey(type), true), keyPolicy, valuePolicy);
     }
 
     /**
@@ -675,17 +707,13 @@ public class MetadataStandard implements Serializable {
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
-    public Map<String,Class<?>> asTypeMap(Class<?> type, final KeyNamePolicy keyPolicy,
+    public Map<String,Class<?>> asTypeMap(final Class<?> type, final KeyNamePolicy keyPolicy,
             final TypeValuePolicy valuePolicy) throws ClassCastException
     {
         ensureNonNull("type",        type);
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new TypeMap(getAccessor(new CacheKey(type), true), keyPolicy, valuePolicy);
+        return new TypeMap(getAccessor(createCacheKey(type), true), keyPolicy, valuePolicy);
     }
 
     /**
@@ -732,16 +760,12 @@ public class MetadataStandard implements Serializable {
      *
      * @see org.apache.sis.metadata.iso.DefaultExtendedElementInformation
      */
-    public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type, final KeyNamePolicy keyPolicy)
+    public Map<String,ExtendedElementInformation> asInformationMap(final Class<?> type, final KeyNamePolicy keyPolicy)
             throws ClassCastException
     {
         ensureNonNull("type",     type);
         ensureNonNull("keyNames", keyPolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new InformationMap(getAccessor(new CacheKey(type), true), keyPolicy);
+        return new InformationMap(getAccessor(createCacheKey(type), true), keyPolicy);
     }
 
     /**
@@ -761,16 +785,12 @@ public class MetadataStandard implements Serializable {
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
-    public Map<String,Integer> asIndexMap(Class<?> type, final KeyNamePolicy keyPolicy)
+    public Map<String,Integer> asIndexMap(final Class<?> type, final KeyNamePolicy keyPolicy)
             throws ClassCastException
     {
         ensureNonNull("type",      type);
         ensureNonNull("keyPolicy", keyPolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new IndexMap(getAccessor(new CacheKey(type), true), keyPolicy);
+        return new IndexMap(getAccessor(createCacheKey(type), true), keyPolicy);
     }
 
     /**

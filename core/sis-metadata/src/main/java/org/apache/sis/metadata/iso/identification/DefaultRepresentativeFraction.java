@@ -33,6 +33,7 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.IdentifierMap;
@@ -176,7 +177,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     public void setDenominator(final long denominator) {
         if (isUnmodifiable) {
-            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
         }
         if (ensurePositive(DefaultRepresentativeFraction.class, "denominator", false, denominator)) {
             this.denominator = denominator;
@@ -194,7 +195,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     public void setScale(final double scale) {
         if (isUnmodifiable) {
-            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
         }
         /*
          * For the following argument check, we do not need to use a Metadatautility method because

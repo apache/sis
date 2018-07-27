@@ -73,6 +73,8 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Root entity which defines metadata about a resource or resources.
@@ -545,7 +547,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLanguage(final Locale newValue) {
-        checkWritePermission(languages);
+        checkWritePermission(valueIfDefined(languages));
         setDefaultLocale(newValue);
     }
 
@@ -573,7 +575,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
-        checkWritePermission(languages);
+        checkWritePermission(valueIfDefined(languages));
         setOtherLocales(newValues);
     }
 
@@ -801,7 +803,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission(metadataScopes);
+        checkWritePermission(valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
@@ -852,7 +854,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        checkWritePermission(metadataScopes);
+        checkWritePermission(valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
@@ -937,7 +939,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
-        checkWritePermission(dateInfo);
+        checkWritePermission(valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
@@ -1070,7 +1072,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@link #setMetadataStandardVersion(String)} methods.
      */
     private void setMetadataStandard(final boolean version, final String newValue) {
-        checkWritePermission(metadataStandards);
+        checkWritePermission(valueIfDefined(metadataStandards));
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
@@ -1228,8 +1230,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = new URI(newValue);
-        checkWritePermission(identificationInfo);
-        Collection<Identification> info = identificationInfo; // See "Note about deprecated methods implementation"
+        Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
+        checkWritePermission(valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();

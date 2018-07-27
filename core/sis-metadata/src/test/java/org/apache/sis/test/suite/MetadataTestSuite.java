@@ -53,6 +53,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.HashCodeTest.class,
     org.apache.sis.metadata.PrunerTest.class,
     org.apache.sis.metadata.AbstractMetadataTest.class,
+    org.apache.sis.metadata.ModifiableMetadataTest.class,
     org.apache.sis.metadata.MetadataCopierTest.class,
     org.apache.sis.internal.metadata.MergerTest.class,
 

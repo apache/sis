@@ -46,6 +46,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -128,6 +129,8 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure was applied.
+     *
+     * @todo Needs to be made unmodifiable after transition to {@link State#FINAL}.
      */
     private Dates dates;
 
@@ -553,8 +556,8 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param  newValues  the new dates, or {@code null}.
      */
     public void setDates(final Collection<? extends Date> newValues) {
-        checkWritePermission(dates);
         if (newValues != dates) {               // Mandatory check for avoiding the call to 'dates.clear()'.
+            checkWritePermission(valueIfDefined(dates));
             writeDates(newValues);
         }
     }
