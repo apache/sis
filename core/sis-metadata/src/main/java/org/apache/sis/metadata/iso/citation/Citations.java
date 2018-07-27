@@ -336,7 +336,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>(Constants.GEOTIFF);
 
     /**
-     * The authority for identifiers of objects defined by the <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
+     * The authority for identifiers of objects defined by the <a href="https://proj4.org/">Proj.4</a> project.
      *
      * <div class="section">Main usage</div>
      * This value can be returned by:
