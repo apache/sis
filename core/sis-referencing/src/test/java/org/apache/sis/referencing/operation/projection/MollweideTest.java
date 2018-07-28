@@ -16,130 +16,114 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
- * Tests for Mollveide transform.
+ * Tests the {@link Mollweide} projection.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public class MollweideTest extends TestCase {
-
-    private double tolerance = 0.00001;
-
-    public MollweideTest() {
+public final strictfp class MollweideTest extends MapProjectionTestCase {
+    /**
+     * Creates a new instance of {@link Mollweide} concatenated with the (de)normalization matrices.
+     * The new instance is stored in the inherited {@link #transform} field.
+     *
+     * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     */
+    private void createProjection(final boolean ellipse) throws FactoryException {
+        createCompleteProjection(new org.apache.sis.internal.referencing.provider.Mollweide(),
+                WGS84_A, ellipse ? WGS84_B : WGS84_A,
+                Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        tolerance = Formulas.LINEAR_TOLERANCE;  // Not NORMALIZED_TOLERANCE since this is not a NormalizedProjection.
     }
 
+    /**
+     * Tests the projection of a few points on a sphere.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
     @Test
-    public void testTransform() throws TransformException, ParameterNotFoundException, FactoryException {
-        final org.apache.sis.internal.referencing.provider.Mollweide provider = new org.apache.sis.internal.referencing.provider.Mollweide();
-        final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
-        parameters.parameter(Constants.CENTRAL_MERIDIAN).setValue(0.0);
-        parameters.parameter(Constants.FALSE_EASTING).setValue(0.0);
-        parameters.parameter(Constants.FALSE_NORTHING).setValue(0.0);
-        parameters.parameter(Constants.SEMI_MAJOR).setValue(6378137);
-        parameters.parameter(Constants.SEMI_MINOR).setValue(6378137);
-
-
-        final MathTransform trs = provider.createMathTransform(DefaultFactories.forClass(MathTransformFactory.class), parameters);
-        final MathTransform invtrs = trs.inverse();
-
-        final double[] in = new double[2];
-        final double[] out = new double[2];
-
-        // at (0,0) point should be unchanged
-        in[0] = 0.0;
-        in[1] = 0.0;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(0.0, out[0], tolerance);
-        assertEquals(0.0, out[1], tolerance);
-
-        // at (0,±90) north/south poles singularity
-        in[0] = 0.0;
-        in[1] = 90;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(0.0, out[0], tolerance);
-        assertEquals(9020047.848073645, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(0.0, in[0], tolerance);
-        assertEquals(90.0, in[1], tolerance);
-
-        in[0] = 0.0;
-        in[1] = -90;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(0.0, out[0], tolerance);
-        assertEquals(-9020047.848073645, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(0.0, in[0], tolerance);
-        assertEquals(-90.0, in[1], tolerance);
-
-        // at (0,~90) point near north pole singularity should be close to ~9.000.000
-        in[0] = 0.0;
-        in[1] = 89;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(0.0, out[0], tolerance);
-        assertEquals(8997266.89915323, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(0.0, in[0], tolerance);
-        assertEquals(89.0, in[1], tolerance);
-
-        //other random points
-        //compared to epsg.io (Bad reference, find something more trustable)
-        //https://epsg.io/transform#s_srs=4326&t_srs=54009&x=-150.0000000&y=-70.0000000
-        in[0] = 12.0;
-        in[1] = 50.0;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(912759.82345261, out[0], tolerance);
-        assertEquals(5873471.95621065, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(12.0, in[0], tolerance);
-        assertEquals(50.0, in[1], tolerance);
-
-
-        in[0] = -150.0;
-        in[1] = -70.0;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(-7622861.35718471, out[0], tolerance);
-        assertEquals(-7774469.60789149, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(-150.0, in[0], tolerance);
-        assertEquals(-70.0, in[1], tolerance);
-
-        in[0] = -179.9999;
-        in[1] = 0.0;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(-18040085.67387191, out[0], tolerance);
-        assertEquals(0.0, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(-179.9999, in[0], tolerance);
-        assertEquals(0.0, in[1], tolerance);
-
-        //outside of validity area, should have NaN with the reverse transform
-        in[0] = -180.0001;
-        in[1] = 0.0;
-        trs.transform(in, 0, out, 0, 1);
-        assertEquals(-1.8040105718422677E7, out[0], tolerance);
-        assertEquals(0.0, out[1], tolerance);
-        invtrs.transform(out, 0, in, 0, 1);
-        assertEquals(Double.NaN, in[0], tolerance);
-        assertEquals(0.0, in[1], tolerance);
-
-
+    public void testTransform() throws FactoryException, TransformException {
+        createProjection(false);
+        assertTrue(isInverseTransformSupported);
+        verifyTransform(
+            new double[] {          // (λ,φ) coordinates in degrees to project.
+                  0,      0,        // At (0,0) point should be unchanged.
+                  0,    +90,        // At (0,±90) north/south poles singularity.
+                  0,    -90,
+                  0,     89,        // At (0,~90) point near north pole singularity should be close to ~9000000.
+                 12,     50,        // Other random points.
+               -150,    -70,
+               -179.9999, 0
+            },
+            new double[] {          // Expected (x,y) results in metres.
+                       0.0,           0.0,
+                       0.0,     9020047.848,
+                       0.0,    -9020047.848,
+                       0.0,     8997266.899,
+                  912759.823,   5873471.956,
+                -7622861.357,  -7774469.608,
+               -18040085.674,         0.0
+            });
     }
 
+    /**
+     * Tests the projection of a few points on a sphere computed from authalic radius.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public void testOnAuthalicRadius() throws FactoryException, TransformException {
+        createProjection(true);
+        assertTrue(isInverseTransformSupported);
+        verifyTransform(
+            new double[] {          // (λ,φ) coordinates in degrees to project.
+                 12,     50,        // Other random points.
+               -150,    -70,
+               -179.9999, 0
+            },
+            new double[] {          // Expected (x,y) results in metres.
+                  911739.492,    5866906.278,
+                -7614340.119,   -7765778.894,
+               -18019919.511,          0.0
+            });
+    }
+
+    /**
+     * Tests inverse projection of a point outside domain of validity.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public void testTransformOutsideDomain() throws FactoryException, TransformException {
+        createProjection(false);
+        final double[] in  = new double[] {-180.0001,     0.0};
+        final double[] out = new double[] {-18040105.718, 0.0};
+        isInverseTransformSupported = false;
+        verifyTransform(in, out);
+
+        // Outside of validity area, should have NaN with the inverse transform.
+        transform = transform.inverse();
+        tolerance = 0;
+        in[0] = Double.NaN;
+        verifyTransform(out, in);
+    }
 }

@@ -16,87 +16,84 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+
 
 /**
- * The provider for <cite>"Mollweide"</cite> projection.
- * There are no EPSG projection using this operation.
+ * The provider for <cite>"Mollweide"</cite> (also known as <cite>"Homalographic"</cite>) projection.
+ * As of version 9.4 of EPSG geodetic dataset, there is no known EPSG code for this projection.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
  *
  * @see <a href="http://mathworld.wolfram.com/MollweideProjection.html">Mathworld formulas</a>
+ * @see <a href="http://geotiff.maptools.org/proj_list/mollweide.html">GeoTIFF parameters for Mollweide</a>
  *
- * @author Johann Sorel (Geomatys)
- * @version 1.0
  * @since 1.0
  * @module
  */
-public class Mollweide extends MapProjection {
-
+@XmlTransient
+public final class Mollweide extends MapProjection {
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.internal.util.Constants#centralMeridian
-     * central meridian} parameter value.
-     *
-     * This parameter is <a href="package-summary.html#Obligation">mandatory</a>.
-     * Valid values range is [-180 &hellip; 180]&deg; and default value is 0&deg;.
+     * For cross-version compatibility.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    private static final long serialVersionUID = -6434031854504431260L;
 
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.internal.util.Constants.Parameters#falseEasting
-     * false easting} parameter value.
-     *
-     * This parameter is <a href="package-summary.html#Obligation">mandatory</a>.
+     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
+     * Valid values range is [-180 … 180]° and default value is 0°.
+     */
+    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = ESRI.CENTRAL_MERIDIAN;
+
+    /**
+     * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING;
+    public static final ParameterDescriptor<Double> FALSE_EASTING = ESRI.FALSE_EASTING;
 
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.internal.util.Constants.Parameters#falseNorthing
-     * false northing} parameter value.
-     *
-     * This parameter is <a href="package-summary.html#Obligation">mandatory</a>.
+     * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING;
+    public static final ParameterDescriptor<Double> FALSE_NORTHING = ESRI.FALSE_NORTHING;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
-    /**
-     * Parameters creation, which must be done before to initialize the {@link #PARAMETERS} field.
-     * Note that the central Meridian and Latitude of Origin are shared with ObliqueStereographic.
-     */
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = new ParameterBuilder();
-
-        CENTRAL_MERIDIAN = createLongitude(builder.addName(Constants.CENTRAL_MERIDIAN));
-        FALSE_EASTING = createShift(builder.addName(Constants.FALSE_EASTING));
-        FALSE_NORTHING = createShift(builder.addName(Constants.FALSE_NORTHING));
-
-        PARAMETERS = new ParameterBuilder()
+        PARAMETERS = builder().setCodeSpace(Citations.ESRI, "ESRI")
                 .addName("Mollweide")
+                .addName(null, "Homalographic")
+                .addName(null, "Homolographic")
+                .addName(null, "Elliptical")
+                .addName(null, "Babinet")
                 .createGroupForMapProjection(
                         CENTRAL_MERIDIAN,
                         FALSE_EASTING,
                         FALSE_NORTHING);
     }
 
+    /**
+     * Constructs a new provider.
+     */
     public Mollweide() {
         super(PARAMETERS);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return the map projection created from the given parameter values.
+     */
     @Override
-    protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {
-        return new org.apache.sis.referencing.operation.projection.Mollweide(this, Parameters.castOrWrap(parameters));
+    protected NormalizedProjection createProjection(final Parameters parameters) {
+        return new org.apache.sis.referencing.operation.projection.Mollweide(this, parameters);
     }
-
 }
