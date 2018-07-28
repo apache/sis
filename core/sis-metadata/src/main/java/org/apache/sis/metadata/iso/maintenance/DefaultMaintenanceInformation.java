@@ -40,6 +40,8 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Information about the scope and frequency of updating.
@@ -198,7 +200,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param  newValue  the new maintenance frequency.
      */
     public void setMaintenanceAndUpdateFrequency(final MaintenanceFrequency newValue) {
-        checkWritePermission();
+        checkWritePermission(maintenanceAndUpdateFrequency);
         maintenanceAndUpdateFrequency = newValue;
     }
 
@@ -262,7 +264,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setDateOfNextUpdate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(maintenanceDates));
         Collection<CitationDate> dates = maintenanceDates;
         if (dates != null) {
             final Iterator<CitationDate> it = dates.iterator();
@@ -307,7 +309,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param  newValue  the new user defined maintenance frequency.
      */
     public void setUserDefinedMaintenanceFrequency(final PeriodDuration newValue) {
-        checkWritePermission();
+        checkWritePermission(userDefinedMaintenanceFrequency);
         userDefinedMaintenanceFrequency = newValue;
     }
 
@@ -383,7 +385,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(maintenanceScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
     }
 
@@ -438,7 +440,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Deprecated
     public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(maintenanceScopes));
         ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);
     }
 

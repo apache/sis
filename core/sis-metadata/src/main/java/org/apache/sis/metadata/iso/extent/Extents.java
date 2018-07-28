@@ -91,10 +91,10 @@ public final class Extents extends Static {
     public static final Extent WORLD;
     static {
         final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
-        box.freeze();
+        box.transition(DefaultGeographicBoundingBox.State.FINAL);
         final DefaultExtent world = new DefaultExtent(
                 Vocabulary.formatInternational(Vocabulary.Keys.World), box, null, null);
-        world.freeze();
+        world.transition(DefaultExtent.State.FINAL);
         WORLD = world;
     }
 

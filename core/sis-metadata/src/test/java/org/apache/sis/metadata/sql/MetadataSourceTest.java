@@ -16,7 +16,9 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Collection;
 import java.util.Collections;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
@@ -51,12 +53,36 @@ public final strictfp class MetadataSourceTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws Exception {
-        try (TestDatabase db = TestDatabase.create("MetadataSource");
-             MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null))
-        {
+        try (TestDatabase db = TestDatabase.create("MetadataSource")) {
+            testAll(db);
+        }
+    }
+
+    /**
+     * Tests {@link MetadataSource} with a PostgreSQL database if available.
+     *
+     * @throws Exception if an error occurred while executing the script runner.
+     */
+    @Test
+    public void testOnPostgreSQL() throws Exception {
+        try (TestDatabase db = TestDatabase.createOnPostgreSQL("metadata", false)) {
+            testAll(db);
+        }
+    }
+
+    /**
+     * Runs all public tests declared in this class.
+     * Also opportunistically run tests declared in {@link MetadataFallbackVerifier}.
+     */
+    private static void testAll(final TestDatabase db) throws Exception {
+        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null)) {
             source.install();
             verifyFormats(source);
             testSearch(source);
+            ensureReadOnly(source);
+
+            // Opportunistic verification using the database we have at hand.
+            MetadataFallbackVerifier.compare(source);
         }
     }
 
@@ -106,5 +132,26 @@ public final strictfp class MetadataSourceTest extends TestCase {
         assertEquals("PNG", source.search(format));
         specification.setTitle(null);
         assertNull(source.search(format));
+    }
+
+    /**
+     * Verifies that instances created by {@link MetadataSource} are read-only.
+     * In particular, it should not be possible to add elements in the collection.
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void ensureReadOnly(final MetadataSource source) throws MetadataStoreException {
+        final Citation c = source.lookup(Citation.class, "SIS");
+        @SuppressWarnings("unchecked")                                  // Cheat or the purpose of this test.
+        final Collection<InternationalString> titles = (Collection<InternationalString>) c.getAlternateTitles();
+        final InternationalString more = new SimpleInternationalString("An open source project.");
+        try {
+            titles.add(more);
+            fail("Pre-defined metadata should be unmodifiable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+        }
     }
 }

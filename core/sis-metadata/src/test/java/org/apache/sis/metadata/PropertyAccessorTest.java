@@ -230,8 +230,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     /**
      * Tests the constructor with a method which override an other method with covariant return type.
      * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS} interface.
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-205">GEOTK-205</a>
      */
     @Test
     @DependsOnMethod("testConstructorWithInheritance")

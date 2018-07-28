@@ -774,7 +774,7 @@ public final class IdentifiedObjects extends Static {
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
         if (cs == null || cs.isEmpty()) {
-            cs = Citations.getUnicodeIdentifier(identifier.getAuthority());
+            cs = Citations.toCodeSpace(identifier.getAuthority());
         }
         if (cs != null) {
             return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;

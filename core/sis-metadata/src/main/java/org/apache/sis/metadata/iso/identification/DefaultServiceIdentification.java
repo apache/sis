@@ -239,7 +239,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @param  newValue  the new service type name.
      */
     public void setServiceType(final GenericName newValue) {
-        checkWritePermission();
+        checkWritePermission(serviceType);
         serviceType = newValue;
     }
 
@@ -285,7 +285,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @since 0.5
      */
     public void setAccessProperties(final StandardOrderProcess newValue) {
-        checkWritePermission();
+        checkWritePermission(accessProperties);
         accessProperties = newValue;
     }
 
@@ -306,7 +306,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * @param  newValue  the new type of coupling between service and associated data.
      */
     public void setCouplingType(final CouplingType newValue) {
-        checkWritePermission();
+        checkWritePermission(couplingType);
         couplingType = newValue;
     }
 

@@ -137,7 +137,7 @@ public class DefaultIndividual extends AbstractParty implements Individual {
      * @param  newValue  the new position of the individual in an organization.
      */
     public void setPositionName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(positionName);
         positionName = newValue;
     }
 }

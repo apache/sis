@@ -180,7 +180,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @since 0.5
      */
     public void setNumber(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(number);
         number = newValue;
     }
 
@@ -206,7 +206,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @since 0.5
      */
     public void setNumberType(final TelephoneType newValue) {
-        checkWritePermission();
+        checkWritePermission(numberType);
         numberType = newValue;
     }
 

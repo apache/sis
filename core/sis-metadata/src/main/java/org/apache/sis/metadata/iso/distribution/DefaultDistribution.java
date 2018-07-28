@@ -166,7 +166,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * @since 0.5
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 

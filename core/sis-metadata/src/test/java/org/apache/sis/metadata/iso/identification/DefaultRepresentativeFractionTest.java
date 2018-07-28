@@ -111,7 +111,7 @@ public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
 
     /**
      * Tests indirectly {@link DefaultRepresentativeFraction#freeze()}.
-     * This method verifies that a call to {@link DefaultResolution#freeze()}
+     * This method verifies that a call to {@code DefaultResolution.transition(FINAL)}
      * implies a call to {@link DefaultRepresentativeFraction#freeze()}.
      *
      * @since 0.7
@@ -120,7 +120,7 @@ public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
     public void testFreeze() {
         final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(1000);
         final DefaultResolution resolution = new DefaultResolution(fraction);
-        resolution.apply(DefaultResolution.State.FINAL);
+        resolution.transition(DefaultResolution.State.FINAL);
         assertSame(fraction, resolution.getEquivalentScale());
         try {
             fraction.setDenominator(10);

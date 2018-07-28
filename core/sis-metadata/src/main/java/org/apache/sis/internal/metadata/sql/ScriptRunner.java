@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  * functionalities other than what we need for those scripts.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -646,6 +646,38 @@ parseLine:  while (pos < length) {
     }
 
     /**
+     * Returns {@code true} if the given fragment seems outside identifier quotes or text quotes.
+     * The given fragment must be the beginning or the end of an SQL statement, or be bounded by
+     * indices that are known to be outside quotes. The implementation counts the occurrences of
+     * {@value #IDENTIFIER_QUOTE} and {@value #QUOTE} and verifies that both of them are even.
+     *
+     * @param  sql   the SQL statement for which to test if a fragment is outside quotes.
+     * @param  from  index of the first character of the fragment.
+     * @param  to    index after the last character of the fragment.
+     * @return whether the given fragment seems outside quotes.
+     */
+    private static boolean isOutsideQuotes(final CharSequence sql, int from, final int to) {
+        int nq = 0, ni = 0;
+        while (from < to) {
+            switch (sql.charAt(from++)) {
+                case IDENTIFIER_QUOTE: {
+                    ni++;
+                    break;
+                }
+                case QUOTE: {
+                    if ((nq & 1) != 0 && from < to && sql.charAt(from) == QUOTE) {
+                        from++;
+                    } else {
+                        nq++;
+                    }
+                    break;
+                }
+            }
+        }
+        return ((nq | ni) & 1) == 0;
+    }
+
+    /**
      * Returns {@code true} if the given SQL statements is supported by the database engine,
      * or {@code false} if this statement should be ignored. The default implementation checks
      * if the given query matches the regular expressions given to {@link #addStatementToSkip(String)}.
@@ -675,6 +707,8 @@ parseLine:  while (pos < length) {
      *
      * <ul>
      *   <li>If {@link #isSupported(CharSequence)} returns {@code false}, then this method does nothing.</li>
+     *   <li>If the statement is {@code CREATE TABLE ... INHERITS ...} but the database does not support
+     *       table inheritance, then this method drops the {@code INHERITS ...} part.</li>
      *   <li>If the {@code maxRowsPerInsert} argument given at construction time was zero,
      *       then this method skips {@code "INSERT INTO"} statements but executes all other.</li>
      *   <li>Otherwise this method executes the given statement with the following modification:
@@ -696,6 +730,13 @@ parseLine:  while (pos < length) {
             return 0;
         }
         String subSQL = currentSQL = CharSequences.trimWhitespaces(sql).toString();
+        if (!dialect.isTableInheritanceSupported && subSQL.startsWith("CREATE TABLE")) {
+            final int s = sql.lastIndexOf("INHERITS");
+            if (s >= 0 && isOutsideQuotes(sql, s+8, sql.length())) {             // 8 is the length of "INHERITS".
+                sql.setLength(CharSequences.skipTrailingWhitespaces(sql, 0, s));
+                subSQL = currentSQL = sql.toString();
+            }
+        }
         int count = 0;
         /*
          * The scripts usually do not contain any SELECT statement. One exception is the creation

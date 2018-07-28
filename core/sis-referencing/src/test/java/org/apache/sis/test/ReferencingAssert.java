@@ -95,7 +95,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertNotNull(actual);
         assertEquals("code",       expected,        actual.getCode());
         assertEquals("codeSpace",  Constants.EPSG,  actual.getCodeSpace());
-        assertEquals("authority",  Constants.EPSG,  Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("authority",  Constants.EPSG,  Citations.toCodeSpace(actual.getAuthority()));
         assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }

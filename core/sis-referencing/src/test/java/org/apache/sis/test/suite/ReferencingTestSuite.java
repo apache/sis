@@ -171,6 +171,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.ObliqueMercatorTest.class,
     org.apache.sis.referencing.operation.projection.CylindricalEqualAreaTest.class,
     org.apache.sis.referencing.operation.projection.AlbersEqualAreaTest.class,
+    org.apache.sis.referencing.operation.projection.MollweideTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,

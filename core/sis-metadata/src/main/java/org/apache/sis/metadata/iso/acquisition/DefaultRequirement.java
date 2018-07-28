@@ -193,7 +193,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 
@@ -295,7 +295,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param  newValue  the new priority value.
      */
     public void setPriority(final Priority newValue) {
-        checkWritePermission();
+        checkWritePermission(priority);
         priority = newValue;
     }
 
@@ -316,7 +316,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param  newValue  the new requested date value.
      */
     public void setRequestedDate(final RequestedDate newValue) {
-        checkWritePermission();
+        checkWritePermission(requestedDate);
         requestedDate = newValue;
     }
 
@@ -337,7 +337,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param  newValue  the new expiry date.
      */
     public void setExpiryDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(toDate(expiryDate));
         expiryDate = toMilliseconds(newValue);
     }
 

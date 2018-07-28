@@ -144,7 +144,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
      * @param  newValue  the new code for the scope.
      */
     public void setResourceScope(final ScopeCode newValue) {
-        checkWritePermission();
+        checkWritePermission(resourceScope);
         resourceScope = newValue;
     }
 
@@ -165,7 +165,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
      * @param  newValue  the new description of the scope.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 }

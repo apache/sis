@@ -174,7 +174,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @param  newValue  the new filename.
      */
     public void setFileName(final URI newValue) {
-        checkWritePermission();
+        checkWritePermission(fileName);
         fileName = newValue;
     }
 
@@ -195,7 +195,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @param  newValue  the new file description.
      */
     public void setFileDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileDescription);
         fileDescription = newValue;
     }
 
@@ -223,7 +223,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @param  newValue  the new file type.
      */
     public void setFileType(final String newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileType);
         fileType = newValue;
     }
 

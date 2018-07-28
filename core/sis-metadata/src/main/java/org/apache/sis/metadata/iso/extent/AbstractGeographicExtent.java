@@ -159,7 +159,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      * @param newValue {@code true} if the bounding polygon encompasses an area covered by the data.
      */
     public void setInclusion(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(inclusion);
         inclusion = newValue;
     }
 }

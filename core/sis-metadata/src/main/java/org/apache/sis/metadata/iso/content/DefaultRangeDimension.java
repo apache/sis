@@ -159,7 +159,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @param  newValue  the new sequence identifier.
      */
     public void setSequenceIdentifier(final MemberName newValue) {
-        checkWritePermission();
+        checkWritePermission(sequenceIdentifier);
         sequenceIdentifier = newValue;
     }
 
@@ -185,7 +185,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * @since 0.5
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 

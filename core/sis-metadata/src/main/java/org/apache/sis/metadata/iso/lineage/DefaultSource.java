@@ -233,7 +233,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -259,7 +259,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     public void setSourceSpatialResolution(final Resolution newValue) {
-        checkWritePermission();
+        checkWritePermission(sourceSpatialResolution);
         sourceSpatialResolution = newValue;
     }
 
@@ -297,7 +297,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Deprecated
     public void setScaleDenominator(final RepresentativeFraction newValue)  {
-        checkWritePermission();
+        checkWritePermission(sourceSpatialResolution);
         Resolution resolution = null;
         if (newValue != null) {
             resolution = sourceSpatialResolution;
@@ -334,7 +334,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new reference system.
      */
     public void setSourceReferenceSystem(final ReferenceSystem newValue) {
-        checkWritePermission();
+        checkWritePermission(sourceReferenceSystem);
         sourceReferenceSystem = newValue;
     }
 
@@ -355,7 +355,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new source citation.
      */
     public void setSourceCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(sourceCitation);
         sourceCitation = newValue;
     }
 
@@ -406,7 +406,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     public void setScope(final Scope newValue){
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 
@@ -450,7 +450,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Deprecated
     public void setSourceExtents(final Collection<? extends Extent> newValues) {
-        checkWritePermission();
+        checkWritePermission(scope);
         Scope scope = this.scope;
         if (!(scope instanceof DefaultScope)) {
             scope = new DefaultScope(scope);
@@ -496,7 +496,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new processed level value.
      */
     public void setProcessedLevel(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(processedLevel);
         processedLevel = newValue;
     }
 
@@ -517,7 +517,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new nominal resolution value.
      */
     public void setResolution(final NominalResolution newValue) {
-        checkWritePermission();
+        checkWritePermission(resolution);
         resolution = newValue;
     }
 

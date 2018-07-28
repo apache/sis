@@ -188,7 +188,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @param  newValue  the new application profile.
      */
     public void setApplicationProfile(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(applicationProfile);
         applicationProfile = newValue;
     }
 
@@ -217,7 +217,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @param  newValue  the new name, or {@code null} if none.
      */
     public void setName(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -238,7 +238,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @param  newValue  the new description, or {@code null} if none.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -259,7 +259,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @param  newValue  the new function, or {@code null} if none.
      */
     public void setFunction(final OnLineFunction newValue) {
-        checkWritePermission();
+        checkWritePermission(function);
         function = newValue;
     }
 
@@ -283,7 +283,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @param  newValue  the new linkage, or {@code null} if none.
      */
     public void setLinkage(final URI newValue) {
-        checkWritePermission();
+        checkWritePermission(linkage);
         linkage = newValue;
     }
 
@@ -308,7 +308,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @param  newValue  the new protocol, or {@code null} if none.
      */
     public void setProtocol(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(protocol);
         protocol = newValue;
     }
 
@@ -345,7 +345,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * @since 0.5
      */
     public void setProtocolRequest(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(protocolRequest);
         protocolRequest = newValue;
     }
 }

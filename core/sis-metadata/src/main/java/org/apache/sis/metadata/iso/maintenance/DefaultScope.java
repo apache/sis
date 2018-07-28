@@ -161,7 +161,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * @param  newValue  the new level.
      */
     public void setLevel(final ScopeCode newValue) {
-        checkWritePermission();
+        checkWritePermission(level);
         level = newValue;
     }
 

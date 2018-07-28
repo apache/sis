@@ -177,7 +177,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @param  newValue  the new scope.
      */
     public void setScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 
@@ -220,7 +220,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @param  newValue  the new lineage.
      */
     public void setLineage(final Lineage newValue) {
-        checkWritePermission();
+        checkWritePermission(lineage);
         lineage = newValue;
     }
 }

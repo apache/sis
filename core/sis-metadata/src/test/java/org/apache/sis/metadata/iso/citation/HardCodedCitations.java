@@ -52,7 +52,7 @@ public final strictfp class HardCodedCitations extends Static {
         c.getAlternateTitles().add(new SimpleInternationalString("ISO 19111"));
         c.getIdentifiers().add(new ImmutableIdentifier(null, "ISO", "19111"));
         c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
-        c.freeze();
+        c.transition(DefaultCitation.State.FINAL);
         ISO_19111 = c;
     }
 
@@ -63,7 +63,7 @@ public final strictfp class HardCodedCitations extends Static {
     static {
         final DefaultCitation c = new DefaultCitation("ISO 19115");
         c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
-        c.freeze();
+        c.transition(DefaultCitation.State.FINAL);
         ISO_19115 = c;
     }
 
@@ -102,7 +102,7 @@ public final strictfp class HardCodedCitations extends Static {
         c.getPresentationForms().add(PresentationForm.TABLE_DIGITAL);
         c.getIdentifiers().add(new DefaultIdentifier(Constants.EPSG));
         c.getCitedResponsibleParties().add(p);
-        c.freeze();
+        c.transition(DefaultCitation.State.FINAL);
         EPSG = c;
     }
 
@@ -112,7 +112,7 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation SIS;
     static {
         final DefaultCitation c = new DefaultCitation(Constants.SIS);
-        c.freeze();
+        c.transition(DefaultCitation.State.FINAL);
         SIS = c;
     }
 

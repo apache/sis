@@ -163,7 +163,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * @param  newValue  the new type value.
      */
     public void setType(final GeometryType newValue) {
-        checkWritePermission();
+        checkWritePermission(type);
         type = newValue;
     }
 
@@ -184,7 +184,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * @param  newValue  the new status value.
      */
     public void setStatus(final Progress newValue) {
-        checkWritePermission();
+        checkWritePermission(status);
         status = newValue;
     }
 
@@ -205,7 +205,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 

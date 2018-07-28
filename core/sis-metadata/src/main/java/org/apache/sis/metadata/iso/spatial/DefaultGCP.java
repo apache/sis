@@ -141,7 +141,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * @param  newValue  the new geographic coordinates values.
      */
     public void setGeographicCoordinates(final DirectPosition newValue) {
-        checkWritePermission();
+        checkWritePermission(geographicCoordinates);
         geographicCoordinates = newValue;
     }
 

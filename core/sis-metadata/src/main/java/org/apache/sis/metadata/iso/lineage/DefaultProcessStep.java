@@ -225,7 +225,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -246,7 +246,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param  newValue  the new rationale.
      */
     public void setRationale(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(rationale);
         rationale = newValue;
     }
 
@@ -271,7 +271,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @since 1.0
      */
     public void setStepDateTime(final TemporalPrimitive newValue) {
-        checkWritePermission();
+        checkWritePermission(stepDateTime);
         stepDateTime = newValue;
     }
 
@@ -379,7 +379,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @since 0.5
      */
     public void setScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 
@@ -444,7 +444,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param  newValue  the new processing information value.
      */
     public void setProcessingInformation(final Processing newValue) {
-        checkWritePermission();
+        checkWritePermission(processingInformation);
         processingInformation = newValue;
     }
 

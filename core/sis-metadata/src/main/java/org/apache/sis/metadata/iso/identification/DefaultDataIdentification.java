@@ -257,7 +257,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param  newValue  the new environment description.
      */
     public void setEnvironmentDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(environmentDescription);
         environmentDescription = newValue;
     }
 
@@ -278,7 +278,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param  newValue  the new supplemental information.
      */
     public void setSupplementalInformation(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(supplementalInformation);
         supplementalInformation = newValue;
     }
 

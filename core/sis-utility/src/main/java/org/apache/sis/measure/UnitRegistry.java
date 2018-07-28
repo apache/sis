@@ -37,7 +37,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * rather uses the static methods directly since we define all units in terms of SI.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -121,19 +121,18 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      */
     static <Q extends Quantity<Q>> SystemUnit<Q> init(final SystemUnit<Q> unit) {
         assert !Units.initialized : unit;        // This assertion happens during Units initialization, but it is okay.
+        final String symbol = unit.getSymbol();
         int existed;
-        existed  = (HARD_CODED.put(unit.dimension,   unit) == null) ? 0 : 1;
-        existed |= (HARD_CODED.put(unit.quantity,    unit) == null) ? 0 : 2;
-        existed |= (HARD_CODED.put(unit.getSymbol(), unit) == null) ? 0 : 4;
-        if (unit.epsg != 0) {
-            existed |= (HARD_CODED.put(unit.epsg, unit) == null) ? 0 : 8;
-        }
+        /* Unconditional */ existed  = (HARD_CODED.put(unit.dimension, unit) == null) ? 0 : 1;
+        /* Unconditional */ existed |= (HARD_CODED.put(unit.quantity,  unit) == null) ? 0 : 2;
+        if (symbol != null) existed |= (HARD_CODED.put(symbol,         unit) == null) ? 0 : 4;
+        if (unit.epsg != 0) existed |= (HARD_CODED.put(unit.epsg,      unit) == null) ? 0 : 8;
         /*
          * Key collision on dimension and quantity tolerated for dimensionless units only, with an
          * an exception for "candela" because "lumen" is candela divided by a dimensionless unit.
          * Another exception is "Hz" because it come after rad/s, which has the same dimension.
          */
-        assert filter(existed, unit) == 0 : unit;
+        assert filter(existed, unit, symbol) == 0 : unit;
         return unit;
     }
 
@@ -141,11 +140,10 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * Clears the {@code existed} bits for the cases where we allow dimension or quantity type collisions.
      * This method is invoked for assertions only.
      */
-    private static int filter(int existed, final SystemUnit<?> unit) {
-        final String s = unit.getSymbol();
+    private static int filter(int existed, final SystemUnit<?> unit, final String s) {
         if (unit.dimension.isDimensionless()) existed &= ~(1 | 2);      // Accepts dimension and quantity collisions.
-        if (s.equals("cd") || s.equals("Hz")) existed &= ~(1    );      // Accepts dimension collisions only;
-        return s.isEmpty() ? 0 : existed;
+        if ("cd".equals(s) || "Hz".equals(s)) existed &= ~(1    );      // Accepts dimension collisions only;
+        return (s == null) || s.isEmpty() ? 0 : existed;
     }
 
     /**

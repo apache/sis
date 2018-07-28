@@ -159,7 +159,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      * @param  newValue  the new extent value.
      */
     public void setExtent(final Geometry newValue) {
-        checkWritePermission();
+        checkWritePermission(extent);
         extent = newValue;
     }
 
