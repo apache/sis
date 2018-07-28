@@ -23,7 +23,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
@@ -104,7 +107,7 @@ public class Mollweide extends NormalizedProjection {
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff + 1];
         final double sinφ = sin(φ);
-        double θ = 2 * asin(φ / (PI/2));            // Actually θ′ in Snyder formulas.
+        double θp = 2 * asin(φ / (PI/2));           // θ′ in Snyder formulas.
         /*
          * If sin(φ) is 1 or -1 we are on a pole.
          * Iteration would produce NaN values.
@@ -117,18 +120,26 @@ public class Mollweide extends NormalizedProjection {
                 if (--nbIte < 0) {
                     throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
                 }
-                Δθ = (θ + sin(θ) - πsinφ) / (1 + cos(θ));
-                θ -= Δθ;
+                Δθ = (θp + sin(θp) - πsinφ) / (1 + cos(θp));
+                θp -= Δθ;
             } while (abs(Δθ) > 2*ITERATION_TOLERANCE);          // *2 because θ′ is twice the desired angle.
         }
-        θ *= 0.5;
-        dstPts[dstOff    ] = cos(θ) * λ;
-        dstPts[dstOff + 1] = sin(θ);
-        Matrix matrix = null;
-        if (derivate) {
-            throw new ProjectionException("Derivation not supported");      // TODO
+        final double θ = θp * 0.5;
+        final double x = cos(θ) * λ;
+        final double y = sin(θ);
+        if (dstPts != null) {
+            dstPts[dstOff    ] = x;
+            dstPts[dstOff + 1] = y;
         }
-        return matrix;
+        if (!derivate) {
+            return null;
+        }
+        try {
+            // TODO: see https://issues.apache.org/jira/browse/SIS-428
+            return Matrices.inverse(inverseDerivate(x, y, θp, sinφ));
+        } catch (NoninvertibleMatrixException e) {
+            throw new ProjectionException(e);
+        }
     }
 
     /**
@@ -142,13 +153,30 @@ public class Mollweide extends NormalizedProjection {
         final double x  = srcPts[srcOff];
         final double y  = srcPts[srcOff + 1];
         final double θ  = asin(y);
-        final double tθ = 2 * θ;
-        final double φ  = asin((tθ + sin(tθ)) / PI);
+        final double θp = 2 * θ;
+        final double φ  = asin((θp + sin(θp)) / PI);
         double λ = x / cos(θ);
         if (abs(λ) > 2*SQRT_2*PI) {
             λ = Double.NaN;
         }
         dstPts[dstOff]   = λ;
         dstPts[dstOff+1] = φ;
+    }
+
+    /**
+     * Computes the inverse of projection derivative.
+     *
+     * @param  θp    {@code 2 * asin(y)}
+     * @param  sinφ  {@code (θp + sin(θp)) / PI}
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-428">SIS-428</a>
+     */
+    private static Matrix inverseDerivate(final double x, final double y, final double θp, final double sinφ) {
+        final double cosφ  = sqrt(1 - (sinφ * sinφ));
+        final double ym1   = 1 - y*y;
+        final double dλ_dx = 1 / sqrt(ym1);
+        final double dλ_dy = (x*y) * dλ_dx / ym1;
+        final double dφ_dy = 2*dλ_dx*(1 + cos(θp)) / (PI*cosφ);
+        return new Matrix2(dλ_dx, dλ_dy, 0, dφ_dy);
     }
 }

@@ -126,4 +126,42 @@ public final strictfp class MollweideTest extends MapProjectionTestCase {
         in[0] = Double.NaN;
         verifyTransform(out, in);
     }
+
+    /**
+     * Tests the inverse derivatives at a few points. This method compares the derivatives computed by
+     * the projection with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-428">SIS-428</a>
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public void testInverseDerivative() throws FactoryException, TransformException {
+        createProjection(false);
+        transform = transform.inverse();
+        derivativeDeltas = new double[] {100, 100};             // Approximatively 100 metres.
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        verifyDerivative(  912759.823,  5873471.956);
+        verifyDerivative(-7622861.357, -7774469.608);
+    }
+
+    /**
+     * Tests the derivatives at a few points. This method compares the derivatives computed by
+     * the projection with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testInverseDerivative")
+    public void testDerivative() throws FactoryException, TransformException {
+        createProjection(false);
+        final double delta = (100.0 / 60) / 1852;               // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = 1E-6;                                       // More severe than Formulas.LINEAR_TOLERANCE.
+        verifyDerivative(15,  30);
+        verifyDerivative(10, -60);
+    }
 }
