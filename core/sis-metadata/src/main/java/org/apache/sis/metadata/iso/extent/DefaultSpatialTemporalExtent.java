@@ -33,6 +33,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -188,7 +189,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * @since 0.5
      */
     public void setVerticalExtent(final VerticalExtent newValue) {
-        checkWritePermission();
+        checkWritePermission(verticalExtent);
         verticalExtent = newValue;
     }
 
@@ -228,7 +229,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      */
     @Override
     public void setBounds(final Envelope envelope) throws TransformException {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(spatialExtent));
         ReferencingServices.getInstance().setBounds(envelope, this);
     }
 }

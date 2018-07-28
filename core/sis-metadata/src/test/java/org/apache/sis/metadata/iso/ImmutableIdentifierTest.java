@@ -45,10 +45,7 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * @since   0.3
  * @module
  */
-@DependsOn({
-    DefaultIdentifierTest.class,
-    org.apache.sis.metadata.iso.citation.CitationsTest.class
-})
+@DependsOn(DefaultIdentifierTest.class)
 public final strictfp class ImmutableIdentifierTest extends TestCase {
     /**
      * Returns the properties map to be used in argument to test methods.

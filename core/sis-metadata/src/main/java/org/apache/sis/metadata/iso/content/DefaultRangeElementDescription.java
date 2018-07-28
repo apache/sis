@@ -145,7 +145,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @param  newValue  the new name value.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -166,7 +166,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @param  newValue  the new definition value.
      */
     public void setDefinition(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(definition);
         definition = newValue;
     }
 

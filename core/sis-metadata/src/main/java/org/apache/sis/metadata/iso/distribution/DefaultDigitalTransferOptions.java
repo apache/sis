@@ -190,7 +190,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * @param  newValue  the new units of distribution.
      */
     public void setUnitsOfDistribution(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(unitsOfDistribution);
         unitsOfDistribution = newValue;
     }
 
@@ -215,7 +215,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * @throws IllegalArgumentException if the given value is NaN or negative.
      */
     public void setTransferSize(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(transferSize);
         if (ensurePositive(DefaultDigitalTransferOptions.class, "transferSize", true, newValue)) {
             transferSize = newValue;
         }
@@ -318,7 +318,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * @since 0.5
      */
     public void setTransferFrequency(final PeriodDuration newValue) {
-        checkWritePermission();
+        checkWritePermission(transferFrequency);
         transferFrequency = newValue;
     }
 

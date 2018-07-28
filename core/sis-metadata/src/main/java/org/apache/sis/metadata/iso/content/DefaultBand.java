@@ -215,7 +215,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
     public void setBoundMin(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(boundMin);
         if (ensurePositive(DefaultBand.class, "boundMin", false, newValue)) {
             boundMin = newValue;
         }
@@ -247,7 +247,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
     public void setBoundMax(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(boundMax);
         if (ensurePositive(DefaultBand.class, "boundMax", false, newValue)) {
             boundMax = newValue;
         }
@@ -277,7 +277,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @since 0.5
      */
     public void setBoundUnits(final Unit<Length> newValue) {
-        checkWritePermission();
+        checkWritePermission(boundUnits);
         boundUnits = newValue;
     }
 
@@ -298,7 +298,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @param  newValue  the new band definition.
      */
     public void setBandBoundaryDefinition(final BandDefinition newValue) {
-        checkWritePermission();
+        checkWritePermission(bandBoundaryDefinition);
         bandBoundaryDefinition = newValue;
     }
 
@@ -355,7 +355,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setPeakResponse(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(peakResponse);
         if (ensurePositive(DefaultBand.class, "peakResponse", false, newValue)) {
             peakResponse = newValue;
         }
@@ -379,7 +379,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @param  newValue  the new tone gradation.
      */
     public void setToneGradation(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(toneGradation);
         if (ensurePositive(DefaultBand.class, "toneGradation", false, newValue)) {
             toneGradation = newValue;
         }
@@ -442,7 +442,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @param  newValue  the new transmitted polarization.
      */
     public void setTransmittedPolarization(final PolarizationOrientation newValue) {
-        checkWritePermission();
+        checkWritePermission(transmittedPolarization);
         transmittedPolarization = newValue;
     }
 
@@ -463,7 +463,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @param  newValue  the new detected polarization.
      */
     public void setDetectedPolarization(final PolarizationOrientation newValue) {
-        checkWritePermission();
+        checkWritePermission(detectedPolarization);
         detectedPolarization = newValue;
     }
 }

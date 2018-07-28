@@ -143,7 +143,7 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Can not process property “{0}”. The reason is: {1}
          */
-        public static final short CanNotProcessProperty_2 = 185;
+        public static final short CanNotProcessProperty_2 = 152;
 
         /**
          * Can not read property “{1}” in file “{0}”.
@@ -894,11 +894,6 @@ public final class Errors extends IndexedResourceBundle {
          * The cell at column “{1}” of row “{0}” is unmodifiable.
          */
         public static final short UnmodifiableCellValue_2 = 151;
-
-        /**
-         * This metadata is not modifiable.
-         */
-        public static final short UnmodifiableMetadata = 152;
 
         /**
          * This instance of ‘{0}’ is not modifiable.

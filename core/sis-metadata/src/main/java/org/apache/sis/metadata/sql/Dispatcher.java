@@ -25,11 +25,16 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.metadata.Dependencies;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**
@@ -54,7 +59,7 @@ import org.apache.sis.internal.metadata.Dependencies;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -126,7 +131,7 @@ final class Dispatcher implements InvocationHandler {
      * @return the value to be returned from the public method invoked by the method.
      */
     @Override
-    public Object invoke(final Object proxy, final Method method, final Object[] args) {
+    public Object invoke(final Object proxy, Method method, final Object[] args) {
         final int n = (args != null) ? args.length : 0;
         switch (method.getName()) {
             case "toString": {
@@ -155,7 +160,13 @@ final class Dispatcher implements InvocationHandler {
                  */
                 Object value;
                 try {
+                    final long nb = nullValues;
                     value = fetchValue(source.getLookupInfo(method.getDeclaringClass()), method);
+                    if (value == null) {
+                        nullValues = nb;
+                        method = supercede(method);
+                        value = fetchValue(source.getLookupInfo(method.getDeclaringClass()), method);
+                    }
                 } catch (ReflectiveOperationException | SQLException | MetadataStoreException e) {
                     throw new BackingStoreException(error(method), e);
                 }
@@ -230,11 +241,15 @@ final class Dispatcher implements InvocationHandler {
                             if (impl == null) {
                                 return value;
                             }
-                            this.cache = cache = impl.newInstance();
+                            cache = impl.newInstance();
+                            if (cache instanceof ModifiableMetadata) {
+                                ((ModifiableMetadata) cache).transition(ModifiableMetadata.State.COMPLETABLE);
+                            }
                             /*
                              * We do not use AtomicReference because it is okay if the cache is instantiated twice.
                              * It would cause us to query the database twice, but we should get the same information.
                              */
+                            this.cache = cache;
                         }
                         final Map<String, Object> map = source.standard.asValueMap(cache, type,
                                     KeyNamePolicy.METHOD_NAME, ValueExistencePolicy.ALL);
@@ -311,5 +326,18 @@ final class Dispatcher implements InvocationHandler {
     @Override
     public String toString() {
         return toString(getClass());
+    }
+
+    /**
+     * If the given method is superceded by a new method, the new method.
+     * This is a hack for transition from legacy ISO type to newer type:
+     * {@code ResponsibleParty.getRole()} overriding {@code Responsibility.getRole()}
+     * confuses this {@code Dispatcher} class. We need the method in the base interface.
+     */
+    private static Method supercede(Method method) throws NoSuchMethodException {
+        if (method.getDeclaringClass() == ResponsibleParty.class && "getRole".equals(method.getName())) {
+            method = DefaultResponsibility.class.getMethod("getRole");
+        }
+        return method;
     }
 }

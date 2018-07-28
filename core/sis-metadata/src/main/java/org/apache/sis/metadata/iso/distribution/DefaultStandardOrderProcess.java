@@ -189,7 +189,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @see #setCurrency(Currency)
      */
     public void setFees(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(fees);
         fees = newValue;
     }
 
@@ -224,7 +224,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @since 0.5
      */
     public void setCurrency(final Currency newValue) {
-        checkWritePermission();
+        checkWritePermission(currency);
         currency = newValue;
     }
 
@@ -245,7 +245,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @param  newValue  the new planned available time.
      */
     public void setPlannedAvailableDateTime(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(plannedAvailableDateTime);
         plannedAvailableDateTime = toMilliseconds(newValue);
     }
 
@@ -266,7 +266,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @param  newValue  the new ordering instructions.
      */
     public void setOrderingInstructions(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(orderingInstructions);
         orderingInstructions = newValue;
     }
 
@@ -287,7 +287,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @param  newValue  the new turnaround.
      */
     public void setTurnaround(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(turnaround);
         turnaround = newValue;
     }
 
@@ -315,7 +315,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @since 0.5
      */
     public void setOrderOptionType(final RecordType newValue) {
-        checkWritePermission();
+        checkWritePermission(orderOptionType);
         orderOptionType = newValue;
     }
 
@@ -345,7 +345,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * @since 0.5
      */
     public void setOrderOptions(final Record newValue) {
-        checkWritePermission();
+        checkWritePermission(orderOptions);
         orderOptions = newValue;
     }
 }

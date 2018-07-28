@@ -83,6 +83,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
      * @throws Exception if an error occurred while writing or reading the database.
      */
     @Test
+    @org.junit.Ignore("Requires GeoAPI 3.1.")
     public void testPostgreSQL() throws Exception {
         try (final TestDatabase db = TestDatabase.createOnPostgreSQL("MetadataWriter", true)) {
             source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, "MetadataWriter", null);

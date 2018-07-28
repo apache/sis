@@ -151,7 +151,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(toDate(date));
         date = toMilliseconds(newValue);
     }
 
@@ -172,7 +172,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new event.
      */
     public void setDateType(final DateType newValue) {
-        checkWritePermission();
+        checkWritePermission(dateType);
         dateType = newValue;
     }
 }

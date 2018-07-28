@@ -203,7 +203,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param  newValue  the new procedure description value.
      */
     public void setProcedureDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(procedureDescription);
         procedureDescription = newValue;
     }
 
@@ -244,7 +244,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param  newValue  the new runtime parameter value.
      */
     public void setRunTimeParameters(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(runTimeParameters);
         runTimeParameters = newValue;
     }
 

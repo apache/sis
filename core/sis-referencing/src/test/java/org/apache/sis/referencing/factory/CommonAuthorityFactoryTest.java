@@ -364,7 +364,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "  SCOPE[“Horizontal component of 3D system.\\E.*\\Q”],\n" +
                 "  AREA[“World\\E.*\\Q”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“CRS”, 84, CITATION[“OGC:WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]\\E", crs);
+                "  ID[“CRS”, 84, CITATION[“WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]\\E", crs);
         /*
          * Note: the WKT specification defines the ID element as:
          *

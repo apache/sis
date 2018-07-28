@@ -123,7 +123,7 @@ public class DefaultIndividual extends AbstractParty {
      * @param  newValue  the new position of the individual in an organization.
      */
     public void setPositionName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(positionName);
         positionName = newValue;
     }
 }

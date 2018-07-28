@@ -196,7 +196,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @param  newValue  the new statement.
      */
     public void setStatement(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(statement);
         statement = newValue;
     }
 
@@ -222,7 +222,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @since 0.5
      */
     public void setScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 

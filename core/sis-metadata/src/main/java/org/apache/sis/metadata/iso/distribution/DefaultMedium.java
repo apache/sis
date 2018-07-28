@@ -38,6 +38,7 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -201,7 +202,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @param  newValue  the new name.
      */
     public void setName(final MediumName newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -231,7 +232,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @since 0.5
      */
     public void setDensity(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(densities));
         if (ensurePositive(DefaultMedium.class, "density", true, newValue)) {
             densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
         }
@@ -278,7 +279,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @param  newValue  the new density units.
      */
     public void setDensityUnits(final Unit<?> newValue) {
-        checkWritePermission();
+        checkWritePermission(densityUnits);
         densityUnits = newValue;
     }
 
@@ -301,7 +302,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setVolumes(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(volumes);
         if (ensurePositive(DefaultMedium.class, "volumes", false, newValue)) {
             volumes = newValue;
         }
@@ -344,7 +345,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @param  newValue  the new medium note.
      */
     public void setMediumNote(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(mediumNote);
         mediumNote = newValue;
     }
 

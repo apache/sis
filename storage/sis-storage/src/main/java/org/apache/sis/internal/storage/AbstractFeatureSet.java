@@ -92,7 +92,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
                 }
             }
             // No geographic extent - see above javadoc.
-            metadata.apply(DefaultMetadata.State.FINAL);
+            metadata.transition(DefaultMetadata.State.FINAL);
             this.metadata = metadata;
         }
         return metadata;

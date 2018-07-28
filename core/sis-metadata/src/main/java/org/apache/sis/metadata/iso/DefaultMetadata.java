@@ -78,6 +78,7 @@ import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Obligation.MANDATORY;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -570,7 +571,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLanguage(final Locale newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(languages));
         setDefaultLocale(newValue);
     }
 
@@ -598,7 +599,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(languages));
         setOtherLocales(newValues);
     }
 
@@ -709,7 +710,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     public void setParentMetadata(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(parentMetadata);
         parentMetadata = newValue;
     }
 
@@ -746,7 +747,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setParentIdentifier(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(parentMetadata);
         // See "Note about deprecated methods implementation"
         DefaultCitation parent = DefaultCitation.castOrCopy(parentMetadata);
         if (parent == null) {
@@ -833,7 +834,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
@@ -881,7 +882,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
@@ -907,7 +908,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param  newValues  the new contacts.
      */
     public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
-        checkWritePermission();
         contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
 
@@ -972,7 +972,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
@@ -1105,7 +1105,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@link #setMetadataStandardVersion(String)} methods.
      */
     private void setMetadataStandard(final boolean version, final String newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(metadataStandards));
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
@@ -1263,8 +1263,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = new URI(newValue);
-        checkWritePermission();
-        Collection<Identification> info = identificationInfo; // See "Note about deprecated methods implementation"
+        Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
+        checkWritePermission(valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();
@@ -1544,7 +1544,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#setResourceMaintenances(Collection)
      */
     public void setMetadataMaintenance(final MaintenanceInformation newValue) {
-        checkWritePermission();
+        checkWritePermission(metadataMaintenance);
         metadataMaintenance = newValue;
     }
 

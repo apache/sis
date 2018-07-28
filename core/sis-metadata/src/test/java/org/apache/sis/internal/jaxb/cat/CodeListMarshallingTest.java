@@ -45,10 +45,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class CodeListMarshallingTest extends TestCase {

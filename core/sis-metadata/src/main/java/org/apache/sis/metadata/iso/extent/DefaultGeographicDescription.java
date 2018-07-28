@@ -202,7 +202,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * @param  newValue  the new geographic identifier.
      */
     public void setGeographicIdentifier(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(geographicIdentifier);
         geographicIdentifier = newValue;
     }
 }

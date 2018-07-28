@@ -187,7 +187,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @param newValue {@code true} if control points are available.
      */
     public void setControlPointAvailable(final boolean newValue) {
-       checkWritePermission();
+       checkWritePermission(isDefined(CONTROL_POINT_MASK));
         if (newValue) {
             booleans |= CONTROL_POINT_MASK;
         } else {
@@ -212,7 +212,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @param newValue {@code true} if orientation parameter are available.
      */
     public void setOrientationParameterAvailable(final boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(OPERATION_MASK));
         if (newValue) {
             booleans |= OPERATION_MASK;
         } else {
@@ -237,7 +237,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @param  newValue  the new orientation parameter description.
      */
     public void setOrientationParameterDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(orientationParameterDescription);
         orientationParameterDescription = newValue;
     }
 
@@ -258,7 +258,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @param  newValue  the new georeferenced parameters.
      */
     public void setGeoreferencedParameters(final Record newValue) {
-        checkWritePermission();
+        checkWritePermission(georeferencedParameters);
         georeferencedParameters = newValue;
     }
 

@@ -166,7 +166,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * @param  newValue  the new specification.
      */
     public void setSpecification(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(specification);
         specification = newValue;
     }
 
@@ -187,7 +187,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * @param  newValue  the new explanation.
      */
     public void setExplanation(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(explanation);
         explanation = newValue;
     }
 
@@ -207,7 +207,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * @param newValue {@code true} if the test pass.
      */
     public void setPass(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(pass);
         pass = newValue;
     }
 }

@@ -170,7 +170,7 @@ public class DefaultResponsibility extends ISOMetadata {
      * @param  newValue  the new role, or {@code null} if none.
      */
     public void setRole(final Role newValue) {
-        checkWritePermission();
+        checkWritePermission(role);
         role = newValue;
     }
 

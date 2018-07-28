@@ -297,7 +297,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new name.
      */
     public void setName(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -324,7 +324,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Deprecated
     public void setShortName(final String newValue)  {
-        checkWritePermission();
+        checkWritePermission(shortName);
         shortName = newValue;
     }
 
@@ -353,7 +353,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      */
     @Deprecated
     public void setDomainCode(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(domainCode);
         domainCode = newValue;
     }
 
@@ -374,7 +374,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new definition.
      */
     public void setDefinition(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(definition);
         definition = newValue;
     }
 
@@ -395,7 +395,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new obligation.
      */
     public void setObligation(final Obligation newValue)  {
-        checkWritePermission();
+        checkWritePermission(obligation);
         obligation = newValue;
     }
 
@@ -418,7 +418,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new condition.
      */
     public void setCondition(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(condition);
         condition = newValue;
     }
 
@@ -439,7 +439,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new data type.
      */
     public void setDataType(final Datatype newValue) {
-        checkWritePermission();
+        checkWritePermission(dataType);
         dataType = newValue;
     }
 
@@ -465,7 +465,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setMaximumOccurrence(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(maximumOccurrence);
         if (ensurePositive(DefaultExtendedElementInformation.class, "maximumOccurrence", false, newValue)) {
             maximumOccurrence = newValue;
         }
@@ -492,7 +492,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new domain value.
      */
     public void setDomainValue(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(domainValue);
         domainValue = newValue;
     }
 
@@ -534,7 +534,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @param  newValue  the new rule.
      */
     public void setRule(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(rule);
         rule = newValue;
     }
 

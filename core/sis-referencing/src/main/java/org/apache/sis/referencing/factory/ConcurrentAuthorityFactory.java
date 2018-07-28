@@ -1603,8 +1603,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *     </ol>
      *   </li>
      * </ul>
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-2">GEOTK-2</a>
      */
     private static final class Key {
         /** The type of the cached object.    */ final Object type;

@@ -234,7 +234,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     public void setConstraintApplicationScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(constraintApplicationScope);
         constraintApplicationScope = newValue;
     }
 
@@ -319,7 +319,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     public void setReleasability(final DefaultReleasability newValue) {
-        checkWritePermission();
+        checkWritePermission(releasability);
         releasability = newValue;
     }
 

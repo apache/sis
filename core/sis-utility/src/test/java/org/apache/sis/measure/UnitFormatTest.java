@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Tests the {@link UnitFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -261,6 +261,25 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests the formatting of units that are derived from existing units by a multiplication factor.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-382">SIS-382</a>
+     */
+    @Test
+    public void testFormatScaled() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        f.setStyle(UnitFormat.Style.SYMBOL);
+        assertEquals("Mm",      f.format(Units.KILOMETRE .multiply(1000)));
+        assertEquals("10⁵⋅m",   f.format(Units.KILOMETRE .multiply( 100)));
+        assertEquals("10⁻⁴⋅m",  f.format(Units.MILLIMETRE.divide  (  10)));
+        assertEquals("mg",      f.format(Units.KILOGRAM  .divide  (1E+6)));
+        assertEquals("mg",      f.format(Units.GRAM      .divide  (1E+3)));
+        assertEquals("µg",      f.format(Units.KILOGRAM  .multiply(1E-9)));
+        assertEquals("cg",      f.format(Units.GRAM      .divide  ( 100)));
+        assertEquals("10⁻⁷⋅kg", f.format(Units.GRAM      .divide  (1E+4)));
+    }
+
+    /**
      * Tests parsing of names.
      */
     @Test
@@ -406,6 +425,8 @@ public final strictfp class UnitFormatTest extends TestCase {
 
     /**
      * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-382">SIS-382</a>
      */
     @Test
     @DependsOnMethod("testParseTerms")
@@ -414,10 +435,14 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.MILLIMETRE, f.parse("m/1000"));
         assertSame(Units.KILOMETRE,  f.parse( "1000*m"));
         assertSame(Units.KILOMETRE,  f.parse( "1000.0*m"));
-        ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6⋅m"),   "µm", 1E-6);
-        ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6.m"),   "µm", 1E-6);
-        ConventionalUnitTest.verify(Units.METRE, f.parse("10^-3.m"),   "mm", 1E-3);
-        ConventionalUnitTest.verify(Units.METRE, f.parse( "100 feet"), null, 30.48);
+        ConventionalUnitTest.verify(Units.METRE,    f.parse("10*-6⋅m"),   "µm", 1E-6);
+        ConventionalUnitTest.verify(Units.METRE,    f.parse("10*-6.m"),   "µm", 1E-6);
+        ConventionalUnitTest.verify(Units.METRE,    f.parse("10^-3.m"),   "mm", 1E-3);
+        ConventionalUnitTest.verify(Units.METRE,    f.parse("10⁻⁴.m"),    null, 1E-4);
+        ConventionalUnitTest.verify(Units.METRE,    f.parse( "100 feet"), null, 30.48);
+        ConventionalUnitTest.verify(Units.KILOGRAM, f.parse("10*3.kg"),   "Mg", 1E+3);
+        ConventionalUnitTest.verify(Units.KILOGRAM, f.parse("10⋅mg"),     "cg", 1E-5);
+        ConventionalUnitTest.verify(Units.KILOGRAM, f.parse("10^-6.kg"),  "mg", 1E-6);
     }
 
     /**

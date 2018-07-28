@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.List;
+import java.util.Arrays;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;                // For javadoc
 import org.apache.sis.util.Static;
@@ -127,7 +128,7 @@ public final class Citations extends Static {
      * @see org.apache.sis.internal.jaxb.referencing.Code#getIdentifier()
      * @see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>
      */
-    static final Citation IOGP = new CitationConstant(Constants.IOGP);
+    static final CitationConstant IOGP = new CitationConstant(Constants.IOGP);
 
     /**
      * The authority for identifiers of objects defined by the
@@ -203,23 +204,7 @@ public final class Citations extends Static {
      *
      * @since 0.7
      */
-    public static final IdentifierSpace<Integer> WMS = new WMS();
-
-    /**
-     * Special case for the {@link Citations#WMS} constant
-     * since it uses the same codespace than {@link Citations#OGC}.
-     */
-    private static final class WMS extends CitationConstant.Authority<Integer> {
-        private static final long serialVersionUID = -8490156477724003085L;
-
-        WMS() {
-            super("WMS");
-        }
-
-        @Override public String getName() {
-            return Constants.OGC;
-        }
-    }
+    public static final IdentifierSpace<Integer> WMS = new CitationConstant.Authority<>("WMS", Constants.OGC);
 
     /**
      * The authority for identifiers found in specifications from the
@@ -301,7 +286,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ESRI");
+    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ArcGIS", "ESRI");
 
     /**
      * The authority for identifiers of objects defined by the
@@ -351,7 +336,7 @@ public final class Citations extends Static {
     public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>(Constants.GEOTIFF);
 
     /**
-     * The authority for identifiers of objects defined by the <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
+     * The authority for identifiers of objects defined by the <a href="https://proj4.org/">Proj.4</a> project.
      *
      * <div class="section">Main usage</div>
      * This value can be returned by:
@@ -388,7 +373,7 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    public static final IdentifierSpace<Integer> S57 = new CitationConstant.Authority<>("S57");
+    public static final IdentifierSpace<Integer> S57 = new CitationConstant.Authority<>("IHO S-57", "S57");
 
     /**
      * The <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
@@ -431,16 +416,17 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final Citation SIS = new CitationConstant(Constants.SIS);
+    public static final Citation SIS = new CitationConstant.Authority<String>(Constants.SIS);
 
     /**
-     * List of citations declared in this class.
+     * List of <em>public</em> citations declared in this class.
      * Most frequently used citations (at least in SIS) should be first.
+     * Non-public citations like {@link #IOGP} are handled separately.
      */
     private static final CitationConstant[] CITATIONS = {
         (CitationConstant) EPSG,
-        (CitationConstant) WMS,
         (CitationConstant) OGC,
+        (CitationConstant) WMS,                 // Must be after OGC because it declares the same namespace.
         (CitationConstant) ESRI,
         (CitationConstant) NETCDF,
         (CitationConstant) GEOTIFF,
@@ -451,8 +437,7 @@ public final class Citations extends Static {
         (CitationConstant) ISSN,
         (CitationConstant) SIS,
         (CitationConstant) ISO_19115.get(0),
-        (CitationConstant) ISO_19115.get(1),
-        (CitationConstant) IOGP
+        (CitationConstant) ISO_19115.get(1)
     };
 
     static {  // Must be after CITATIONS array construction.
@@ -476,6 +461,18 @@ public final class Citations extends Static {
         for (final CitationConstant citation : CITATIONS) {
             citation.refresh();
         }
+        IOGP.refresh();
+    }
+
+    /**
+     * Returns the values declared in this {@code Citations} class.
+     *
+     * @return the value declared in this {@code Citations} class.
+     *
+     * @since 1.0
+     */
+    public static Citation[] values() {
+        return Arrays.copyOf(CITATIONS, CITATIONS.length, Citation[].class);
     }
 
     /**
@@ -496,15 +493,16 @@ public final class Citations extends Static {
             return null;
         }
         for (final CitationConstant citation : CITATIONS) {
-            if (equalsFiltered(identifier, citation.title)) {
+            if (equalsFiltered(identifier, citation.namespace)) {
                 return citation;
             }
         }
-        if (equalsFiltered(identifier, "OGP")) {        // Old name of "IOGP" organization.
-            return IOGP;
-        }
-        if (equalsFiltered(identifier, Constants.CRS)) {
+        if (equalsFiltered(identifier, Constants.CRS) || equalsFiltered(identifier, "WMS")) {
             return WMS;
+        }
+        // "OGP" is the old name of "IOGP" organization.
+        if (equalsFiltered(identifier, "IOGP") || equalsFiltered(identifier, "OGP")) {
+            return IOGP;
         }
         /*
          * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects
@@ -648,11 +646,35 @@ public final class Citations extends Static {
 
     /**
      * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
+     *
+     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
+     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
+     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
+     *
+     * @since 0.6
+     *
+     * @deprecated Replaced by {@link #toCodeSpace(Citation)} in order to reduce the risk of inconsistent
+     *             behavior if those two methods are mixed.
+     */
+    @Deprecated
+    public static String getUnicodeIdentifier(final Citation citation) {
+        return org.apache.sis.internal.util.Citations.removeIgnorableCharacters(
+               org.apache.sis.internal.util.Citations.getIdentifier(citation, true));
+    }
+
+    /**
+     * Infers a code space from the given citation, or returns {@code null} if none.
      * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for processing purpose. This method performs the following actions:
      *
      * <ul class="verbose">
-     *   <li>First, performs the same work than {@link #getIdentifier(Citation)} except that {@code '_'}
+     *   <li>If the given citation is an instance of {@code IdentifierSpace},
+     *       returns {@link IdentifierSpace#getName()}.</li>
+     *   <li>Otherwise, performs the same work than {@link #getIdentifier(Citation)} except that {@code '_'}
      *       is used instead of {@link org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR ':'}
      *       as the separator between the codespace and the code.</li>
      *   <li>If the result of above method call is {@code null} or is not a
@@ -679,28 +701,6 @@ public final class Citations extends Static {
      *   <li>{@code ⁔}</li>
      * </ul></div>
      *
-     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
-     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
-     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
-     *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
-     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
-     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
-     *
-     * @since 0.6
-     */
-    public static String getUnicodeIdentifier(final Citation citation) {
-        return org.apache.sis.internal.util.Citations.removeIgnorableCharacters(
-               org.apache.sis.internal.util.Citations.getIdentifier(citation, true));
-    }
-
-    /**
-     * Infers a code space from the given citation, or returns {@code null} if none.
-     * This method is very close to {@link #getUnicodeIdentifier(Citation)}, except that it looks for
-     * {@link IdentifierSpace#getName()} before to scan the identifiers and titles. The result should
-     * be the same in most cases, except some cases like the {@link org.apache.sis.metadata.iso.citation.Citations}
-     * constant for {@code "Proj.4"} in which case this method returns {@code "Proj4"} instead of {@code null}.
-     *
      * @param  citation  the citation for which to infer the code space, or {@code null}.
      * @return a non-empty code space for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
@@ -711,7 +711,8 @@ public final class Citations extends Static {
         if (citation instanceof IdentifierSpace<?>) {
             return ((IdentifierSpace<?>) citation).getName();
         } else {
-            return getUnicodeIdentifier(citation);
+            return org.apache.sis.internal.util.Citations.removeIgnorableCharacters(
+                   org.apache.sis.internal.util.Citations.getIdentifier(citation, true));
         }
     }
 

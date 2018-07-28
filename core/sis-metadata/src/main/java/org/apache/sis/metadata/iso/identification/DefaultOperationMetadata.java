@@ -169,7 +169,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * @param  newValue  the new unique identifier for this interface.
      */
     public void setOperationName(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(operationName);
         operationName = newValue;
     }
 
@@ -245,7 +245,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * @param  newValue  the new free text description of the intent of the operation and the results of the operation.
      */
     public void setOperationDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(operationDescription);
         operationDescription = newValue;
     }
 
@@ -267,7 +267,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * @param  newValue  the new name used to invoke this interface within the context of the DCP.
      */
     public void setInvocationName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(invocationName);
         invocationName = newValue;
     }
 

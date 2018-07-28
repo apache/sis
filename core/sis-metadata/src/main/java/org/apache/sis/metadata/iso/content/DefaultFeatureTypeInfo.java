@@ -142,7 +142,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * @param  newValue  the new name.
      */
     public void setFeatureTypeName(final GenericName newValue) {
-        checkWritePermission();
+        checkWritePermission(featureTypeName);
         featureTypeName = newValue;
     }
 
@@ -165,7 +165,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setFeatureInstanceCount(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(featureInstanceCount);
         if (ensurePositive(DefaultFeatureTypeInfo.class, "featureInstanceCount", true, newValue)) {
             featureInstanceCount = newValue;
         }

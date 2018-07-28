@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
+import java.util.Collection;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -31,7 +32,7 @@ import org.apache.sis.internal.util.Utilities;
  * Miscellaneous utility methods for metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  *
@@ -65,6 +66,17 @@ public final class MetadataUtilities extends Static {
      */
     public static Date toDate(final long value) {
         return (value != Long.MIN_VALUE) ? new Date(value) : null;
+    }
+
+    /**
+     * Returns the given collection if non-null and non-empty, or {@code null} otherwise.
+     * This method is used for calls to {@code checkWritePermission(Object)}.
+     *
+     * @param  value  the collection.
+     * @return the given collection if non-empty, or {@code null} otherwise.
+     */
+    public static Collection<?> valueIfDefined(final Collection<?> value) {
+        return (value == null) || value.isEmpty() ? null : value;
     }
 
     /**

@@ -180,7 +180,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @since 1.0
      */
     public void setFileName(final URI newValue) {
-        checkWritePermission();
+        checkWritePermission(fileName);
         fileName = newValue;
     }
 
@@ -205,7 +205,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @since 1.0
      */
     public void setFileDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileDescription);
         fileDescription = newValue;
     }
 
@@ -231,7 +231,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @param  newValue  the new file type.
      */
     public void setFileType(final String newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileType);
         fileType = newValue;
     }
 
@@ -281,7 +281,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      */
     @Deprecated
     public void setFileFormat(final Format newValue) {
-        checkWritePermission();
+        checkWritePermission(fileFormat);
         fileFormat = newValue;
     }
 }

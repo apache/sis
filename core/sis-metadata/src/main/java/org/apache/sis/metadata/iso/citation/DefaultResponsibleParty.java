@@ -31,6 +31,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Identification of, and means of communication with, person(s) and
@@ -201,7 +203,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @return {@code true} if the name has been set, or {@code false} otherwise.
      */
     private boolean setName(final Class<? extends AbstractParty> type, final boolean position, final InternationalString name) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(super.getParties()));
         final Iterator<AbstractParty> it = getParties().iterator();
         while (it.hasNext()) {
             final AbstractParty party = it.next();
@@ -383,7 +385,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setContactInfo(final Contact newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(super.getParties()));
         final Iterator<AbstractParty> it = getParties().iterator();
         while (it.hasNext()) {
             final AbstractParty party = it.next();

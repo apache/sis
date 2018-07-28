@@ -29,8 +29,11 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.metadata.ServicesForUtility;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -43,7 +46,7 @@ import org.apache.sis.internal.metadata.ServicesForUtility;
  * @version 1.0
  *
  * @see IdentifierSpace
- * @see org.apache.sis.metadata.iso.citation.Citations
+ * @see Citations
  *
  * @since 0.6
  * @module
@@ -52,7 +55,7 @@ public class CitationConstant extends SimpleCitation {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7812463864874105717L;
+    private static final long serialVersionUID = -8429121584437634107L;
 
     /**
      * Class of {@code public static final Citation} constants which are also used as namespace for identifiers.
@@ -69,11 +72,22 @@ public class CitationConstant extends SimpleCitation {
 
         /**
          * Creates a new citation for an authority managing codes in the given namespace.
+         * This constructor assumes that the namespace is the same as the abbreviation given as citation title.
          *
          * @param  namespace  the namespace of codes managed by this authority (e.g. "EPSG").
          */
         public Authority(final String namespace) {
             super(namespace);
+        }
+
+        /**
+         * Creates a new citation for an authority managing codes in the given namespace.
+         *
+         * @param  name       a human-understandable primary key for fetching more information.
+         * @param  namespace  the namespace of codes managed by this authority (e.g. "EPSG").
+         */
+        public Authority(final String name, final String namespace) {
+            super(name, namespace);
         }
 
         /**
@@ -84,8 +98,8 @@ public class CitationConstant extends SimpleCitation {
          * </ul>
          */
         @Override
-        public String getName() {
-            return title;
+        public final String getName() {
+            return namespace;
         }
 
         /**
@@ -98,7 +112,17 @@ public class CitationConstant extends SimpleCitation {
     }
 
     /**
+     * The name by which this citation is known to {@link Citations#fromName(String)}.
+     * Often the same than the abbreviation that {@link CitationConstant} uses as the title.
+     * If this {@code CitationConstant} is a {@link Authority} subtype, then this is also
+     * the authority namespace.
+     */
+    public final String namespace;
+
+    /**
      * The citation which contain the "real" data, or {@code null} if not yet created.
+     * This is usually an instance created by {@link MetadataSource}. Those instances
+     * manage their own caching, so accesses to the database should not occur often.
      */
     private transient volatile Citation delegate;
 
@@ -110,6 +134,19 @@ public class CitationConstant extends SimpleCitation {
      */
     public CitationConstant(final String name) {
         super(name);
+        this.namespace = name;
+    }
+
+    /**
+     * Creates a new proxy for the given primary key but a different programmatic name.
+     * The key should be readable enough for being usable as a fallback if the database is not available.
+     *
+     * @param  name       a human-understandable primary key for fetching more information.
+     * @param  namespace  the name by which this citation is known to {@link Citations#fromName(String)}.
+     */
+    public CitationConstant(final String name, final String namespace) {
+        super(name);
+        this.namespace = namespace;
     }
 
     /**
@@ -135,12 +172,15 @@ public class CitationConstant extends SimpleCitation {
             synchronized (this) {
                 c = delegate;
                 if (c == null) {
-                    c = ServicesForUtility.createCitation(title);
-                    if (c == null) {
+                    try {
+                        c = MetadataSource.getProvided().lookup(Citation.class, title);
+                    } catch (MetadataStoreException e) {
                         /*
-                         * 'sis-metadata' module not on the classpath (should be very rare)
-                         * or no citation defined for the given primary key.
+                         * If no database was available, MetadataSource.getProvided() was supposed to fallback on
+                         * the MetadataFallback class. So if we get this exception, a more serious error occurred.
+                         * It is still not fatal however, since most of Citation content is informative.
                          */
+                        Logging.unexpectedException(Logging.getLogger(Loggers.SQL), CitationConstant.class, "delegate", e);
                         c = new SimpleCitation(title);
                     }
                     delegate = c;

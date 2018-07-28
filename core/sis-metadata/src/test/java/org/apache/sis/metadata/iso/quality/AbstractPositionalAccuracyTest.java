@@ -68,9 +68,6 @@ public final strictfp class AbstractPositionalAccuracyTest extends TestUsingFile
      * Tests the (un)marshalling of a text group from/to legacy ISO 19139:2007 schema.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-399">SIS-399</a>
      */
     @Test
     public void testLegacyXML() throws JAXBException {

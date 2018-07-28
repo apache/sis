@@ -40,6 +40,7 @@ import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -180,7 +181,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @param  newValue  the new attribute description.
      */
     public void setAttributeDescription(final RecordType newValue) {
-        checkWritePermission();
+        checkWritePermission(attributeDescription);
         attributeDescription = newValue;
     }
 
@@ -208,7 +209,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @since 0.5
      */
     public void setProcessingLevelCode(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(processingLevelCode);
         processingLevelCode = newValue;
     }
 
@@ -292,7 +293,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Deprecated
     public void setContentType(final CoverageContentType newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(attributeGroups));
         final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
         Collection<DefaultAttributeGroup> groups = attributeGroups;
         if (groups != null) {
@@ -360,7 +361,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Deprecated
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(attributeGroups));
         ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);
     }
 

@@ -145,7 +145,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
      * @param  newValue  the new name used by the service for this chain.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -166,7 +166,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
      * @param  newValue  the new a narrative explanation of the services in the chain and resulting output
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 

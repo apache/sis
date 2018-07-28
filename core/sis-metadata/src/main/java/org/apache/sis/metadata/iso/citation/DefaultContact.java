@@ -456,7 +456,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @param  newValue  the new contact instructions, or {@code null} if none.
      */
     public void setContactInstructions(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(contactInstructions);
         contactInstructions = newValue;
     }
 
@@ -483,7 +483,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @since 0.5
      */
     public void setContactType(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(contactType);
         contactType = newValue;
     }
 

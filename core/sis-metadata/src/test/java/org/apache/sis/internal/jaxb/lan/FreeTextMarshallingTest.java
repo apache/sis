@@ -33,11 +33,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class FreeTextMarshallingTest extends TestCase {

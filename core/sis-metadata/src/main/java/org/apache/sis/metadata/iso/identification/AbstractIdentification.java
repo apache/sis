@@ -338,7 +338,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param  newValue  the new citation.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 
@@ -359,7 +359,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param  newValue  the new summary of resource(s).
      */
     public void setAbstract(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(abstracts);
         abstracts = newValue;
     }
 
@@ -380,7 +380,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param  newValue  the new summary of intention.
      */
     public void setPurpose(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(purpose);
         purpose = newValue;
     }
 
@@ -608,7 +608,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     public void setProcessingLevel(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(processingLevel);
         processingLevel = newValue;
     }
 

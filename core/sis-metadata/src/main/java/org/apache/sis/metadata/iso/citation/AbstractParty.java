@@ -141,7 +141,7 @@ public class AbstractParty extends ISOMetadata {
      * @param  newValue  the new name of the party.
      */
     public void setName(final InternationalString newValue) {
-       checkWritePermission();
+       checkWritePermission(name);
        name = newValue;
     }
 

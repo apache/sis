@@ -69,15 +69,22 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * <ul class="verbose">
  *   <li>On input, the {@link #transform(double[], int, double[], int, boolean) transform(…)} method
- *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
+ *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>,
+ *   sometime pre-multiplied by other projection-specific factors (see point #3 below).
  *   Longitudes have the <cite>central meridian</cite> (λ₀) removed before the transform method is invoked.
  *   The conversion from degrees to radians and the longitude rotation are applied by the
  *   {@linkplain ContextualParameters#normalizeGeographicInputs normalization} affine transform.</li>
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
- *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
+ *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1,
+ *   sometime divided by other projection-specific factors (see point #3 below).
  *   The multiplication by the scale factor (<var>k₀</var>) and the translation by false easting (FE) and false
  *   northing (FN) are applied by the {@linkplain ContextualParameters#getMatrix denormalization} affine transform.</li>
+ *
+ *   <li>In addition to above-cited conversions, subclasses may opportunistically concatenate other linear operations
+ *   (scales and translations). They do that by changing the normalization and denormalization matrices shown below.
+ *   When such changes are applied, the {@code transform(…)} inputs are no longer angles in radians but some other
+ *   derived values.</li>
  * </ul>
  *
  * The normalization and denormalization steps are represented below by the matrices immediately on the left and right
@@ -651,16 +658,23 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * <div class="section">Normalization</div>
      * The input ordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
-     * <var>latitude</var> respectively) angles in radians.
+     * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
      * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
      * before this method is invoked. After this method is invoked, the caller will need to multiply the output
-     * coordinate by the global <cite>scale factor</cite>
-     * and apply the (<cite>false easting</cite>, <cite>false northing</cite>) offset.
+     * coordinate by the global <cite>scale factor</cite>,
+     * apply the (<cite>false easting</cite>, <cite>false northing</cite>) offset
+     * and eventually other projection-specific factors.
      * This means that projections that implement this method are performed on a sphere or ellipse
      * having a semi-major axis length of 1.
      *
-     * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">Proj.4</a>, the same standardization,
-     * described above, is handled by {@code pj_fwd.c}.</div>
+     * <div class="note"><b>Note 1:</b> it is generally not necessary to know the projection-specific additional
+     * factors applied by subclasses on the input and output values, because {@code NormalizedProjection} should
+     * never be used directly. {@code NormalizedProjection} instances are used only indirectly as a step in a
+     * concatenated transform that include the <cite>normalization</cite> and <cite>denormalization</cite>
+     * matrices documented in this class javadoc.</div>
+     *
+     * <div class="note"><b>Note 2:</b> in <a href="https://proj4.org/">Proj.4</a>, the same standardization,
+     * described above, is handled by {@code pj_fwd.c}, except for the projection-specific additional factors.</div>
      *
      * <div class="section">Argument checks</div>
      * The input longitude and latitude are usually (but not always) in the range [-π … π] and [-π/2 … π/2] respectively.
@@ -695,9 +709,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude
      * in the output coordinate. This means that projections that implement this method are performed on a sphere
      * or ellipse having a semi-major axis of 1.
+     * Additional projection-specific factors may also need to be applied (see class javadoc).
      *
-     * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">Proj.4</a>, the same standardization,
-     * described above, is handled by {@code pj_inv.c}.</div>
+     * <div class="note"><b>Note:</b> in <a href="https://proj4.org/">Proj.4</a>, the same standardization,
+     * described above, is handled by {@code pj_inv.c}, except for the projection-specific additional factors.</div>
      *
      * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.

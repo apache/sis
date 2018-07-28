@@ -137,7 +137,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 
@@ -158,7 +158,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 }

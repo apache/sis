@@ -199,7 +199,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @param newValue  the new keyword type.
      */
     public void setType(final KeywordType newValue) {
-        checkWritePermission();
+        checkWritePermission(type);
         type = newValue;
     }
 
@@ -220,7 +220,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @param newValue  the new thesaurus name.
      */
     public void setThesaurusName(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(thesaurusName);
         thesaurusName = newValue;
     }
 
@@ -256,7 +256,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @since 0.5
      */
     public void setKeywordClass(final DefaultKeywordClass newValue) {
-        checkWritePermission();
+        checkWritePermission(keywordClass);
         keywordClass = newValue;
     }
 }

@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -101,7 +101,8 @@ public final strictfp class TypesTest extends TestCase {
     public void testForStandardName() {
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation"));
         assertEquals(Datum        .class, Types.forStandardName("CD_Datum"));
-        assertEquals(Citation     .class, Types.forStandardName("CI_Citation")); // Value should be cached.
+        assertEquals(Citation     .class, Types.forStandardName("CI_Citation"));            // Value should be cached.
+        assertEquals(Citation     .class, Types.forStandardName("Citation"));
         assertEquals(AxisDirection.class, Types.forStandardName("CS_AxisDirection"));
         assertNull  (                     Types.forStandardName("MD_Dummy"));
     }

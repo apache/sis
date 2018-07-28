@@ -81,6 +81,7 @@ public class LandsatReaderTest extends TestCase {
      * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     @Test
+    @org.junit.Ignore("Requires GeoAPI 3.1.")
     public void testRead() throws IOException, DataStoreException, FactoryException {
         final Metadata actual;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -96,6 +97,7 @@ public class LandsatReaderTest extends TestCase {
                 "Metadata\n"
                 + "  ├─Metadata identifier……………………………………………………………… LandsatTest\n"
                 + "  ├─Metadata standard (1 of 2)…………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n"
+                + "  │   ├─Alternate title……………………………………………………………… ISO 19115-1\n"
                 + "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n"
                 + "  │   ├─Identifier…………………………………………………………………………… 19115-1\n"
                 + "  │   ├─Cited responsible party\n"
@@ -103,6 +105,7 @@ public class LandsatReaderTest extends TestCase {
                 + "  │   │   └─Party……………………………………………………………………………… International Organization for Standardization\n"
                 + "  │   └─Presentation form………………………………………………………… Document digital\n"
                 + "  ├─Metadata standard (2 of 2)…………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n"
+                + "  │   ├─Alternate title……………………………………………………………… ISO 19115-2\n"
                 + "  │   ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n"
                 + "  │   ├─Identifier…………………………………………………………………………… 19115-2\n"
                 + "  │   ├─Cited responsible party\n"

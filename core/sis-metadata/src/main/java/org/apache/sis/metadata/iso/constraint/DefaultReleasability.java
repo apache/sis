@@ -153,7 +153,7 @@ public class DefaultReleasability extends ISOMetadata {
      * @param  newValue  the new release statement.
      */
     public void setStatement(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(statement);
         statement = newValue;
     }
 

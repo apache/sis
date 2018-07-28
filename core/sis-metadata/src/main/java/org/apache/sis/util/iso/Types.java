@@ -35,6 +35,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.CodeLists;
 import org.apache.sis.internal.system.Loggers;
@@ -101,13 +102,13 @@ public final class Types extends Static {
     private static final char SEPARATOR = '.';
 
     /**
-     * The types for ISO 19115 UML identifiers. The keys are UML identifiers. Values
-     * are either class names as {@link String} objects, or the {@link Class} instances.
+     * The types for ISO 19115 UML identifiers. The keys are UML identifiers.
+     * Values are either class names as {@link String} objects, or the {@link Class} instances.
      * This map will be built only when first needed.
      *
      * @see #forStandardName(String)
      */
-    private static Map<Object,Object> typeForNames;
+    private static Map<String,Object> typeForNames;
 
     /**
      * Do not allow instantiation of this class.
@@ -492,12 +493,18 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
-     * This method does not handle the identifiers for interfaces in the {@code geoapi-pending} module.
+     * The package prefix (e.g. {@code "CI_"} in {@code "CI_Citation"}) can be omitted.
+     * The flexibility is provided for allowing transition to newer ISO standards,
+     * which are dropping the package prefixes.
+     * For example {@code "CS_AxisDirection"} in ISO 19111:2007
+     * has been renamed {@code "AxisDirection"} in ISO 19111:2018.
+     *
+     * <p>Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
+     * This method does not handle the identifiers for interfaces in the {@code geoapi-pending} module.</p>
      *
      * <div class="note"><b>Future evolution:</b>
      * when a new ISO type does not yet have a corresponding GeoAPI interface,
-     * this method may temporarily return an Apache SIS class instead until a future version can use the interface.
+     * this method may temporarily return an Apache SIS class instead, until a future version can use the interface.
      * For example {@code forStandardName("CI_Individual")} returns
      * <code>{@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual}.class</code> in Apache SIS versions
      * that depend on GeoAPI 3.0, but the return type may be changed to {@code Individual.class} when Apache SIS will
@@ -523,9 +530,28 @@ public final class Types extends Static {
             } catch (IOException | IllegalArgumentException e) {
                 throw new BackingStoreException(e);
             }
-            typeForNames = new HashMap<>(props);
+            /*
+             * Copy all map entries from Properties to a new HashMap for avoiding Properties synchronization.
+             * Also use internized strings because those Strings are programmatic names or annotation values
+             * which are expected to be internized anyway when the corresponding classes are loaded.
+             */
+            typeForNames = new HashMap<>(Containers.hashMapCapacity(2 * props.size()));
+            for (final Map.Entry<Object,Object> e : props.entrySet()) {
+                final String key   = ((String) e.getKey()).intern();
+                final String value = ((String) e.getValue()).intern();
+                typeForNames.put(key, value);
+
+                // Heuristic rule for omitting the prefix (e.g. "CI_" in "CI_Citation").
+                if (key.length() > 3 && key.charAt(2) == '_' && Character.isUpperCase(key.charAt(1))) {
+                    typeForNames.putIfAbsent(key.substring(3).intern(), value);
+                }
+            }
+            // Following code list is not defined in ISO 19115-2 but appears in XML schemas.
             typeForNames.putIfAbsent("MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
         }
+        /*
+         * Get the interface class for the given identifier, loading the class when first needed.
+         */
         final Object value = typeForNames.get(identifier);
         if (value == null || value instanceof Class<?>) {
             return (Class<?>) value;
@@ -536,7 +562,7 @@ public final class Types extends Static {
         } catch (ClassNotFoundException e) {
             throw new TypeNotPresentException((String) value, e);
         }
-        typeForNames.put(identifier, type);
+        typeForNames.put(identifier.intern(), type);
         return type;
     }
 

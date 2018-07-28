@@ -145,7 +145,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * @param  newValue  the new name, or {@code null} if none.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -176,7 +176,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * @param  newValue  the new issue identification, or {@code null} if none.
      */
     public void setIssueIdentification(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(issueIdentification);
         issueIdentification = newValue;
     }
 
@@ -207,7 +207,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * @param  newValue  the new page, or {@code null} if none.
      */
     public void setPage(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(page);
         page = newValue;
     }
 }

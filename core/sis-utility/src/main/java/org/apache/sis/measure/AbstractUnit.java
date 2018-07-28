@@ -53,7 +53,7 @@ import org.apache.sis.util.resources.Errors;
  * All unit instances shall be immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
@@ -382,7 +382,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
      */
     static boolean isSymbolChar(final int c) {
-        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰-_".indexOf(c) >= 0;
+        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰‱-_".indexOf(c) >= 0;
     }
 
     /**

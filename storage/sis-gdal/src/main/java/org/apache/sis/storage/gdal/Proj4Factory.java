@@ -257,7 +257,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             if (release != null) {
                 final DefaultCitation df = new DefaultCitation(c);
                 df.setEdition(new SimpleInternationalString(release));
-                df.freeze();
+                df.transition(DefaultCitation.State.FINAL);
                 c = df;
             }
             authority = c;

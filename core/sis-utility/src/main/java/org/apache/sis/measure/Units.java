@@ -1217,11 +1217,13 @@ public final class Units extends Static {
         /*
          * All Unit<Dimensionless>.
          */
-        PERCENT = add(one, centi,                                                    "%",     OTHER, (short) 0);
-        PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
-        PSU     = add(Salinity.class,      null,                      dimensionless, "psu",   OTHER, (short) 0);
+        final SystemUnit<Salinity> sal;
         SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", OTHER, (short) 0);
         PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    OTHER, (short) 0);
+        sal     = add(Salinity.class,      null,                      dimensionless, null,    OTHER, (short) 0);
+        PSU     = add(sal, milli,                                                    "psu",   OTHER, (short) 0);
+        PERCENT = add(one, centi,                                                    "%",     OTHER, (short) 0);
+        PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
@@ -1244,6 +1246,13 @@ public final class Units extends Static {
     /**
      * Invoked by {@code Units} static class initializer for registering SI base and derived units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
+     *
+     * @param  quantity   the type of quantity that uses this unit (should not be null).
+     * @param  factory    the factory to use for creating quantities, or {@code null} if none.
+     * @param  dimension  the unit dimension.
+     * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
+     * @param  scope      {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
+     * @param  epsg       the EPSG code, or 0 if this unit has no EPSG code.
      */
     private static <Q extends Quantity<Q>> SystemUnit<Q> add(Class<Q> quantity, ScalarFactory<Q> factory,
             UnitDimension dimension, String symbol, byte scope, short epsg)

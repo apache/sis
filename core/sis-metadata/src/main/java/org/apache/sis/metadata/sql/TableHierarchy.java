@@ -25,6 +25,14 @@ import org.apache.sis.util.iso.Types;
  * Utility methods for handling the inheritance between tables.
  * This features is partially supported in PostgreSQL database.
  *
+ * <p>This class is a work around for databases that support table inheritances,
+ * but not yet index inheritance. For example in PostgreSQL 9.5.13, we can not yet declare
+ * a foreigner key to the super table and find the entries in inherited tables that way.</p>
+ *
+ * <p>An alternative to current workaround would be to repeat a search in all child tables.
+ * We could use {@link java.sql.DatabaseMetaData#getSuperTables(String, String, String)} for
+ * getting the list of child tables.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
@@ -33,9 +41,9 @@ import org.apache.sis.util.iso.Types;
 final class TableHierarchy {
     /**
      * Delimiter characters for the table name in identifier. Table names are prefixed to identifiers only if
-     * the type represented by the table is a subtype. For example since {@code CI_Organisation} is a subtype
-     * of {@code CI_Party}, identifiers for organizations need to be prefixed by {@code {CI_Organisation}} in
-     * order allow {@code MetadataSource} to know in which table to search for such party.
+     * the type represented by the table is a subtype. For example since {@code Organisation} is a subtype of
+     * {@code Party}, identifiers for organizations need to be prefixed by {@code {Organisation}} in order to
+     * allow {@code MetadataSource} to know in which table to search for such party.
      *
      * @see MetadataWriter#isReservedChar(int)
      */
@@ -43,7 +51,7 @@ final class TableHierarchy {
 
     /**
      * Abbreviations for commonly-used tables. We use those abbreviations because table names like
-     * {@code "MD_VectorSpatialRepresentation"} consume a lot of space, which leave few spaces left
+     * {@code "VectorSpatialRepresentation"} consume a lot of space, which leave few spaces left
      * for actual identifiers when we want to limit the length to a relatively small value.
      */
     private static final Map<String,String> ABBREVIATIONS = new HashMap<>(25);
@@ -53,27 +61,27 @@ final class TableHierarchy {
      */
     private static final Map<String,String> TABLES = new HashMap<>(25);
     static {
-        add("CI_Individual",                  "ind");
-        add("CI_Organisation",                "org");
-        add("CI_ResponsibleParty",            "rp");
-        add("MD_VectorSpatialRepresentation", "vec");
-        add("MD_GridSpatialRepresentation",   "grd");
-        add("MD_Georectified",                "rtf");
-        add("MD_Georeferenceable",            "cbl");
-        add("MD_DataIdentification",          "data");
-        add("SV_ServiceIdentification",       "srv");
-        add("MD_FeatureCatalogueDescription", "cat");
-        add("MD_CoverageDescription",         "cov");
-        add("MD_ImageDescription",            "img");
-        add("MD_SampleDimension",             "sd");
-        add("MD_Band",                        "band");
-        add("MD_LegalConstraints",            "legal");
-        add("MD_SecurityConstraints",         "secu");
-        add("EX_GeographicBoundingBox",       "bbox");
-        add("EX_BoundingPolygon",             "poly");
-        add("EX_GeographicDescription",       "gdsc");
-        add("EX_SpatialTemporalExtent",       "ste");
-        add("MI_GCPCollection",               "gcp");
+        add("Individual",                  "ind");
+        add("Organisation",                "org");
+        add("ResponsibleParty",            "rp");
+        add("VectorSpatialRepresentation", "vec");
+        add("GridSpatialRepresentation",   "grd");
+        add("Georectified",                "rtf");
+        add("Georeferenceable",            "cbl");
+        add("DataIdentification",          "data");
+        add("ServiceIdentification",       "srv");
+        add("FeatureCatalogueDescription", "cat");
+        add("CoverageDescription",         "cov");
+        add("ImageDescription",            "img");
+        add("SampleDimension",             "sd");
+        add("Band",                        "band");
+        add("LegalConstraints",            "legal");
+        add("SecurityConstraints",         "secu");
+        add("GeographicBoundingBox",       "bbox");
+        add("BoundingPolygon",             "poly");
+        add("GeographicDescription",       "gdsc");
+        add("SpatialTemporalExtent",       "ste");
+        add("GCPCollection",               "gcp");
         // TODO: missing quality package.
     }
 
@@ -102,7 +110,7 @@ final class TableHierarchy {
     /**
      * If the given identifier specifies a subtype of the given type, then returns that subtype.
      * For example if the given type is {@code Party.class} and the given identifier is
-     * {@code "{CI_Organisation}EPSG"}, then this method returns {@code Organisation.class}.
+     * {@code "{Organisation}EPSG"}, then this method returns {@code Organisation.class}.
      * Otherwise this method returns {@code type} unchanged.
      */
     static Class<?> subType(Class<?> type, final String identifier) {
