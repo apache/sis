@@ -1091,16 +1091,16 @@ public final class Units extends Static {
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,        length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
-        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,          area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Volume>        m3  = add(Volume.class,        Scalar.Volume::new,        length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,          time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature::new,   temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,         speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,      pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,         dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "",            SI,               (short) 9201);
-        final SystemUnit<Mass>          kg  = add(Mass.class,          Scalar.Mass::new,          mass,          "kg",          SI,               (short) 0);
+        final SystemUnit<Length>        m   = add(Length.class,        Scalar.Length::new,         length,        "m",   (byte) (SI | PREFIXABLE), Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2  = add(Area.class,          Scalar.Area::new,           area,          "m²",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Volume>        m3  = add(Volume.class,        Scalar.Volume::new,         length.pow(3), "m³",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Time>          s   = add(Time.class,          Scalar.Time::new,           time,          "s",   (byte) (SI | PREFIXABLE), (short) 1040);
+        final SystemUnit<Temperature>   K   = add(Temperature.class,   Scalar.Temperature.FACTORY, temperature,   "K",   (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Speed>         mps = add(Speed.class,         Scalar.Speed::new,          speed,         "m∕s", (byte) (SI | PREFIXABLE), (short) 1026);
+        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      Scalar.Pressure::new,       pressure,      "Pa",  (byte) (SI | PREFIXABLE), (short) 0);
+        final SystemUnit<Angle>         rad = add(Angle.class,         Scalar.Angle::new,          dimensionless, "rad", (byte) (SI | PREFIXABLE), (short) 9101);
+        final SystemUnit<Dimensionless> one = add(Dimensionless.class, Scalar.Dimensionless::new,  dimensionless, "",            SI,               (short) 9201);
+        final SystemUnit<Mass>          kg  = add(Mass.class,          Scalar.Mass::new,           mass,          "kg",          SI,               (short) 0);
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */

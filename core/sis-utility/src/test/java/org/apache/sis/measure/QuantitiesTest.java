@@ -19,18 +19,19 @@ package org.apache.sis.measure;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
+import javax.measure.quantity.Temperature;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
  * Tests {@link Quantities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -71,5 +72,42 @@ public final strictfp class QuantitiesTest extends TestCase {
         assertNotSame(q, c);
         assertEquals("value", 8, c.getValue().doubleValue(), STRICT);
         assertSame  ("unit", Units.CENTIMETRE, c.getUnit());
+    }
+
+    /**
+     * Tests operations on temperature. The values shall be converted to Kelvin before any operation.
+     * This produces counter-intuitive result, but is the only way to get results that are consistent
+     * with arithmetic rules like commutativity and associativity.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testTemperature() {
+        final Quantity<Temperature> q1 = Quantities.create( 2, Units.CELSIUS);
+        final Quantity<Temperature> q2 = Quantities.create( 3, Units.KELVIN);
+        final Quantity<Temperature> q3 = Quantities.create(-8, Units.CELSIUS);
+
+        assertInstanceOf( "2°C", DerivedScalar.TemperatureMeasurement.class, q1);
+        assertInstanceOf( "3 K", DerivedScalar.Temperature.class,            q2);
+        assertInstanceOf("-8°C", DerivedScalar.TemperatureMeasurement.class, q3);
+
+        Quantity<Temperature> r = q1.add(q2);
+        assertSame  ("unit",  Units.CELSIUS, r.getUnit());
+        assertEquals("value", 5, r.getValue().doubleValue(), 1E-13);
+
+        r = q2.add(q1);
+        assertSame  ("unit",  Units.KELVIN, r.getUnit());
+        assertEquals("value", 278.15, r.getValue().doubleValue(), 1E-13);
+
+        r = q1.add(q3);
+        assertSame  ("unit",  Units.CELSIUS, r.getUnit());
+        assertEquals("value", 267.15, r.getValue().doubleValue(), 1E-13);
+
+        r = q1.multiply(3);
+        assertSame  ("unit",  Units.CELSIUS, r.getUnit());
+        assertEquals("value", 552.3, r.getValue().doubleValue(), 1E-13);
+
+        r = q1.multiply(1);
+        assertSame(q1, r);
     }
 }
