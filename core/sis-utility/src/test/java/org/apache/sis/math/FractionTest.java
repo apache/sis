@@ -26,7 +26,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Fraction} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -72,6 +72,20 @@ public final strictfp class FractionTest extends TestCase {
                 final String label = "ceil(" + numerator + '/' + denominator + ')';
                 assertEquals(label, expected[i], new Fraction(numerator, denominator).ceil());
             }
+        }
+    }
+
+    /**
+     * Tests the {@link Fraction#signum()} method.
+     */
+    @Test
+    public void testSignum() {
+        final int[] numerators   = { 0,  1,  2, -3, -9};
+        final int[] denominators = { 3,  3, -3,  3, -3};
+        final int[] signums      = { 0,  1, -1, -1,  1};
+        for (int i=0; i<signums.length; i++) {
+            final Fraction f = new Fraction(numerators[i], denominators[i]);
+            assertEquals(signums[i], f.signum());
         }
     }
 

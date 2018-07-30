@@ -280,6 +280,19 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests formatting of units when the numerator is unity.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-414">SIS-414</a>
+     */
+    @Test
+    public void testUnity() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertEquals(   "1∕m²", f.format(Units.UNITY.divide(Units.SQUARE_METRE)));
+        assertEquals("10⁻²∕m²", f.format(Units.UNITY.divide(100).divide(Units.SQUARE_METRE)));
+        assertEquals("10⁻²∕m²", f.format(Units.PERCENT.divide(Units.SQUARE_METRE)));
+    }
+
+    /**
      * Tests parsing of names.
      */
     @Test

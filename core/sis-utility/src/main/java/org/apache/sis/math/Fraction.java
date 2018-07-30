@@ -26,7 +26,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  * All {@code Fraction} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -361,6 +361,21 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
         final int n = intValue();
         if ((n & ~0xFF) == 0) return (byte) n;
         throw new ArithmeticException();
+    }
+
+    /**
+     * Returns the sign of this fraction. The return value is -1 if this fraction is negative;
+     * 0 if the numerator is zero; and 1 if this fraction is positive.
+     *
+     * @return the sign of this fraction.
+     *
+     * @see Integer#signum(int)
+     *
+     * @since 1.0
+     */
+    public int signum() {
+        if (numerator == 0) return 0;
+        return ((numerator ^ denominator) >> (Integer.SIZE - 2)) | 1;
     }
 
     /**

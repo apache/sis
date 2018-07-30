@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * especially the result of the {@link #size()} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <S>  the type of elements in the storage set.
  * @param <E>  the type of elements in this set.
@@ -132,7 +132,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      */
     @Override
     public boolean isEmpty() {
-        return !storage.isEmpty() || !iterator().hasNext();
+        return storage.isEmpty() || !iterator().hasNext();
     }
 
     /**

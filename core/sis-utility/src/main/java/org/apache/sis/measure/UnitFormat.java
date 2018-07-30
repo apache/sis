@@ -642,6 +642,26 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * Note that this may produce more verbose symbols than needed since derived units like Volt or Watt are
          * decomposed into their base SI units.
          */
+        boolean hasPositivePower = false;
+        final Map<? extends Unit<?>, ? extends Number> components;
+        if (unit instanceof AbstractUnit<?>) {
+            // In Apache SIS implementation, power may be fractional.
+            final Map<SystemUnit<?>, Fraction> c = ((AbstractUnit<?>) unit).getBaseSystemUnits();
+            for (final Fraction power : c.values()) {
+                hasPositivePower = (power.signum() > 0);
+                if (hasPositivePower) break;
+            }
+            components = c;
+        } else {
+            // Fallback for foreigner implementations (power restricted to integer).
+            Map<? extends Unit<?>, Integer> c = unit.getBaseUnits();
+            if (c == null) c = Collections.singletonMap(unit, 1);
+            for (final Integer power : c.values()) {
+                hasPositivePower = (power > 0);
+                if (hasPositivePower) break;
+            }
+            components = c;
+        }
         final double scale = Units.toStandardUnit(unit);
         if (scale != 1) {
             if (Double.isNaN(scale)) {
@@ -668,18 +688,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 }
                 toAppendTo.append(text, 0, length);
             }
-            toAppendTo.append(style.multiply);
-        }
-        Map<? extends Unit<?>, ? extends Number> components;
-        if (unit instanceof AbstractUnit<?>) {
-            // In Apache SIS implementation, the powers may be ratios.
-            components = ((AbstractUnit<?>) unit).getBaseSystemUnits();
-        } else {
-            // Fallback for foreigner implementations (powers restricted to integers).
-            components = unit.getBaseUnits();
-            if (components == null) {
-                components = Collections.singletonMap(unit, 1);
+            if (hasPositivePower) {
+                toAppendTo.append(style.multiply);
             }
+        } else if (!hasPositivePower) {
+            toAppendTo.append('1');
         }
         formatComponents(components, style, toAppendTo);
         return toAppendTo;
