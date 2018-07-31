@@ -79,8 +79,8 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * <p>Users can override this symbol by call to {@link UnitFormat#label(Unit, String)},
      * but such overriding applies only to the target {@code UnitFormat} instance.</p>
      *
-     * <p>The value given assigned to this field is also used by {@link #getName()}
-     * for fetching a localized name from the resource bundle.</p>
+     * <p>The value assigned to this field is also used by {@link #getName()} for fetching a localized name
+     * from the resource bundle.</p>
      *
      * @see #getSymbol()
      * @see SystemUnit#alternate(String)
@@ -105,9 +105,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * The EPSG code, or 0 if this unit has no EPSG code.
      *
      * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
-     * by a hard-coded instance with appropriate value, if possible. Note that EPSG codes are not included in the
-     * {@code sis-uom} module (a module containing a subset of {@code sis-utility} module), so we need to ignore
-     * this field at serialization time if we want compatible serialization forms.</p>
+     * by a hard-coded instance with appropriate value, if possible.</p>
      *
      * @see #equals(short, short)
      */

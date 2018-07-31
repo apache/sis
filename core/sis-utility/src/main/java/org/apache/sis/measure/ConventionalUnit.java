@@ -171,7 +171,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     }
 
     /**
-     * Returns the positive power after the given unit symbol, or in case of doubt.
+     * Returns the positive power after the given unit symbol, or 0 in case of doubt.
      * For example this method returns 1 for “m” and 2 for “m²”. We parse the unit symbol instead
      * than the {@link SystemUnit#dimension} because we can not extract easily the power from the
      * product of dimensions (e.g. what is the M⋅L²∕T³ power?) Furthermore the power will be used
