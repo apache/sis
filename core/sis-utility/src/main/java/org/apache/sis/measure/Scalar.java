@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import java.lang.reflect.Proxy;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 
@@ -30,7 +31,7 @@ import org.apache.sis.util.StringBuilders;
  * Instances of this class are unmodifiable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <Q>  the concrete subtype.
  *
@@ -63,8 +64,20 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
 
     /**
      * Creates a new quantity of same type than this quantity but with a different value and/or unit.
-     * This method performs the same work than {@link Quantities#create(double, Unit)}, but without the need
-     * to check for the Apache SIS specific {@link SystemUnit} implementation.
+     * This method performs the same work than {@link Quantities#create(double, Unit)}, but without
+     * the need to check for the Apache SIS specific {@link SystemUnit} implementation.
+     *
+     * <p>This method is invoked (indirectly) in only two situations:</p>
+     * <ul>
+     *   <li>Arithmetic operations that do not change the unit of measurement (addition, subtraction),
+     *       in which case the given {@code newUnit} is the same that the unit of this quantity.</li>
+     *   <li>Conversion to a new compatible unit by {@link #to(Unit)}, provided that the conversion
+     *       is only a scale factor.</li>
+     * </ul>
+     *
+     * {@link DerivedScalar} relies on the fact that there is no other situations where this method
+     * is invoked. If this assumption become not true anymore in a future SIS version, then we need
+     * to revisit {@code DerivedScalar}.
      *
      * @see Quantities#create(double, Unit)
      */
@@ -96,9 +109,10 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
 
     /**
      * Returns the unit of measurement specified at construction time.
+     * The method shall not return {@code null}.
      */
     @Override
-    public final Unit<Q> getUnit() {
+    public Unit<Q> getUnit() {
         return unit;
     }
 
@@ -114,7 +128,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      * Returns the value specified at construction time.
      */
     @Override
-    public final double doubleValue() {
+    public double doubleValue() {
         return value;
     }
 
@@ -122,7 +136,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      * Returns the value casted to a single-precision floating point number.
      */
     @Override
-    public final float floatValue() {
+    public float floatValue() {
         return (float) value;
     }
 
@@ -131,7 +145,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      * {@code long} range are clamped to minimal or maximal representable numbers of {@code long} type.
      */
     @Override
-    public final long longValue() {
+    public long longValue() {
         return Math.round(value);
     }
 
@@ -185,14 +199,33 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
 
     /**
      * Converts this quantity to another unit of measurement.
+     * This default implementation is valid only if the unit of this quantity is a system unit,
+     * or convertible to the system unit with only a scale factor. If this assumption does not
+     * hold anymore (as in {@link DerivedScalar} subclass), then this method needs to be overridden.
      */
     @Override
-    public final Quantity<Q> to(final Unit<Q> newUnit) {
+    public Quantity<Q> to(final Unit<Q> newUnit) {
         if (newUnit == unit) {
             return this;
         }
         ArgumentChecks.ensureNonNull("unit", newUnit);      // "unit" is the parameter name used in public API.
-        return create(unit.getConverterTo(newUnit).convert(value), newUnit);
+        assert unit.getConverterTo(unit.getSystemUnit()).isLinear() : unit;              // See method javadoc.
+        final UnitConverter c = unit.getConverterTo(newUnit);
+        final double newValue = c.convert(value);
+        if (c.isLinear()) {                                 // Despite method name, this is actually "is scale".
+            /*
+             * Conversion from this quantity to system unit was a scale factor (see assumption documented
+             * in this method javadoc) and given conversion is also a scale factor. Consequently conversion
+             * from the new quantity unit to system unit will still be a scale factor, in which case this
+             * 'Scalar' class is still appropriate.
+             */
+            return create(newValue, newUnit);
+        } else {
+            /*
+             * Re-evaluate if we need to create a DerivedScalar subclass.
+             */
+            return Quantities.create(newValue, newUnit);
+        }
     }
 
     /**
@@ -280,26 +313,35 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
                 return false;
             }
         }
+        /*
+         * We require the Scalar implementation rather than accepting arbitrary Quantity<?> instance
+         * for making sure that we obey to Object.equals(Object) contract (e.g. symmetric, transitive,
+         * etc.). But we invoke the getter methods instead than accessing directly the fields because
+         * DerivedScalar override them.
+         */
         final Scalar<?> that = (Scalar<?>) other;
-        return Double.doubleToLongBits(value) == Double.doubleToLongBits(that.value) && unit.equals(that.unit);
+        return Double.doubleToLongBits(doubleValue()) == Double.doubleToLongBits(that.doubleValue())
+                && getUnit().equals(that.getUnit());
     }
 
     /**
-     * Returns a hash code value for this quantity.
+     * Returns a hash code value for this quantity. This method computes the code from values returned by
+     * {@link #doubleValue()} and {@link #getUnit()} methods, which may be overridden by sub-classes.
      */
     @Override
     public final int hashCode() {
-        return Double.hashCode(value) ^ unit.hashCode();
+        return Double.hashCode(doubleValue()) ^ getUnit().hashCode();
     }
 
     /**
-     * Returns the quantity value followed by its units of measurement.
+     * Returns the quantity value followed by its units of measurement. This method uses the values returned
+     * by {@link #doubleValue()} and {@link #getUnit()} methods, which may be overridden by sub-classes.
      */
     @Override
     public final String toString() {
-        final StringBuilder buffer = new StringBuilder().append(value);
+        final StringBuilder buffer = new StringBuilder().append(doubleValue());
         StringBuilders.trimFractionalPart(buffer);
-        final String symbol = unit.toString();
+        final String symbol = getUnit().toString();
         if (symbol != null && !symbol.isEmpty()) {
             buffer.append(' ').append(symbol);
         }
@@ -458,18 +500,6 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
         }
     }
 
-    static final class Temperature extends Scalar<javax.measure.quantity.Temperature>
-                                   implements     javax.measure.quantity.Temperature
-    {
-        private static final long serialVersionUID = -6391507887931973739L;
-        Temperature(double value, Unit<javax.measure.quantity.Temperature> unit) {super(value, unit);}
-
-        @Override
-        Quantity<javax.measure.quantity.Temperature> create(double value, Unit<javax.measure.quantity.Temperature> unit) {
-            return new Temperature(value, unit);
-        }
-    }
-
     static final class Pressure extends Scalar<javax.measure.quantity.Pressure>
                                 implements     javax.measure.quantity.Pressure
     {
@@ -479,6 +509,30 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
         @Override
         Quantity<javax.measure.quantity.Pressure> create(double value, Unit<javax.measure.quantity.Pressure> unit) {
             return new Pressure(value, unit);
+        }
+    }
+
+    static final class Temperature extends Scalar<javax.measure.quantity.Temperature>
+                                   implements     javax.measure.quantity.Temperature
+    {
+        static final ScalarFactory<javax.measure.quantity.Temperature> FACTORY = new ScalarFactory<javax.measure.quantity.Temperature>() {
+            @Override public javax.measure.quantity.Temperature create(double value, Unit<javax.measure.quantity.Temperature> unit) {
+                return new Temperature(value, unit);
+            }
+
+            @Override public javax.measure.quantity.Temperature createDerived(double value, Unit<javax.measure.quantity.Temperature> unit,
+                    Unit<javax.measure.quantity.Temperature> systemUnit, UnitConverter toSystem)
+            {
+                return new DerivedScalar.TemperatureMeasurement(value, unit, systemUnit, toSystem);
+            }
+        };
+
+        private static final long serialVersionUID = -6391507887931973739L;
+        Temperature(double value, Unit<javax.measure.quantity.Temperature> unit) {super(value, unit);}
+
+        @Override
+        Quantity<javax.measure.quantity.Temperature> create(double value, Unit<javax.measure.quantity.Temperature> unit) {
+            return new Temperature(value, unit);
         }
     }
 }
