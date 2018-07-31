@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * but those methods just delegate to {@link ConventionalUnit#create(AbstractUnit, UnitConverter)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -211,6 +211,23 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         assertSame(Units.NANOMETRE,  Units.KILOMETRE .multiply(1E-12));
 
         verify(Units.SQUARE_METRE, Units.HECTARE.divide(1E+10), "mm²", 1E-6);
+    }
+
+    /**
+     * Tests operation on kilogram.
+     * The management of SI prefixes need to make a special case for kilogram.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-382">SIS-382</a>
+     * @see UnitFormatTest#testParseKilogram()
+     */
+    @Test
+    public void testKilogram() {
+        Unit<?> unit = Units.KILOGRAM.divide(1E+9);
+        assertEquals("µg", unit.getSymbol());
+        unit = unit.divide(Units.METRE);
+        assertEquals("µg∕m", unit.getSymbol());
+        unit = unit.multiply(1E+3);
+        assertEquals("mg∕m", unit.getSymbol());
     }
 
     /**

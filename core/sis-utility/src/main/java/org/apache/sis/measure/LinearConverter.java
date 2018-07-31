@@ -476,7 +476,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
         }
         if (scale != 1) {
             StringBuilders.trimFractionalPart(buffer.append(scale));
-            buffer.append('⋅');
+            buffer.append(AbstractUnit.MULTIPLY);
         }
         buffer.append('x');
         if (offset != 0) {
@@ -484,7 +484,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
             buffer.append(')');
         }
         if (divisor != 1) {
-            StringBuilders.trimFractionalPart(buffer.append('∕').append(divisor));
+            StringBuilders.trimFractionalPart(buffer.append(AbstractUnit.DIVIDE).append(divisor));
         }
         return buffer.toString();
     }

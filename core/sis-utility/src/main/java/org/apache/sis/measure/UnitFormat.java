@@ -74,7 +74,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * different threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Units#valueOf(String)
  *
@@ -154,7 +154,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          *
          * @see Unit#getSymbol()
          */
-        SYMBOL('⋅', '∕'),
+        SYMBOL(AbstractUnit.MULTIPLY, AbstractUnit.DIVIDE),
 
         /**
          * Format unit symbols using a syntax close to the Unified Code for Units of Measure (UCUM) one.
@@ -212,7 +212,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          *
          * @see Unit#getName()
          */
-        NAME('⋅', '∕');
+        NAME(AbstractUnit.MULTIPLY, AbstractUnit.DIVIDE);
 
         /**
          * Other symbols not in the {@link Style} enumeration because common to all.
@@ -459,13 +459,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Returns the unit instance for the given long (un)localized or name.
+     * Returns the unit instance for the given long (un)localized name.
      * This method is somewhat the converse of {@link #symbolToName()}, but recognizes also
      * international and American spelling of unit names in addition of localized names.
      * The intent is to recognize "meter" as well as "metre".
-     *
-     * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
-     * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>
      *
      * @param  uom  the unit symbol, without leading or trailing spaces.
      */
@@ -670,14 +667,20 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             }
             boolean asFloatingPoint = (style == Style.UCUM);
             if (!asFloatingPoint) {
+                /*
+                 * Try to format the scale using exponent, for example 10⁵⋅m instead of 100000⋅m.
+                 * If the scale is not a power of 10, or if we have been requested to format UCUM
+                 * symbol, then we fallback on the usual 'Double.toString(double)' representation.
+                 */
                 double power = Math.log10(scale);
                 if (2*Math.ulp(power) >= Math.abs(power - (power = Math.round(power)))) {
-                    asFloatingPoint = false;
                     toAppendTo.append("10");
                     final String text = Integer.toString((int) power);
                     for (int i=0; i<text.length(); i++) {
                         toAppendTo.append(Characters.toSuperScript(text.charAt(i)));
                     }
+                } else {
+                    asFloatingPoint = true;                         // Scale is not a power of 10.
                 }
             }
             if (asFloatingPoint) {
@@ -688,6 +691,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 }
                 toAppendTo.append(text, 0, length);
             }
+            /*
+             * The 'formatComponents' method appends division symbol only, no multiplication symbol.
+             * If we have formatted a scale factor and there is at least one component to multiply,
+             * we need to append the multiplication symbol ourselves. Note that 'formatComponents'
+             * put numerators before denominators, so we are sure that the first term after the
+             * multiplication symbol is a numerator.
+             */
             if (hasPositivePower) {
                 toAppendTo.append(style.multiply);
             }
@@ -898,6 +908,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
+     * Returns {@code true} if the given character is the sign of a division operator.
+     */
+    private static boolean isDivisor(final char c) {
+        return c == '/' || c == AbstractUnit.DIVIDE;
+    }
+
+    /**
      * Returns {@code true} if the given character sequence contains at least one digit.
      * This is a hack for allowing to recognize units like "100 feet" (in principle not
      * legal, but seen in practice). This verification has some value if digits are not
@@ -1029,7 +1046,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          *
          * The 'start' variable is the index of the first character of the next unit term to parse.
          */
-        int operation = NOOP;            // Enumeration value: IMPLICIT, MULTIPLY, DIVIDE.
+        final Operation operation = new Operation();    // Enumeration value: NOOP, IMPLICIT, MULTIPLY, DIVIDE.
         Unit<?> unit = null;
         boolean hasSpaces = false;
         int i = start;
@@ -1045,8 +1062,8 @@ scan:   for (int n; i < end; i += n) {
                  */
                 default:  {
                     if (AbstractUnit.isSymbolChar(c)) {
-                        if (operation == IMPLICIT) {
-                            operation = MULTIPLY;
+                        if (operation.code == Operation.IMPLICIT) {
+                            operation.code =  Operation.MULTIPLY;
                         }
                         continue;
                     }
@@ -1067,14 +1084,14 @@ scan:   for (int n; i < end; i += n) {
                 case Style.EXPONENT_OR_MULTIPLY: {
                     final int w = exponentOperator(symbols, i, end);
                     if (w < 0) {
-                        next = MULTIPLY;
+                        next = Operation.MULTIPLY;
                         break;
                     }
                     i += w;
                     // else fall through.
                 }
                 case Style.EXPONENT: {
-                    if (operation == IMPLICIT) {
+                    if (operation.code == Operation.IMPLICIT) {
                         // Support of exponentiation after parenthesis is not yet supported.
                         break scan;
                     }
@@ -1087,12 +1104,12 @@ scan:   for (int n; i < end; i += n) {
                  * is interpreted as a decimal separator if there is a decimal digit before and after it.
                  */
                 case '.': if (isDecimalSeparator(symbols, i, end)) continue;
-                case '⋅': // Fall through
-                case '×': next = MULTIPLY; break;
+                case '×': // Fall through
+                case AbstractUnit.MULTIPLY: next = Operation.MULTIPLY; break;
                 case '÷':
                 case '⁄': // Fraction slash
                 case '/':
-                case '∕': next = DIVIDE; break;
+                case AbstractUnit.DIVIDE: next = Operation.DIVIDE; break;
                 /*
                  * If we find an '(' parenthesis, invoke recursively this method for the part inside parenthesis.
                  * The parsing should end at the ')' parenthesis since it is not a valid unit symbol. If we do not
@@ -1106,11 +1123,22 @@ scan:   for (int n; i < end; i += n) {
                         throw new ParserException(Errors.format(Errors.Keys.NonEquilibratedParenthesis_2,
                                symbols.subSequence(start, i), Style.CLOSE), symbols, start);
                     }
-                    unit = apply(operation, unit, term);
-                    operation = IMPLICIT;       // Default operation if there is no × or / symbols after parenthesis.
-                    start = i + (n = 1);        // Skip the number of characters in the '(' Unicode code point.
+                    unit = operation.apply(unit, term);
+                    operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbols after parenthesis.
+                    start = i + (n = 1);                    // Skip the number of characters in the '(' Unicode code point.
                     continue;
                 }
+            }
+            /*
+             * We reach this point only if we found some operator (division or multiplication).
+             * If the operator has been found between two digits, we consider it as part of the
+             * term. For example "m2/3" is considered as a single term where "2/3" is the exponent.
+             */
+            if (i > start && i+n < end
+                    && Character.isDigit(Character.codePointBefore(symbols, i))
+                    && Character.isDigit(Character.codePointAt(symbols, i+n)))
+            {
+                continue;
             }
             /*
              * At this point, we have either a first unit to parse (NOOP), or a multiplication or division to apply
@@ -1119,11 +1147,11 @@ scan:   for (int n; i < end; i += n) {
              * overridden by an explicit × or / symbol, which is what happened if we reach this point (tip: look in
              * the above 'switch' statement all cases that end with 'break', not 'break scan' or 'continue').
              */
-            if (operation != IMPLICIT) {
-                unit = apply(operation, unit, parseTerm(symbols, start, i));
+            if (operation.code != Operation.IMPLICIT) {
+                unit = operation.apply(unit, parseTerm(symbols, start, i, operation));
             }
             hasSpaces = false;
-            operation = next;
+            operation.code = next;
             start = i + n;
         }
         /*
@@ -1166,48 +1194,86 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
             }
         }
         if (component == null) {
-            component = parseTerm(symbols, start, i);
+            component = parseTerm(symbols, start, i, operation);
         }
-        unit = apply(operation, unit, component);
+        unit = operation.apply(unit, component);
         position.setIndex(endOfURI >= 0 ? endOfURI : i);
         return unit;
     }
 
     /**
-     * Meaning of some characters parsed by {@link #parse(CharSequence)}. The {@code IMPLICIT} case
-     * is a multiplication without symbol, which can be overridden by an explicit × or / symbol.
+     * Represents an operation to be applied between two terms parsed by
+     * {@link UnitFormat#parseTerm(CharSequence, int, int, Operation)}.
      */
-    private static final int NOOP = 0, IMPLICIT = 1, MULTIPLY = 2, DIVIDE = 3;
+    private static final class Operation {
+        /**
+         * Meaning of some characters parsed by {@link UnitFormat#parse(CharSequence)}.
+         * The {@code IMPLICIT} case is a multiplication without symbol, which can be
+         * overridden by an explicit × or / symbol.
+         */
+        static final int NOOP = 0, IMPLICIT = 1, MULTIPLY = 2, DIVIDE = 3;
 
-    /**
-     * Applies a multiplication or division operation between the given units.
-     *
-     * @param  operation  one of {@link #NOOP}, {@link #IMPLICIT}, {@link #MULTIPLY} or {@link #DIVIDE}.
-     * @param  unit       the left operand, which is the unit parsed so far.
-     * @param  term       the right operation, which is the newly parsed unit.
-     */
-    private static Unit<?> apply(final int operation, final Unit<?> unit, final Unit<?> term) {
-        switch (operation) {
-            case NOOP:     return term;
-            case IMPLICIT:
-            case MULTIPLY: return unit.multiply(term);
-            case DIVIDE:   return unit.divide(term);
-            default: throw new AssertionError(operation);
+        /**
+         * The operation as one of the {@link #NOOP}, {@link #IMPLICIT}, {@link #MULTIPLY}
+         * or {@link #DIVIDE} values.
+         */
+        int code;
+
+        /**
+         * Creates an operation initialized to {@link #NOOP}.
+         */
+        Operation() {
+        }
+
+        /**
+         * Applies a multiplication or division operation between the given units.
+         *
+         * @param  unit  the left operand, which is the unit parsed so far.
+         * @param  term  the right operation, which is the newly parsed unit.
+         */
+        Unit<?> apply(final Unit<?> unit, final Unit<?> term) {
+            switch (code) {
+                case NOOP:     return term;
+                case IMPLICIT:
+                case MULTIPLY: return unit.multiply(term);
+                case DIVIDE:   return unit.divide(term);
+                default: throw new AssertionError(code);
+            }
+        }
+
+        /**
+         * If this operation is a multiplication, replaces by division. Otherwise do nothing
+         * (we do <strong>not</strong> replace division by multiplication). The intent is to
+         * replace units like "m⋅s-1" by "m/s".
+         *
+         * @return whether the operation has been inverted.
+         */
+        boolean invert() {
+            switch (code) {
+                case IMPLICIT:
+                case MULTIPLY: code = DIVIDE; return true;
+                default: return false;
+            }
         }
     }
 
     /**
      * Parses a single unit symbol with its exponent.
-     * The given symbol shall not contain multiplication or division operator.
+     * The given symbol shall not contain multiplication or division operator except in exponent.
+     * Parsing of fractional exponent as in "m2/3" is not yet supported.
      *
-     * @param  symbols  the complete string specified by the user.
-     * @param  lower    index where to begin parsing in the {@code symbols} string.
-     * @param  upper    index after the last character to parse in the {@code symbols} string.
+     * @param  symbols    the complete string specified by the user.
+     * @param  lower      index where to begin parsing in the {@code symbols} string.
+     * @param  upper      index after the last character to parse in the {@code symbols} string.
+     * @param  operation  if the term will be used as multiplier or divisor of another unit, the
+     *                    operation to be applied. Otherwise {@code null}.
      * @return the parsed unit symbol (never {@code null}).
      * @throws ParserException if a problem occurred while parsing the given symbols.
      */
     @SuppressWarnings("fallthrough")
-    private Unit<?> parseTerm(final CharSequence symbols, final int lower, final int upper) throws ParserException {
+    private Unit<?> parseTerm(final CharSequence symbols, final int lower, final int upper, final Operation operation)
+            throws ParserException
+    {
         final String uom = CharSequences.trimWhitespaces(symbols, lower, upper).toString();
         /*
          * Check for labels explicitly given by users. Those labels have precedence over the Apache SIS hard-coded
@@ -1236,12 +1302,12 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                     if (isDigit(c) || isSign(c)) {
                         final double multiplier;
                         try {
-                            int s = uom.lastIndexOf(' ');
+                            int s = uom.indexOf(' ');
                             if (s >= 0) {
                                 final int next = CharSequences.skipLeadingWhitespaces(uom, s, length);
                                 if (next < length && AbstractUnit.isSymbolChar(uom.codePointAt(next))) {
                                     multiplier = Double.parseDouble(uom.substring(0, s));
-                                    return parseTerm(uom, s, length).multiply(multiplier);
+                                    return parseTerm(uom, s, length, null).multiply(multiplier);
                                 }
                             }
                             multiplier = parseMultiplicationFactor(uom);
@@ -1258,34 +1324,31 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                      * exponent.  That exponent can be a Unicode character (only one character in current UnitFormat
                      * implementation) or a number parseable with Integer.parseInt(String).
                      */
-                    int  power = 1;
+                    Fraction power = null;
                     int  i = length;
                     char c = uom.charAt(--i);
-                    boolean canApply = false;
                     if (Characters.isSuperScript(c)) {
                         c = Characters.toNormalScript(c);
                         if (isDigit(c)) {
-                            power = c - '0';
-                            canApply = true;
+                            power = new Fraction(c - '0', 1);
                         }
                     } else if (isDigit(c)) {
                         do {
                             c = uom.charAt(--i);
-                            if (!isDigit(c)) {
+                            if (!isDigit(c) && !isDivisor(c)) {
                                 if (!isSign(c)) i++;
                                 try {
-                                    power = Integer.parseInt(uom.substring(i));
+                                    power = new Fraction(uom.substring(i));
                                 } catch (NumberFormatException e) {
                                     // Should never happen unless the number is larger than 'int' capacity.
                                     throw (ParserException) new ParserException(Errors.format(
                                             Errors.Keys.UnknownUnit_1, uom), symbols, lower+i).initCause(e);
                                 }
-                                canApply = true;
                                 break;
                             }
                         } while (i != 0);
                     }
-                    if (canApply) {
+                    if (power != null) {
                         /*
                          * At this point we have parsed the exponent. Before to parse the raw unit symbol,
                          * skip the exponent symbol (^, * or **) if any.
@@ -1305,7 +1368,14 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                         }
                         unit = getPrefixed(uom.substring(CharSequences.skipLeadingWhitespaces(uom, 0, i), i));
                         if (unit != null) {
-                            return unit.pow(power);
+                            int numerator   = power.numerator;
+                            int denominator = power.denominator;
+                            if (numerator < 0 && operation != null && operation.invert()) {
+                                numerator = -numerator;
+                            }
+                            if (numerator   != 1) unit = unit.pow (numerator);
+                            if (denominator != 1) unit = unit.root(denominator);
+                            return unit;
                         }
                     }
                 }

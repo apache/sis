@@ -280,6 +280,19 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests formatting of some more unusual units. The units tested by this method are artificial
+     * and somewhat convolved. The intent is to verify that unit formatting is still robust.
+     */
+    @Test
+    public void testFormatUnusual() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        final Unit<?> u1 = Units.SECOND.pow(-1).multiply(3);
+        assertEquals("3∕s",   f.format(u1));
+        assertEquals("3⋅m∕s", f.format(Units.METRE.multiply(u1)));
+        assertEquals("m^⅔",   f.format(Units.METRE.pow(2).root(3)));
+    }
+
+    /**
      * Tests formatting of units when the numerator is unity.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-414">SIS-414</a>
@@ -438,8 +451,6 @@ public final strictfp class UnitFormatTest extends TestCase {
 
     /**
      * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-382">SIS-382</a>
      */
     @Test
     @DependsOnMethod("testParseTerms")
@@ -459,9 +470,28 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests parsing of symbols composed of terms containing kilogram.
+     * The management of SI prefixes need to make a special case for kilogram.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-382">SIS-382</a>
+     * @see ConventionalUnitTest#testKilogram()
+     */
+    @Test
+    @DependsOnMethod("testParseTerms")
+    public void testParseKilogram() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        /*
+         * Kilograms should be identified even if they appear in an expression.
+         * Current implementation creates a symbol early when it detect such case.
+         */
+        assertEquals("mg∕m",  f.parse("10^-6.kg/m").getSymbol());
+//      assertEquals("μg∕m³", f.parse("μg.m-3").getSymbol());
+    }
+
+    /**
      * Tests parsing of symbols containing an explicit exponentiation operation.
      * Usually the exponentiation is implicit, as in {@code "m*s-1"}.
-     * However some formats write it explicitely, as in {@code "m*s^-1"}.
+     * However some formats write it explicitly, as in {@code "m*s^-1"}.
      */
     @Test
     @DependsOnMethod("testParseMultiplier")
@@ -525,5 +555,97 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals("mySecondLabel",   f1.format(Units.SECOND));
         assertEquals("otherMeterLabel", f2.format(Units.METRE));
         assertEquals("mySecondLabel",   f2.format(Units.SECOND));
+    }
+
+    /**
+     * Tests parsing of miscellaneous symbols, followed by formatting.
+     * This test uses some units defined by World Meteorological Organisation (WMO).
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-378">SIS-378</a>
+     */
+    @Test
+    @DependsOnMethod({"testFormatScaled", "testParseMultiplier"})
+    public void testParseAndFormat() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        roundtrip(f, "K.m2.kg-1.s-1",    "K⋅m²∕(kg⋅s)");
+        roundtrip(f, "Pa.s-1",           "Pa∕s");
+        roundtrip(f, "S.m-1",            "S∕m");
+        roundtrip(f, "m2/3.s-1",         "m^⅔∕s");
+        roundtrip(f, "J.kg-1",           "J∕kg");
+        roundtrip(f, "mol.s-1",          "mol∕s");
+        roundtrip(f, "K.s-1",            "K∕s");
+        roundtrip(f, "m.s-1",            "m∕s");
+        roundtrip(f, "m.s-2",            "m∕s²");
+        roundtrip(f, "Pa.m",             "Pa⋅m");
+        roundtrip(f, "m3.s-1",           "m³∕s");
+        roundtrip(f, "kg.m-2.s-1",       "kg∕(m²⋅s)");
+        roundtrip(f, "K.m-1",            "K∕m");
+        roundtrip(f, "N.m-2",            "Pa");
+        roundtrip(f, "kg.m-2",           "kg∕m²");
+        roundtrip(f, "kg.m-3",           "kg∕m³");
+        roundtrip(f, "K*m.s-1",          "K⋅m∕s");
+        roundtrip(f, "N.m-2.s",          "Pa⋅s");
+        roundtrip(f, "K*m/s",            "K⋅m∕s");
+        roundtrip(f, "kg/kg*Pa/s",       "Pa∕s");
+        roundtrip(f, "kg/kg*m/s",        "m∕s");
+        roundtrip(f, "day",              "d");
+        roundtrip(f, "Pa*Pa",            "Pa²");
+        roundtrip(f, "N.m-1",            "N∕m");
+        roundtrip(f, "m-2.s-1",          "1∕(m²⋅s)");
+        roundtrip(f, "°",                "°");
+        roundtrip(f, "s.m-1",            "s∕m");
+        roundtrip(f, "V.m-1",            "V∕m");
+        roundtrip(f, "m2.s-2",           "m²∕s²");
+        roundtrip(f, "m2.s-1",           "m²∕s");
+        roundtrip(f, "mol.m-3",          "mol∕m³");
+        roundtrip(f, "psu",              "psu");
+        roundtrip(f, "kg-2.s-1",         "1∕(kg²⋅s)");
+        roundtrip(f, "K*K",              "K²");
+        roundtrip(f, "kg.m-3.s-1",       "kg∕(m³⋅s)");
+    }
+
+    /**
+     * Reminder for units parsing and formatting that still need improvement.
+     * The "expected" values checked in this method are not really what we expect,
+     * but they reflect the current behavior of Apache SIS units library. We keep
+     * those tests as a reminder of work to do, but they should be modified if SIS
+     * support of those units is improved in a future version.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-378">SIS-378</a>
+     */
+    @Test
+    public void needForImprovements() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        roundtrip(f, "m.m6.m-3",         "m⁴");
+        roundtrip(f, "kg.kg-1.m.s-1",    "m∕s");
+        roundtrip(f, "mol.mol-1",        "");
+        roundtrip(f, "μg.m-3",           "10⁻⁹⋅kg∕m³");
+        roundtrip(f, "W.m-2",            "kg∕s³");
+        roundtrip(f, "(m2.s.sr)-1",      "-1⋅m²⋅s");
+        roundtrip(f, "cm/day",           "1.1574074074074074E-7⋅m∕s");
+        roundtrip(f, "m-2.s.rad-1",      "s∕m²");
+        roundtrip(f, "kg.kg-1.s-1",      "Hz");
+        roundtrip(f, "kg/kg*kg/kg",      "");
+        roundtrip(f, "µg.m-3",           "10⁻⁹⋅kg∕m³");
+        roundtrip(f, "W.m-2.Hz-1",       "kg∕s²");
+        roundtrip(f, "W.sr-1.m-2",       "kg∕s³");
+        roundtrip(f, "W.m-1.sr-1",       "W∕m");
+        roundtrip(f, "kg.kg-1",          "");
+        roundtrip(f, "W.m-3.sr-1",       "kg∕(m⋅s³)");
+        roundtrip(f, "K*Pa/s",           "K⋅kg∕(m⋅s³)");
+        roundtrip(f, "m3.m-3",           "");
+        roundtrip(f, "J.m-2",            "kg∕s²");
+        roundtrip(f, "m3.s-1.m-1",       "m²∕s");
+        roundtrip(f, "(kg.m-3)*(m.s-1)", "kg∕(m²⋅s)");
+        roundtrip(f, "W.m-2.nm-1",       "10⁹⋅kg∕(m⋅s³)");
+    }
+
+    /**
+     * Parses the given symbol, then reformat the unit and compares with expected symbol.
+     */
+    private static void roundtrip(final UnitFormat f, final String symbol, final String expected) {
+        final Unit<?> unit = f.parse(symbol);
+        final String actual = f.format(unit);
+        assertEquals(expected, actual);
     }
 }

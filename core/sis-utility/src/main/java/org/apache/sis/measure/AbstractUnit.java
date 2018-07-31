@@ -67,6 +67,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     private static final long serialVersionUID = -5559950920796714303L;
 
     /**
+     * The multiplication and division symbols used for Unicode representation.
+     * Also used for internal representation of {@link #symbol}.
+     */
+    static final char MULTIPLY = '⋅', DIVIDE = '∕';
+
+    /**
      * The unit symbol, or {@code null} if this unit has no specific symbol. If {@code null},
      * then the {@link #toString()} method is responsible for creating a representation on the fly.
      * If non-null, this symbol should complies with the {@link UnitFormat.Style#SYMBOL} formatting
@@ -160,11 +166,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final String getName() {
-        try {
+        if (symbol != null) try {
             return UnitFormat.getBundle(Locale.getDefault()).getString(symbol);
         } catch (MissingResourceException e) {
-            return null;
+            // Ignore as per this method contract.
         }
+        return null;
     }
 
     /**
@@ -238,12 +245,10 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @return this unit scaled by the specified multiplier.
      */
     @Override
-    public final Unit<Q> multiply(final double multiplier) {
-        final double r = inverse(multiplier);
-        if (!Double.isNaN(r)) {
-            return divide(r);
-        }
-        return transform(LinearConverter.scale(multiplier, 1));
+    public final Unit<Q> multiply(double multiplier) {
+        final double divisor = inverse(multiplier);
+        if (divisor != 1) multiplier = 1;
+        return transform(LinearConverter.scale(multiplier, divisor));
     }
 
     /**
@@ -254,16 +259,14 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @return this unit divided by the specified divisor.
      */
     @Override
-    public final Unit<Q> divide(final double divisor) {
-        final double r = inverse(divisor);
-        if (!Double.isNaN(r)) {
-            return multiply(r);
-        }
-        return transform(LinearConverter.scale(1, divisor));
+    public final Unit<Q> divide(double divisor) {
+        final double multiplier = inverse(divisor);
+        if (multiplier != 1) divisor = 1;
+        return transform(LinearConverter.scale(multiplier, divisor));
     }
 
     /**
-     * If the inverse of the given multiplier is an integer, returns that inverse. Otherwise returns NaN.
+     * If the inverse of the given multiplier is an integer, returns that inverse. Otherwise returns 1.
      * This method is used for replacing e.g. {@code multiply(0.001)} calls by {@code divide(1000)} calls.
      * The later allows more accurate operations because of the way {@link LinearConverter} is implemented.
      */
@@ -275,7 +278,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
                 return r;
             }
         }
-        return Double.NaN;
+        return 1;
     }
 
     /**

@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * All {@code UnitDimension} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -170,6 +170,31 @@ final class UnitDimension implements Dimension, Serializable {
      */
     final boolean isDimensionless() {
         return components.isEmpty();
+    }
+
+    /**
+     * Returns {@code true} if the numerator is the dimension identified by the given symbol.
+     * This method returns {@code true} only if the numerator is not be raised to any exponent
+     * other than 1. All denominator terms are ignored.
+     */
+    final boolean numeratorIs(final char s) {
+        if (symbol == s) {
+            assert components.keySet().equals(Collections.singleton(this));
+            return true;
+        }
+        boolean found = false;
+        for (final Map.Entry<UnitDimension,Fraction> e : components.entrySet()) {
+            final Fraction value = e.getValue();
+            if (e.getKey().symbol == s) {
+                if (value.numerator != 1 || value.denominator != 1) {
+                    return false;
+                }
+                found = true;
+            } else if (value.signum() >= 0) {
+                return false;
+            }
+        }
+        return found;
     }
 
     /**

@@ -27,6 +27,7 @@ import javax.measure.UnitConverter;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
 import javax.measure.spi.QuantityFactory;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.ComparisonMode;
@@ -42,7 +43,7 @@ import org.apache.sis.math.Fraction;
  * without scale factor or offset.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
@@ -103,16 +104,54 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     /**
      * Returns a unit of the given dimension with default name and symbol.
      * This method is invoked for creating the result of arithmetic operations.
+     * If there is no predefined unit for the given dimension, then the new unit may be allocated a symbol derived from
+     * this unit's symbol. A new symbol is created only if this unit symbol and the {@code other} unit symbol are simple
+     * (for example "m" but not "m²", or "N" but not "N/m").
+     *
+     * @param  operation  symbol to write after the symbol of this unit for generating the new unit symbol, or 0
+     *                    for not inferring new symbol. Ignored if the condition documented in javadoc does not hold.
+     * @param  other      other units to append after the operation symbol, or {@code null} if none.
+     *                    Ignored if the condition documented in javadoc does not hold.
      */
-    private SystemUnit<?> create(final UnitDimension dim) {
-        if (dim == dimension) {
+    private SystemUnit<?> create(final UnitDimension newDimension, final char operation, final Unit<?> other) {
+        if (newDimension == dimension) {
             return this;
         }
-        SystemUnit<?> result = Units.get(dim);
+        SystemUnit<?> result = Units.get(newDimension);
         if (result == null) {
-            result = new SystemUnit<>(null, dim, null, (byte) 0, (short) 0, null);
+            String symbol = null;
+            if (operation != 0) {
+                final String ts = getSymbol();
+                if (invalidCharForSymbol(ts) == -1) {
+                    if (other == null) {
+                        symbol = (ts + operation).intern();
+                    } else {
+                        final String os = other.getSymbol();
+                        if (invalidCharForSymbol(os) == -1) {
+                            symbol = (ts + operation + os).intern();
+                        }
+                    }
+                }
+            }
+            result = new SystemUnit<>(null, newDimension, symbol, (byte) 0, (short) 0, null);
         }
         return result;
+    }
+
+    /**
+     * If the given symbol contains an invalid character for a unit symbol, returns the character code point.
+     * Otherwise if the given symbol is null or empty, returns -2. Otherwise (the symbol is valid) returns -1.
+     */
+    private static int invalidCharForSymbol(final String symbol) {
+        if (symbol == null || symbol.isEmpty()) {
+            return -2;
+        }
+        for (int i=0; i < symbol.length();) {
+            final int c = symbol.codePointAt(i);
+            if (!isSymbolChar(c)) return c;
+            i += Character.charCount(c);
+        }
+        return -1;
     }
 
     /**
@@ -358,13 +397,10 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     @SuppressWarnings("unchecked")
     public Unit<Q> alternate(final String symbol) {
         ArgumentChecks.ensureNonEmpty("symbol", symbol);
-        for (int i=0; i < symbol.length();) {
-            final int c = symbol.codePointAt(i);
-            if (!isSymbolChar(c)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCharacter_2,
-                        "symbol", String.valueOf(Character.toChars(c))));
-            }
-            i += Character.charCount(c);
+        final int c = invalidCharForSymbol(symbol);
+        if (c >= 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCharacter_2,
+                    "symbol", String.valueOf(Character.toChars(c))));
         }
         if (symbol.equals(getSymbol())) {
             return this;
@@ -405,7 +441,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     @Override
     public Unit<?> multiply(final Unit<?> multiplier) {
         ArgumentChecks.ensureNonNull("multiplier", multiplier);
-        return combine(multiplier, false);
+        if (multiplier == this) return pow(2);                      // For formating e.g. "K²" instead than "K⋅K".
+        return product(multiplier, false);
     }
 
     /**
@@ -417,22 +454,33 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     @Override
     public Unit<?> divide(final Unit<?> divisor) {
         ArgumentChecks.ensureNonNull("divisor", divisor);
-        return combine(divisor, true);
+        return product(divisor, true);
     }
 
     /**
      * Implementation of {@link #multiply(Unit)} and {@link #divide(Unit)} methods.
+     *
+     * @param  inverse  wether to use the inverse of {@code other}.
      */
-    private <T extends Quantity<T>> Unit<?> combine(final Unit<T> other, final boolean divide) {
-        final Unit<T> step = other.getSystemUnit();
-        final Dimension dim = step.getDimension();
-        Unit<?> result = create(divide ? dimension.divide(dim) : dimension.multiply(dim));
-        if (step != other) {
-            UnitConverter c = other.getConverterTo(step);
+    private <T extends Quantity<T>> Unit<?> product(final Unit<T> other, final boolean inverse) {
+        final Unit<T> intermediate = other.getSystemUnit();
+        final Dimension dim = intermediate.getDimension();
+        final UnitDimension newDimension;
+        final char operation;
+        if (inverse) {
+            operation = DIVIDE;
+            newDimension = dimension.divide(dim);
+        } else {
+            operation = MULTIPLY;
+            newDimension = dimension.multiply(dim);
+        }
+        Unit<?> result = create(newDimension, operation, other);
+        if (intermediate != other) {
+            UnitConverter c = other.getConverterTo(intermediate);
             if (!c.isLinear()) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1, other));
             }
-            if (divide) c = c.inverse();
+            if (inverse) c = c.inverse();
             result = result.transform(c);
         }
         return result;
@@ -446,7 +494,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public Unit<?> pow(final int n) {
-        return create(dimension.pow(n));
+        return create(dimension.pow(n), (n >= 0 && n <= 9) ? Characters.toSuperScript((char) ('0' + n)) : 0, null);
     }
 
     /**
@@ -458,7 +506,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public Unit<?> root(final int n) {
-        return create(dimension.root(n));
+        return create(dimension.root(n), (char) 0, null);
     }
 
     /**
@@ -472,9 +520,31 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     public Unit<Q> transform(UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
         AbstractUnit<Q> base = this;
-        if (this == Units.KILOGRAM) {
-            base = (AbstractUnit<Q>) Units.GRAM;
-            operation = operation.concatenate(LinearConverter.forPrefix('k'));
+        if ((scope & ~UnitRegistry.SI) == 0 && dimension.numeratorIs('M')) {
+            /*
+             * Special case for Units.KILOGRAM, to be replaced by Units.GRAM so a prefix can be computed.
+             * The kilogram may appear in an expression like "kg/m", which we want to replace by "g/m".
+             * We do that by dividing the unit by 1000 (the converter for "milli" prefix).
+             *
+             * Note: we could argue that this block should be UnitFormat work rather than SystemUnit.
+             * For now we perform this work here because this unit symbol may be different than what
+             * UnitFormat would infer, for example because of the symbols recorded by the sequence of
+             * Unit.multiply(Unit) and Unit.divide(Unit) operations. However we may revisit this policy
+             * in a future version.
+             */
+            if (this == Units.KILOGRAM) {
+                base = (AbstractUnit<Q>) Units.GRAM;                    // Optimization for a common case.
+            } else {
+                String symbol = getSymbol();
+                if (symbol != null && symbol.length() >= 3 && symbol.startsWith("kg") && !isSymbolChar(symbol.codePointAt(2))) {
+                    symbol = symbol.substring(1);
+                    base = new ConventionalUnit<>(this, LinearConverter.forPrefix('m'),
+                            symbol, UnitRegistry.PREFIXABLE, (byte) 0).unique(symbol);
+                }
+            }
+            if (base != this) {
+                operation = operation.concatenate(LinearConverter.forPrefix('k'));
+            }
         }
         return ConventionalUnit.create(base, operation);
     }

@@ -94,7 +94,6 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * @param  target    the base or derived units to which the new unit will be related.
      * @param  toTarget  the conversion from the new unit to the {@code target} unit.
      */
-    @SuppressWarnings("unchecked")
     static <Q extends Quantity<Q>> AbstractUnit<Q> create(final AbstractUnit<Q> target, final UnitConverter toTarget) {
         if (toTarget.isIdentity()) {
             return target;
@@ -149,25 +148,36 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
          * have more information.  For example instances provided by Units static constants may contain an
          * EPSG code, or even an alternative symbol (e.g. “hm²” will be replaced by “ha” for hectare).
          */
-        final ConventionalUnit<Q> unit = new ConventionalUnit<>(target, toTarget, symbol, (byte) 0, (short) 0);
+        ConventionalUnit<Q> unit = new ConventionalUnit<>(target, toTarget, symbol, (byte) 0, (short) 0);
         if (symbol != null) {
-            final Object existing = UnitRegistry.putIfAbsent(symbol, unit);
-            if (existing instanceof ConventionalUnit<?>) {
-                final ConventionalUnit<?> c = (ConventionalUnit<?>) existing;
-                if (target.equals(c.target)) {
-                    final boolean equivalent;
-                    if (toTarget instanceof LinearConverter && c.toTarget instanceof LinearConverter) {
-                        equivalent = ((LinearConverter) toTarget).equivalent((LinearConverter) c.toTarget);
-                    } else {
-                        equivalent = toTarget.equals(c.toTarget);   // Fallback for unknown implementations.
-                    }
-                    if (equivalent) {
-                        return (ConventionalUnit<Q>) c;
-                    }
+            unit = unit.unique(symbol);
+        }
+        return unit;
+    }
+
+    /**
+     * Returns a unique instance of this unit if available, or store this unit in the map of existing unit otherwise.
+     *
+     * @param  symbol  the symbol of this unit, which must be non-null.
+     */
+    @SuppressWarnings("unchecked")
+    final ConventionalUnit<Q> unique(final String symbol) {
+        final Object existing = UnitRegistry.putIfAbsent(symbol, this);
+        if (existing instanceof ConventionalUnit<?>) {
+            final ConventionalUnit<?> c = (ConventionalUnit<?>) existing;
+            if (target.equals(c.target)) {
+                final boolean equivalent;
+                if (toTarget instanceof LinearConverter && c.toTarget instanceof LinearConverter) {
+                    equivalent = ((LinearConverter) toTarget).equivalent((LinearConverter) c.toTarget);
+                } else {
+                    equivalent = toTarget.equals(c.toTarget);   // Fallback for unknown implementations.
+                }
+                if (equivalent) {
+                    return (ConventionalUnit<Q>) c;
                 }
             }
         }
-        return unit;
+        return this;
     }
 
     /**
