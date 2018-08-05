@@ -173,6 +173,20 @@ final class UnitDimension implements Dimension, Serializable {
     }
 
     /**
+     * Returns {@code true} if the given dimension has no components.
+     */
+    static boolean isDimensionless(final Dimension dim) {
+        if (dim instanceof UnitDimension) {
+            return ((UnitDimension) dim).isDimensionless();
+        } else if (dim != null) {
+            // Fallback for foreigner implementations.
+            final Map<? extends Dimension, Integer> bases = dim.getBaseDimensions();
+            if (bases != null) return bases.isEmpty();
+        }
+        return false;       // Unit is a base unit (not a product of existing units).
+    }
+
+    /**
      * Returns {@code true} if the numerator is the dimension identified by the given symbol.
      * This method returns {@code true} only if the numerator is not be raised to any exponent
      * other than 1 and there is no other numerator. All denominator terms are ignored.

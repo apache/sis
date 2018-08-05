@@ -114,41 +114,84 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *                    Ignored if the condition documented in javadoc does not hold.
      */
     private SystemUnit<?> create(final UnitDimension newDimension, final char operation, final Unit<?> other) {
-        if (newDimension == dimension) {
-            return this;
+        /*
+         * Check if the SystemUnit to create is known to Units, provided that no dimensionless units
+         * is involved. If a dimensionless unit is involved, we will try to build a symbol before to
+         * check if the unit is known to Units. The reason is that there is many dimensionless units
+         * with different symbols (rad, sr, psu, …).
+         */
+        final boolean deferred = newDimension.isDimensionless() || dimension.isDimensionless() ||
+                (other != null && UnitDimension.isDimensionless(other.getDimension()));
+        if (!deferred) {
+            final SystemUnit<?> result = Units.get(newDimension);
+            if (result != null) return result;
         }
-        SystemUnit<?> result = Units.get(newDimension);
-        if (result == null) {
-            String symbol = null;
-            if (operation != 0) {
-                final String ts = getSymbol();
-                if (invalidCharForSymbol(ts) == -1) {
-                    if (other == null) {
-                        symbol = (ts + operation).intern();
-                    } else {
-                        final String os = other.getSymbol();
-                        if (invalidCharForSymbol(os) == -1) {
-                            symbol = (ts + operation + os).intern();
-                        }
+        String symbol = null;
+        if (operation != 0) {
+            final String ts = getSymbol();
+            final boolean exponents = (operation == MULTIPLY || operation == DIVIDE);
+            if (invalidCharForSymbol(ts, exponents ? 1 : 0, exponents) == -1) {
+                if (other == null) {
+                    symbol = (ts + operation).intern();
+                } else {
+                    final String os = other.getSymbol();
+                    if (invalidCharForSymbol(os, 0, exponents) == -1) {
+                        symbol = (ts + operation + os).intern();
                     }
                 }
             }
-            result = new SystemUnit<>(null, newDimension, symbol, (byte) 0, (short) 0, null);
         }
-        return result;
+        /*
+         * The check that we did not performed at the beginning of this method
+         * if any component were unitless.
+         */
+        if (deferred) {
+            final SystemUnit<?> result = Units.get(newDimension);
+            if (result != null && result.sameSymbol(symbol)) {
+                return result;
+            }
+        }
+        if (newDimension == dimension && sameSymbol(symbol)) {
+            return this;
+        }
+        return new SystemUnit<>(null, newDimension, symbol, (byte) 0, (short) 0, null);
+    }
+
+    /**
+     * Returns {@code true} if the given symbol is null or equals to the symbol of this unit.
+     */
+    private boolean sameSymbol(final String symbol) {
+        return (symbol == null) || symbol.equals(getSymbol());
     }
 
     /**
      * If the given symbol contains an invalid character for a unit symbol, returns the character code point.
      * Otherwise if the given symbol is null or empty, returns -2. Otherwise (the symbol is valid) returns -1.
+     *
+     * <p>The check for valid symbols can be relaxed, for example when building a new symbol from existing units.
+     * For example we may want to accept "W" and "m²" as valid symbols for deriving "W∕m²" without being rejected
+     * because of the "²" in "m²". We do not want to relax too much however, because a long sequence of arithmetic
+     * operations would result in a long and maybe meaningless unit symbol, while declaring "no symbol" would allow
+     * {@link UnitFormat} to create a new one from the base units. The criterion for accepting a symbol or not (for
+     * example how many multiplications) is arbitrary.</p>
+     *
+     * @param  symbol     the symbol to verify for invalid characters.
+     * @param  multiply   maximal number of multiplication symbol to accept.
+     * @param  exponents  whether to accept also exponent characters.
      */
-    private static int invalidCharForSymbol(final String symbol) {
+    private static int invalidCharForSymbol(final String symbol, int multiply, final boolean exponents) {
         if (symbol == null || symbol.isEmpty()) {
             return -2;
         }
         for (int i=0; i < symbol.length();) {
             final int c = symbol.codePointAt(i);
-            if (!isSymbolChar(c)) return c;
+            if (!isSymbolChar(c)) {
+                if (c == MULTIPLY) {
+                    if (--multiply < 0) return c;
+                } else if (!exponents || !Characters.isSuperScript(c)) {
+                    return c;
+                }
+            }
             i += Character.charCount(c);
         }
         return -1;
@@ -397,7 +440,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     @SuppressWarnings("unchecked")
     public Unit<Q> alternate(final String symbol) {
         ArgumentChecks.ensureNonEmpty("symbol", symbol);
-        final int c = invalidCharForSymbol(symbol);
+        final int c = invalidCharForSymbol(symbol, 0, false);
         if (c >= 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCharacter_2,
                     "symbol", String.valueOf(Character.toChars(c))));
@@ -494,7 +537,14 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public Unit<?> pow(final int n) {
-        return create(dimension.pow(n), (n >= 0 && n <= 9) ? Characters.toSuperScript((char) ('0' + n)) : 0, null);
+        switch (n) {
+            case 0: return Units.UNITY;
+            case 1: return this;
+            default: {
+                final char p = (n >= 0 && n <= 9) ? Characters.toSuperScript((char) ('0' + n)) : 0;
+                return create(dimension.pow(n), p, null);
+            }
+        }
     }
 
     /**
