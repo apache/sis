@@ -175,10 +175,13 @@ final class UnitDimension implements Dimension, Serializable {
     /**
      * Returns {@code true} if the numerator is the dimension identified by the given symbol.
      * This method returns {@code true} only if the numerator is not be raised to any exponent
-     * other than 1. All denominator terms are ignored.
+     * other than 1 and there is no other numerator. All denominator terms are ignored.
+     *
+     * <p>This method is used for identifying units like "kg", "kg/s", <i>etc</i> for handling
+     * the "kg" prefix in a special way.</p>
      */
     final boolean numeratorIs(final char s) {
-        if (symbol == s) {
+        if (symbol == s) {                                  // Optimization for a simple case.
             assert components.keySet().equals(Collections.singleton(this));
             return true;
         }
@@ -186,12 +189,12 @@ final class UnitDimension implements Dimension, Serializable {
         for (final Map.Entry<UnitDimension,Fraction> e : components.entrySet()) {
             final Fraction value = e.getValue();
             if (e.getKey().symbol == s) {
-                if (value.numerator != 1 || value.denominator != 1) {
-                    return false;
+                if (value.numerator != value.denominator) {
+                    return false;                           // Raised to a power different than 1.
                 }
                 found = true;
             } else if (value.signum() >= 0) {
-                return false;
+                return false;                               // Found other numerators.
             }
         }
         return found;

@@ -17,7 +17,6 @@
 package org.apache.sis.measure;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collections;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -45,7 +44,7 @@ import org.apache.sis.internal.util.Numerics;
  * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -54,25 +53,6 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3759983642723729926L;
-
-    /**
-     * The SI prefixes in increasing order. The only two-letters prefix – “da” – is encoded using the JCK compatibility
-     * character “㍲”. The Greek letter μ is repeated twice: the U+00B5 character for micro sign (this is the character
-     * that Apache SIS uses in unit symbols) and the U+03BC character for the Greek small letter “mu” (the later is the
-     * character that appears when decomposing JCK compatibility characters with {@link java.text.Normalizer}).
-     * Both characters have same appearance but different values.
-     *
-     * <p>For each prefix at index <var>i</var>, the multiplication factor is given by 10 raised to power {@code POWERS[i]}.</p>
-     */
-    private static final char[] PREFIXES = {'E','G','M','P','T','Y','Z','a','c','d','f','h','k','m','n','p','y','z','µ','μ','㍲'};
-    private static final byte[] POWERS   = {18,  9,  6, 15, 12, 24, 21,-18, -2, -1,-15,  2,  3, -3, -9,-12,-24,-21, -6, -6,  1};
-
-    /**
-     * The converters for SI prefixes, created when first needed.
-     *
-     * @see #forPrefix(char)
-     */
-    private static final LinearConverter[] SI = new LinearConverter[POWERS.length];
 
     /**
      * The identity linear converter.
@@ -145,34 +125,6 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     static LinearConverter offset(final double numerator, final double denominator) {
         return new LinearConverter(denominator, numerator, denominator);
-    }
-
-    /**
-     * Returns the converter for the given SI prefix, or {@code null} if none.
-     * Those converters are created when first needed and cached for reuse.
-     */
-    static LinearConverter forPrefix(final char prefix) {
-        final int i = Arrays.binarySearch(PREFIXES, prefix);
-        if (i < 0) {
-            return null;
-        }
-        synchronized (SI) {
-            LinearConverter c = SI[i];
-            if (c == null) {
-                final int p = POWERS[i];
-                final double numerator, denominator;
-                if (p >= 0) {
-                    numerator = MathFunctions.pow10(p);
-                    denominator = 1;
-                } else {
-                    numerator = 1;
-                    denominator = MathFunctions.pow10(-p);
-                }
-                c = scale(numerator, denominator);
-                SI[i] = c;
-            }
-            return c;
-        }
     }
 
     /**
@@ -459,8 +411,16 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * except for rounding errors.
      */
     boolean equivalent(final LinearConverter other) {
-        return AbstractUnit.epsilonEquals(scale  * other.divisor, other.scale  * divisor) &&
-               AbstractUnit.epsilonEquals(offset * other.divisor, other.offset * divisor);
+        return epsilonEquals(scale  * other.divisor, other.scale  * divisor) &&
+               epsilonEquals(offset * other.divisor, other.offset * divisor);
+    }
+
+    /**
+     * Returns {@code true} if the given floating point numbers are considered equal.
+     * The tolerance factor used in this method is arbitrary and may change in any future version.
+     */
+    static boolean epsilonEquals(final double expected, final double actual) {
+        return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
     }
 
     /**

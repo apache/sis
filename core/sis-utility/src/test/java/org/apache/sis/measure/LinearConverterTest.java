@@ -17,10 +17,8 @@
 package org.apache.sis.measure;
 
 import java.math.BigDecimal;
-import java.lang.reflect.Field;
 import javax.measure.UnitConverter;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -32,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link LinearConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -45,7 +43,7 @@ public final strictfp class LinearConverterTest extends TestCase {
      * @param  denominator  the expected denominator in the conversion factor.
      * @param  converter    the converter to verify.
      */
-    private static void assertScale(final int numerator, final int denominator, final LinearConverter converter) {
+    static void assertScale(final int numerator, final int denominator, final LinearConverter converter) {
         final double derivative = numerator / (double) denominator;
         final Number[] coefficients = converter.coefficients();
         assertEquals("coefficients.length", 2, coefficients.length);
@@ -58,39 +56,6 @@ public final strictfp class LinearConverterTest extends TestCase {
             assertEquals("denominator", denominator, f.denominator);
         }
         assertEquals("derivative", derivative, converter.derivative(0), STRICT);
-    }
-
-    /**
-     * Ensures that the characters in the {@link LinearConverter#PREFIXES} array are in strictly increasing order,
-     * and that {@link LinearConverter#POWERS} has the same length.
-     *
-     * @throws ReflectiveOperationException if this test can not access the private fields of {@link LinearConverter}.
-     *
-     * @see ConventionalUnitTest#verifyPrefixes()
-     */
-    @Test
-    public void verifyPrefixes() throws ReflectiveOperationException {
-        Field f = LinearConverter.class.getDeclaredField("PREFIXES");
-        f.setAccessible(true);
-        final char[] prefixes = (char[]) f.get(null);
-        assertTrue(ArraysExt.isSorted(prefixes, true));
-
-        f = LinearConverter.class.getDeclaredField("POWERS");
-        f.setAccessible(true);
-        assertEquals("length", prefixes.length, ((byte[]) f.get(null)).length);
-    }
-
-    /**
-     * Tests the {@link LinearConverter#forPrefix(char)} method. This also indirectly tests the
-     * {@link LinearConverter#scale(double, double)} and {@link LinearConverter#coefficients()}
-     * methods.
-     */
-    @Test
-    public void testForPrefix() {
-        assertScale(1000000,    1, LinearConverter.forPrefix('M'));
-        assertScale(   1000,    1, LinearConverter.forPrefix('k'));
-        assertScale(      1,  100, LinearConverter.forPrefix('c'));
-        assertScale(      1, 1000, LinearConverter.forPrefix('m'));
     }
 
     /**

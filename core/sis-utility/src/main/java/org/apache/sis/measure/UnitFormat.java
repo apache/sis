@@ -68,10 +68,8 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * opposite sign. It is caller responsibility to handle the direction of axes associated to netCDF units.
  *
  * <div class="section">Multi-threading</div>
- * {@code UnitFormat} is generally not thread-safe.
- * However if there is no call to any setter method or to {@link #label(Unit, String)} after construction,
- * then the {@link #parse(CharSequence)} and {@link #format(Unit)} methods can be invoked concurrently in
- * different threads.
+ * {@code UnitFormat} is generally not thread-safe. If units need to be parsed or formatted in different threads,
+ * each thread should have its own {@code UnitFormat} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -99,16 +97,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     static final String UNITY = "unity";
 
     /**
-     * The SI “deca” prefix. This is the only SI prefix encoded on two letters instead than one.
-     * It can be represented by the CJK compatibility character “㍲”, but use of those characters
-     * is generally not recommended outside of Chinese, Japanese or Korean texts.
-     */
-    static final String DECA = "da";
-
-    /**
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
      * While {@code UnitFormat} is generally not thread-safe, this particular instance is safe if
-     * we never invoke any setter method.
+     * we never invoke any setter method and we do not format with {@link Style#NAME}.
      */
     static final UnitFormat INSTANCE = new UnitFormat();
 
@@ -464,6 +455,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * international and American spelling of unit names in addition of localized names.
      * The intent is to recognize "meter" as well as "metre".
      *
+     * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
+     * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>
+     *
      * @param  uom  the unit symbol, without leading or trailing spaces.
      */
     private Unit<?> fromName(String uom) {
@@ -598,13 +592,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         if (label != null) {
             return toAppendTo.append(label);
         }
+        /*
+         * Choice 2: value specified by Unit.getName(). We skip this check if the given Unit is an instance
+         * implemented by Apache SIS because  AbstractUnit.getName()  delegates to the same resource bundle
+         * than the one used by this block. We are better to use the resource bundle of the UnitFormat both
+         * for performance reasons and because the locale may not be the same.
+         */
         if (style == Style.NAME) {
-            /*
-             * Choice 2: value specified by Unit.getName(). We skip this check if the given Unit is an instance
-             * implemented by Apache SIS because  AbstractUnit.getName()  delegates to the same resource bundle
-             * than the one used by this block. We are better to use the resource bundle of the UnitFormat both
-             * for performance reasons and because the locale may not be the same.
-             */
             if (!(unit instanceof AbstractUnit)) {
                 label = unit.getName();
                 if (label != null) {
@@ -629,6 +623,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         }
         /*
          * Choice 3: if the unit has a specific symbol, appends that symbol.
+         * Apache SIS implementation use Unicode characters in the symbol, which are not valid for UCUM.
+         * But Styme.UCUM.appendSymbol(…) performs required replacements.
          */
         label = unit.getSymbol();
         if (label != null) {
@@ -1434,20 +1430,14 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
         if (unit == null && uom.length() >= 2) {
             int s = 1;
             char prefix = uom.charAt(0);
-            if (prefix == 'd' && uom.charAt(1) == 'a') {
-                prefix = '㍲';
-                s = 2;
+            if (prefix != (prefix = Prefixes.twoLetters(prefix, uom))) {
+                s = 2;          // Skip "da", which we represent by '㍲'.
             }
             unit = Units.get(uom.substring(s));
             if (unit instanceof AbstractUnit<?> && ((AbstractUnit<?>) unit).isPrefixable()) {
-                final LinearConverter c = LinearConverter.forPrefix(prefix);
+                final LinearConverter c = Prefixes.converter(prefix);
                 if (c != null) {
-                    String symbol = unit.getSymbol();
-                    if (prefix == '㍲') {
-                        symbol = DECA + symbol;
-                    } else {
-                        symbol = prefix + symbol;
-                    }
+                    final String symbol = Prefixes.concat(prefix, unit.getSymbol());
                     return new ConventionalUnit<>((AbstractUnit<?>) unit, c, symbol.intern(), (byte) 0, (short) 0);
                 }
             }

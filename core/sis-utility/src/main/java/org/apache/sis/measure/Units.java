@@ -1104,12 +1104,12 @@ public final class Units extends Static {
         /*
          * All SI prefix to be used below, with additional converters to be used more than once.
          */
-        final LinearConverter nano  = LinearConverter.forPrefix('n');
-        final LinearConverter micro = LinearConverter.forPrefix('µ');
-        final LinearConverter milli = LinearConverter.forPrefix('m');
-        final LinearConverter centi = LinearConverter.forPrefix('c');
-        final LinearConverter hecto = LinearConverter.forPrefix('h');
-        final LinearConverter kilo  = LinearConverter.forPrefix('k');
+        final LinearConverter nano  = Prefixes.converter('n');
+        final LinearConverter micro = Prefixes.converter('µ');
+        final LinearConverter milli = Prefixes.converter('m');
+        final LinearConverter centi = Prefixes.converter('c');
+        final LinearConverter hecto = Prefixes.converter('h');
+        final LinearConverter kilo  = Prefixes.converter('k');
         final LinearConverter ten4  = LinearConverter.scale(10000, 1);
         /*
          * All Unit<Angle>.

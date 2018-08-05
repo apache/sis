@@ -97,7 +97,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * A code that identifies whether this unit is part of SI system, or outside SI but accepted for use with SI.
      * Value can be {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
      *
-     * <p>This information may be approximative since we can not always guess correctly whether the result of
+     * <p>This information may be approximate since we can not always guess correctly whether the result of
      * an operation is part of SI or not. Values given to the field may be adjusted in any future version.</p>
      *
      * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
@@ -274,19 +274,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         if (Math.abs(multiplier) < 1) {
             final double inverse = 1 / multiplier;
             final double r = Math.rint(inverse);
-            if (epsilonEquals(inverse, r)) {
+            if (LinearConverter.epsilonEquals(inverse, r)) {
                 return r;
             }
         }
         return 1;
-    }
-
-    /**
-     * Returns {@code true} if the given floating point numbers are considered equal.
-     * The tolerance factor used in this method is arbitrary and may change in any future version.
-     */
-    static boolean epsilonEquals(final double expected, final double actual) {
-        return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
     }
 
     /**

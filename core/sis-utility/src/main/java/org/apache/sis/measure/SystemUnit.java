@@ -516,15 +516,14 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      * @return the unit after the specified transformation.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public Unit<Q> transform(UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
         AbstractUnit<Q> base = this;
-        if ((scope & ~UnitRegistry.SI) == 0 && dimension.numeratorIs('M')) {
+        final ConventionalUnit<Q> pseudo = Prefixes.pseudoSystemUnit(this);
+        if (pseudo != null) {
             /*
              * Special case for Units.KILOGRAM, to be replaced by Units.GRAM so a prefix can be computed.
              * The kilogram may appear in an expression like "kg/m", which we want to replace by "g/m".
-             * We do that by dividing the unit by 1000 (the converter for "milli" prefix).
              *
              * Note: we could argue that this block should be UnitFormat work rather than SystemUnit.
              * For now we perform this work here because this unit symbol may be different than what
@@ -532,19 +531,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
              * Unit.multiply(Unit) and Unit.divide(Unit) operations. However we may revisit this policy
              * in a future version.
              */
-            if (this == Units.KILOGRAM) {
-                base = (AbstractUnit<Q>) Units.GRAM;                    // Optimization for a common case.
-            } else {
-                String symbol = getSymbol();
-                if (symbol != null && symbol.length() >= 3 && symbol.startsWith("kg") && !isSymbolChar(symbol.codePointAt(2))) {
-                    symbol = symbol.substring(1);
-                    base = new ConventionalUnit<>(this, LinearConverter.forPrefix('m'),
-                            symbol, UnitRegistry.PREFIXABLE, (byte) 0).unique(symbol);
-                }
-            }
-            if (base != this) {
-                operation = operation.concatenate(LinearConverter.forPrefix('k'));
-            }
+            operation = operation.concatenate(pseudo.toTarget.inverse());
+            base = pseudo;
         }
         return ConventionalUnit.create(base, operation);
     }

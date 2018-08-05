@@ -29,15 +29,13 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.math.MathFunctions;
-import org.apache.sis.internal.util.Numerics;
 
 
 /**
  * A unit of measure which is related to a base or derived unit through a conversion formula.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -46,19 +44,6 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6963634855104019466L;
-
-    /**
-     * The SI prefixes form smallest to largest. Power of tens go from -24 to +24 inclusive with a step of 3,
-     * except for the addition of -2, -1, +1, +2 and the omission of 0.
-     *
-     * @see #prefix(double)
-     */
-    private static final char[] PREFIXES = {'y','z','a','f','p','n','µ','m','c','d','㍲','h','k','M','G','T','P','E','Z','Y'};
-
-    /**
-     * The maximal power of 1000 for the prefixes in the {@link #PREFIXES} array. Note that 1000⁸ = 1E+24.
-     */
-    static final int MAX_POWER = 8;
 
     /**
      * The base, derived or alternate units to which this {@code ConventionalUnit} is related.
@@ -131,13 +116,9 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
                         case 3:  scale = Math.cbrt(scale); break;
                         default: scale = Math.pow(scale, 1.0/power);
                     }
-                    final char prefix = prefix(scale);
+                    final char prefix = Prefixes.symbol(scale);
                     if (prefix != 0) {
-                        if (prefix == '㍲') {
-                            symbol = UnitFormat.DECA + ts;
-                        } else {
-                            symbol = prefix + ts;
-                        }
+                        symbol = Prefixes.concat(prefix, ts);
                     }
                 }
             }
@@ -228,31 +209,6 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             }
         }
         return 1;
-    }
-
-    /**
-     * Returns the SI prefix for the given scale factor, or 0 if none.
-     */
-    @SuppressWarnings("null")
-    static char prefix(final double scale) {
-        final int n = Numerics.toExp10(Math.getExponent(scale)) + 1;
-        if (epsilonEquals(MathFunctions.pow10(n), scale)) {
-            int i = Math.abs(n);
-            switch (i) {
-                case 0:  return 0;
-                case 1:  // Fallthrough
-                case 2:  break;
-                default: {
-                    if (i > (MAX_POWER*3) || (i % 3) != 0) {
-                        return 0;
-                    }
-                    i = i/3 + 2;
-                    break;
-                }
-            }
-            return PREFIXES[n >= 0 ? (MAX_POWER+1) + i : (MAX_POWER+2) - i];
-        }
-        return 0;
     }
 
     /**

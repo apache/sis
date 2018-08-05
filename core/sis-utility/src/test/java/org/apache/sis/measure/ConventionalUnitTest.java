@@ -16,7 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.lang.reflect.Field;
 import javax.measure.IncommensurableException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -39,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.8
  * @module
  */
-@DependsOn({SystemUnitTest.class, LinearConverterTest.class})
+@DependsOn({SystemUnitTest.class, LinearConverterTest.class, PrefixesTest.class})
 public final strictfp class ConventionalUnitTest extends TestCase {
     /**
      * Verifies the properties if the given unit.
@@ -81,35 +80,6 @@ public final strictfp class ConventionalUnitTest extends TestCase {
     }
 
     /**
-     * Tests {@link ConventionalUnit#prefix(double)}.
-     */
-    @Test
-    public void testPrefix() {
-        assertEquals( 0 , ConventionalUnit.prefix(1E-27));
-        assertEquals( 0 , ConventionalUnit.prefix(1E-25));
-        assertEquals('y', ConventionalUnit.prefix(1E-24));
-        assertEquals( 0 , ConventionalUnit.prefix(1E-23));
-        assertEquals('n', ConventionalUnit.prefix(1E-09));
-        assertEquals( 0 , ConventionalUnit.prefix(1E-08));
-        assertEquals( 0 , ConventionalUnit.prefix(1E-04));
-        assertEquals('m', ConventionalUnit.prefix(1E-03));
-        assertEquals('c', ConventionalUnit.prefix(1E-02));
-        assertEquals('d', ConventionalUnit.prefix(1E-01));
-        assertEquals( 0 , ConventionalUnit.prefix(    1));
-        assertEquals( 0 , ConventionalUnit.prefix(    0));
-        assertEquals( 0 , ConventionalUnit.prefix(  -10));
-        assertEquals('㍲', ConventionalUnit.prefix(   10));
-        assertEquals('h', ConventionalUnit.prefix(  100));
-        assertEquals('k', ConventionalUnit.prefix( 1000));
-        assertEquals( 0 , ConventionalUnit.prefix(1E+04));
-        assertEquals('G', ConventionalUnit.prefix(1E+09));
-        assertEquals('Y', ConventionalUnit.prefix(1E+24));
-        assertEquals( 0 , ConventionalUnit.prefix(1E+25));
-        assertEquals( 0 , ConventionalUnit.prefix(1E+27));
-        assertEquals( 0 , ConventionalUnit.prefix(1E+25));
-    }
-
-    /**
      * Tests {@link ConventionalUnit#power(String)}.
      */
     @Test
@@ -126,45 +96,11 @@ public final strictfp class ConventionalUnitTest extends TestCase {
     }
 
     /**
-     * Ensures that the characters in the {@link ConventionalUnit#PREFIXES} array match
-     * the prefixes recognized by {@link LinearConverter#forPrefix(char)}.
-     *
-     * @throws ReflectiveOperationException if this test can not access the private fields of {@link LinearConverter}.
-     *
-     * @see LinearConverterTest#verifyPrefixes()
-     */
-    @Test
-    @DependsOnMethod("testPrefix")
-    public void verifyPrefixes() throws ReflectiveOperationException {
-        Field f = ConventionalUnit.class.getDeclaredField("PREFIXES");
-        f.setAccessible(true);
-        double previousScale = StrictMath.pow(1000, -(ConventionalUnit.MAX_POWER + 1));
-        for (final char prefix : (char[]) f.get(null)) {
-            final LinearConverter lc = LinearConverter.forPrefix(prefix);
-            final String asString = String.valueOf(prefix);
-            assertNotNull(asString, lc);
-            /*
-             * Ratio of previous scale with current scale shall be a power of 10.
-             */
-            final double scale = lc.derivative(0);
-            final double power = StrictMath.log10(scale / previousScale);
-            assertTrue  (asString,    power >= 1);
-            assertEquals(asString, 0, power % 1, STRICT);
-            /*
-             * At this point we got the LinearConverter to use for the test,
-             * and we know the expected prefix. Verify that we get that value.
-             */
-            assertEquals("ConventionalUnit.prefix(double)", asString, String.valueOf(ConventionalUnit.prefix(scale)));
-            previousScale = scale;
-        }
-    }
-
-    /**
      * Tests {@link SystemUnit#multiply(double)} and {@link SystemUnit#divide(double)}.
      * Both are implemented by calls to {@link SystemUnit#transform(UnitConverter)}.
      */
     @Test
-    @DependsOnMethod({"verifyPrefixes","testPower"})
+    @DependsOnMethod("testPower")
     public void testTransformSystemUnit() {
         assertSame(Units.METRE,      Units.METRE.multiply(   1));
         assertSame(Units.KILOMETRE,  Units.METRE.multiply(1000));
@@ -286,7 +222,6 @@ public final strictfp class ConventionalUnitTest extends TestCase {
      * @throws IncommensurableException if {@link Unit#getConverterToAny(Unit)} failed.
      */
     @Test
-    @DependsOnMethod("verifyPrefixes")
     public void testVolumeEquivalences() throws IncommensurableException {
         assertEquivalent(  "L", Units.LITRE.divide  (1E+00),  "dm³", Units.CUBIC_METRE.divide  (1E+03));
         assertEquivalent( "mL", Units.LITRE.divide  (1E+03),  "cm³", Units.CUBIC_METRE.divide  (1E+06));
