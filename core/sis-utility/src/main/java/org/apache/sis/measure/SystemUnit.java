@@ -525,11 +525,10 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
              * Special case for Units.KILOGRAM, to be replaced by Units.GRAM so a prefix can be computed.
              * The kilogram may appear in an expression like "kg/m", which we want to replace by "g/m".
              *
-             * Note: we could argue that this block should be UnitFormat work rather than SystemUnit.
-             * For now we perform this work here because this unit symbol may be different than what
-             * UnitFormat would infer, for example because of the symbols recorded by the sequence of
-             * Unit.multiply(Unit) and Unit.divide(Unit) operations. However we may revisit this policy
-             * in a future version.
+             * Note: we could argue that this block should be UnitFormat's work rather than SystemUnit.
+             * We perform this work here because this unit symbol may be different than what UnitFormat
+             * would infer, for example because of symbols recorded by sequence of Unit.multiply(Unit)
+             * and Unit.divide(Unit) operations.
              */
             operation = operation.concatenate(pseudo.toTarget.inverse());
             base = pseudo;

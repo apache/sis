@@ -106,17 +106,10 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         String symbol = null;
         if (target.isPrefixable()) {
             final String ts = target.getSymbol();
-            if (ts != null && !ts.isEmpty() && toTarget.isLinear()) {
-                final int power = power(ts);
-                if (power != 0) {
-                    double scale = toTarget.convert(1);
-                    switch (power) {
-                        case 1:  break;
-                        case 2:  scale = Math.sqrt(scale); break;
-                        case 3:  scale = Math.cbrt(scale); break;
-                        default: scale = Math.pow(scale, 1.0/power);
-                    }
-                    final char prefix = Prefixes.symbol(scale);
+            if (ts != null && !ts.isEmpty()) {
+                double scale = AbstractConverter.scale(toTarget);
+                if (!Double.isNaN(scale)) {
+                    final char prefix = Prefixes.symbol(scale, power(ts));
                     if (prefix != 0) {
                         symbol = Prefixes.concat(prefix, ts);
                     }

@@ -131,6 +131,13 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     }
 
     /**
+     * Returns {@code true} if the use of SI prefixes is allowed for the given unit.
+     */
+    static boolean isPrefixable(final Unit<?> unit) {
+        return (unit instanceof AbstractUnit<?>) && ((AbstractUnit<?>) unit).isPrefixable();
+    }
+
+    /**
      * Returns {@code true} if the use of SI prefixes is allowed for this unit.
      */
     final boolean isPrefixable() {
@@ -274,7 +281,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         if (Math.abs(multiplier) < 1) {
             final double inverse = 1 / multiplier;
             final double r = Math.rint(inverse);
-            if (LinearConverter.epsilonEquals(inverse, r)) {
+            if (AbstractConverter.epsilonEquals(inverse, r)) {
                 return r;
             }
         }

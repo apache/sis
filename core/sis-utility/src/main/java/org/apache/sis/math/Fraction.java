@@ -162,7 +162,16 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction negate() {
-        return (numerator == 0) ? this : new Fraction(Math.negateExact(numerator), denominator);
+        int n = numerator;
+        int d = denominator;
+        if (n != 0) {
+            n = Math.negateExact(n);
+        } else if (d != 0) {
+            d = Math.negateExact(d);
+        } else {
+            return this;
+        }
+        return new Fraction(n, d);
     }
 
     /**

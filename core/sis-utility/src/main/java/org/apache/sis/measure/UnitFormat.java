@@ -588,9 +588,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         /*
          * Choice 1: label specified by a call to label(Unit, String).
          */
-        String label = unitToLabel.get(unit);
-        if (label != null) {
-            return toAppendTo.append(label);
+        {
+            final String label = unitToLabel.get(unit);
+            if (label != null) {
+                return toAppendTo.append(label);
+            }
         }
         /*
          * Choice 2: value specified by Unit.getName(). We skip this check if the given Unit is an instance
@@ -600,12 +602,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          */
         if (style == Style.NAME) {
             if (!(unit instanceof AbstractUnit)) {
-                label = unit.getName();
+                final String label = unit.getName();
                 if (label != null) {
                     return toAppendTo.append(label);
                 }
             } else {
-                label = unit.getSymbol();
+                String label = unit.getSymbol();
                 if (label != null) {
                     if (label.isEmpty()) {
                         label = UNITY;
@@ -626,78 +628,114 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * Apache SIS implementation use Unicode characters in the symbol, which are not valid for UCUM.
          * But Styme.UCUM.appendSymbol(…) performs required replacements.
          */
-        label = unit.getSymbol();
-        if (label != null) {
-            return style.appendSymbol(toAppendTo, label);
+        {
+            final String symbol = unit.getSymbol();
+            if (symbol != null) {
+                return style.appendSymbol(toAppendTo, symbol);
+            }
         }
         /*
          * Choice 4: if all the above failed, fallback on a symbol created from the base units and their power.
-         * Note that this may produce more verbose symbols than needed since derived units like Volt or Watt are
-         * decomposed into their base SI units.
+         * Note that this may produce more verbose symbols than needed because derived units like Volt or Watt
+         * are decomposed into their base SI units. The scale factor will be inserted before the unit components,
+         * e.g. "30⋅m∕s". Note that a scale factor relative to system unit may not be what we want if the unit
+         * contains "kg", since it block us from using SI prefixes. But in many cases (not all), a symbol will
+         * have been created by SystemUnit.transform(…), in which case "Choice 3" above would have been executed.
          */
-        boolean hasPositivePower = false;
+        final Unit<?> unscaled = unit.getSystemUnit();
+        @SuppressWarnings("unchecked")          // Both 'unit' and 'unscaled' are 'Unit<Q>'.
+        final double scale = AbstractConverter.scale(unit.getConverterTo((Unit) unscaled));
+        if (Double.isNaN(scale)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1,
+                    "?⋅" + Style.OPEN + unscaled + Style.CLOSE));
+        }
+        /*
+         * In addition of the scale, we will need to know:
+         *
+         *   - The components (for example "m" and "s" in "m∕s").
+         *   - Whether we have at least one component on the left side of "∕" operation.
+         *     Used for determining if we should prepend "1" before the "∕" symbol.
+         *   - If there is exactly one component on the left side of "∕" and that component
+         *     is prefixable, the power raising that component. Used for choosing a prefix.
+         */
+        int prefixPower = 0;
+        boolean hasNumerator = false;
         final Map<? extends Unit<?>, ? extends Number> components;
-        if (unit instanceof AbstractUnit<?>) {
+        if (unscaled instanceof AbstractUnit<?>) {
             // In Apache SIS implementation, power may be fractional.
-            final Map<SystemUnit<?>, Fraction> c = ((AbstractUnit<?>) unit).getBaseSystemUnits();
-            for (final Fraction power : c.values()) {
-                hasPositivePower = (power.signum() > 0);
-                if (hasPositivePower) break;
-            }
+            final Map<SystemUnit<?>, Fraction> c = ((AbstractUnit<?>) unscaled).getBaseSystemUnits();
             components = c;
+            for (final Map.Entry<SystemUnit<?>, Fraction> e : c.entrySet()) {
+                final Fraction power = e.getValue();
+                if (power.signum() > 0) {
+                    hasNumerator = true;
+                    if (prefixPower == 0 && power.denominator == 1 && e.getKey().isPrefixable()) {
+                        prefixPower = power.numerator;
+                    } else {
+                        prefixPower = 0;
+                        break;
+                    }
+                }
+            }
         } else {
             // Fallback for foreigner implementations (power restricted to integer).
-            Map<? extends Unit<?>, Integer> c = unit.getBaseUnits();
+            Map<? extends Unit<?>, Integer> c = unscaled.getBaseUnits();
             if (c == null) c = Collections.singletonMap(unit, 1);
-            for (final Integer power : c.values()) {
-                hasPositivePower = (power > 0);
-                if (hasPositivePower) break;
-            }
             components = c;
-        }
-        final double scale = Units.toStandardUnit(unit);
-        if (scale != 1) {
-            if (Double.isNaN(scale)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1,
-                        "?⋅" + Style.OPEN + unit.getSystemUnit() + Style.CLOSE));
-            }
-            boolean asFloatingPoint = (style == Style.UCUM);
-            if (!asFloatingPoint) {
-                /*
-                 * Try to format the scale using exponent, for example 10⁵⋅m instead of 100000⋅m.
-                 * If the scale is not a power of 10, or if we have been requested to format UCUM
-                 * symbol, then we fallback on the usual 'Double.toString(double)' representation.
-                 */
-                double power = Math.log10(scale);
-                if (2*Math.ulp(power) >= Math.abs(power - (power = Math.round(power)))) {
-                    toAppendTo.append("10");
-                    final String text = Integer.toString((int) power);
-                    for (int i=0; i<text.length(); i++) {
-                        toAppendTo.append(Characters.toSuperScript(text.charAt(i)));
+            for (final Map.Entry<? extends Unit<?>, Integer> e : c.entrySet()) {
+                final int power = e.getValue();
+                if (power > 0) {
+                    hasNumerator = true;
+                    if (prefixPower == 0 && AbstractUnit.isPrefixable(e.getKey())) {
+                        prefixPower = power;
+                    } else {
+                        prefixPower = 0;
+                        break;
                     }
-                } else {
-                    asFloatingPoint = true;                         // Scale is not a power of 10.
                 }
             }
-            if (asFloatingPoint) {
-                final String text = Double.toString(scale);
-                int length = text.length();
-                if (text.endsWith(".0")) {
-                    length -= 2;
+        }
+        /*
+         * Append the scale factor. If we can use a prefix (e.g. "km" instead of "1000⋅m"), we will do that.
+         * Otherwise if the scale is a power of 10 and we are allowed to use Unicode symbols, we will write
+         * for example 10⁵⋅m instead of 100000⋅m. If the scale is not a power of 10, or if we are requested
+         * to format UCUM symbol, then we fallback on the usual 'Double.toString(double)' representation.
+         */
+        if (scale != 1) {
+            final char prefix = Prefixes.symbol(scale, prefixPower);
+            if (prefix != 0) {
+                toAppendTo.append(Prefixes.concat(prefix, ""));
+            } else {
+                boolean asPowerOf10 = (style != Style.UCUM);
+                if (asPowerOf10) {
+                    double power = Math.log10(scale);
+                    asPowerOf10 = AbstractConverter.epsilonEquals(power, power = Math.round(power));
+                    if (asPowerOf10) {
+                        toAppendTo.append("10");
+                        final String text = Integer.toString((int) power);
+                        for (int i=0; i<text.length(); i++) {
+                            toAppendTo.append(Characters.toSuperScript(text.charAt(i)));
+                        }
+                    }
                 }
-                toAppendTo.append(text, 0, length);
+                if (!asPowerOf10) {
+                    final String text = Double.toString(scale);
+                    int length = text.length();
+                    if (text.endsWith(".0")) length -= 2;
+                    toAppendTo.append(text, 0, length);
+                }
+                /*
+                 * The 'formatComponents' method appends division symbol only, no multiplication symbol.
+                 * If we have formatted a scale factor and there is at least one component to multiply,
+                 * we need to append the multiplication symbol ourselves. Note that 'formatComponents'
+                 * put numerators before denominators, so we are sure that the first term after the
+                 * multiplication symbol is a numerator.
+                 */
+                if (hasNumerator) {
+                    toAppendTo.append(style.multiply);
+                }
             }
-            /*
-             * The 'formatComponents' method appends division symbol only, no multiplication symbol.
-             * If we have formatted a scale factor and there is at least one component to multiply,
-             * we need to append the multiplication symbol ourselves. Note that 'formatComponents'
-             * put numerators before denominators, so we are sure that the first term after the
-             * multiplication symbol is a numerator.
-             */
-            if (hasPositivePower) {
-                toAppendTo.append(style.multiply);
-            }
-        } else if (!hasPositivePower) {
+        } else if (!hasNumerator) {
             toAppendTo.append('1');
         }
         formatComponents(components, style, toAppendTo);
@@ -1256,7 +1294,8 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     /**
      * Parses a single unit symbol with its exponent.
      * The given symbol shall not contain multiplication or division operator except in exponent.
-     * Parsing of fractional exponent as in "m2/3" is not yet supported.
+     * Parsing of fractional exponent as in "m2/3" is supported; other operations in the exponent
+     * will cause an exception to be thrown.
      *
      * @param  symbols    the complete string specified by the user.
      * @param  lower      index where to begin parsing in the {@code symbols} string.
@@ -1277,7 +1316,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
          */
         Unit<?> unit = labelToUnit.get(uom);
         if (unit == null) {
-            unit = getPrefixed(uom);
+            unit = Prefixes.getUnit(uom);
             if (unit == null) {
                 final int length = uom.length();
                 if (length == 0) {
@@ -1362,7 +1401,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                 }
                             }
                         }
-                        unit = getPrefixed(uom.substring(CharSequences.skipLeadingWhitespaces(uom, 0, i), i));
+                        unit = Prefixes.getUnit(uom.substring(CharSequences.skipLeadingWhitespaces(uom, 0, i), i));
                         if (unit != null) {
                             int numerator   = power.numerator;
                             int denominator = power.denominator;
@@ -1418,32 +1457,6 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
         final int base = Integer.parseInt(term.substring(0, s));
         final int exp  = Integer.parseInt(exponent);
         return (base == 10) ? MathFunctions.pow10(exp) : Math.pow(base, exp);
-    }
-
-    /**
-     * Returns the unit for the given symbol, taking the SI prefix in account.
-     * This method does not perform any arithmetic operation on {@code Unit}.
-     * Returns {@code null} if no unit is found.
-     */
-    private static Unit<?> getPrefixed(final String uom) {
-        Unit<?> unit = Units.get(uom);
-        if (unit == null && uom.length() >= 2) {
-            int s = 1;
-            char prefix = uom.charAt(0);
-            if (prefix != (prefix = Prefixes.twoLetters(prefix, uom))) {
-                s = 2;          // Skip "da", which we represent by '㍲'.
-            }
-            unit = Units.get(uom.substring(s));
-            if (unit instanceof AbstractUnit<?> && ((AbstractUnit<?>) unit).isPrefixable()) {
-                final LinearConverter c = Prefixes.converter(prefix);
-                if (c != null) {
-                    final String symbol = Prefixes.concat(prefix, unit.getSymbol());
-                    return new ConventionalUnit<>((AbstractUnit<?>) unit, c, symbol.intern(), (byte) 0, (short) 0);
-                }
-            }
-            unit = null;
-        }
-        return unit;
     }
 
     /**

@@ -17,7 +17,9 @@
 package org.apache.sis.measure;
 
 import java.util.Arrays;
+import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.MathFunctions;
 
@@ -56,7 +58,7 @@ final class Prefixes {
      * The SI prefixes from smallest to largest. Power of tens go from -24 to +24 inclusive with a step of 3,
      * except for the addition of -2, -1, +1, +2 and the omission of 0.
      *
-     * @see #symbol(double)
+     * @see #symbol(double, int)
      */
     private static final char[] ENUM = {'y','z','a','f','p','n','µ','m','c','d','㍲','h','k','M','G','T','P','E','Z','Y'};
 
@@ -108,10 +110,21 @@ final class Prefixes {
 
     /**
      * Returns the SI prefix symbol for the given scale factor, or 0 if none.
+     *
+     * @param  scale  the scale factor.
+     * @param  power  the unit power. For example if we are scaling m², then this is 2.
+     * @return the prefix, or 0 if none.
      */
-    static char symbol(final double scale) {
+    static char symbol(double scale, final int power) {
+        switch (power) {
+            case 0:  return 0;
+            case 1:  break;
+            case 2:  scale = Math.sqrt(scale); break;
+            case 3:  scale = Math.cbrt(scale); break;
+            default: scale = Math.pow(scale, 1.0/power);
+        }
         final int n = Numerics.toExp10(Math.getExponent(scale)) + 1;
-        if (LinearConverter.epsilonEquals(MathFunctions.pow10(n), scale)) {
+        if (AbstractConverter.epsilonEquals(MathFunctions.pow10(n), scale)) {
             int i = Math.abs(n);
             switch (i) {
                 case 0:  return 0;
@@ -138,15 +151,41 @@ final class Prefixes {
     }
 
     /**
-     * If the given string begins with a two-letter prefix, returns the one-character representation of that prefix.
-     * Otherwise returns the given prefix unchanged. This method is the converse of {@link #concat(char, String)}.
+     * Returns the unit for the given symbol, taking the SI prefix in account. The given string is usually a single symbol
+     * like "km", but may be an expression like "m³" or "m/s" if the given symbol is explicitly registered as an item that
+     * {@link Units#get(String)} recognizes. This method does not perform any arithmetic operation on {@code Unit},
+     * except a check for the exponent.
      *
-     * @param  prefix  value of {@code uom.charAt(0)}.
-     * @param  uom     the unit symbol. Length shall be at least 2 characters long.
-     * @return the one-character prefix, or the given {@code prefix} unchanged.
+     * @param  uom  a symbol compliant with the rules documented in {@link AbstractUnit#symbol}.
+     * @return the unit for the given symbol, or {@code null} if no unit is found.
      */
-    static char twoLetters(final char prefix, final String uom) {
-        return (prefix == 'd' && uom.charAt(1) == 'a') ? '㍲' : prefix;
+    static Unit<?> getUnit(final String uom) {
+        Unit<?> unit = Units.get(uom);
+        if (unit == null && uom.length() >= 2) {
+            int s = 1;
+            char prefix = uom.charAt(0);
+            if (prefix == 'd' && uom.charAt(1) == 'a') {
+                prefix = '㍲';      // Converse of above 'concat(char, String)' method.
+                s = 2;              // Skip "da", which we represent by '㍲'.
+            }
+            unit = Units.get(uom.substring(s));
+            if (AbstractUnit.isPrefixable(unit)) {
+                LinearConverter c = Prefixes.converter(prefix);
+                if (c != null) {
+                    String symbol = unit.getSymbol();
+                    final int power = ConventionalUnit.power(symbol);
+                    if (power != 0) {
+                        if (power != 1) {
+                            c = LinearConverter.pow(c, power, false);
+                        }
+                        symbol = Prefixes.concat(prefix, symbol);
+                        return new ConventionalUnit<>((AbstractUnit<?>) unit, c, symbol.intern(), (byte) 0, (short) 0);
+                    }
+                }
+            }
+            unit = null;
+        }
+        return unit;
     }
 
     /**
@@ -160,14 +199,15 @@ final class Prefixes {
     static <Q extends Quantity<Q>> ConventionalUnit<Q> pseudoSystemUnit(final SystemUnit<Q> unit) {
         if ((unit.scope & ~UnitRegistry.SI) == 0 && unit.dimension.numeratorIs('M')) {
             if (unit == Units.KILOGRAM) {
-                return (ConventionalUnit<Q>) Units.GRAM;                    // Optimization for a common case.
+                return (ConventionalUnit<Q>) Units.GRAM;            // Optimization for a common case.
             } else {
                 String symbol = unit.getSymbol();
                 if (symbol != null && symbol.length() >= 3 && symbol.startsWith("kg")
                         && !AbstractUnit.isSymbolChar(symbol.codePointAt(2)))
                 {
                     symbol = symbol.substring(1);
-                    return new ConventionalUnit<>(unit, converter('m'), symbol, UnitRegistry.PREFIXABLE, (byte) 0);
+                    UnitConverter c = converter('m');
+                    return new ConventionalUnit<>(unit, c, symbol, UnitRegistry.PREFIXABLE, (byte) 0).unique(symbol);
                 }
             }
         }

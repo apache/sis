@@ -287,9 +287,10 @@ public final strictfp class UnitFormatTest extends TestCase {
     public void testFormatUnusual() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         final Unit<?> u1 = Units.SECOND.pow(-1).multiply(3);
-        assertEquals("3∕s",   f.format(u1));
-        assertEquals("3⋅m∕s", f.format(Units.METRE.multiply(u1)));
-        assertEquals("m^⅔",   f.format(Units.METRE.pow(2).root(3)));
+        assertEquals("3∕s",        f.format(u1));
+        assertEquals("3⋅m∕s",      f.format(Units.METRE.multiply(u1)));
+        assertEquals("m^⅔",        f.format(Units.METRE.pow(2).root(3)));
+        assertEquals("km²∕(s⋅kg)", f.format(Units.SQUARE_METRE.divide(Units.SECOND).divide(Units.KILOGRAM).multiply(1E+6)));
     }
 
     /**
@@ -419,6 +420,12 @@ public final strictfp class UnitFormatTest extends TestCase {
         ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("kg"),   "kg",   1E+0);
         ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("g"),    "g",    1E-3);
         ConventionalUnitTest.verify(Units.KILOGRAM,    f.parse("mg"),   "mg",   1E-6);
+        /*
+         * When the unit contain an exponent, the conversion factor shall be raised
+         * to that exponent too.
+         */
+        assertEquals("km²", 1E+6, Units.toStandardUnit(f.parse("km²")), STRICT);
+        assertEquals("kJ²", 1E+6, Units.toStandardUnit(f.parse("kJ²")), STRICT);
         /*
          * Verify that prefix are not accepted for conventional units. It would either be illegal prefix duplication
          * (for example we should not accept "kkm" as if it was "k" + "km") or confusing (for example "a" stands for

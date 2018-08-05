@@ -23,7 +23,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.util.ArraysExt;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
@@ -83,7 +83,7 @@ public final strictfp class PrefixesTest extends TestCase {
              * At this point we got the LinearConverter to use for the test,
              * and we know the expected prefix. Verify that we get that value.
              */
-            assertEquals("Prefixes.converter(double)", asString, String.valueOf(Prefixes.symbol(scale)));
+            assertEquals("Prefixes.converter(double)", asString, String.valueOf(Prefixes.symbol(scale, 1)));
             previousScale = scale;
         }
     }
@@ -102,31 +102,42 @@ public final strictfp class PrefixesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Prefixes#symbol(double)}.
+     * Tests {@link Prefixes#symbol(double, int)}.
      */
     @Test
     public void testSymbol() {
-        assertEquals( 0 , Prefixes.symbol(1E-27));
-        assertEquals( 0 , Prefixes.symbol(1E-25));
-        assertEquals('y', Prefixes.symbol(1E-24));
-        assertEquals( 0 , Prefixes.symbol(1E-23));
-        assertEquals('n', Prefixes.symbol(1E-09));
-        assertEquals( 0 , Prefixes.symbol(1E-08));
-        assertEquals( 0 , Prefixes.symbol(1E-04));
-        assertEquals('m', Prefixes.symbol(1E-03));
-        assertEquals('c', Prefixes.symbol(1E-02));
-        assertEquals('d', Prefixes.symbol(1E-01));
-        assertEquals( 0 , Prefixes.symbol(    1));
-        assertEquals( 0 , Prefixes.symbol(    0));
-        assertEquals( 0 , Prefixes.symbol(  -10));
-        assertEquals('㍲', Prefixes.symbol(   10));
-        assertEquals('h', Prefixes.symbol(  100));
-        assertEquals('k', Prefixes.symbol( 1000));
-        assertEquals( 0 , Prefixes.symbol(1E+04));
-        assertEquals('G', Prefixes.symbol(1E+09));
-        assertEquals('Y', Prefixes.symbol(1E+24));
-        assertEquals( 0 , Prefixes.symbol(1E+25));
-        assertEquals( 0 , Prefixes.symbol(1E+27));
-        assertEquals( 0 , Prefixes.symbol(1E+25));
+        assertEquals( 0 , Prefixes.symbol(1E-27, 1));
+        assertEquals( 0 , Prefixes.symbol(1E-25, 1));
+        assertEquals('y', Prefixes.symbol(1E-24, 1));
+        assertEquals( 0 , Prefixes.symbol(1E-23, 1));
+        assertEquals('n', Prefixes.symbol(1E-09, 1));
+        assertEquals( 0 , Prefixes.symbol(1E-08, 1));
+        assertEquals( 0 , Prefixes.symbol(1E-04, 1));
+        assertEquals('m', Prefixes.symbol(1E-03, 1));
+        assertEquals('c', Prefixes.symbol(1E-02, 1));
+        assertEquals('d', Prefixes.symbol(1E-01, 1));
+        assertEquals( 0 , Prefixes.symbol(    1, 1));
+        assertEquals( 0 , Prefixes.symbol(    0, 1));
+        assertEquals( 0 , Prefixes.symbol(  -10, 1));
+        assertEquals('㍲', Prefixes.symbol(   10, 1));
+        assertEquals('h', Prefixes.symbol(  100, 1));
+        assertEquals('k', Prefixes.symbol( 1000, 1));
+        assertEquals( 0 , Prefixes.symbol(1E+04, 1));
+        assertEquals('G', Prefixes.symbol(1E+09, 1));
+        assertEquals('Y', Prefixes.symbol(1E+24, 1));
+        assertEquals( 0 , Prefixes.symbol(1E+25, 1));
+        assertEquals( 0 , Prefixes.symbol(1E+27, 1));
+        assertEquals( 0 , Prefixes.symbol(1E+25, 1));
+    }
+
+    /**
+     * Tests {@link Prefixes#getUnit(String)}.
+     */
+    @Test
+    public void testGetUnit() {
+        assertEquals( "m" , 1,    Units.toStandardUnit(Prefixes.getUnit( "m" )), STRICT);
+        assertEquals( "m²", 1,    Units.toStandardUnit(Prefixes.getUnit( "m²")), STRICT);
+        assertEquals("km",  1E+3, Units.toStandardUnit(Prefixes.getUnit("km" )), STRICT);
+        assertEquals("km²", 1E+6, Units.toStandardUnit(Prefixes.getUnit("km²")), STRICT);
     }
 }

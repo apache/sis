@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn({SystemUnitTest.class, LinearConverterTest.class, PrefixesTest.class})
 public final strictfp class ConventionalUnitTest extends TestCase {
     /**
-     * Verifies the properties if the given unit.
+     * Verifies the properties in the given unit.
      *
      * @param  system  the expected system unit.
      * @param  unit    the conventional unit to verify.

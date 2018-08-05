@@ -1306,6 +1306,8 @@ public final class Units extends Static {
      *
      * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
      * in order to force a class initialization before use.</p>
+     *
+     * @see Prefixes#getUnit(String)
      */
     @SuppressWarnings("unchecked")
     static Unit<?> get(final String symbol) {
@@ -1497,15 +1499,7 @@ public final class Units extends Static {
      *         measurement in the standard unit, or NaN if the conversion can not be expressed by a scale factor.
      */
     public static <Q extends Quantity<Q>> double toStandardUnit(final Unit<Q> unit) {
-        if (unit != null) {
-            final UnitConverter converter = unit.getConverterTo(unit.getSystemUnit());
-            if (converter.isLinear() && converter.convert(0) == 0) {
-                // Above check for converter(0) is a paranoiac check since
-                // JSR-363 said that a "linear" converter has no offset.
-                return converter.convert(1);
-            }
-        }
-        return Double.NaN;
+        return AbstractConverter.scale(unit == null ? null : unit.getConverterTo(unit.getSystemUnit()));
     }
 
     /**

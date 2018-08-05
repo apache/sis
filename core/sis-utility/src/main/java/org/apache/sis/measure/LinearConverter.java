@@ -416,14 +416,6 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
     }
 
     /**
-     * Returns {@code true} if the given floating point numbers are considered equal.
-     * The tolerance factor used in this method is arbitrary and may change in any future version.
-     */
-    static boolean epsilonEquals(final double expected, final double actual) {
-        return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
-    }
-
-    /**
      * Returns a string representation of this converter for debugging purpose.
      * This string representation may change in any future SIS release.
      * Current format is of the form "y = scale⋅x + offset".
