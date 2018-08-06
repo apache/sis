@@ -304,8 +304,8 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame  (HERTZ,                         valueOf("1/s"));
         assertSame  (HERTZ,                         valueOf("s-1"));
         assertSame  (PERCENT,                       valueOf("%"));
-        assertSame  (UNITY,                         valueOf("kg/kg"));
-        assertSame  (UNITY,                         valueOf("kg.kg-1"));
+        assertEquals(KILOGRAM.divide(KILOGRAM),     valueOf("kg/kg"));
+        assertEquals(KILOGRAM.divide(KILOGRAM),     valueOf("kg.kg-1"));
         assertSame  (PPM,                           valueOf("ppm"));            // Parts per million
         assertSame  (PSU,                           valueOf("psu"));            // Pratical Salinity Unit
         assertSame  (SIGMA,                         valueOf("sigma"));

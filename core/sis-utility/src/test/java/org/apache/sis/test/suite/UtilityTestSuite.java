@@ -96,6 +96,7 @@ import org.junit.BeforeClass;
     org.apache.sis.measure.LinearConverterTest.class,
     org.apache.sis.measure.UnitDimensionTest.class,
     org.apache.sis.measure.SystemUnitTest.class,
+    org.apache.sis.measure.PrefixesTest.class,
     org.apache.sis.measure.ConventionalUnitTest.class,
     org.apache.sis.measure.UnitFormatTest.class,
     org.apache.sis.measure.UnitsTest.class,

@@ -149,6 +149,33 @@ public final strictfp class FractionTest extends TestCase {
     }
 
     /**
+     * Tests the {@link Fraction#Fraction(String)} constructor.
+     */
+    @Test
+    public void testParse() {
+        verifyParsing( 2,  3,  "2/3");
+        verifyParsing(-2, -3, "-2/-3");
+        verifyParsing( 4,  1,  "4");
+        verifyParsing( 1,  0,  "∞");
+        verifyParsing(-1,  0, "-∞");
+        verifyParsing( 1,  4,  "¼");
+        verifyParsing( 5,  6,  "⅚");
+    }
+
+    /**
+     * Verifies that parsing the given fraction produces the given numerator and denominator.
+     *
+     * @param numerator    the expected numerator.
+     * @param denominator  the expected denominator.
+     * @param s            the text to parse.
+     */
+    private static void verifyParsing(final int numerator, final int denominator, final String s) {
+        final Fraction f = new Fraction(s);
+        assertEquals("numerator",   numerator,   f.numerator);
+        assertEquals("denominator", denominator, f.denominator);
+    }
+
+    /**
      * Tests serialization.
      */
     @Test

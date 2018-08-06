@@ -17,6 +17,7 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 
 
@@ -161,7 +162,16 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction negate() {
-        return (numerator == 0) ? this : new Fraction(Math.negateExact(numerator), denominator);
+        int n = numerator;
+        int d = denominator;
+        if (n != 0) {
+            n = Math.negateExact(n);
+        } else if (d != 0) {
+            d = Math.negateExact(d);
+        } else {
+            return this;
+        }
+        return new Fraction(n, d);
     }
 
     /**
@@ -471,5 +481,59 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
             }
         }
         return new StringBuilder().append(numerator).append('⁄').append(denominator).toString();
+    }
+
+    /**
+     * Creates a new fraction from the given text. This constructor is the converse of {@link #toString()} method.
+     * It can parse single numbers like "3", fractions like "2/3", Unicode characters like "⅔" and infinity symbols
+     * "∞" and "−∞". The given text shall not contain spaces.
+     *
+     * @param  s  the text to parse.
+     * @throws NumberFormatException if the given text can not be parsed.
+     *
+     * @since 1.0
+     */
+    public Fraction(final String s) throws NumberFormatException {
+        ArgumentChecks.ensureNonEmpty("s", s);
+        final int length = s.length();
+        if (length == 1) {
+            final char c = s.charAt(0);
+            if (c >= 128) {
+                for (int j=0; j<UNICODES.length; j++) {
+                    final char[] unicodes = UNICODES[j];
+                    for (int i=0; i<unicodes.length; i++) {
+                        if (unicodes[i] == c) {
+                            numerator   = j;
+                            denominator = j + i + 1;
+                            return;
+                        }
+                    }
+                }
+                if (c == '∞') {
+                    numerator   = 1;
+                    denominator = 0;
+                    return;
+                }
+            }
+        }
+        if (s.equals("−∞") || s.equals("-∞")) {
+            numerator   = -1;
+            denominator =  0;
+            return;
+        }
+        for (int i=0; i<length; i++) {
+            switch (s.charAt(i)) {
+                case '÷':
+                case '⁄':
+                case '/':
+                case '∕': {
+                    numerator   = Integer.parseInt(s.substring(0,i));       // TODO: revisit with JDK9.
+                    denominator = Integer.parseInt(s.substring(i+1));
+                    return;
+                }
+            }
+        }
+        numerator   = Integer.parseInt(s);
+        denominator = 1;
     }
 }
