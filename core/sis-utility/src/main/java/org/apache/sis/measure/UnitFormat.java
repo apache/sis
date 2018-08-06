@@ -1080,7 +1080,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          *
          * The 'start' variable is the index of the first character of the next unit term to parse.
          */
-        final Operation operation = new Operation();    // Enumeration value: NOOP, IMPLICIT, MULTIPLY, DIVIDE.
+        final Operation operation = new Operation(symbols);    // Enumeration value: NOOP, IMPLICIT, MULTIPLY, DIVIDE.
         Unit<?> unit = null;
         boolean hasSpaces = false;
         int i = start;
@@ -1089,6 +1089,19 @@ scan:   for (int n; i < end; i += n) {
             n = Character.charCount(c);
             final int next;
             switch (c) {
+                /*
+                 * The minus sign can be both part of a number or part of a symbol. If the minus sign if followed
+                 * by a digit, then handle it as part of a number, in which case the action is only "continue".
+                 * Otherwise handle as part of a symbol, in which case the action is in the default case below.
+                 * The intent is to prevent the replacement of Operation.IMPLICIT by Operation.MULTIPLY in symbol
+                 * like "(m²⋅s)-1" because we want the "-1" part to be handled as Operation.EXPONENT instead.
+                 */
+                case '-': {
+                    if (i + n < end && Character.isDigit(Character.codePointAt(symbols, i + n))) {
+                        continue;
+                    }
+                    // else fall through.
+                }
                 /*
                  * For any character that are is not an operator or parenthesis, either continue the scanning of
                  * characters or stop it, depending on whether the character is valid for a unit symbol or not.
@@ -1126,8 +1139,8 @@ scan:   for (int n; i < end; i += n) {
                 }
                 case Style.EXPONENT: {
                     if (operation.code == Operation.IMPLICIT) {
-                        // Support of exponentiation after parenthesis is not yet supported.
-                        break scan;
+                        next = Operation.EXPONENT;
+                        break;
                     }
                     continue;
                 }
@@ -1150,14 +1163,15 @@ scan:   for (int n; i < end; i += n) {
                  * find that closing parenthesis, this will be considered an error.
                  */
                 case Style.OPEN: {
-                    final ParsePosition sub = new ParsePosition(i + Character.charCount(c));
+                    final int pos = i + Character.charCount(c);
+                    final ParsePosition sub = new ParsePosition(pos);
                     final Unit<?> term = parse(symbols, sub);
                     i = CharSequences.skipLeadingWhitespaces(symbols, sub.getIndex(), end);
                     if (i >= end || Character.codePointAt(symbols, i) != Style.CLOSE) {
                         throw new ParserException(Errors.format(Errors.Keys.NonEquilibratedParenthesis_2,
                                symbols.subSequence(start, i), Style.CLOSE), symbols, start);
                     }
-                    unit = operation.apply(unit, term);
+                    unit = operation.apply(unit, term, pos);
                     operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbols after parenthesis.
                     start = i + (n = 1);                    // Skip the number of characters in the '(' Unicode code point.
                     continue;
@@ -1182,7 +1196,7 @@ scan:   for (int n; i < end; i += n) {
              * the above 'switch' statement all cases that end with 'break', not 'break scan' or 'continue').
              */
             if (operation.code != Operation.IMPLICIT) {
-                unit = operation.apply(unit, parseTerm(symbols, start, i, operation));
+                unit = operation.apply(unit, parseTerm(symbols, start, i, operation), start);
             }
             hasSpaces = false;
             operation.code = next;
@@ -1230,7 +1244,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
         if (component == null) {
             component = parseTerm(symbols, start, i, operation);
         }
-        unit = operation.apply(unit, component);
+        unit = operation.apply(unit, component, start);
         position.setIndex(endOfURI >= 0 ? endOfURI : i);
         return unit;
     }
@@ -1245,7 +1259,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
          * The {@code IMPLICIT} case is a multiplication without symbol, which can be
          * overridden by an explicit × or / symbol.
          */
-        static final int NOOP = 0, IMPLICIT = 1, MULTIPLY = 2, DIVIDE = 3;
+        static final int NOOP = 0, IMPLICIT = 1, MULTIPLY = 2, DIVIDE = 3, EXPONENT = 4;
 
         /**
          * The operation as one of the {@link #NOOP}, {@link #IMPLICIT}, {@link #MULTIPLY}
@@ -1254,23 +1268,43 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
         int code;
 
         /**
+         * The symbols being parsed. Used only for formatting error message if needed.
+         */
+        private final CharSequence symbols;
+
+        /**
          * Creates an operation initialized to {@link #NOOP}.
          */
-        Operation() {
+        Operation(final CharSequence symbols) {
+            this.symbols = symbols;
         }
 
         /**
          * Applies a multiplication or division operation between the given units.
          *
-         * @param  unit  the left operand, which is the unit parsed so far.
-         * @param  term  the right operation, which is the newly parsed unit.
+         * @param  unit      the left operand, which is the unit parsed so far.
+         * @param  term      the right operation, which is the newly parsed unit.
+         * @param  position  the parse position to report if parsing fail.
          */
-        Unit<?> apply(final Unit<?> unit, final Unit<?> term) {
+        Unit<?> apply(final Unit<?> unit, final Unit<?> term, final int position) {
             switch (code) {
                 case NOOP:     return term;
                 case IMPLICIT:
                 case MULTIPLY: return unit.multiply(term);
                 case DIVIDE:   return unit.divide(term);
+                case EXPONENT: {
+                    if (UnitDimension.isDimensionless(term.getDimension())) {
+                        final String symbol = term.getSymbol();
+                        if (symbol == null || symbol.isEmpty()) {
+                            final double scale = Units.toStandardUnit(term);
+                            final int power = (int) scale;
+                            if (power == scale) {
+                                return unit.pow(power);
+                            }
+                        }
+                    }
+                    throw new ParserException(Errors.format(Errors.Keys.NotAnInteger_1, term), symbols, position);
+                }
                 default: throw new AssertionError(code);
             }
         }
@@ -1349,6 +1383,9 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                         } catch (NumberFormatException e) {
                             throw (ParserException) new ParserException(Errors.format(
                                     Errors.Keys.UnknownUnit_1, uom), symbols, lower).initCause(e);
+                        }
+                        if (operation.code == Operation.IMPLICIT) {
+                            operation.code = Operation.EXPONENT;
                         }
                         return Units.UNITY.multiply(multiplier);
                     }

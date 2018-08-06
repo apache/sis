@@ -620,6 +620,8 @@ public final strictfp class UnitFormatTest extends TestCase {
         roundtrip(f, "kg.m-3.s-1",       "kg∕(m³⋅s)");
         roundtrip(f, "m.rad-1",          "m∕rad");
         roundtrip(f, "rad.s-1",          "rad∕s");
+        roundtrip(f, "(m2.s)^-1",        "1∕(m²⋅s)");
+        roundtrip(f, "(m2.s)-1",         "1∕(m²⋅s)");
     }
 
     /**
@@ -635,7 +637,7 @@ public final strictfp class UnitFormatTest extends TestCase {
     public void needForImprovements() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         roundtrip(f, "kg.kg-1.m.s-1",    "m∕s");
-        roundtrip(f, "(m2.s.sr)-1",      "-1⋅m²⋅s");                    // TODO: this one is a bug.
+        roundtrip(f, "(m2.s.sr)-1",      "1∕(m²⋅s)");
         roundtrip(f, "cm/day",           "1.1574074074074074E-7⋅m∕s");
         roundtrip(f, "m-2.s.rad-1",      "s∕m²");
         roundtrip(f, "kg.kg-1.s-1",      "Hz");
