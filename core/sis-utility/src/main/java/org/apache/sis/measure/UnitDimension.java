@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * All {@code UnitDimension} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -170,6 +170,48 @@ final class UnitDimension implements Dimension, Serializable {
      */
     final boolean isDimensionless() {
         return components.isEmpty();
+    }
+
+    /**
+     * Returns {@code true} if the given dimension has no components.
+     */
+    static boolean isDimensionless(final Dimension dim) {
+        if (dim instanceof UnitDimension) {
+            return ((UnitDimension) dim).isDimensionless();
+        } else if (dim != null) {
+            // Fallback for foreigner implementations.
+            final Map<? extends Dimension, Integer> bases = dim.getBaseDimensions();
+            if (bases != null) return bases.isEmpty();
+        }
+        return false;       // Unit is a base unit (not a product of existing units).
+    }
+
+    /**
+     * Returns {@code true} if the numerator is the dimension identified by the given symbol.
+     * This method returns {@code true} only if the numerator is not be raised to any exponent
+     * other than 1 and there is no other numerator. All denominator terms are ignored.
+     *
+     * <p>This method is used for identifying units like "kg", "kg/s", <i>etc</i> for handling
+     * the "kg" prefix in a special way.</p>
+     */
+    final boolean numeratorIs(final char s) {
+        if (symbol == s) {                                  // Optimization for a simple case.
+            assert components.keySet().equals(Collections.singleton(this));
+            return true;
+        }
+        boolean found = false;
+        for (final Map.Entry<UnitDimension,Fraction> e : components.entrySet()) {
+            final Fraction value = e.getValue();
+            if (e.getKey().symbol == s) {
+                if (value.numerator != value.denominator) {
+                    return false;                           // Raised to a power different than 1.
+                }
+                found = true;
+            } else if (value.signum() >= 0) {
+                return false;                               // Found other numerators.
+            }
+        }
+        return found;
     }
 
     /**

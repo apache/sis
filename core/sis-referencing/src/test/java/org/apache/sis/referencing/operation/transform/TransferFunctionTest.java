@@ -17,8 +17,12 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.metadata.content.TransferFunctionType;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -31,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link TransferFunction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -137,5 +141,38 @@ public final strictfp class TransferFunctionTest extends TestCase {
         assertEquals("base",   10,    b.getBase(),   STRICT);
         assertEquals("scale",   0.15, b.getScale(),  1E-16);
         assertEquals("offset", -2,    b.getOffset(), 1E-16);
+    }
+
+    /**
+     * Same tests than above, but using a math transform factory.
+     *
+     * @throws FactoryException if the factory failed to create a transform.
+     */
+    @Test
+    public void testCreateTransform() throws FactoryException {
+        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final TransferFunction f = new TransferFunction();
+        f.setScale(0.15);
+        f.setOffset(-2);
+        MathTransform transform = f.createTransform(factory);
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertMatrixEquals("transform.matrix", new Matrix2(0.15, -2, 0, 1),
+                ((LinearTransform) transform).getMatrix(), STRICT);
+        /*
+         * Logarithmic case.
+         */
+        f.setType(TransferFunctionType.LOGARITHMIC);
+        f.setScale(1);
+        f.setOffset(-2);
+        transform = f.getTransform();
+        assertInstanceOf("transform", LogarithmicTransform1D.class, transform);
+        /*
+         * Exponential case.
+         */
+        f.setType(TransferFunctionType.EXPONENTIAL);
+        f.setScale(0.15);
+        f.setOffset(0);
+        transform = f.getTransform();
+        assertInstanceOf("transform", ExponentialTransform1D.class, transform);
     }
 }
