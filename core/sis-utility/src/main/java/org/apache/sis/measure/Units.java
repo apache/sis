@@ -1503,6 +1503,21 @@ public final class Units extends Static {
     }
 
     /**
+     * Creates a linear converter from the given scale and offset.
+     *
+     * @param  scale   the scale factor, or {@code null} if none.
+     * @param  offset  the offset, or {@code null} if none.
+     * @return a converter for the given scale and offset.
+     *
+     * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(double, double)
+     *
+     * @since 1.0
+     */
+    public static UnitConverter converter(final Number scale, final Number offset) {
+        return LinearConverter.create(scale, offset);
+    }
+
+    /**
      * Returns the coefficients of the given converter expressed as a polynomial equation.
      * This method returns the first of the following choices that apply:
      *

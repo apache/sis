@@ -59,6 +59,16 @@ public final strictfp class LinearConverterTest extends TestCase {
     }
 
     /**
+     * Tests {@link LinearConverter#create(Number, Number)}.
+     */
+    @Test
+    public void testCreate() {
+        assertTrue(LinearConverter.create(null, null).isIdentity());
+        assertScale(3, 1, LinearConverter.create(3, 0));
+        assertScale(3, 2, LinearConverter.create(new Fraction(3, 2), null));
+    }
+
+    /**
      * Tests {@link LinearConverter#pow(UnitConverter, int, boolean)}.
      */
     @Test

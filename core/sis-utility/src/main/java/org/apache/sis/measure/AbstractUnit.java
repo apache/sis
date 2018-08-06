@@ -241,6 +241,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final Unit<Q> shift(final double offset) {
+        if (offset == 0) return this;
         return transform(LinearConverter.offset(offset, 1));
     }
 
@@ -253,6 +254,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final Unit<Q> multiply(double multiplier) {
+        if (multiplier == 1) return this;
         final double divisor = inverse(multiplier);
         if (divisor != 1) multiplier = 1;
         return transform(LinearConverter.scale(multiplier, divisor));
@@ -267,6 +269,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final Unit<Q> divide(double divisor) {
+        if (divisor == 1) return this;
         final double multiplier = inverse(divisor);
         if (multiplier != 1) divisor = 1;
         return transform(LinearConverter.scale(multiplier, divisor));

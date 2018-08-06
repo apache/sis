@@ -93,6 +93,8 @@ public final class MathTransforms extends Static {
      * @param  scale   the {@code scale}  term in the linear equation.
      * @param  offset  the {@code offset} term in the linear equation.
      * @return the linear transform for the given scale and offset.
+     *
+     * @see org.apache.sis.measure.Units#converter(Number, Number)
      */
     public static LinearTransform linear(final double scale, final double offset) {
         return LinearTransform1D.create(scale, offset);
@@ -154,7 +156,7 @@ public final class MathTransforms extends Static {
      * Both {@code preimage} (the <var>x</var>) and {@code values} (the <var>y</var>) arguments can be null:
      *
      * <ul>
-     *   <li>If both {@code preimage} and {@code values} arrays are non-null, then the must have the same length.</li>
+     *   <li>If both {@code preimage} and {@code values} arrays are non-null, then they must have the same length.</li>
      *   <li>If both {@code preimage} and {@code values} arrays are null, then this method returns the identity transform.</li>
      *   <li>If only {@code preimage} is null, then the <var>x</var> values are taken as {0, 1, 2, …, {@code values.length} - 1}.</li>
      *   <li>If only {@code values} is null, then the <var>y</var> values are taken as {0, 1, 2, …, {@code preimage.length} - 1}.</li>
