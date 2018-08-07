@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
+    <title>Landsat to ISO 19115 metadata</title>
+    <style>
+      table {
+        width:          auto;
+        background:     #F8F8F8;
+        margin:         6px 0px;
+        border-style:   solid;
+        border-width:   2px;
+        border-color:   lightgray;
+        border-spacing: 0;
+        padding:        9px;
+        line-height:    1em;
+        text-align:     left;
+        font-size:      small;
+        font-family:    Helvetica, Arial, sans-serif;
+        white-space:    nowrap;
+      }
+      table caption {
+        text-align:     left;
+        font-weight:    bold;
+        padding-top:    18px;
+        padding-bottom: 12px;
+        font-size:      large;
+      }
+      table tr th {
+        padding-left:        9px;
+        padding-bottom:      9px;
+        margin-bottom:       9px;
+        border-bottom-width: 1px;
+        border-bottom-style: solid;
+        border-bottom-color: lightgray;
+      }
+      table tr td {
+        padding:        0 9px;
+        vertical-align: text-top;
+      }
+      table tr td code {
+        font-family: Andale Mono, Courier New, monospace;
+      }
+      code.rf, span.rf {
+        color: green
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Landsat to ISO 19115 metadata</h1>
+    <p>
+      Landset metadata are provided as <var>key</var>-<var>value</var> pairs in text files (ASCII).
+      While Landsat files are divided in groups (<code>METADATA_FILE_INFO</code>, <code>PRODUCT_METADATA</code>,
+      <code>IMAGE_ATTRIBUTES</code>, <code>MIN_MAX_RADIANCE</code>, <code>MIN_MAX_REFLECTANCE</code>,
+      <code>MIN_MAX_PIXEL_VALUE</code>, <code>RADIOMETRIC_RESCALING</code>, <code>TIRS_THERMAL_CONSTANTS</code>,
+      <code>PROJECTION_PARAMETERS</code>), they can nevertheless be though as flat structures since there is no
+      duplicated key names. Consequently the Landsat group are omitted in the following discussion.
+      But ISO 19115 metadata on the other hand are structured as trees, and this tree structure can not be ignored.
+    </p>
+    <p>
+      Landsat values are mapped to ISO 19115 metadata when an ISO property can be found for a Landsat key.
+      The Landsat to ISO mapping is not always a one-to-one relationship.
+      In some cases the ISO value need to be computed from two or more Landsat values.
+      In other cases the ISO value does not appear in the Landsat file at all,
+      so the value is hard-coded in the <code>LandsatReader</code> class.
+    </p>
+    <p>
+      In the following table, black values in the "Landsat property" column are hard-coded values.
+      Some of them are inferred from table 2-1: <cite>Band Reference Table</cite> in the Landsat Data Format Control Book (DFCB).
+      Green values are values to be read and interpreted as described in table 3-4: <cite>L1Gt / L1T Metadata File</cite>.
+      Values in the ISO 19115 column shown the paths to an ISO property relative to the <code>Metadata</code> root.
+      When an ISO property can accept various subtypes, the type used are those listed below:
+    </p>
+    <ul>
+      <li><code>identificationInfo</code> is of type <code>DataIdentification</code> (a <code>Identification</code> subtype)</li>
+      <li><code>contentInfo</code> is of type <code>ImageDescription</code> (a <code>ContentInformation</code> subtype)</li>
+      <li><code>attribute</code> is of type <code>Band</code> (a <code>RangeDimension</code> subtype)</li>
+    </ul>
+    <p><b>Sources:</b></p>
+    <ul>
+      <li><a href="http://www.iso.org/iso/home/store/catalogue_ics/catalogue_detail_ics.htm?csnumber=53798">ISO 19115-1:2014
+          - Geographic information - Metadata - Part 1: Fundamentals</a></li>
+      <li><a href="https://landsat.usgs.gov/sites/default/files/documents/LSDS-809_V10.0.pdf">LANDSAT 8 (L8) level 1 (L1) Data Format Control Book (DFCB)</a></li>
+    </ul>
+    <table>
+      <caption>Metadata mapping</caption>
+      <tr>
+        <th>ISO 19115 property</th>
+        <th>Landsat property</th>
+        <th>Description or comment</th>
+      </tr>
+      <tr><td colspan="3" style="padding-top: 9px">Metadata</td></tr>
+      <tr><td><code>  ├─</code>Language</td>                              <td>English</td>                                          <td></td></tr>
+      <tr><td><code>  ├─</code>Spatial representation info (1 of 3)</td>  <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   ├─</code>Number of dimensions</td>              <td>2</td>                                                <td></td></tr>
+      <tr><td><code>  │   ├─</code>Axis dimension properties (1 of 2)</td><td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Dimension name</td>                <td>Sample</td>                                           <td></td></tr>
+      <tr><td><code>  │   │   └─</code>Dimension size</td>                <td><code class="rf">PANCHROMATIC_SAMPLES</code></td>     <td></td></tr>
+      <tr><td><code>  │   └─</code>Axis dimension properties (2 of 2)</td><td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       ├─</code>Dimension name</td>                <td>Line</td>                                             <td></td></tr>
+      <tr><td><code>  │       └─</code>Dimension size</td>                <td><code class="rf">PANCHROMATIC_LINES</code></td>       <td></td></tr>
+      <tr><td><code>  ├─</code>Spatial representation info (2 of 3)</td>  <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   ├─</code>Number of dimensions</td>              <td>2</td>                                                <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Dimension name</td>                <td>Sample</td>                                           <td></td></tr>
+      <tr><td><code>  │   │   └─</code>Dimension size</td>                <td><code class="rf">REFLECTIVE_SAMPLES</code></td>       <td></td></tr>
+      <tr><td><code>  │   └─</code>Axis dimension properties (2 of 2)</td><td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       ├─</code>Dimension name</td>                <td>Line</td>                                             <td></td></tr>
+      <tr><td><code>  │       └─</code>Dimension size</td>                <td><code class="rf">REFLECTIVE_LINES</code></td>         <td></td></tr>
+      <tr><td><code>  ├─</code>Spatial representation info (3 of 3)</td>  <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   ├─</code>Number of dimensions</td>              <td>2</td>                                                <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Dimension name</td>                <td>Sample</td>                                           <td></td></tr>
+      <tr><td><code>  │   │   └─</code>Dimension size</td>                <td><code class="rf">THERMAL_SAMPLES</code></td>          <td></td></tr>
+      <tr><td><code>  │   └─</code>Axis dimension properties (2 of 2)</td><td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       ├─</code>Dimension name</td>                <td>Line</td>                                             <td></td></tr>
+      <tr><td><code>  │       └─</code>Dimension size</td>                <td><code class="rf">THERMAL_LINES</code></td>            <td></td></tr>
+      <tr><td><code>  ├─</code>Reference system info</td>                 <td><code class="rf">MAP_PROJECTION</code>, <i>etc.</i></td><td>UTM or polar stereographic projection built from up to 8 elements.</td></tr>
+      <tr><td><code>  ├─</code>Identification info</td>                   <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   ├─</code>Citation</td>                          <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Date:</td>                         <td><code class="rf">FILE_DATE</code></td>                <td>The date when metadata file product set was created.</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Date type:</td>                <td>Creation</td>                                         <td>Hard-coded ISO 19115 value to be set only if above date exists.</td></tr>
+      <tr><td><code>  │   │   └─</code>Identifier:</td>                   <td><code class="rf">LANDSAT_SCENE_ID</code></td>         <td>The unique Landsat scene identifier.</td></tr>
+      <tr><td><code>  │   ├─</code>Credit:</td>                           <td><code class="rf">ORIGIN</code></td>                   <td>Recognition of those who contributed to the resources.</td></tr>
+      <tr><td><code>  │   ├─</code>Resource format</td>                   <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   └─</code>Format specification citation</td> <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │       ├─</code>Title:</td>                    <td></td>                                                 <td>Long name inferred from <code>OUTPUT_FORMAT</code> if possible.</td></tr>
+      <tr><td><code>  │   │       └─</code>Alternate title:</td>          <td><code class="rf">OUTPUT_FORMAT</code></td>            <td>The name of the data transfer format, considered as an abbreviation.</td></tr>
+      <tr><td><code>  │   ├─</code>Spatial resolution (1 of 3)</td>       <td><code class="rf">GRID_CELL_SIZE_PANCHROMATIC</code></td><td>The grid cell size in meters for the panchromatic band, if part of the product.</td></tr>
+      <tr><td><code>  │   ├─</code>Spatial resolution (2 of 3)</td>       <td><code class="rf">GRID_CELL_SIZE_REFLECTIVE</code></td><td>The grid cell size in meters for the reflective bands, if part of the product.</td></tr>
+      <tr><td><code>  │   ├─</code>Spatial resolution (3 of 3)</td>       <td><code class="rf">GRID_CELL_SIZE_THERMAL</code></td>   <td>The grid cell size in meters for the thermal bands, if part of the product.</td></tr>
+      <tr><td><code>  │   └─</code>Extent</td>                            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       ├─</code>Geographic element</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       │   ├─</code>West bound longitude:</td>     <td><code>min(<span class="rf">CORNER_*_LON_PRODUCT</span>)</code></td> <td>The western-most longitude value in degrees (approximative).</td></tr>
+      <tr><td><code>  │       │   ├─</code>East bound longitude:</td>     <td><code>max(<span class="rf">CORNER_*_LON_PRODUCT</span>)</code></td> <td>The eastern-most longitude value in degrees (approximative).</td></tr>
+      <tr><td><code>  │       │   ├─</code>South bound latitude:</td>     <td><code>min(<span class="rf">CORNER_*_LAT_PRODUCT</span>)</code></td> <td>The southern-most longitude value in degrees (approximative).</td></tr>
+      <tr><td><code>  │       │   ├─</code>North bound latitude:</td>     <td><code>max(<span class="rf">CORNER_*_LAT_PRODUCT</span>)</code></td> <td>The northern-most longitude value in degrees (approximative).</td></tr>
+      <tr><td><code>  │       │   └─</code>Extent type code:</td>         <td>true</td>                                             <td></td></tr>
+      <tr><td><code>  │       └─</code>Temporal element</td>              <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │           └─</code>Start time:</td>               <td><code><span class="rf">DATE_ACQUIRED</span> + <span class="rf">SCENE_CENTER_TIME</span></code></td> <td>The date and center time the image was acquired.</td></tr>
+      <tr><td><code>  ├─</code>Content info</td>                          <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   ├─</code>Illumination elevation angle:</td>     <td><code class="rf">SUN_ELEVATION</code></td>            <td>The Sun elevation angle in degrees for the image center location at the image center acquisition time.</td></tr>
+      <tr><td><code>  │   ├─</code>Illumination azimuth angle:</td>       <td><code class="rf">SUN_AZIMUTH</code></td>              <td>The Sun azimuth angle in degrees for the image center location at the image center acquisition time.</td></tr>
+      <tr><td><code>  │   ├─</code>Cloud cover percentage:</td>           <td><code class="rf">CLOUD_COVER</code></td>              <td>The overall cloud coverage (percent) of the WRS-2 scene.</td></tr>
+      <tr><td><code>  │   ├─</code>Attribute group (1 of 3)</td>          <td></td>                                                 <td>Reflective bands</td></tr>
+      <tr><td><code>  │   │   ├─</code>Content type:</td>                 <td>Physical measurement</td>                             <td>The types of information represented by the values.</td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (1 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>433</td>                                              <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_1</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_1</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_1</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_1</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_1</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>Coastal Aerosol (Operational Land Imager)</td>        <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (2 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>482</td>                                              <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_2</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_2</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_2</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_2</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_2</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>Blue (OLI)</td>                                       <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (3 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>562</td>                                              <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_3</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_3</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_3</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_3</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_3</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>Green (OLI)</td>                                      <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (4 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>655</td>                                              <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_4</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_4</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_4</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_4</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_4</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>Red (OLI)</td>                                        <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (5 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>865</td>                                              <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_5</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_5</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_5</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_5</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_5</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>Near-Infrared (NIR) (OLI)</td>                        <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (6 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>1610</td>                                             <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_6</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_6</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_6</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_6</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_6</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>Short Wavelength Infrared (SWIR) 1 (OLI)</td>         <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Attribute (7 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Peak response:</td>            <td>2200</td>                                             <td></td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_7</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_7</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_7</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_7</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │   │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_7</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │   │   └─</code>Description:</td>              <td>SWIR 2 (OLI)</td>                                     <td></td></tr>
+      <tr><td><code>  │   │   └─</code>Attribute (8 of 8)</td>            <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │       ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Peak response:</td>            <td>1375</td>                                             <td></td></tr>
+      <tr><td><code>  │   │       ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_9</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_9</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_9</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_9</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_9</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │       └─</code>Description:</td>              <td>Cirrus (OLI)</td>                                     <td></td></tr>
+      <tr><td><code>  │   ├─</code>Attribute group (2 of 3)</td>          <td></td>                                                 <td>Panchromatic band</td></tr>
+      <tr><td><code>  │   │   ├─</code>Content type:</td>                 <td>Physical measurement</td>                             <td>The types of information represented by the values.</td></tr>
+      <tr><td><code>  │   │   └─</code>Attribute (8 of 11)</td>           <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │       ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Peak response:</td>            <td>590</td>                                              <td></td></tr>
+      <tr><td><code>  │   │       ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_8</code></td>  <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_8</code></td>  <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_8</code></td>     <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_8</code></td>      <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │   │       ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_8</code></td>         <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │   │       └─</code>Description:</td>              <td>Panchromatic (OLI)</td>                               <td></td></tr>
+      <tr><td><code>  │   └─</code>Attribute group (3 of 3)</td>          <td></td>                                                 <td>Thermal bands</td></tr>
+      <tr><td><code>  │       ├─</code>Content type:</td>                 <td>Physical measurement</td>                             <td>The types of information represented by the values.</td></tr>
+      <tr><td><code>  │       ├─</code>Attribute (10 of 11)</td>          <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       │   ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │       │   ├─</code>Peak response:</td>            <td>10800</td>                                            <td></td></tr>
+      <tr><td><code>  │       │   ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_10</code></td> <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │       │   ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_10</code></td> <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │       │   ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_10</code></td>    <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │       │   ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_10</code></td>     <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │       │   ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │       │   ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_10</code></td>        <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │       │   └─</code>Description:</td>              <td>Thermal Infrared Sensor (TIRS) 1</td>                 <td></td></tr>
+      <tr><td><code>  │       └─</code>Attribute (11 of 11)</td>          <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │           ├─</code>Bound units:</td>              <td>nm</td>                                               <td>Units in which sensor wavelengths are expressed.</td></tr>
+      <tr><td><code>  │           ├─</code>Peak response:</td>            <td>12000</td>                                            <td></td></tr>
+      <tr><td><code>  │           ├─</code>Min value:</td>                <td><code class="rf">QUANTIZE_CAL_MIN_BAND_11</code></td> <td>Minimum pixel value.</td></tr>
+      <tr><td><code>  │           ├─</code>Max value:</td>                <td><code class="rf">QUANTIZE_CAL_MAX_BAND_11</code></td> <td>Maximum pixel value.</td></tr>
+      <tr><td><code>  │           ├─</code>Scale factor:</td>             <td><code class="rf">RADIANCE_MULT_BAND_11</code></td>    <td>Multiplicative rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │           ├─</code>Offset:</td>                   <td><code class="rf">RADIANCE_ADD_BAND_11</code></td>     <td>Additive rescaling factor from pixel to radiance units.</td></tr>
+      <tr><td><code>  │           ├─</code>Transfer function type:</td>   <td>Linear</td>                                           <td>Scale factor and offset are used in a linear equation.</td></tr>
+      <tr><td><code>  │           ├─</code>Name:</td>                     <td><code class="rf">FILE_NAME_BAND_11</code></td>        <td>File name of the TIFF image containing pixel values</td></tr>
+      <tr><td><code>  │           └─</code>Description:</td>              <td>Thermal Infrared Sensor (TIRS) 2</td>                 <td></td></tr>
+      <tr><td><code>  ├─</code>Acquisition information</td>               <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   ├─</code>Acquisition requirement</td>           <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   └─</code>Identifier:</td>                   <td><code class="rf">REQUEST_ID</code></td>               <td>Product Request ID.</td></tr>
+      <tr><td><code>  │   ├─</code>Operation</td>                         <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │   ├─</code>Status:</td>                       <td>Completed</td>                                        <td>Status of the data acquisition.</td></tr>
+      <tr><td><code>  │   │   ├─</code>Type:</td>                         <td>Real</td>                                             <td>Collection technique for the operation.</td></tr>
+      <tr><td><code>  │   │   └─</code>Significant event</td>             <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │   │       ├─</code>Context:</td>                  <td>Acquisition</td>                                      <td>Meaning of the event.</td></tr>
+      <tr><td><code>  │   │       └─</code>Time:</td>                     <td><code><span class="rf">DATE_ACQUIRED</span> + <span class="rf">SCENE_CENTER_TIME</span></code></td> <td style="color: red">Duplication of above "Start time" metadata.</td></tr>
+      <tr><td><code>  │   └─</code>Platform</td>                          <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │       ├─</code>Identifier:</td>                   <td><code class="rf">SPACECRAFT_ID</code></td>            <td>Spacecraft from which the data were captured.</td></tr>
+      <tr><td><code>  │       └─</code>Instrument</td>                    <td></td>                                                 <td></td></tr>
+      <tr><td><code>  │           └─</code>Identifier:</td>               <td><code class="rf">SENSOR_ID</code></td>                <td>Sensor used to capture this scene.</td></tr>
+      <tr><td><code>  └─</code>Date info:</td>                            <td><code class="rf">FILE_DATE</code></td>                <td style="color: red">Duplication of above "Citation date" metadata.</td></tr>
+      <tr><td><code>      └─</code>Date type:</td>                        <td>Creation</td>                                         <td>Hard-coded ISO 19115 value to be set only if <code>dateInfo/date</code> exists.</td></tr>
+    </table>
+  </body>
+</html>

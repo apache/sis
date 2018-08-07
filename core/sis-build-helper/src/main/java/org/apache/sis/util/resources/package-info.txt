@@ -1,0 +1,2 @@
+This directory has no "package-info.java" file
+because it is defined in the sis-utility module.

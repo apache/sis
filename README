@@ -1,0 +1,87 @@
+=============================================
+Welcome to Apache SIS <http://sis.apache.org>
+=============================================
+
+SIS provides data structures for geographic data and associated metadata
+along with methods to manipulate those data structures. The SIS metadata
+module forms the base of the library and enables the creation of metadata
+objects which comply with the model of ISO 19115 series of standards.
+The SIS referencing module enable the construction of geodetic data structures
+for geospatial referencing such as axis, projection and coordinate reference
+system definitions, along with the associated operations which enable the
+mathematical conversion of coordinates between different systems of reference.
+The SIS storage modules will provide a common approach to the reading and
+writing of grid coverages applicable to simple imagery as to many dimensional
+data structures.
+
+SIS is a project of the Apache Software Foundation <http://www.apache.org/>.
+
+Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
+project logo are trademarks of The Apache Software Foundation.
+
+
+Getting Started
+===============
+
+SIS requires Java 8 and uses the Maven 3 <http://maven.apache.org/>
+build system. To build SIS, use the following command in this directory:
+
+    mvn install
+
+Information for running a command-line tool can be found on the web site:
+(<http://sis.apache.org/command-line.html>)
+
+
+License (see also LICENSE)
+==========================
+
+Collective work: Copyright 2010-2017 The Apache Software Foundation.
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Some Apache SIS subcomponents have dependencies subject to different
+license terms. All those dependencies except GeoAPI and JSR-363 are
+optional. Your use of those dependencies is subject to the terms and
+conditions of the licenses listed in the NOTICE file.
+
+
+Mailing Lists
+=============
+
+Discussion about SIS takes place on the following mailing lists:
+
+    user@sis.apache.org    - About using SIS
+    dev@sis.apache.org     - About developing SIS
+
+Notification on all code changes are sent to the following mailing list:
+
+    commits@sis.apache.org
+
+The mailing lists are open to anyone and publicly archived.
+
+You can subscribe the mailing lists by sending a message to
+<LIST>-subscribe@sis.apache.org (for example user-subscribe@...).
+To unsubscribe, send a message to <LIST>-unsubscribe@sis.apache.org.
+For more instructions, send a message to <LIST>-help@sis.apache.org.
+
+
+Issue Tracker
+=============
+
+If you encounter errors in SIS or want to suggest an improvement or
+a new feature, please visit the SIS issue tracker at
+https://issues.apache.org/jira/browse/SIS There you can also find the
+latest information on known issues and recent bug fixes and enhancements.

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<cit:CI_Citation
+    xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/cit/1.0 http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd
+                          http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd">
+
+  <cit:title>
+    <gco:CharacterString>Fight against poverty</gco:CharacterString>
+  </cit:title>
+  <cit:date>
+    <cit:CI_Date>
+      <cit:date>
+        <!-- International Day for the Eradication of Poverty -->
+        <gco:DateTime>2015-10-17T02:00:00+02:00</gco:DateTime>
+      </cit:date>
+      <cit:dateType>
+        <cit:CI_DateTypeCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_DateTypeCode"
+                             codeListValue="adopted">Adopted</cit:CI_DateTypeCode>
+      </cit:dateType>
+    </cit:CI_Date>
+  </cit:date>
+  <cit:citedResponsibleParty>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode"
+                         codeListValue="originator">Originator</cit:CI_RoleCode>
+      </cit:role>
+      <cit:party>
+        <cit:CI_Individual>
+          <cit:name>
+            <gco:CharacterString>Maid Marian</gco:CharacterString>
+          </cit:name>
+          <cit:contactInfo>
+            <cit:CI_Contact id="ip-protocol">
+              <cit:onlineResource>
+                <cit:CI_OnlineResource>
+                  <cit:linkage>
+                    <gcx:FileName src="https://tools.ietf.org/html/rfc1149">rfc1149</gcx:FileName>
+                  </cit:linkage>
+                  <cit:name>
+                    <gco:CharacterString>IP over Avian Carriers</gco:CharacterString>
+                  </cit:name>
+                  <cit:description>
+                    <gco:CharacterString>High delay, low throughput, and low altitude service.</gco:CharacterString>
+                  </cit:description>
+                  <cit:function>
+                    <cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_OnLineFunctionCode"
+                                               codeListValue="offlineAccess">Offline access</cit:CI_OnLineFunctionCode>
+                  </cit:function>
+                </cit:CI_OnlineResource>
+              </cit:onlineResource>
+              <cit:contactInstructions>
+                <gco:CharacterString>Send carrier pigeon.</gco:CharacterString>
+              </cit:contactInstructions>
+            </cit:CI_Contact>
+          </cit:contactInfo>
+        </cit:CI_Individual>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </cit:citedResponsibleParty>
+  <cit:citedResponsibleParty>
+    <cit:CI_Responsibility>
+      <cit:role>
+        <cit:CI_RoleCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_RoleCode"
+                         codeListValue="funder">Funder</cit:CI_RoleCode>
+      </cit:role>
+      <cit:party>
+        <cit:CI_Individual>
+          <cit:name>
+            <gco:CharacterString>Robin Hood</gco:CharacterString>
+          </cit:name>
+          <cit:contactInfo xlink:href="#ip-protocol"/>
+        </cit:CI_Individual>
+      </cit:party>
+    </cit:CI_Responsibility>
+  </cit:citedResponsibleParty>
+  <cit:presentationForm>
+    <cit:CI_PresentationFormCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#CI_PresentationFormCode"
+                                 codeListValue="physicalObject">Physical object</cit:CI_PresentationFormCode>
+  </cit:presentationForm>
+</cit:CI_Citation>

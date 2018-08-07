@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<html>
+  <head>
+    <title>API Overview</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    Overview of <a href="http://sis.apache.org">Apache SIS™ (Spatial Information System)</a>.
+
+    <h3>Requirements</h3>
+    <p>SIS requires Java 8 Standard Edition.</p>
+
+    <h3>Classes naming</h3>
+    <p>Implementations of <a href="http://www.geoapi.org/">GeoAPI interfaces</a> usually (but not always)
+    begin with {@code Abstract}, {@code Default}, {@code Simple} or {@code General} prefix.
+    The {@code Abstract} prefix is used when a class is abstract according ISO specifications -
+    it may or may not be be abstract in the Java sense.
+    The {@code General} prefix is used when an implementation is designed for use in the general case,
+    as opposed to other implementations specialized for a fixed number of dimensions or other conditions.
+    Implementations specialized for a fixed number of dimensions are suffixed with {@code 1D}, {@code 2D},
+    {@code 3D} or {@code 4D} rather than being prefixed.</p>
+
+    <p>Classes that are not GeoAPI implementation are usually not prefixed by any of the above.</p>
+  </body>
+</html>

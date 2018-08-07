@@ -1,0 +1,44 @@
+# Convert line endings to native line endings on checkout.
+# Files for source code:
+*.c          text
+*.h          text
+*.idl        text
+*.java       text
+*.jsp        text
+*.prj        text
+*.properties text
+*.sql        text
+
+# XML files:
+*.fxml  text
+*.gml   text
+*.sld   text
+*.xml   text
+*.xsd   text
+*.xsl   text
+
+# Text or web files:
+*.css   text
+*.html  text
+*.md    text
+*.txt   text
+*.xhtml text
+
+# Batch files (system-dependent):
+*.sh    text eol=lf
+*.bat   text eol=crlf
+
+# Denote files that are truly binary and should not be modified.
+*.bmp  binary
+*.dbf  binary
+*.gif  binary
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.shp  binary
+*.shx  binary
+*.so   binary
+*.tif  binary
+*.tiff binary
+*.utf  binary
+*.zip  binary

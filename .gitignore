@@ -1,0 +1,28 @@
+# All configurations
+ide-project/local-src/
+target/
+tmp/
+*.tmp
+*.log
+*.orig
+.svn/
+
+# NetBeans IDE files
+ide-project/NetBeans/build/
+ide-project/NetBeans/dist/
+nbactions.xml
+nbproject
+
+# Eclipse IDE files
+.classpath
+.project
+.settings/
+
+# IntelliJ IDE files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# MacOS
+.DS_Store

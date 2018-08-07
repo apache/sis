@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<gco:Multiplicity
+    xmlns:gco          = "http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/gco/1.0  http://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd">
+
+  <!--
+    We provide this file for completion and comparison purposes, but the tests do not use it
+    yet because we do not have a valid wrapper class. The ../2007/Multiplicity.xml file uses
+    the FC_FeatureAttribute type published in 2005. A new version of FC_FeatureAttribute has
+    been published later, but that version do not use Multiplicity anymore (cardinality is
+    represented by a character string instead). Since its content is identical to the 2007
+    version (with only a different namespace), it is sufficient to test (un)marshalling of
+    the older version.
+  -->
+  <gco:range>
+    <gco:MultiplicityRange>
+      <gco:lower>
+        <gco:Integer>0</gco:Integer>
+      </gco:lower>
+      <gco:upper>
+        <gco:UnlimitedInteger>233332</gco:UnlimitedInteger>
+      </gco:upper>
+    </gco:MultiplicityRange>
+  </gco:range>
+  <gco:range>
+    <gco:MultiplicityRange>
+      <gco:lower>
+        <gco:Integer>1</gco:Integer>
+      </gco:lower>
+      <gco:upper>
+        <gco:UnlimitedInteger isInfinite="true" xsi:nil="true"/>
+      </gco:upper>
+    </gco:MultiplicityRange>
+  </gco:range>
+</gco:Multiplicity>

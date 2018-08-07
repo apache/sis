@@ -1,0 +1,12 @@
+This directory contains the sis.jar file together with optional dependencies.
+Recognized optional dependencies are:
+
+  - Derby database
+  - UCAR netCDF library
+  - ESRI Geometry API
+  - Java Topology Suite
+
+The "linux", "darwin" and "windows" sub-directories contain bridges to Proj.4
+and other libraries through Java Native Interfaces (JNI). They do not contain
+the actual libraries however; Apache SIS uses the libraries installed on host
+computer by packages manager, if any. Those libraries are optional.

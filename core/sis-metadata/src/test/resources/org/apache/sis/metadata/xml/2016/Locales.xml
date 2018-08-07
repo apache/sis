@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<mdb:MD_Metadata
+    xmlns:mdb = "http://standards.iso.org/iso/19115/-3/mdb/1.0"
+    xmlns:lan = "http://standards.iso.org/iso/19115/-3/lan/1.0"
+    xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/mdb/1.0
+                          http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd">
+
+  <mdb:defaultLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</lan:LanguageCode>
+      </lan:language>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+      <!--
+        Above <gmd:characterEncoding> element is repeated for every locale. This element is ignored
+        by Apache SIS since it is considered redundant with the encoding declared in the XML header.
+        But those elements are mandatory according OGC/ISO schemas, so we have to carry their weight.
+      -->
+    </lan:PT_Locale>
+  </mdb:defaultLocale>
+
+  <!-- Following empty elements are mandatory according ISO 19115, but ignored for this test. -->
+  <mdb:contact/>
+  <mdb:dateInfo/>
+
+  <mdb:otherLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="jpn" codeSpace="eng">Japanese</lan:LanguageCode>
+      </lan:language>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:otherLocale>
+  <mdb:otherLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</lan:LanguageCode>
+      </lan:language>
+      <lan:country>
+        <lan:CountryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</lan:CountryCode>
+      </lan:country>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:otherLocale>
+  <mdb:otherLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</lan:LanguageCode>
+      </lan:language>
+      <lan:country>
+        <lan:CountryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#Country" codeListValue="FR" codeSpace="eng">France</lan:CountryCode>
+      </lan:country>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:otherLocale>
+  <mdb:otherLocale>
+    <lan:PT_Locale>
+      <lan:language>
+        <lan:LanguageCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</lan:LanguageCode>
+      </lan:language>
+      <lan:country>
+        <lan:CountryCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</lan:CountryCode>
+      </lan:country>
+      <lan:characterEncoding>
+        <lan:MD_CharacterSetCode codeList="http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</lan:MD_CharacterSetCode>
+      </lan:characterEncoding>
+    </lan:PT_Locale>
+  </mdb:otherLocale>
+
+  <!-- Following empty element is mandatory according ISO 19115, but ignored for this test. -->
+  <mdb:identificationInfo/>
+
+</mdb:MD_Metadata>

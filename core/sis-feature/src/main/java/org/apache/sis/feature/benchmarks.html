@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Design goals and benchmarks</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <h1>Design goals and benchmarks</h1>
+    <p>A major design goal of <code>org.apache.sis.feature</code> is to reduce memory usage.
+    Consider a ShapeFile or a database table with millions of records.
+    Each record is represented by one <code>Feature</code> instance.
+    Sophisticated <code>DataStore</code> implementations will create and discard <code>Feature</code>
+    instances on the fly, but not all <code>DataStore</code> do that.
+    As a safety, Apache SIS tries to implement <code>Feature</code> in a way that allow applications
+    to scale higher before to die with an <code>OutOfMemoryError</code>.</p>
+
+    <p>A simple <code>Feature</code> implementation would use a <code>java.util.HashMap</code> as below:</p>
+    <blockquote><pre>class SimpleFeature {
+    final Map&lt;String,Object&gt; attributes = new HashMap&lt;&gt;(8);
+}</pre></blockquote>
+
+    <p>The above <code>SimpleFeature</code> does not supports explicitely multi-valued properties and metadata
+    about the properties (admittedly multi-values could be stored as <code>java.util.Collection</code>,
+    but this approach has implications on the way we ensure type safety).
+    A more complete but still straightforward implementation could be:</p>
+    <blockquote><pre>class ComplexFeature {
+    final Map&lt;String,Property&gt; properties = new HashMap&lt;&gt;(8);
+}
+class Property {
+    final List&lt;String&gt; values = new ArrayList&lt;&gt;(4);
+}</pre></blockquote>
+
+
+    <p>A more sophisticated implementation would take advantage of our knowledge that all records in a table have the
+    same attribute names, and that the vast majority of attributes are singleton.
+    Apache SIS uses this knowledge, together with lazy instantiations of <code>Property</code>.
+    The above simple implementation has been compared with the Apache SIS one in a micro-benchmark consisting of the
+    following steps:</p>
+
+    <ol>
+      <li>
+        <p>Defines the following feature type:</p>
+        <table style="border: 1px solid">
+          <tr><th>Attribute</th>              <th> </th> <th>Value class</th></tr>
+          <tr><td><code>city</code></td>      <td>:</td> <td><code>String</code> (8 characters)</td></tr>
+          <tr><td><code>latitude</code></td>  <td>:</td> <td><code>Float</code></td></tr>
+          <tr><td><code>longitude</code></td> <td>:</td> <td><code>Float</code></td></tr>
+        </table>
+      </li>
+      <li>
+        <p>Launch the micro-benchmarks in Java with a fixed amount of memory.
+        This micro-benchmarks used the following command line with Java 1.8.0_05 on MacOS X 10.7.5:</p>
+        <code>java -Xms100M -Xmx100M </code> <i>command</i>
+      </li>
+      <li>
+        <p>Creates <code>Feature</code> instances of the above type and store them in a list of fixed size
+        until we get <code>OutOfMemoryError</code>.</p>
+      </li>
+    </ol>
+
+    <h2>Results and discussion</h2>
+    The benchmarks have been executed about 8 times for each implementation
+    (<cite>simple</cite> and <cite>complex</cite> versus <cite>SIS</cite>).
+    Results of the simple feature implementation were very stable.
+    But results of the SIS implementation randomly fall in two modes, one twice faster than the other
+    (maybe depending on which optimizations have been chosen by the HotSpot compiler):
+
+    <blockquote><table style="border: 1px solid">
+      <tr>
+        <th></th>
+        <th colspan="2">Count</th>
+        <th colspan="2">Time (seconds)</th>
+      </tr>
+      <tr>
+        <th>Run</th>
+        <th>mean</th> <th>σ</th>
+        <th>mean</th> <th>σ</th>
+      </tr>
+      <tr>
+        <td><code>ComplexFeature</code>:</td>
+        <td style="text-align: right">194262</td> <td style="text-align: right">± 2</td>
+        <td style="text-align: right">21.8</td>   <td style="text-align: right">± 0.9</td>
+      </tr>
+      <tr>
+        <td><code>SimpleFeature</code>:</td>
+        <td style="text-align: right">319426</td> <td style="text-align: right">± 4</td>
+        <td style="text-align: right">22.5</td>   <td style="text-align: right">± 0.6</td>
+      </tr>
+      <tr>
+        <td>SIS (mode 1):</td>
+        <td style="text-align: right">639156</td> <td style="text-align: right">± 40</td>
+        <td style="text-align: right">25.6</td>   <td style="text-align: right">± 0.4</td>
+      </tr>
+      <tr>
+        <td>SIS (mode 2):</td>
+        <td style="text-align: right">642437</td> <td style="text-align: right">± 7</td>
+        <td style="text-align: right">12.1</td>   <td style="text-align: right">± 0.8</td>
+      </tr>
+    </table></blockquote>
+
+    <p>For the trivial <code>FeatureType</code> used in this benchmark, the Apache SIS implementation can load
+    twice more <code>Feature</code> instances than the <code>HashMap&lt;String,Object&gt;</code>-based
+    implementation before the application get an <code>OutOfMemoryError</code>.
+    We presume that this is caused by the <code>Map.Entry</code> instances that <code>HashMap</code> must
+    create internally for each attribute.
+    Compared to <code>ComplexFeature</code>, SIS allows 3.3 times more instances while being functionally equivalent.</p>
+
+    <p>The speed comparisons are subject to more cautions, in part because each run has created a different amount
+    of instances before the test stopped. So even the slowest SIS case would be almost twice faster than
+    <code>SimpleFeature</code> because it created two times more instances in an equivalent amount of time.
+    However this may be highly dependent on garbage collector activities (it has not been verified).</p>
+  </body>
+</html>

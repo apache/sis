@@ -1,0 +1,288 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@import url('standard.css');
+
+/*
+ * This file is divided in two parts. The first part is specific to the SIS project
+ * and defines the styles used by the developers in the javadoc comments. The second
+ * part overwrites some aspects of the default stylesheet provided by the Javadoc tools.
+ */
+
+
+/*
+ * Definition of <table class="sis">
+ *
+ * Table without vertical space between rows, a little bit of space between columns,
+ * a light background color and a header with a darker background color. The header
+ * also have a little bit more space, and a border is drawn around the table.
+ */
+table.sis caption {
+  color:          #0086E0;
+  font-weight:    bold;
+  padding-bottom: 4px;
+}
+
+table.sis {
+  margin:           18px 0;
+  width:            auto;
+  background-color: #F4F8FF;
+  border-color:     darkgray;
+  border-style:     solid;
+  border-width:     1px;
+  border-spacing:   0;
+  padding:          0;
+  line-height:      1em;
+}
+
+table.sis tr th {
+  background-color:    #B9DCFF;
+  border-bottom-color: darkgray;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  padding:             6px;
+  padding-bottom:      3px;
+}
+
+table.sis tr td {
+  padding:        3px 12px;
+  vertical-align: text-top;
+}
+
+/*
+ * Optionally add a line or column separator.
+ */
+table.sis tr th.hsep {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: darkgray;
+}
+
+table.sis tr td.hsep {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: darkgray;
+}
+
+table.sis tr th.sep {
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: #819AB2;
+}
+
+table.sis tr td.sep {
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: #AAADB2;
+}
+
+
+/*
+ * Definition of <table class="compact">
+ *
+ * Table without vertical space between rows and a little bit of space between columns.
+ * This table has no border and text is left-aligned.
+ */
+table.compact {
+  margin:         6px 0px;
+  width:          auto;
+  border:         none;
+  border-spacing: 0;
+  padding:        0;
+  line-height:    1em;
+  text-align:     left;
+}
+
+table.compact tr td {
+  padding:        0 9px;
+  vertical-align: text-top;
+}
+
+
+/*
+ * Definition of <div class="note">
+ *
+ * Note or examples.
+ */
+div.note {
+  color:     #353833;
+  font-size:   small;
+  margin-left:  40px;
+  margin-right: 40px;
+  margin-top:    9px;
+  margin-bottom: 9px;
+}
+
+
+/*
+ * The warning box for upcomming API changes. The warning icon is 64 pixels height.
+ * Since we have 30 pixels in top and bottom padding, There is 34 remaining pixels
+ * to set as the minimal height.
+ */
+div.warning {
+  border-width: 2pt;
+  border-style: solid;
+  border-color: darkred;
+  background:   antiquewhite;
+  margin:       12pt 30pt;
+  padding:      15px;
+  min-height:   34px;
+}
+
+div.warning:before {
+  position: relative;
+  float:    left;
+  top:      -15px;
+  left:     -15px;
+  content:  url("warning.png");
+}
+
+
+/*
+ * Formatting of section headers
+ */
+div.section {
+  font-size:    15px;
+  font-weight:  bold;
+  margin-top:   21px;
+  margin-bottom: 3px;
+}
+
+div.description div.section {
+  font-size:  18px;
+  margin-top: 30px;
+}
+
+/*
+ * Bullet and ordered lists. Put some space before and after the list.
+ * Lists of the "verbose" class also have some space betweem items.
+ */
+div.block ul,
+div.block ol {
+  margin-top:    9px;
+  margin-bottom: 9px;
+  text-align:   left;
+}
+
+div.block ul > li,
+div.block ol > li {
+  margin-top:    0;
+  margin-bottom: 0;
+}
+
+div.block ul.verbose > li,
+div.block ol.verbose > li {
+  margin-top:    9px;
+  margin-bottom: 9px;
+  text-align: justify;
+}
+
+/*
+ * Reduce the space for sublists.
+ */
+div.block ul > li > ul,
+div.block ol > li > ul {
+  margin-top:    3px;
+  margin-bottom: 6px;
+  text-align:   left;
+}
+
+div.block ul > li > ul > li,
+div.block ol > li > ul > li {
+  margin-top:    0;
+  margin-bottom: 0;
+}
+
+div.block center {
+  margin-top:    18px;
+  margin-bottom: 18px;
+}
+
+/*
+ * Text similar to <pre> but without monospace font.
+ */
+div.preformat {
+  margin: 15px 30px;
+  line-height: 100%;
+  white-space: pre-wrap;
+}
+
+/*
+ * Output of {@preformat} inline tag.
+ */
+pre.code-sample {
+  margin-left:   40px;
+  margin-right:  40px;
+  margin-top:    12px;
+  margin-bottom: 12px;
+}
+
+td > pre.code-sample {
+  margin: 9px;
+}
+
+:not(td) > pre.code-sample {
+  padding:      9px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: gray;
+  background-color: rgba(200, 200, 200, 0.1);
+}
+
+/*
+ * Miscellaneous.
+ */
+span.deprecated {
+  text-decoration: line-through;
+}
+
+:not(td) > div.block {
+  text-align: justify;
+}
+
+
+
+/* ----------------------------------------------------------------------
+ * End of SIS-specific part. The remaining of this file overwrite some
+ * aspects of the Javadoc default stylesheet.
+ */
+body, div.block {
+  color:       black;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd {
+  color:       #353833;
+  font-family: Helvetica, Arial, sans-serif;
+  margin-left: 40px;
+}
+
+pre, div.block pre, code, tt, dt code, table tr td dt code {
+  font-family: Andale Mono, Courier New, monospace;
+}
+
+div.block pre, code, tt, dt code, table tr td dt code {
+  line-height: 1em;
+  font-size:   1em;
+}
+
+/* Appareance of links in the "Description" column of class and package summaries.
+ * JDK style uses bold characters for the left column, which contains the class and
+ * package names. But we do not want those bold characters to apply to the descriptions.
+ */
+td.colLast div.block a:link {
+  font-weight: normal;
+}

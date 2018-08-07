@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<html>
+  <head>
+    <title>MathTransform formulas</title>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <h1>MathTransform formulas</h1>
+    <div>This file contains formulas written in MathML for inclusion in the Javadoc of some classes in the
+    <code>org.apache.sis.referencing.operation.transform</code> package.
+    Those formulas are provided in separated files for easier edition and for avoiding <code>javac</code> or
+    <code>javadoc</code> “<cite>unknown HTML tag</cite>” errors with JDK 8.
+    Fragment of this files are inserted in the Javadoc by the following tag:
+
+    <blockquote><pre>{@include formulas.html#<var>title</var>}</pre></blockquote>
+
+    where <var>title</var> is the text inside <code>&lt;h2&gt;…&lt;/h2&gt;</code> elements just before
+    the parts to copy in the javadoc.
+    The <code>{@include}</code> taglet is defined in the <code>sis-build-helper</code> module.</div>
+
+    <h2>ProjectiveTransform</h2>
+    <table class="compact" summary="Projective transform matrix">
+      <tr><td nowrap>
+        <math display="block" alttext="MathML capable browser required">
+          <mfenced open="[" close="]">
+            <mtable>
+              <mtr><mtd><mi>x</mi><mo>'</mo></mtd></mtr>
+              <mtr><mtd><mi>y</mi><mo>'</mo></mtd></mtr>
+              <mtr><mtd><mi>z</mi><mo>'</mo></mtd></mtr>
+            </mtable>
+          </mfenced>
+          <mo>=</mo>
+          <mfenced open="[" close="]">
+            <mtable>
+              <mtr><mtd><mi>u</mi><mo>/</mo><mi>t</mi></mtd></mtr>
+              <mtr><mtd><mi>v</mi><mo>/</mo><mi>t</mi></mtd></mtr>
+              <mtr><mtd><mi>w</mi><mo>/</mo><mi>t</mi></mtd></mtr>
+            </mtable>
+          </mfenced>
+        </math>
+
+        </td><td style="vertical-align: middle" >
+          <blockquote>where <var>u</var>, <var>v</var>, <var>w</var> and <var>t</var> are obtained by</blockquote>
+        </td><td nowrap>
+
+        <math display="block" alttext="MathML capable browser required">
+          <mfenced open="[" close="]">
+            <mtable>
+              <mtr><mtd><mi>u</mi></mtd></mtr>
+              <mtr><mtd><mi>v</mi></mtd></mtr>
+              <mtr><mtd><mi>w</mi></mtd></mtr>
+              <mtr><mtd><mi>t</mi></mtd></mtr>
+            </mtable>
+          </mfenced>
+          <mo>=</mo>
+          <mfenced open="[" close="]">
+            <mtable>
+              <mtr>
+                <mtd><msub><mi>m</mi><mn>00</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>01</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>02</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>03</mn></msub></mtd>
+              </mtr>
+              <mtr>
+                <mtd><msub><mi>m</mi><mn>10</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>11</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>12</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>13</mn></msub></mtd>
+              </mtr>
+              <mtr>
+                <mtd><msub><mi>m</mi><mn>20</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>21</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>22</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>23</mn></msub></mtd>
+              </mtr>
+              <mtr>
+                <mtd><msub><mi>m</mi><mn>30</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>31</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>32</mn></msub></mtd>
+                <mtd><msub><mi>m</mi><mn>33</mn></msub></mtd>
+              </mtr>
+            </mtable>
+          </mfenced>
+          <mo>×</mo>
+          <mfenced open="[" close="]">
+            <mtable>
+              <mtr><mtd><mi>x</mi></mtd></mtr>
+              <mtr><mtd><mi>y</mi></mtd></mtr>
+              <mtr><mtd><mi>z</mi></mtd></mtr>
+              <mtr><mtd><mn>1</mn></mtd></mtr>
+            </mtable>
+          </mfenced>
+        </math>
+      </td></tr>
+    </table>
+
+
+
+
+    <h2>SwapAxes</h2>
+    <math display="block" alttext="MathML capable browser required">
+      <mfenced open="[" close="]">
+        <mtable>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>1</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>1</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>1</mn></mtd>
+          </mtr>
+        </mtable>
+      </mfenced>
+    </math>
+
+
+
+
+    <h2>NormalizeGeographic</h2>
+    <math display="block" alttext="MathML capable browser required">
+      <mfenced open="[" close="]">
+        <mtable>
+          <mtr>
+            <mtd><mi>π</mi><mo>/</mo><mn>180</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mo>-</mo><msub><mi>λ</mi><mn>0</mn></msub> <mo>⋅</mo> <mo>(</mo><mi>π</mi><mo>/</mo><mn>180</mn><mo>)</mo></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mi>π</mi><mo>/</mo><mn>180</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>1</mn></mtd>
+          </mtr>
+        </mtable>
+      </mfenced>
+    </math>
+
+
+
+
+    <h2>DenormalizeGeographic</h2>
+    <math display="block" alttext="MathML capable browser required">
+      <mfenced open="[" close="]">
+        <mtable>
+          <mtr>
+            <mtd><mi>180</mi><mo>/</mo><mn>π</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><msub><mi>λ</mi><mn>0</mn></msub></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mi>180</mi><mo>/</mo><mn>π</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>1</mn></mtd>
+          </mtr>
+        </mtable>
+      </mfenced>
+    </math>
+
+
+
+
+    <h2>DenormalizeCartesian</h2>
+    <math display="block" alttext="MathML capable browser required">
+      <mfenced open="[" close="]">
+        <mtable>
+          <mtr>
+            <mtd><mi>a</mi> <mo>⋅</mo> <msub><mi>k</mi><mn>0</mn></msub></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mi>FE</mi></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mi>a</mi> <mo>⋅</mo> <msub><mi>k</mi><mn>0</mn></msub></mtd>
+            <mtd><mi>FN</mi></mtd>
+          </mtr>
+          <mtr>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>0</mn></mtd>
+            <mtd><mn>1</mn></mtd>
+          </mtr>
+        </mtable>
+      </mfenced>
+    </math>
+  </body>
+</html>

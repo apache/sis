@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<gex:EX_Extent
+    xmlns:gex = "http://standards.iso.org/iso/19115/-3/gex/1.0"
+    xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:gml = "http://www.opengis.net/gml/3.2"
+    xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/gex/1.0
+                          http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd">
+
+  <gex:geographicElement>
+    <gex:EX_GeographicBoundingBox id="bbox">
+      <gex:extentTypeCode>
+        <gco:Boolean>true</gco:Boolean>
+      </gex:extentTypeCode>
+      <gex:westBoundLongitude>
+        <gco:Decimal>-99.0</gco:Decimal>
+      </gex:westBoundLongitude>
+      <gex:eastBoundLongitude>
+        <gco:Decimal>-79.0</gco:Decimal>
+      </gex:eastBoundLongitude>
+      <gex:southBoundLatitude>
+        <gco:Decimal>14.9844</gco:Decimal>
+      </gex:southBoundLatitude>
+      <gex:northBoundLatitude>
+        <gco:Decimal>31.0</gco:Decimal>
+      </gex:northBoundLatitude>
+    </gex:EX_GeographicBoundingBox>
+  </gex:geographicElement>
+  <gex:temporalElement>
+    <gex:EX_TemporalExtent>
+      <!-- TODO: This block needs the sis-temporal module.
+      <gex:extent>
+        <gml:TimePeriod gml:id="period">
+          <gml:description>Acquisition period</gml:description>
+          <gml:beginPosition>2010-01-27T08:26:10-05:00</gml:beginPosition>
+          <gml:endPosition>2010-08-27T08:26:10-05:00</gml:endPosition>
+        </gml:TimePeriod>
+      </gex:extent>
+      -->
+    </gex:EX_TemporalExtent>
+  </gex:temporalElement>
+</gex:EX_Extent>

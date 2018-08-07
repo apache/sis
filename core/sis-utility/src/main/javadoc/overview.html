@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<html>
+  <head>
+    <title>API Overview</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    Overview of Apache <code>sis-utility</code> module.
+    This Javadoc is only about one specific module. For the full Apache SIS project,
+    see the <a href="http://sis.apache.org/apidocs/overview-summary.html">aggregated Javadoc</a>.
+
+    <p>The <code>sis-utility</code> module provides simple data objects and miscellaneous utilities.
+    The services provided by this module include internationalization, operations on common Java types
+    like Arrays and character strings, logging, and more.</p>
+
+    <p>Some functionalities provided by this module may overlap some external libraries like
+    <code>common-logging</code> and <code>commons-collections</code>. However this module often implement
+    them in a slightly different way. For example instead of defining new API for logging operations,
+    SIS uses the standard Java logging framework with optional adaptors on top of <code>java.util.logging.Logger</code>
+    for users who want to redirect to other logging frameworks.</p>
+
+    <p>Since this is not the purpose of this module to compete with dedicated libraries, this
+    module should be considered as mostly internal to the Apache SIS project. For example
+    any future SIS release may change the collection implementations (how they perform
+    synchronizations, how they handle exceptions, <i>etc.</i>) in order to fit SIS needs.</p>
+  </body>
+</html>

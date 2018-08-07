@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<mdq:DQ_RelativeInternalPositionalAccuracy
+    xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0"
+    xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0"
+    xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
+    xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation = "http://standards.iso.org/iso/19157/-2/mdq/1.0 http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd
+                          http://standards.iso.org/iso/19115/-3/lan/1.0 http://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd">
+
+  <!--
+    The <measure> element below is the main purpose of MetadataMarshallingTest.testPositionalAccuracy().
+    The <result> element was added only in order to allow validation of this XML file, with the addition
+    of an opportunist check of xsi:type declaration.
+  -->
+  <mdq:measure>
+   <mdq:DQ_MeasureReference>
+      <mdq:measureIdentification>
+         <mcc:MD_Identifier>
+            <mcc:code xsi:type="lan:PT_FreeText_PropertyType">
+              <gco:CharacterString>Quantitative quality measure focusing on the effective class percent regarded to the total surface size</gco:CharacterString>
+              <lan:PT_FreeText>
+                <lan:textGroup>
+                  <lan:LocalisedCharacterString locale="#locale-fra">Mesure qualité quantitative de type pourcentage de représentation de la classe par rapport à la surface totale</lan:LocalisedCharacterString>
+                </lan:textGroup>
+              </lan:PT_FreeText>
+            </mcc:code>
+         </mcc:MD_Identifier>
+      </mdq:measureIdentification>
+   </mdq:DQ_MeasureReference>
+  </mdq:measure>
+  <mdq:result>
+    <!--
+      The xsi:type declaration below is useless, but we put it
+      in order to test that it does not break unmarshalling.
+    -->
+    <mdq:DQ_ConformanceResult xsi:type="mdq:DQ_ConformanceResult_Type">
+      <mdq:specification>
+        <cit:CI_Citation>
+          <cit:title>
+            <gco:CharacterString>Some documentation for a conformance test.</gco:CharacterString>
+          </cit:title>
+          <cit:date>
+            <cit:CI_Date>
+              <cit:date>
+                <!-- Dummy date for the purpose of this test. -->
+                <gco:DateTime>2009-08-12T19:40:17.653+02:00</gco:DateTime>
+              </cit:date>
+              <cit:dateType>
+                <cit:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">Creation</cit:CI_DateTypeCode>
+              </cit:dateType>
+            </cit:CI_Date>
+          </cit:date>
+        </cit:CI_Citation>
+      </mdq:specification>
+      <mdq:explanation>
+        <gco:CharacterString>We should explain here what a test conformance means.</gco:CharacterString>
+      </mdq:explanation>
+      <mdq:pass>
+        <gco:Boolean>true</gco:Boolean>
+      </mdq:pass>
+    </mdq:DQ_ConformanceResult>
+  </mdq:result>
+</mdq:DQ_RelativeInternalPositionalAccuracy>
