@@ -99,7 +99,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * Creates a new derived set from the specified storage set.
      *
      * @param  storage    the set which actually store the elements.
-     * @param  converter  the type of elements in this derived set.
+     * @param  converter  the converter from the storage to the derived type.
      */
     private DerivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
         this.storage   = storage;

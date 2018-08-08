@@ -105,13 +105,13 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     static LinearConverter create(final Number scale, final Number offset) {
         final double numerator, divisor;
-        double shift = (offset != null) ? offset.doubleValue() : 0;
+        double shift = (offset != null) ? doubleValue(offset) : 0;
         if (scale instanceof Fraction) {
             numerator = ((Fraction) scale).numerator;
             divisor   = ((Fraction) scale).denominator;
             shift    *= divisor;
         } else {
-            numerator = (scale != null) ? scale.doubleValue() : 1;
+            numerator = (scale != null) ? doubleValue(scale) : 1;
             divisor   = 1;
         }
         final LinearConverter c = create(numerator, shift, divisor);
