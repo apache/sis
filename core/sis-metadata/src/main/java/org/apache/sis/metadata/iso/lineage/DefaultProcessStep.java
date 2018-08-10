@@ -36,7 +36,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gml.TM_Primitive;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.util.TemporalUtilities;
@@ -68,7 +68,6 @@ import org.apache.sis.internal.util.TemporalUtilities;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",
@@ -226,7 +225,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -247,7 +246,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param  newValue  the new rationale.
      */
     public void setRationale(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(rationale);
         rationale = newValue;
     }
 
@@ -272,7 +271,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @since 1.0
      */
     public void setStepDateTime(final TemporalPrimitive newValue) {
-        checkWritePermission();
+        checkWritePermission(stepDateTime);
         stepDateTime = newValue;
     }
 
@@ -370,7 +369,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @since 0.5
      */
     public void setScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 
@@ -435,7 +434,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param  newValue  the new processing information value.
      */
     public void setProcessingInformation(final Processing newValue) {
-        checkWritePermission();
+        checkWritePermission(processingInformation);
         processingInformation = newValue;
     }
 

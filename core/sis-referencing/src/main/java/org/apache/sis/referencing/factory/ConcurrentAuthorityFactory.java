@@ -188,7 +188,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         /**
          * Returns a string representation for debugging purpose only.
          */
-        @Debug
         @Override
         public String toString() {
             final String text;
@@ -1604,8 +1603,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *     </ol>
      *   </li>
      * </ul>
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-2">GEOTK-2</a>
      */
     private static final class Key {
         /** The type of the cached object.    */ final Object type;
@@ -1632,7 +1629,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /** String representation used by {@link CacheRecord}. */
-        @Override @Debug public String toString() {
+        @Override public String toString() {
             final StringBuilder buffer = new StringBuilder();
             if (type instanceof Class<?>) {
                 buffer.append("Code[“").append(code);
@@ -2135,7 +2132,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @see #printCacheContent(PrintWriter)
      */
-    @Debug
     @Override
     public String toString() {
         final String s = super.toString();

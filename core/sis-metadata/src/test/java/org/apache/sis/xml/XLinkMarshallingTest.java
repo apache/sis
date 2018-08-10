@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -38,14 +38,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
- *
- * @since 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
-public final strictfp class XLinkMarshallingTest extends XMLTestCase {
+public final strictfp class XLinkMarshallingTest extends TestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.
      */

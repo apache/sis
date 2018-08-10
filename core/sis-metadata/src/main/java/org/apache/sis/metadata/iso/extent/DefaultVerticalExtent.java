@@ -69,7 +69,6 @@ import org.apache.sis.xml.NilReason;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_VerticalExtent_Type", propOrder = {
     "minimumValue",
     "maximumValue",
@@ -182,7 +181,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @param  newValue  the new minimum value.
      */
     public void setMinimumValue(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(minimumValue);
         minimumValue = newValue;
     }
 
@@ -204,7 +203,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @param  newValue  the new maximum value.
      */
     public void setMaximumValue(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(maximumValue);
         maximumValue = newValue;
     }
 
@@ -230,8 +229,16 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @param  newValue  the new vertical CRS.
      */
     public void setVerticalCRS(final VerticalCRS newValue) {
-        checkWritePermission();
+        checkWritePermission(verticalCRS);
         verticalCRS = newValue;
+    }
+
+    /**
+     * Returns an arbitrary value, or {@code null} if both minimum and maximum are null.
+     * This is used for verifying if the bounds are already set or partially set.
+     */
+    private Double value() {
+        return (minimumValue != null) ? minimumValue : maximumValue;
     }
 
     /**
@@ -250,7 +257,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
     public void setBounds(final Envelope envelope) throws TransformException {
-        checkWritePermission();
+        checkWritePermission(value());
         ReferencingServices.getInstance().setBounds(envelope, this);
     }
 
@@ -273,7 +280,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @since 0.8
      */
     public void intersect(final VerticalExtent other) throws MismatchedReferenceSystemException {
-        checkWritePermission();
+        checkWritePermission(value());
         ArgumentChecks.ensureNonNull("other", other);
         Double min = other.getMinimumValue();
         Double max = other.getMaximumValue();

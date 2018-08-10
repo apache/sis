@@ -192,7 +192,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     /**
      * Sets the maximum number of property values. If the given number is less than the
      * {@linkplain #getMinimumOccurs() minimal number} of property values, than the minimum
-     * is also set to that value.
+     * is also set to that value. {@link Integer#MAX_VALUE} means that there is no maximum.
      *
      * @param  occurs  the new maximum number of property values.
      * @return {@code this} for allowing method calls chaining.

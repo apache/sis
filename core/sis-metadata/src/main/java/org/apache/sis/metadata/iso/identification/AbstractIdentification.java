@@ -47,7 +47,7 @@ import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
@@ -86,7 +86,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
     "citation",
     "abstract",
@@ -335,7 +334,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param  newValue  the new citation.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 
@@ -356,7 +355,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param  newValue  the new summary of resource(s).
      */
     public void setAbstract(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(abstracts);
         abstracts = newValue;
     }
 
@@ -377,7 +376,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param  newValue  the new summary of intention.
      */
     public void setPurpose(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(purpose);
         purpose = newValue;
     }
 
@@ -611,7 +610,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @since 0.5
      */
     public void setProcessingLevel(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(processingLevel);
         processingLevel = newValue;
     }
 

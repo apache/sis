@@ -50,13 +50,15 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.TreeTableViewTest.class,
     org.apache.sis.metadata.TreeTableFormatTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class,
+    org.apache.sis.metadata.HashCodeTest.class,
     org.apache.sis.metadata.PrunerTest.class,
     org.apache.sis.metadata.AbstractMetadataTest.class,
+    org.apache.sis.metadata.ModifiableMetadataTest.class,
     org.apache.sis.metadata.MetadataCopierTest.class,
     org.apache.sis.internal.metadata.MergerTest.class,
 
     // XML marshalling.
-    org.apache.sis.internal.test.XMLComparatorTest.class,
+    org.apache.sis.internal.test.DocumentComparatorTest.class,
     org.apache.sis.xml.NamespacesTest.class,
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
@@ -65,11 +67,12 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,
     org.apache.sis.xml.TransformingNamespacesTest.class,
-    org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
+    org.apache.sis.internal.xml.XmlUtilitiesTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
     org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.internal.jaxb.gco.MultiplicityTest.class,
     org.apache.sis.internal.jaxb.lan.PT_LocaleTest.class,
     org.apache.sis.internal.jaxb.lan.LanguageCodeTest.class,
     org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest.class,
@@ -101,7 +104,6 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.citation.DefaultResponsibilityTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
-    org.apache.sis.metadata.iso.citation.CitationsTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     org.apache.sis.metadata.iso.extent.DefaultExtentTest.class,
@@ -140,7 +142,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class,
     org.apache.sis.metadata.sql.IdentifierGeneratorTest.class,
     org.apache.sis.metadata.sql.MetadataSourceTest.class,
-    org.apache.sis.metadata.sql.MetadataWriterTest.class
+    org.apache.sis.metadata.sql.MetadataWriterTest.class,
+    org.apache.sis.metadata.iso.citation.CitationsTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

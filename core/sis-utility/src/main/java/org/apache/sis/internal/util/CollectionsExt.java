@@ -405,6 +405,8 @@ public final class CollectionsExt extends Static {
      * @return a unmodifiable version of the given map, or {@code null} if the given map was null.
      *
      * @see #compact(Map)
+     *
+     * @todo Replace by {@code Map.copyOf(Map)} on JDK10.
      */
     public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
         if (map != null) {
@@ -428,41 +430,34 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Returns a unmodifiable version of the given collection.
-     * If the given collection is a {@link Set} or a {@link List}, then this method tries to
-     * return a collection of the same type. Other types are not guaranteed to be preserved.
+     * Returns a unmodifiable version of the given list.
      *
-     * <p><em>The collection returned by this method may or may not be a view of the given collection</em>.
-     * Consequently this method shall be used <strong>only</strong> if the given collection will
+     * <p><em>The collection returned by this method may or may not be a view of the given list</em>.
+     * Consequently this method shall be used <strong>only</strong> if the given list will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link Collections#unmodifiableCollection(Collection)} method instead.</p>
+     * standard {@link Collections#unmodifiableList(List)} method instead.</p>
      *
-     * @param  <E>         the type of elements in the collection.
-     * @param  collection  the collection to make unmodifiable, or {@code null}.
-     * @return a unmodifiable version of the given collection, or {@code null} if the given collection was null.
-     *
-     * @since 0.8
+     * @param  <E>   the type of elements in the list.
+     * @param  list  the list to make unmodifiable, or {@code null}.
+     * @return a unmodifiable version of the given list, or {@code null} if the given list was null.
      */
-    public static <E> Collection<E> unmodifiableOrCopy(Collection<E> collection) {
-        if (collection != null) {
-            if (collection instanceof Set<?>) {
-                return unmodifiableOrCopy((Set<E>) collection);
-            }
-            final int length = collection.size();
+    public static <E> List<E> unmodifiableOrCopy(List<E> list) {
+        if (list != null) {
+            final int length = list.size();
             switch (length) {
                 case 0: {
-                    collection = Collections.emptyList();
+                    list = Collections.emptyList();
                     break;
                 }
                 case 1: {
-                    collection = Collections.singletonList(collection.iterator().next());
+                    list = Collections.singletonList(list.get(0));
                     break;
                 }
                 default: {
-                    if (collection instanceof UnmodifiableArrayList<?>) {
+                    if (list instanceof UnmodifiableArrayList<?>) {
                         break;                                              // List is already unmodifiable.
                     }
-                    if (collection instanceof CheckedContainer<?>) {
+                    if (list instanceof CheckedContainer<?>) {
                         /*
                          * We use UnmodifiableArrayList for avoiding one level of indirection. The fact that it
                          * implements CheckedContainer is not a goal here, and is actually unsafe since we have
@@ -472,18 +467,16 @@ public final class CollectionsExt extends Static {
                          * by JDK9 collections.
                          */
                         @SuppressWarnings("unchecked")       // Okay if collection is compliant with CheckedContainer contract.
-                        final E[] array = (E[]) Array.newInstance(((CheckedContainer<E>) collection).getElementType(), length);
-                        collection = UnmodifiableArrayList.wrap(collection.toArray(array));
-                    } else if (collection instanceof List<?>) {
-                        collection = Collections.unmodifiableList((List<E>) collection);
-                    } else {
-                        collection = Collections.unmodifiableCollection(collection);
+                        final E[] array = (E[]) Array.newInstance(((CheckedContainer<E>) list).getElementType(), length);
+                        list = UnmodifiableArrayList.wrap(list.toArray(array));
+                    } else if (list instanceof List<?>) {
+                        list = Collections.unmodifiableList(list);
                     }
                     break;
                 }
             }
         }
-        return collection;
+        return list;
     }
 
     /**
@@ -632,6 +625,28 @@ public final class CollectionsExt extends Static {
             }
         }
         return set;
+    }
+
+    /**
+     * Returns a more compact representation of the given list. This method is similar to
+     * {@link #unmodifiableOrCopy(List)} except that it does not wrap the list in an unmodifiable view.
+     * The intend is to avoid one level of indirection for performance and memory reasons.
+     * This is okay only if the list is kept in a private field and never escape outside that class.
+     *
+     * @param  <E>   the type of elements in the list.
+     * @param  list  the list to compact, or {@code null}.
+     * @return a unmodifiable version of the given list, or {@code null} if the given list was null.
+     *
+     * @see #unmodifiableOrCopy(List)
+     */
+    public static <E> List<E> compact(final List<E> list) {
+        if (list != null) {
+            switch (list.size()) {
+                case 0: return Collections.emptyList();
+                case 1: return Collections.singletonList(list.get(0));
+            }
+        }
+        return list;
     }
 
     /**

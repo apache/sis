@@ -25,9 +25,9 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -46,7 +46,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
-public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
+public final strictfp class DefaultPrimeMeridianTest extends TestCase {
     /**
      * An XML file in this package containing a prime meridian definition.
      */

@@ -67,11 +67,13 @@ import org.apache.sis.internal.metadata.OtherLocales;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -129,7 +131,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014
     "metadataIdentifier",
@@ -189,11 +190,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4935599812744534502L;
-
-    /**
-     * Unique identifier for this metadata record, or {@code null} if none.
-     */
-    private Identifier metadataIdentifier;
 
     /**
      * Language(s) used for documenting metadata.
@@ -347,7 +343,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public DefaultMetadata(final Metadata object) {
         super(object);
         if (object != null) {
-            metadataIdentifier            = object.getMetadataIdentifier();
+            identifiers                   = singleton(object.getMetadataIdentifier(), Identifier.class);
             parentMetadata                = object.getParentMetadata();
             languages                     = copyCollection(object.getLanguages(),                     Locale.class);
             characterSets                 = copyCollection(object.getCharacterSets(),                 Charset.class);
@@ -423,7 +419,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "metadataIdentifier")
     @XmlJavaTypeAdapter(MD_Identifier.Since2014.class)
     public Identifier getMetadataIdentifier() {
-        return metadataIdentifier;
+        return super.getIdentifier();
     }
 
     /**
@@ -434,8 +430,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     public void setMetadataIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        metadataIdentifier = newValue;
+        super.setIdentifier(newValue);
     }
 
     /**
@@ -467,7 +462,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setFileIdentifier(final String newValue) {
-        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(metadataIdentifier); // See "Note about deprecated methods implementation"
+        // See "Note about deprecated methods implementation"
+        DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(super.getIdentifier());
         if (identifier == null) {
             if (newValue == null) return;
             identifier = new DefaultIdentifier();
@@ -551,7 +547,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLanguage(final Locale newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(languages));
         setDefaultLocale(newValue);
     }
 
@@ -579,7 +575,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(languages));
         setOtherLocales(newValues);
     }
 
@@ -690,7 +686,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     public void setParentMetadata(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(parentMetadata);
         parentMetadata = newValue;
     }
 
@@ -727,7 +723,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setParentIdentifier(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(parentMetadata);
         // See "Note about deprecated methods implementation"
         DefaultCitation parent = DefaultCitation.castOrCopy(parentMetadata);
         if (parent == null) {
@@ -807,7 +803,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
@@ -858,7 +854,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
@@ -879,7 +875,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param  newValues  the new contacts.
      */
     public void setContacts(final Collection<? extends Responsibility> newValues) {
-        checkWritePermission();
         contacts = writeCollection(newValues, contacts, Responsibility.class);
     }
 
@@ -944,7 +939,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
@@ -1077,7 +1072,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@link #setMetadataStandardVersion(String)} methods.
      */
     private void setMetadataStandard(final boolean version, final String newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(metadataStandards));
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
@@ -1235,8 +1230,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = new URI(newValue);
-        checkWritePermission();
-        Collection<Identification> info = identificationInfo; // See "Note about deprecated methods implementation"
+        Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
+        checkWritePermission(valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();
@@ -1505,7 +1500,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @see org.apache.sis.metadata.iso.identification.AbstractIdentification#setResourceMaintenances(Collection)
      */
     public void setMetadataMaintenance(final MaintenanceInformation newValue) {
-        checkWritePermission();
+        checkWritePermission(metadataMaintenance);
         metadataMaintenance = newValue;
     }
 

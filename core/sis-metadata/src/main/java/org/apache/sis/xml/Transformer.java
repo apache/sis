@@ -26,6 +26,7 @@ import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
@@ -336,7 +337,7 @@ abstract class Transformer {
                         String localPart = value.substring(s+1).trim();
                         QName name = new QName(namespace, localPart, prefix);
                         final Map<String,String> currentMap = outerElementProperties;
-                        outerElementProperties = renamingMap().getOrDefault(localPart, Collections.emptyMap());
+                        outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Collections.emptyMap());
                         final boolean changed = (name != (name = convert(name)));
                         outerElementProperties = currentMap;
                         if (changed) {
@@ -400,7 +401,7 @@ abstract class Transformer {
         final String localPart = name.getLocalPart();
         if (isTypeElement(localPart)) {
             outerElements.add(name);
-            outerElementProperties = renamingMap().getOrDefault(localPart, Collections.emptyMap());
+            outerElementProperties = renamingMap(name.getNamespaceURI()).getOrDefault(localPart, Collections.emptyMap());
         }
     }
 
@@ -417,8 +418,16 @@ abstract class Transformer {
             for (int i=outerElements.size(); --i >= 0;) {
                 if (name.equals(outerElements.get(i))) {
                     outerElements.remove(i);
-                    final String parent = (--i >= 0) ? outerElements.get(i).getLocalPart() : null;
-                    outerElementProperties = renamingMap().getOrDefault(parent, Collections.emptyMap());
+                    final String namespace, localPart;
+                    if (--i >= 0) {
+                        final QName parent = outerElements.get(i);
+                        namespace = parent.getNamespaceURI();
+                        localPart = parent.getLocalPart();
+                    } else {
+                        namespace = XMLConstants.NULL_NS_URI;
+                        localPart = null;
+                    }
+                    outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Collections.emptyMap());
                     break;
                 }
             }
@@ -468,8 +477,11 @@ abstract class Transformer {
     /**
      * Returns the map loaded by {@link #load(String, int)}.
      * This is a static field in the {@link TransformingReader} or {@link TransformingWriter} subclass.
+     *
+     * @param  namespace  the namespace URI for which to get the substitution map (never null).
+     * @return the substitution map for the given namespace, or an empty map if none.
      */
-    abstract Map<String, Map<String,String>> renamingMap();
+    abstract Map<String, Map<String,String>> renamingMap(String namespace);
 
     /**
      * Returns the new namespace for elements (types and properties) in the given namespace.

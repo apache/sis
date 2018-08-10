@@ -19,7 +19,7 @@ package org.apache.sis.referencing.crs;
 import javax.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
 })
-public final strictfp class DefaultGeodeticCRSTest extends XMLTestCase {
+public final strictfp class DefaultGeodeticCRSTest extends TestCase {
     /**
      * An XML file in this package containing a geodetic CRS definition.
      */

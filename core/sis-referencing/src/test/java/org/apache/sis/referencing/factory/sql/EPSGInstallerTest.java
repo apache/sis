@@ -24,27 +24,24 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.hsqldb.jdbc.JDBCDataSource;
-import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
 // Test dependencies
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -61,7 +58,7 @@ import static org.junit.Assume.assumeTrue;
  * This class does not write anything to disk (except maybe some temporary files).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -131,11 +128,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Test
     public void testCreationOnDerby() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        final DataSource ds = TestDatabase.create("EPSGInstaller");
-        try {
-            createAndTest(ds, scripts);
-        } finally {
-            TestDatabase.drop(ds);
+        try (TestDatabase db = TestDatabase.create("EPSGInstaller")) {
+            createAndTest(db.source, scripts);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:derby:memory:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
@@ -150,38 +144,27 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Test
     public void testCreationOnHSQLDB() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        final JDBCDataSource ds = new JDBCDataSource();
-        ds.setURL("jdbc:hsqldb:mem:EPSGInstaller");
-        try {
-            createAndTest(ds, scripts);
-        } finally {
-            try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
-                s.execute("SHUTDOWN");
-            }
+        try (TestDatabase db = TestDatabase.createOnHSQLDB("EPSGInstaller", false)) {
+            createAndTest(db.source, scripts);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
     }
 
     /**
-     * Tests the creation of an EPSG database on PostgreSQL. This test is disabled by default.
-     * To run this test, the tester needs to launch on {@code "localhost"} a PostgreSQL server
-     * having an empty database named {@code "SpatialMetadataTest"}. After the test completion,
-     * one can verify the {@code "EPSG"} schema created by the test, then delete that schema for future test executions
-     * (this test does <strong>not</strong> delete by itself the schema that it created).
+     * Tests the creation of an EPSG database on PostgreSQL. This test requires a PostgreSQL server
+     * running on {@code "localhost"} with an empty database named {@code "SpatialMetadataTest"}.
      *
      * @throws Exception if an error occurred while creating the database.
      *
      * @since 0.8
      */
     @Test
-    @Ignore("This test need to be run manually on a machine having a local PostgreSQL database.")
     public void testCreationOnPostgreSQL() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        final PGSimpleDataSource ds = new PGSimpleDataSource();
-        ds.setServerName("localhost");
-        ds.setDatabaseName("SpatialMetadataTest");
-        createAndTest(ds, scripts);
+        try (TestDatabase db = TestDatabase.createOnPostgreSQL("EPSG", false)) {
+            createAndTest(db.source, scripts);
+        }
         loggings.assertNextLogContains("EPSG", "jdbc:postgresql://localhost/SpatialMetadataTest");
         loggings.assertNoUnexpectedLog();
     }
@@ -240,7 +223,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         try (Connection c = ds.getConnection()) {
             try (ResultSet r = c.getMetaData().getTables(null, null, "Coordinate Reference System", null)) {
                 while (r.next()) {
-                    final String schema = r.getString("TABLE_SCHEM");
+                    final String schema = r.getString(Reflection.TABLE_SCHEM);
                     assertTrue(schema, "EPSG".equalsIgnoreCase(schema));
                     count++;
                 }

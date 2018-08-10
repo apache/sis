@@ -29,6 +29,8 @@ import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+
 
 /**
  * Extent with respect to date/time and spatial boundaries.
@@ -55,7 +57,6 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_SpatialTemporalExtent_Type")
 @XmlRootElement(name = "EX_SpatialTemporalExtent")
 public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implements SpatialTemporalExtent {
@@ -182,7 +183,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * @since 0.5
      */
     public void setVerticalExtent(final VerticalExtent newValue) {
-        checkWritePermission();
+        checkWritePermission(verticalExtent);
         verticalExtent = newValue;
     }
 
@@ -222,7 +223,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      */
     @Override
     public void setBounds(final Envelope envelope) throws TransformException {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(spatialExtent));
         ReferencingServices.getInstance().setBounds(envelope, this);
     }
 }

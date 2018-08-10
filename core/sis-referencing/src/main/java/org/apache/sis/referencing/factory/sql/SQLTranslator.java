@@ -28,6 +28,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.metadata.sql.Reflection;
 
 
 /**
@@ -264,8 +265,8 @@ public class SQLTranslator implements Function<String,String> {
                     isPrefixed      = table.startsWith(TABLE_PREFIX);
                     quoteTableNames = (i == MIXED_CASE);
                     do {
-                        catalog = result.getString("TABLE_CAT");
-                        schema  = result.getString("TABLE_SCHEM");
+                        catalog = result.getString(Reflection.TABLE_CAT);
+                        schema  = result.getString(Reflection.TABLE_SCHEM);
                     } while (!Constants.EPSG.equalsIgnoreCase(schema) && result.next());
                     if (schema == null) schema = "";
                     break;
@@ -304,8 +305,8 @@ public class SQLTranslator implements Function<String,String> {
         }
         try (ResultSet result = md.getColumns(catalog, schema, null, deprecated)) {
             while (result.next()) {
-                if (CharSequences.endsWith(result.getString("TABLE_NAME"), "Datum", true)) {
-                    final int type = result.getInt("DATA_TYPE");
+                if (CharSequences.endsWith(result.getString(Reflection.TABLE_NAME), "Datum", true)) {
+                    final int type = result.getInt(Reflection.DATA_TYPE);
                     useBoolean = (type == Types.BOOLEAN) || (type == Types.BIT);
                     break;
                 }

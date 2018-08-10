@@ -25,7 +25,7 @@ import org.apache.sis.math.DecimalFunctions;
  * Base class of unit converters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -70,10 +70,30 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
+     * Returns the scale factor of the given converter if the conversion is linear, or NaN otherwise.
+     */
+    static double scale(final UnitConverter converter) {
+        if (converter != null && converter.isLinear() && converter.convert(0) == 0) {
+            // Above check for converter(0) is a paranoiac check since
+            // JSR-363 said that a "linear" converter has no offset.
+            return converter.convert(1);
+        }
+        return Double.NaN;
+    }
+
+    /**
      * Returns the value of the given number, with special handling for {@link Float} value on the assumption
      * that the original value was written in base 10. This is usually the case for unit conversion factors.
      */
     static double doubleValue(final Number n) {
         return (n instanceof Float) ? DecimalFunctions.floatToDouble(n.floatValue()) : n.doubleValue();
+    }
+
+    /**
+     * Returns {@code true} if the given floating point numbers are considered equal.
+     * The tolerance factor used in this method is arbitrary and may change in any future version.
+     */
+    static boolean epsilonEquals(final double expected, final double actual) {
+        return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
     }
 }

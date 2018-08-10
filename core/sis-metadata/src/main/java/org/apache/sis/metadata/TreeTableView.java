@@ -24,10 +24,15 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.function.Predicate;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.jaxb.SpecializedIdentifier;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.util.TreeFormatCustomization;
 import org.apache.sis.internal.system.LocalizedStaticObject;
 import org.apache.sis.internal.system.Semaphores;
 
@@ -45,11 +50,11 @@ import org.apache.sis.internal.system.Semaphores;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
-final class TreeTableView implements TreeTable, Serializable {
+final class TreeTableView implements TreeTable, TreeFormatCustomization, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -158,6 +163,54 @@ final class TreeTableView implements TreeTable, Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the filter to use when formatting an instance of this {@code TreeTable}.
+     * This filter will be combined with the filter that the user may specify by a call
+     * to {@link TreeTableFormat#setNodeFilter(Predicate)}.
+     */
+    @Override
+    public Predicate<TreeTable.Node> filter() {
+        return TreeTableView::filter;
+    }
+
+    /**
+     * Invoked during the formatting of a tree node for hiding the ISBN and ISSN identifiers of a {@link Citation}.
+     * Those identifiers will be formatted in the {@code ISBN} and {@code ISSN} properties instead. We apply this
+     * filtering for avoiding redundancies in the tree representation.
+     */
+    private static boolean filter(final TreeTable.Node node) {
+        /*
+         * The special case implemented in this method applies only to two attributes in the Citation interface.
+         * We test for this condition first because the call to TreeNode.getParent() is cheap and allow to detect
+         * soon the metadata instances that do not need further examination.
+         */
+        final Node parent = node.getParent();
+        if (parent instanceof TreeNode && Citation.class.isAssignableFrom(((TreeNode) parent).baseType)) {
+            Object value = null;
+            if (node instanceof TreeNode) {
+                /*
+                 * Since this method is invoked (indirectly) during iteration over the children, the value may have
+                 * been cached by TreeNodeChildren.Iter.next(). Try to use this value instead than computing it again.
+                 */
+                value = ((TreeNode) node).cachedValue;
+            }
+            if (value == null) {
+                value = node.getUserObject();
+            }
+            /*
+             * Filter out the ISBN and ISSN identifiers if they are inside a Citation object.
+             * We keep them if the user added them to other kind of objects.
+             */
+            if (value instanceof SpecializedIdentifier) {
+                final Citation authority = ((SpecializedIdentifier) value).getAuthority();
+                if (authority instanceof NonMarshalledAuthority && ((NonMarshalledAuthority) authority).isBookOrSerialNumber()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

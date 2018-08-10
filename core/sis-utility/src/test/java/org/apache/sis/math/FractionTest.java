@@ -26,7 +26,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Fraction} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -72,6 +72,20 @@ public final strictfp class FractionTest extends TestCase {
                 final String label = "ceil(" + numerator + '/' + denominator + ')';
                 assertEquals(label, expected[i], new Fraction(numerator, denominator).ceil());
             }
+        }
+    }
+
+    /**
+     * Tests the {@link Fraction#signum()} method.
+     */
+    @Test
+    public void testSignum() {
+        final int[] numerators   = { 0,  1,  2, -3, -9};
+        final int[] denominators = { 3,  3, -3,  3, -3};
+        final int[] signums      = { 0,  1, -1, -1,  1};
+        for (int i=0; i<signums.length; i++) {
+            final Fraction f = new Fraction(numerators[i], denominators[i]);
+            assertEquals(signums[i], f.signum());
         }
     }
 
@@ -132,6 +146,33 @@ public final strictfp class FractionTest extends TestCase {
         assertEquals("⅞",   new Fraction(7, 8).toString());
         assertEquals("4⁄8", new Fraction(4, 8).toString());
         assertEquals("∞",   new Fraction(3, 0).toString());
+    }
+
+    /**
+     * Tests the {@link Fraction#Fraction(String)} constructor.
+     */
+    @Test
+    public void testParse() {
+        verifyParsing( 2,  3,  "2/3");
+        verifyParsing(-2, -3, "-2/-3");
+        verifyParsing( 4,  1,  "4");
+        verifyParsing( 1,  0,  "∞");
+        verifyParsing(-1,  0, "-∞");
+        verifyParsing( 1,  4,  "¼");
+        verifyParsing( 5,  6,  "⅚");
+    }
+
+    /**
+     * Verifies that parsing the given fraction produces the given numerator and denominator.
+     *
+     * @param numerator    the expected numerator.
+     * @param denominator  the expected denominator.
+     * @param s            the text to parse.
+     */
+    private static void verifyParsing(final int numerator, final int denominator, final String s) {
+        final Fraction f = new Fraction(s);
+        assertEquals("numerator",   numerator,   f.numerator);
+        assertEquals("denominator", denominator, f.denominator);
     }
 
     /**

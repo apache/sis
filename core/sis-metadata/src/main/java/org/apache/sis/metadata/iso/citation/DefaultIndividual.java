@@ -43,7 +43,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Individual_Type", propOrder = {
     "positionName"
 })
@@ -138,7 +137,7 @@ public class DefaultIndividual extends AbstractParty implements Individual {
      * @param  newValue  the new position of the individual in an organization.
      */
     public void setPositionName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(positionName);
         positionName = newValue;
     }
 }

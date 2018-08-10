@@ -55,7 +55,6 @@ import org.opengis.metadata.constraint.LegalConstraints;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_LegalConstraints_Type", propOrder = {
     "accessConstraints",
     "useConstraints",

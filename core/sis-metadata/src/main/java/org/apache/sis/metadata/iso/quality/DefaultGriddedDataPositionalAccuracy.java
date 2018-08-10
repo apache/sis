@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.GriddedDataPositionalAccuracy;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_GriddedDataPositionalAccuracy_Type")
 @XmlRootElement(name = "DQ_GriddedDataPositionalAccuracy")
 public class DefaultGriddedDataPositionalAccuracy extends AbstractPositionalAccuracy

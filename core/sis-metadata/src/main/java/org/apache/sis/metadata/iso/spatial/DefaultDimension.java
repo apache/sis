@@ -59,7 +59,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "dimensionName")
 @XmlType(name = "MD_Dimension_Type", propOrder = {
     "dimensionName",
@@ -190,7 +189,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @param  newValue  the new dimension name.
      */
     public void setDimensionName(final DimensionNameType newValue) {
-        checkWritePermission();
+        checkWritePermission(dimensionName);
         dimensionName = newValue;
     }
 
@@ -213,7 +212,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDimensionSize(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(dimensionSize);
         if (ensurePositive(DefaultDimension.class, "dimensionSize", false, newValue)) {
             dimensionSize = newValue;
         }
@@ -239,8 +238,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setResolution(final Double newValue) {
-        checkWritePermission();
-        if (ensurePositive(DefaultDimension.class, "dimensionSize", true, newValue)) {
+        checkWritePermission(resolution);
+        if (ensurePositive(DefaultDimension.class, "resolution", true, newValue)) {
             resolution = newValue;
         }
     }
@@ -270,7 +269,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @since 0.5
      */
     public void setDimensionTitle(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(dimensionTitle);
         dimensionTitle = newValue;
     }
 
@@ -296,7 +295,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * @since 0.5
      */
     public void setDimensionDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(dimensionDescription);
         dimensionDescription = newValue;
     }
 }

@@ -28,6 +28,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.identification.Progress;
+import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
@@ -110,6 +111,7 @@ public class LandsatReaderTest extends TestCase {
             "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
             "dateInfo[0].date",                                                                      date("2016-06-27 16:48:12"),
             "dateInfo[0].dateType",                                                                  DateType.CREATION,
+            "identificationInfo[0].topicCategory[0]",                                                TopicCategory.GEOSCIENTIFIC_INFORMATION,
             "identificationInfo[0].citation.date[0].date",                                           date("2016-06-27 16:48:12"),
             "identificationInfo[0].citation.date[0].dateType",                                       DateType.CREATION,
             "identificationInfo[0].citation.title",                                                  "LandsatTest",
@@ -131,6 +133,10 @@ public class LandsatReaderTest extends TestCase {
             "acquisitionInformation[0].operation[0].significantEvent[0].time",     date("2016-06-26 03:02:01.090"),
             "acquisitionInformation[0].operation[0].status",                       Progress.COMPLETED,
             "acquisitionInformation[0].operation[0].type",                         OperationType.REAL,
+
+            "contentInfo[0].processingLevelCode.authority.title",          "Landsat",
+            "contentInfo[0].processingLevelCode.codeSpace",                "Landsat",
+            "contentInfo[0].processingLevelCode.code",                     "Pseudo LT1",
 
             "contentInfo[0].attributeGroup[0].attribute[0].name[0].code",  "TestImage_B1.TIF",
             "contentInfo[0].attributeGroup[0].attribute[1].name[0].code",  "TestImage_B2.TIF",
@@ -261,6 +267,8 @@ public class LandsatReaderTest extends TestCase {
             "spatialRepresentationInfo[0].transformationParameterAvailability",      false,
             "spatialRepresentationInfo[1].transformationParameterAvailability",      false,
             "spatialRepresentationInfo[0].checkPointAvailability",                   false,
-            "spatialRepresentationInfo[1].checkPointAvailability",                   false);
+            "spatialRepresentationInfo[1].checkPointAvailability",                   false,
+
+            "resourceLineage[0].source[0].description", "Pseudo GLS");
     }
 }

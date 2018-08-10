@@ -32,7 +32,7 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -75,7 +75,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "title")
 @XmlType(name = "CI_Citation_Type", propOrder = {
     "title",
@@ -265,7 +264,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new title, or {@code null} if none.
      */
     public void setTitle(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(title);
         title = newValue;
     }
 
@@ -328,7 +327,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new edition, or {@code null} if none.
      */
     public void setEdition(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(edition);
         edition = newValue;
     }
 
@@ -349,7 +348,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new edition date, or {@code null} if none.
      */
     public void setEditionDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(toDate(editionDate));
         editionDate = toMilliseconds(newValue);
     }
 
@@ -457,7 +456,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new series.
      */
     public void setSeries(final Series newValue) {
-        checkWritePermission();
+        checkWritePermission(series);
         series = newValue;
     }
 
@@ -505,8 +504,15 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Deprecated
     public void setCollectiveTitle(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(collectiveTitle);
         collectiveTitle = newValue;
+    }
+
+    /**
+     * Returns the ISBN or ISSN identifier for the given authority, or {@code null} if none.
+     */
+    private String getIdentifier(final Citation authority) {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(authority);
     }
 
     /**
@@ -525,7 +531,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISBN")
     public String getISBN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(Citations.ISBN);
+        return getIdentifier(Citations.ISBN);
     }
 
     /**
@@ -542,7 +548,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see Citations#ISBN
      */
     public void setISBN(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(getIdentifier(Citations.ISBN));
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
         }
@@ -564,7 +570,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISSN")
     public String getISSN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(Citations.ISSN);
+        return getIdentifier(Citations.ISSN);
     }
 
     /**
@@ -581,7 +587,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see Citations#ISSN
      */
     public void setISSN(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(getIdentifier(Citations.ISSN));
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
         }

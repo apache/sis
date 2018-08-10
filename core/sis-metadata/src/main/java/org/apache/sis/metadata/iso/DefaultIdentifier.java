@@ -92,7 +92,6 @@ import org.apache.sis.xml.Namespaces;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", namespace = Namespaces.MCC, propOrder = {
     "authority",
@@ -252,7 +251,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @param  newValue  the new authority.
      */
     public void setAuthority(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(authority);
         authority = newValue;
     }
 
@@ -280,7 +279,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @param  newValue  the new code, or {@code null}.
      */
     public void setCode(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(code);
         code = newValue;
     }
 
@@ -308,7 +307,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @since 0.5
      */
     public void setCodeSpace(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(codeSpace);
         codeSpace = newValue;
     }
 
@@ -333,7 +332,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @param  newValue  the new version, or {@code null} if none.
      */
     public void setVersion(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(version);
         version = newValue;
     }
 
@@ -360,7 +359,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @since 0.5
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 }

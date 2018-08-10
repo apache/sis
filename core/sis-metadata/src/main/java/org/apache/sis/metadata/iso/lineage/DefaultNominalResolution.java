@@ -49,7 +49,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_NominalResolution_Type", propOrder = {
     "scanningResolution",
     "groundResolution"
@@ -149,7 +148,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setScanningResolution(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(scanningResolution);
         if (ensurePositive(DefaultNominalResolution.class, "scanningResolution", true, newValue)) {
             scanningResolution = newValue;
         }
@@ -176,7 +175,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setGroundResolution(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(groundResolution);
         if (ensurePositive(DefaultNominalResolution.class, "groundResolution", true, newValue)) {
             groundResolution = newValue;
         }

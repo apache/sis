@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -58,7 +60,9 @@ import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.quality.Element;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -106,12 +110,18 @@ import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
+import org.apache.sis.metadata.iso.lineage.DefaultSource;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
+import org.apache.sis.metadata.iso.maintenance.DefaultScopeDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -129,7 +139,8 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -918,19 +929,36 @@ public class MetadataBuilder {
      * Storage location is:
      *
      * <ul>
-     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
+     *   <li>{@code metadata/identificationInfo/resourceFormat}</li>
      * </ul>
+     *
+     * This method should be invoked <strong>before</strong> any other method writing in the
+     * {@code identificationInfo/resourceFormat} node. If this exception throws an exception,
+     * than that exception should be reported as a warning. Example:
+     *
+     * {@preformat java
+     *     try {
+     *         metadata.setFormat("MyFormat");
+     *     } catch (MetadataStoreException e) {
+     *         metadata.addFormatName("MyFormat");
+     *         listeners.warning(null, e);
+     *     }
+     *     metadata.addCompression("decompression technique");
+     * }
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
      * @throws MetadataStoreException  if this method can not connect to the {@code jdbc/SpatialMetadata} database.
      *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
      *
      * @see #addCompression(CharSequence)
+     * @see #addFormatName(CharSequence)
      */
     public final void setFormat(final String abbreviation) throws MetadataStoreException {
         if (abbreviation != null && abbreviation.length() != 0) {
             if (format == null) {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
+            } else {
+                addFormatName(abbreviation);
             }
         }
     }
@@ -1865,6 +1893,73 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds and populates a "spatial representation info" node using the given grid geometry.
+     * If this method invokes implicitly {@link #newGridRepresentation(GridType)}, unless this
+     * method returns {@code false} in which case nothing has been done.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/spatialRepresentationInfo/transformationDimensionDescription}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/transformationParameterAvailability}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionName}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}</li>
+     *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/resolution}</li>
+     *   <li>{@code metadata/identificationInfo/spatialRepresentationType}</li>
+     *   <li>{@code metadata/referenceSystemInfo}</li>
+     * </ul>
+     *
+     * @param  description    a general description of the "grid to CRS" transformation, or {@code null} if none.
+     * @param  grid           the grid extent, "grid to CRS" transform and target CRS, or {@code null} if none.
+     * @param  addResolution  whether to declare the resolutions. Callers should set this argument to {@code false} if they intend
+     *                        to provide the resolution themselves, or if grid axes are not in the same order than CRS axes.
+     * @return whether a "spatial representation info" node has been added.
+     */
+    public final boolean addSpatialRepresentation(final String description, final GridGeometry grid, final boolean addResolution) {
+        final GridType type;
+        if (grid == null) {
+            if (description == null) {
+                return false;
+            }
+            type = GridType.UNSPECIFIED;
+        } else {
+            type = grid.isConversionLinear(0, 1) ? GridType.GEORECTIFIED : GridType.GEOREFERENCEABLE;
+        }
+        addSpatialRepresentation(SpatialRepresentationType.GRID);
+        newGridRepresentation(type);
+        setGridToCRS(description);
+        if (grid != null) {
+            setGeoreferencingAvailability(grid.isDefined(GridGeometry.GRID_TO_CRS), false, false);
+            CoordinateSystem cs = null;
+            if (grid.isDefined(GridGeometry.CRS)) {
+                final CoordinateReferenceSystem crs = grid.getCoordinateReferenceSystem();
+                cs = crs.getCoordinateSystem();
+                addReferenceSystem(crs);
+            }
+            if (grid.isDefined(GridGeometry.EXTENT)) {
+                final GridExtent extent = grid.getExtent();
+                final int dimension = extent.getDimension();
+                for (int i=0; i<dimension; i++) {
+                    final Optional<DimensionNameType> axisType = extent.getAxisType(i);
+                    if (axisType.isPresent()) {
+                        setAxisName(i, axisType.get());
+                    }
+                    final long size = extent.getSize(i);
+                    if (size >= 0 && size <= Integer.MAX_VALUE) {
+                        setAxisLength(i, (int) size);
+                    }
+                }
+            }
+            if (addResolution && grid.isDefined(GridGeometry.RESOLUTION)) {
+                final double[] resolution = grid.getResolution(false);
+                for (int i=0; i<resolution.length; i++) {
+                    setAxisResolution(i, resolution[i], (cs != null) ? cs.getAxis(i).getUnit() : null);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Adds a linear resolution in metres.
      * Storage location is:
      *
@@ -2006,7 +2101,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
+     * Sets a general description of the transformation from grid coordinates to "real world" coordinates.
      * Storage location is:
      *
      * <ul>
@@ -2071,6 +2166,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets the degree of detail in the given dimension.
+     * This method does nothing if the given resolution if NaN or infinite.
      * Storage location is:
      *
      * <ul>
@@ -2079,9 +2175,18 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  dimension   the axis dimension.
      * @param  resolution  the degree of detail in the grid dataset, or NaN for no-operation.
+     * @param  unit        the resolution unit, of {@code null} if unknown.
      */
-    public final void setAxisResolution(final int dimension, final double resolution) {
-        if (!Double.isNaN(resolution)) {
+    public final void setAxisResolution(final int dimension, double resolution, final Unit<?> unit) {
+        if (Double.isFinite(resolution)) {
+            /*
+             * Value should be a Quantity<?>. Since GeoAPI does not yet allow that,
+             * we convert to metres for now. Future version should store the value
+             * as-is with its unit of measurement (TODO).
+             */
+            if (Units.isLinear(unit)) {
+                resolution = unit.asType(Length.class).getConverterTo(Units.METRE).convert(resolution);
+            }
             axis(dimension).setResolution(shared(resolution));
         }
     }
@@ -2320,11 +2425,16 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Sets an identifier for the level of processing that has been applied to the coverage.
+     * For image descriptions, this is the image distributor's code that identifies the level
+     * of radiometric and geometric processing that has been applied.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/processingLevelCode}</li>
      * </ul>
+     *
+     * Note that another storage location exists at {@code metadata/identificationInfo/processingLevel}
+     * but is currently not used.
      *
      * @param  authority        identifies which controlled list of code is used, or {@code null} if none.
      * @param  processingLevel  identifier for the level of processing that has been applied to the resource,
@@ -2514,6 +2624,64 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds a general explanation of the data producer's knowledge about the lineage of a dataset.
+     * If a statement already exists, the new one will be appended after a new line.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/statement}</li>
+     * </ul>
+     *
+     * @param statement  explanation of the data producer's knowledge about the lineage, or {@code null} for no-operation.
+     *
+     * @see #addProcessDescription(CharSequence)
+     */
+    public final void addLineage(final CharSequence statement) {
+        final InternationalString i18n = trim(statement);
+        if (i18n != null) {
+            final DefaultLineage lineage = lineage();
+            lineage.setStatement(append(lineage.getStatement(), i18n));
+        }
+    }
+
+    /**
+     * Adds information about a source of data used for producing the resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/source/description}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/levelDescription/features}</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * if a Landsat image uses the "GTOPO30" digital elevation model, then it can declare the source
+     * with "GTOPO30" description, {@link ScopeCode#MODEL} and feature "Digital Elevation Model".</div>
+     *
+     * @param  description  a detailed description of the level of the source data, or {@code null} if none.
+     * @param  level        hierarchical level of the source (e.g. model), or {@code null} if unspecified.
+     * @param  feature      more detailed name for {@code level}, or {@code null} if none.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addProcessDescription(CharSequence)
+     */
+    public final void addSource(final CharSequence description, final ScopeCode level, final CharSequence feature) {
+        final InternationalString i18n = trim(description);
+        if (i18n != null) {
+            final DefaultSource source = new DefaultSource(description);
+            if (level != null || feature != null) {
+                DefaultScope scope = new DefaultScope(level);
+                if (feature != null) {
+                    final DefaultScopeDescription sd = new DefaultScopeDescription();
+                    sd.getFeatures().add(feature);
+                    scope.getLevelDescription().add(sd);
+                }
+            }
+            addIfNotPresent(lineage().getSources(), source);
+        }
+    }
+
+    /**
      * Adds information about the procedure, process and algorithm applied in a process step.
      * If a processing was already defined with a different identifier, then a new processing
      * instance will be created. Storage location is:
@@ -2527,6 +2695,8 @@ parse:      for (int i = 0; i < length;) {
      *
      * @see #addSoftwareReference(CharSequence)
      * @see #addHostComputer(CharSequence)
+     * @see #addProcessDescription(CharSequence)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addProcessing(final CharSequence authority, String identifier) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
@@ -2556,6 +2726,9 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  title  title of the document that describe the software, or {@code null} for no-operation.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addSoftwareReference(final CharSequence title) {
         final InternationalString i18n = trim(title);
@@ -2574,6 +2747,9 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  platform  name of the system on which the processing has been executed, or {@code null} for no-operation.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addHostComputer(final CharSequence platform) {
         InternationalString i18n = trim(platform);
@@ -2594,12 +2770,46 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * @param  description  additional details about the process step, or {@code null} for no-operation.
+     *
+     * @see #addProcessing(CharSequence, String)
+     * @see #addSource(CharSequence, ScopeCode, CharSequence)
+     * @see #addLineage(CharSequence)
      */
     public final void addProcessDescription(final CharSequence description) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
             final DefaultProcessStep ps = processStep();
             ps.setDescription(append(ps.getDescription(), i18n));
+        }
+    }
+
+    /**
+     * Adds a name to the resource format. Note that this method does not add a new format,
+     * but only an alternative name to current format. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/alternateTitle}</li>
+     * </ul>
+     *
+     * If this method is used together with {@link #setFormat(String)},
+     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     *
+     * @param value  the format name, or {@code null} for no-operation.
+     *
+     * @see #setFormat(String)
+     * @see #addCompression(CharSequence)
+     */
+    public final void addFormatName(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            final DefaultFormat format = format();
+            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (citation == null) {
+                citation = new DefaultCitation(i18n);
+            } else {
+                addIfNotPresent(citation.getAlternateTitles(), i18n);
+            }
+            format.setFormatSpecificationCitation(citation);
         }
     }
 
@@ -2611,9 +2821,13 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/resourceFormat/fileDecompressionTechnique}</li>
      * </ul>
      *
+     * If this method is used together with {@link #setFormat(String)},
+     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     *
      * @param value  the compression name, or {@code null} for no-operation.
      *
      * @see #setFormat(String)
+     * @see #addFormatName(CharSequence)
      */
     public final void addCompression(final CharSequence value) {
         final InternationalString i18n = trim(value);
@@ -2647,8 +2861,8 @@ parse:      for (int i = 0; i < length;) {
      * Returns the metadata (optionally as an unmodifiable object), or {@code null} if none.
      * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
      *
-     * @param  freeze  {@code true} if this method should {@linkplain DefaultMetadata#freeze() freeze}
-     *                 the metadata instance before to return it.
+     * @param  freeze  {@code true} if this method should set the returned metadata to
+     *                 {@link DefaultMetadata.State#FINAL}, or {@code false} for leaving the metadata editable.
      * @return the metadata, or {@code null} if none.
      */
     public final DefaultMetadata build(final boolean freeze) {
@@ -2658,10 +2872,11 @@ parse:      for (int i = 0; i < length;) {
         newCoverage(false);
         newAcquisition();
         newDistribution();
+        newLineage();
         final DefaultMetadata md = metadata;
         metadata = null;
         if (freeze && md != null) {
-            md.freeze();
+            md.transition(DefaultMetadata.State.FINAL);
         }
         return md;
     }

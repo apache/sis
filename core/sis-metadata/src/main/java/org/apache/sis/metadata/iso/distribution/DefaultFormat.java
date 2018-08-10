@@ -30,7 +30,7 @@ import org.opengis.metadata.distribution.Distributor;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Medium;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -85,7 +85,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
     // ISO 19115:2003 (legacy)
     "name",
@@ -205,7 +204,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @since 0.5
      */
     public void setFormatSpecificationCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         formatSpecificationCitation = newValue;
     }
 
@@ -263,7 +262,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Deprecated
     public void setSpecification(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) -> citation.setTitle(value), newValue);
     }
 
@@ -302,7 +301,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Deprecated
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) ->
                 citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value)), newValue);
     }
@@ -341,7 +340,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Deprecated
     public void setVersion(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) -> citation.setEdition(value), newValue);
     }
 
@@ -362,7 +361,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @param  newValue  the new amendment number.
      */
     public void setAmendmentNumber(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(amendmentNumber);
         amendmentNumber = newValue;
     }
 
@@ -386,7 +385,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @param  newValue  the new file decompression technique.
      */
     public void setFileDecompressionTechnique(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(fileDecompressionTechnique);
         fileDecompressionTechnique = newValue;
     }
 

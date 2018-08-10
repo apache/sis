@@ -51,7 +51,6 @@ import org.apache.sis.metadata.TitleProperty;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "name")
 @XmlType(name = "MI_RangeElementDescription_Type", propOrder = {
     "name",
@@ -146,7 +145,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @param  newValue  the new name value.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -167,7 +166,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @param  newValue  the new definition value.
      */
     public void setDefinition(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(definition);
         definition = newValue;
     }
 

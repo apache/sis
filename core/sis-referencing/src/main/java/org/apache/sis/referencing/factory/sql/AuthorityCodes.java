@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.Projection;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.util.collection.IntegerList;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -337,7 +336,6 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * Returns a string representation of this map for debugging purpose.
      * This method does not let the default implementation format all entry, since it would be a costly operation.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder("AuthorityCodes[").append(type.getSimpleName());

@@ -524,10 +524,11 @@ final class StringJoinOperation extends AbstractOperation {
      */
     @Override
     void formatResultFormula(final Appendable buffer) throws IOException {
+        final String escape = ESCAPE + delimiter;
         if (prefix != null) buffer.append(prefix);
         for (int i=0; i<attributeNames.length; i++) {
             if (i != 0) buffer.append(delimiter);
-            buffer.append(attributeNames[i]);
+            buffer.append(attributeNames[i].replace(delimiter, escape));
         }
         if (suffix != null) buffer.append(suffix);
     }

@@ -19,8 +19,8 @@ package org.apache.sis.metadata.iso.constraint;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase {
+public final strictfp class DefaultLegalConstraintsTest extends TestCase {
     /**
      * Tests unmarshalling of an element containing an empty {@code codeListValue} attribute.
      * This was used to cause a {@code NullPointerException} prior SIS-157 fix.

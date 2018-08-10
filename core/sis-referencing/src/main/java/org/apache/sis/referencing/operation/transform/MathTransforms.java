@@ -93,6 +93,8 @@ public final class MathTransforms extends Static {
      * @param  scale   the {@code scale}  term in the linear equation.
      * @param  offset  the {@code offset} term in the linear equation.
      * @return the linear transform for the given scale and offset.
+     *
+     * @see org.apache.sis.measure.Units#converter(Number, Number)
      */
     public static LinearTransform linear(final double scale, final double offset) {
         return LinearTransform1D.create(scale, offset);
@@ -154,7 +156,7 @@ public final class MathTransforms extends Static {
      * Both {@code preimage} (the <var>x</var>) and {@code values} (the <var>y</var>) arguments can be null:
      *
      * <ul>
-     *   <li>If both {@code preimage} and {@code values} arrays are non-null, then the must have the same length.</li>
+     *   <li>If both {@code preimage} and {@code values} arrays are non-null, then they must have the same length.</li>
      *   <li>If both {@code preimage} and {@code values} arrays are null, then this method returns the identity transform.</li>
      *   <li>If only {@code preimage} is null, then the <var>x</var> values are taken as {0, 1, 2, …, {@code values.length} - 1}.</li>
      *   <li>If only {@code values} is null, then the <var>y</var> values are taken as {0, 1, 2, …, {@code preimage.length} - 1}.</li>
@@ -220,6 +222,49 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Creates a transform which passes through a subset of coordinates to another transform.
+     * This method returns a transform having the following dimensions:
+     *
+     * {@preformat java
+     *     Source: firstAffectedOrdinate + subTransform.getSourceDimensions() + numTrailingOrdinates
+     *     Target: firstAffectedOrdinate + subTransform.getTargetDimensions() + numTrailingOrdinates
+     * }
+     *
+     * Affected ordinates will range from {@code firstAffectedOrdinate} inclusive to
+     * {@code dimTarget - numTrailingOrdinates} exclusive.
+     *
+     * @param  firstAffectedOrdinate  index of the first affected ordinate.
+     * @param  subTransform           the sub-transform to apply on modified coordinates.
+     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @return a pass-through transform, potentially as a {@link PassThroughTransform} instance but not necessarily.
+     *
+     * @since 1.0
+     */
+    public static MathTransform passThrough(final int firstAffectedOrdinate,
+                                            final MathTransform subTransform,
+                                            final int numTrailingOrdinates)
+    {
+        ArgumentChecks.ensureNonNull ("subTransform",          subTransform);
+        ArgumentChecks.ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
+        ArgumentChecks.ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
+        if (firstAffectedOrdinate == 0 && numTrailingOrdinates == 0) {
+            return subTransform;
+        }
+        if (subTransform.isIdentity()) {
+            final int dimension = subTransform.getSourceDimensions();
+            if (dimension == subTransform.getTargetDimensions()) {
+                return IdentityTransform.create(firstAffectedOrdinate + dimension + numTrailingOrdinates);
+            }
+        }
+        final Matrix matrix = getMatrix(subTransform);
+        if (matrix != null) {
+            return linear(PassThroughTransform.asMatrix(firstAffectedOrdinate, matrix, numTrailingOrdinates));
+        } else {
+            return PassThroughTransform.newInstance(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+        }
+    }
+
+    /**
      * Puts together a list of independent math transforms, each of them operating on a subset of ordinate values.
      * This method is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * transform as an aggregation of 3 simpler transforms operating on (<var>x</var>,<var>y</var>), (<var>z</var>)
@@ -254,7 +299,7 @@ public final class MathTransforms extends Static {
         int firstAffectedOrdinate = 0;
         for (int i=0; i<transforms.length; i++) {
             MathTransform tr = transforms[i];
-            tr = PassThroughTransform.create(firstAffectedOrdinate, tr, sum - (firstAffectedOrdinate += dimensions[i]));
+            tr = passThrough(firstAffectedOrdinate, tr, sum - (firstAffectedOrdinate += dimensions[i]));
             if (compound == null) {
                 compound = tr;
             } else {

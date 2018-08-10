@@ -20,9 +20,9 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -33,14 +33,10 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
-public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
+public final strictfp class FreeTextMarshallingTest extends TestCase {
     /**
      * Returns the expected string.
      */

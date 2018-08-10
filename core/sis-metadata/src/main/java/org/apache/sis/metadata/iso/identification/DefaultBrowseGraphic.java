@@ -57,7 +57,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_BrowseGraphic_Type", namespace = Namespaces.MCC, propOrder = {
     "fileName",
     "fileDescription",
@@ -175,7 +174,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @param  newValue  the new filename.
      */
     public void setFileName(final URI newValue) {
-        checkWritePermission();
+        checkWritePermission(fileName);
         fileName = newValue;
     }
 
@@ -196,7 +195,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @param  newValue  the new file description.
      */
     public void setFileDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileDescription);
         fileDescription = newValue;
     }
 
@@ -224,7 +223,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * @param  newValue  the new file type.
      */
     public void setFileType(final String newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileType);
         fileType = newValue;
     }
 

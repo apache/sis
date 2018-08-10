@@ -22,7 +22,7 @@ import java.util.Locale;
 import javax.xml.XMLConstants;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
@@ -505,9 +505,17 @@ public final class Namespaces extends Static {
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "csw"}.
      *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>0.3</td>         <td>http://www.opengis.net/cat/csw/2.0.2</td></tr>
+     *   <tr><td>Since 1.0</td>   <td>http://www.opengis.net/cat/csw/3.0</td></tr>
+     * </table>
+     *
      * @category OGC
      */
-    public static final String CSW = "http://www.opengis.net/cat/csw/2.0.2";
+    public static final String CSW = "http://www.opengis.net/cat/csw/3.0";
 
     /**
      * The <code>{@value}</code> URL.
@@ -539,8 +547,7 @@ public final class Namespaces extends Static {
         "http://www.isotc211.org/2005/",
         "http://www.opengis.net/",
         "http://www.w3.org/1999/",
-        "http://www.cnig.gouv.fr/2005/",
-        "http://purl.org/"
+        "http://www.cnig.gouv.fr/2005/"
     };
 
     /**
@@ -558,7 +565,9 @@ public final class Namespaces extends Static {
         p.put("http://www.opengis.net/sensorML/1.0",                     "sml1");
         p.put("http://www.opengis.net/sensorML/1.0.1",                    "sml");
         p.put("http://www.opengis.net/swe/1.0",                          "swe1");
-        p.put("http://www.opengis.net/cat/csw/2.0.2",                     "csw");
+        p.put("http://www.opengis.net/cat/csw/3.0",                       "csw");
+        p.put("http://www.opengis.net/cat/csw/2.0.2",                    "csw2");
+        p.put("http://www.opengis.net/ows/2.0",                           "ows");
         p.put("http://www.opengis.net/cat/wrs/1.0",                       "wrs");
         p.put("http://www.opengis.net/cat/wrs",                         "wrs09");
         p.put("http://www.opengis.net/ows-6/utds/0.3",                   "utds");

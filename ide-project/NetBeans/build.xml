@@ -36,6 +36,9 @@
       <fileset dir="${project.root}/core/sis-utility/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/core/sis-metadata/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <fileset dir="${project.root}/core/sis-referencing/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
@@ -247,6 +250,9 @@
       <fileset dir="${project.root}/storage/sis-xmlstore/src/test/resources">
         <include name="**/*.gpx"/>
         <include name="**/*.xml"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-sqlstore/src/test/resources">
+        <include name="**/*.sql"/>
       </fileset>
       <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
         <include name="**/*.txt"/>

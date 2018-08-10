@@ -59,7 +59,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @since   0.5
  * @module
  */
-@SuppressWarnings({"CloneableClassWithoutClone", "deprecation"})    // ModifiableMetadata needs shallow clones.
+@SuppressWarnings("deprecation")
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
     "role",
     "extent",
@@ -170,7 +170,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
      * @param  newValue  the new role, or {@code null} if none.
      */
     public void setRole(final Role newValue) {
-        checkWritePermission();
+        checkWritePermission(role);
         role = newValue;
     }
 

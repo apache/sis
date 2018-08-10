@@ -36,6 +36,9 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.metadata.MetadataCopier;
+import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.metadata.UnmodifiableMetadataException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.xml.TestUsingFile;
@@ -124,18 +127,57 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
     }
 
     /**
-     * Tests {@link DefaultCitation#freeze()}, which is needed for the constants defined in {@link Citations}.
+     * Tests {@link DefaultCitation#transition(DefaultCitation.State)} to the final state.
      */
     @Test
-    public void testFreeze() {
+    public void testTransitionToFinal() {
+        final DefaultCitation original = create();
+        final DefaultCitation clone = create();
+        clone.transition(DefaultCitation.State.FINAL);
+        assertEquals("original.state", DefaultCitation.State.EDITABLE, original.state());
+        assertEquals("clone.state",    DefaultCitation.State.FINAL,    clone.state());
+        assertEquals(original, clone);
+        SimpleInternationalString title = new SimpleInternationalString("Undercurrent");
+        original.setTitle(title);
+        try {
+            clone.setTitle(title);
+            fail("Frozen metadata shall not be modifiable.");
+        } catch (UnmodifiableMetadataException e) {
+            // This is the expected exception.
+        }
+    }
+
+    /**
+     * Tests {@link MetadataCopier} on a citation.
+     */
+    public void testCopy() {
+        final DefaultCitation original = create();
+        final DefaultCitation clone = (DefaultCitation) new MetadataCopier(MetadataStandard.ISO_19115).copy(original);
+        assertCopy(original, clone);
+    }
+
+    /**
+     * Tests {@link DefaultCitation#unmodifiable()}.
+     *
+     * @deprecated To be removed after we removed {@link DefaultCitation#unmodifiable()}.
+     */
+    @Test
+    @Deprecated
+    public void testUnmodifiable() {
         final DefaultCitation original = create();
         final DefaultCitation clone = (DefaultCitation) original.unmodifiable();    // This will invoke 'freeze()'.
-        assertNotSame(original, clone);
-        assertTrue ("original.isModifiable",        original.isModifiable());
-        assertFalse(   "clone.isModifiable",           clone.isModifiable());
-        assertSame ("original.unmodifiable", clone, original.unmodifiable());
-        assertSame (   "clone.unmodifiable", clone,    clone.unmodifiable());
+        assertSame("original.unmodifiable", clone, original.unmodifiable());
+        assertSame("clone.unmodifiable",    clone, clone.unmodifiable());
+        assertEquals("original.state", DefaultCitation.State.EDITABLE, original.state());
+        assertEquals("clone.state",    DefaultCitation.State.FINAL,    clone.state());
+        assertCopy(original, clone);
+    }
 
+    /**
+     * Verifies that {@code clone} is a copy of {@code original}, sharing same instance of values when possible.
+     */
+    private static void assertCopy(final DefaultCitation original, final DefaultCitation clone) {
+        assertNotSame(original, clone);
         assertSame ("ISBN",  original.getISBN(),  clone.getISBN());
         assertSame ("title", original.getTitle(), clone.getTitle());
         assertSame ("alternateTitle", getSingleton(original.getAlternateTitles()),
@@ -169,7 +211,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
      * Verifies that {@code actual} is an unmodifiable copy of {@code expected}.
      */
     private static <T> void assertCopy(final Collection<T> expected, final Collection<T> actual) {
-        assertNotSame("ModifiableMetadata.freeze() shall have copied the collection.", expected, actual);
+        assertNotSame("ModifiableMetadata.transition(FINAL) shall have copied the collection.", expected, actual);
         assertEquals("The copied collection shall have the same content than the original.", expected, actual);
         try {
             actual.add(null);

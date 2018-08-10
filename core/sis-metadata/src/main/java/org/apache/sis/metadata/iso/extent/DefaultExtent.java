@@ -91,7 +91,6 @@ import org.apache.sis.xml.NilReason;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",
@@ -215,7 +214,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -280,6 +279,15 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     }
 
     /**
+     * Returns a non-null value if this extent is non-empty.
+     * This implementation does not test if the elements are themselves empty.
+     */
+    private Boolean isNonEmpty() {
+        return (geographicElements != null) || (verticalElements != null) || (temporalElements != null)
+                || (description != null) ? Boolean.TRUE : null;
+    }
+
+    /**
      * Adds geographic, vertical or temporal extents inferred from the given envelope.
      * This method inspects the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}
      * and creates a {@link GeographicBoundingBox}, {@link VerticalExtent} or {@link TemporalExtent}
@@ -296,7 +304,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
     public void addElements(final Envelope envelope) throws TransformException {
-        checkWritePermission();
+        checkWritePermission(isNonEmpty());
         ArgumentChecks.ensureNonNull("envelope", envelope);
         ReferencingServices.getInstance().addElements(envelope, this);
     }
@@ -319,7 +327,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @since 0.8
      */
     public void intersect(final Extent other) {
-        checkWritePermission();
+        checkWritePermission(isNonEmpty());
         ArgumentChecks.ensureNonNull("other", other);
         final InternationalString od = other.getDescription();
         if (od != null && !(description instanceof NilObject)) {

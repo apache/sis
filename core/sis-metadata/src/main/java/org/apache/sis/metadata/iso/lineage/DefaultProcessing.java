@@ -26,7 +26,6 @@ import org.opengis.metadata.lineage.Algorithm;
 import org.opengis.metadata.lineage.Processing;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
@@ -53,7 +52,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_Processing_Type", propOrder = {
     "identifier",
     "softwareReferences",
@@ -155,7 +153,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -163,10 +161,9 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param  newValue  the new identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**
@@ -206,7 +203,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param  newValue  the new procedure description value.
      */
     public void setProcedureDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(procedureDescription);
         procedureDescription = newValue;
     }
 
@@ -247,7 +244,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param  newValue  the new runtime parameter value.
      */
     public void setRunTimeParameters(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(runTimeParameters);
         runTimeParameters = newValue;
     }
 

@@ -28,7 +28,7 @@ import org.opengis.metadata.distribution.DataFile;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.MimeFileTypeAdapter;
 import org.opengis.util.InternationalString;
 
@@ -59,7 +59,6 @@ import org.opengis.util.InternationalString;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
     "fileName",
     "fileDescription",
@@ -181,7 +180,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @since 1.0
      */
     public void setFileName(final URI newValue) {
-        checkWritePermission();
+        checkWritePermission(fileName);
         fileName = newValue;
     }
 
@@ -206,7 +205,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @since 1.0
      */
     public void setFileDescription(final InternationalString newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileDescription);
         fileDescription = newValue;
     }
 
@@ -232,7 +231,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @param  newValue  the new file type.
      */
     public void setFileType(final String newValue)  {
-        checkWritePermission();
+        checkWritePermission(fileType);
         fileType = newValue;
     }
 
@@ -282,7 +281,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      */
     @Deprecated
     public void setFileFormat(final Format newValue) {
-        checkWritePermission();
+        checkWritePermission(fileFormat);
         fileFormat = newValue;
     }
 }

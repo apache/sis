@@ -51,9 +51,9 @@ import org.opengis.util.InternationalString;
 /**
  * Tree viewer displaying a {@link Resource} hierarchy.
  *
- * @author Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  * @module
  */
 public class ResourceTree extends TreeTableView<Resource> {
@@ -75,7 +75,7 @@ public class ResourceTree extends TreeTableView<Resource> {
      */
     public Resource getResource() {
         final TreeItem<Resource> root = getRoot();
-        return root==null ? null : root.getValue();
+        return root == null ? null : root.getValue();
     }
 
     /**
@@ -84,7 +84,7 @@ public class ResourceTree extends TreeTableView<Resource> {
      * @param resource can be null
      */
     public void setResource(Resource resource) {
-        if (resource==null) {
+        if (resource == null) {
             setRoot(null);
         } else {
             setRoot(new ResourceItem(resource));
@@ -95,7 +95,7 @@ public class ResourceTree extends TreeTableView<Resource> {
      * Find an appropriate icon for given resource.
      *
      * @param resource resource to test
-     * @return Image icon
+     * @return image icon
      */
     private static Image getTypeIcon(Resource resource){
         if (resource instanceof FeatureSet) {
@@ -105,7 +105,7 @@ public class ResourceTree extends TreeTableView<Resource> {
         } else if (resource instanceof Aggregate) {
             return ICON_FOLDER;
         } else {
-            //unspecific resource type
+            // Unspecific resource type
             return ICON_OTHER;
         }
     }
@@ -183,13 +183,12 @@ public class ResourceTree extends TreeTableView<Resource> {
                         lst.add(new ResourceItem(res));
                     }
                 } catch (DataStoreException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace();                   // TODO: need better handling.
                 }
                 return lst;
             }
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-
     }
 
     private static class ResourceNameColumn extends TreeTableColumn<Resource,String> {
@@ -204,7 +203,7 @@ public class ResourceTree extends TreeTableView<Resource> {
                     try {
                         return new SimpleObjectProperty<>(getTitle(name, res.getMetadata()));
                     } catch (DataStoreException ex) {
-                       return new SimpleObjectProperty<>(ex.getMessage());
+                        return new SimpleObjectProperty<>(ex.getMessage());
                     }
                 }
             });
@@ -214,7 +213,6 @@ public class ResourceTree extends TreeTableView<Resource> {
             setMinWidth(120);
             setResizable(true);
         }
-
     }
 
     private static class Cell extends TreeTableCell<Resource, String> {
@@ -238,7 +236,6 @@ public class ResourceTree extends TreeTableView<Resource> {
             if (ti == null) {
                 return;
             }
-
             final Resource resource = ti.getValue();
             setGraphic(new ImageView(getTypeIcon(resource)));
         }

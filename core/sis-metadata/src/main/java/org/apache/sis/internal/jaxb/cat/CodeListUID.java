@@ -26,7 +26,7 @@ import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.xml.Schemas;
 
 
 /**

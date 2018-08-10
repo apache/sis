@@ -52,7 +52,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "date")
 @XmlType(name = "CI_Date_Type", propOrder = {
     "date",
@@ -152,7 +151,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(toDate(date));
         date = toMilliseconds(newValue);
     }
 
@@ -173,7 +172,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new event.
      */
     public void setDateType(final DateType newValue) {
-        checkWritePermission();
+        checkWritePermission(dateType);
         dateType = newValue;
     }
 }

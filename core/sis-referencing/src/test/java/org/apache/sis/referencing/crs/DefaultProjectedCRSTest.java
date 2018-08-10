@@ -40,7 +40,7 @@ import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Rule;
@@ -60,7 +60,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class
 })
-public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
+public final strictfp class DefaultProjectedCRSTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
      * This rule is used by the test methods for verifying that the logged messages contain the expected information.

@@ -21,7 +21,7 @@ import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.Version;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultRepresentativeFractionTest extends XMLTestCase {
+public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
     /**
      * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
      */
@@ -111,7 +111,7 @@ public final strictfp class DefaultRepresentativeFractionTest extends XMLTestCas
 
     /**
      * Tests indirectly {@link DefaultRepresentativeFraction#freeze()}.
-     * This method verifies that a call to {@link DefaultResolution#freeze()}
+     * This method verifies that a call to {@code DefaultResolution.transition(FINAL)}
      * implies a call to {@link DefaultRepresentativeFraction#freeze()}.
      *
      * @since 0.7
@@ -120,12 +120,10 @@ public final strictfp class DefaultRepresentativeFractionTest extends XMLTestCas
     public void testFreeze() {
         final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(1000);
         final DefaultResolution resolution = new DefaultResolution(fraction);
-        resolution.freeze();
-        final DefaultRepresentativeFraction clone = (DefaultRepresentativeFraction) resolution.getEquivalentScale();
-        assertEquals ("Fraction should have the same value.",      fraction, clone);
-        assertNotSame("Should have copied the fraction instance.", fraction, clone);
+        resolution.transition(DefaultResolution.State.FINAL);
+        assertSame(fraction, resolution.getEquivalentScale());
         try {
-            clone.setDenominator(10);
+            fraction.setDenominator(10);
             fail("Shall not be allowed to modify an unmodifiable fraction.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.

@@ -30,13 +30,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 
 import static org.junit.Assert.assertEquals;
 
@@ -74,12 +73,11 @@ public final class DataScriptFormatter extends ScriptRunner {
             System.err.println("Expected two arguments: source SQL file and target SQL file.");
             return;
         }
-        final DataSource ds = TestDatabase.create("dummy");
-        try (Connection c = ds.getConnection()) {
+        try (TestDatabase db = TestDatabase.create("dummy");
+             Connection c = db.source.getConnection())
+        {
             final DataScriptFormatter f = new DataScriptFormatter(c);
             f.run(new File(arguments[0]), new File(arguments[1]));
-        } finally {
-            TestDatabase.drop(ds);
         }
     }
 

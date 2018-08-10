@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.measure;
 
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -39,7 +39,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -79,12 +79,37 @@ public final class Quantities extends Static {
         ArgumentChecks.ensureNonNull("unit", unit);
         final Unit<Q> system = unit.getSystemUnit();
         if (system instanceof SystemUnit<?>) {
+            final UnitConverter c = unit.getConverterTo(system);
             final ScalarFactory<Q> factory = ((SystemUnit<Q>) system).factory;
-            if (factory != null) {
-                return factory.create(value, unit);
-            } else {
-                return ScalarFallback.factory(value, unit, ((SystemUnit<Q>) system).quantity);
+            if (c.isLinear()) {
+                /*
+                 * We require arithmetic operations (A + B, A * 2, etc.) to be performed as if all values were
+                 * converted to system unit before calculation. This is mandatory for preserving arithmetic laws
+                 * like associativity, commutativity, etc.  But in the special case were the unit of measurement
+                 * if related to the system unit with only a scale factor (no offset), we get equivalent results
+                 * even if we skip the conversion to system unit.  Since the vast majority of units fall in this
+                 * category, it is worth to do this optimization.
+                 *
+                 * (Note: despite its name, above 'isLinear()' method actually has an 'isScale()' behavior).
+                 */
+                if (factory != null) {
+                    return factory.create(value, unit);
+                } else {
+                    return ScalarFallback.factory(value, unit, ((SystemUnit<Q>) system).quantity);
+                }
             }
+            /*
+             * If the given unit of measurement is derived from the system unit by a more complex formula
+             * than a scale factor, then we need to perform arithmetic operations using the full path
+             * (convert all values to system unit before calculation).
+             */
+            if (factory != null) {
+                final Q quantity = factory.createDerived(value, unit, system, c);
+                if (quantity != null) {
+                    return quantity;
+                }
+            }
+            return DerivedScalar.Fallback.factory(value, unit, system, c, ((SystemUnit<Q>) system).quantity);
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedImplementation_1, unit.getClass()));
         }

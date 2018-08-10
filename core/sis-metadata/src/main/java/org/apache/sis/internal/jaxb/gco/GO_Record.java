@@ -105,7 +105,7 @@ public class GO_Record extends PropertyType<GO_Record, Record> {
          *
          * @return a non-null value only if marshalling ISO 19115-3 or newer.
          */
-        @Override public GO_Record wrap(final Record value) {
+        @Override protected GO_Record wrap(final Record value) {
             return accept2014() ? super.wrap(value) : null;
         }
     }

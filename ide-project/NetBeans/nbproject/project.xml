@@ -32,7 +32,7 @@
                 <root id="src.geotiff.dir" name="GeoTIFF"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
                 <root id="src.shapefile.dir" name="Shapefile"/>
-                <root id="src.sql.dir" name="SQL"/>
+                <root id="src.sql.dir" name="SQLStore"/>
                 <root id="src.xmlstore.dir" name="XMLStore"/>
                 <root id="src.storage.dir" name="Storage"/>
                 <root id="src.feature.dir" name="Feature"/>
@@ -54,7 +54,7 @@
                 <root id="test.geotiff.dir" name="Test GeoTIFF"/>
                 <root id="test.netcdf.dir" name="Test NetCDF"/>
                 <root id="test.shapefile.dir" name="Test Shapefile"/>
-                <root id="test.sql.dir" name="Test SQL"/>
+                <root id="test.sql.dir" name="Test SQLStore"/>
                 <root id="test.xmlstore.dir" name="Test XMLStore"/>
                 <root id="test.storage.dir" name="Test Storage"/>
                 <root id="test.feature.dir" name="Test Feature"/>
@@ -111,6 +111,7 @@
             <word>recursivity</word>
             <word>spliterator</word>
             <word>timezone</word>
+            <word>transitioning</word>
             <word>Unicode</word>
             <word>uninstall</word>
             <word>unmarshal</word>

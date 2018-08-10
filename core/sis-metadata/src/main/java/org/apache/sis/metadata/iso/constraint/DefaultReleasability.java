@@ -44,7 +44,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Releasability_Type", propOrder = {
     "addressees",
     "statement",
@@ -158,7 +157,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
      * @param  newValue  the new release statement.
      */
     public void setStatement(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(statement);
         statement = newValue;
     }
 

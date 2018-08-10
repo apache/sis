@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.temporal.Period;
 import org.apache.sis.internal.jaxb.Context;
 
-import static org.apache.sis.internal.jaxb.LegacyNamespaces.VERSION_3_0;
+import static org.apache.sis.internal.xml.LegacyNamespaces.VERSION_3_0;
 
 
 /**

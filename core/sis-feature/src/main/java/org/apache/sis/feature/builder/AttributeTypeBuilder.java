@@ -252,7 +252,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
      * Sets the maximum number of attribute values. If the given number is less than the
      * {@linkplain #getMinimumOccurs() minimal number} of attribute values, than the minimum
-     * is also set to that value.
+     * is also set to that value. {@link Integer#MAX_VALUE} means that there is no maximum.
      *
      * @param  occurs  the new maximum number of attribute values.
      * @return {@code this} for allowing method calls chaining.
@@ -461,7 +461,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @see #characteristics()
      */
     public CharacteristicTypeBuilder<?> getCharacteristic(final String name) {
-        return forName(characteristics, name);
+        return forName(characteristics, name, true);
     }
 
     /**

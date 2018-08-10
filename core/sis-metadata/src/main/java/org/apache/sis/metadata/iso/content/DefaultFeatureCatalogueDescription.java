@@ -27,10 +27,12 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.FeatureTypeInfo;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -60,7 +62,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
     "compliant",
     "locale",                       // New in ISO 19115:2014
@@ -176,7 +177,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param  newValue  the new compliance value.
      */
     public void setCompliant(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(compliant);
         compliant = newValue;
     }
 
@@ -217,7 +218,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param  newValue  {@code true} if the feature catalogue is included.
      */
     public void setIncludedWithDataset(final boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(includedWithDataset ? Boolean.TRUE : null);
         includedWithDataset = newValue;
     }
 
@@ -289,7 +290,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Deprecated
     public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(featureTypes));
         ((LegacyPropertyAdapter<GenericName,?>) getFeatureTypes()).setValues(newValues);
     }
 

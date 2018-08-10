@@ -77,7 +77,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Scope;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",
     "scope",                    // New in ISO 19115:2014
@@ -190,7 +189,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @param  newValue  the new statement.
      */
     public void setStatement(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(statement);
         statement = newValue;
     }
 
@@ -216,7 +215,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @since 0.5
      */
     public void setScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 

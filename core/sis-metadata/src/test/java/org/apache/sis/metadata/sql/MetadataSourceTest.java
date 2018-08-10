@@ -16,12 +16,13 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Collection;
 import java.util.Collections;
-import javax.sql.DataSource;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
@@ -38,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -52,13 +53,37 @@ public final strictfp class MetadataSourceTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws Exception {
-        final DataSource ds = TestDatabase.create("MetadataSource");
-        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null)) {
+        try (TestDatabase db = TestDatabase.create("MetadataSource")) {
+            testAll(db);
+        }
+    }
+
+    /**
+     * Tests {@link MetadataSource} with a PostgreSQL database if available.
+     *
+     * @throws Exception if an error occurred while executing the script runner.
+     */
+    @Test
+    public void testOnPostgreSQL() throws Exception {
+        try (TestDatabase db = TestDatabase.createOnPostgreSQL("metadata", false)) {
+            testAll(db);
+        }
+    }
+
+    /**
+     * Runs all public tests declared in this class.
+     * Also opportunistically run tests declared in {@link MetadataFallbackVerifier}.
+     */
+    private static void testAll(final TestDatabase db) throws Exception {
+        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null)) {
             source.install();
             verifyFormats(source);
             testSearch(source);
-        } finally {
-            TestDatabase.drop(ds);
+            testEmptyCollection(source);
+            ensureReadOnly(source);
+
+            // Opportunistic verification using the database we have at hand.
+            MetadataFallbackVerifier.compare(source);
         }
     }
 
@@ -108,5 +133,41 @@ public final strictfp class MetadataSourceTest extends TestCase {
         assertEquals("PNG", source.search(format));
         specification.setTitle(null);
         assertNull(source.search(format));
+    }
+
+    /**
+     * Verifies that empty collections are empty, not-null.
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void testEmptyCollection(final MetadataSource source) throws MetadataStoreException {
+        final Citation c = source.lookup(Citation.class, "SIS");
+        final Collection<?> details = c.getOtherCitationDetails();
+        assertNotNull("Empty collection should not be null.", details);
+        assertTrue("Expected an empty collection.", details.isEmpty());
+        assertSame("Collection shall be unmodifiable.", Collections.EMPTY_LIST, details);
+    }
+
+    /**
+     * Verifies that instances created by {@link MetadataSource} are read-only.
+     * In particular, it should not be possible to add elements in the collection.
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void ensureReadOnly(final MetadataSource source) throws MetadataStoreException {
+        final Citation c = source.lookup(Citation.class, "SIS");
+        @SuppressWarnings("unchecked")                                  // Cheat or the purpose of this test.
+        final Collection<InternationalString> titles = (Collection<InternationalString>) c.getAlternateTitles();
+        final InternationalString more = new SimpleInternationalString("An open source project.");
+        try {
+            titles.add(more);
+            fail("Pre-defined metadata should be unmodifiable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+        }
     }
 }

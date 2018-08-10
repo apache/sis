@@ -268,10 +268,6 @@ public enum AxesConvention implements AxisFilter {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})
      * are unchanged.
      *
-     * <p>Note that projecting geometry objects from the old to the new coordinate system may require
-     * a non-affine conversion. Some geometries may need to be separated in two parts, and others may
-     * need to be merged.</p>
-     *
      * <div class="section">Usage</div>
      * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
      * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
@@ -279,7 +275,8 @@ public enum AxesConvention implements AxisFilter {
      *
      * <p>Note that conversions from an coordinate system using the [-180 … +180]° range to a coordinate system
      * using the [0 … 360]° range may not be affine. For example the data in the West hemisphere ([-180 … 0]°)
-     * may need to move on the right side of the East hemisphere ([180 … 360]°).</p>
+     * may need to move on the right side of the East hemisphere ([180 … 360]°).
+     * Some geometries may need to be separated in two parts, and others may need to be merged.</p>
      *
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */

@@ -27,7 +27,6 @@ import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -267,7 +266,6 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      *
      * @see IdentifierMapAdapter#toString()
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60).append("Identifier[");
@@ -279,7 +277,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      * Formats the given (authority, code) par value in the given buffer.
      */
     static void format(final StringBuilder buffer, final Citation authority, final String code) {
-        buffer.append(Citations.getIdentifier(authority)).append('=');
+        buffer.append(Citations.toCodeSpace(authority)).append('=');
         final boolean quote = (code != null) && (code.indexOf('[') < 0);
         if (quote) buffer.append('“');
         buffer.append(code);

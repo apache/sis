@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * especially the result of the {@link #size()} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <S>  the type of elements in the storage set.
  * @param <E>  the type of elements in this set.
@@ -99,7 +99,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * Creates a new derived set from the specified storage set.
      *
      * @param  storage    the set which actually store the elements.
-     * @param  converter  the type of elements in this derived set.
+     * @param  converter  the converter from the storage to the derived type.
      */
     private DerivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
         this.storage   = storage;
@@ -132,7 +132,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      */
     @Override
     public boolean isEmpty() {
-        return !storage.isEmpty() || !iterator().hasNext();
+        return storage.isEmpty() || !iterator().hasNext();
     }
 
     /**

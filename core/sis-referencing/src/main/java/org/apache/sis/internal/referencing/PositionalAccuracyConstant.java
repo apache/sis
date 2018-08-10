@@ -51,7 +51,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 @XmlTransient
-@SuppressWarnings("CloneableClassWithoutClone")       // ModifiableMetadata needs shallow clones.
 public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPositionalAccuracy {
     /**
      * Serial number for inter-operability with different versions.
@@ -105,17 +104,15 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     /**
      * Creates an positional accuracy initialized to the given result.
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")                  // Safe because this class is final.
     private PositionalAccuracyConstant(final InternationalString measureDescription,
             final InternationalString evaluationMethodDescription, final boolean pass)
     {
         DefaultConformanceResult result = new DefaultConformanceResult(Citations.SIS, evaluationMethodDescription, pass);
-        result.freeze();
         setResults(Collections.singleton(result));
         setMeasureDescription(measureDescription);
         setEvaluationMethodDescription(evaluationMethodDescription);
         setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
-        freeze();
+        transition(State.FINAL);
     }
 
     /**

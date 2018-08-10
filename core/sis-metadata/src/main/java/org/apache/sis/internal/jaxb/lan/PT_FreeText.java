@@ -58,10 +58,7 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "PT_FreeText_PropertyType")
@@ -69,8 +66,6 @@ public final class PT_FreeText extends GO_CharacterString {
     /**
      * A set of {@link LocalisedCharacterString}, representing the {@code <lan:textGroup>} element.
      * The array shall contain one element for each locale.
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
      */
     @XmlElementWrapper(name = "PT_FreeText")
     @XmlElement(required = true)

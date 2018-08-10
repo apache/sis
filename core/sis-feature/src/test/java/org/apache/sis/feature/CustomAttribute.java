@@ -83,7 +83,7 @@ final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
         final DefaultDomainConsistency  report  = new DefaultDomainConsistency();
         final DefaultQuantitativeResult result  = new DefaultQuantitativeResult();
         result.setErrorStatistic(new SimpleInternationalString(ADDITIONAL_QUALITY_INFO));
-        report.setMeasureIdentification(new NamedIdentifier(getName()));
+        report.setMeasureIdentification(NamedIdentifier.castOrCopy(getName()));
         report .setResults(singleton(result));
         quality.setReports(singleton(report));
         return quality;

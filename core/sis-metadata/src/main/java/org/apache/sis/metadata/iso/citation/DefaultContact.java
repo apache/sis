@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
@@ -60,7 +60,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",
     "phoneList",
@@ -434,7 +433,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @param  newValue  the new contact instructions, or {@code null} if none.
      */
     public void setContactInstructions(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(contactInstructions);
         contactInstructions = newValue;
     }
 
@@ -461,7 +460,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @since 0.5
      */
     public void setContactType(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(contactType);
         contactType = newValue;
     }
 

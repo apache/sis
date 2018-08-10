@@ -59,7 +59,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Scope_Type", namespace = Namespaces.MCC, propOrder = {
    "level",
    "extents",
@@ -162,7 +161,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * @param  newValue  the new level.
      */
     public void setLevel(final ScopeCode newValue) {
-        checkWritePermission();
+        checkWritePermission(level);
         level = newValue;
     }
 

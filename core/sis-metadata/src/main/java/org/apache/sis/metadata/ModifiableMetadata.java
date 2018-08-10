@@ -28,27 +28,34 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.Modules;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
- * Provides convenience methods for support of modifiable properties in metadata implementations.
- * Implementations typically provide {@code set*(…)} methods for each corresponding {@code get*()}
- * method. Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
- * with a different processing for singleton value or for {@linkplain Collection collections}.
+ * Base class of metadata having an editable content.
+ * Newly created {@code ModifiableMetadata} are initially in {@linkplain State#EDITABLE editable} state.
+ * The metadata can be populated using the setter methods provided by subclasses, then transition to the
+ * {@linkplain State#FINAL final} state for making it safe to share by many consumers.
  *
- * <p>For singleton value:</p>
+ * <div class="section">Tip for subclass implementations</div>
+ * Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
+ * with a different processing for singleton value or for {@linkplain Collection collections}.
  *
  * {@preformat java
  *     public class MyMetadata {
+ *
+ *         // ==== Example for a singleton value =============================
+ *
  *         private Foo property;
  *
  *         public Foo getProperty() {
@@ -59,13 +66,9 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *             checkWritePermission();
  *             property = newValue;
  *         }
- *     }
- * }
  *
- * For collections (note that the call to {@link #checkWritePermission()} is implicit):
+ *         // ==== Example for a collection ==================================
  *
- * {@preformat java
- *     public class MyMetadata {
  *         private Collection<Foo> properties;
  *
  *         public Collection<Foo> getProperties() {
@@ -73,55 +76,221 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *         }
  *
  *         public void setProperties(Collection<Foo> newValues) {
+ *             // the call to checkWritePermission() is implicit
  *             properties = writeCollection(newValues, properties, Foo.class);
  *         }
  *     }
  * }
  *
- * An initially modifiable metadata may become unmodifiable at a later stage
- * (typically after its construction is completed) by the call to the {@link #freeze()} method.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @XmlTransient
-public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
+public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
-     * Initial capacity of sets. We use a small value because collections will typically
-     * contain few elements (often just a singleton).
+     * The {@link #state} value meaning that the metadata is modifiable.
+     * This is the default state when new {@link ModifiableMetadata} instances are created.
      */
-    private static final int INITIAL_CAPACITY = 4;
+    private static final byte EDITABLE = 0;
 
     /**
-     * A null implementation for the {@link #FREEZING} constant.
+     * See https://issues.apache.org/jira/browse/SIS-81 - not yet committed.
      */
-    @SuppressWarnings("CloneableClassWithoutClone")
-    private static final class Null extends ModifiableMetadata {
-        @Override public MetadataStandard getStandard() {
-            return null;
-        }
-    }
+    private static final byte STAGED = 1;
 
     /**
-     * A sentinel value used for {@link #unmodifiable} in order to specify that {@link #freeze()} is under way.
+     * A value for {@link #state} meaning that execution of {@code transition(…)} is in progress.
+     * Must be greater than all other values except {@link #COMPLETABLE} and {@link #FINAL}.
      */
-    private static final ModifiableMetadata FREEZING = new Null();
+    private static final byte FREEZING = 2;
+
+    /**
+     * The {@link #state} value meaning that missing properties can be set,
+     * but no existing properties can be modified (including collections).
+     * This is a kind of semi-final state.
+     */
+    private static final byte COMPLETABLE = 3;
+
+    /**
+     * A value for {@link #state} meaning that {@code transition(State.FINAL)} has been invoked.
+     * Must be greater than all other values.
+     */
+    private static final byte FINAL = 4;
+
+    /**
+     * Whether this metadata has been made unmodifiable, as one of {@link #EDITABLE}, {@link #FREEZING}
+     * {@link #COMPLETABLE} or {@link #FINAL} values.
+     *
+     * <p>This field is not yet serialized because we are not sure to keep this information as a byte in
+     * the future. We could for example use an {@code int} and use remaining bits for caching hash-code
+     * value of final metadata.</p>
+     */
+    private transient byte state;
 
     /**
      * An unmodifiable copy of this metadata, created only when first needed.
      * If {@code null}, then no unmodifiable entity is available.
      * If {@code this}, then this entity is itself unmodifiable.
      *
-     * @see #unmodifiable()
+     * @deprecated to be deleted after the removal of {@link #unmodifiable()}.
      */
+    @Deprecated
     private transient ModifiableMetadata unmodifiable;
 
     /**
      * Constructs an initially empty metadata.
+     * The initial state is {@link State#EDITABLE}.
      */
     protected ModifiableMetadata() {
+    }
+
+    /**
+     * Whether the metadata is still editable or has been made final.
+     * New {@link ModifiableMetadata} instances are initially {@link #EDITABLE}
+     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transition(State)}.
+     *
+     * <div class="note"><b>Note:</b>
+     * more states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.</div>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.0
+     * @since   1.0
+     * @module
+     */
+    public enum State {
+        /**
+         * The metadata is modifiable.
+         * This is the default state when new {@link ModifiableMetadata} instances are created.
+         * Note that a modifiable metadata instance does <strong>not</strong> imply that all
+         * properties contained in that instance are also editable.
+         */
+        EDITABLE(ModifiableMetadata.EDITABLE),
+
+        /**
+         * The metadata allows missing values to be set, but does not allow existing values to be modified.
+         * This state is not appendable, i.e. it does not allow adding elements in a collection.
+         */
+        COMPLETABLE(ModifiableMetadata.COMPLETABLE),
+
+        /**
+         * The metadata is unmodifiable.
+         * When a metadata is final, it can not be moved back to an editable state
+         * (but it is still possible to create a modifiable copy with {@link MetadataCopier}).
+         * Invoking any setter method on an unmodifiable metadata cause an
+         * {@link UnmodifiableMetadataException} to be thrown.
+         */
+        FINAL(ModifiableMetadata.FINAL);
+
+        /**
+         * Mapping from {@link ModifiableMetadata} private flags to {@code State} enumeration.
+         * A mapping exists because {@code ModifiableMetadata} does not use the same set of enumeration values
+         * (e.g. it has an internal {@link #FREEZING} value), and because future versions may use a bitmask.
+         */
+        private static final State[] VALUES = new State[ModifiableMetadata.FINAL + 1];
+        static {
+            VALUES[ModifiableMetadata.EDITABLE]    = EDITABLE;
+            VALUES[ModifiableMetadata.STAGED]      = EDITABLE;
+            VALUES[ModifiableMetadata.FREEZING]    = FINAL;
+            VALUES[ModifiableMetadata.COMPLETABLE] = COMPLETABLE;
+            VALUES[ModifiableMetadata.FINAL]       = FINAL;
+        }
+
+        /**
+         * The numerical code associated to this enumeration value. It serves similar purpose to the
+         * {@link #ordinal()} value, but is nevertheless provided for the reasons given in {@link #VALUES}.
+         */
+        final byte code;
+
+        /**
+         * Creates a new state associated to the given code numerical code.
+         */
+        private State(final byte code) {
+            this.code = code;
+        }
+    }
+
+    /**
+     * Tells whether this instance of metadata is editable.
+     * This is initially {@link State#EDITABLE} for new {@code ModifiableMetadata} instances,
+     * but can be changed by a call to {@link #transition(State)}.
+     *
+     * <p>{@link State#FINAL} implies that all properties are also final.
+     * This recursivity does not necessarily apply to other states. For example {@link State#EDITABLE}
+     * does <strong>not</strong> imply that all {@code ModifiableMetadata} children are also editable.</p>
+     *
+     * <div class="note"><b>API note:</b>
+     * the {@code ModifiableMetadata} state is not a metadata per se, but rather an information about
+     * this particular instance of a metadata class. Two metadata instances may be in different states
+     * but still have the same metadata content. For this reason, this method does not have {@code get}
+     * prefix for avoiding confusion with getter and setter methods of metadata properties.</div>
+     *
+     * @return the state (editable, completable or final) of this {@code ModifiableMetadata} instance.
+     *
+     * @since 1.0
+     */
+    public State state() {
+        return State.VALUES[state];
+    }
+
+    /**
+     * Requests this metadata instance and (potentially) all its children to transition to a new state.
+     * The action performed by this method depends on the {@linkplain #state() source state} and the
+     * given target state, as listed in the following table:
+     *
+     * <table class="sis">
+     *   <caption>State transitions</caption>
+     *   <tr>
+     *     <th>Current state</th>
+     *     <th>Target state</th>
+     *     <th>Action</th>
+     *   </tr><tr>
+     *     <td><var>Any</var></td>
+     *     <td><var>Same</var></td>
+     *     <td>Does nothing and returns {@code false}.</td>
+     *   </tr><tr>
+     *     <td>{@link State#EDITABLE}</td>
+     *     <td>{@link State#COMPLETABLE}</td>
+     *     <td>Marks this metadata and all children as completable.</td>
+     *   </tr><tr>
+     *     <td>Any</td>
+     *     <td>{@link State#FINAL}</td>
+     *     <td>Marks this metadata and all children as unmodifiable.</td>
+     *   </tr><tr>
+     *     <td>{@link State#FINAL}</td>
+     *     <td>Any other</td>
+     *     <td>Throws {@link UnmodifiableMetadataException}.</td>
+     *   </tr>
+     * </table>
+     *
+     * The effect of invoking this method may be recursive. For example transitioning to {@link State#FINAL}
+     * implies transitioning all children {@code ModifiableMetadata} instances to the final state too.
+     *
+     * @param  target  the desired new state.
+     * @return {@code true} if the state of this {@code ModifiableMetadata} changed as a result of this method call.
+     * @throws UnmodifiableMetadataException if a transition to a less restrictive state
+     *         (e.g. from {@link State#FINAL} to {@link State#EDITABLE}) was attempted.
+     *
+     * @since 1.0
+     */
+    public boolean transition(final State target) {
+        if (target.code < state) {
+            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
+        }
+        if (target.code == state || state == FREEZING) {
+            return false;
+        }
+        byte result = state;
+        try {
+            state = FREEZING;
+            StateChanger.applyTo(target, this);
+            result = target.code;
+        } finally {
+            state = result;
+        }
+        return true;
     }
 
     /**
@@ -132,9 +301,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @see #freeze()
      * @see #checkWritePermission()
+     *
+     * @deprecated Replaced by <code>{@linkplain #state()} != State.FINAL</code>.
+     *             See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.
      */
+    @Deprecated
     public final boolean isModifiable() {
-        return unmodifiable != this && unmodifiable != FREEZING;
+        return state <= STAGED;
     }
 
     /**
@@ -167,31 +340,22 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @return an unmodifiable copy of this metadata.
      *
      * @see MetadataCopier
+     *
+     * @deprecated Replaced by {@code MetadataCopier.forModifiable(getStandard()).copy(this).transition(State.FINAL)}.
      */
+    @Deprecated
     public AbstractMetadata unmodifiable() {
+        if (!isModifiable()) {
+            unmodifiable = this;
+        }
         /*
          * The 'unmodifiable' field is reset to null by checkWritePermission().
          * However this is not sufficient since the setter method of some child
          * could have been invoked without invoking any setter method on 'this'.
          * So we also need to perform an equality check.
          */
-        if (unmodifiable == null || (unmodifiable != this && unmodifiable != FREEZING && !equals(unmodifiable))) {
-            final ModifiableMetadata candidate;
-            try {
-                /*
-                 * Need a SHALLOW copy of this metadata, because some properties
-                 * may already be unmodifiable and we don't want to clone them.
-                 */
-                candidate = clone();
-            } catch (CloneNotSupportedException exception) {
-                /*
-                 * The metadata is not cloneable for some reason left to the user
-                 * (for example it may be backed by some external database).
-                 * Assumes that the metadata is unmodifiable.
-                 */
-                Logging.unexpectedException(Logging.getLogger(Modules.METADATA), getClass(), "unmodifiable", exception);
-                return this;
-            }
+        if (unmodifiable == null || !equals(unmodifiable)) {
+            final ModifiableMetadata candidate = (ModifiableMetadata) MetadataCopier.forModifiable(getStandard()).copy(this);
             candidate.freeze();
             /*
              * Set the field only after success. The 'unmodifiable' field must
@@ -211,49 +375,55 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * <p>Subclasses usually do not need to override this method since the default implementation
      * performs its work using Java reflection.</p>
      *
-     * @see #isModifiable()
+     * @see #state()
      * @see #checkWritePermission()
+     *
+     * @deprecated Replaced by {@code transition(State.FINAL)}.
      */
+    @Deprecated
     public void freeze() {
-        if (isModifiable()) {
-            ModifiableMetadata success = null;
-            /*
-             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
-             * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
-             * for all unused properties. Users should not see behavioral difference, except if they override
-             * some getters with an implementation invoking other getters. However in such cases, users would
-             * have been exposed to null values at XML marshalling time anyway.
-             */
-            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
-            try {
-                unmodifiable = FREEZING;
-                getStandard().freeze(this);
-                success = this;
-            } finally {
-                unmodifiable = success;
-                if (!allowNull) {
-                    Semaphores.clear(Semaphores.NULL_COLLECTION);
-                }
-            }
+        transition(State.FINAL);
+    }
+
+    /**
+     * @deprecated Replaced by {@link #checkWritePermission(Object)}.
+     *
+     * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
+     */
+    @Deprecated
+    protected void checkWritePermission() throws UnmodifiableMetadataException {
+        if (state == FINAL) {
+            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
+        } else {
+            unmodifiable = null;                    // Discard since this metadata is going to change.
         }
     }
 
     /**
      * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
      * shall invoke this method (directly or indirectly) before to apply any change.
+     * The current property value should be specified in argument.
      *
+     * @param  current  the current value, or {@code null} if none.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
-     * @see #isModifiable()
-     * @see #freeze()
+     * @see #state()
+     *
+     * @since 1.0
      */
-    protected void checkWritePermission() throws UnmodifiableMetadataException {
-        if (unmodifiable != null) {
-            if (unmodifiable == this) {
-                throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
-            } else if (unmodifiable != FREEZING) {
-                unmodifiable = null;
+    protected void checkWritePermission(Object current) throws UnmodifiableMetadataException {
+        if (state != COMPLETABLE) {
+            checkWritePermission();
+        } else if (current != null) {
+            final MetadataStandard standard;
+            if (current instanceof AbstractMetadata) {
+                standard = ((AbstractMetadata) current).getStandard();
+            } else {
+                standard = getStandard();
             }
+            final Object c = standard.getTitle(current);
+            if (c != null) current = c;
+            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.ElementAlreadyInitialized_1, current));
         }
     }
 
@@ -262,7 +432,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link List}.</li>
@@ -280,28 +450,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #nonNullList(List, Class)
      */
     @SuppressWarnings("unchecked")
-    protected final <E> List<E> writeList(final Collection<? extends E> source,
-            List<E> target, final Class<E> elementType)
-            throws UnmodifiableMetadataException
+    protected final <E> List<E> writeList(Collection<? extends E> source, List<E> target,
+            Class<E> elementType) throws UnmodifiableMetadataException
     {
-        // See the comments in writeCollection(…) for implementation notes.
-        if (source != target) {
-            if (unmodifiable == FREEZING) {
-                return (List<E>) source;
-            }
-            checkWritePermission();
-            if (isNullOrEmpty(source)) {
-                target = null;
-            } else {
-                if (target != null) {
-                    target.clear();
-                } else {
-                    target = new CheckedArrayList<>(elementType, source.size());
-                }
-                target.addAll(source);
-            }
-        }
-        return target;
+        return (List<E>) write(source, target, elementType, Boolean.FALSE);
     }
 
     /**
@@ -309,7 +461,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set}.</li>
@@ -326,29 +478,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @see #nonNullSet(Set, Class)
      */
-    @SuppressWarnings("unchecked")
-    protected final <E> Set<E> writeSet(final Collection<? extends E> source,
-            Set<E> target, final Class<E> elementType)
-            throws UnmodifiableMetadataException
+    protected final <E> Set<E> writeSet(Collection<? extends E> source, Set<E> target,
+            Class<E> elementType) throws UnmodifiableMetadataException
     {
-        // See the comments in writeCollection(…) for implementation notes.
-        if (source != target) {
-            if (unmodifiable == FREEZING) {
-                return (Set<E>) source;
-            }
-            checkWritePermission();
-            if (isNullOrEmpty(source)) {
-                target = null;
-            } else {
-                if (target != null) {
-                    target.clear();
-                } else {
-                    target = new CheckedHashSet<>(elementType, source.size());
-                }
-                target.addAll(source);
-            }
-        }
-        return target;
+        return (Set<E>) write(source, target, elementType, Boolean.TRUE);
     }
 
     /**
@@ -356,7 +489,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
@@ -379,10 +512,22 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *         or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
+    protected final <E> Collection<E> writeCollection(Collection<? extends E> source, Collection<E> target,
+            Class<E> elementType) throws UnmodifiableMetadataException
+    {
+        return write(source, target, elementType, null);
+    }
+
+    /**
+     * Writes the content of the {@code source} collection into the {@code target} list or set,
+     * creating it if needed.
+     *
+     * @param  useSet  {@link Boolean#TRUE} for creating a set, {@link Boolean#FALSE} for creating a list,
+     *                 or null for automatic choice.
+     */
     @SuppressWarnings("unchecked")
-    protected final <E> Collection<E> writeCollection(final Collection<? extends E> source,
-            Collection<E> target, final Class<E> elementType)
-            throws UnmodifiableMetadataException
+    private <E> Collection<E> write(final Collection<? extends E> source, Collection<E> target,
+            final Class<E> elementType, Boolean useSet) throws UnmodifiableMetadataException
     {
         /*
          * It is not worth to copy the content if the current and the new instance are the
@@ -391,29 +536,42 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
          * and JAXB unmarshalling.
          */
         if (source != target) {
-            if (unmodifiable == FREEZING) {
+            if (state == FREEZING) {
                 /*
-                 * freeze() method is under progress. The source collection is already
-                 * an unmodifiable instance created by Freezer.clone(Object).
+                 * transition(State.FINAL) is under progress. The source collection is already
+                 * an unmodifiable instance created by StageChanger.
                  */
-                assert collectionType(elementType).isInstance(source);
+                assert (useSet != null) || collectionType(elementType).isInstance(source) : elementType;
                 return (Collection<E>) source;
             }
-            checkWritePermission();
+            checkWritePermission(valueIfDefined(target));
             if (isNullOrEmpty(source)) {
                 target = null;
             } else {
-                if (target != null) {
+                /*
+                 * Reuse the existing collection if available, except in State.COMPLETABLE case
+                 * since that collection may the Collection.EMPTY_SET or EMPTY_LIST.
+                 */
+                if (target != null && state != COMPLETABLE) {
                     target.clear();
                 } else {
-                    final int capacity = source.size();
-                    if (useSet(elementType)) {
-                        target = createSet(elementType, capacity);
+                    if (useSet == null) {
+                        useSet = useSet(elementType);
+                    }
+                    if (useSet) {
+                        target = createSet(elementType, source);
                     } else {
-                        target = new CheckedArrayList<>(elementType, capacity);
+                        target = createList(elementType, source);
                     }
                 }
                 target.addAll(source);
+                if (state == COMPLETABLE) {
+                    if (useSet) {
+                        target = CollectionsExt.unmodifiableOrCopy((Set<E>) target);
+                    } else {
+                        target = CollectionsExt.unmodifiableOrCopy((List<E>) target);
+                    }
+                }
             }
         }
         return target;
@@ -434,7 +592,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final List<E> target = new CheckedArrayList<>(elementType, source.size());
+        final List<E> target = createList(elementType, source);
         target.addAll(source);
         return target;
     }
@@ -454,7 +612,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final Set<E> target = new CheckedHashSet<>(elementType, source.size());
+        final Set<E> target = createSet(elementType, source);
         target.addAll(source);
         return target;
     }
@@ -478,11 +636,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             return null;
         }
         final Collection<E> target;
-        final int capacity = source.size();
         if (useSet(elementType)) {
-            target = createSet(elementType, capacity);
+            target = createSet(elementType, source);
         } else {
-            target = new CheckedArrayList<>(elementType, capacity);
+            target = createList(elementType, source);
         }
         target.addAll(source);
         return target;
@@ -507,7 +664,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         }
         final Collection<E> collection;
         if (useSet(elementType)) {
-            collection = createSet(elementType, INITIAL_CAPACITY);
+            collection = createSet(elementType, null);
         } else {
             collection = new CheckedArrayList<>(elementType, 1);
         }
@@ -531,18 +688,18 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
-     * @param  c            the existing list, or {@code null} if the list has not yet been created.
+     * @param  current      the existing list, or {@code null} if the list has not yet been created.
      * @param  elementType  the element type (used only if {@code c} is null).
      * @return {@code c}, or a new list if {@code c} is null.
      */
-    protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
-        if (c != null) {
-            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
+    protected final <E> List<E> nonNullList(final List<E> current, final Class<E> elementType) {
+        if (current != null) {
+            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
         }
         if (emptyCollectionAsNull()) {
             return null;
         }
-        if (isModifiable()) {
+        if (state < FREEZING) {
             /*
              * Do not specify an initial capacity, because the list will stay empty in a majority of cases
              * (i.e. the users will want to iterate over the list elements more often than they will want
@@ -560,19 +717,19 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
-     * @param  c            the existing set, or {@code null} if the set has not yet been created.
+     * @param  current      the existing set, or {@code null} if the set has not yet been created.
      * @param  elementType  the element type (used only if {@code c} is null).
      * @return {@code c}, or a new set if {@code c} is null.
      */
-    protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
-        if (c != null) {
-            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
+    protected final <E> Set<E> nonNullSet(final Set<E> current, final Class<E> elementType) {
+        if (current != null) {
+            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
         }
         if (emptyCollectionAsNull()) {
             return null;
         }
-        if (isModifiable()) {
-            return createSet(elementType, INITIAL_CAPACITY);
+        if (state < FREEZING) {
+            return createSet(elementType, null);
         }
         return Collections.emptySet();
     }
@@ -589,22 +746,22 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * a {@link List} or a {@link Set} should be used.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
-     * @param  c            the existing collection, or {@code null} if the collection has not yet been created.
+     * @param  current      the existing collection, or {@code null} if the collection has not yet been created.
      * @param  elementType  the element type (used only if {@code c} is null).
      * @return {@code c}, or a new collection if {@code c} is null.
      */
-    protected final <E> Collection<E> nonNullCollection(final Collection<E> c, final Class<E> elementType) {
-        if (c != null) {
-            assert collectionType(elementType).isInstance(c);
-            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
+    protected final <E> Collection<E> nonNullCollection(final Collection<E> current, final Class<E> elementType) {
+        if (current != null) {
+            assert collectionType(elementType).isInstance(current);
+            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
         }
         if (emptyCollectionAsNull()) {
             return null;
         }
-        final boolean isModifiable = isModifiable();
+        final boolean isModifiable = (state < FREEZING);
         if (useSet(elementType)) {
             if (isModifiable) {
-                return createSet(elementType, INITIAL_CAPACITY);
+                return createSet(elementType, null);
             } else {
                 return Collections.emptySet();
             }
@@ -619,18 +776,38 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
+     * Creates a modifiable list for elements of the given type. This method is defined mostly
+     * for consistency with {@link #createSet(Class, Collection)}.
+     *
+     * @param  source  the collection to be copied in the new list. This method uses this information
+     *                 only for computing initial capacity; it does not perform the actual copy.
+     */
+    private static <E> List<E> createList(final Class<E> elementType, final Collection<?> source) {
+        return new CheckedArrayList<>(elementType, source.size());
+    }
+
+    /**
      * Creates a modifiable set for elements of the given type. This method will create an {@link EnumSet},
      * {@link CodeListSet} or {@link java.util.LinkedHashSet} depending on the {@code elementType} argument.
+     *
+     * @param  source  the collection to be copied in the new set, or {@code null} if unknown.
+     *                 This method uses this information only for computing initial capacity;
+     *                 it does not perform the actual copy.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    private <E> Set<E> createSet(final Class<E> elementType, final int capacity) {
+    private static <E> Set<E> createSet(final Class<E> elementType, final Collection<?> source) {
         if (Enum.class.isAssignableFrom(elementType)) {
             return EnumSet.noneOf((Class) elementType);
         }
         if (CodeList.class.isAssignableFrom(elementType) && Modifier.isFinal(elementType.getModifiers())) {
             return new CodeListSet(elementType);
         }
-        return new CheckedHashSet<>(elementType, capacity);
+        /*
+         * If we can not compute an initial capacity from the size of an existing source, use an arbitrary
+         * small value (currently 4). We use a small value because collections will typically contain few
+         * elements (often just a singleton).
+         */
+        return new CheckedHashSet<>(elementType, (source != null) ? Containers.hashMapCapacity(source.size()) : 4);
     }
 
     /**
@@ -671,32 +848,5 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 ||        Locale.class ==               elementType
                 ||      Currency.class ==               elementType
                 ? Set.class : List.class);
-    }
-
-    /**
-     * Creates a <strong>shallow</strong> copy of this metadata.
-     * The clone operation is required for the internal working of the {@link #unmodifiable()} method,
-     * which needs <em>shallow</em> copies of metadata entities.
-     * For deep copies, see {@link MetadataCopier}.
-     *
-     * <div class="section">API note</div>
-     * While {@link Cloneable}, the {@code ModifiableMetadata} subclasses should not provide
-     * the {@code clone()} operation as part of their public API, because the cloned object
-     * share reference to the same collections than the original object.
-     *
-     * <div class="section">Note for subclass implementors</div>
-     * The default {@link Object#clone()} implementation is sufficient in most cases.
-     * The need to override this method should be rare, but may happen if the object
-     * contains for example connection to a database.
-     *
-     * @return a <em>shallow</em> copy of this metadata.
-     * @throws CloneNotSupportedException if the clone is not supported.
-     *
-     * @see #unmodifiable()
-     * @see MetadataCopier
-     */
-    @Override
-    protected ModifiableMetadata clone() throws CloneNotSupportedException {
-        return (ModifiableMetadata) super.clone();
     }
 }

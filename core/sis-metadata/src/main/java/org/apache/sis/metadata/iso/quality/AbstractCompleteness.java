@@ -46,7 +46,6 @@ import org.opengis.metadata.quality.CompletenessCommission;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Completeness_Type")
 @XmlRootElement(name = "AbstractDQ_Completeness")
 @XmlSeeAlso({

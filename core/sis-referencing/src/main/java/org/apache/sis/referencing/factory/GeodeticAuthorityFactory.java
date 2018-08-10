@@ -38,7 +38,6 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -1307,7 +1306,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @return a string representation for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))

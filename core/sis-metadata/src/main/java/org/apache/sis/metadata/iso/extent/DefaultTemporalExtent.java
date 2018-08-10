@@ -66,7 +66,6 @@ import org.apache.sis.xml.NilReason;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_TemporalExtent_Type")
 @XmlRootElement(name = "EX_TemporalExtent")
 @XmlSeeAlso(DefaultSpatialTemporalExtent.class)
@@ -155,7 +154,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @param  newValue  the new content date.
      */
     public void setExtent(final TemporalPrimitive newValue) {
-        checkWritePermission();
+        checkWritePermission(extent);
         extent = newValue;
     }
 
@@ -241,7 +240,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @see DefaultVerticalExtent#setBounds(Envelope)
      */
     public void setBounds(final Envelope envelope) throws TransformException {
-        checkWritePermission();
+        checkWritePermission(extent);
         ReferencingServices.getInstance().setBounds(envelope, this);
     }
 
@@ -260,7 +259,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @since 0.8
      */
     public void intersect(final TemporalExtent other) {
-        checkWritePermission();
+        checkWritePermission(extent);
         final TemporalPrimitive ot = other.getExtent();
         if (ot != null && !(extent instanceof NilObject)) {
             if (extent == null || (ot instanceof NilObject)) {

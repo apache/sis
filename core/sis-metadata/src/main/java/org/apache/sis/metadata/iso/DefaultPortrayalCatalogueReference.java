@@ -50,7 +50,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_PortrayalCatalogueReference_Type", namespace = Namespaces.MPC)
 @XmlRootElement(name = "MD_PortrayalCatalogueReference", namespace = Namespaces.MPC)
 public class DefaultPortrayalCatalogueReference extends ISOMetadata implements PortrayalCatalogueReference {

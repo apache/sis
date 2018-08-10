@@ -52,7 +52,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_EnvironmentalRecord_Type", propOrder = {
     "averageAirTemperature",
     "maxRelativeHumidity",
@@ -160,7 +159,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @param  newValue  the new average air temperature value.
      */
     public void setAverageAirTemperature(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(averageAirTemperature);
         averageAirTemperature = newValue;
     }
 
@@ -183,7 +182,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setMaxRelativeHumidity(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(maxRelativeHumidity);
         if (ensureInRange(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue)) {
             maxRelativeHumidity = newValue;
         }
@@ -206,7 +205,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @param  newValue  the new maximum altitude value.
      */
     public void setMaxAltitude(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(maxAltitude);
         maxAltitude = newValue;
     }
 
@@ -227,7 +226,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * @param  newValue  the meteorological conditions value.
      */
     public void setMeteorologicalConditions(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(meteorologicalConditions);
         meteorologicalConditions = newValue;
     }
 }

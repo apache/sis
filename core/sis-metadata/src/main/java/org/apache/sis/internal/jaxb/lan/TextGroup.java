@@ -18,7 +18,6 @@ package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -72,7 +71,6 @@ import org.apache.sis.util.Debug;
  * @version 1.0
  *
  * @see LocalisedCharacterString
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
  *
  * @since 0.3
  * @module
@@ -123,7 +121,6 @@ final class TextGroup {
      *
      * @see LocalisedCharacterString#toString()
      */
-    @Debug
     @Override
     public String toString() {
         final String lineSeparator = System.lineSeparator();

@@ -50,6 +50,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Acyclic;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.internal.util.TreeFormatCustomization;
 
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
@@ -113,7 +114,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Shared {@code TreeTableFormat} instance for {@link DefaultTreeTable#toString()} implementation.
-     * Usage of this instance shall be done in a synchronized block.
+     * Usage of this instance shall be done in a synchronized block. Note that metadata objects defined
+     * as {@link org.apache.sis.metadata.AbstractMetadata} subclasses use their own format instance.
      */
     static final TreeTableFormat INSTANCE = new TreeTableFormat(null, null);
 
@@ -622,8 +624,17 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Creates string representation of the node values. Tabulations are replaced by spaces,
      * and line feeds are replaced by the Pilcrow character. This is necessary in order to
      * avoid conflict with the characters expected by {@link TableAppender}.
+     *
+     * <p>Instances of {@link Writer} are created temporarily before to begin the formatting
+     * of a node, and discarded when the formatting is finished.</p>
      */
     private final class Writer extends LineAppender {
+        /**
+         * Combination of {@link #nodeFilter} with other filter that may be specified by the tree table to format.
+         * The {@code TreeTable}-specific filter is specified by {@link TreeFormatCustomization}.
+         */
+        private final Predicate<TreeTable.Node> filter;
+
         /**
          * The columns to write.
          */
@@ -660,16 +671,27 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * Creates a new instance which will write to the given appendable.
          *
          * @param  out               where to format the tree.
+         * @param  tree              the tree table to format.
          * @param  columns           the columns of the tree table to format.
          * @param  recursivityGuard  an initially empty set.
          */
-        Writer(final Appendable out, final TableColumn<?>[] columns, final Set<TreeTable.Node> recursivityGuard) {
+        Writer(final Appendable out, final TreeTable tree, final TableColumn<?>[] columns,
+                final Set<TreeTable.Node> recursivityGuard)
+        {
             super(columns.length >= 2 ? new TableAppender(out, "") : out);
             this.columns = columns;
             this.formats = getFormats(columns, false);
             this.values  = new Object[columns.length];
             this.isLast  = new boolean[8];
             this.recursivityGuard = recursivityGuard;
+            Predicate<TreeTable.Node> filter = nodeFilter;
+            if (tree instanceof TreeFormatCustomization) {
+                final Predicate<TreeTable.Node> more = ((TreeFormatCustomization) tree).filter();
+                if (more != null) {
+                    filter = (filter != null) ? more.and(filter) : more;
+                }
+            }
+            this.filter = filter;
             setTabulationExpanded(true);
             setLineSeparator(" ¶ ");
         }
@@ -858,7 +880,24 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                    .append(')').append(lineSeparator);
             }
         }
-    }
+
+        /**
+         * Returns the next filtered element from the given iterator, or {@code null} if none.
+         * The filter applied by this method combines {@link #getNodeFilter()} with the filter
+         * returned by {@link TreeFormatCustomization#filter()}.
+         */
+        private TreeTable.Node next(final Iterator<? extends TreeTable.Node> it) {
+            while (it.hasNext()) {
+                final TreeTable.Node next = it.next();
+                if (next != null) {
+                    if (filter == null || filter.test(next)) {
+                        return next;
+                    }
+                }
+            }
+            return null;
+        }
+   }
 
     /**
      * Writes a graphical representation of the specified tree table in the given stream or buffer.
@@ -890,27 +929,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             recursivityGuard = new HashSet<>();
         }
         try {
-            final Writer out = new Writer(toAppendTo, columns, recursivityGuard);
+            final Writer out = new Writer(toAppendTo, tree, columns, recursivityGuard);
             out.format(tree.getRoot(), 0);
             out.flush();
         } finally {
             recursivityGuard.clear();
         }
-    }
-
-    /**
-     * Returns the next filtered element from the given iterator, or {@code null} if none.
-     */
-    private TreeTable.Node next(final Iterator<? extends TreeTable.Node> it) {
-        while (it.hasNext()) {
-            final TreeTable.Node next = it.next();
-            if (next != null) {
-                if (nodeFilter == null || nodeFilter.test(next)) {
-                    return next;
-                }
-            }
-        }
-        return null;
     }
 
     /**

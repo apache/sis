@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
@@ -37,7 +39,7 @@ import org.apache.sis.util.iso.AbstractInternationalString;
  * This base class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -101,10 +103,29 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
     /**
      * Returns the resource bundle for the given locale.
      *
-     * @param  locale  the locale for which to get the resource bundle.
+     * @param  locale  the locale for which to get the resource bundle, or {@code null} for the default locale.
      * @return the resource bundle for the given locale.
      */
     protected abstract IndexedResourceBundle getBundle(final Locale locale);
+
+    /**
+     * Converts this international string to a log record.
+     *
+     * @param  level  the logging level.
+     * @return a log record with the message of this international string.
+     *
+     * @since 1.0
+     */
+    public final LogRecord toLogRecord(final Level level) {
+        final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
+        final IndexedResourceBundle resources = getBundle(null);
+        record.setResourceBundleName(resources.getClass().getName());
+        record.setResourceBundle(resources);
+        if (hasArguments) {
+            record.setParameters(resources.toArray(arguments));
+        }
+        return record;
+    }
 
     /**
      * Returns a string in the specified locale.
@@ -121,6 +142,8 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
 
     /**
      * Compares this international string with the specified object for equality.
+     * Two {@code ResourceInternationalString} are considered equal if they are
+     * of the same class and have been constructed with equal arguments.
      *
      * @param  object  the object to compare with this international string.
      * @return {@code true} if the given object is equal to this string.

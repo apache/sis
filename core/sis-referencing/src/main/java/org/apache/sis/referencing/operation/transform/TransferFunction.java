@@ -18,13 +18,16 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.io.Serializable;
 import org.opengis.metadata.content.TransferFunctionType;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Debug;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 
 /**
@@ -55,7 +58,7 @@ import org.apache.sis.util.Debug;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -189,38 +192,86 @@ public class TransferFunction implements Cloneable, Serializable {
     }
 
     /**
+     * Returns a linear transform created using the given factory.
+     * This method is used only when the user specify explicitly a factory to use.
+     *
+     * @param  factory    the factory to use.
+     * @param  withScale  {@code true} for using {@link #scale}, or {@code false} for replacing the scale by zero.
+     */
+    private MathTransform createAffineTransform(final MathTransformFactory factory, final boolean withScale) throws FactoryException {
+        return factory.createAffineTransform(new Matrix2(withScale ? scale : 0, offset, 0, 1));
+    }
+
+    /**
+     * Creates a transform from sample values to geophysics values using the given factory.
+     * This method constructs a transform mathematically equivalent to the one returned by
+     * {@link #getTransform()}, but allows to specify another factory than the default one.
+     *
+     * @param  factory  the factory to use for creating a transform.
+     * @return the transform from sample to geophysics values.
+     * @throws FactoryException if the given factory failed to create a transform.
+     *
+     * @since 1.0
+     */
+    public MathTransform createTransform(final MathTransformFactory factory) throws FactoryException {
+        ArgumentChecks.ensureNonNull("factory", factory);
+        MathTransform mt;
+        if (TransferFunctionType.LINEAR.equals(type)) {
+            mt = createAffineTransform(factory, true);
+        } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
+            mt = ExponentialTransform1D.create(base, scale);
+            if (offset != 0) {
+                mt = factory.createConcatenatedTransform(mt, createAffineTransform(factory, false));
+            }
+        } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
+            if (scale == 1) {
+                mt = LogarithmicTransform1D.create(base, offset);
+            } else {
+                mt = factory.createConcatenatedTransform(
+                        LogarithmicTransform1D.create(base, 0),
+                        createAffineTransform(factory, true));
+            }
+        } else {
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
+        }
+        return mt;
+    }
+
+    /**
      * Returns the transform from sample values to geophysics values, as specified by the
      * current properties of this {@code TransferFunction}.
      *
      * @return the transform from sample to geophysics values.
      */
     public MathTransform1D getTransform() {
-        if (transform == null) {
+        MathTransform1D mt = transform;
+        if (mt == null) {
             if (TransferFunctionType.LINEAR.equals(type)) {
-                transform = LinearTransform1D.create(scale, offset);
+                mt = LinearTransform1D.create(scale, offset);
             } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
-                transform = ExponentialTransform1D.create(base, scale);
+                mt = ExponentialTransform1D.create(base, scale);
                 if (offset != 0) {                                          // Rarely occurs in practice.
-                    transform = MathTransforms.concatenate(transform, LinearTransform1D.create(0, offset));
+                    mt = MathTransforms.concatenate(mt, LinearTransform1D.create(0, offset));
                 }
             } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
                 if (scale == 1) {
-                    transform = LogarithmicTransform1D.create(base, offset);
+                    mt = LogarithmicTransform1D.create(base, offset);
                 } else {
                     /*
                      * This case rarely occurs in practice, so we do not provide optimized constructor.
                      * The ExponentialTransform1D.concatenate(…) method will rewrite the equation using
                      * mathematical identities. The result will be a function with a different base.
                      */
-                    transform = MathTransforms.concatenate(
+                    mt = MathTransforms.concatenate(
                             LogarithmicTransform1D.create(base, 0),
                             LinearTransform1D.create(scale, offset));
                 }
             } else {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
             }
+            transform = mt;     // Set only after all steps completed successfully.
         }
-        return transform;
+        return mt;
     }
 
     /**
@@ -314,7 +365,6 @@ public class TransferFunction implements Cloneable, Serializable {
      *
      * @return a string representation of this transfer function.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder b = new StringBuilder("y = ");

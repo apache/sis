@@ -19,12 +19,12 @@ package org.apache.sis.metadata.iso.lineage;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.lineage.Source;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -39,7 +39,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.3
  * @module
  */
-public final strictfp class DefaultLineageTest extends XMLTestCase {
+public final strictfp class DefaultLineageTest extends TestCase {
     /**
      * Create a lineage to marshal. If {@code extension} is {@code false}, then this method uses
      * only properties defined in ISO 19115-1. If {@code extension} is {@code true}, then this

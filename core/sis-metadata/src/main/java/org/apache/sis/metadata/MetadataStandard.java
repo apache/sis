@@ -26,11 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
+import java.io.InvalidClassException;
+import java.security.AccessController;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
@@ -39,6 +39,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.util.FinalFieldSetter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -89,7 +90,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * by a large amount of {@link ModifiableMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see AbstractMetadata
  *
@@ -290,6 +291,18 @@ public class MetadataStandard implements Serializable {
      */
     public Citation getCitation() {
         return citation;
+    }
+
+    /**
+     * Returns a key for use in {@link #getAccessor(CacheKey, boolean)} for the given type.
+     * The type may be an interface (typically a GeoAPI interface) or an implementation class.
+     */
+    private CacheKey createCacheKey(Class<?> type) {
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new CacheKey(type);
     }
 
     /**
@@ -606,6 +619,30 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
+     * Returns a value of the "title" property of the given metadata object.
+     * The title property is defined by {@link TitleProperty} annotation on the implementation class.
+     *
+     * @param  metadata  the metadata for which to get the title property, or {@code null}.
+     * @return the title property value of the given metadata, or {@code null} if none.
+     *
+     * @see TitleProperty
+     * @see ValueExistencePolicy#COMPACT
+     */
+    final Object getTitle(final Object metadata) {
+        if (metadata != null) {
+            final Class<?> type = metadata.getClass();
+            final PropertyAccessor accessor = getAccessor(createCacheKey(type), false);
+            if (accessor != null) {
+                TitleProperty an = type.getAnnotation(TitleProperty.class);
+                if (an != null || (an = accessor.implementation.getAnnotation(TitleProperty.class)) != null) {
+                    return accessor.get(accessor.indexOf(an.name(), false), metadata);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the names of all properties defined in the given metadata type.
      * The property names appears both as keys and as values, but may be written differently.
      * The names may be {@linkplain KeyNamePolicy#UML_IDENTIFIER standard identifiers} (e.g.
@@ -635,17 +672,13 @@ public class MetadataStandard implements Serializable {
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
-    public Map<String,String> asNameMap(Class<?> type, final KeyNamePolicy keyPolicy,
+    public Map<String,String> asNameMap(final Class<?> type, final KeyNamePolicy keyPolicy,
             final KeyNamePolicy valuePolicy) throws ClassCastException
     {
         ensureNonNull("type",        type);
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new NameMap(getAccessor(new CacheKey(type), true), keyPolicy, valuePolicy);
+        return new NameMap(getAccessor(createCacheKey(type), true), keyPolicy, valuePolicy);
     }
 
     /**
@@ -674,17 +707,13 @@ public class MetadataStandard implements Serializable {
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
-    public Map<String,Class<?>> asTypeMap(Class<?> type, final KeyNamePolicy keyPolicy,
+    public Map<String,Class<?>> asTypeMap(final Class<?> type, final KeyNamePolicy keyPolicy,
             final TypeValuePolicy valuePolicy) throws ClassCastException
     {
         ensureNonNull("type",        type);
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new TypeMap(getAccessor(new CacheKey(type), true), keyPolicy, valuePolicy);
+        return new TypeMap(getAccessor(createCacheKey(type), true), keyPolicy, valuePolicy);
     }
 
     /**
@@ -731,16 +760,12 @@ public class MetadataStandard implements Serializable {
      *
      * @see org.apache.sis.metadata.iso.DefaultExtendedElementInformation
      */
-    public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type, final KeyNamePolicy keyPolicy)
+    public Map<String,ExtendedElementInformation> asInformationMap(final Class<?> type, final KeyNamePolicy keyPolicy)
             throws ClassCastException
     {
         ensureNonNull("type",     type);
         ensureNonNull("keyNames", keyPolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new InformationMap(getAccessor(new CacheKey(type), true), keyPolicy);
+        return new InformationMap(getAccessor(createCacheKey(type), true), keyPolicy);
     }
 
     /**
@@ -760,16 +785,12 @@ public class MetadataStandard implements Serializable {
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
-    public Map<String,Integer> asIndexMap(Class<?> type, final KeyNamePolicy keyPolicy)
+    public Map<String,Integer> asIndexMap(final Class<?> type, final KeyNamePolicy keyPolicy)
             throws ClassCastException
     {
         ensureNonNull("type",      type);
         ensureNonNull("keyPolicy", keyPolicy);
-        final Class<?> implementation = getImplementation(type);
-        if (implementation != null) {
-            type = implementation;
-        }
-        return new IndexMap(getAccessor(new CacheKey(type), true), keyPolicy);
+        return new IndexMap(getAccessor(createCacheKey(type), true), keyPolicy);
     }
 
     /**
@@ -916,19 +937,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
-     *
-     * @throws ClassCastException if the specified implementation class do
-     *         not implements a metadata interface of the expected package.
-     *
-     * @see ModifiableMetadata#freeze()
-     */
-    final void freeze(final Object metadata) throws ClassCastException {
-        getAccessor(new CacheKey(metadata.getClass()), true).freeze(metadata);
-    }
-
-    /**
      * Compares the two specified metadata objects.
      * The two metadata arguments shall be implementations of a metadata interface defined by
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
@@ -1023,24 +1031,14 @@ public class MetadataStandard implements Serializable {
      */
     public int hashCode(final Object metadata) throws ClassCastException {
         if (metadata != null) {
-            final Map<Object,Object> inProgress = RecursivityGuard.HASH_CODES.get();
-            if (inProgress.put(metadata, Boolean.TRUE) == null) {
-                // See comment in 'equals(…) about NULL_COLLECTION semaphore purpose.
-                final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
-                try {
-                    return getAccessor(new CacheKey(metadata.getClass()), true).hashCode(metadata);
-                } finally {
-                    inProgress.remove(metadata);
-                    if (!allowNull) {
-                        Semaphores.clear(Semaphores.NULL_COLLECTION);
-                    }
-                }
-            }
+            final Integer hash = HashCode.getOrCreate().walk(this, null, metadata, true);
+            if (hash != null) return hash;
             /*
-             * If we get there, a cycle has been found. We can not compute a hash code value for that metadata.
-             * However it should not be a problem since this metadata is part of a bigger metadata object, and
-             * that enclosing object has other properties for computing its hash code. We just need the result
-             * to be consistent, wich should be the case if properties ordering is always the same.
+             * 'hash' may be null if a cycle has been found. Example: A depends on B which depends on A,
+             * in which case the null value is returned for the second occurrence of A (not the first one).
+             * We can not compute a hash code value here, but it should be okay since that metadata is part
+             * of a bigger metadata object, and that enclosing object should have other properties for computing
+             * its hash code.
              */
         }
         return 0;
@@ -1050,7 +1048,6 @@ public class MetadataStandard implements Serializable {
      * Returns a string representation of this metadata standard.
      * This is for debugging purpose only and may change in any future version.
      */
-    @Debug
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
@@ -1060,13 +1057,13 @@ public class MetadataStandard implements Serializable {
      * Assigns a {@link ConcurrentMap} instance to the given field.
      * Used on deserialization only.
      */
-    final void setMapForField(final Class<?> classe, final String name) {
+    static <T extends MetadataStandard> void setMapForField(final Class<T> classe, final T instance, final String name)
+            throws InvalidClassException
+    {
         try {
-            final Field field = classe.getDeclaredField(name);
-            field.setAccessible(true);
-            field.set(this, new ConcurrentHashMap<>());
+            AccessController.doPrivileged(new FinalFieldSetter<>(classe, name)).set(instance, new ConcurrentHashMap<>());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);                // Should never happen (tested by MetadataStandardTest).
+            throw FinalFieldSetter.readFailure(e);
         }
     }
 
@@ -1079,6 +1076,6 @@ public class MetadataStandard implements Serializable {
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        setMapForField(MetadataStandard.class, "accessors");
+        setMapForField(MetadataStandard.class, this, "accessors");
     }
 }

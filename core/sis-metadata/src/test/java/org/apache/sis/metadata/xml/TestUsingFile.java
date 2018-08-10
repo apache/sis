@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.xml;
 
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 
 
 /**
@@ -29,7 +29,7 @@ import org.apache.sis.test.XMLTestCase;
  * @since   1.0
  * @module
  */
-public abstract strictfp class TestUsingFile extends XMLTestCase {
+public abstract strictfp class TestUsingFile extends TestCase {
     /**
      * The sub-directory of XML files encoded according the ISO 19115-3:2016 schema.
      */

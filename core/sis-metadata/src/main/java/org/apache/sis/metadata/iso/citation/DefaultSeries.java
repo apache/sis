@@ -43,7 +43,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Series_Type", propOrder = {
     "name",
     "issueIdentification",
@@ -146,7 +145,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * @param  newValue  the new name, or {@code null} if none.
      */
     public void setName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(name);
         name = newValue;
     }
 
@@ -167,7 +166,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * @param  newValue  the new issue identification, or {@code null} if none.
      */
     public void setIssueIdentification(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(issueIdentification);
         issueIdentification = newValue;
     }
 
@@ -188,7 +187,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * @param  newValue  the new page, or {@code null} if none.
      */
     public void setPage(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(page);
         page = newValue;
     }
 }

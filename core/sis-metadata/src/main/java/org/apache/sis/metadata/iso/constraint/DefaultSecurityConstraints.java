@@ -47,7 +47,6 @@ import org.opengis.metadata.constraint.SecurityConstraints;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_SecurityConstraints_Type", propOrder = {
     "classification",
     "userNote",
@@ -167,7 +166,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * @param  newValue  the new classification.
      */
     public void setClassification(final Classification newValue) {
-        checkWritePermission();
+        checkWritePermission(classification);
         classification = newValue;
     }
 
@@ -190,7 +189,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * @param  newValue  the new user note.
      */
     public void setUserNote(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(userNote);
         userNote = newValue;
     }
 
@@ -211,7 +210,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * @param  newValue  the new classification system.
      */
     public void setClassificationSystem(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(classificationSystem);
         classificationSystem = newValue;
     }
 
@@ -232,7 +231,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * @param  newValue  the new handling description.
      */
     public void setHandlingDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(handlingDescription);
         handlingDescription = newValue;
     }
 }

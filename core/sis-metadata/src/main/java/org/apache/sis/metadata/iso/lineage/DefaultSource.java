@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.MD_Resolution;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.util.iso.Types;
 
@@ -85,7 +85,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {
     "description",
@@ -234,7 +233,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -260,7 +259,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     public void setSourceSpatialResolution(final Resolution newValue) {
-        checkWritePermission();
+        checkWritePermission(sourceSpatialResolution);
         sourceSpatialResolution = newValue;
     }
 
@@ -298,7 +297,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Deprecated
     public void setScaleDenominator(final RepresentativeFraction newValue)  {
-        checkWritePermission();
+        checkWritePermission(sourceSpatialResolution);
         Resolution resolution = null;
         if (newValue != null) {
             resolution = sourceSpatialResolution;
@@ -335,7 +334,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new reference system.
      */
     public void setSourceReferenceSystem(final ReferenceSystem newValue) {
-        checkWritePermission();
+        checkWritePermission(sourceReferenceSystem);
         sourceReferenceSystem = newValue;
     }
 
@@ -356,7 +355,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new source citation.
      */
     public void setSourceCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(sourceCitation);
         sourceCitation = newValue;
     }
 
@@ -407,7 +406,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @since 0.5
      */
     public void setScope(final Scope newValue){
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 
@@ -428,7 +427,7 @@ public class DefaultSource extends ISOMetadata implements Source {
             Scope scope = getScope();
             if (scope != null) {
                 if (!(scope instanceof DefaultScope)) {
-                    if (isModifiable()) {
+                    if (super.state() != State.FINAL) {
                         scope = new DefaultScope(scope);
                         this.scope = scope;
                     } else {
@@ -451,7 +450,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Deprecated
     public void setSourceExtents(final Collection<? extends Extent> newValues) {
-        checkWritePermission();
+        checkWritePermission(scope);
         Scope scope = this.scope;
         if (!(scope instanceof DefaultScope)) {
             scope = new DefaultScope(scope);
@@ -497,7 +496,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new processed level value.
      */
     public void setProcessedLevel(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(processedLevel);
         processedLevel = newValue;
     }
 
@@ -518,7 +517,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param  newValue  the new nominal resolution value.
      */
     public void setResolution(final NominalResolution newValue) {
-        checkWritePermission();
+        checkWritePermission(resolution);
         resolution = newValue;
     }
 

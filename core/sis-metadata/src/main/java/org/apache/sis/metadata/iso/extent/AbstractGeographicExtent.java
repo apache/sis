@@ -46,7 +46,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractEX_GeographicExtent_Type")
 @XmlRootElement(name = "AbstractEX_GeographicExtent")
 @XmlSeeAlso({
@@ -160,7 +159,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      * @param newValue {@code true} if the bounding polygon encompasses an area covered by the data.
      */
     public void setInclusion(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(inclusion);
         inclusion = newValue;
     }
 }

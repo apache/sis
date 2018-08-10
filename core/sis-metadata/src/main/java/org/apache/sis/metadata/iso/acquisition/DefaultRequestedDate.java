@@ -50,7 +50,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_RequestedDate_Type", propOrder = {
     "requestedDateOfCollection",
     "latestAcceptableDate"
@@ -139,7 +138,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * @param  newValue  the new requested date of collection value.
      */
     public void setRequestedDateOfCollection(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(toDate(requestedDateOfCollection));
         requestedDateOfCollection = toMilliseconds(newValue);
     }
 
@@ -160,7 +159,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * @param  newValue  the new latest acceptable data value.
      */
     public void setLatestAcceptableDate(final Date newValue) {
-        checkWritePermission();
+        checkWritePermission(toDate(latestAcceptableDate));
         latestAcceptableDate = toMilliseconds(newValue);
     }
 }

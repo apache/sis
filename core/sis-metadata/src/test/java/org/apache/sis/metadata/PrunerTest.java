@@ -38,11 +38,11 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  * Tests the {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
-@DependsOn(ValueMapTest.class)
+@DependsOn(HashCodeTest.class)
 public final strictfp class PrunerTest extends TestCase {
     /**
      * The root metadata object being tested.

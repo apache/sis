@@ -71,7 +71,6 @@ import org.apache.sis.util.resources.Messages;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Georectified_Type", propOrder = {
     "checkPointAvailable",
     "checkPointDescription",
@@ -220,7 +219,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param newValue {@code true} if check points are available.
      */
     public void setCheckPointAvailable(final boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(CHECK_POINT_MASK));
         if (newValue) {
             booleans |= CHECK_POINT_MASK;
         } else {
@@ -256,7 +255,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param  newValue  the new check point description.
      */
     public void setCheckPointDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(checkPointDescription);
         checkPointDescription = newValue;
         if (newValue != null) {
             booleans |= CHECK_POINT_MASK;
@@ -309,7 +308,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param  newValue  the new center point.
      */
     public void setCenterPoint(final Point newValue) {
-        checkWritePermission();
+        checkWritePermission(centerPoint);
         centerPoint = newValue;
     }
 
@@ -330,7 +329,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param  newValue  the new point in a pixel.
      */
     public void setPointInPixel(final PixelOrientation newValue) {
-        checkWritePermission();
+        checkWritePermission(pointInPixel);
         pointInPixel = newValue;
     }
 
@@ -351,7 +350,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param  newValue  the new general description.
      */
     public void setTransformationDimensionDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(transformationDimensionDescription);
         transformationDimensionDescription = newValue;
     }
 

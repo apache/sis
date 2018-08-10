@@ -23,7 +23,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
@@ -39,7 +39,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * @since   0.4
  * @module
  */
-public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
+public final strictfp class DefaultTemporalDatumTest extends TestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */

@@ -16,7 +16,10 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.Set;
+import java.util.List;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -32,12 +35,14 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.Containers;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -54,12 +59,11 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
 @XmlTransient
-@SuppressWarnings("CloneableClassWithoutClone")     // ModifiableMetadata needs shallow clones.
 public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -133,7 +137,20 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * {@inheritDoc}
+     * Returns all identifiers associated to this object (from conceptual model and from XML document).
+     * This collection may contain identifiers from different sources:
+     *
+     * <ul class="verbose">
+     *   <li>Identifiers specified in the ISO 19115-1 or 19115-2 abstract models,
+     *       typically (but not necessarily) as an {@code identifier} property
+     *       (may also be {@link DefaultMetadata#getMetadataIdentifier() metadataIdentifier},
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} or
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getISSN() ISSN} properties).</li>
+     *   <li>Identifiers specified in the ISO 19115-3 or 19115-4 XML schemas.
+     *       Those identifiers are typically stored as a result of unmarshalling an XML document.
+     *       Those identifiers can be recognized by an {@linkplain Identifier#getAuthority() authority}
+     *       sets as one of the {@link IdentifierSpace} constants.</li>
+     * </ul>
      */
     @Override
     public Collection<Identifier> getIdentifiers() {
@@ -161,8 +178,41 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
          * We do not cache (for now) the IdentifierMap because it is cheap to create, and if we were
          * caching it we would need anyway to check if 'identifiers' still references the same list.
          */
-        return isModifiable() ? new ModifiableIdentifierMap(identifiers)
-                              : new IdentifierMapAdapter(identifiers);
+        return (super.state() != State.FINAL) ? new ModifiableIdentifierMap(identifiers)
+                                              : new IdentifierMapAdapter(identifiers);
+    }
+
+    /**
+     * Returns the first identifier which is presumed to be defined by ISO 19115 conceptual model.
+     * This method checks the {@linkplain Identifier#getAuthority() authority} for filtering ignorable
+     * identifiers like ISBN/ISSN codes and XML attributes.
+     * This convenience method is provided for implementation of public {@code getIdentifier(Identifier)}
+     * methods in subclasses having an {@code identifier} property with [0 … 1] cardinality.
+     *
+     * @return an identifier from ISO 19115-3 conceptual model (excluding XML identifiers),
+     *         or {@code null} if none.
+     *
+     * @since 1.0
+     */
+    protected Identifier getIdentifier() {
+        return NonMarshalledAuthority.getMarshallable(identifiers);
+    }
+
+    /**
+     * Sets the identifier for metadata objects that are expected to contain at most one ISO 19115 identifier.
+     * This convenience method is provided for implementation of public {@code setIdentifier(Identifier)} methods
+     * in subclasses having an {@code identifier} property with [0 … 1] cardinality.
+     * The default implementation removes all identifiers that would be returned by {@link #getIdentifier()}
+     * before to add the given one in the {@link #identifiers} collection.
+     *
+     * @param  newValue  the new identifier value, or {@code null} for removing the identifier.
+     *
+     * @since 1.0
+     */
+    protected void setIdentifier(final Identifier newValue) {
+        checkWritePermission(valueIfDefined(identifiers));
+        identifiers = nonNullCollection(identifiers, Identifier.class);
+        identifiers = writeCollection(NonMarshalledAuthority.setMarshallable(identifiers, newValue), identifiers, Identifier.class);
     }
 
     // --------------------------------------------------------------------------------------
@@ -170,27 +220,29 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * Declares this metadata and all its properties as unmodifiable. Any attempt to modify a property
-     * after this method call will throw an {@link org.apache.sis.metadata.UnmodifiableMetadataException}.
-     * If this metadata is already unmodifiable, then this method does nothing.
-     *
-     * <p>Subclasses usually do not need to override this method since the default implementation
-     * performs most of its work using Java reflection.</p>
+     * {@inheritDoc}
      */
     @Override
-    public void freeze() {
-        if (isModifiable()) {
-            final Collection<Identifier> p = identifiers;
-            super.freeze();
+    public boolean transition(final State target) {
+        final Collection<Identifier> p = identifiers;
+        final boolean changed = super.transition(target);
+        if (changed) {
             /*
              * The 'identifiers' collection will have been replaced by an unmodifiable collection if
              * subclass has an "identifiers" property. If this is not the case, then the collection
              * is unchanged (or null) so we have to make it unmodifiable here.
              */
-            if (p == identifiers) {
-                identifiers = CollectionsExt.unmodifiableOrCopy(p);                     // Null safe.
+            if (p != null && p == identifiers) {
+                if (p instanceof Set<?>) {
+                    identifiers = CollectionsExt.unmodifiableOrCopy((Set<Identifier>) p);
+                } else if (p instanceof List<?>) {
+                    identifiers = CollectionsExt.unmodifiableOrCopy((List<Identifier>) p);
+                } else {
+                    identifiers = Collections.unmodifiableCollection(p);
+                }
             }
         }
+        return changed;
     }
 
 

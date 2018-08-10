@@ -24,8 +24,11 @@ import org.apache.sis.storage.DataStoreException;
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
- * @since   0.3
+ * @version 1.0
+ *
+ * @see Decoder#getGridGeometries()
+ *
+ * @since 0.3
  * @module
  */
 public abstract class GridGeometry {

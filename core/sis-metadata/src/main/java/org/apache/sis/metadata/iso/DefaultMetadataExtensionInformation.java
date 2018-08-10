@@ -46,7 +46,6 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MetadataExtensionInformation_Type", namespace = Namespaces.MEX, propOrder = {
     "extensionOnLineResource",
     "extendedElementInformation"
@@ -136,8 +135,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata implements 
      * @param  newValue  the new extension online resource.
      */
     public void setExtensionOnLineResource(final OnlineResource newValue) {
-        checkWritePermission();
-        this.extensionOnLineResource = newValue;
+        checkWritePermission(extensionOnLineResource);
+        extensionOnLineResource = newValue;
     }
 
     /**

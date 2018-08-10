@@ -69,7 +69,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription", namespace = Namespaces.MCC)
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
@@ -272,7 +271,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Returns the dataset to which the information applies.
      *
      * <div class="note"><b>Example:</b>
-     * If a geographic data provider is generating vector mapping for thee administrative areas
+     * If a geographic data provider is generating vector mapping for the administrative areas
      * and if the data were processed in the same way, then the provider could record the bulk
      * of initial data at {@link ScopeCode#DATASET} level with a
      * “<cite>Administrative area A, B &amp; C</cite>” description.
@@ -296,7 +295,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param  newValue  the new dataset.
      */
     public void setDataset(final String newValue) {
-        checkWritePermission();
+        checkWritePermission(value);
         if (newValue != null || property == DATASET) {
             warningOnOverwrite(DATASET);
             property = DATASET;
@@ -462,7 +461,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValue Other class of information.
      */
     public void setOther(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(value);
         if (newValue != null || property == OTHER) {
             warningOnOverwrite(OTHER);
             property = OTHER;

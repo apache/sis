@@ -55,7 +55,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Keywords_Type", propOrder = {
     "keywords",
     "type",
@@ -196,7 +195,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @param newValue  the new keyword type.
      */
     public void setType(final KeywordType newValue) {
-        checkWritePermission();
+        checkWritePermission(type);
         type = newValue;
     }
 
@@ -217,7 +216,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @param newValue  the new thesaurus name.
      */
     public void setThesaurusName(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(thesaurusName);
         thesaurusName = newValue;
     }
 
@@ -244,7 +243,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @since 0.5
      */
     public void setKeywordClass(final KeywordClass newValue) {
-        checkWritePermission();
+        checkWritePermission(keywordClass);
         keywordClass = newValue;
     }
 }

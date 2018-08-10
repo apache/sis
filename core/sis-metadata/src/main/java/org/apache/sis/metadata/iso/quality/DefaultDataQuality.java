@@ -28,7 +28,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
@@ -58,7 +58,6 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {
     "scope",
     "reports",
@@ -179,7 +178,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @param  newValue  the new scope.
      */
     public void setScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(scope);
         scope = newValue;
     }
 
@@ -222,7 +221,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @param  newValue  the new lineage.
      */
     public void setLineage(final Lineage newValue) {
-        checkWritePermission();
+        checkWritePermission(lineage);
         lineage = newValue;
     }
 }

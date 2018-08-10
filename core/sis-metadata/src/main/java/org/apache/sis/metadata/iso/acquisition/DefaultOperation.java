@@ -31,7 +31,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Progress;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
@@ -59,7 +58,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Operation_Type", propOrder = {
     "description",
     "citation",
@@ -206,7 +204,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -227,7 +225,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(citation);
         citation = newValue;
     }
 
@@ -239,7 +237,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     @Override
     @XmlElement(name = "identifier")
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -247,10 +245,9 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param  newValue  the new identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**
@@ -270,7 +267,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new status value.
      */
     public void setStatus(final Progress newValue) {
-        checkWritePermission();
+        checkWritePermission(status);
         status = newValue;
     }
 
@@ -291,7 +288,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new type value.
      */
     public void setType(final OperationType newValue) {
-        checkWritePermission();
+        checkWritePermission(type);
         type = newValue;
     }
 
@@ -352,7 +349,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new parent operation value.
      */
     public void setParentOperation(final Operation newValue) {
-        checkWritePermission();
+        checkWritePermission(parentOperation);
         parentOperation = newValue;
     }
 
@@ -373,7 +370,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param  newValue  the new plan value.
      */
     public void setPlan(final Plan newValue) {
-        checkWritePermission();
+        checkWritePermission(plan);
         plan = newValue;
     }
 

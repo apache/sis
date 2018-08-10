@@ -26,7 +26,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
@@ -53,7 +53,6 @@ import org.apache.sis.internal.jaxb.LegacyNamespaces;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
     "values",
     "valueType",
@@ -194,7 +193,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param  newValue  the new value type.
      */
     public void setValueType(final RecordType newValue) {
-        checkWritePermission();
+        checkWritePermission(valueType);
         valueType = newValue;
     }
 
@@ -215,7 +214,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param  newValue  the new value unit.
      */
     public void setValueUnit(final Unit<?> newValue) {
-        checkWritePermission();
+        checkWritePermission(valueUnit);
         valueUnit = newValue;
     }
 
@@ -238,7 +237,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param  newValue  the new error statistic.
      */
     public void setErrorStatistic(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(errorStatistic);
         errorStatistic = newValue;
     }
 }

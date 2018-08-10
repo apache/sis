@@ -503,7 +503,6 @@ public class StorageConnector implements Serializable {
         /**
          * Returns a string representation for debugging purpose.
          */
-        @Debug
         @Override
         public String toString() {
             return Utilities.toString(getClass(),
@@ -753,8 +752,10 @@ public class StorageConnector implements Serializable {
      * @param  <T>   the compile-time type of the {@code type} argument.
      * @param  type  the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
      *               class or other type supported by {@code StorageConnector} subclasses.
-     * @return the storage as a view of the given type, or {@code null} if no view can be created for the given type.
-     * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
+     * @return the storage as a view of the given type, or {@code null} if the given type is one of the supported
+     *         types listed in javadoc but no view can be created for the source given at construction time.
+     * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types
+     *         listed in this javadoc or in subclass javadoc.
      * @throws DataStoreException if an error occurred while opening a stream or database connection.
      *
      * @see #getStorage()
@@ -1361,7 +1362,6 @@ public class StorageConnector implements Serializable {
      *
      * @return a string representation of this {@code StorageConnector} for debugging purpose.
      */
-    @Debug
     @Override
     public String toString() {
         final TreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);

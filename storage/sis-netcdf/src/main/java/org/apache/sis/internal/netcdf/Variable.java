@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.awt.image.DataBuffer;
 import org.apache.sis.math.Vector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -232,7 +231,6 @@ public abstract class Variable extends NamedElement {
      *
      * @return a string representation of this variable.
      */
-    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(getName()).append(" : ").append(getDataType());

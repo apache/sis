@@ -53,7 +53,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @TitleProperty(name = "className")
 @XmlType(name = "MD_KeywordClass_Type", propOrder = {
     "className",
@@ -160,7 +159,7 @@ public class DefaultKeywordClass extends ISOMetadata implements KeywordClass {
      * @param  newValue  the new keyword category in natural language.
      */
     public void setClassName(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(className);
         className = newValue;
     }
 
@@ -181,7 +180,7 @@ public class DefaultKeywordClass extends ISOMetadata implements KeywordClass {
      * @param  newValue  the new URI of concept in the ontology.
      */
     public void setConceptIdentifier(final URI newValue) {
-        checkWritePermission();
+        checkWritePermission(conceptIdentifier);
         conceptIdentifier = newValue;
     }
 
@@ -202,7 +201,7 @@ public class DefaultKeywordClass extends ISOMetadata implements KeywordClass {
      * @param  newValue  the new reference that binds the keyword class to a formal conceptualization.
      */
     public void setOntology(final Citation newValue) {
-        checkWritePermission();
+        checkWritePermission(ontology);
         ontology = newValue;
     }
 }

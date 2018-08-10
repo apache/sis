@@ -406,7 +406,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
         /** {@inheritDoc} */
         @Override
         protected int computeHashCode() {
-            return Numerics.hashCode(Double.doubleToLongBits(offset)) ^ super.computeHashCode();
+            return Double.hashCode(offset) ^ super.computeHashCode();
         }
 
         /** Compares the specified object with this math transform for equality. */

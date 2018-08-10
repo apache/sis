@@ -29,6 +29,7 @@ import javax.measure.quantity.Speed;
 import javax.measure.quantity.Temperature;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Volume;
+import javax.measure.IncommensurableException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -42,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
  * Test conversions using the units declared in {@link Units}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -196,6 +197,19 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
+     * Verifies the conversion factory of {@link Units#PSU}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-413">SIS-413</a>
+     *
+     * @throws IncommensurableException if the conversion can not be applied.
+     */
+    @Test
+    public void testSalinityConversionFactor() throws IncommensurableException {
+        assertEquals(0.001, PSU.getConverterToAny(UNITY)  .convert(1), STRICT);
+        assertEquals(0.1,   PSU.getConverterToAny(PERCENT).convert(1), STRICT);
+    }
+
+    /**
      * Tests getting a unit for a given quantity type.
      */
     @Test
@@ -290,8 +304,8 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame  (HERTZ,                         valueOf("1/s"));
         assertSame  (HERTZ,                         valueOf("s-1"));
         assertSame  (PERCENT,                       valueOf("%"));
-        assertSame  (UNITY,                         valueOf("kg/kg"));
-        assertSame  (UNITY,                         valueOf("kg.kg-1"));
+        assertEquals(KILOGRAM.divide(KILOGRAM),     valueOf("kg/kg"));
+        assertEquals(KILOGRAM.divide(KILOGRAM),     valueOf("kg.kg-1"));
         assertSame  (PPM,                           valueOf("ppm"));            // Parts per million
         assertSame  (PSU,                           valueOf("psu"));            // Pratical Salinity Unit
         assertSame  (SIGMA,                         valueOf("sigma"));

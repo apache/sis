@@ -50,7 +50,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_AcquisitionInformation_Type", propOrder = {
     "acquisitionPlans",
     "acquisitionRequirements",
@@ -213,7 +212,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param  newValue  the new environmental record value.
      */
     public void setEnvironmentalConditions(final EnvironmentalRecord newValue) {
-        checkWritePermission();
+        checkWritePermission(environmentalConditions);
         environmentalConditions = newValue;
     }
 

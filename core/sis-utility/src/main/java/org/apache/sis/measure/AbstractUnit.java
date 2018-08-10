@@ -53,7 +53,7 @@ import org.apache.sis.util.resources.Errors;
  * All unit instances shall be immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
@@ -65,6 +65,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5559950920796714303L;
+
+    /**
+     * The multiplication and division symbols used for Unicode representation.
+     * Also used for internal representation of {@link #symbol}.
+     */
+    static final char MULTIPLY = '⋅', DIVIDE = '∕';
 
     /**
      * The unit symbol, or {@code null} if this unit has no specific symbol. If {@code null},
@@ -79,8 +85,8 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * <p>Users can override this symbol by call to {@link UnitFormat#label(Unit, String)},
      * but such overriding applies only to the target {@code UnitFormat} instance.</p>
      *
-     * <p>The value given assigned to this field is also used by {@link #getName()}
-     * for fetching a localized name from the resource bundle.</p>
+     * <p>The value assigned to this field is also used by {@link #getName()} for fetching a localized name
+     * from the resource bundle.</p>
      *
      * @see #getSymbol()
      * @see SystemUnit#alternate(String)
@@ -91,7 +97,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * A code that identifies whether this unit is part of SI system, or outside SI but accepted for use with SI.
      * Value can be {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
      *
-     * <p>This information may be approximative since we can not always guess correctly whether the result of
+     * <p>This information may be approximate since we can not always guess correctly whether the result of
      * an operation is part of SI or not. Values given to the field may be adjusted in any future version.</p>
      *
      * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
@@ -105,9 +111,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * The EPSG code, or 0 if this unit has no EPSG code.
      *
      * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
-     * by a hard-coded instance with appropriate value, if possible. Note that EPSG codes are not included in the
-     * {@code sis-uom} module (a module containing a subset of {@code sis-utility} module), so we need to ignore
-     * this field at serialization time if we want compatible serialization forms.</p>
+     * by a hard-coded instance with appropriate value, if possible.</p>
      *
      * @see #equals(short, short)
      */
@@ -124,6 +128,13 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         this.symbol = symbol;
         this.scope  = scope;
         this.epsg   = epsg;
+    }
+
+    /**
+     * Returns {@code true} if the use of SI prefixes is allowed for the given unit.
+     */
+    static boolean isPrefixable(final Unit<?> unit) {
+        return (unit instanceof AbstractUnit<?>) && ((AbstractUnit<?>) unit).isPrefixable();
     }
 
     /**
@@ -162,11 +173,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final String getName() {
-        try {
+        if (symbol != null) try {
             return UnitFormat.getBundle(Locale.getDefault()).getString(symbol);
         } catch (MissingResourceException e) {
-            return null;
+            // Ignore as per this method contract.
         }
+        return null;
     }
 
     /**
@@ -229,6 +241,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final Unit<Q> shift(final double offset) {
+        if (offset == 0) return this;
         return transform(LinearConverter.offset(offset, 1));
     }
 
@@ -240,12 +253,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @return this unit scaled by the specified multiplier.
      */
     @Override
-    public final Unit<Q> multiply(final double multiplier) {
-        final double r = inverse(multiplier);
-        if (!Double.isNaN(r)) {
-            return divide(r);
-        }
-        return transform(LinearConverter.scale(multiplier, 1));
+    public final Unit<Q> multiply(double multiplier) {
+        if (multiplier == 1) return this;
+        final double divisor = inverse(multiplier);
+        if (divisor != 1) multiplier = 1;
+        return transform(LinearConverter.scale(multiplier, divisor));
     }
 
     /**
@@ -256,16 +268,15 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @return this unit divided by the specified divisor.
      */
     @Override
-    public final Unit<Q> divide(final double divisor) {
-        final double r = inverse(divisor);
-        if (!Double.isNaN(r)) {
-            return multiply(r);
-        }
-        return transform(LinearConverter.scale(1, divisor));
+    public final Unit<Q> divide(double divisor) {
+        if (divisor == 1) return this;
+        final double multiplier = inverse(divisor);
+        if (multiplier != 1) divisor = 1;
+        return transform(LinearConverter.scale(multiplier, divisor));
     }
 
     /**
-     * If the inverse of the given multiplier is an integer, returns that inverse. Otherwise returns NaN.
+     * If the inverse of the given multiplier is an integer, returns that inverse. Otherwise returns 1.
      * This method is used for replacing e.g. {@code multiply(0.001)} calls by {@code divide(1000)} calls.
      * The later allows more accurate operations because of the way {@link LinearConverter} is implemented.
      */
@@ -273,19 +284,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         if (Math.abs(multiplier) < 1) {
             final double inverse = 1 / multiplier;
             final double r = Math.rint(inverse);
-            if (epsilonEquals(inverse, r)) {
+            if (AbstractConverter.epsilonEquals(inverse, r)) {
                 return r;
             }
         }
-        return Double.NaN;
-    }
-
-    /**
-     * Returns {@code true} if the given floating point numbers are considered equal.
-     * The tolerance factor used in this method is arbitrary and may change in any future version.
-     */
-    static boolean epsilonEquals(final double expected, final double actual) {
-        return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
+        return 1;
     }
 
     /**
@@ -382,7 +385,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
      */
     static boolean isSymbolChar(final int c) {
-        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰-_".indexOf(c) >= 0;
+        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰‱-_".indexOf(c) >= 0;
     }
 
     /**

@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.measure.ValueRange;
 
@@ -54,7 +54,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ImageDescription_Type", propOrder = {
     "illuminationElevationAngle",
     "illuminationAzimuthAngle",
@@ -229,7 +228,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setIlluminationElevationAngle(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(illuminationElevationAngle);
         if (ensureInRange(DefaultImageDescription.class, "illuminationElevationAngle", -90, +90, newValue)) {
             illuminationElevationAngle = newValue;
         }
@@ -256,7 +255,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setIlluminationAzimuthAngle(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(illuminationAzimuthAngle);
         if (ensureInRange(DefaultImageDescription.class, "illuminationAzimuthAngle", 0, 360, newValue)) {
             illuminationAzimuthAngle = newValue;
         }
@@ -279,7 +278,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  the new imaging condition.
      */
     public void setImagingCondition(final ImagingCondition newValue) {
-        checkWritePermission();
+        checkWritePermission(imagingCondition);
         imagingCondition = newValue;
     }
 
@@ -300,7 +299,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  the new image quality code.
      */
     public void setImageQualityCode(final Identifier newValue) {
-        checkWritePermission();
+        checkWritePermission(imageQualityCode);
         imageQualityCode = newValue;
     }
 
@@ -323,7 +322,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setCloudCoverPercentage(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(cloudCoverPercentage);
         if (ensureInRange(DefaultImageDescription.class, "cloudCoverPercentage", 0, 100, newValue)) {
             cloudCoverPercentage = newValue;
         }
@@ -348,7 +347,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setCompressionGenerationQuantity(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(compressionGenerationQuantity);
         if (ensurePositive(DefaultImageDescription.class, "compressionGenerationQuantity", false, newValue)) {
             compressionGenerationQuantity = newValue;
         }
@@ -371,7 +370,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  the new triangulation indicator.
      */
     public void setTriangulationIndicator(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(triangulationIndicator);
         triangulationIndicator = newValue;
     }
 
@@ -394,7 +393,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  {@code true} if radiometric calibration data are available.
      */
     public void setRadiometricCalibrationDataAvailable(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(radiometricCalibrationDataAvailable);
         radiometricCalibrationDataAvailable = newValue;
     }
 
@@ -415,7 +414,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  {@code true} if camera calibration information are available.
      */
     public void setCameraCalibrationInformationAvailable(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(cameraCalibrationInformationAvailable);
         cameraCalibrationInformationAvailable = newValue;
     }
 
@@ -436,7 +435,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  {@code true} if film distortion information are available.
      */
     public void setFilmDistortionInformationAvailable(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(filmDistortionInformationAvailable);
         filmDistortionInformationAvailable = newValue;
     }
 
@@ -457,7 +456,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * @param  newValue  {@code true} if lens distortion information are available.
      */
     public void setLensDistortionInformationAvailable(final Boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(lensDistortionInformationAvailable);
         lensDistortionInformationAvailable = newValue;
     }
 

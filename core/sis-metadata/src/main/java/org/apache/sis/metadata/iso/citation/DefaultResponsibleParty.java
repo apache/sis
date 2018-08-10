@@ -31,9 +31,11 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
 
 /**
@@ -58,7 +60,6 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @module
  */
 @Deprecated
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_ResponsibleParty_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "individualName",
     "organisationName",
@@ -189,7 +190,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @return {@code true} if the name has been set, or {@code false} otherwise.
      */
     private boolean setName(final Class<? extends Party> type, final boolean position, final InternationalString name) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(super.getParties()));
         final Iterator<Party> it = getParties().iterator();
         while (it.hasNext()) {
             final Party party = it.next();
@@ -371,7 +372,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      */
     @Deprecated
     public void setContactInfo(final Contact newValue) {
-        checkWritePermission();
+        checkWritePermission(valueIfDefined(super.getParties()));
         final Iterator<Party> it = getParties().iterator();
         while (it.hasNext()) {
             final Party party = it.next();

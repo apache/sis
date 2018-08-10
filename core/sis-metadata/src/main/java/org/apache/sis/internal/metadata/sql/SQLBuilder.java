@@ -19,6 +19,9 @@ package org.apache.sis.internal.metadata.sql;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.internal.metadata.ReferencingServices;
 
 
 /**
@@ -26,7 +29,7 @@ import java.util.StringTokenizer;
  * This class is for internal purpose only and may change or be removed in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -43,6 +46,14 @@ public class SQLBuilder {
     private final String quote;
 
     /**
+     * Whether the schema name should be written between quotes. If {@code false},
+     * we will let the database engine uses its default lower case / upper case policy.
+     *
+     * @see #appendIdentifier(String, String)
+     */
+    private final boolean quoteSchema;
+
+    /**
      * The string that can be used to escape wildcard characters.
      * This is the value returned by {@link DatabaseMetaData#getSearchStringEscape()}.
      */
@@ -52,14 +63,6 @@ public class SQLBuilder {
      * The buffer where the SQL query is to be created.
      */
     private final StringBuilder buffer = new StringBuilder();
-
-    /**
-     * Whether the schema name should be written between quotes. If {@code false},
-     * we will let the database engine uses its default lower case / upper case policy.
-     *
-     * @see #appendIdentifier(String, String)
-     */
-    private final boolean quoteSchema;
 
     /**
      * Creates a new {@code SQLBuilder} initialized from the given database metadata.
@@ -176,13 +179,33 @@ public class SQLBuilder {
     }
 
     /**
+     * Appends an identifier for an element in the given schema and catalog.
+     *
+     * @param  catalog     the catalog, or {@code null} if none.
+     * @param  schema      the schema, or {@code null} if none.
+     * @param  identifier  the identifier to append.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder appendIdentifier(final String catalog, String schema, final String identifier) {
+        if (catalog != null && !catalog.isEmpty()) {
+            appendIdentifier(catalog);
+            buffer.append('.');
+            if (schema == null) {
+                return appendIdentifier("").appendIdentifier(identifier);
+            }
+        }
+        return appendIdentifier(schema, identifier);
+    }
+
+    /**
      * Appends a value in a {@code SELECT} statement.
      * The {@code "="} string will be inserted before the value.
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
+     * @throws FactoryException if an error occurred while using the geodetic database.
      */
-    public final SQLBuilder appendCondition(final Object value) {
+    public final SQLBuilder appendCondition(final Object value) throws FactoryException {
         if (value == null) {
             buffer.append(" IS NULL");
             return this;
@@ -196,8 +219,9 @@ public class SQLBuilder {
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
+     * @throws FactoryException if an error occurred while using the geodetic database.
      */
-    public final SQLBuilder appendValue(final Object value) {
+    public final SQLBuilder appendValue(Object value) throws FactoryException {
         if (value == null) {
             buffer.append("NULL");
         } else if (value instanceof Boolean) {
@@ -205,6 +229,9 @@ public class SQLBuilder {
         } else if (value instanceof Number) {
             buffer.append(value);
         } else {
+            if (value instanceof IdentifiedObject) {
+                value = ReferencingServices.getInstance().getPreferredIdentifier((IdentifiedObject) value);
+            }
             buffer.append('\'').append(doubleQuotes(value)).append('\'');
         }
         return this;
@@ -297,7 +324,7 @@ public class SQLBuilder {
         final String name = buffer.append(table).append('_').append(column).append("_fkey").toString();
         return clear().append("ALTER TABLE ").appendIdentifier(schema, table).append(" ADD CONSTRAINT ")
                 .appendIdentifier(name).append(" FOREIGN KEY(").appendIdentifier(column).append(") REFERENCES ")
-                .appendIdentifier(schema, target).append(" (").append(primaryKey)
+                .appendIdentifier(schema, target).append(" (").appendIdentifier(primaryKey)
                 .append(") ON UPDATE ").append(cascade ? "CASCADE" : "RESTRICT")
                 .append(" ON DELETE RESTRICT").toString();
     }

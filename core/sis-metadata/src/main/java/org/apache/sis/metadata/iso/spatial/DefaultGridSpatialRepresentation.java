@@ -59,7 +59,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_GridSpatialRepresentation_Type", propOrder = {
     "numberOfDimensions",
     "axisDimensionProperties",
@@ -204,7 +203,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNumberOfDimensions(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(numberOfDimensions);
         if (ensurePositive(DefaultGridSpatialRepresentation.class, "numberOfDimensions", false, newValue)) {
             numberOfDimensions = newValue;
         }
@@ -227,9 +226,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * @param  newValues  the new axis dimension properties.
      */
     public void setAxisDimensionProperties(final List<? extends Dimension> newValues) {
-        checkWritePermission();
-        axisDimensionProperties = (List<Dimension>)
-                writeCollection(newValues, axisDimensionProperties, Dimension.class);
+        axisDimensionProperties = writeList(newValues, axisDimensionProperties, Dimension.class);
     }
 
     /**
@@ -249,8 +246,15 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * @param  newValue  the new cell geometry.
      */
     public void setCellGeometry(final CellGeometry newValue) {
-        checkWritePermission();
+        checkWritePermission(cellGeometry);
         cellGeometry = newValue;
+    }
+
+    /**
+     * Returns {@link Boolean#TRUE} if the given flag is set, or {@code null} otherwise.
+     */
+    final Boolean isDefined(final byte mask) {
+        return (booleans & mask) != 0 ? Boolean.TRUE : null;
     }
 
     /**
@@ -270,7 +274,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * @param newValue {@code true} if the transformation parameters are available.
      */
     public void setTransformationParameterAvailable(final boolean newValue) {
-        checkWritePermission();
+        checkWritePermission(isDefined(TRANSFORMATION_MASK));
         if (newValue) {
             booleans |= TRANSFORMATION_MASK;
         } else {

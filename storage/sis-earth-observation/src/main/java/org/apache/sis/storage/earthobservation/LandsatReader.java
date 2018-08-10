@@ -33,6 +33,7 @@ import java.time.temporal.Temporal;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
@@ -98,13 +99,17 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
 final class LandsatReader {
     /**
      * Names of Landsat bands.
+     *
+     * @todo Those names and the wavelength could be moved to the {@code SpatialMetadata} database,
+     *       as described in <a href="https://issues.apache.org/jira/browse/SIS-338">SIS-338</a>.
+     *       It would make easier to enrich the metadata with more information.
      *
      * @see #bands
      * @see #band(String, int)
@@ -497,25 +502,32 @@ final class LandsatReader {
              * The identifier to inform the user of the product type.
              * Value can be "L1T" or "L1GT".
              */
-// TODO     case "DATA_TYPE":
+            case "DATA_TYPE": {
+                metadata.setProcessingLevelCode("Landsat", value);
+                break;
+            }
             /*
              * Indicates the source of the DEM used in the correction process.
              * Value can be "GLS2000", "RAMP" or "GTOPO30".
              */
-// TODO     case "ELEVATION_SOURCE":
+            case "ELEVATION_SOURCE": {
+                metadata.addSource(value, ScopeCode.MODEL,
+                        Vocabulary.formatInternational(Vocabulary.Keys.DigitalElevationModel));
+                break;
+            }
             /*
              * The output format of the image.
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                if (Constants.GEOTIFF.equalsIgnoreCase(value)) {
+                if (Constants.GEOTIFF.equalsIgnoreCase(value)) try {
                     value = Constants.GEOTIFF;              // Because 'metadata.setFormat(…)' is case-sensitive.
-                }
-                try {
                     metadata.setFormat(value);
+                    break;
                 } catch (MetadataStoreException e) {
                     warning(key, null, e);
                 }
+                metadata.addFormatName(value);
                 break;
             }
             /*
@@ -888,6 +900,7 @@ final class LandsatReader {
     final Metadata getMetadata() throws FactoryException {
         metadata.addLanguage(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
         metadata.addResourceScope(ScopeCode.COVERAGE, null);
+        metadata.addTopicCategory(TopicCategory.GEOSCIENTIFIC_INFORMATION);
         try {
             flushSceneTime();
         } catch (DateTimeException e) {
@@ -967,7 +980,7 @@ final class LandsatReader {
                 }
             }
             result.setMetadataStandards(Citations.ISO_19115);
-            result.freeze();
+            result.transition(DefaultMetadata.State.FINAL);
         }
         return result;
     }

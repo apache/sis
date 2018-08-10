@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;
@@ -893,7 +892,6 @@ class TreeNode implements Node {
     /**
      * Returns a string representation of this node for debugging purpose.
      */
-    @Debug
     @Override
     public final String toString() {
         final StringBuilder buffer = new StringBuilder(60);

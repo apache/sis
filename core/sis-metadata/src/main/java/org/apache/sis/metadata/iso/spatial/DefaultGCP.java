@@ -53,7 +53,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_GCP_Type", propOrder = {
     //"geographicCoordinates",
     "accuracyReports"
@@ -142,7 +141,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * @param  newValue  the new geographic coordinates values.
      */
     public void setGeographicCoordinates(final DirectPosition newValue) {
-        checkWritePermission();
+        checkWritePermission(geographicCoordinates);
         geographicCoordinates = newValue;
     }
 

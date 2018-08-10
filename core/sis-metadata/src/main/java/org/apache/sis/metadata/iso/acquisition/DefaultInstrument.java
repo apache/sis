@@ -26,7 +26,6 @@ import org.opengis.metadata.acquisition.Platform;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
@@ -53,7 +52,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Instrument_Type", propOrder = {
     "citations",
     "identifier",
@@ -167,7 +165,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Identifier getIdentifier() {
-        return NonMarshalledAuthority.getMarshallable(identifiers);
+        return super.getIdentifier();
     }
 
     /**
@@ -175,10 +173,9 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param  newValue  the new identifier value.
      */
+    @Override
     public void setIdentifier(final Identifier newValue) {
-        checkWritePermission();
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        NonMarshalledAuthority.setMarshallable(identifiers, newValue);
+        super.setIdentifier(newValue);
     }
 
     /**
@@ -198,7 +195,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * @param  newValue  the new type value.
      */
     public void setType(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(type);
         type = newValue;
     }
 
@@ -219,7 +216,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(description);
         description = newValue;
     }
 
@@ -240,7 +237,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * @param  newValue  the new platform value.
      */
     public void setMountedOn(final Platform newValue) {
-        checkWritePermission();
+        checkWritePermission(mountedOn);
         mountedOn = newValue;
     }
 }

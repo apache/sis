@@ -63,7 +63,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Objective_Type", propOrder = {
     "identifiers",
     "priority",
@@ -221,7 +220,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param  newValue  the new priority value.
      */
     public void setPriority(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(priority);
         priority = newValue;
     }
 

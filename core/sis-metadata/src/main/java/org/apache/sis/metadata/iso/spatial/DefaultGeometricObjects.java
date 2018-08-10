@@ -50,7 +50,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_GeometricObjects_Type", propOrder = {
     "geometricObjectType",
     "geometricObjectCount"
@@ -153,7 +152,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      * @param  newValue  the new geometric object type.
      */
     public void setGeometricObjectType(final GeometricObjectType newValue) {
-        checkWritePermission();
+        checkWritePermission(geometricObjectType);
         geometricObjectType = newValue;
     }
 
@@ -176,7 +175,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setGeometricObjectCount(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(geometricObjectCount);
         if (ensurePositive(DefaultGeometricObjects.class, "geometricObjectCount", true, newValue)) {
             geometricObjectCount = newValue;
         }

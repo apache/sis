@@ -23,7 +23,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -34,13 +34,10 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-149">GEOTK-149</a>
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
-public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
+public final strictfp class NilReasonMarshallingTest extends TestCase {
     /**
      * Tests a simple case for a missing data.
      *

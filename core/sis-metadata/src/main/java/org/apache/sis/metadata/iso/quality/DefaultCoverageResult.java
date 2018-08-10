@@ -58,7 +58,6 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "QE_CoverageResult_Type", propOrder = {
     "spatialRepresentationType",
     "resultSpatialRepresentation",
@@ -167,7 +166,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @param  newValue  the new spatial representation type value.
      */
     public void setSpatialRepresentationType(final SpatialRepresentationType newValue) {
-        checkWritePermission();
+        checkWritePermission(spatialRepresentationType);
         spatialRepresentationType = newValue;
     }
 
@@ -188,7 +187,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @param  newValue  the new spatial representation value.
      */
     public void setResultSpatialRepresentation(final SpatialRepresentation newValue) {
-        checkWritePermission();
+        checkWritePermission(resultSpatialRepresentation);
         resultSpatialRepresentation = newValue;
     }
 
@@ -211,7 +210,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @param  newValue  the new content description value.
      */
     public void setResultContentDescription(final CoverageDescription newValue) {
-        checkWritePermission();
+        checkWritePermission(resultContentDescription);
         resultContentDescription = newValue;
     }
 
@@ -232,7 +231,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @param  newValue  the new result format value.
      */
     public void setResultFormat(final Format newValue) {
-        checkWritePermission();
+        checkWritePermission(resultFormat);
         resultFormat = newValue;
     }
 
@@ -253,7 +252,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @param  newValue  the new result file value.
      */
     public void setResultFile(final DataFile newValue) {
-        checkWritePermission();
+        checkWritePermission(resultFile);
         resultFile = newValue;
     }
 }

@@ -59,7 +59,6 @@ import org.apache.sis.util.iso.Types;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Constraints_Type", propOrder = {
     "useLimitations",
     "constraintApplicationScope",
@@ -228,7 +227,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     public void setConstraintApplicationScope(final Scope newValue) {
-        checkWritePermission();
+        checkWritePermission(constraintApplicationScope);
         constraintApplicationScope = newValue;
     }
 
@@ -303,7 +302,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @since 0.5
      */
     public void setReleasability(final Releasability newValue) {
-        checkWritePermission();
+        checkWritePermission(releasability);
         releasability = newValue;
     }
 

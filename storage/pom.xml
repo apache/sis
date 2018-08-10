@@ -164,10 +164,10 @@
   <modules>
     <module>sis-storage</module>
     <module>sis-shapefile</module>
-    <module>sis-sql</module>
+    <module>sis-xmlstore</module>
+    <module>sis-sqlstore</module>
     <module>sis-netcdf</module>
     <module>sis-geotiff</module>
-    <module>sis-xmlstore</module>
     <module>sis-earth-observation</module>
     <module>sis-gdal</module>
   </modules>

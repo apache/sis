@@ -60,7 +60,7 @@ import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -79,8 +79,8 @@ import static java.util.Collections.singletonMap;
 // Test dependencies
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.XMLComparator;
-import org.apache.sis.test.XMLTestCase;
+import org.apache.sis.test.xml.DocumentComparator;
+import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.After;
 import org.junit.Rule;
@@ -107,7 +107,7 @@ import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
 })
-public strictfp class MetadataTest extends XMLTestCase {
+public strictfp class MetadataTest extends TestCase {
     /**
      * The resource file which contains an XML representation
      * of a {@link Metadata} object with a {@link VerticalCRS}.
@@ -416,7 +416,7 @@ public strictfp class MetadataTest extends XMLTestCase {
          * now the "gml:id" attribute since SIS generates different values than the ones in oyr test XML file,
          * and those values may change in future SIS version.
          */
-        final XMLComparator comparator = new XMLComparator(getResource(), xml.toString());
+        final DocumentComparator comparator = new DocumentComparator(getResource(), xml.toString());
         comparator.ignoredNodes.add(LegacyNamespaces.GMD + ":temporalElement");
         comparator.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
         comparator.ignoredAttributes.add(Namespaces.XSI + ":schemaLocation");

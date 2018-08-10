@@ -61,7 +61,6 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_SampleDimension_Type", propOrder = {
     "maxValue",
     "minValue",
@@ -245,7 +244,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNumberOfValues(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(numberOfValues);
         if (ensurePositive(DefaultSampleDimension.class, "numberOfValues", false, newValue)) {
             numberOfValues = newValue;
         }
@@ -268,7 +267,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new new minimum value.
      */
     public void setMinValue(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(minValue);
         minValue = newValue;
     }
 
@@ -289,7 +288,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new new maximum value.
      */
     public void setMaxValue(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(maxValue);
         maxValue = newValue;
     }
 
@@ -311,7 +310,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new mean value of data values in each dimension included in the resource.
      */
     public void setMeanValue(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(meanValue);
         meanValue = newValue;
     }
 
@@ -333,7 +332,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new standard deviation of data values in each dimension included in the resource.
      */
     public void setStandardDeviation(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(standardDeviation);
         standardDeviation = newValue;
     }
 
@@ -354,7 +353,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new units of data in the dimension.
      */
     public void setUnits(final Unit<?> newValue) {
-        checkWritePermission();
+        checkWritePermission(units);
         units = newValue;
     }
 
@@ -375,7 +374,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new scale factor which has been applied to the cell value.
      */
     public void setScaleFactor(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(scaleFactor);
         scaleFactor = newValue;
     }
 
@@ -396,7 +395,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new physical value corresponding to a cell value of zero.
      */
     public void setOffset(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(offset);
         offset = newValue;
     }
 
@@ -422,7 +421,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new transfer function value.
      */
     public void setTransferFunctionType(final TransferFunctionType newValue) {
-        checkWritePermission();
+        checkWritePermission(transferFunctionType);
         transferFunctionType = newValue;
     }
 
@@ -448,7 +447,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setBitsPerValue(final Integer newValue) {
-        checkWritePermission();
+        checkWritePermission(bitsPerValue);
         if (ensurePositive(DefaultSampleDimension.class, "bitsPerValue", true, newValue)) {
             bitsPerValue = newValue;
         }
@@ -480,7 +479,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNominalSpatialResolution(final Double newValue) {
-        checkWritePermission();
+        checkWritePermission(nominalSpatialResolution);
         if (ensurePositive(DefaultSampleDimension.class, "nominalSpatialResolution", true, newValue)) {
             nominalSpatialResolution = newValue;
         }
@@ -504,7 +503,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new type of other attribute description.
      */
     public void setOtherPropertyType(final RecordType newValue) {
-        checkWritePermission();
+        checkWritePermission(otherPropertyType);
         otherPropertyType = newValue;
     }
 
@@ -528,7 +527,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * @param  newValue  the new instance of other/attributeType.
      */
     public void setOtherProperty(final Record newValue) {
-        checkWritePermission();
+        checkWritePermission(otherProperty);
         otherProperty = newValue;
     }
 }

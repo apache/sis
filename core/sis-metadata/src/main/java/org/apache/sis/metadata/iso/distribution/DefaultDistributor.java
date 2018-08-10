@@ -59,7 +59,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Distributor_Type", propOrder = {
     "distributorContact",
     "distributionOrderProcesses",
@@ -170,7 +169,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * @param  newValue  the new distributor contact.
      */
     public void setDistributorContact(final Responsibility newValue) {
-        checkWritePermission();
+        checkWritePermission(distributorContact);
         distributorContact = newValue;
     }
 

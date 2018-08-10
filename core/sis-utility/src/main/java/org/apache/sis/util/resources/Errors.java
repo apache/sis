@@ -86,6 +86,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAssignUnitToDimension_2 = 3;
 
         /**
+         * Can not assign units “{1}” to variable “{0}”.
+         */
+        public static final short CanNotAssignUnitToVariable_2 = 183;
+
+        /**
          * Can not assign “{1}” to “{0}”.
          */
         public static final short CanNotAssign_2 = 4;
@@ -129,6 +134,16 @@ public final class Errors extends IndexedResourceBundle {
          * Can not parse “{0}”.
          */
         public static final short CanNotParse_1 = 180;
+
+        /**
+         * Can not process property “{1}” located at path “{0}”. The reason is: {2}
+         */
+        public static final short CanNotProcessPropertyAtPath_3 = 184;
+
+        /**
+         * Can not process property “{0}”. The reason is: {1}
+         */
+        public static final short CanNotProcessProperty_2 = 152;
 
         /**
          * Can not read property “{1}” in file “{0}”.
@@ -879,11 +894,6 @@ public final class Errors extends IndexedResourceBundle {
          * The cell at column “{1}” of row “{0}” is unmodifiable.
          */
         public static final short UnmodifiableCellValue_2 = 151;
-
-        /**
-         * This metadata is not modifiable.
-         */
-        public static final short UnmodifiableMetadata = 152;
 
         /**
          * This instance of ‘{0}’ is not modifiable.
