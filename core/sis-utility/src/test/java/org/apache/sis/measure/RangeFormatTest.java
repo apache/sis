@@ -322,11 +322,11 @@ public final strictfp class RangeFormatTest extends TestCase {
         String text = it.toString();
         findYears(it, RangeFormat.Field.MIN_VALUE, minPos);
         findYears(it, RangeFormat.Field.MAX_VALUE, maxPos);
-        assertEquals("[16/01/70 18:00 … 16/01/90 09:00]", text);
+        assertEquals("[16/01/1970 18:00 … 16/01/1990 09:00]", text);
         assertEquals( 7, minPos.getBeginIndex());
-        assertEquals( 9, minPos.getEndIndex());
-        assertEquals(24, maxPos.getBeginIndex());
-        assertEquals(26, maxPos.getEndIndex());
+        assertEquals(11, minPos.getEndIndex());
+        assertEquals(26, maxPos.getBeginIndex());
+        assertEquals(30, maxPos.getEndIndex());
         assertEquals(range, parse(text));
         /*
          * Try again with the infinity symbol in one endpoint.
@@ -335,18 +335,18 @@ public final strictfp class RangeFormatTest extends TestCase {
         it    = format.formatToCharacterIterator(range);
         text  = it.toString();
         findYears(it, RangeFormat.Field.MAX_VALUE, maxPos);
-        assertEquals("(−∞ … 01/01/90 00:00]", text);
+        assertEquals("(−∞ … 01/01/1990 00:00]", text);
         assertEquals(12, maxPos.getBeginIndex());
-        assertEquals(14, maxPos.getEndIndex());
+        assertEquals(16, maxPos.getEndIndex());
         assertEquals(range, parse(text));
 
         range = new Range<>(Date.class, new Date(20*YEAR), true, (Date) null, true);
         it    = format.formatToCharacterIterator(range);
         text  = it.toString();
         findYears(it, RangeFormat.Field.MIN_VALUE, minPos);
-        assertEquals("[01/01/90 00:00 … ∞)", text);
-        assertEquals(7, minPos.getBeginIndex());
-        assertEquals(9, minPos.getEndIndex());
+        assertEquals("[01/01/1990 00:00 … ∞)", text);
+        assertEquals( 7, minPos.getBeginIndex());
+        assertEquals(11, minPos.getEndIndex());
         assertEquals(range, parse(text));
     }
 
