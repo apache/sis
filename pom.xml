@@ -510,8 +510,8 @@
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compile.source>9</maven.compile.source>
-    <maven.compile.target>9</maven.compile.target>
+    <maven.compiler.source>9</maven.compiler.source>
+    <maven.compiler.target>9</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>0.8</sis.non-free.version>
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
@@ -561,14 +561,33 @@
        ============================================================== -->
   <build>
     <plugins>
+      <!-- JDK requirement for building (not necessarily for running) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>${maven.compiler.target}</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
-          <source>${maven.compile.source}</source>
-          <target>${maven.compile.target}</target>
+          <release>${maven.compiler.target}</release>
           <encoding>${project.build.sourceEncoding}</encoding>
           <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
           <compilerArgs>
@@ -595,6 +614,7 @@
               <value>${project.build.directory}/derby.log</value>
             </property>
           </systemProperties>
+          <argLine>--add-modules java.xml.bind,java.xml.ws.annotation,javafx.graphics</argLine>
         </configuration>
       </plugin>
 
@@ -764,7 +784,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.0.1</version>
         <configuration>
-          <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
+          <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
           <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->

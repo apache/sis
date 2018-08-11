@@ -91,6 +91,9 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <compilerArgs>
+            <!-- As of August 2018, we can not yet moduralize Maven plugins because the Maven dependencies are
+                 themselves not modularized. Attempts to use them as unnamed modules cause package conflicts.
+                 We have to workaround by adding dependencies on the command-line instead. -->
             <arg>--add-modules</arg> <arg>jdk.javadoc</arg>
           </compilerArgs>
         </configuration>
