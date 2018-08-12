@@ -29,7 +29,7 @@ import javax.lang.model.element.Element;
  * The <code>@module</code> tag. This tag expects no argument.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */

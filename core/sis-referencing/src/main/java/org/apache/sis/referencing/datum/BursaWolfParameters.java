@@ -79,8 +79,8 @@ import java.util.Objects;
  * </td><td style="padding-left: 40pt; white-space: nowrap">
  * <center><b>Geocentric coordinates transformation</b></center>
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
- *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
- * <center style="font-size: small">(ignoring unit conversions)</center>
+ *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
+ * <br><span style="font-size:small">(ignoring unit conversions)</span></center>
  *
  * <p>{@include formulas.html#Bursa-Wolf}</p>
  * </td></tr></table>

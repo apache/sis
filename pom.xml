@@ -856,9 +856,9 @@
             <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
           </tags>
           <taglets>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Include</tagletClass></taglet>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.doclet.Module</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.doclet.Include</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.doclet.Preformat</tagletClass></taglet>
           </taglets>
           <doclet>org.apache.sis.internal.doclet.Doclet</doclet>
           <tagletArtifact>

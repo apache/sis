@@ -33,7 +33,7 @@ import com.sun.source.doctree.DocTree;
  * just before the parts to copy in the javadoc.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */

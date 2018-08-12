@@ -94,7 +94,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     /**
      * The unit name for dimensionless unit.
      */
-    static final String UNITY = "unity";
+    private static final String UNITY = "unity";
 
     /**
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
@@ -625,7 +625,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         }
         /*
          * Choice 3: if the unit has a specific symbol, appends that symbol.
-         * Apache SIS implementation use Unicode characters in the symbol, which are not valid for UCUM.
+         * Apache SIS implementation uses Unicode characters in the symbol, which are not valid for UCUM.
          * But Styme.UCUM.appendSymbol(…) performs required replacements.
          */
         {

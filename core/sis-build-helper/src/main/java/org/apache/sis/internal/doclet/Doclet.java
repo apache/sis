@@ -57,7 +57,7 @@ import jdk.javadoc.doclet.StandardDoclet;
  * <p>This class presumes that all CSS files are encoded in UTF-8.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
