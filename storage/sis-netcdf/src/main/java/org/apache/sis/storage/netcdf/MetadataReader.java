@@ -967,7 +967,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds metadata about the meaning of a sample value.
      * This is the {@code <gmd:rangeElementDescription>} element in XML.
      *
-     * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
+     * <p><b>Note:</b> ISO 19115 range elements are approximately equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
      *
      * @param  variable  the netCDF variable.

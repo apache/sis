@@ -28,7 +28,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the XML marshaling of {@link PT_Locale}.
+ * Tests the XML marshalling of {@link PT_Locale}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)

@@ -51,7 +51,7 @@ import org.junit.Test;
 public final strictfp class InterpolatedTransformTest extends MathTransformTestCase {
     /**
      * Creates the same transformation than <cite>"France geocentric interpolation"</cite> transform
-     * (approximatively), but using shifts in geographic domain instead than in geocentric domain.
+     * (approximately), but using shifts in geographic domain instead than in geocentric domain.
      *
      * @throws FactoryException if an error occurred while loading the grid.
      */

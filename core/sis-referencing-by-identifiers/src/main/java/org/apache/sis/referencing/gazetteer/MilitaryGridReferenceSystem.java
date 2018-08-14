@@ -783,7 +783,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             }
 
             /**
-             * If this iterator can be partitioned, returns an iterator covering approximatively
+             * If this iterator can be partitioned, returns an iterator covering approximately
              * the first half of MGRS references and update this iterator for covering the other
              * half. Each iterator will use a disjoint set of projected CRS.
              */
@@ -1529,8 +1529,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                      */
                     if (col < 1 || col > 8) {
                         /*
-                         * UTM northing values at the equator range from 166021 to 833979 meters approximatively
-                         * (WGS84 ellipsoid). Consequently 'cx' ranges from approximatively 1.66 to 8.34, so 'c'
+                         * UTM northing values at the equator range from 166021 to 833979 meters approximately
+                         * (WGS84 ellipsoid). Consequently 'cx' ranges from approximately 1.66 to 8.34, so 'c'
                          * should range from 1 to 8 inclusive.
                          */
                         throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));

@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * </ul>
  *
  * Widening conversions (for example from {@code short} to {@code long}) are always allowed.
- * Narrowing conversions are allowed if the result can be represented at least approximatively by the target type.
+ * Narrowing conversions are allowed if the result can be represented at least approximately by the target type.
  * For example conversions from {@code double} to {@code float} are always allowed (values that are too large for
  * the {@code float} type are represented by positive of negative infinity), but conversions from {@code long} to
  * {@code short} are allowed only if the value is between {@link Short#MIN_VALUE} and {@link Short#MAX_VALUE} inclusive.

@@ -2302,7 +2302,7 @@ parse:      for (int i = 0; i < length;) {
      * </ul>
      *
      * <div class="note"><b>Note:</b>
-     * ISO 19115 range elements are approximatively equivalent to
+     * ISO 19115 range elements are approximately equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</div>
      *
      * @param  name        designation associated with a set of range elements, or {@code null} if none.

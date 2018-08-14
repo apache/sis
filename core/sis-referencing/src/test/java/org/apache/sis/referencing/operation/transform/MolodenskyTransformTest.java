@@ -57,7 +57,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MolodenskyTransform}. The {@link #compareWithGeocentricTranslation()}
  * method uses {@link EllipsoidToCentricTransform} as a reference implementation.
  * The errors compared to geocentric translations should not be greater than
- * approximatively 1 centimetre.
+ * approximately 1 centimetre.
  *
  * @author  Tara Athan
  * @author  Martin Desruisseaux (Geomatys)
@@ -256,7 +256,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     /**
      * Tests the point used in {@link FranceGeocentricInterpolationTest}. We use this test for measuring the
      * errors induced by the use of the Molodensky approximation instead than a real geocentric translation.
-     * The error is approximatively 1 centimetre, which is about 6 times more than the accuracy of the point
+     * The error is approximately 1 centimetre, which is about 6 times more than the accuracy of the point
      * given in {@code FranceGeocentricInterpolationTest}.
      *
      * @throws FactoryException if an error occurred while creating the transform.

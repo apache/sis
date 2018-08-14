@@ -127,7 +127,7 @@ public enum ComparisonMode {
      *
      * <div class="section">Application to coordinate operations</div>
      * If two {@link org.opengis.referencing.operation.MathTransform} objects are considered equal according this mode,
-     * then for any given identical source position, the two compared transforms shall compute at least approximatively
+     * then for any given identical source position, the two compared transforms shall compute at least approximately
      * the same target position.
      * A small difference is tolerated between the target coordinates calculated by the two math transforms.
      * How small is “small” is implementation dependent — the threshold can not be specified in the current
@@ -141,7 +141,7 @@ public enum ComparisonMode {
      * ignores some attributes that may differ between objects not equal but related.
      *
      * <p>The main purpose of this method is to verify if two Coordinate Reference Systems (CRS)
-     * are approximatively equal ignoring axis order.</p>
+     * are approximately equal ignoring axis order.</p>
      *
      * <div class="note"><b>Example:</b>
      * consider two geographic coordinate reference systems with the same attributes except axis order,

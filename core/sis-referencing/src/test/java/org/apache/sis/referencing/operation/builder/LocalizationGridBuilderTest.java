@@ -82,7 +82,7 @@ public final strictfp class LocalizationGridBuilderTest extends TransformTestCas
         isInverseTransformSupported = false;
         verifyQuadratic();
         /*
-         * The tolerance value specified here should be approximatively equal to ResidualGrid.accuracy.
+         * The tolerance value specified here should be approximately equal to ResidualGrid.accuracy.
          */
         tolerance = LocalizationGridBuilder.DEFAULT_PRECISION;
         isInverseTransformSupported = true;

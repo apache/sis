@@ -94,7 +94,7 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
     private final MarshallerPool pool;
 
     /**
-     * The output to which the metadata object will be marshaled.
+     * The output to which the metadata object will be marshalled.
      */
     private final StringWriter output;
 

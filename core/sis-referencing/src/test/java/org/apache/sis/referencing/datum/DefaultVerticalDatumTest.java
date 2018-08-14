@@ -153,7 +153,7 @@ public final strictfp class DefaultVerticalDatumTest extends TestCase {
         assertEquals("remarks", "Approximates geoid.", datum.getRemarks().toString());
         assertEquals("scope",   "Hydrography.",        datum.getScope().toString());
         /*
-         * Test marshaling. We can not yet compare with the original XML file
+         * Test marshalling. We can not yet compare with the original XML file
          * because of all the information lost. This may be fixed in a future
          * SIS version (SIS-160).
          */

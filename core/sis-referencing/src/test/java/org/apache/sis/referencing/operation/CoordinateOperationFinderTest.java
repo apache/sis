@@ -541,7 +541,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
 
     /**
      * Tests a conversion of the temporal axis. We convert 1899-12-31 from a CRS having its epoch at 1970-1-1
-     * to an other CRS having its epoch at 1858-11-17, so the new value shall be approximatively 41 years
+     * to an other CRS having its epoch at 1858-11-17, so the new value shall be approximately 41 years
      * after the new epoch. This conversion also implies a change of units from seconds to days.
      *
      * @throws FactoryException if the operation can not be created.

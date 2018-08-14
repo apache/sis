@@ -248,19 +248,19 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Returns {@code true} if the given values are approximatively equal, up to the given comparison threshold.
+     * Returns {@code true} if the given values are approximately equal, up to the given comparison threshold.
      *
      * @param  v1  the first value to compare.
      * @param  v2  the second value to compare.
      * @param  threshold  the comparison threshold.
-     * @return {@code true} if both values are approximatively equal.
+     * @return {@code true} if both values are approximately equal.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final double threshold) {
         return (abs(v1 - v2) <= threshold) || equals(v1, v2);
     }
 
     /**
-     * Returns {@code true} if the given values are approximatively equal given the comparison mode.
+     * Returns {@code true} if the given values are approximately equal given the comparison mode.
      * In mode {@code APPROXIMATIVE} or {@code DEBUG}, this method will compute a relative comparison
      * threshold from the {@link #COMPARISON_THRESHOLD} constant.
      *

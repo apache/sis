@@ -497,7 +497,7 @@ final class CRSBuilder {
     }
 
     /**
-     * Verifies that a value found in the GeoTIFF file is approximatively equal to the expected value.
+     * Verifies that a value found in the GeoTIFF file is approximately equal to the expected value.
      * This method is invoked when a CRS component is defined both explicitly and by EPSG code,
      * in which case we expect the given value to be equal to the value fetched from the EPSG database.
      * If the values do not match, a warning is reported and the caller should use the EPSG value.

@@ -114,7 +114,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Tests if one math transform is the inverse of the other, or approximatively the inverse.
+     * Tests if one math transform is the inverse of the other, or approximately the inverse.
      * Used for {@link #createOptimized(MathTransform, MathTransform, MathTransformFactory)} implementation.
      */
     private static boolean areInverse(final MathTransform tr1, MathTransform tr2) {

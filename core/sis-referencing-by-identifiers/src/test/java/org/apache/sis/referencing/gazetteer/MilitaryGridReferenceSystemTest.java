@@ -608,7 +608,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Encodes random coordinates, decodes them and verifies that the results are approximatively equal
+     * Encodes random coordinates, decodes them and verifies that the results are approximately equal
      * to the original coordinates.
      *
      * @throws TransformException if an error occurred while computing the coordinate.

@@ -27,7 +27,7 @@ import org.apache.sis.util.collection.CheckedContainer;
 
 
 /**
- * Static methods for object comparisons in different ways (deeply, approximatively, <i>etc</i>).
+ * Static methods for object comparisons in different ways (deeply, approximately, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
@@ -85,7 +85,7 @@ public final class Utilities extends Static {
      * <ul>
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
-     *       then transforming a set of coordinate values using one transform will produce <em>approximatively</em>
+     *       then transforming a set of coordinate values using one transform will produce <em>approximately</em>
      *       the same results than transforming the same coordinates with the other transform.</li>
      *
      *   <li>If the two given objects are
@@ -103,7 +103,7 @@ public final class Utilities extends Static {
      *
      * @param  object1  the first object to compare (may be null).
      * @param  object2  the second object to compare (may be null).
-     * @return {@code true} if both objects are approximatively equal.
+     * @return {@code true} if both objects are approximately equal.
      *
      * @see #deepEquals(Object, Object, ComparisonMode)
      * @see ComparisonMode#APPROXIMATIVE

@@ -85,7 +85,7 @@ public strictfp class CoordinateDomainTest extends TestCase {
 
     /**
      * Tests {@link CoordinateDomain#GEOGRAPHIC_SAFE}.
-     * Latitude values shall be in the [-66 … +66]° range approximatively.
+     * Latitude values shall be in the [-66 … +66]° range approximately.
      */
     @Test
     public void testGeographicSafe() {
@@ -101,7 +101,7 @@ public strictfp class CoordinateDomainTest extends TestCase {
 
     /**
      * Tests {@link CoordinateDomain#GEOGRAPHIC_POLES}.
-     * Latitude values shall be in the [-90 … -66]° or [66 … 90]° range approximatively.
+     * Latitude values shall be in the [-90 … -66]° or [66 … 90]° range approximately.
      */
     @Test
     public void testGeographicPole() {

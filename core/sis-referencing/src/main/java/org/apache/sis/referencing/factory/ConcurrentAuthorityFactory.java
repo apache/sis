@@ -1883,7 +1883,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /**
-         * Looks up an object from this authority factory which is approximatively equal to the specified object.
+         * Looks up an object from this authority factory which is approximately equal to the specified object.
          * The default implementation performs the same lookup than the Data Access Object and caches the result.
          */
         @Override

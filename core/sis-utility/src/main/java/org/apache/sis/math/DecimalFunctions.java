@@ -182,7 +182,7 @@ public final class DecimalFunctions extends Static {
 
     /**
      * Returns the difference between the given {@code double} value and the representation of that value in base 10.
-     * For any value in the method's domain of validity (defined below), this method is <em>approximatively</em>
+     * For any value in the method's domain of validity (defined below), this method is <em>approximately</em>
      * equivalent to the following code except that it is potentially faster since the actual implementation
      * avoids the creation of {@link java.math.BigDecimal} objects:
      *
@@ -200,7 +200,7 @@ public final class DecimalFunctions extends Static {
      * Many international standards define values in base 10. For example the conversion factor from inches
      * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
      * since 1959, not an approximation. But the 2.54 value can not be represented exactly in the IEEE 754
-     * format – the error is approximatively 3.6E-17 cm/inch. In the vast majority of cases such tiny error
+     * format – the error is approximately 3.6E-17 cm/inch. In the vast majority of cases such tiny error
      * can be ignored. But in situations where it is desirable to have an error estimation
      * (e.g. in non-linear equations where errors can grow exponentially), this method can be useful.
      * Other examples of values defined in base 10 are conversions from feet to metres and
@@ -208,7 +208,7 @@ public final class DecimalFunctions extends Static {
      * </div>
      *
      * <div class="section">Domain of validity</div>
-     * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximatively,
+     * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximately,
      * except for the 0 value which is supported. For any non-zero value closer to zero than the 3E-8
      * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
      * This limitation may change in any future SIS version if we find a better algorithm.

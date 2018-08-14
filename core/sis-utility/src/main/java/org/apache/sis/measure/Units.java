@@ -164,7 +164,7 @@ public final class Units extends Static {
 
     /**
      * Unit of measurement defined as exactly 1852 metres (1 M).
-     * This is approximatively the distance between two parallels of latitude
+     * This is approximately the distance between two parallels of latitude
      * separated by one {@linkplain #ARC_MINUTE arc-minute}.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
      * the unlocalized name is “nautical mile” and the identifier is EPSG:9030.
@@ -205,7 +205,7 @@ public final class Units extends Static {
     public static final Unit<Length> STATUTE_MILE;
 
     /**
-     * Unit of measurement approximatively equals to 0.3048006096… metres.
+     * Unit of measurement approximately equals to 0.3048006096… metres.
      * The legal definition is exactly 12/39.37 metres.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
      * the unlocalized name is “US survey foot” and the identifier is EPSG:9003.
@@ -342,7 +342,7 @@ public final class Units extends Static {
 
     /**
      * Unit of measurement defined as 10<sup>-6</sup> radians (1 µrad).
-     * The distance of one microradian of latitude on Earth is approximatively 2 millimetres.
+     * The distance of one microradian of latitude on Earth is approximately 2 millimetres.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
      * the unlocalized name is “microradian” and the identifier is EPSG:9109.
      *
@@ -393,7 +393,7 @@ public final class Units extends Static {
 
     /**
      * Unit of measurement defined as 1/60 degree (1′).
-     * The distance of one arc-minute of latitude on Earth is approximatively 1852 metres
+     * The distance of one arc-minute of latitude on Earth is approximately 1852 metres
      * (one {@linkplain #NAUTICAL_MILE nautical mile}).
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
      * the unlocalized name is “arc-minute” and the identifier is EPSG:9103.
@@ -411,7 +411,7 @@ public final class Units extends Static {
 
     /**
      * Unit of measurement defined as 1/(60×60) degree (1″).
-     * The distance of one arc-second of latitude on Earth is approximatively 31 metres.
+     * The distance of one arc-second of latitude on Earth is approximately 31 metres.
      * This unit of measurement is used for rotation terms in
      * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
@@ -546,7 +546,7 @@ public final class Units extends Static {
     public static final Unit<Time> WEEK;
 
     /**
-     * Unit of measurement approximatively equals to 365.24219 days (1 a).
+     * Unit of measurement approximately equals to 365.24219 days (1 a).
      * This is defined by the International Union of Geological Sciences (IUGS) as exactly 31556925.445 seconds,
      * taken as the length of the tropical year in the the year 2000.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND},
@@ -1044,7 +1044,7 @@ public final class Units extends Static {
     /**
      * Dimensionless unit for pixels (px).
      * The unlocalized name is “pixel”.
-     * This unity should not be confused with {@link #POINT}, which is approximatively equal to 1/72 of inch.
+     * This unity should not be confused with {@link #POINT}, which is approximately equal to 1/72 of inch.
      *
      * @see #POINT
      */

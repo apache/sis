@@ -30,7 +30,7 @@ import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
- * Tests the XML marshaling of {@code Enum}.
+ * Tests the XML marshalling of {@code Enum}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
@@ -40,9 +40,9 @@ import static org.apache.sis.test.MetadataAssert.*;
  */
 public final strictfp class EnumMarshallingTest extends TestCase {
     /**
-     * Tests (un)marshaling of an enumeration.
+     * Tests (un)marshalling of an enumeration.
      *
-     * @throws JAXBException if an error occurred while (un)marshaling the XML.
+     * @throws JAXBException if an error occurred while (un)marshalling the XML.
      */
     @Test
     public void testTopicCategories() throws JAXBException {

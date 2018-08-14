@@ -3080,7 +3080,7 @@ next:               while (r.next()) {
         }
 
         /**
-         * Lookups objects which are approximatively equal to the specified object.
+         * Lookups objects which are approximately equal to the specified object.
          * This method temporarily disables warnings about deprecated objects.
          */
         @Override

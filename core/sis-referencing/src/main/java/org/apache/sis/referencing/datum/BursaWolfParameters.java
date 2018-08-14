@@ -389,9 +389,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Inverts in-place the transformation by inverting the sign of all numerical parameters.
      * The {@linkplain #getPositionVectorTransformation(Date) position vector transformation} matrix
-     * created from inverted Bursa-Wolf parameters will be <strong>approximatively</strong> equals
+     * created from inverted Bursa-Wolf parameters will be <strong>approximately</strong> equals
      * to the {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverse}
-     * of the matrix created from the original parameters. The equality holds approximatively only
+     * of the matrix created from the original parameters. The equality holds approximately only
      * because the parameter values are very small (parts per millions and arc-seconds).
      */
     public void invert() {

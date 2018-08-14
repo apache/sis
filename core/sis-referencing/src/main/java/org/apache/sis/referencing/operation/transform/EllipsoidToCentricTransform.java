@@ -1018,7 +1018,7 @@ next:   while (--numPts >= 0) {
         if (applyOtherFirst && withHeight && other instanceof LinearTransform && other.getSourceDimensions() == 2) {
             /*
              * Found a 4×3 matrix before this transform. We can reduce to a 3×3 matrix only if the row that we are
-             * about to drop unconditionnaly set the height to zero (i.e. all coefficients in that row are zero).
+             * about to drop unconditionally set the height to zero (i.e. all coefficients in that row are zero).
              */
             Matrix matrix = ((LinearTransform) other).getMatrix();
             if (matrix.getElement(2,0) == 0 &&

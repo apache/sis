@@ -43,7 +43,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 })
 public final strictfp class CopyTransformTest extends MathTransformTestCase {
     /**
-     * Generates random ordinates with approximatively 5% of NaN values in the array.
+     * Generates random ordinates with approximately 5% of NaN values in the array.
      */
     private double[] generateRandomCoordinates() {
         return generateRandomCoordinates(CoordinateDomain.GEOGRAPHIC, 0.05f);
