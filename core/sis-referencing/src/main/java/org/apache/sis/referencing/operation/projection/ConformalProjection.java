@@ -389,7 +389,7 @@ abstract class ConformalProjection extends NormalizedProjection {
 
     /**
      * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only,
-     * for values close to the [-1 … +1] range. The tolerance threshold is approximatively 1.5E-12 (note that it
+     * for values close to the [-1 … +1] range. The tolerance threshold is approximately 1.5E-12 (note that it
      * still about 7000 time greater than {@code Math.ulp(1.0)}).
      *
      * @see #ALLOW_TRIGONOMETRIC_IDENTITIES

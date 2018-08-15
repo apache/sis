@@ -27,6 +27,12 @@ import org.apache.sis.util.StringBuilders;
 /**
  * Executes the installation scripts for the "metadata" schema in the "SpatialMetadata" database.
  *
+ * @todo We should replace the SQL {@code "CREATE TABLE"} statements in SQL scripts by something like
+ *       {@code "GENERATE TABLE"}, to be handled in a special way by this {@code Installer} class.
+ *       The {@code "GENERATE TABLE"} statement would enumerate only the columns, and this installer
+ *       would delegate to {@link MetadataWriter} for inferring the column types and the {@code ENUM}
+ *       dependencies.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
@@ -36,6 +42,8 @@ final class Installer extends ScriptRunner {
     /**
      * List of enumeration types to replace by {@code VARCHAR}
      * on implementations that do not support {@code ENUM} type.
+     *
+     * @todo This field can be removed if we apply the "todo" documented in class javadoc.
      */
     private final String[] enumTypes;
 
@@ -51,7 +59,8 @@ final class Installer extends ScriptRunner {
             enumTypes = null;
         } else {
             enumTypes = new String[] {
-                "RoleCode", "DateTypeCode", "PresentationFormCode", "OnLineFunctionCode", "TransferFunctionTypeCode"
+                "RoleCode", "DateTypeCode", "PresentationFormCode", "OnLineFunctionCode", "TransferFunctionTypeCode",
+                "AxisDirection"
             };
             for (int i=0; i<enumTypes.length; i++) {
                 enumTypes[i] = "metadata.\"" + enumTypes[i] + '"';
@@ -65,6 +74,8 @@ final class Installer extends ScriptRunner {
     public void run() throws IOException, SQLException {
         run(Installer.class, "Citations.sql");
         run(Installer.class, "Contents.sql");
+        run(Installer.class, "Metadata.sql");
+        run(Installer.class, "Referencing.sql");
     }
 
     /**

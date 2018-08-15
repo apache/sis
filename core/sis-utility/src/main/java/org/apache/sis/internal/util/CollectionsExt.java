@@ -405,6 +405,8 @@ public final class CollectionsExt extends Static {
      * @return a unmodifiable version of the given map, or {@code null} if the given map was null.
      *
      * @see #compact(Map)
+     *
+     * @todo Replace by {@code Map.copyOf(Map)} on JDK10.
      */
     public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
         if (map != null) {

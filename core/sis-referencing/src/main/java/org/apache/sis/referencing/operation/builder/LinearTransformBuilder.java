@@ -45,7 +45,7 @@ import org.apache.sis.util.Classes;
 
 
 /**
- * Creates an affine transform which will map approximatively the given source positions to the given target positions.
+ * Creates an affine transform which will map approximately the given source positions to the given target positions.
  * In many cases, the <em>source</em> positions are grid indices and the <em>target</em> positions are geographic or
  * projected coordinates, but this is not mandatory. If the source positions are known to be grid indices,
  * then a builder created by the {@link #LinearTransformBuilder(int...)} constructor will be more efficient.

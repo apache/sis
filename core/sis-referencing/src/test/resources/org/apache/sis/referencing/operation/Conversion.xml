@@ -84,7 +84,7 @@
       </gml:parameter>
 
       <!-- There is more parameters in a Mercator projection,
-           but two are enough for (un)marshaling test purpose. -->
+           but two are enough for (un)marshalling test purpose. -->
 
     </gml:OperationMethod>
   </gml:method>
@@ -119,6 +119,6 @@
   </gml:parameterValue>
 
   <!-- There is more parameters in a Mercator projection,
-       but two are enough for (un)marshaling test purpose. -->
+       but two are enough for (un)marshalling test purpose. -->
 
 </gml:Conversion>

@@ -207,7 +207,7 @@ final class Prefixes {
                 {
                     symbol = symbol.substring(1);
                     UnitConverter c = converter('m');
-                    return new ConventionalUnit<>(unit, c, symbol, UnitRegistry.PREFIXABLE, (byte) 0).unique(symbol);
+                    return new ConventionalUnit<>(unit, c, symbol, UnitRegistry.PREFIXABLE, (short) 0).unique(symbol);
                 }
             }
         }

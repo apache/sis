@@ -66,6 +66,17 @@
        =========================================================== -->
   <build>
     <plugins>
+      <!-- To be removed after SIS has been fully modularized. -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>9</release>
+          <compilerArgs>
+            <arg>--add-modules</arg> <arg>java.xml.bind,java.xml.ws.annotation,javafx.graphics</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
       <!-- Anticipation for Java 9 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

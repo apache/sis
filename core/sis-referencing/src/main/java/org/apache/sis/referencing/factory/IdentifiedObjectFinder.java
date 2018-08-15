@@ -39,7 +39,7 @@ import org.apache.sis.util.Utilities;
 
 
 /**
- * Searches in an authority factory for objects approximatively equal to a given object.
+ * Searches in an authority factory for objects approximately equal to a given object.
  * This class can be used for fetching a fully defined {@linkplain AbstractIdentifiedObject identified object}
  * from an incomplete one, for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}"
  * element in <cite>Well Known Text</cite>.
@@ -273,7 +273,7 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups objects which are approximatively equal to the specified object.
+     * Lookups objects which are approximately equal to the specified object.
      * The default implementation tries to instantiate some {@linkplain AbstractIdentifiedObject identified objects}
      * from the authority factory specified at construction time, in the following order:
      *
@@ -339,7 +339,7 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups only one object which is approximatively equal to the specified object.
+     * Lookups only one object which is approximately equal to the specified object.
      * This method invokes {@link #find(IdentifiedObject)}, then examine the returned {@code Set} as below:
      *
      * <ul>
@@ -536,7 +536,7 @@ public class IdentifiedObjectFinder {
     /**
      * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
      * The returned set must contains <em>at least</em> the code of every objects that are
-     * {@linkplain ComparisonMode#APPROXIMATIVE approximatively equal} to the specified one.
+     * {@linkplain ComparisonMode#APPROXIMATIVE approximately equal} to the specified one.
      * However the set may conservatively contains the code for more objects if an exact search is too expensive.
      *
      * <p>This method is invoked by the default {@link #find(IdentifiedObject)} method implementation.

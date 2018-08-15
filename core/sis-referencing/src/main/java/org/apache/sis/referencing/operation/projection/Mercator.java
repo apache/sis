@@ -439,7 +439,7 @@ public class Mercator extends ConformalProjection {
      * this class contains an explicit check for latitude values at a pole. If floating point arithmetic had infinite
      * precision, such checks would not be necessary since the formulas lead naturally to infinite values at poles,
      * which is the correct answer. In practice the infinite value emerges by itself at only one pole, and the other
-     * one produces a high value (approximatively 1E+16). This is because there is no accurate representation of π/2,
+     * one produces a high value (approximately 1E+16). This is because there is no accurate representation of π/2,
      * and consequently {@code tan(π/2)} does not return the infinite value. We workaround this issue with an explicit
      * check for abs(φ) ≊ π/2. Note that:
      *

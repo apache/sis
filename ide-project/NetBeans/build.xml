@@ -27,6 +27,16 @@
   <import file="nbproject/build-impl.xml"/>
 
   <!--
+    Called after initialisation of project properties. Creates the "local-src"
+    empty directory, which needs to exist before the compiler can be invoked.
+    We perform this task because Git does not track empty directories, and we
+    avoid polluting the directory with dummy files as they appear in NetBeans.
+  -->
+  <target name="-post-init">
+    <mkdir dir="${src.local-src.dir}"/>
+  </target>
+
+  <!--
     Called after compilation. Copies the "*.utf" resources files created by Maven.
     Note that the Apache SIS project must have been build by Maven at least once
     before it can be built by the NetBeans IDE.

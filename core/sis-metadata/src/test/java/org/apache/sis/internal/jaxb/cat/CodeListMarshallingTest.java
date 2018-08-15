@@ -40,7 +40,7 @@ import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
- * Tests the XML marshaling of {@code CodeList}.
+ * Tests the XML marshalling of {@code CodeList}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
@@ -95,9 +95,9 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     }
 
     /**
-     * Tests marshaling using the default URL.
+     * Tests marshalling using the default URL.
      *
-     * @throws JAXBException if an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
     public void testDefaultURL() throws JAXBException {
@@ -113,9 +113,9 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     }
 
     /**
-     * Tests marshaling using the ISO URL.
+     * Tests marshalling using the ISO URL.
      *
-     * @throws JAXBException if an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
     public void testISO_URL() throws JAXBException {
@@ -136,7 +136,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     /**
      * Tests a code list localization.
      *
-     * @throws JAXBException if an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
     public void testLocalization() throws JAXBException {
@@ -146,7 +146,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     /**
      * Tests a code list localization in ISO 19139:2007.
      *
-     * @throws JAXBException if an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshalling the XML.
      *
      * @since 1.0
      */
@@ -188,9 +188,9 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     }
 
     /**
-     * Tests marshaling of a code list which is not in the list of standard codes.
+     * Tests marshalling of a code list which is not in the list of standard codes.
      *
-     * @throws JAXBException if an error occurred while marshaling the XML.
+     * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
     public void testExtraCodes() throws JAXBException {

@@ -154,7 +154,7 @@ public class DBFStatement extends AbstractStatement {
 
         if (this.currentResultSet != null) {
             // Inform that this ResultSet could have been closed but that we are handling this :
-            // Some developpers may expect their ResultSet should have been closed before in their program.
+            // Some developers may expect their ResultSet should have been closed before in their program.
             log(Level.FINE, "log.closing_underlying_resultset", this.currentResultSet);
             this.currentResultSet.close();
 
@@ -162,7 +162,7 @@ public class DBFStatement extends AbstractStatement {
         }
 
         // Check if all the underlying ResultSets that has been opened with this statement has been closed.
-        // If not, we log a warning to help the developper.
+        // If not, we log a warning to help the developer.
         if (this.openedResultSets.size() > 0) {
             log(Level.WARNING, "log.resultsets_left_opened", this.openedResultSets.size(), this.openedResultSets.stream().map(DBFResultSet::toString).collect(Collectors.joining(", ")));
         }

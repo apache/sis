@@ -981,7 +981,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             }
             default: {
                 /*
-                 * We want to compare the eccentricity with a tolerance threshold corresponding approximatively
+                 * We want to compare the eccentricity with a tolerance threshold corresponding approximately
                  * to an error of 1 cm on Earth. The eccentricity for an ellipsoid of semi-major axis a=1 is:
                  *
                  *     ℯ² = 1 - b²

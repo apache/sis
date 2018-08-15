@@ -79,8 +79,8 @@ import java.util.Objects;
  * </td><td style="padding-left: 40pt; white-space: nowrap">
  * <center><b>Geocentric coordinates transformation</b></center>
  * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
- *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)</center>
- * <center style="font-size: small">(ignoring unit conversions)</center>
+ *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
+ * <br><span style="font-size:small">(ignoring unit conversions)</span></center>
  *
  * <p>{@include formulas.html#Bursa-Wolf}</p>
  * </td></tr></table>
@@ -389,9 +389,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Inverts in-place the transformation by inverting the sign of all numerical parameters.
      * The {@linkplain #getPositionVectorTransformation(Date) position vector transformation} matrix
-     * created from inverted Bursa-Wolf parameters will be <strong>approximatively</strong> equals
+     * created from inverted Bursa-Wolf parameters will be <strong>approximately</strong> equals
      * to the {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverse}
-     * of the matrix created from the original parameters. The equality holds approximatively only
+     * of the matrix created from the original parameters. The equality holds approximately only
      * because the parameter values are very small (parts per millions and arc-seconds).
      */
     public void invert() {

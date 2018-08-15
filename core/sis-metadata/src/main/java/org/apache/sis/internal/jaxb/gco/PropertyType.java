@@ -98,7 +98,7 @@ import org.apache.sis.util.resources.Errors;
  *       specific type.</li>
  *   <li>The parameterized return type forces the compiler to generate bridge methods under
  *       the hood. In the particular case of typical {@code PropertyType} subclasses,
- *       this increases the size of {@code .class} files by approximatively 4.5%.
+ *       this increases the size of {@code .class} files by approximately 4.5%.
  *       While quite small, this is a useless overhead since we never need to invoke the
  *       abstract {@code getElement()} from this class.</li>
  * </ul></div>

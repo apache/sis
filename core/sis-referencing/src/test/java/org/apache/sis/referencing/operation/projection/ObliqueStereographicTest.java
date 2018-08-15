@@ -250,7 +250,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         dstPts[1] += FN;
 
         // Use a smaller tolerance because spherical and elliptical formulas should be equivalent in this case.
-        assertArrayEquals("Spherical projection", refPts, dstPts, Formulas.ANGULAR_TOLERANCE / 1E6);
+        assertArrayEquals("Spherical projection", refPts, dstPts, Formulas.LINEAR_TOLERANCE / 1E4);
     }
 
     /**

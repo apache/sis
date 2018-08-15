@@ -239,7 +239,7 @@ public final strictfp class ConsistencyTest extends TestCase {
     {
         final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
         /*
-         * Lookup operation is not going to work if the CRS are not approximatively equal.
+         * Lookup operation is not going to work if the CRS are not approximately equal.
          */
         final String urn = IdentifiedObjects.toURN(crs.getClass(), id);
         assertNotNull(crs.getName().getCode(), urn);

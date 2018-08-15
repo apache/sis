@@ -267,7 +267,7 @@ public final class DoubleDouble extends Number {
     public DoubleDouble(final double value, final double error) {
         this.value = value;
         this.error = error;
-        assert !(Math.abs(error) >= Math.ulp(value)) : this; // Use ! for being tolerant to NaN.
+        assert !(Math.abs(error) >= Math.ulp(value)) : this;            // Use ! for being tolerant to NaN.
     }
 
     /**
@@ -1096,8 +1096,6 @@ public final class DoubleDouble extends Number {
         return false;
     }
 
-
-
     /**
      * Returns a string representation of this number for debugging purpose.
      * The returned string does not need to contains all digits that this {@code DoubleDouble} can handle.
@@ -1106,6 +1104,6 @@ public final class DoubleDouble extends Number {
      */
     @Override
     public String toString() {
-        return String.valueOf(value);
+        return new BigDecimal(value).add(new BigDecimal(error), MathContext.DECIMAL128).toString();
     }
 }

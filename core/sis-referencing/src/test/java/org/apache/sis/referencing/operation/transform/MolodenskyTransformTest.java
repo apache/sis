@@ -16,11 +16,13 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
@@ -29,7 +31,9 @@ import org.apache.sis.referencing.CommonCRS;
 import static java.lang.StrictMath.*;
 
 // Test dependencies
+import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -42,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MolodenskyTransform}. The {@code compareWithGeocentricTranslation()}
  * method uses {@link EllipsoidToCentricTransform} as a reference implementation.
  * The errors compared to geocentric translations should not be greater than
- * approximatively 1 centimetre.
+ * approximately 1 centimetre.
  *
  * @author  Tara Athan
  * @author  Martin Desruisseaux (Geomatys)
@@ -179,6 +183,38 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         zTolerance = Formulas.LINEAR_TOLERANCE;
         isInverseTransformSupported = true;
         verifyTransform(sample, expected);
+    }
+
+    /**
+     * Tests the point used in {@link FranceGeocentricInterpolationTest}. We use this test for measuring the
+     * errors induced by the use of the Molodensky approximation instead than a real geocentric translation.
+     * The error is approximately 1 centimetre, which is about 6 times more than the accuracy of the point
+     * given in {@code FranceGeocentricInterpolationTest}.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if transformation of a point failed.
+     */
+    @Test
+    @DependsOnMethod("testMolodensky")
+    public void testFranceGeocentricInterpolationPoint() throws FactoryException, TransformException {
+        transform = MolodenskyTransform.createGeodeticTransformation(
+                DefaultFactories.forBuildin(MathTransformFactory.class),
+                HardCodedDatum.NTF.getEllipsoid(), true,        // Clarke 1880 (IGN)
+                CommonCRS.ETRS89.ellipsoid(), true,             // GRS 1980 ellipsoid
+               -FranceGeocentricInterpolation.TX,
+               -FranceGeocentricInterpolation.TY,
+               -FranceGeocentricInterpolation.TZ,
+                false);
+        /*
+         * Code below is a copy-and-paste of GeocentricTranslationTest.testFranceGeocentricInterpolationPoint(),
+         * but with the tolerance threshold increased. We do not let the error goes beyond 1 cm however.
+         */
+        tolerance = Formulas.LINEAR_TOLERANCE;  // Other SIS branches use a stricter threshold.
+        final double[] source   = Arrays.copyOf(FranceGeocentricInterpolationTest.samplePoint(1), 3);
+        final double[] expected = Arrays.copyOf(FranceGeocentricInterpolationTest.samplePoint(2), 3);
+        expected[2] = 43.15;  // Anti-regression (this value is not provided in NTG_88 guidance note).
+        verifyTransform(source, expected);
+        validate();
     }
 
     /**

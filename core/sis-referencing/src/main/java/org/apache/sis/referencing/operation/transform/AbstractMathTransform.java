@@ -881,7 +881,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Compares the specified object with this math transform for equality.
      * Two math transforms are considered equal if, given identical source positions, their
      * {@linkplain #transform(DirectPosition,DirectPosition) transformed} positions would be
-     * equal or {@linkplain ComparisonMode#APPROXIMATIVE approximatively} equal.
+     * equal or {@linkplain ComparisonMode#APPROXIMATIVE approximately} equal.
      * This method may conservatively returns {@code false} if unsure.
      *
      * <p>The default implementation returns {@code true} if the following conditions are meet:</p>

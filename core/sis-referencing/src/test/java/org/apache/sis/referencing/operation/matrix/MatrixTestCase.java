@@ -66,7 +66,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tolerance factor for comparisons of floating point numbers between SIS and JAMA implementation,
      * which is {@value}. Note that the matrix element values used in this class vary between 0 and 100,
-     * and the {@code StrictMath.ulp(100.0)} value is approximatively 1.4E-14.
+     * and the {@code StrictMath.ulp(100.0)} value is approximately 1.4E-14.
      *
      * <div class="section">How this value is determined</div>
      * Experience (by looking at {@link #statistics}) shows that the differences are usually smaller than 1E-12.
@@ -199,7 +199,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Returns the next random number as a value between approximatively -100 and 100
+     * Returns the next random number as a value between approximately -100 and 100
      * with the guarantee to be different than zero. The values returned by this method
      * are suitable for testing scale factors.
      */
@@ -445,7 +445,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Asserts that the given matrix has approximatively the same coefficients than the given affine transform.
+     * Asserts that the given matrix has approximately the same coefficients than the given affine transform.
      */
     private static void assertCoefficientsEqual(final AffineTransform at, final MatrixSIS matrix) {
         assertEqualsRelative("m20",        0,                  matrix, 2, 0);

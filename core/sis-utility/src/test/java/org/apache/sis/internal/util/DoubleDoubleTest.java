@@ -265,7 +265,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * In the {@code sqrt(2)} case:
      *
      * <ul>
-     *   <li>The error using {@code double} arithmetic is approximatively 1E-16.</li>
+     *   <li>The error using {@code double} arithmetic is approximately 1E-16.</li>
      *   <li>The error using double-double arithmetic is expected to be slightly less that 1E-32.</li>
      * </ul>
      */
@@ -279,7 +279,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
         /*
          * If we have been able to compute √2, now test with random values.
-         * Since the range of values is approximatively [-1000 … 1000], use
+         * Since the range of values is approximately [-1000 … 1000], use
          * a tolerance value 1000 time the one that we used for √2.
          */
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {

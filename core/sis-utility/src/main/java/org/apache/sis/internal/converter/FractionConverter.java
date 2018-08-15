@@ -97,7 +97,7 @@ public final class FractionConverter extends SystemConverter<Fraction,Integer> {
     }
 
     /**
-     * The inverse of the {@link FractionConverter}.
+     * The inverse of {@link FractionConverter}.
      */
     public static final class FromInteger extends SystemConverter<Integer,Fraction> {
         /**
@@ -121,6 +121,16 @@ public final class FractionConverter extends SystemConverter<Fraction,Integer> {
         @Override public ObjectConverter<Integer,Fraction> unique()  {return INSTANCE;}
         @Override public ObjectConverter<Fraction,Integer> inverse() {return FractionConverter.INSTANCE;}
         @Override public Set<FunctionProperty> properties()          {return bijective();}
-        @Override public Fraction apply(Integer value)               {return new Fraction(value, 1);}
+
+        /**
+         * Creates a new fraction from the given integer.
+         *
+         * @param  value  the integer to convert.
+         * @return a fraction equals to the given integer.
+         */
+        @Override
+        public Fraction apply(Integer value) {
+            return new Fraction(value, 1);
+        }
     }
 }
