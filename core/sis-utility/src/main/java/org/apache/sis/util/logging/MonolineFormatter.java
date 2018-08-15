@@ -931,7 +931,7 @@ loop:   for (int i=0; ; i++) {
      * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Configuration
-    public static MonolineFormatter install()  throws SecurityException {
+    public static MonolineFormatter install() throws SecurityException {
         return install(Logging.getLogger(""), null);
     }
 

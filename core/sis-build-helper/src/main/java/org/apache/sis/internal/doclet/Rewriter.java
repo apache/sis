@@ -42,7 +42,7 @@ import java.io.Writer;
  * We may revisit when JDK 9 become available, if their new standard doclet API is public.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */

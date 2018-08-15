@@ -100,12 +100,31 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
     }
 
     /**
+     * Creates a linear converter from the given scale and offset, which may be {@link BigDecimal} instances.
+     * This is the implementation of public {@link Units#converter(Number, Number)} method.
+     */
+    static LinearConverter create(final Number scale, final Number offset) {
+        final double numerator, divisor;
+        double shift = (offset != null) ? doubleValue(offset) : 0;
+        if (scale instanceof Fraction) {
+            numerator = ((Fraction) scale).numerator;
+            divisor   = ((Fraction) scale).denominator;
+            shift    *= divisor;
+        } else {
+            numerator = (scale != null) ? doubleValue(scale) : 1;
+            divisor   = 1;
+        }
+        final LinearConverter c = create(numerator, shift, divisor);
+        if (scale  instanceof BigDecimal) c.scale10  = (BigDecimal) scale;
+        if (offset instanceof BigDecimal) c.offset10 = (BigDecimal) offset;
+        return c;
+    }
+
+    /**
      * Returns a linear converter for the given scale and offset.
      */
     private static LinearConverter create(final double scale, final double offset, final double divisor) {
-        if (offset == 0) {
-            if (scale == divisor) return IDENTITY;
-        }
+        if (offset == 0 && scale == divisor) return IDENTITY;
         return new LinearConverter(scale, offset, divisor);
     }
 
@@ -113,6 +132,9 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * Returns a linear converter for the given ratio. The scale factor is specified as a ratio because
      * the unit conversion factors are often defined with a value in base 10.  That value is considered
      * exact by definition, but IEEE 754 has no exact representation of decimal fraction digits.
+     *
+     * <p>It is caller's responsibility to skip this method call when {@code numerator} = {@code denominator}.
+     * This method does not perform this check because it is usually already done (indirectly) by the caller.</p>
      */
     static LinearConverter scale(final double numerator, final double denominator) {
         return new LinearConverter(numerator, 0, denominator);
@@ -122,6 +144,9 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * Returns a converter for the given shift. The translation is specified as a fraction because the
      * unit conversion terms are often defined with a value in base 10. That value is considered exact
      * by definition, but IEEE 754 has no exact representation of decimal fraction digits.
+     *
+     * <p>It is caller's responsibility to skip this method call when {@code numerator} = 0.
+     * This method does not perform this check because it is usually already done by the caller.</p>
      */
     static LinearConverter offset(final double numerator, final double denominator) {
         return new LinearConverter(denominator, numerator, denominator);
@@ -131,6 +156,9 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * Raises the given converter to the given power. This method assumes that the given converter
      * {@linkplain #isLinear() is linear} (this is not verified) and takes only the scale factor;
      * the offset (if any) is ignored.
+     *
+     * <p>It is caller's responsibility to skip this method call when {@code n} = 1.
+     * This method does not perform this check because it is usually already done (indirectly) by the caller.</p>
      *
      * @param  converter  the converter to raise to the given power.
      * @param  n          the exponent.

@@ -106,7 +106,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      * Implementation of the {@link #testWeakReferences()} method,
      * to be reused by {@link CacheTest}.
      *
-     * @param weakMap The map implementation to test.
+     * @param weakMap  the map implementation to test.
      */
     @SuppressWarnings("UnnecessaryBoxing")
     static void testWeakReferences(final Map<Integer,Integer> weakMap) throws InterruptedException {

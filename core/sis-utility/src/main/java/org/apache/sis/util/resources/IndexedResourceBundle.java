@@ -334,7 +334,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     }
                     record.setParameters(new String[] {language, baseName});
                     Logging.log(IndexedResourceBundle.class, methodName, record);
-                    resources = null; // Not needed anymore, let GC do its job.
+                    resources = null;                                           // Not needed anymore, let GC do its job.
                 }
                 this.values = values;
             }

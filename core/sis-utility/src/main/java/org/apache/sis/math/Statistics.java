@@ -41,7 +41,7 @@ import static java.lang.Double.doubleToLongBits;
  * statistics on the differences between consecutive sample values, i.e. the statistics on
  * <var>y₁</var>-<var>y₀</var>, <var>y₂</var>-<var>y₁</var>, <var>y₃</var>-<var>y₂</var>, <i>etc…</i>,
  * Those statistics can be fetched by a call to {@link #differences()}.
- * They are useful for verifying if the interval between sample values is approximatively constant.</p>
+ * They are useful for verifying if the interval between sample values is approximately constant.</p>
  *
  * <p>If the samples are (at least conceptually) the result of some <var>y</var>=<var>f</var>(<var>x</var>)
  * function for <var>x</var> values increasing or decreasing at a constant interval Δ<var>x</var>,

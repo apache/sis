@@ -57,7 +57,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * <p>Note that if we were using {@code double} arithmetic instead than double-double, then all results smaller
      * than {@code Math.ulp(max)} would not be significant. Those cases could be caught by a {@code ZERO_THRESHOLD}
      * value of 1.  On the other hand, if all the extra precision of double-double arithmetic was considered valid,
-     * then the {@code ZERO_THRESHOLD} value would be approximatively 1E-16.   In reality, the extra digits in our
+     * then the {@code ZERO_THRESHOLD} value would be approximately 1E-16.   In reality, the extra digits in our
      * double-double arithmetic were usually guessed rather than provided, and the last digits are also subject to
      * rounding errors anyway. So we put the threshold to some arbitrary mid-value, which may change in any future
      * SIS version according experience gained. As long as the value is smaller than 1, it still more accurate than

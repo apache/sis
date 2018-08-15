@@ -396,7 +396,7 @@ public final class IdentifiedObjects extends Static {
      * Looks up a URN, such as {@code "urn:ogc:def:crs:EPSG:9.1:4326"}, of the specified object.
      * This method searches in all {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory geodetic
      * authority factories} known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE
-     * approximatively equals} to the specified object. Then there is a choice:
+     * approximately equals} to the specified object. Then there is a choice:
      *
      * <ul>
      *   <li>If a single matching object is found in the specified authority factory, then its URN is returned.</li>
@@ -512,7 +512,7 @@ public final class IdentifiedObjects extends Static {
 
     /**
      * Looks up an EPSG code, such as {@code 4326}, of the specified object. This method searches in EPSG factories
-     * known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE approximatively equals}
+     * known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE approximately equals}
      * to the specified object. If such an object is found, then its EPSG identifier is returned.
      * Otherwise or if there is ambiguity, this method returns {@code null}.
      *

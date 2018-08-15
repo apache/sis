@@ -351,7 +351,7 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
         assertBoxEquals(-λend, -λbgn, φmin, φmax, b1);
         /*
          * Reset the boxes to there initial state, then test again with the two boxes interchanged.
-         * The consequence for the implementation is not as symetric than the above test, so there
+         * The consequence for the implementation is not as symmetric than the above test, so there
          * is more risk of failure here.
          */
         flipHorizontally(b2);

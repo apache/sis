@@ -63,7 +63,7 @@ import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
  */
 public abstract class AbstractResultSet extends AbstractJDBC implements ResultSet {
     /*
-     * Note to developpers : this class only offers methods that return unsupported exceptions : methods that are not implemented anywhere.
+     * Note to developers : this class only offers methods that return unsupported exceptions : methods that are not implemented anywhere.
      * if any implementation is done, even a redirection to another class or method, please move the implementation on the next subclass.
      */
 

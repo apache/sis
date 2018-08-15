@@ -167,7 +167,7 @@ public final class CodeColorizer {
             return null;
         }
         /*
-         * If the given identifier is wrapped by some syntatic characters (e.g. "@Foo" for Java annotation,
+         * If the given identifier is wrapped by some syntactic characters (e.g. "@Foo" for Java annotation,
          * or <Foo> for XML elements), remove the wrapper characters so we can get the identifier itelf.
          */
         switch (word.charAt(0)) {
@@ -263,17 +263,17 @@ public final class CodeColorizer {
     public void highlight(final Node parent, final String type) throws BookException {
         final boolean isXML = "xml".equals(type);
         final boolean isJava = !isXML;                              // Future version may add more choices.
-        Element syntaticElement = null;                             // E.g. comment block or a String.
-        String  stopCondition   = null;                             // Identify 'syntaticElement' end.
+        Element syntacticElement = null;                            // E.g. comment block or a String.
+        String  stopCondition    = null;                            // Identify 'syntacticElement' end.
         for (final Node node : toArray(parent.getChildNodes())) {
             /*
              * The following condition happen only if a quoted string or a comment started in a previous
              * node and is continuing in the current node. In such case we need to transfer everything we
-             * found into the 'syntaticElement' node, until we found the 'stopCondition'.
+             * found into the 'syntacticElement' node, until we found the 'stopCondition'.
              */
             if (stopCondition != null) {
                 if (node.getNodeType() != Node.TEXT_NODE) {
-                    syntaticElement.appendChild(node);          // Also remove from its previous position.
+                    syntacticElement.appendChild(node);         // Also remove from its previous position.
                     continue;
                 }
                 final String text = node.getTextContent();
@@ -284,7 +284,7 @@ public final class CodeColorizer {
                 } else {
                     lower = text.length();
                 }
-                syntaticElement.appendChild(document.createTextNode(text.substring(0, lower)));
+                syntacticElement.appendChild(document.createTextNode(text.substring(0, lower)));
                 node.setTextContent(text.substring(lower));
                 // Continue below in case there is some remaining characters to analyse.
             }
@@ -305,19 +305,19 @@ public final class CodeColorizer {
                         if (!Character.isJavaIdentifierStart(c)) {
                             if (c == '"') {
                                 stopCondition = "\"";
-                                syntaticElement = document.createElement("i");
+                                syntacticElement = document.createElement("i");
                             } else if (isJava && text.regionMatches(lower, "/*", 0, 2)) {
                                 stopCondition = "*/";
-                                syntaticElement = document.createElement("code");
-                                syntaticElement.setAttribute("class", "comment");
+                                syntacticElement = document.createElement("code");
+                                syntacticElement.setAttribute("class", "comment");
                             } else if (isJava && text.regionMatches(lower, "//", 0, 2)) {
                                 stopCondition = "\n";
-                                syntaticElement = document.createElement("code");
-                                syntaticElement.setAttribute("class", "comment");
+                                syntacticElement = document.createElement("code");
+                                syntacticElement.setAttribute("class", "comment");
                             } else if (isXML && text.regionMatches(lower, "<!--", 0, 4)) {
                                 stopCondition = "-->";
-                                syntaticElement = document.createElement("code");
-                                syntaticElement.setAttribute("class", "comment");
+                                syntacticElement = document.createElement("code");
+                                syntacticElement.setAttribute("class", "comment");
                             } else {
                                 lower += Character.charCount(c);
                                 continue;                       // "Ordinary" character: scan next characters.
@@ -325,7 +325,7 @@ public final class CodeColorizer {
                             /*
                              * Found the begining of a comment block or a string. Search where that block ends
                              * (it may be in another node) and store all text between the current position and
-                             * the end into 'syntaticElement'.
+                             * the end into 'syntacticElement'.
                              */
                             if (nextSubstringStart != lower) {
                                 parent.insertBefore(document.createTextNode(text.substring(nextSubstringStart, lower)), node);
@@ -341,8 +341,8 @@ public final class CodeColorizer {
                                 lower = text.length();
                                 // Keep stopCondition; we will need to search for it in next nodes.
                             }
-                            syntaticElement.setTextContent(text.substring(nextSubstringStart, lower));
-                            parent.insertBefore(syntaticElement, node);
+                            syntacticElement.setTextContent(text.substring(nextSubstringStart, lower));
+                            parent.insertBefore(syntacticElement, node);
                             nextSubstringStart = lower;
                         } else {
                             /*

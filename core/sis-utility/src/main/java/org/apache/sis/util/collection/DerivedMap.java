@@ -302,9 +302,11 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
 
     /**
      * Returns a set view of the keys contained in this map.
+     *
+     * @return a view of the keys in this map.
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Set<K> keySet() {
         if (keySet == null) {
             keySet = DerivedSet.create(storage.keySet(), keyConverter);
@@ -314,9 +316,11 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
 
     /**
      * Returns a set view of the mappings contained in this map.
+     *
+     * @return a view of the entries in this map.
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Set<Map.Entry<K,V>> entrySet() {
         if (entrySet == null) {
             entrySet = DerivedSet.create(storage.entrySet(), this);
@@ -361,12 +365,19 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
 
     /**
      * Converts the given entry.
+     *
+     * @param  entry an entry with the key and value from the storage.
+     * @return an entry with the key and value converted to types declared by this map,
+     *         or {@code null} if the key is unconvertible.
      */
     @Override
     public final Entry<K,V> apply(final Entry<SK,SV> entry) {
-        final K key   =   keyConverter.apply(entry.getKey());
-        final V value = valueConverter.apply(entry.getValue());
-        return (key != null) ? new SimpleEntry<>(key, value) : null;
+        final K key = keyConverter.apply(entry.getKey());
+        if (key != null) {
+            final V value = valueConverter.apply(entry.getValue());
+            return new SimpleImmutableEntry<>(key, value);
+        }
+        return null;
     }
 
     /**

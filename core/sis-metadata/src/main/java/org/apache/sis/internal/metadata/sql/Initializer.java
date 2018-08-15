@@ -17,13 +17,14 @@
 package org.apache.sis.internal.metadata.sql;
 
 import java.util.Locale;
+import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.security.AccessController;
@@ -49,6 +50,7 @@ import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.Configuration;
 
 
 /**
@@ -105,8 +107,18 @@ public abstract class Initializer {
      * a JAR file the JDK installation directory, and we presume that the JDK installation do not change.
      *
      * @see #forJavaDB(String)
+     *
+     * @deprecated to be removed after we migrate to Java 9, since Derby is no longer distributed with the JDK.
      */
+    @Deprecated
     private static URLClassLoader javadbLoader;
+
+    /**
+     * Data source specified by the user, to be used if no data source is specified by JNDI.
+     *
+     * @see #setDefault(Supplier)
+     */
+    private static Supplier<DataSource> supplier;
 
     /**
      * The unique, SIS-wide, data source to the {@code $SIS_DATA/Databases/SpatialMetadata} database.
@@ -145,7 +157,7 @@ public abstract class Initializer {
     /**
      * A JNDI listener for being informed of changes in the {@link DataSource} associated to {@code "jdbc/SpatialMetadata"}.
      * This listener clears the {@link Initializer#source} field, so the next call to {@link Initializer#getDataSource()}
-     * will fetch a new one.
+     * will fetch a new one. This listener is registered only if {@link Initializer#source} has been fetched from JNDI.
      */
     private static final class Listener implements ObjectChangeListener, Callable<Object> {
         /**
@@ -226,11 +238,36 @@ public abstract class Initializer {
     }
 
     /**
+     * Specifies the data source to use if there is no JNDI environment or if no data source is binded
+     * to {@code jdbc/SpatialMetadata}. Data source specified by JNDI has precedence over this supplier
+     * in order to let users control their data source. This method does nothing if the data source has
+     * already been initialized.
+     *
+     * @param  ds  supplier of data source to set, or {@code null} for removing previous supplier.
+     *             This supplier may return {@code null}, in which case it will be ignored.
+     * @return whether the given data source supplier has been successfully set.
+     *
+     * @since 1.0
+     */
+    @Configuration
+    public static synchronized boolean setDefault(final Supplier<DataSource> ds) {
+        if (source == null) {
+            supplier = ds;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Returns the data source for the SIS-wide "SpatialMetadata" database.
      * This method returns the first of the following steps that succeed:
      *
      * <ol>
      *   <li>If a JNDI context exists, the data source registered under the {@code jdbc/SpatialMetadata} name.</li>
+     *   <li>Otherwise if a default data source {@linkplain #setDefault has been supplied}, use that data source.</li>
+     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the classpath and there is no
+     *       database already installed in the {@code SIS_DATA} directory, use the embedded database.</li>
      *   <li>If the {@code SIS_DATA} environment variable is defined, {@code jdbc:derby:$SIS_DATA/Databases/SpatialMetadata}.
      *       This database will be created if it does not exist. Note that this is the only case where we allow database
      *       creation since we are in the directory managed by SIS.</li>
@@ -262,6 +299,8 @@ public abstract class Initializer {
                 /*
                  * No Derby shutdown hook for DataSource fetched fron JNDI.
                  * We presume that shutdowns are handled by the container.
+                 * We do not clear the 'supplier' field in case 'source'
+                 * is cleaned by the listener.
                  */
             } catch (NameNotFoundException e) {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
@@ -271,6 +310,17 @@ public abstract class Initializer {
             }
             /*
              * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
+             * Check for programmatically supplied data source. We verify only after JNDI in order to let users control
+             * their data source if desired.
+             */
+            if (supplier != null) {
+                source = supplier.get();
+                if (source != null) {
+                    supplier = null;
+                    return source;
+                }
+            }
+            /*
              * As a fallback, try to open the Derby database located in $SIS_DATA/Databases/SpatialMetadata directory.
              * Only if the SIS_DATA environment variable is not set, verify first if the 'sis-embedded-data' module is
              * on the classpath. Note that if SIS_DATA is defined and valid, it has precedence.
@@ -327,6 +377,7 @@ public abstract class Initializer {
                     source = forJavaDB(dbURL);
                 }
             }
+            supplier = null;        // Not needed anymore.
             /*
              * Register the shutdown hook before to attempt any operation on the database in order to close
              * it properly if the schemas creation below fail.

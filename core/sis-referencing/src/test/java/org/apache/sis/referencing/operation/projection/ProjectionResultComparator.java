@@ -51,14 +51,14 @@ import static org.junit.Assert.*;
 final strictfp class ProjectionResultComparator extends NormalizedProjection {
     /**
      * Maximum difference allowed when comparing the result of an inverse projections, in radians.
-     * A value of 1E-11 radians is approximatively 5 centimetres.
+     * A value of 1E-11 radians is approximately 5 centimetres.
      * Note that inverse projections are typically less accurate than forward projections.
      */
     private static final double INVERSE_TOLERANCE = NormalizedProjection.ANGULAR_TOLERANCE;
 
     /**
      * Maximum difference allowed when comparing the result of forward projections,
-     * in distance on the unit ellipse. A value of 1E-8 is approximatively 0.01 metres.
+     * in distance on the unit ellipse. A value of 1E-8 is approximately 0.01 metres.
      */
     private static final double FORWARD_TOLERANCE = Formulas.LINEAR_TOLERANCE;
 

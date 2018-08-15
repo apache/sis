@@ -237,7 +237,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
             return values != (values |= (1L << ordinal));
         }
         /*
-         * The above code is suffisient in the vast majority of cases. In the rare cases where
+         * The above code is sufficient in the vast majority of cases. In the rare cases where
          * there is more than 64 elements, create a BitSet for storing the supplementary values.
          */
         BitSet s = supplementary;

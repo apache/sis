@@ -76,7 +76,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     private final double c2χ, c4χ, c6χ, c8χ;
 
     /**
-     * Creates a new instance for the excentricty of the WGS84 ellipsoid, which is approximatively 0.08181919084262157.
+     * Creates a new instance for the excentricty of the WGS84 ellipsoid, which is approximately 0.08181919084262157.
      * Reminder: the eccentricity of a sphere is 0.
      */
     public MercatorMethodComparison() {

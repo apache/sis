@@ -760,7 +760,7 @@ class CoordinateOperationRegistry {
             throws IllegalArgumentException, FactoryException
     {
         /*
-         * If the user-provided CRS are approximatively equal to the coordinate operation CRS, keep the later.
+         * If the user-provided CRS are approximately equal to the coordinate operation CRS, keep the later.
          * The reason is that coordinate operation CRS are built from the definitions provided by the authority,
          * while the user-provided CRS can be anything (e.g. parsed from a quite approximative WKT).
          */

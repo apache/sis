@@ -646,7 +646,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * This method returns 0 if the two ellipsoids are equal.
      *
      * <div class="note"><b>Example:</b>
-     * {@code WGS84.flatteningDifference(ED50)} returns approximatively 1.41927E-05. This information is a parameter of
+     * {@code WGS84.flatteningDifference(ED50)} returns approximately 1.41927E-05. This information is a parameter of
      * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
      *
      * @param  other  the other ellipsoid from which to get flattening difference.

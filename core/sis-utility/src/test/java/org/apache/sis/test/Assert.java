@@ -75,7 +75,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
     }
 
     /**
-     * Asserts that the two given objects are approximatively equal, while slightly different.
+     * Asserts that the two given objects are approximately equal, while slightly different.
      * More specifically, this method asserts that the given objects are equal according the
      * {@link ComparisonMode#APPROXIMATIVE} criterion, but not equal according the
      * {@link ComparisonMode#IGNORE_METADATA} criterion.
@@ -86,7 +86,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
     public static void assertAlmostEquals(final Object expected, final Object actual) {
         assertFalse("Shall not be strictly equals",          Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
         assertFalse("Shall be slightly different",           Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("Shall be approximatively equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue ("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
         assertTrue ("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
     }
 
@@ -98,7 +98,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @param  actual    the actual object.
      */
     public static void assertEqualsIgnoreMetadata(final Object expected, final Object actual) {
-        assertTrue("Shall be approximatively equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
         assertTrue("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
         assertTrue("Shall be equal, ignoring metadata",     Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
     }
@@ -363,6 +363,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @return the deserialized object.
      */
     public static <T> T assertSerializedEquals(final T object) {
+        Objects.requireNonNull(object);
         final Object deserialized;
         try {
             final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -381,7 +382,10 @@ public strictfp class Assert extends org.opengis.test.Assert {
         } catch (IOException e) {
             throw new AssertionError(e.toString(), e);
         }
-        // Compares with the original object and returns it.
+        assertNotNull("Deserialized object shall not be null.", deserialized);
+        /*
+         * Compare with the original object and return it.
+         */
         @SuppressWarnings("unchecked")
         final Class<? extends T> type = (Class<? extends T>) object.getClass();
         assertEquals("Deserialized object not equal to the original one.", object, deserialized);

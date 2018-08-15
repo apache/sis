@@ -21,7 +21,6 @@ import javax.measure.Quantity;
 import javax.measure.UnitConverter;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -199,20 +198,20 @@ abstract class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     @SuppressWarnings("serial")
     static final class Fallback<Q extends Quantity<Q>> extends DerivedScalar<Q> implements InvocationHandler {
         /**
-         * The constructor for new proxy instances.
+         * The type implemented by proxy instances.
          *
-         * @see ScalarFallback#constructor
+         * @see ScalarFallback#type
          */
-        private final Constructor<? extends Q> constructor;
+        private final Class<Q> type;
 
         /**
          * Constructor for {@link Quantities} factory only.
          */
         private Fallback(final double value, final Unit<Q> unit, final Unit<Q> systemUnit,
-                         final UnitConverter toSystem, final Constructor<? extends Q> constructor)
+                         final UnitConverter toSystem, final Class<Q> type)
         {
             super(value, unit, systemUnit, toSystem);
-            this.constructor = constructor;
+            this.type = type;
         }
 
         /**
@@ -220,7 +219,7 @@ abstract class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
          */
         private Fallback(final Fallback<Q> origin, final double value) {
             super(origin, value);
-            constructor = origin.constructor;
+            type = origin.type;
         }
 
         /**
@@ -229,13 +228,11 @@ abstract class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
          * @see ScalarFallback#create(double, Unit)
          */
         @Override
+        @SuppressWarnings("unchecked")
         Quantity<Q> create(final double newValue, final Unit<Q> newUnit) {
             assert newUnit == getSystemUnit() : newUnit;
-            try {
-                return constructor.newInstance(new Fallback<>(this, newValue));
-            } catch (ReflectiveOperationException e) {
-                throw new UnsupportedOperationException(e);                 // Should never happen.
-            }
+            final Fallback<Q> quantity = new Fallback<>(this, newValue);
+            return (Q) Proxy.newProxyInstance(Scalar.class.getClassLoader(), new Class<?>[] {type}, quantity);
         }
 
         /**
@@ -247,14 +244,8 @@ abstract class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
         static <Q extends Quantity<Q>> Q factory(final double value, final Unit<Q> unit,
                 final Unit<Q> systemUnit, final UnitConverter toSystem, final Class<Q> type)
         {
-            final Class<?> pc = Proxy.getProxyClass(Scalar.class.getClassLoader(), new Class<?>[] {type});
-            final Constructor<? extends Q> constructor;
-            try {
-                constructor = (Constructor<? extends Q>) pc.getConstructor(InvocationHandler.class);
-                return constructor.newInstance(new Fallback<>(value, unit, systemUnit, toSystem, constructor));
-            } catch (ReflectiveOperationException e) {
-                throw new UnsupportedOperationException(e);                 // Should never happen.
-            }
+            final Fallback<Q> quantity = new Fallback<>(value, unit, systemUnit, toSystem, type);
+            return (Q) Proxy.newProxyInstance(Scalar.class.getClassLoader(), new Class<?>[] {type}, quantity);
         }
 
         /**

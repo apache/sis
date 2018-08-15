@@ -79,7 +79,7 @@ public class DBFConnection extends AbstractConnection {
 
         try {
             // Check if all the underlying connections that has been opened with this connection has been closed.
-            // If not, we log a warning to help the developper.
+            // If not, we log a warning to help the developer.
             if (this.openedStatements.size() > 0) {
                 log(Level.WARNING, "log.statements_left_opened", this.openedStatements.size(), this.openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));
             }

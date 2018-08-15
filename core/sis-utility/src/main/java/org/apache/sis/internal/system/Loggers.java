@@ -30,7 +30,7 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Names of loggers used in SIS other than the "module-wide" loggers. We often use approximatively one logger
+ * Names of loggers used in SIS other than the "module-wide" loggers. We often use approximately one logger
  * per module, using the appropriate constant of the {@link Modules} class as the "module-wide" logger name.
  * However we also have a few more specialized loggers, which are listed here.
  *
