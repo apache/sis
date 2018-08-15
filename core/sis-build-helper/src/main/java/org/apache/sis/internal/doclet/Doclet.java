@@ -38,6 +38,7 @@ import jdk.javadoc.doclet.Reporter;
 import jdk.javadoc.doclet.Doclet.Option;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.StandardDoclet;
+import com.sun.source.util.DocTrees;
 
 
 /**
@@ -89,8 +90,25 @@ public final class Doclet extends StandardDoclet {
 
     /**
      * Where to report warnings, or {@code null} if unknown.
+     *
+     * @todo make package-private after {@link #workaround8201817} has been removed.
      */
-    Reporter reporter;
+    public Reporter reporter;
+
+    /**
+     * Utility methods for locating the path of elements, or {@code null} if unknown.
+     *
+     * @todo make package-private after {@link #workaround8201817} has been removed.
+     */
+    public DocTrees trees;
+
+    /**
+     * Temporary Workaround for https://bugs.openjdk.java.net/browse/JDK-8201817
+     *
+     * @deprecated to be removed after we upgraded Apache SIS build requirement to JDK 11.
+     */
+    @Deprecated
+    public static Doclet workaround8201817;
 
     /**
      * Invoked by the Javadoc tools for instantiating the custom doclet.
@@ -108,6 +126,7 @@ public final class Doclet extends StandardDoclet {
     public void init(final Locale locale, final Reporter reporter) {
         super.init(locale, reporter);
         this.reporter = reporter;
+        workaround8201817 = this;
     }
 
     /**
@@ -157,6 +176,7 @@ public final class Doclet extends StandardDoclet {
     @Override
     @SuppressWarnings("CallToPrintStackTrace")
     public boolean run(final DocletEnvironment environment) {
+        trees = environment.getDocTrees();
         final boolean success = super.run(environment);
         if (success && outputDirectory != null) try {
             final File output = new File(outputDirectory);

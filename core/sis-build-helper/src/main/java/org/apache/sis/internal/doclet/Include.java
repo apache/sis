@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.doclet;
 
-import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.BufferedReader;
+import java.io.IOException;
 import com.sun.source.doctree.DocTree;
 
 
@@ -37,7 +40,7 @@ import com.sun.source.doctree.DocTree;
  * @since   0.5
  * @module
  */
-public final class Include extends InlineTaglet {
+public final class Include extends Taglet {
     /**
      * The beginning and the end of the anchor texts. Must be on the same line.
      */
@@ -66,32 +69,35 @@ public final class Include extends InlineTaglet {
     }
 
     /**
-     * Given the <code>DocTree</code> representation of this custom tag, return its string representation.
+     * Given the <code>DocTree</code> representation of this custom tag, appends its string representation.
      *
-     * @param  tag  the tag to format.
-     * @return a string representation of the given tag.
+     * @param  tag     the tag to format.
+     * @param  buffer  the buffer where to format the tag.
      */
     @Override
-    protected String toString(final DocTree tag) {
+    protected void format(final DocTree tag, final StringBuilder buffer) {
         final String reference = text(tag);
         final int sep = reference.indexOf('#');
         if (sep < 0) {
-            printWarning(tag, "@include expected a reference like \"filename#anchor\" but got \"" + reference + "\".");
-            return reference;
+            printWarning("@include expected a reference like \"filename#anchor\" but got \"" + reference + "\".");
+            buffer.append(reference);
+            return;
         }
-        File file = file(tag);
-        file = new File(file.getParentFile(), reference.substring(0, sep));
+        final int bs = buffer.length();
+        Path file = getCurrentFile();
+        file = file.getParent().resolve(reference.substring(0, sep));
         final String anchor = reference.substring(sep + 1);
-        final StringBuilder buffer = new StringBuilder();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+        try (BufferedReader in = Files.newBufferedReader(file)) {
             /*
              * Search the anchor.
              */
             String line;
             int start, end;
             do if ((line = in.readLine()) == null) {
-                printWarning(tag, "Header \"" + anchor + "\" not found in file " + file);
-                return reference;
+                printWarning("Header \"" + anchor + "\" not found in file " + file);
+                buffer.setLength(bs);
+                buffer.append(reference);
+                return;
             }
             while ((start = line.indexOf(ANCHOR_START)) < 0 ||
                      (end = line.lastIndexOf(ANCHOR_END)) < start ||
@@ -103,8 +109,10 @@ public final class Include extends InlineTaglet {
             while (true) {
                 line = in.readLine();
                 if (line == null) {
-                    printWarning(tag, "Unexpected end of file in " + file);
-                    return reference;
+                    printWarning("Unexpected end of file in " + file);
+                    buffer.setLength(bs);
+                    buffer.append(reference);
+                    return;
                 }
                 start = line.indexOf(ANCHOR_START);
                 if (start >= 0 && line.lastIndexOf(ANCHOR_END) >= start) {
@@ -116,8 +124,7 @@ public final class Include extends InlineTaglet {
                 buffer.append(line).append('\n');
             }
         } catch (IOException e) {
-            printError(tag, "Error reading " + file + ":\n" + e);
+            printError("Error reading " + file + ":\n" + e);
         }
-        return buffer.toString();
     }
 }
