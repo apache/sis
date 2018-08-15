@@ -36,7 +36,7 @@ import org.apache.sis.internal.book.CodeColorizer;
  * @since   0.3
  * @module
  */
-public final class Preformat extends InlineTaglet {
+public final class Preformat extends Taglet {
     /**
      * The set of legal words after {@code preformat}. We write them in lower-cases even if this is not
      * conform to the Java convention for enumeration constants, because we will use {@link Enum#name()}
@@ -74,13 +74,13 @@ public final class Preformat extends InlineTaglet {
     }
 
     /**
-     * Given the <code>DocTree</code> representation of this custom tag, return its string representation.
+     * Given the <code>DocTree</code> representation of this custom tag, appends its string representation.
      *
-     * @param  tag  the tag to format.
-     * @return a string representation of the given tag.
+     * @param  tag     the tag to format.
+     * @param  buffer  the buffer where to format the tag.
      */
     @Override
-    protected String toString(final DocTree tag) {
+    protected void format(final DocTree tag, final StringBuilder buffer) {
         String text = text(tag).replace("\r\n", "\n").replace('\r', '\n');
         String format = "<unspecified>";
         /*
@@ -97,7 +97,7 @@ public final class Preformat extends InlineTaglet {
         try {
             style = Style.valueOf(format);
         } catch (IllegalArgumentException e) {
-            printWarning(tag, "Unknown format: " + format);
+            printWarning("Unknown format: " + format);
             style = Style.text;
         }
         /*
@@ -126,7 +126,7 @@ all:    while (tk.hasMoreTokens()) {
         /*
          * Nows inserts each line.
          */
-        final StringBuilder buffer = new StringBuilder("<blockquote><pre>");
+        buffer.append("<blockquote><pre>");
         tk = new StringTokenizer(text, "\r\n", true);
         while (tk.hasMoreTokens()) {
             String line = tk.nextToken();
@@ -144,7 +144,7 @@ all:    while (tk.hasMoreTokens()) {
             }
             buffer.append(line);
         }
-        return buffer.append("</pre></blockquote>").toString();
+        buffer.append("</pre></blockquote>");
     }
 
     /**

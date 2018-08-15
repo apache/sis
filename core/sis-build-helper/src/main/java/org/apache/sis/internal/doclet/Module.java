@@ -16,13 +16,10 @@
  */
 package org.apache.sis.internal.doclet;
 
-import java.io.File;
-import java.util.List;
 import java.util.Set;
 import java.util.EnumSet;
-import jdk.javadoc.doclet.Taglet;
+import java.nio.file.Path;
 import com.sun.source.doctree.DocTree;
-import javax.lang.model.element.Element;
 
 
 /**
@@ -33,17 +30,11 @@ import javax.lang.model.element.Element;
  * @since   0.3
  * @module
  */
-public final class Module implements Taglet {
-    /**
-     * The SIS module in which the <code>@module</code> taglet has been found.
-     */
-    private String module;
-
+public final class Module extends Taglet {
     /**
      * Constructs a <code>@module</code> taglet.
      */
     public Module() {
-        super();
     }
 
     /**
@@ -62,9 +53,8 @@ public final class Module implements Taglet {
      * @return the set of locations in which this taglet may be used.
      */
     @Override
-    public Set<Taglet.Location> getAllowedLocations() {
-        return EnumSet.of(Taglet.Location.PACKAGE,
-                          Taglet.Location.TYPE);
+    public Set<Location> getAllowedLocations() {
+        return EnumSet.of(Location.PACKAGE, Location.TYPE);
     }
 
     /**
@@ -78,27 +68,22 @@ public final class Module implements Taglet {
     }
 
     /**
-     * Given a list of {@code DocTree}s representing this custom tag, returns its string representation.
+     * Given a {@code DocTree}s representing this custom tag, appends its string representation.
      *
-     * @param  tags     the tags to format.
-     * @param  element  the element to which the enclosing comment belongs.
-     * @return a string representation of the given tags.
+     * @param  tag     the tag to format.
+     * @param  buffer  the buffer where to format the tag.
      */
     @Override
-    public String toString(final List<? extends DocTree> tags, final Element element) {
-        if (tags == null || tags.isEmpty()) {
-            return "";
-        }
-        final StringBuilder buffer = new StringBuilder(128);
+    protected void format(final DocTree tag, final StringBuilder buffer) {
         buffer.append("\n<p><font size=\"-1\">");
-        for (final DocTree tag : tags) {
-            File file = InlineTaglet.file(tag);
-            module = file.getName();
-            while ((file = file.getParentFile()) != null) {
-                if (file.getName().equals("src")) {
-                    file = file.getParentFile();
+        Path file = getCurrentFile();
+        if (file != null) {
+            String module = file.getFileName().toString();
+            while ((file = file.getParent()) != null) {
+                if (file.getFileName().toString().equals("src")) {
+                    file = file.getParent();
                     if (file != null) {
-                        module = file.getName();
+                        module = file.getFileName().toString();
                     }
                     break;
                 }
@@ -106,8 +91,7 @@ public final class Module implements Taglet {
             /*
              * Appends the module link.
              */
-            buffer.append("Defined in the <code>").append(module).append("</code> module");
+            buffer.append("Defined in the <code>").append(module).append("</code> module").append("</font></p>\n");
         }
-        return buffer.append("</font></p>\n").toString();
     }
 }
