@@ -78,6 +78,10 @@ CREATE TABLE metadata."Band" (
   "peakResponse"         DOUBLE PRECISION)
 INHERITS (metadata."SampleDimension");
 
+--
+-- TODO: move those declarations in sis-earthobservation module.
+-- https://issues.apache.org/jira/browse/SIS-338
+--
 INSERT INTO metadata."Band" ("ID", "sequenceIdentifier", "description", "boundMin", "boundMax", "boundUnits", "peakResponse") VALUES
   ('Landsat 8-01',  '1', 'Ultra Blue (coastal/aerosol)',         435.0,  451.0, 'nm',   443.0),
   ('Landsat 8-02',  '2', 'Blue',                                 452.0,  512.1, 'nm',   482.0),
