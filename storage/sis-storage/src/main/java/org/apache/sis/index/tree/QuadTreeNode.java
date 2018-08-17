@@ -22,157 +22,157 @@ package org.apache.sis.index.tree;
  */
 final class QuadTreeNode {
 
-  private QuadTreeData[] data;
-  private QuadTreeNode nw;
-  private QuadTreeNode ne;
-  private QuadTreeNode se;
-  private QuadTreeNode sw;
-  private NodeType type;
-  private int id;
-  private int capacity;
-  private int dataCount;
-  private static final int MIN_CAPACITY = 10;
+    private QuadTreeData[] data;
+    private QuadTreeNode nw;
+    private QuadTreeNode ne;
+    private QuadTreeNode se;
+    private QuadTreeNode sw;
+    private NodeType type;
+    private int id;
+    private int capacity;
+    private int dataCount;
+    private static final int MIN_CAPACITY = 10;
 
-  /**
-   * Constructs a quad tree node that can store data
-   *
-   * @param id
-   *          node's id
-   * @param capacity
-   *          node's capcacity
-   */
-  public QuadTreeNode(int id, int capacity) {
-    this.capacity = capacity > 0 ? capacity : MIN_CAPACITY;
-    this.dataCount = 0;
-    this.data = new QuadTreeData[this.capacity];
-    this.type = NodeType.BLACK;
-    this.nw = null;
-    this.ne = null;
-    this.sw = null;
-    this.se = null;
-    this.id = id;
-  }
-
-  /**
-   * Constructs a quad tree node that acts as a parent.
-   *
-   * @param type
-   *          node's type
-   * @param id
-   *          node's id
-   */
-  public QuadTreeNode(NodeType type, int id) {
-    this.type = type;
-    this.nw = null;
-    this.ne = null;
-    this.sw = null;
-    this.se = null;
-    this.data = null;
-    this.id = id;
-  }
-
-  /**
-   * Add data to the node.
-   *
-   * @param data
-   *          data to be added
-   */
-  public void addData(QuadTreeData data) {
-    if (this.dataCount < this.capacity) {
-      this.data[dataCount] = data;
-      this.dataCount++;
+    /**
+     * Constructs a quad tree node that can store data
+     *
+     * @param id
+     *            node's id
+     * @param capacity
+     *            node's capcacity
+     */
+    public QuadTreeNode(int id, int capacity) {
+        this.capacity = capacity > 0 ? capacity : MIN_CAPACITY;
+        this.dataCount = 0;
+        this.data = new QuadTreeData[this.capacity];
+        this.type = NodeType.BLACK;
+        this.nw = null;
+        this.ne = null;
+        this.sw = null;
+        this.se = null;
+        this.id = id;
     }
-  }
 
-  /**
-   * Gets the number of data stored in the node
-   *
-   * @return number of data stored in the node
-   */
-  public int getCount() {
-    return this.dataCount;
-  }
-
-  /**
-   * Gets the node type.
-   *
-   * @return node type
-   */
-  public NodeType getNodeType() {
-    return this.type;
-  }
-
-  /**
-   * Sets the node's quadrant to point to the specified child.
-   *
-   * @param child
-   *          child of this node
-   * @param q
-   *          quadrant where the child resides
-   */
-  public void setChild(QuadTreeNode child, Quadrant q) {
-    switch (q) {
-    case NW:
-      this.nw = child;
-      break;
-    case NE:
-      this.ne = child;
-      break;
-    case SW:
-      this.sw = child;
-      break;
-    case SE:
-      this.se = child;
-      break;
+    /**
+     * Constructs a quad tree node that acts as a parent.
+     *
+     * @param type
+     *            node's type
+     * @param id
+     *            node's id
+     */
+    public QuadTreeNode(NodeType type, int id) {
+        this.type = type;
+        this.nw = null;
+        this.ne = null;
+        this.sw = null;
+        this.se = null;
+        this.data = null;
+        this.id = id;
     }
-  }
 
-  /**
-   * Returns the child of this node that resides in the specified quadrant.
-   *
-   * @param q
-   *          specified quadrant
-   * @return child in the specified quadrant
-   */
-  public QuadTreeNode getChild(Quadrant q) {
-    switch (q) {
-    case NW:
-      return this.nw;
-    case NE:
-      return this.ne;
-    case SW:
-      return this.sw;
-    case SE:
-      return this.se;
-    default:
-      return null;
+    /**
+     * Add data to the node.
+     *
+     * @param data
+     *            data to be added
+     */
+    public void addData(QuadTreeData data) {
+        if (this.dataCount < this.capacity) {
+            this.data[dataCount] = data;
+            this.dataCount++;
+        }
     }
-  }
 
-  /**
-   * Returns the data stored in this node.
-   *
-   * @return data stored in this node
-   */
-  public QuadTreeData[] getData() {
-    return this.data;
-  }
+    /**
+     * Gets the number of data stored in the node
+     *
+     * @return number of data stored in the node
+     */
+    public int getCount() {
+        return this.dataCount;
+    }
 
-  /**
-   * Returns node's id.
-   *
-   * @return node's id
-   */
-  public int getId() {
-    return this.id;
-  }
+    /**
+     * Gets the node type.
+     *
+     * @return node type
+     */
+    public NodeType getNodeType() {
+        return this.type;
+    }
 
-  /**
-   * Returns node's capacity.
-   *
-   * @return node's capacity
-   */
-  public int getCapacity() {
-    return this.capacity;
-  }
+    /**
+     * Sets the node's quadrant to point to the specified child.
+     *
+     * @param child
+     *            child of this node
+     * @param q
+     *            quadrant where the child resides
+     */
+    public void setChild(QuadTreeNode child, Quadrant q) {
+        switch (q) {
+        case NW:
+            this.nw = child;
+            break;
+        case NE:
+            this.ne = child;
+            break;
+        case SW:
+            this.sw = child;
+            break;
+        case SE:
+            this.se = child;
+            break;
+        }
+    }
+
+    /**
+     * Returns the child of this node that resides in the specified quadrant.
+     *
+     * @param q
+     *            specified quadrant
+     * @return child in the specified quadrant
+     */
+    public QuadTreeNode getChild(Quadrant q) {
+        switch (q) {
+        case NW:
+            return this.nw;
+        case NE:
+            return this.ne;
+        case SW:
+            return this.sw;
+        case SE:
+            return this.se;
+        default:
+            return null;
+        }
+    }
+
+    /**
+     * Returns the data stored in this node.
+     *
+     * @return data stored in this node
+     */
+    public QuadTreeData[] getData() {
+        return this.data;
+    }
+
+    /**
+     * Returns node's id.
+     *
+     * @return node's id
+     */
+    public int getId() {
+        return this.id;
+    }
+
+    /**
+     * Returns node's capacity.
+     *
+     * @return node's capacity
+     */
+    public int getCapacity() {
+        return this.capacity;
+    }
 }
