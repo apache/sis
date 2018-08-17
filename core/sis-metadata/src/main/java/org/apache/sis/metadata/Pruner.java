@@ -121,7 +121,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
             if (!isNullOrEmpty(element)) {
                 /*
                  * At this point, 'element' is not an empty CharSequence, Collection or array.
-                 * It may be an other metadata, a Java primitive type or user-defined object.
+                 * It may be another metadata, a Java primitive type or user-defined object.
                  *
                  *  - For AbstractMetadata, delegate to the public API in case it has been overriden.
                  *  - For user-defined Emptiable, delegate to the user's isEmpty() method. Note that
@@ -142,18 +142,18 @@ final class Pruner extends MetadataVisitor<Boolean> {
                          * For implementation that are not subtype of AbstractMetadata but nevertheless
                          * implement some metadata interfaces, we will invoke recursively this method.
                          */
-                        final Boolean r = walk(standard, type, value, false);
+                        final Boolean r = walk(standard, type, element, false);
                         if (r != null) {
                             isEmptyElement = r;
                             if (!isEmptyElement && element instanceof Emptiable) {
                                 isEmptyElement = ((Emptiable) element).isEmpty();
                             }
                         }
-                    } else if (value instanceof Number) {
-                        isEmptyElement = Double.isNaN(((Number) value).doubleValue());
-                    } else if (value instanceof Boolean) {
+                    } else if (element instanceof Number) {
+                        isEmptyElement = Double.isNaN(((Number) element).doubleValue());
+                    } else if (element instanceof Boolean) {
                         // Typically methods of the kind 'isFooAvailable()'.
-                        isEmptyElement = !((Boolean) value);
+                        isEmptyElement = !((Boolean) element);
                     }
                 }
                 if (!isEmptyElement) {
