@@ -18,20 +18,21 @@ package org.apache.sis.referencing.factory.sql.epsg;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.util.Collections;
+import java.util.function.UnaryOperator;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
@@ -60,7 +61,7 @@ public final class DataScriptFormatter extends ScriptRunner {
      * The values of those arguments are typically:
      *
      * <ol>
-     *   <li>{@code EPSG_vX.mdb_Data_PostgreSQL.sql}</li>
+     *   <li>{@code PostgreSQL_Table_Script.sql}</li>
      *   <li>{@code core/sis-referencing/src/main/resources/org/apache/sis/referencing/factory/sql/Data.sql}</li>
      * </ol>
      *
@@ -77,7 +78,7 @@ public final class DataScriptFormatter extends ScriptRunner {
              Connection c = db.source.getConnection())
         {
             final DataScriptFormatter f = new DataScriptFormatter(c);
-            f.run(new File(arguments[0]), new File(arguments[1]));
+            f.run(Paths.get(arguments[0]), Paths.get(arguments[1]));
         }
     }
 
@@ -103,8 +104,8 @@ public final class DataScriptFormatter extends ScriptRunner {
     private String insertStatement;
 
     /**
-     * Index (in reversal order) of columns to change from type SMALLINT to type BOOLEAN.
-     * Index 0 is the last columns, index 1 is the column before the last, <i>etc</i>.
+     * Indices (in reversal order) of columns to change from type SMALLINT to type BOOLEAN.
+     * Index 0 is the last column, index 1 is the column before the last, <i>etc</i>.
      * We use the reverse order because most boolean columns in the EPSG dataset are last.
      */
     private int[] booleanColumnIndices;
@@ -115,6 +116,24 @@ public final class DataScriptFormatter extends ScriptRunner {
     private final Map<String,int[]> booleanColumnIndicesForTables;
 
     /**
+     * Indices (in reversal order) of columns to reformat as a double value.
+     * The EPSG database contains values like {@code -0.000000000000000000000003689471323},
+     * while is either not parsed by Derby because too long (Derby 10.14 documents a limit
+     * of 30 characters for floating-point constants) or parsed as 0. To workaround such
+     * limitation, we reformat above value as {@code -3.689471323E-24}.
+     */
+    private int[] doubleColumnIndices;
+
+    /**
+     * The {@link #doubleColumnIndices} value of each table for which we want to reformat the value.
+     * We do not reformat the {@code change_id} columns since they are more like character strings.
+     * We do not reformat east/west/north/south bounds or {@code greenwich_longitude} since their
+     * values are close to integers, or {@code semi_major_axis}, {@code semi_minor_axis} and
+     * {@code inv_flattening} for similar reasons.
+     */
+    private final Map<String,int[]> doubleColumnIndicesForTables;
+
+    /**
      * Creates a new instance.
      *
      * @param  c  a dummy connection. Will be used for fetching metadata.
@@ -122,29 +141,24 @@ public final class DataScriptFormatter extends ScriptRunner {
      */
     private DataScriptFormatter(final Connection c) throws SQLException {
         super(c, Integer.MAX_VALUE);
+        final int[]    lastColumn  = new int[] {0  };
+        final int[] twoLastColumns = new int[] {0,1};
         final Map<String,int[]> m = new HashMap<>();
-        m.put("epsg_alias",                     new int[] {   });
-        m.put("epsg_area",                      new int[] {0  });
-        m.put("epsg_change",                    new int[] {   });
-        m.put("epsg_coordinateaxis",            new int[] {   });
-        m.put("epsg_coordinateaxisname",        new int[] {0  });
-        m.put("epsg_coordinatereferencesystem", new int[] {0,1});
-        m.put("epsg_coordinatesystem",          new int[] {0  });
-        m.put("epsg_coordoperation",            new int[] {0,1});
-        m.put("epsg_coordoperationmethod",      new int[] {0,8});
-        m.put("epsg_coordoperationparam",       new int[] {0  });
-        m.put("epsg_coordoperationparamusage",  new int[] {0  });
-        m.put("epsg_coordoperationparamvalue",  new int[] {   });
-        m.put("epsg_coordoperationpath",        new int[] {   });
-        m.put("epsg_datum",                     new int[] {0  });
-        m.put("epsg_deprecation",               new int[] {   });
-        m.put("epsg_ellipsoid",                 new int[] {0,6});
-        m.put("epsg_namingsystem",              new int[] {0  });
-        m.put("epsg_primemeridian",             new int[] {0  });
-        m.put("epsg_supersession",              new int[] {   });
-        m.put("epsg_unitofmeasure",             new int[] {0  });
-        m.put("epsg_versionhistory",            new int[] {   });
+        m.put("epsg_area",                         lastColumn );
+        m.put("epsg_coordinateaxisname",           lastColumn );
+        m.put("epsg_coordinatereferencesystem", twoLastColumns);
+        m.put("epsg_coordinatesystem",             lastColumn );
+        m.put("epsg_coordoperation",            twoLastColumns);
+        m.put("epsg_coordoperationmethod",     new int[] {0,8});
+        m.put("epsg_coordoperationparam",          lastColumn );
+        m.put("epsg_coordoperationparamusage",     lastColumn );
+        m.put("epsg_datum",                        lastColumn );
+        m.put("epsg_ellipsoid",                new int[] {0,6});
+        m.put("epsg_namingsystem",                 lastColumn );
+        m.put("epsg_primemeridian",                lastColumn );
+        m.put("epsg_unitofmeasure",                lastColumn );
         booleanColumnIndicesForTables = m;
+        doubleColumnIndicesForTables = Collections.singletonMap("epsg_coordoperationparamvalue", new int[] {2});
     }
 
     /**
@@ -166,12 +180,12 @@ public final class DataScriptFormatter extends ScriptRunner {
      * @throws IOException  if an I/O operation failed.
      * @throws SQLException should never happen.
      */
-    private void run(final File inputFile, final File outputFile) throws SQLException, IOException {
+    private void run(final Path inputFile, final Path outputFile) throws SQLException, IOException {
         if (inputFile.equals(outputFile)) {
             throw new IllegalArgumentException("Input and output files are the same.");
         }
-        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.ISO_8859_1));
-        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1))) {
+        out = Files.newBufferedWriter(outputFile);
+        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(Files.newInputStream(inputFile), StandardCharsets.UTF_8))) {
             out.write("---\n" +
                       "---    Copyright International Association of Oil and Gas Producers (IOGP)\n" +
                       "---    See  http://www.epsg.org/TermsOfUse  (a copy is in ./LICENSE.txt).\n" +
@@ -180,7 +194,7 @@ public final class DataScriptFormatter extends ScriptRunner {
                       "---    See org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter.\n" +
                       "---\n" +
                       "\n");
-            run(inputFile.getName(), in);
+            run(inputFile.getFileName().toString(), in);
         } finally {
             out.close();
             out = null;
@@ -216,15 +230,16 @@ public final class DataScriptFormatter extends ScriptRunner {
                 break;
             }
         }
-        if (CharSequences.regionMatches(sql, ++lower, oldValue) &&
-            CharSequences.regionMatches(sql, 0, "INSERT INTO " + table + " VALUES"))
-        {
-            assertEquals("oldValue.length", oldValue.length(), --upper - lower);
-            if (before != null) {
-                final int i = sql.indexOf(before);
-                if (i < 0 || i >= lower) return;
+        if (CharSequences.regionMatches(sql, ++lower, oldValue)) {
+            final int s = CharSequences.skipLeadingWhitespaces(sql, 0, lower);
+            if (CharSequences.regionMatches(sql, s, "INSERT INTO " + table + " VALUES")) {
+                assertEquals("oldValue.length", oldValue.length(), --upper - lower);
+                if (before != null) {
+                    final int i = sql.indexOf(before);
+                    if (i < 0 || i >= lower) return;
+                }
+                sql.replace(lower, upper, newValue);
             }
-            sql.replace(lower, upper, newValue);
         }
     }
 
@@ -288,11 +303,8 @@ public final class DataScriptFormatter extends ScriptRunner {
         if (insertStatement != null) {
             if (line.startsWith(insertStatement)) {
                 // The previous instruction was already an INSERT INTO the same table.
-                line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
-                line = replaceIntegerByBoolean(line);
-                line = removeUselessExponents(line);
                 out.append(",\n");      // Really want Unix EOL, not the platform-specific one.
-                writeValues(line);
+                writeValues(editInsertValues(line));
                 return 1;
             }
             // Previous instruction was the last INSERT INTO for a given table.
@@ -305,24 +317,20 @@ public final class DataScriptFormatter extends ScriptRunner {
                 throw new SQLException("This simple program wants VALUES on the same line than INSERT INTO.");
             }
             final String table = CharSequences.trimWhitespaces(line, INSERT_INTO.length(), valuesStart).toString();
-            booleanColumnIndices = booleanColumnIndicesForTables.get(table);
+            booleanColumnIndices = booleanColumnIndicesForTables.getOrDefault(table, ArraysExt.EMPTY_INT);
+            doubleColumnIndices  =  doubleColumnIndicesForTables.getOrDefault(table, ArraysExt.EMPTY_INT);
             /*
              * We are beginning insertions in a new table.
              */
             valuesStart += VALUES.length();     // Move to the end of "VALUES".
             insertStatement = CharSequences.trimWhitespaces(line, 0, valuesStart).toString();
-            line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
-            line = replaceIntegerByBoolean(line);
-            line = removeUselessExponents(line);
-            out.append(insertStatement);
-            out.append('\n');
-            writeValues(line);
+            out.append(insertStatement).append('\n');
+            writeValues(editInsertValues(line));
             return 1;
         }
         insertStatement = null;
         if (!omit(line)) {
-            out.append(line);
-            out.append(";\n");
+            out.append(line).append(";\n");
         }
         return 0;
     }
@@ -333,23 +341,43 @@ public final class DataScriptFormatter extends ScriptRunner {
      */
     private void writeValues(final String values) throws IOException {
         if (values.startsWith("(") && values.endsWith(")")) {
-            out.append('(');
-            out.append(CharSequences.trimWhitespaces(values, 1, values.length() - 1));
-            out.append(')');
+            out.append('(').append(CharSequences.trimWhitespaces(values, 1, values.length() - 1)).append(')');
         } else {
             out.append(values);
         }
     }
 
     /**
-     * Replaces the last {@code SMALLINT} types by {@code BOOLEAN}.
-     * This is for consistency with the table type documented in the class javadoc.
+     * Modifies the given {@code INSERT INTO table VALUE (…)} line before to write it.
+     * The given line is only the {@code VALUE (…)} part for a single entry.
+     * The modifications applied on entry values can be a change of integer types to
+     * boolean types, and rewrite of some floating point values.
      */
-    private String replaceIntegerByBoolean(final String line) throws SQLException {
+    private String editInsertValues(String line) throws SQLException {
+        line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
+        line = editColumns(booleanColumnIndices, line, DataScriptFormatter::replaceIntegerByBoolean);
+        line = editColumns(doubleColumnIndices,  line, DataScriptFormatter::reformatFloatingPoints);
+        line = removeUselessExponents(line);
+        return line;
+    }
+
+    /**
+     * Modifies the content of columns identified by the given indices.
+     *
+     * @param  indices    indices (in reversal order) of columns to edit. Index 0 is the last column,
+     *                    index 1 is the column before the last, <i>etc</i>.
+     * @param  line       the line to modify.
+     * @param  converter  the transformation to apply columns identified by the given indices.
+     *                    A {@code null} return value means that the conversion can not be performed.
+     * @return the modified line.
+     */
+    private static String editColumns(final int[] indices, final String line, final UnaryOperator<String> converter)
+            throws SQLException
+    {
         final StringBuilder buffer = new StringBuilder(line);
         int end = CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length());
         if (buffer.codePointBefore(end) == ')') end--;
-        for (int n=0, columnIndex=0; n < booleanColumnIndices.length; columnIndex++) {
+        for (int n=0, columnIndex=0; n < indices.length; columnIndex++) {
             int start = end;
             for (int c; (c = buffer.codePointBefore(start)) != ',';) {
                 start -= Character.charCount(c);
@@ -366,18 +394,13 @@ public final class DataScriptFormatter extends ScriptRunner {
                     }
                 }
             }
-            if (columnIndex == booleanColumnIndices[n]) {
-                String value = CharSequences.trimWhitespaces(buffer, start, end).toString();
-                if (value.equals("0") || value.equalsIgnoreCase("'No'")) {
-                    value = "false";
-                } else if (value.equals("1") || value.equalsIgnoreCase("'Yes'")) {
-                    value = "true";
-                } else if (value.equalsIgnoreCase("Null") || value.equals("''")) {
-                    value = "Null";
-                } else {
-                    throw new SQLException("Unexpected boolean value \"" + value + "\" at position " + start + " in:\n" + line);
+            if (columnIndex == indices[n]) {
+                final String value = CharSequences.trimWhitespaces(buffer, start, end).toString();
+                final String c = converter.apply(value);
+                if (value == null) {
+                    throw new SQLException("Unexpected value \"" + value + "\" at position " + start + " in:\n" + line);
                 }
-                buffer.replace(start, end, value);
+                buffer.replace(start, end, c);
                 n++;
             }
             end = CharSequences.skipTrailingWhitespaces(buffer, 0, start - 1);
@@ -386,16 +409,45 @@ public final class DataScriptFormatter extends ScriptRunner {
     }
 
     /**
+     * Replaces the last {@code SMALLINT} types by {@code BOOLEAN}.
+     * This is for consistency with the table type documented in the class javadoc.
+     */
+    private static String replaceIntegerByBoolean(String value) {
+        if (value.equals("0") || value.equalsIgnoreCase("'No'")) {
+            value = "false";
+        } else if (value.equals("1") || value.equalsIgnoreCase("'Yes'")) {
+            value = "true";
+        } else if (value.equalsIgnoreCase("Null") || value.equals("''")) {
+            value = "Null";
+        } else {
+            value = null;
+        }
+        return value;
+    }
+
+    /**
+     * Reformats the given floating point number. This is used for replacing for example
+     * {@code -0.000000000000000000000003689471323} by {@code -3.689471323E-24}.
+     */
+    private static String reformatFloatingPoints(String value) {
+        if (!value.equalsIgnoreCase("Null")) {
+            value = Double.toString(Double.parseDouble(value));
+            value = CharSequences.trimFractionalPart(value).toString();
+        }
+        return value;
+    }
+
+    /**
      * For private usage by the following method only.
      */
-    private static final Pattern uselessExponentPattern =
+    private final Pattern uselessExponentPattern =
             Pattern.compile("([\\(\\,]\\-?\\d+\\.\\d+)E[\\+\\-]?0+([\\,\\)])");
 
     /**
      * Removes the useless "E0" exponents after floating point numbers.
      */
     @SuppressWarnings("null")
-    private static String removeUselessExponents(String line) {
+    private String removeUselessExponents(String line) {
         StringBuilder cleaned = null;
         final Matcher matcher = uselessExponentPattern.matcher(line);
         while (true) {
