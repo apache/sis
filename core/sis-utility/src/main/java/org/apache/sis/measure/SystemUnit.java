@@ -373,19 +373,19 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     /**
      * Returns a converter of numeric values from this unit to another unit of same type.
      *
-     * @param  that  the unit of same type to which to convert the numeric values.
+     * @param  unit  the unit of same type to which to convert the numeric values.
      * @return the converter from this unit to {@code that} unit.
      * @throws UnconvertibleException if the converter can not be constructed.
      */
     @Override
-    public UnitConverter getConverterTo(final Unit<Q> that) throws UnconvertibleException {
-        ArgumentChecks.ensureNonNull("that", that);
-        final Unit<Q> step = that.getSystemUnit();
+    public UnitConverter getConverterTo(final Unit<Q> unit) throws UnconvertibleException {
+        ArgumentChecks.ensureNonNull("unit", unit);
+        final Unit<Q> step = unit.getSystemUnit();
         if (step != this && !equalsIgnoreMetadata(step)) {
             // Should never occur unless parameterized type has been compromised.
-            throw new UnconvertibleException(incompatible(that));
+            throw new UnconvertibleException(incompatible(unit));
         }
-        if (step == that) {
+        if (step == unit) {
             return LinearConverter.IDENTITY;
         }
         /*
@@ -394,7 +394,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
          * in Apache SIS implementation, the former returns directly ConventionalUnit.toTarget
          * while the later implies a recursive call to this method.
          */
-        return that.getConverterTo(step).inverse();
+        return unit.getConverterTo(step).inverse();
     }
 
     /**
@@ -402,24 +402,24 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      * This method can be used when the quantity type of the specified unit is unknown at compile-time
      * or when dimensional analysis allows for conversion between units of different type.
      *
-     * @param  that  the unit to which to convert the numeric values.
+     * @param  unit  the unit to which to convert the numeric values.
      * @return the converter from this unit to {@code that} unit.
      * @throws IncommensurableException if this unit is not {@linkplain #isCompatible(Unit) compatible} with {@code that} unit.
      *
      * @see #isCompatible(Unit)
      */
     @Override
-    public UnitConverter getConverterToAny(final Unit<?> that) throws IncommensurableException {
-        ArgumentChecks.ensureNonNull("that", that);
-        final Unit<?> step = that.getSystemUnit();
+    public UnitConverter getConverterToAny(final Unit<?> unit) throws IncommensurableException {
+        ArgumentChecks.ensureNonNull("unit", unit);
+        final Unit<?> step = unit.getSystemUnit();
         if (step != this && !isCompatible(step)) {
-            throw new IncommensurableException(incompatible(that));
+            throw new IncommensurableException(incompatible(unit));
         }
-        if (step == that) {
+        if (step == unit) {
             return LinearConverter.IDENTITY;
         }
         // Same remark than in getConverterTo(Unit).
-        return that.getConverterToAny(step).inverse();
+        return unit.getConverterToAny(step).inverse();
     }
 
     /**
