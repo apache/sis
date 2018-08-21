@@ -24,35 +24,36 @@ import org.apache.sis.geometry.DirectPosition2D;
  * quad tree must implement this interface, so that quad tree can access
  * location and store name of file in which data is saved.
  *
- * <div class="warning"><b>Note on future work:</b> this interface may change in incompatible way
- * in a future Apache SIS release, or may be replaced by new API.</div>
+ * <div class="warning"><b>Note on future work:</b> this interface may change in
+ * incompatible way in a future Apache SIS release, or may be replaced by new
+ * API.</div>
  */
 public interface QuadTreeData {
-  /**
-   * Returns the Java 2D x-coordinate for the longitude.
-   *
-   * @return the Java 2D x-coordinate
-   */
-  public double getX();
+    /**
+     * Returns the Java 2D x-coordinate for the longitude.
+     *
+     * @return the Java 2D x-coordinate
+     */
+    public double getX();
 
-  /**
-   * Returns the Java 2D y-coordinate for the latitude.
-   *
-   * @return the Java 2D y-coordinate
-   */
-  public double getY();
+    /**
+     * Returns the Java 2D y-coordinate for the latitude.
+     *
+     * @return the Java 2D y-coordinate
+     */
+    public double getY();
 
-  /**
-   * Returns the latitude/longitude pair.
-   *
-   * @return the latitude/longitude pair.
-   */
-  public DirectPosition2D getLatLon();
+    /**
+     * Returns the latitude/longitude pair.
+     *
+     * @return the latitude/longitude pair.
+     */
+    public DirectPosition2D getLatLon();
 
-  /**
-   * Returns the name of the file where the entry's info is saved.
-   *
-   * @return the name of the file where the entry's info is saved
-   */
-  public String getFileName();
+    /**
+     * Returns the name of the file where the entry's info is saved.
+     *
+     * @return the name of the file where the entry's info is saved
+     */
+    public String getFileName();
 }
