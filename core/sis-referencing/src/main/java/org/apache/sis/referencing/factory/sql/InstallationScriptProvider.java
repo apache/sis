@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -198,7 +197,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * <div class="section">Default implementation</div>
      * The default implementation invokes {@link #openStream(String)} – except for {@link #PREPARE} and {@link #FINISH}
      * in which case an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
-     * The file encoding is ISO LATIN-1 (the encoding used in the scripts distributed by EPSG).
+     * The file encoding is UTF-8 (the encoding used in the scripts distributed by EPSG since version 9.4).
      *
      * @param  authority  the value given at construction time (e.g. {@code "EPSG"}).
      * @param  resource   index of the SQL script to read, from 0 inclusive to
@@ -217,21 +216,18 @@ public abstract class InstallationScriptProvider extends InstallationResources {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnknownAuthority_1, authority));
         }
         String name = resources[resource];
-        final Charset charset;
         final InputStream in;
         if (PREPARE.equals(name) || FINISH.equals(name)) {
             name = authority + '_' + name + ".sql";
             in = InstallationScriptProvider.class.getResourceAsStream(name);
-            charset = StandardCharsets.UTF_8;
         } else {
             in = openStream(name);
-            charset = StandardCharsets.ISO_8859_1;
             name = name.concat(".sql");
         }
         if (in == null) {
             throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, name));
         }
-        return new LineNumberReader(new InputStreamReader(in, charset));
+        return new LineNumberReader(new InputStreamReader(in, StandardCharsets.UTF_8));
     }
 
     /**

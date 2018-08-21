@@ -30,14 +30,15 @@ import org.apache.sis.util.resources.Errors;
  */
 final class CacheKey {
     /**
-     * The metadata class (interface or implementation) for which an {@link PropertyAccessor} will be associated.
+     * The metadata class (interface or implementation) for which a {@link PropertyAccessor} will be associated.
+     * May be null if unknown, in which case {@link #isValid()} returns {@code false}.
      */
     final Class<?> type;
 
     /**
-     * If the {@link #type} is the return value of a property, then the type of that property.
-     * This information allows to handle classes that implement more than one metadata interfaces
-     * for convenience, as for example in the {@link org.apache.sis.internal.simple} package.
+     * If the {@link #type} is an implementation class of a property, then the type declared in the signature for
+     * that property. This information allows to handle classes that implement more than one metadata interfaces
+     * for their convenience. Some examples are found in the {@link org.apache.sis.internal.simple} package.
      *
      * <p>This field shall never be null. If there is no property type information,
      * then this field shall be set to {@code Object.class}.</p>

@@ -19,8 +19,12 @@
   <head>
     <title>EPSG dataset update procedure</title>
     <meta charset="UTF-8">
+    <style>
+      p {text-align: justify;}
+    </style>
   </head>
   <body>
+    <h1>EPSG dataset update procedure</h1>
     <p>
       The <code>org.apache.sis.referencing.factory.sql.epsg</code> package in the <code>non-free:sis-epsg</code> module
       provides SQL scripts for installing a local copy of the <a href="http://www.epsg.org/">EPSG geodetic dataset</a>.
@@ -45,7 +49,7 @@
       We put those tools here for easier maintainance when the core of Apache SIS is modified.
     </p>
 
-    <h3>How to apply EPSG geodetic dataset updates</h3>
+    <h2>How to apply EPSG geodetic dataset updates</h2>
     <p>
       This page explains how to convert the SQL scripts published by EPSG into the more compact form used by Apache SIS.
       This conversion applies only to the data types, the integrity constraints and the way the SQL scripts are written.
@@ -54,19 +58,18 @@
     <ol>
       <li><p>Download the latest SQL scripts for PostgreSQL from <a href="http://www.epsg.org">http://www.epsg.org</a>.</p></li>
 
-      <li><p>Unzip in the directory of your choice (replace "9_0" by the appropriate version number in the ZIP filename),
+      <li><p>Unzip in the directory of your choice (replace "9_4" by the appropriate version number in the ZIP filename),
           and remember the path to that directory:</p>
 
-        <pre>unzip epsg-v9_0sql-PostgreSQL.zip
-cd epsg-v9_0sql-PostgreSQL
+        <pre>unzip EPSG-PSQL-export-9.4.zip
 export EPSG_SCRIPTS=$PWD</pre>
       </li>
 
       <li><p>If a copy of the original SQL scripts (as downloaded from EPSG) for the previous version is still available,
           and if the following commands report no difference, then jump to step 4.</p>
 
-        <pre>diff EPSG_v9_0.mdb_Tables_PostgreSQL.sql EPSG_v8_9.mdb_Tables_PostgreSQL.sql
-diff EPSG_v9_0.mdb_FKeys_PostgreSQL.sql  EPSG_v8_9.mdb_FKeys_PostgreSQL.sql</pre>
+        <pre>diff PostgreSQL_Table_Script.sql &lt;path to previous version&gt;/PostgreSQL_Table_Script.sql
+diff PostgreSQL_FKey_Script.sql  &lt;path to previous version&gt;/PostgreSQL_FKey_Script.sql</pre>
 
         <p>Otherwise:</p>
         <ol>
@@ -75,10 +78,9 @@ diff EPSG_v9_0.mdb_FKeys_PostgreSQL.sql  EPSG_v8_9.mdb_FKeys_PostgreSQL.sql</pre
           </li>
 
           <li><p>Overwrite <code>Tables.sql</code> and <code>FKeys.sql</code> with the new SQL scripts
-              (replace "9_0" by the appropriate version number in the commands show below).
               Do not overwrite <code>Data.sql</code> and <code>Indexes.sql</code>:</p>
-            <pre>cp $EPSG_SCRIPTS/EPSG_v9_0.mdb_Tables_PostgreSQL.sql Tables.sql
-cp $EPSG_SCRIPTS/EPSG_v9_0.mdb_FKeys_PostgreSQL.sql  FKeys.sql</pre>
+            <pre>cp $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql Tables.sql
+cp $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql  FKeys.sql</pre>
           </li>
 
           <li><p>Open the <code>Tables.sql</code> file for edition:</p>

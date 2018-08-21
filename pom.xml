@@ -575,7 +575,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>9</version>
+                  <version>10</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
@@ -802,9 +802,9 @@
             <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
           </links>
 
-          <additionalparam>
-            -Xdoclint:syntax -Xdoclint:html -Xdoclint:missing -Xdoclint:accessibility
-          </additionalparam>
+          <additionalOptions>
+            <additionalOption>--add-stylesheet "${maven.multiModuleProjectDirectory}/src/main/javadoc/sis.css"</additionalOption>
+          </additionalOptions>
 
           <!-- Separates packages on the overview page into the groups specified. -->
           <groups>
