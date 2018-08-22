@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.opengis.util.FactoryException;
@@ -130,6 +131,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.create("EPSGInstaller")) {
             createAndTest(db.source, scripts);
+            verifyParameterValues(db.source);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:derby:memory:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
@@ -146,6 +148,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.createOnHSQLDB("EPSGInstaller", false)) {
             createAndTest(db.source, scripts);
+            verifyParameterValues(db.source);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:EPSGInstaller");
         loggings.assertNoUnexpectedLog();
@@ -164,6 +167,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.createOnPostgreSQL("EPSG", false)) {
             createAndTest(db.source, scripts);
+            verifyParameterValues(db.source);
         }
         loggings.assertNextLogContains("EPSG", "jdbc:postgresql://localhost/SpatialMetadataTest");
         loggings.assertNoUnexpectedLog();
@@ -230,5 +234,28 @@ public final strictfp class EPSGInstallerTest extends TestCase {
             }
         }
         return count;
+    }
+
+    /**
+     * Verifies some parameter values in the database. We perform this check on a parameter which are known
+     * to have small values, in order to make sure that the values have not been truncated to zero.
+     */
+    private static void verifyParameterValues(final DataSource ds) throws SQLException {
+        try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
+            try (ResultSet r = s.executeQuery("SELECT COORD_OP_CODE, PARAMETER_VALUE"
+                    + " FROM \"EPSG\".\"Coordinate_Operation Parameter Value\""
+                    + " WHERE PARAMETER_CODE = 1035 AND COORD_OP_METHOD_CODE = 1042"))
+            {
+                while (r.next()) {
+                    switch (r.getInt(1)) {
+                        case 5219:
+                        case 5511: {
+                            assertEquals(-3.689471323E-24, r.getDouble(2), STRICT);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
