@@ -43,6 +43,7 @@ import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
@@ -979,6 +980,32 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         } finally {
             recursivityGuard.clear();
         }
+    }
+
+    /**
+     * Creates a new format to use for parsing and formatting values of the given type.
+     * This method is invoked by the first time that a format is needed for the given type.
+     * Subclasses can override this method if they want to configure the way dates, numbers
+     * or other objects are formatted.
+     * See {@linkplain org.apache.sis.io.CompoundFormat#createFormat(Class) parent class documentation}
+     * for more information.
+     *
+     * <p>The implementation in {@code TreeTableFormat} differs from the default implementation
+     * in the following aspects:</p>
+     * <ul>
+     *   <li>{@code UnitFormat} uses {@link UnitFormat.Style#NAME}.</li>
+     * </ul>
+     *
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
+     */
+    @Override
+    protected Format createFormat(final Class<?> valueType) {
+        final Format format = super.createFormat(valueType);
+        if (format instanceof UnitFormat) {
+            ((UnitFormat) format).setStyle(UnitFormat.Style.NAME);
+        }
+        return format;
     }
 
     /**
