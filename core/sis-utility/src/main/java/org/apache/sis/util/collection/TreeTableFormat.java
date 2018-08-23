@@ -29,6 +29,7 @@ import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
 import java.io.IOException;
 import java.text.Format;
+import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
@@ -42,11 +43,13 @@ import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Acyclic;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -175,9 +178,27 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * The set to be given to {@link Writer} constructor,
-     * created when first needed and reused for subsequent formating.
+     * created when first needed and reused for subsequent formatting.
      */
     private transient Set<TreeTable.Node> recursivityGuard;
+
+    /**
+     * A clone of the number format to be used with different settings (number of fraction digits, scientific notation).
+     * We use a clone for avoiding to change the setting of potentially user-supplied number format. This is used only
+     * for floating point numbers, not for integers.
+     */
+    private transient DecimalFormat adaptableFormat;
+
+    /**
+     * The default pattern used by {@link #adaptableFormat}.
+     * Used for switching back to default mode after scientific notation.
+     */
+    private transient String defaultPattern;
+
+    /**
+     * Whether {@link #adaptableFormat} is using scientific notation.
+     */
+    private transient boolean usingScientificNotation;
 
     /**
      * Creates a new tree table format.
@@ -771,7 +792,30 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                  * more uniform formatting.
                  */
                 final Format format = getFormat(value.getClass());
-                text = (format != null) ? format.format(value) : value.toString();
+                if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
+                    /*
+                     * The default floating point formats use only 3 fraction digits. We adjust that to the number
+                     * of digits required by the number to format. We do that only if no NumberFormat was inferred
+                     * for the whole column (in order to keep column format uniform).  We use enough precision for
+                     * all fraction digits except the last 2, in order to let DecimalFormat round the number.
+                     */
+                    if (adaptableFormat == null) {
+                        adaptableFormat = (DecimalFormat) format.clone();
+                        defaultPattern = adaptableFormat.toPattern();
+                    }
+                    final int nf = DecimalFunctions.fractionDigitsForValue(((Number) value).doubleValue());
+                    final boolean preferScientificNotation = (nf > 20 || nf < 7);       // == (value < 1E-4 || value > 1E+9)
+                    if (preferScientificNotation != usingScientificNotation) {
+                        usingScientificNotation = preferScientificNotation;
+                        adaptableFormat.applyPattern(preferScientificNotation ? "0.0############E0" : defaultPattern);
+                    }
+                    if (!preferScientificNotation) {
+                        adaptableFormat.setMaximumFractionDigits(nf - 2);       // All significand fraction digits except last two.
+                    }
+                    text = adaptableFormat.format(value);
+                } else {
+                    text = (format != null) ? format.format(value) : value.toString();
+                }
             }
             append(text);
         }
