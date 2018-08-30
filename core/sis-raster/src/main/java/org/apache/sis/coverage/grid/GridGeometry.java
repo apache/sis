@@ -791,7 +791,7 @@ public class GridGeometry implements Serializable {
             appendLabel(buffer, "Resolution", visible);
             if (resolution == null) {
                 buffer.append("unspecified");
-            } for (int i=0; i<resolution.length; i++) {
+            } else for (int i=0; i<resolution.length; i++) {
                 if (i != 0) buffer.append(" × ");
                 buffer.append((float) resolution[i]);
                 if (cs != null) {
