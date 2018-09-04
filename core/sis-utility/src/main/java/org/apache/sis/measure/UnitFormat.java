@@ -258,6 +258,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * Symbols or names to use for formatting units in replacement to the default unit symbols or names.
+     * The {@link Unit} instances are the ones specified by user in calls to {@link #label(Unit, String)}.
      *
      * @see #label(Unit, String)
      */
@@ -265,7 +266,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * Units associated to a given label (in addition to the system-wide {@link UnitRegistry}).
-     * This map is the converse of {@link #unitToLabel}.
+     * This map is the converse of {@link #unitToLabel}. The {@link Unit} instances may differ from the ones
+     * specified by user since {@link AbstractUnit#symbol} may have been set to the label specified by the user.
      *
      * @see #label(Unit, String)
      */
@@ -385,10 +387,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * <div class="section">Restriction on character set</div>
      * Current implementation accepts only {@linkplain Character#isLetter(int) letters},
      * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isSpaceChar(int) spaces}
-     * (including non-breaking spaces but <strong>not</strong> CR/LF characters), the degree sign (°) and
-     * a few other characters like underscore,
-     * but the set of legal characters may be expanded in future Apache SIS versions.
-     * However the following restrictions are likely to remain:
+     * (including non-breaking spaces but not CR/LF characters),
+     * the degree sign (°) and a few other characters like underscore.
+     * The set of legal characters may be expanded in future Apache SIS versions,
+     * but the following restrictions are likely to remain:
      *
      * <ul>
      *   <li>The following characters are reserved since they have special meaning in UCUM format, in URI
@@ -412,9 +414,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             }
             i += Character.charCount(c);
         }
+        Unit<?> labeledUnit = unit;
+        if (labeledUnit instanceof ConventionalUnit<?>) {
+            labeledUnit = ((ConventionalUnit<?>) labeledUnit).forSymbol(label);
+        }
         final Unit<?> unitForOldLabel = labelToUnit.remove(unitToLabel.put(unit, label));
-        final Unit<?> oldUnitForLabel = labelToUnit.put(label, unit);
-        if (oldUnitForLabel != null && !oldUnitForLabel.equals(unit) && !label.equals(unitToLabel.remove(oldUnitForLabel))) {
+        final Unit<?> oldUnitForLabel = labelToUnit.put(label, labeledUnit);
+        if (oldUnitForLabel != null && !oldUnitForLabel.equals(labeledUnit) && !label.equals(unitToLabel.remove(oldUnitForLabel))) {
             /*
              * Assuming there is no bug in our algorithm, this exception should never happen
              * unless this UnitFormat has been modified concurrently in another thread.
@@ -904,7 +910,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     private static int exponentOperator(final CharSequence symbols, int i, final int length) {
         if (i >= 0 && ++i < length) {
-            final char c = symbols.charAt(i);
+            final char c = symbols.charAt(i);           // No need for code point because next conditions are true only in BMP.
             if (c == Style.EXPONENT_OR_MULTIPLY) {
                 return 1;                               // "**" operator: need to skip one character after '*'.
             }
@@ -929,22 +935,33 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     /**
      * Returns {@code true} if the given character is a digit in the sense of the {@code UnitFormat} parser.
      * Note that "digit" is taken here in a much more restrictive way than {@link Character#isDigit(int)}.
+     *
+     * <p>A return value of {@code true} guarantees that the given character is in the Basic Multilingual Plane (BMP).
+     * Consequently the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)};
+     * the result of {@link String#charAt(int)} is sufficient. We nevertheless use the {@code int} type for avoiding
+     * the need to cast if caller uses code points for another reason.</p>
+     *
+     * @see Character#isBmpCodePoint(int)
      */
-    private static boolean isDigit(final char c) {
+    private static boolean isDigit(final int c) {
         return c >= '0' && c <= '9';
     }
 
     /**
      * Returns {@code true} if the given character is the sign of a number according the {@code UnitFormat} parser.
+     * A return value of {@code true} guarantees that the given character is in the Basic Multilingual Plane (BMP).
+     * Consequently the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)}.
      */
-    private static boolean isSign(final char c) {
+    private static boolean isSign(final int c) {
         return c == '+' || c == '-';
     }
 
     /**
      * Returns {@code true} if the given character is the sign of a division operator.
+     * A return value of {@code true} guarantees that the given character is in the Basic Multilingual Plane (BMP).
+     * Consequently the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)}.
      */
-    private static boolean isDivisor(final char c) {
+    private static boolean isDivisor(final int c) {
         return c == '/' || c == AbstractUnit.DIVIDE;
     }
 
@@ -1367,7 +1384,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                      *
                      * If the last character is a super-script, then we assume a notation like "10⁻⁴".
                      */
-                    final char c = uom.charAt(0);
+                    final char c = uom.charAt(0);       // No need for code point because next condition is true only for BMP.
                     if (isDigit(c) || isSign(c)) {
                         final double multiplier;
                         try {
@@ -1397,18 +1414,22 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                      * implementation) or a number parseable with Integer.parseInt(String).
                      */
                     Fraction power = null;
-                    int  i = length;
-                    char c = uom.charAt(--i);
+                    int i = length;
+                    int c = uom.codePointBefore(i);
+                    i -= Character.charCount(c);
                     if (Characters.isSuperScript(c)) {
                         c = Characters.toNormalScript(c);
                         if (isDigit(c)) {
                             power = new Fraction(c - '0', 1);
                         }
                     } else if (isDigit(c)) {
-                        do {
-                            c = uom.charAt(--i);
-                            if (!isDigit(c) && !isDivisor(c)) {
-                                if (!isSign(c)) i++;
+                        while (i != 0) {
+                            c = uom.codePointBefore(i);
+                            final boolean isExponent = isDigit(c) || isDivisor(c);
+                            if (isExponent || isSign(c)) {
+                                i -= Character.charCount(c);
+                            }
+                            if (!isExponent) {
                                 try {
                                     power = new Fraction(uom.substring(i));
                                 } catch (NumberFormatException e) {
@@ -1418,7 +1439,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                 }
                                 break;
                             }
-                        } while (i != 0);
+                        }
                     }
                     if (power != null) {
                         /*
@@ -1427,6 +1448,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                          */
                         i = CharSequences.skipTrailingWhitespaces(uom, 0, i);
                         if (i != 0) {
+                            // No need for code point because next conditions are true only in BMP.
                             switch (uom.charAt(i-1)) {
                                 case Style.EXPONENT_OR_MULTIPLY: {
                                     if (i != 1 && uom.charAt(i-2) == Style.EXPONENT_OR_MULTIPLY) i--;
@@ -1438,7 +1460,11 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                 }
                             }
                         }
-                        unit = Prefixes.getUnit(uom.substring(CharSequences.skipLeadingWhitespaces(uom, 0, i), i));
+                        final String symbol = uom.substring(CharSequences.skipLeadingWhitespaces(uom, 0, i), i);
+                        unit = labelToUnit.get(symbol);
+                        if (unit == null) {
+                            unit = Prefixes.getUnit(symbol);
+                        }
                         if (unit != null) {
                             int numerator   = power.numerator;
                             int denominator = power.denominator;
@@ -1485,7 +1511,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
             // Example: "10⁻⁴". Split in base and exponent.
             final StringBuilder buffer = new StringBuilder(s);
             do {
-                buffer.append(Characters.toNormalScript((char) c));  // This API does not support code points yet.
+                buffer.appendCodePoint(Characters.toNormalScript(c));
                 if ((s -= Character.charCount(c)) <= 0) break;
                 c = term.codePointBefore(s);
             } while (Characters.isSuperScript(c));

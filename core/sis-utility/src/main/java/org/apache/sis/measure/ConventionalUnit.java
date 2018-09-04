@@ -155,6 +155,45 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     }
 
     /**
+     * Raises the given symbol to the given power. If the given symbol already contains an exponent,
+     * it will be combined with the given power.
+     *
+     * @param  symbol  the symbol to raise to a power.
+     * @param  n       the power to which to raise the given symbol.
+     * @param  root    {@code true} for raising to 1/n instead of n.
+     */
+    private static String pow(final String symbol, final int n, final boolean root) {
+        if (symbol != null) {
+            final int length = symbol.length();
+            int power = 1, i = 0;
+            while (i < length) {
+                final int c = symbol.codePointAt(i);
+                i += Character.charCount(c);
+                if (!isSymbolChar(c)) {
+                    if (!Characters.isSuperScript(c) || i + Character.charCount(c) < length) {
+                        return null;                // Character is not an exponent or is not the last character.
+                    }
+                    power = Characters.toNormalScript(c) - '0';
+                }
+            }
+            if (power >= 0 && power <= 9) {
+                final boolean isValid;
+                if (root) {
+                    isValid = (power % n) == 0;
+                    power /= n;
+                } else {
+                    power *= n;
+                    isValid = (power >= 0 && power <= 9);
+                }
+                if (isValid) {
+                    return symbol.substring(0, i) + Characters.toSuperScript((char) (power + '0'));
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the positive power after the given unit symbol, or 0 in case of doubt.
      * For example this method returns 1 for “m” and 2 for “m²”. We parse the unit symbol instead
      * than the {@link SystemUnit#dimension} because we can not extract easily the power from the
@@ -180,26 +219,22 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
          * operator like the “/” in “m/s²”. In any cases we stop here because we want the
          * exponent of the first symbol, not the “²” in “m/s²”.
          */
-        if (Character.isBmpCodePoint(c)) {
-            final int p = Characters.toNormalScript((char) c) - '0';
-            if (p >= 0 && p <= 9) {
-                if (i < length) {
-                    c = symbol.codePointAt(i);
-                    if (isSymbolChar(c)) {
-                        // Exponent is immediately followed by a another unit symbol character.
-                        // We would have expected something else, like an arithmetic operator.
-                        return 0;
-                    }
-                    if (Character.isBmpCodePoint(c)) {
-                        c = Characters.toNormalScript((char) c);
-                        if (c >= '0' && c <= '9') {
-                            // Exponent on two digits. We do not expect so high power after unit symbol.
-                            return 0;
-                        }
-                    }
+        final int p = Characters.toNormalScript(c) - '0';
+        if (p >= 0 && p <= 9) {
+            if (i < length) {
+                c = symbol.codePointAt(i);
+                if (isSymbolChar(c)) {
+                    // Exponent is immediately followed by a another unit symbol character.
+                    // We would have expected something else, like an arithmetic operator.
+                    return 0;
                 }
-                return p;
+                c = Characters.toNormalScript(c);
+                if (c >= '0' && c <= '9') {
+                    // Exponent on two digits. We do not expect so high power after unit symbol.
+                    return 0;
+                }
             }
+            return p;
         }
         return 1;
     }
@@ -321,6 +356,18 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     }
 
     /**
+     * Returns a new unit identical to this unit except for the symbol, which is set to the given value.
+     * This is used by {@link UnitFormat} only; we do not provide public API for setting a unit symbol
+     * on a conventional unit.
+     */
+    final ConventionalUnit<Q> forSymbol(final String symbol) {
+        if (symbol.equals(getSymbol())) {
+            return this;
+        }
+        return new ConventionalUnit<>(target, toTarget, symbol, scope, epsg);
+    }
+
+    /**
      * Unsupported operation for conventional units, as required by JSR-363 specification.
      *
      * @param  symbol  the new symbol for the alternate unit.
@@ -351,6 +398,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      */
     @Override
     public Unit<?> multiply(final Unit<?> multiplier) {
+        if (multiplier == this) return pow(2);                      // For formating e.g. "mi²".
         ensureRatioScale();
         return target.multiply(multiplier).transform(toTarget);
     }
@@ -376,8 +424,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public Unit<?> pow(final int n) {
         ensureRatioScale();
-        final Unit<?> result = target.pow(n);
-        return (result == target) ? this : result.transform(LinearConverter.pow(toTarget, n, false));
+        return applyConversion(target.pow(n), n, false);
     }
 
     /**
@@ -390,8 +437,30 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public Unit<?> root(final int n) {
         ensureRatioScale();
-        final Unit<?> result = target.root(n);
-        return (result == target) ? this : result.transform(LinearConverter.pow(toTarget, n, true));
+        return applyConversion(target.root(n), n, true);
+    }
+
+    /**
+     * Applies the {@link #toTarget} conversion factor on the result of raising the system unit to the given power.
+     * This method shall be invoked only if {@link #ensureRatioScale()} succeed (this is not verified).
+     * This method tries to build a unit symbol made from the current unit raised to the given power.
+     * This is not needed for SI units since {@link #create(AbstractUnit, UnitConverter)} can infer
+     * the symbol automatically (including its prefix), but this is useful for non SI units like "mi²"
+     *
+     * @param  result  the result of {@link SystemUnit#pow(int)} or {@link SystemUnit#root(int)}.
+     * @param  n       the power by which the {@link #target} has been raised for producing {@code result}.
+     * @param  root    {@code true} if the power is 1/n instead of n.
+     */
+    private Unit<?> applyConversion(final Unit<?> result, final int n, final boolean root) {
+        if (result == target) return this;
+        final LinearConverter operation = LinearConverter.pow(toTarget, n, root);
+        if (result instanceof SystemUnit<?>) {
+            final String symbol = pow(getSymbol(), n, root);
+            if (symbol != null) {
+                return new ConventionalUnit<>((SystemUnit<?>) result, operation, symbol, (byte) 0, (short) 0).unique(symbol);
+            }
+        }
+        return result.transform(operation);
     }
 
     /**

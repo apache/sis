@@ -368,7 +368,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalCoordinateSystem_1 = 51;
 
         /**
-         * The “{1}” pattern can not be applied to formating of objects of type ‘{0}’.
+         * The “{1}” pattern can not be applied to formatting of objects of type ‘{0}’.
          */
         public static final short IllegalFormatPatternForClass_2 = 52;
 
