@@ -26,7 +26,7 @@ import org.opengis.feature.PropertyType;
 
 
 /**
- * Base class of property types having a value and a cardinality.
+ * Base class of property types having a value and a multiplicity.
  * This include {@code AttributeType} and {@code AssociationRole}, but not {@code Operation}.
  *
  * <div class="note"><b>Analogy:</b> if we compare {@code FeatureType} to a class in the Java language,

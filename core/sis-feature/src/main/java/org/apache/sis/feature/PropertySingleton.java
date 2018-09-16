@@ -136,7 +136,7 @@ final class PropertySingleton<V> extends AbstractList<V> {
      * Removes the property value.
      *
      * This method does not checks if the removal is allowed by the
-     * {@linkplain DefaultAttributeType#getMinimumOccurs() cardinality}.
+     * {@linkplain DefaultAttributeType#getMinimumOccurs() multiplicity}.
      * Such check can be performed by {@link AbstractFeature#quality()}.
      */
     @Override
@@ -168,7 +168,7 @@ final class PropertySingleton<V> extends AbstractList<V> {
      * Removes the property value.
      *
      * This method does not checks if the removal is allowed by the
-     * {@linkplain DefaultAttributeType#getMinimumOccurs() cardinality}.
+     * {@linkplain DefaultAttributeType#getMinimumOccurs() multiplicity}.
      * Such check can be performed by {@link AbstractFeature#quality()}.
      */
     @Override

@@ -28,7 +28,7 @@ import org.opengis.annotation.UML;
  * <p>In GeoAPI implementation of ISO 19115, {@code UML_IDENTIFIER} and {@code JAVA_PROPERTY}
  * names are usually identical except for {@linkplain java.util.Collection collections}:
  * {@code JAVA_PROPERTY} names are plural when the property is a collection while
- * {@code UML_IDENTIFIER} usually stay singular no matter the property cardinality.</p>
+ * {@code UML_IDENTIFIER} usually stay singular no matter the property multiplicity.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

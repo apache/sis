@@ -298,7 +298,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * Returns the value for the property of the given name.
      * This convenience method is equivalent to invoking {@link #getProperty(String)} for the given name,
-     * then to perform one of the following actions depending on the property type and the cardinality:
+     * then to perform one of the following actions depending on the property type and the multiplicity:
      *
      * <table class="sis">
      *   <caption>Class of returned value</caption>
@@ -735,7 +735,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
      * <div class="note"><b>Example:</b> given a feature with an attribute named “population”.
-     * If this attribute is mandatory ([1 … 1] cardinality) but no value has been assigned to it,
+     * If this attribute is mandatory ([1 … 1] multiplicity) but no value has been assigned to it,
      * then this {@code quality()} method will return the following data quality report:
      *
      * {@preformat text

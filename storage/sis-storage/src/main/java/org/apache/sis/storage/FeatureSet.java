@@ -44,7 +44,7 @@ public interface FeatureSet extends DataSet {
      *   <li>Name to use for accessing the property</li>
      *   <li>Human-readable description</li>
      *   <li>Type of values</li>
-     *   <li>Cardinality (minimum and maximum number of occurrences)</li>
+     *   <li>Multiplicity (minimum and maximum number of occurrences)</li>
      *   <li>{@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference System}.</li>
      * </ul>
      *

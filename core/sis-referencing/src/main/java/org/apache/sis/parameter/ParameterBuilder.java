@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <div class="section">Identification properties</div>
  * The following properties are cleared after a call to any {@code createXXX(…)} method,
  * since those properties are specific to the each parameter. Other properties like codespace,
- * version and cardinality are left unchanged because they may be shared by many parameters.
+ * version and multiplicity are left unchanged because they may be shared by many parameters.
  *
  * <ul class="verbose">
  *   <li><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
@@ -146,6 +146,14 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *
      * <p><b>Lifetime:</b>
      * this property is kept unchanged until this {@code setRequired(…)} method is invoked again.</p>
+     *
+     * <div class="note"><b>API note:</b> the {@link DefaultParameterDescriptor#getMaximumOccurs()
+     * maximum number of occurrences} is fixed to 1 and can not be changed with this builder
+     * (except for {@linkplain #createGroup(int, int, GeneralParameterDescriptor...) parameters group})
+     * because {@link DefaultParameterValueGroup#parameter(String)} can return only one value.
+     * Allowing to return more than one value would complicate the API for an uncommon case.
+     * If nevertheless a maximum number of occurrences greater than 1 is really desired, Apache SIS supports
+     * this feature but users have to create the {@link DefaultParameterDescriptor} instance themselves.</div>
      *
      * @param  required {@code true} for a mandatory parameter, or {@code false} for an optional one.
      * @return {@code this}, for method call chaining.
@@ -328,7 +336,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
-     * Creates a descriptor group for the given cardinality and parameters.
+     * Creates a descriptor group for the given multiplicity and parameters.
      *
      * @param  minimumOccurs  the {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs() minimum}
      *                        number of times that values for this parameter group are required.
@@ -353,7 +361,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
 
     /**
      * Creates a descriptor group for the given parameters. This is a convenience method for
-     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
+     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a multiplicity of [0 … 1]
      * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
      *
      * @param  parameters  the {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}

@@ -98,7 +98,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
 
     /**
      * Creates an attribute type for a list of universities.
-     * The cardinality is [0 … ∞].
+     * The multiplicity is [0 … ∞].
      *
      * @return an attribute type for university names.
      */

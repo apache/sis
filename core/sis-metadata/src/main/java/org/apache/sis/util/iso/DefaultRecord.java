@@ -39,7 +39,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
 /**
  * A list of logically related elements as (<var>name</var>, <var>value</var>) pairs in a dictionary.
- * By definition, all record members have a [1 … 1] cardinality
+ * By definition, all record members have a [1 … 1] multiplicity
  * (for a more flexible construct, see {@linkplain org.apache.sis.feature features}).
  * Since all members are expected to be assigned a value, the initial values on {@code DefaultRecord}
  * instantiation are unspecified. Some may be null, or some may be zero.

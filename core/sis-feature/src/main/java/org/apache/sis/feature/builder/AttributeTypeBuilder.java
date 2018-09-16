@@ -58,7 +58,7 @@ import org.opengis.feature.AttributeType;
  *       Must be specified at {@linkplain FeatureTypeBuilder#addAttribute(Class) construction time}.</li>
  *   <li>a default value — to be used when an attribute instance does not provide an explicit value.</li>
  *   <li>characteristics — for example the units of measurement for all attributes of the same type.</li>
- *   <li>cardinality     — the minimum and maximum occurrences of attribute values.</li>
+ *   <li>multiplicity    — the minimum and maximum occurrences of attribute values.</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)

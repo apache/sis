@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
 public final strictfp class MultiValuedAttributeTest extends TestCase {
     /**
      * Creates an attribute for a list of universities.
-     * The cardinality is [0 … ∞].
+     * The multiplicity is [0 … ∞].
      */
     static MultiValuedAttribute<String> universities() {
         return new MultiValuedAttribute<>(DefaultAttributeTypeTest.universities());
