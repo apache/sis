@@ -206,6 +206,17 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests the assignation of two labels on the same unit.
+     */
+    @Test
+    public void testDuplicatedLabels() {
+        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        f.label(Units.DEGREE, "deg");
+        f.label(Units.DEGREE, "dd");        // For "decimal degrees"
+        roundtrip(f, "dd", "dd");
+    }
+
+    /**
      * Tests unit formatting with {@link UnitFormat.Style#UCUM}.
      */
     @Test
@@ -507,6 +518,16 @@ public final strictfp class UnitFormatTest extends TestCase {
          */
         assertEquals("mg∕m",  f.parse("10^-6.kg/m").getSymbol());
         assertEquals("µg∕m³", f.parse("μg.m-3").getSymbol());
+    }
+
+    /**
+     * Tests the parsing of {@code "1/l"}.
+     */
+    @Test
+    public void testParseInverseL() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        final Unit<?> u = f.parse("1/l");
+        assertEquals("1∕L", u.toString());
     }
 
     /**

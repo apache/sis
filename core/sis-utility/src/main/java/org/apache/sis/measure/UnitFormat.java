@@ -427,10 +427,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
              */
             throw new CorruptedObjectException("unitToLabel");
         }
-        if (unitForOldLabel != null && !unitForOldLabel.equals(unit)) {
+        if (unitForOldLabel != null && !unitForOldLabel.getSystemUnit().equals(unit.getSystemUnit())) {
             /*
              * Assuming there is no bug in our algorithm, this exception should never happen
              * unless this UnitFormat has been modified concurrently in another thread.
+             * We compared system units because the units may not be strictly equal
+             * as a result of the call to ConventionalUnit.forSymbol(label).
              */
             throw new CorruptedObjectException("labelToUnit");
         }

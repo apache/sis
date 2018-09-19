@@ -357,7 +357,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
 
     /**
      * Returns a new unit identical to this unit except for the symbol, which is set to the given value.
-     * This is used by {@link UnitFormat} only; we do not provide public API for setting a unit symbol
+     * This is used by {@link UnitFormat} mostly; we do not provide public API for setting a unit symbol
      * on a conventional unit.
      */
     final ConventionalUnit<Q> forSymbol(final String symbol) {
