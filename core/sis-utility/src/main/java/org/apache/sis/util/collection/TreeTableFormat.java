@@ -794,26 +794,31 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                  */
                 final Format format = getFormat(value.getClass());
                 if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
-                    /*
-                     * The default floating point formats use only 3 fraction digits. We adjust that to the number
-                     * of digits required by the number to format. We do that only if no NumberFormat was inferred
-                     * for the whole column (in order to keep column format uniform).  We use enough precision for
-                     * all fraction digits except the last 2, in order to let DecimalFormat round the number.
-                     */
-                    if (adaptableFormat == null) {
-                        adaptableFormat = (DecimalFormat) format.clone();
-                        defaultPattern = adaptableFormat.toPattern();
+                    final double number = ((Number) value).doubleValue();
+                    if (number != (int) number) {   // Cast to 'int' instead of 'long' as a way to limit to about 2E9.
+                        /*
+                         * The default floating point format uses only 3 fraction digits. We adjust that to the number
+                         * of digits required by the number to format. We do that only if no NumberFormat was inferred
+                         * for the whole column (in order to keep column format uniform).  We use enough precision for
+                         * all fraction digits except the last 2, in order to let DecimalFormat round the number.
+                         */
+                        if (adaptableFormat == null) {
+                            adaptableFormat = (DecimalFormat) format.clone();
+                            defaultPattern = adaptableFormat.toPattern();
+                        }
+                        final int nf = DecimalFunctions.fractionDigitsForValue(number);
+                        final boolean preferScientificNotation = (nf > 20 || nf < 7);       // == (value < 1E-4 || value > 1E+9)
+                        if (preferScientificNotation != usingScientificNotation) {
+                            usingScientificNotation = preferScientificNotation;
+                            adaptableFormat.applyPattern(preferScientificNotation ? "0.0############E0" : defaultPattern);
+                        }
+                        if (!preferScientificNotation) {
+                            adaptableFormat.setMaximumFractionDigits(nf - 2);       // All significand fraction digits except last two.
+                        }
+                        text = adaptableFormat.format(value);
+                    } else {
+                        text = format.format(value);
                     }
-                    final int nf = DecimalFunctions.fractionDigitsForValue(((Number) value).doubleValue());
-                    final boolean preferScientificNotation = (nf > 20 || nf < 7);       // == (value < 1E-4 || value > 1E+9)
-                    if (preferScientificNotation != usingScientificNotation) {
-                        usingScientificNotation = preferScientificNotation;
-                        adaptableFormat.applyPattern(preferScientificNotation ? "0.0############E0" : defaultPattern);
-                    }
-                    if (!preferScientificNotation) {
-                        adaptableFormat.setMaximumFractionDigits(nf - 2);       // All significand fraction digits except last two.
-                    }
-                    text = adaptableFormat.format(value);
                 } else {
                     text = (format != null) ? format.format(value) : value.toString();
                 }
