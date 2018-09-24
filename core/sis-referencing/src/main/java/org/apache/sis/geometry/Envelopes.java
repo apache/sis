@@ -22,6 +22,7 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Set;
+import java.util.ConcurrentModificationException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -46,8 +47,8 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 
@@ -87,7 +88,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -100,6 +101,58 @@ public final class Envelopes extends Static {
      * Do not allow instantiation of this class.
      */
     private Envelopes() {
+    }
+
+    /**
+     * Puts together a list of envelopes, each of them using an independent coordinate reference system.
+     * The dimension of the returned envelope is the sum of the dimension of all components.
+     * If all components have a coordinate reference system, then the returned envelope will
+     * have a compound coordinate reference system.
+     *
+     * @param  components  the envelopes to aggregate in a single envelope, in the given order.
+     * @return the aggregation of all given envelopes.
+     * @throws FactoryException if the geodetic factory failed to create the compound CRS.
+     *
+     * @see org.apache.sis.referencing.CRS#compound(CoordinateReferenceSystem...)
+     * @see org.apache.sis.referencing.operation.transform.MathTransforms#compound(MathTransform...)
+     *
+     * @since 1.0
+     */
+    public static Envelope compound(final Envelope... components) throws FactoryException {
+        ArgumentChecks.ensureNonNull("components", components);
+        int sum = 0;
+        for (int i=0; i<components.length; i++) {
+            final Envelope env = components[i];
+            ArgumentChecks.ensureNonNullElement("components", i, env);
+            sum += env.getDimension();
+        }
+        final GeneralEnvelope compound = new GeneralEnvelope(sum);
+        CoordinateReferenceSystem[] crsComponents = null;
+        int firstAffectedOrdinate = 0;
+        for (int i=0; i<components.length; i++) {
+            final Envelope env = components[i];
+            final int dim = env.getDimension();
+            compound.subEnvelope(firstAffectedOrdinate, firstAffectedOrdinate += dim).setEnvelope(env);
+            if (i == 0) {
+                final CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
+                if (crs != null) {
+                    crsComponents = new CoordinateReferenceSystem[components.length];
+                    crsComponents[0] = crs;
+                }
+            } else if (crsComponents != null) {
+                if ((crsComponents[i] = env.getCoordinateReferenceSystem()) == null) {
+                    crsComponents = null;               // Not all CRS are non-null.
+                }
+            }
+        }
+        if (firstAffectedOrdinate != sum) {
+            // Should never happen unless the number of dimensions of an envelope changed during iteration.
+            throw new ConcurrentModificationException();
+        }
+        if (crsComponents != null) {
+            compound.setCoordinateReferenceSystem(CRS.compound(crsComponents));
+        }
+        return compound;
     }
 
     /**
@@ -124,6 +177,7 @@ public final class Envelopes extends Static {
      * @throws TransformException if the point can not be transformed
      *         or if a problem occurred while calculating the derivative.
      */
+    @SuppressWarnings("null")
     static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
             final double[] dstPts, final int dstOff, final boolean derivate) throws TransformException
     {
@@ -203,7 +257,7 @@ public final class Envelopes extends Static {
     public static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope)
             throws TransformException
     {
-        ensureNonNull("transform", transform);
+        ArgumentChecks.ensureNonNull("transform", transform);
         return (envelope != null) ? transform(transform, envelope, null) : null;
     }
 
@@ -436,7 +490,7 @@ public final class Envelopes extends Static {
     public static GeneralEnvelope transform(final CoordinateOperation operation, Envelope envelope)
             throws TransformException
     {
-        ensureNonNull("operation", operation);
+        ArgumentChecks.ensureNonNull("operation", operation);
         if (envelope == null) {
             return null;
         }
@@ -765,7 +819,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
      * @see org.apache.sis.io.wkt
      */
     public static Envelope fromWKT(final CharSequence wkt) throws FactoryException {
-        ensureNonNull("wkt", wkt);
+        ArgumentChecks.ensureNonNull("wkt", wkt);
         try {
             return new GeneralEnvelope(wkt);
         } catch (IllegalArgumentException e) {
