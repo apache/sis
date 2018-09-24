@@ -184,6 +184,7 @@ public final class Envelopes extends Static {
      * Transforms an envelope using the given math transform.
      * The transformation is only approximative: the returned envelope may be bigger than necessary,
      * or smaller than required if the bounding box contains a pole.
+     * The coordinate reference system of the returned envelope will be null.
      *
      * <div class="section">Limitation</div>
      * This method can not handle the case where the envelope contains the North or South pole,
