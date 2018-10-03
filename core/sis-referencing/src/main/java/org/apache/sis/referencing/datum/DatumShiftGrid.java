@@ -532,9 +532,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int iy = Math.max(0, Math.min(gridSize[1] - 2, (int) gridY));
         final Matrix derivative = Matrices.createDiagonal(getTranslationDimensions(), gridSize.length);
         for (int j=derivative.getNumRow(); --j>=0;) {
-            final double orig = getCellValue(j, iy, ix);
-            derivative.setElement(j, 0, derivative.getElement(j, 0) + (getCellValue(j, iy+1, ix) - orig));
-            derivative.setElement(j, 1, derivative.getElement(j, 1) + (getCellValue(j, iy, ix+1) - orig));
+            final double orig = getCellValue(j, ix, iy);
+            derivative.setElement(j, 0, derivative.getElement(j, 0) + (getCellValue(j, ix+1, iy) - orig));
+            derivative.setElement(j, 1, derivative.getElement(j, 1) + (getCellValue(j, ix, iy+1) - orig));
         }
         return derivative;
     }
