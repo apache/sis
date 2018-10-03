@@ -340,9 +340,16 @@ search: for (int j=0; j<numPoints; j++) {
     }
 
     /**
-     * Returns the envelope of source points. The lower and upper values are inclusive.
+     * Returns the envelope of source points. This method returns the known minimum and maximum values for each dimension,
+     * <strong>not</strong> expanded to encompass full cell surfaces. In other words, the returned envelope encompasses only
+     * {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}.
      *
-     * @return the envelope of source points.
+     * <p>If a grid size was {@link #LinearTransformBuilder(int...) specified at construction time},
+     * then those minimums and maximums are inferred from the grid size and are always integer values.
+     * Otherwise, the minimums and maximums are extracted from the control points and may be any floating point values.
+     * In any cases, the lower and upper values are inclusive.</p>
+     *
+     * @return the envelope of source points (cell centers), inclusive.
      * @throws IllegalStateException if the source points are not yet known.
      *
      * @since 1.0

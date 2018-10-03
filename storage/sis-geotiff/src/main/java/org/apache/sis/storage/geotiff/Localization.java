@@ -102,7 +102,7 @@ final class Localization {
             }
             grid.setDesiredPrecision(PRECISION);
             final MathTransform tr = grid.create(null);
-            if (addTo != null && addTo.put(grid.getSourceEnvelope(), tr) != null) {
+            if (addTo != null && addTo.put(grid.getSourceEnvelope(false), tr) != null) {
                 throw new FactoryException();       // Should never happen. If it does, we have a bug in our algorithm.
             }
             return tr;

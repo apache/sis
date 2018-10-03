@@ -32,6 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
@@ -77,6 +78,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
 
     /**
      * The transform for the linear part.
+     * Always created with a grid size specified to the constructor.
      */
     private final LinearTransformBuilder linear;
 
@@ -88,6 +90,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
 
     /**
      * Conversions from source real-world coordinates to grid indices before interpolation.
+     * If there is no such conversion to apply, then this is the identity transform.
      */
     private LinearTransform sourceToGrid;
 
@@ -109,7 +112,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param height  the number of rows in the grid of target positions.
      */
     public LocalizationGridBuilder(final int width, final int height) {
-        linear       = new LinearTransformBuilder(width, height);
+        linear = new LinearTransformBuilder(width, height);
         sourceToGrid = MathTransforms.identity(2);
     }
 
@@ -316,13 +319,25 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Returns the envelope of source coordinates. This is the envelope of the grid domain
-     * (i.e. the ranges of valid {@code gridX} and {@code gridY} argument values in calls
-     * to {@code get/setControlPoint(…)} methods) transformed by the inverse of
-     * {@linkplain #getSourceToGrid() source to grid} transform.
-     * The lower and upper values are inclusive.
+     * Returns the envelope of source coordinates. The {@code fullArea} argument control whether
+     * the returned envelope shall encompass full surface of every cells or only their centers:
+     * <ul>
+     *   <li>If {@code true}, then the returned envelope encompasses full cell surfaces,
+     *       from lower border to upper border. In other words, the returned envelope encompasses all
+     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER cell corners}.</li>
+     *   <li>If {@code false}, then the returned envelope encompasses only
+     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}, inclusive.</li>
+     * </ul>
      *
-     * @return the envelope of grid points.
+     * This is the envelope of the grid domain (i.e. the ranges of valid {@code gridX} and {@code gridY} argument
+     * values in calls to {@code get/setControlPoint(…)} methods) transformed as below:
+     * <ol>
+     *   <li>expanded by ½ cell on each side if {@code fullArea} is {@code true}</li>
+     *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
+     * </ol>
+     *
+     * @param  fullArea whether the the envelope shall encompass the full cell surfaces instead than only their centers.
+     * @return the envelope of grid points, from lower corner to upper corner.
      * @throws IllegalStateException if the grid points are not yet known.
      * @throws TransformException if the envelope can not be calculated.
      *
@@ -330,8 +345,17 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @since 1.0
      */
-    public Envelope getSourceEnvelope() throws TransformException {
-        return Envelopes.transform(sourceToGrid.inverse(), linear.getSourceEnvelope());
+    public Envelope getSourceEnvelope(final boolean fullArea) throws TransformException {
+        Envelope envelope = linear.getSourceEnvelope();
+        if (fullArea) {
+            for (int i = envelope.getDimension(); --i >= 0;) {
+                final GeneralEnvelope ge = GeneralEnvelope.castOrCopy(envelope);
+                ge.setRange(i, ge.getLower(i) - 0.5,
+                               ge.getUpper(i) + 0.5);
+                envelope = ge;
+            }
+        }
+        return Envelopes.transform(sourceToGrid.inverse(), envelope);
     }
 
     /**

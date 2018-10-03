@@ -583,6 +583,24 @@
         </executions>
       </plugin>
 
+      <!-- Cleanup local repository by removing Apache SIS snapshots -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>remove-old-artifacts</id>
+            <goals>
+              <goal>remove-project-artifact</goal>
+            </goals>
+            <configuration>
+              <removeAll>false</removeAll>      <!-- Remove only snapshots of this project version. -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -892,11 +910,6 @@
     <!-- Following plugins are used only by some specific modules. -->
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
         <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>

@@ -220,6 +220,8 @@ public final class Envelopes extends Static {
                     envelope = new GeneralEnvelope(envelope);
                     ((GeneralEnvelope) envelope).setCoordinateReferenceSystem(targetCRS);
                 } else {
+                    // TODO: create an CoordinateOperationContext with the envelope as geographic area.
+                    //       May require that we optimize the search for CoordinateOperation with non-null context first.
                     final CoordinateOperation operation;
                     try {
                         operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);
