@@ -33,7 +33,7 @@ import org.junit.Test;
  * @since   0.8
  * @module
  */
-@DependsOn(LinearTransformBuilderTest.class)
+@DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
 public final strictfp class LocalizationGridBuilderTest extends TransformTestCase {
     /**
      * Creates a builder initialized with control points computed from the given affine transform.
