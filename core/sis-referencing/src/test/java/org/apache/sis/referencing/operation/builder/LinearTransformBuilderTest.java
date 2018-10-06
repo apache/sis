@@ -29,14 +29,15 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
+import org.opengis.geometry.DirectPosition;
 
 
 /**
  * Tests {@link LinearTransformBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -328,5 +329,81 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertEquals("m₁₁", ref.getScaleY(),     m.getElement(1, 1), scaleTolerance);
         assertEquals("m₁₂", ref.getTranslateY(), m.getElement(1, 2), translationTolerance);
         assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), scaleTolerance);
+    }
+
+    /**
+     * Tests {@link LinearTransformBuilder#getControlPoints()} with gridded source points.
+     */
+    @Test
+    public void testGetControlPoints() {
+        testGetControlPoints(new LinearTransformBuilder(3, 4));
+    }
+
+    /**
+     * Tests {@link LinearTransformBuilder#getControlPoints()} with non-gridded source points.
+     */
+    @Test
+    public void testGetUngriddedControlPoints() {
+        testGetControlPoints(new LinearTransformBuilder());
+    }
+
+    /**
+     * Tests {@link LinearTransformBuilder#getControlPoints()} with the given builder.
+     * If the builder is backed by a grid, then the grid size shall be at least 3×4.
+     */
+    private static void testGetControlPoints(final LinearTransformBuilder builder) {
+        final DirectPosition2D s12, s23, s00;
+        final DirectPosition2D t12, t23, t00;
+        s12 = new DirectPosition2D(1, 2);   t12 = new DirectPosition2D(3, 2);
+        s23 = new DirectPosition2D(2, 3);   t23 = new DirectPosition2D(4, 1);
+        s00 = new DirectPosition2D(0, 0);   t00 = new DirectPosition2D(7, 3);
+
+        final Map<DirectPosition2D,DirectPosition2D> expected = new HashMap<>();
+        final Map<DirectPosition,DirectPosition> actual = builder.getControlPoints();
+        assertEquals(0, actual.size());
+        assertTrue(actual.isEmpty());
+        assertFalse(actual.containsKey  (s12));
+        assertFalse(actual.containsKey  (s23));
+        assertFalse(actual.containsKey  (s00));
+        assertFalse(actual.containsValue(t12));
+        assertFalse(actual.containsValue(t23));
+        assertFalse(actual.containsValue(t00));
+        assertMapEquals(expected, actual);
+
+        builder.setControlPoint(new int[] {1, 2}, t12.getCoordinate());
+        assertNull(expected.put(s12, t12));
+        assertEquals(1, actual.size());
+        assertFalse(actual.isEmpty());
+        assertTrue (actual.containsKey  (s12));
+        assertFalse(actual.containsKey  (s23));
+        assertFalse(actual.containsKey  (s00));
+        assertTrue (actual.containsValue(t12));
+        assertFalse(actual.containsValue(t23));
+        assertFalse(actual.containsValue(t00));
+        assertMapEquals(expected, actual);
+
+        builder.setControlPoint(new int[] {2, 3}, t23.getCoordinate());
+        assertNull(expected.put(s23, t23));
+        assertEquals(2, actual.size());
+        assertFalse(actual.isEmpty());
+        assertTrue (actual.containsKey  (s12));
+        assertTrue (actual.containsKey  (s23));
+        assertFalse(actual.containsKey  (s00));
+        assertTrue (actual.containsValue(t12));
+        assertTrue (actual.containsValue(t23));
+        assertFalse(actual.containsValue(t00));
+        assertMapEquals(expected, actual);
+
+        builder.setControlPoint(new int[] {0, 0}, t00.getCoordinate());
+        assertNull(expected.put(s00, t00));
+        assertEquals(3, actual.size());
+        assertFalse(actual.isEmpty());
+        assertTrue (actual.containsKey  (s12));
+        assertTrue (actual.containsKey  (s23));
+        assertTrue (actual.containsKey  (s00));
+        assertTrue (actual.containsValue(t12));
+        assertTrue (actual.containsValue(t23));
+        assertTrue (actual.containsValue(t00));
+        assertMapEquals(expected, actual);
     }
 }

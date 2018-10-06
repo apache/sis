@@ -21,20 +21,28 @@ import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
+
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
  * Tests {@link LocalizationGridBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
 @DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
 public final strictfp class LocalizationGridBuilderTest extends TransformTestCase {
+    /**
+     * For floating-point comparisons.
+     */
+    private static final double STRICT = 0;
+
     /**
      * Creates a builder initialized with control points computed from the given affine transform.
      * Some non-linear terms will be added to the coordinates computed by the given transform.
@@ -101,5 +109,34 @@ public final strictfp class LocalizationGridBuilderTest extends TransformTestCas
         verifyTransform(new double[] {1, 1}, new double[] {  6.1,  -26.2});         // Not yet non-linear
         verifyTransform(new double[] {0, 3}, new double[] {  1.3,   -8.5});
         verifyTransform(new double[] {4, 3}, new double[] { 87.7, -123.7});
+    }
+
+    /**
+     * Tests {@link LocalizationGridBuilder#LocalizationGridBuilder(LinearTransformBuilder)}.
+     *
+     * @throws TransformException if an error occurred while computing the envelope.
+     */
+    @Test
+    public void testCreateFromLocalizations() throws TransformException {
+        final LinearTransformBuilder localizations = new LinearTransformBuilder();
+        localizations.setControlPoint(new int[] {0, 0}, new double[] {-20.0,    8.0});
+        localizations.setControlPoint(new int[] {1, 0}, new double[] {  0.4,  -21.7});
+        localizations.setControlPoint(new int[] {0, 1}, new double[] {-14.3,    3.5});
+        localizations.setControlPoint(new int[] {1, 1}, new double[] {  6.1,  -26.2});
+        localizations.setControlPoint(new int[] {0, 2}, new double[] {  1.3,   -8.5});
+        localizations.setControlPoint(new int[] {1, 2}, new double[] { 87.7, -123.7});
+        LocalizationGridBuilder builder = new LocalizationGridBuilder(localizations);
+        /*
+         * Verifies the grid size by checking the source envelope.
+         * Minimum and maximum values are inclusive.
+         */
+        assertEnvelopeEquals(new Envelope2D(null, 0, 0, 1, 2), builder.getSourceEnvelope(false), STRICT);
+        /*
+         * Verify a few random positions.
+         */
+        assertArrayEquals(new double[] {-20.0,    8.0}, builder.getControlPoint(0, 0), STRICT);
+        assertArrayEquals(new double[] {  0.4,  -21.7}, builder.getControlPoint(1, 0), STRICT);
+        assertArrayEquals(new double[] {  1.3,   -8.5}, builder.getControlPoint(0, 2), STRICT);
+        assertArrayEquals(new double[] { 87.7, -123.7}, builder.getControlPoint(1, 2), STRICT);
     }
 }

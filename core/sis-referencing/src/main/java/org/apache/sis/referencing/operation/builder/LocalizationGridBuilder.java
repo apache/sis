@@ -134,12 +134,64 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public LocalizationGridBuilder(final Vector sourceX, final Vector sourceY) {
         final Matrix fromGrid = new Matrix3();
-        linear = new LinearTransformBuilder(infer(sourceX, fromGrid, 0), infer(sourceY, fromGrid, 1));
+        final int width  = infer(sourceX, fromGrid, 0);
+        final int height = infer(sourceY, fromGrid, 1);
+        linear = new LinearTransformBuilder(width, height);
         try {
             sourceToGrid = MathTransforms.linear(fromGrid).inverse();
         } catch (NoninvertibleTransformException e) {
             // Should not happen because infer(…) verified that the coefficients are okay.
             throw (ArithmeticException) new ArithmeticException(e.getLocalizedMessage()).initCause(e);
+        }
+    }
+
+    /**
+     * Creates a new builder for a localization grid inferred from the given provider of control points.
+     * The {@linkplain LinearTransformBuilder#getSourceDimensions() number of source dimensions} in the
+     * given {@code localizations} argument shall be 2. The {@code localization} can be used in two ways:
+     *
+     * <ul class="verbose">
+     *   <li>If the {@code localizations} instance has been
+     *     {@linkplain LinearTransformBuilder#LinearTransformBuilder(int...) created with a fixed grid size},
+     *     then that instance is used as-is — it is not copied. It is okay to specify an empty instance and
+     *     to provide control points later by calls to {@link #setControlPoint(int, int, double...)}.</li>
+     *   <li>If the {@code localizations} instance has been
+     *     {@linkplain LinearTransformBuilder#LinearTransformBuilder() created for a grid of unknown size},
+     *     then this constructor tries to infer a grid size by inspection of the control points present in
+     *     {@code localizations} at the time this constructor is invoked. Changes in {@code localizations}
+     *     after construction will not be reflected in this new builder.</li>
+     * </ul>
+     *
+     * @param  localizations  the provider of control points for which to create a localization grid.
+     * @throws ArithmeticException if this constructor can not infer a reasonable grid size from the given localizations.
+     *
+     * @since 1.0
+     */
+    public LocalizationGridBuilder(final LinearTransformBuilder localizations) {
+        ArgumentChecks.ensureNonNull("localizations", localizations);
+        int n = localizations.getGridDimensions();
+        if (n == 2) {
+            linear = localizations;
+            sourceToGrid = MathTransforms.identity(2);
+        } else {
+            if (n < 0) {
+                final Vector[] sources = localizations.sources();
+                n = sources.length;
+                if (n == 2) {
+                    final Matrix fromGrid = new Matrix3();
+                    final int width  = infer(sources[0], fromGrid, 0);
+                    final int height = infer(sources[1], fromGrid, 1);
+                    linear = new LinearTransformBuilder(width, height);
+                    linear.setControlPoints(localizations.getControlPoints());
+                    try {
+                        sourceToGrid = MathTransforms.linear(fromGrid).inverse();
+                    } catch (NoninvertibleTransformException e) {
+                        throw (ArithmeticException) new ArithmeticException(e.getLocalizedMessage()).initCause(e);
+                    }
+                    return;
+                }
+            }
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTransformDimension_3, 0, 2, n));
         }
     }
 

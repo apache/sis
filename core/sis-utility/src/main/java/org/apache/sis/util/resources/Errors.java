@@ -383,6 +383,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalLanguageCode_1 = 54;
 
         /**
+         * Illegal mapping: {0} → {1}.
+         */
+        public static final short IllegalMapping_2 = 185;
+
+        /**
          * Member “{0}” can not be associated to type “{1}”.
          */
         public static final short IllegalMemberType_2 = 55;
