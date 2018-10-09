@@ -16,41 +16,43 @@
  */
 package org.apache.sis.internal.storage.folder;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.concurrent.ConcurrentHashMap;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.StoreResource;
+import org.apache.sis.internal.storage.StoreUtilities;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.iso.Names;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStores;
-import org.apache.sis.storage.DataStoreProvider;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.storage.StoreResource;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -179,6 +181,13 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         encoding          = connector.getOption(OptionKey.ENCODING);
         children          = parent.children;
         componentProvider = parent.componentProvider;
+    }
+
+    @Override
+    public GenericName getIdentifier() {
+        final String displayName = getDisplayName();
+        if (displayName != null) return Names.createLocalName(null, null, displayName);
+        return null;
     }
 
     /**

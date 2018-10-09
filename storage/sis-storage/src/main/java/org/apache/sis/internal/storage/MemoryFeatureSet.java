@@ -21,11 +21,10 @@ import java.util.stream.Stream;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.metadata.Metadata;
-
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.metadata.Metadata;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -69,6 +68,16 @@ public final class MemoryFeatureSet extends AbstractFeatureSet {
         this.type     = type;
         this.features = features;
         this.metadata = metadata;
+    }
+
+    /**
+     * Returns the name of the feature type.
+     *
+     * @return feature type name.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return type.getName();
     }
 
     /**

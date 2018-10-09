@@ -16,17 +16,16 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.opengis.util.GenericName;
-import org.opengis.geometry.Envelope;
-import org.apache.sis.feature.FeatureOperations;
-import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStore;
@@ -36,8 +35,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.WarningListeners;
-
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Operation;
@@ -46,7 +43,8 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.PropertyIsEqualTo;
 import org.opengis.filter.expression.Expression;
-import org.apache.sis.filter.DefaultFilterFactory;
+import org.opengis.geometry.Envelope;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -252,6 +250,16 @@ public class JoinFeatureSet extends AbstractFeatureSet {
             featureInfo = name(leftName.tip().toString() + '-' + rightName.tip());
         }
         type = new DefaultFeatureType(featureInfo, false, null, properties);
+    }
+
+    /**
+     * Returns the name of the join operation resulting feature type.
+     *
+     * @return resulting feature type name.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return type.getName();
     }
 
     /**

@@ -16,23 +16,24 @@
  */
 package org.apache.sis.storage.earthobservation;
 
-import java.io.Reader;
 import java.io.BufferedReader;
-import java.io.LineNumberReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.Reader;
 import java.net.URI;
-import org.opengis.metadata.Metadata;
-import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.setup.OptionKey;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -102,6 +103,17 @@ public class LandsatStore extends DataStore {
             throw new UnsupportedStorageException(super.getLocale(), LandsatStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+    }
+
+    /**
+     * Returns a null value.
+     * TODO : implement this method when Coverage API will be finished.
+     *
+     * @return null.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return null;
     }
 
     /**

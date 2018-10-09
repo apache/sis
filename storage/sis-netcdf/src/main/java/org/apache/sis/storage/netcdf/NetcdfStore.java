@@ -18,25 +18,26 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.Collection;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.Aggregate;
+import java.util.List;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.util.GenericName;
 import ucar.nc2.constants.CDM;
 
 
@@ -115,6 +116,16 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @Override
     public ParameterValueGroup getOpenParameters() {
         return URIDataStore.parameters(provider, location);
+    }
+
+    /**
+     * SQL Datastore root resource has no identifier.
+     *
+     * @return null
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return null;
     }
 
     /**

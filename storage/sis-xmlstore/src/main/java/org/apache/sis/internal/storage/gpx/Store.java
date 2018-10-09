@@ -16,37 +16,36 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
-import org.opengis.util.NameFactory;
-import org.opengis.util.FactoryException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import org.apache.sis.internal.storage.AbstractResource;
+import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.ConcurrentReadException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Version;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.ConcurrentReadException;
-import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.storage.AbstractResource;
-import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Version;
-import org.apache.sis.setup.OptionKey;
-import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.distribution.DefaultFormat;
-
-// Branch-dependent imports
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 
 
 /**
@@ -145,6 +144,16 @@ public final class Store extends StaxDataStore implements FeatureSet {
     public synchronized void setVersion(final Version version) throws DataStoreException {
         ArgumentChecks.ensureNonNull("version", version);
         this.version = version;
+    }
+
+    /**
+     * Returns GPX parent feature type name.
+     *
+     * @return feature type name.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return types.parent.getName();
     }
 
     /**

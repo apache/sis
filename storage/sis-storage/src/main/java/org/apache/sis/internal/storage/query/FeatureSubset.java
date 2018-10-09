@@ -18,18 +18,17 @@ package org.apache.sis.internal.storage.query;
 
 import java.util.List;
 import java.util.stream.Stream;
-import org.opengis.geometry.Envelope;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.expression.Expression;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.geometry.Envelope;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -68,6 +67,16 @@ final class FeatureSubset extends AbstractFeatureSet {
         super(source);
         this.source = source;
         this.query = query;
+    }
+
+    /**
+     * Inherit parent FeatureSet identifier.
+     *
+     * @return parent FeatureSet identifier.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return source.getIdentifier();
     }
 
     /**

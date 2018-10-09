@@ -17,28 +17,29 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.DateType;
-import org.opengis.util.FactoryException;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -363,6 +364,16 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      */
     private Charset encoding() {
         return reader.owner.encoding;
+    }
+
+    /**
+     * Datastore root resource has no identifier.
+     *
+     * @return null
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return null;
     }
 
     /**

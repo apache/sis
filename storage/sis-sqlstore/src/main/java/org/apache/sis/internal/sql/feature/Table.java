@@ -16,46 +16,45 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.sql.DatabaseMetaData;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.sql.DataSource;
-import org.opengis.util.GenericName;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Debug;
-
-// Branch-dependent imports
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.iso.Names;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.FeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -414,6 +413,21 @@ final class Table extends AbstractFeatureSet {
         this.attributeNames   = attributeNames.toArray(new String[attributeNames.size()]);
         this.attributeColumns = attributeColumns.equals(attributeNames) ? this.attributeNames
                               : attributeColumns.toArray(new String[attributeColumns.size()]);
+    }
+
+    /**
+     *
+     * @return table identifier composed of catalog, schema and table name.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        if (name.catalog != null && name.schema != null) {
+            return Names.createGenericName(null, null, name.catalog, name.schema, name.table);
+        } else if (name.schema != null) {
+            return Names.createGenericName(null, null, name.schema, name.table);
+        } else {
+            return Names.createLocalName(null, null, name.table);
+        }
     }
 
     /**

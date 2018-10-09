@@ -16,33 +16,34 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Locale;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
-import org.opengis.util.FactoryException;
+import java.util.Locale;
+import java.util.logging.LogRecord;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.util.resources.Errors;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.storage.DataStoreClosedException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.util.resources.Errors;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -104,6 +105,17 @@ public class GeoTiffStore extends DataStore {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+    }
+
+    /**
+     * Returns a null value.
+     * TODO : implement this method when Coverage API will be finished.
+     *
+     * @return null.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return null;
     }
 
     /**

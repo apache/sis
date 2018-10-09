@@ -16,37 +16,36 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
-import java.util.Map;
-import java.util.List;
-import java.util.Collection;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.util.function.Consumer;
-import java.io.IOException;
-import org.apache.sis.math.Vector;
+import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.feature.MovingFeature;
+import org.apache.sis.math.Vector;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.setup.GeometryLibrary;
-import ucar.nc2.constants.CF;
-
-// Branch-dependent imports
+import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
-import org.opengis.feature.AttributeType;
+import org.opengis.util.GenericName;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -149,6 +148,15 @@ final class FeaturesInfo extends DiscreteSampling {
         }
         info.put(DefaultAttributeType.NAME_KEY, "Feature");     // TODO: find a better name.
         type = new DefaultFeatureType(info, false, null, pt);
+    }
+
+    /**
+     *
+     * @return type name.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return type.getName();
     }
 
     /**
