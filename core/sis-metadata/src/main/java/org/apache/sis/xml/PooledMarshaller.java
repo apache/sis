@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.util.function.UnaryOperator;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.PropertyException;
@@ -36,7 +37,6 @@ import javax.xml.validation.Schema;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.TypeRegistration;
 import org.apache.sis.internal.jaxb.UseLegacyMetadata;
 
 
@@ -138,12 +138,12 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * If the given object is not recognized or is already an instance of the expected class,
      * then it is returned unchanged.
      */
-    private Object toImplementation(final Object value) throws JAXBException {
+    private Object toImplementation(final Object value) {
         specificBitMasks = value.getClass().isAnnotationPresent(UseLegacyMetadata.class) ? Context.LEGACY_METADATA : 0;
-        final TypeRegistration[] converters = getRootAdapters();
+        final UnaryOperator<Object>[] converters = getRootAdapters();
         if (converters != null) {
-            for (final TypeRegistration t : converters) {
-                final Object c = t.toImplementation(value);
+            for (final UnaryOperator<Object> t : converters) {
+                final Object c = t.apply(value);
                 if (c != null) return c;
             }
         }

@@ -62,10 +62,10 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      * Location of the file listing types and their properties contained in legacy namespaces.
      * This is used for mapping new ISO 19115-3:2016 namespaces to legacy ISO 19139:2007 ones,
      * where the same {@code "http://standards.iso.org/iso/19115/-3/…"} URI is used in places
-     * where legacy schemas had two distinct URIs: {@code "http://www.isotc211.org/2005/gmd"}
+     * where legacy schema had two distinct URIs:  {@code "http://www.isotc211.org/2005/gmd"}
      * and {@code "http://standards.iso.org/iso/19115/-2/gmi/1.0"}.
      */
-    static final String FILENAME = "RenameOnExport.lst";
+    private static final String FILENAME = "RenameOnExport.lst";
 
     /**
      * The mapping from (<var>type</var>, <var>attribute</var>) pairs to legacy namespaces.
@@ -84,7 +84,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME, 60);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(true, FILENAME, 60);
 
     /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
@@ -214,7 +214,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     }
 
     /**
-     * Returns the map loaded by {@link #load(String, int)}.
+     * Returns the map loaded by {@link #load(boolean, String, int)}.
      *
      * @param  namespace  the namespace URI for which to get the substitution map.
      * @return the substitution map for the given namespace.

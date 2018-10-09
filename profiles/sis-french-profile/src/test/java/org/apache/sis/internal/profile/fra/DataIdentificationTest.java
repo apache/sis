@@ -18,7 +18,6 @@ package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.JAXBException;
 import org.apache.sis.test.xml.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -42,7 +41,6 @@ public final strictfp class DataIdentificationTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-404">SIS-404</a>
      */
     @Test
-    @Ignore("Verify if we should discontinue this profile.")
     public void testMarshalling() throws JAXBException {
         final String xml =
                 "<fra:FRA_DataIdentification xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"" +

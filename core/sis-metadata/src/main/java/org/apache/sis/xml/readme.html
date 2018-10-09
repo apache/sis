@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Syntax of Rename files</title>
+    <meta charset="UTF-8">
+    <style>
+      p {
+        text-align: justify;
+      }
+      pre {
+        border-left-style: solid;
+        border-left-color: darkgray;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Syntax of <code>RenameOnImport</code>/<code>Export</code> files</h1>
+    <p>
+      <b>WARNING: the syntax documented in this page is not committed API and may change in any future SIS version.</b>
+    </p>
+    <p>
+      This package provides two files in the <code>resources/org/apache/sis/xml/</code> folder:
+      <code>RenameOnImport.lst</code> and <code>RenameOnExport.lst</code>.
+      Those files are used by <code>TransformingReader.java</code> and <code>TransformingWriter.java</code> respectively
+      for converting XML namespaces between new specifications (ISO 19115-3:2016 and ISO 19115-4) and old specifications
+      (ISO 19139:2007 and ISO 19115-2:2009). The JAXB annotations in Apache SIS use the newer specifications.
+      The <code>Rename*.lst</code> files are needed only when reading or writing to older specifications.
+      Those files are used for performing the work of a lightweight XSLT engine.
+      Both share the same syntax:
+    </p>
+    <ul>
+      <li>Lines with zero-space indentation are namespace URIs.</li>
+      <li>Lines with one-space  indentation are XML type names.</li>
+      <li>Lines with two-spaces indentation are property names.</li>
+      <li>The "/" character in "<var>before</var>/<var>after</var>" means that a property name needs to be changed.
+          <var>Before</var> is the name before the renaming process and <var>after</var> is the name after the renaming process.</li>
+      <li>The ":" character in "<var>Parent</var> : <var>Child</var>" means that a subclass inherits all properties from a parent class.
+          The <var>parent</var> must be defined before the <var>child</var> (no forward references).
+      <li>The "!" character in "<var>Class</var> !<var>reason</var>" skips the association of current namespace to that class
+          (but namespace will still be associated to the properties). <var>Reason</var> is a free text.</li>
+    </ul>
+    <p>
+      For example the following snippet from <code>RenameOnImport.lst</code> declares that the <code>Citation.title</code>,
+      <code>Citation.edition</code> and <code>Address.country</code> properties are defined in the <b><code>cit</code></b> namespace,
+      while the <code>Extent.description</code> property is defined in the <b><code>gex</code></b> namespace
+      and the <code>Georectified.centrePoint</code> property is defined in the <b><code>msr</code></b> namespace.
+      Those information are required when reading a file encoded by the old standards
+      because almost all properties where in the single <code>gmd</code> namespace.
+      In general those information are used for converting only the <em>namespaces</em>; the class and property names are unchanged.
+      But in the special case where the "<var>before</var>/<var>after</var>" syntax is used, then class and/or property names are also changed.
+      For example in the following example, <code>Georectified.centerPoint</code> (from the old standard)
+      is renamed as <code>Georectified.centrePoint</code> (new standard).
+    </p>
+    <blockquote><pre>http://standards.iso.org/iso/19115/-3/<b>cit</b>/1.0
+ CI_Citation
+  title
+  edition
+ CI_Address
+  country
+http://standards.iso.org/iso/19115/-3/<b>gex</b>/1.0
+ EX_Extent
+  description
+http://standards.iso.org/iso/19115/-3/<b>msr</b>/1.0
+ MI_Georectified
+  centerPoint/centrePoint</pre></blockquote>
+    <p>
+      Conversely, when writing a file, some additional renaming can be applied <em>after</em> the namespaces have been renamed to <code>gmd</code>.
+      The following snippet from <code>RenameOnExport.lst</code> performs the converse of the property renaming shown in previous example:
+    </p>
+    <blockquote><pre>http://www.isotc211.org/2005/gmd
+ MD_Georectified
+  centrePoint/centerPoint</pre></blockquote>
+  </body>
+</html>

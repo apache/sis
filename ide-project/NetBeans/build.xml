@@ -116,6 +116,9 @@
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>
+      <fileset dir="${project.root}/profiles/sis-french-profile/src/main/resources">
+        <include name="**/*.lst"/>
+      </fileset>
     </copy>
 
 

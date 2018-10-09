@@ -37,17 +37,32 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
- * Creates the {@value TransformingReader#FILENAME} file. This class needs to be executed only when the content
+ * Creates a file in the {@value TransformingReader#FILENAME} format. This class can be executed if the content
  * has changed, or for verifying the current file. Output format contains namespaces first, then classes,
  * then properties. Example:
  *
- * {@preformat
+ * {@preformat text
  * http://standards.iso.org/iso/19115/-3/cit/1.0
  *   CI_Address
  *     administrativeArea
  *     city
  *   CI_Citation
  *     citedResponsibleParty
+ * }
+ *
+ * This class can be used as a starting point for generating a new file from scratch.
+ * It should not be used for updating the existing file (unless a lot of things have changed)
+ * because some of {@value TransformingReader#FILENAME} content have been edited by hand.
+ * For generating a new file:
+ *
+ * {@preformat java
+ *     public static void main(String[] args) throws Exception {
+ *         RenameListGenerator gen = new RenameListGenerator(Paths.get("/path/to/your/classes"));
+ *         gen.add(Paths.get("root/package/of/classes/to/add"));
+ *         try (final BufferedWriter out = Files.newBufferedWriter(Paths.get("MyOutputFile.lst"))) {
+ *             gen.print(out);
+ *         }
+ *     }
  * }
  */
 public final class RenameListGenerator {

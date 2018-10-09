@@ -1,0 +1,10 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements;
+# and to You under the Apache License, Version 2.0.
+#
+http://www.cnig.gouv.fr/2005/fra
+ FRA_DataIdentification : MD_DataIdentification
+ FRA_DirectReferenceSystem : MD_ReferenceSystem
+ FRA_IndirectReferenceSystem : MD_ReferenceSystem
+ FRA_Constraints : MD_Constraints
+ FRA_LegalConstraints : MD_LegalConstraints
+ FRA_SecurityConstraints : MD_SecurityConstraints

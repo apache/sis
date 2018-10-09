@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
@@ -30,11 +31,11 @@ import org.opengis.referencing.ReferenceSystem;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
-public final class ReferencingTypes extends TypeRegistration {
+public final class ReferencingTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**
      * Adds to the given collection the referencing types that should be given to the initial JAXB context.
      */
@@ -46,14 +47,13 @@ public final class ReferencingTypes extends TypeRegistration {
     }
 
     /**
-     * Notifies that the {@code sis-referencing} module can marshal arbitrary implementations
-     * of some coordinate reference system interfaces.
+     * Returns the converter to apply before marshalling objects.
      *
-     * @return {@code true}.
+     * @return {@code this}.
      */
     @Override
-    protected boolean canMarshalInterfaces() {
-        return true;
+    protected UnaryOperator<Object> beforeMarshal() {
+        return this;
     }
 
     /**
@@ -64,7 +64,7 @@ public final class ReferencingTypes extends TypeRegistration {
      * @return the given value as a type that can be marshalled, or {@code null}.
      */
     @Override
-    public Object toImplementation(final Object value) {
+    public Object apply(final Object value) {
         return (value instanceof ReferenceSystem) ? AbstractReferenceSystem.castOrCopy((ReferenceSystem) value) : null;
     }
 }

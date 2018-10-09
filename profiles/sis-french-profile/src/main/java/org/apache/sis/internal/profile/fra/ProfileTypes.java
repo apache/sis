@@ -25,7 +25,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -41,5 +41,17 @@ public final class ProfileTypes extends TypeRegistration {
         addTo.add(Constraints.class);
         addTo.add(LegalConstraints.class);
         addTo.add(SecurityConstraints.class);
+    }
+
+    /**
+     * Returns {@code true} for {@code export = false} in order to notify that we provide
+     * a {@code "RenameOnImport.lst"} file that need to be read.
+     *
+     * @param  export  {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
+     * @return {@code true} for {@code "RenameOnImport.lst"}, {@code false} otherwise.
+     */
+    @Override
+    protected boolean hasRenameFile(boolean export) {
+        return !export;
     }
 }

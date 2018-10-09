@@ -39,7 +39,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 /**
  * A XML reader replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
  * This class forwards every method calls to the wrapped {@link XMLEventReader}, but with some {@code namespaceURI}
- * modified before being transfered. This class uses a dictionary for identifying the XML namespaces expected by JAXB
+ * modified before being transferred. This class uses a dictionary for identifying the XML namespaces expected by JAXB
  * implementation. This is needed when a single namespace in a legacy schema has been splitted into many namespaces
  * in the newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3.
  * In such cases, we need to check which attribute is being mapped in order to determine the new namespace.
@@ -77,7 +77,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME, 250);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(false, FILENAME, 260);
 
     /**
      * Returns the namespace for the given ISO type, or {@code null} if unknown.
@@ -280,11 +280,11 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
-     * Returns the map loaded by {@link #load(String, int)} if the given namespace is a known legacy namespace.
-     * This method returns a non-empty map only for legacy namespaces for which the {@value #FILENAME} file has
-     * been designed. This is necessary for avoiding confusion with classes of the same name defined in other
-     * standards. For example the {@code Record} class name is used by other standards like Catalog Service for
-     * the Web (OGC CSW), and we don't want to replace the namespace of CSW classes.
+     * Returns the map loaded by {@link #load(boolean, String, int)} if the given namespace is a known legacy namespace.
+     * This method returns a non-empty map only for legacy namespaces for which the {@value #FILENAME} file has been designed.
+     * This is necessary for avoiding confusion with classes of the same name defined in other standards.
+     * For example the {@code Record} class name is used by other standards like Catalog Service for the Web (OGC CSW),
+     * and we don't want to replace the namespace of CSW classes.
      *
      * @param  namespace  the namespace URI for which to get the substitution map.
      * @return the substitution map for the given namespace, or an empty map if none.
@@ -294,6 +294,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     final Map<String, Map<String,String>> renamingMap(final String namespace) {
         if (!namespace.isEmpty()) {
             switch (removeTrailingSlash(namespace)) {
+                case "http://www.cnig.gouv.fr/2005/fra":        // TODO: move to sis-french-profile module.
                 case LegacyNamespaces.GMI_ALIAS:
                 case LegacyNamespaces.GMI:
                 case LegacyNamespaces.GMD:

@@ -18,14 +18,18 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.util.function.Function;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -34,6 +38,7 @@ import javax.xml.stream.events.Namespace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
 /**
@@ -98,7 +103,15 @@ abstract class Transformer {
     private static final char RENAME_SEPARATOR = '/';
 
     /**
-     * A flag after type name in files loaded by {@link #load(String, int)}, meaning that the type itself
+     * Character used for separating a class name from the parent class name. When the {@code Child : Parent} syntax
+     * is used, the child inherits all properties defined in the parent. The parent class must be defined before the
+     * child class (no forward reference). We do not store the relationship between the two classes, so it is not
+     * necessary to extend a parent that define no property.
+     */
+    private static final char EXTENDS = ':';
+
+    /**
+     * A flag after type name in files loaded by {@link #load(boolean, String, int)}, meaning that the type itself
      * is in a different namespace than the properties listed below the type. For example in the following:
      *
      * {@preformat text
@@ -110,8 +123,9 @@ abstract class Transformer {
      *
      * {@code SV_ServiceIdentification} type is defined in the {@code "http://standards.iso.org/iso/19115/-3/srv/2.0"}
      * namespace, but the {@code citation} and {@code abstract} properties inherited from {@code Identification} are
-     * defined in the {@code http://standards.iso.org/iso/19115/-3/mri/1.0} namespace. If the {@value} flag is not
-     * present, then the type is assumed in the same namespace than the properties (this is the most common case).
+     * defined in the {@code http://standards.iso.org/iso/19115/-3/mri/1.0} namespace (note: using {@link #EXTENDS}
+     * is a better way to achieve the same result for this particular example). If the {@value} flag is not present,
+     * then the type is assumed in the same namespace than the properties (this is the most common case).
      */
     static final char NO_NAMESPACE = '!';
 
@@ -184,8 +198,8 @@ abstract class Transformer {
     /**
      * Returns {@code true} if the given string is a namespace URI, or {@code false} if it is a property name.
      * This method implements a very fast check based on the presence of {@code ':'} in {@code "http://foo.bar"}.
-     * It assumes that all namespaces declared in files loaded by {@link #load(String, int)} use the {@code "http"}
-     * protocol and no property name use the {@code ':'} character.
+     * It assumes that all namespaces declared in files loaded by {@link #load(boolean, String, int)} use the
+     * {@code "http"} protocol and no property name use the {@code ':'} character.
      */
     static boolean isNamespace(final String candidate) {
         return (candidate.length() > 4) && (candidate.charAt(4) == ':');
@@ -220,63 +234,98 @@ abstract class Transformer {
      *   </ul></li>
      * </ul>
      *
+     * @param  export    {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
      * @param  filename  name of the file to load.
      * @param  capacity  initial hash map capacity. This is only a hint.
      */
-    static Map<String, Map<String,String>> load(final String filename, final int capacity) {
+    static Map<String, Map<String,String>> load(final boolean export, final String filename, final int capacity) {
         final Map<String, Map<String,String>> m = new HashMap<>(capacity);
-        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(
-                TransformingReader.class.getResourceAsStream(filename), "UTF-8")))
-        {
-            Map<String,String> attributes = null;               // All attributes for a given type.
-            String namespace = null;                            // Value to store in 'attributes' map.
-            String line;
-            while ((line = in.readLine()) != null) {
-                final int length = line.length();
-                final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
-                if (start < length && line.charAt(start) != '#') {
-                    String element = line.substring(start).trim();
-                    switch (start) {
-                        case 0: {                                                   // New namespace URI.
-                            if (!isNamespace(element)) break;                       // Report illegal format.
-                            namespace  = element.intern();
-                            attributes = null;
-                            continue;
-                        }
-                        case 1: {                                                   // New type in above namespace URI.
-                            if (namespace == null) break;                           // Report illegal format.
-                            final int s = element.indexOf(NO_NAMESPACE);
-                            if (s >= 0) {
-                                element = element.substring(0, s).trim();
+        final Set<Class<?>> renameLoaders = new LinkedHashSet<>(8);
+        renameLoaders.add(Transformer.class);
+        TypeRegistration.getRenameFileLoader(export, renameLoaders);
+        for (final Class<?> loader : renameLoaders) {
+            try (LineNumberReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
+                Map<String,String> attributes = null;               // All attributes for a given type.
+                String namespace = null;                            // Value to store in 'attributes' map.
+                String line;
+                while ((line = in.readLine()) != null) {
+                    final int length = line.length();
+                    final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
+                    if (start < length && line.charAt(start) != '#') {
+                        String element = line.substring(start).trim();
+                        switch (start) {
+                            /*
+                             * Begin a new namespace. Must be before any class or property.
+                             */
+                            case 0: {                                                   // New namespace URI.
+                                if (!isNamespace(element)) break;                       // Report illegal format.
+                                namespace  = element.intern();
+                                attributes = null;
+                                continue;
                             }
-                            element = element.intern();
-                            attributes = m.computeIfAbsent(element, (k) -> new HashMap<>());
-                            if (s < 0) {
-                                // Record namespace for this type only if '!' is not present.
-                                if (attributes.put(element, namespace) != null) break;
-                            }
-                            continue;
-                        }
-                        case 2: {                                                   // New attribute in above type.
-                            if (attributes == null || namespace == null) break;     // Report illegal format.
-                            final int s = element.indexOf(RENAME_SEPARATOR);
-                            if (s >= 0) {
-                                final String old = element.substring(0, s).trim().intern();
-                                element = element.substring(s+1).trim().intern();
-                                if (attributes.put(old, element) != null) break;    // Report an error if duplicated values.
-                            } else {
+                            /*
+                             * Add a class into the above-defined namespace.
+                             * The class may inherit the properties of another class.
+                             * Inherited properties may be in a different namespace than the new class.
+                             */
+                            case 1: {                                                   // New type in above namespace URI.
+                                if (namespace == null) break;                           // Report illegal format.
+                                final int noNS = element.indexOf(NO_NAMESPACE);
+                                if (noNS >= 0) {
+                                    element = CharSequences.trimWhitespaces(element, 0, noNS).toString();
+                                }
+                                final Function<String, Map<String,String>> init;
+                                final int s = element.indexOf(EXTENDS);
+                                if (s >= 0) {
+                                    final String parent;
+                                    parent  = CharSequences.trimWhitespaces(element, s+1, element.length()).toString();
+                                    element = CharSequences.trimWhitespaces(element, 0, s).toString();
+                                    init = (k) -> {
+                                        Map<String,String> properties = m.get(parent);
+                                        if (properties != null) {
+                                            properties = new HashMap<>(properties);
+                                            properties.remove(parent);
+                                            return properties;
+                                        }
+                                        throw new NoSuchElementException(parent);
+                                    };
+                                } else {
+                                    init = (k) -> new HashMap<>();
+                                }
                                 element = element.intern();
+                                attributes = m.computeIfAbsent(element, init);
+                                if (noNS < 0) {
+                                    // Record namespace for this type only if '!' is not present.
+                                    if (attributes.put(element, namespace) != null) break;
+                                }
+                                continue;
                             }
-                            if (attributes.put(element, namespace) != null) break;  // Report an error if duplicated values.
-                            continue;
+                            /*
+                             * Add a property into the above-defined class.
+                             * All properties are associated to above-defined namespace.
+                             * A property may have an alias (e.g. "center/centre").
+                             */
+                            case 2: {                                                   // New attribute in above type.
+                                if (attributes == null || namespace == null) break;     // Report illegal format.
+                                final int s = element.indexOf(RENAME_SEPARATOR);
+                                if (s >= 0) {
+                                    final String old = element.substring(0, s).trim().intern();
+                                    element = element.substring(s+1).trim().intern();
+                                    if (attributes.put(old, element) != null) break;    // Report an error if duplicated values.
+                                } else {
+                                    element = element.intern();
+                                }
+                                if (attributes.put(element, namespace) != null) break;  // Report an error if duplicated values.
+                                continue;
+                            }
                         }
+                        throw new InvalidPropertiesFormatException(Errors.format(       // See method javadoc.
+                                Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber()));
                     }
-                    throw new InvalidPropertiesFormatException(Errors.format(       // See method javadoc.
-                            Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber()));
                 }
+            } catch (IOException e) {
+                throw new ExceptionInInitializerError(e);
             }
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
         }
         /*
          * At this point we finished computing the map values. Many values are maps with only 1 entry.
@@ -443,9 +492,9 @@ abstract class Transformer {
     }
 
     /**
-     * Renames en element using the namespaces map give to the {@code open(…)} and {@code close(…)} methods.
-     * When unmarshalling, this imports a name read from the XML document to the name to give to JAXB.
-     * When marshalling, this exports a name used in JAXB annotation to the name to use in XML document.
+     * Renames en element using the namespaces map given to the {@code open(…)} and {@code close(…)} methods.
+     * When unmarshalling, this method converts a name read from the XML document to the name to give to JAXB.
+     * When marshalling, this method converts a name used in JAXB annotation to the name to use in XML document.
      * The new namespace depends on both the old namespace and the element name.
      * The prefix is computed by {@link #prefixReplacement(String, String)}.
      *
@@ -475,7 +524,7 @@ abstract class Transformer {
     }
 
     /**
-     * Returns the map loaded by {@link #load(String, int)}.
+     * Returns the map loaded by {@link #load(boolean, String, int)}.
      * This is a static field in the {@link TransformingReader} or {@link TransformingWriter} subclass.
      *
      * @param  namespace  the namespace URI for which to get the substitution map (never null).

@@ -1,9 +1,7 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements;
+# and to You under the Apache License, Version 2.0.
 #
-# Namespaces in which attribute are defined.
-# Lines with zero-space indentation are namespace URIs.
-# Lines with one-space  indentation are XML types.
-# Lines with two-spaces indentation are properties.
-# old/new means that a property needs to be renamed.
+# See readme.html is source code for the syntax of this file.
 #
 http://standards.iso.org/iso/19115/-3/cit/1.0
  AbstractCI_Party
@@ -39,9 +37,7 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   date
   dateType
  CI_DateTypeCode
- CI_Individual
-  contactInfo
-  name
+ CI_Individual : AbstractCI_Party
   positionName
  CI_OnLineFunctionCode
  CI_OnlineResource
@@ -52,20 +48,15 @@ http://standards.iso.org/iso/19115/-3/cit/1.0
   name
   protocol
   protocolRequest
- CI_Organisation
-  contactInfo
+ CI_Organisation : AbstractCI_Party
   individual
   logo
-  name
  CI_PresentationFormCode
  CI_Responsibility
   extent
   party
   role
- CI_ResponsibleParty !other namespace
-  extent
-  party
-  role
+ CI_ResponsibleParty : CI_Responsibility !legacy
  CI_RoleCode
  CI_Series
   issueIdentification
@@ -96,29 +87,25 @@ http://standards.iso.org/iso/19115/-3/gcx/1.0
 http://standards.iso.org/iso/19115/-3/gex/1.0
  AbstractEX_GeographicExtent
   extentTypeCode
- EX_BoundingPolygon
-  extentTypeCode
+ EX_BoundingPolygon : AbstractEX_GeographicExtent
   polygon
  EX_Extent
   description
   geographicElement
   temporalElement
   verticalElement
- EX_GeographicBoundingBox
+ EX_GeographicBoundingBox : AbstractEX_GeographicExtent
   eastBoundLongitude
-  extentTypeCode
   northBoundLatitude
   southBoundLatitude
   westBoundLongitude
- EX_GeographicDescription
-  extentTypeCode
+ EX_GeographicDescription : AbstractEX_GeographicExtent
   geographicIdentifier
- EX_SpatialTemporalExtent
-  extent
-  spatialExtent
-  verticalExtent
  EX_TemporalExtent
   extent
+ EX_SpatialTemporalExtent : EX_TemporalExtent
+  spatialExtent
+  verticalExtent
  EX_VerticalExtent
   maximumValue
   minimumValue
@@ -267,31 +254,19 @@ http://standards.iso.org/iso/19115/-3/mco/1.0
   releasability
   responsibleParty
   useLimitation
- MD_LegalConstraints
+ MD_LegalConstraints : MD_Constraints
   accessConstraints
-  constraintApplicationScope
-  graphic
   otherConstraints
-  reference
-  releasability
-  responsibleParty
   useConstraints
-  useLimitation
  MD_Releasability
   addressee
   disseminationConstraints
   statement
  MD_RestrictionCode
- MD_SecurityConstraints
+ MD_SecurityConstraints : MD_Constraints
   classification
   classificationSystem
-  constraintApplicationScope
-  graphic
   handlingDescription
-  reference
-  releasability
-  responsibleParty
-  useLimitation
   userNote
 http://standards.iso.org/iso/19115/-3/mdb/1.0
  MD_Metadata
@@ -322,31 +297,7 @@ http://standards.iso.org/iso/19115/-3/mdb/1.0
  MD_MetadataScope
   name
   resourceScope
- MI_Metadata !other namespace
-  acquisitionInformation
-  alternativeMetadataReference
-  applicationSchemaInfo
-  contact
-  contentInfo
-  dataQualityInfo
-  dateInfo
-  defaultLocale
-  distributionInfo
-  identificationInfo
-  metadataConstraints
-  metadataExtensionInfo
-  metadataIdentifier
-  metadataLinkage
-  metadataMaintenance
-  metadataProfile
-  metadataScope
-  metadataStandard
-  otherLocale
-  parentMetadata
-  portrayalCatalogueInfo
-  referenceSystemInfo
-  resourceLineage
-  spatialRepresentationInfo
+ MI_Metadata : MD_Metadata !other namespace
 http://standards.iso.org/iso/19115/-3/mdt/1.0
  MX_DataFile
   featureTypes
@@ -387,31 +338,6 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
  MD_AttributeGroup
   attribute
   contentType
- MD_Band
-  bandBoundaryDefinition
-  bitsPerValue
-  boundMax
-  boundMin
-  boundUnits
-  description
-  detectedPolarisation
-  maxValue
-  meanValue
-  minValue
-  name
-  nominalSpatialResolution
-  numberOfValues
-  offset
-  otherProperty
-  otherPropertyType
-  peakResponse
-  scaleFactor
-  sequenceIdentifier
-  standardDeviation
-  toneGradation
-  transferFunctionType
-  transmittedPolarisation
-  units
  MD_CoverageContentTypeCode
  MD_CoverageDescription
   attributeDescription
@@ -427,9 +353,7 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
  MD_FeatureTypeInfo
   featureInstanceCount
   featureTypeName
- MD_ImageDescription
-  attributeDescription
-  attributeGroup
+ MD_ImageDescription : MD_CoverageDescription
   cameraCalibrationInformationAvailability
   cloudCoverPercentage
   compressionGenerationQuantity
@@ -439,77 +363,40 @@ http://standards.iso.org/iso/19115/-3/mrc/1.0
   imageQualityCode
   imagingCondition
   lensDistortionInformationAvailability
-  processingLevelCode
   radiometricCalibrationDataAvailability
-  rangeElementDescription
   triangulationIndicator
  MD_ImagingConditionCode
  MD_RangeDimension
   description
   name
   sequenceIdentifier
- MD_SampleDimension
+ MD_SampleDimension : MD_RangeDimension
   bitsPerValue
-  description
   maxValue
   meanValue
   minValue
-  name
   numberOfValues
   offset
   otherProperty
   otherPropertyType
   scaleFactor
-  sequenceIdentifier
   standardDeviation
   units
- MI_Band
+ MD_Band : MD_SampleDimension
   bandBoundaryDefinition
-  bitsPerValue
   boundMax
   boundMin
   boundUnits
-  description
   detectedPolarisation
-  maxValue
-  meanValue
-  minValue
-  name
   nominalSpatialResolution
-  numberOfValues
-  offset
-  otherProperty
-  otherPropertyType
   peakResponse
-  scaleFactor
-  sequenceIdentifier
-  standardDeviation
   toneGradation
   transferFunctionType
   transmittedPolarisation
-  units
+ MI_Band : MD_Band
  MI_BandDefinition
- MI_CoverageDescription
-  attributeDescription
-  attributeGroup
-  processingLevelCode
-  rangeElementDescription
- MI_ImageDescription
-  attributeDescription
-  attributeGroup
-  cameraCalibrationInformationAvailability
-  cloudCoverPercentage
-  compressionGenerationQuantity
-  filmDistortionInformationAvailability
-  illuminationAzimuthAngle
-  illuminationElevationAngle
-  imageQualityCode
-  imagingCondition
-  lensDistortionInformationAvailability
-  processingLevelCode
-  radiometricCalibrationDataAvailability
-  rangeElementDescription
-  triangulationIndicator
+ MI_CoverageDescription : MD_CoverageDescription
+ MI_ImageDescription : MD_ImageDescription
  MI_RangeElementDescription
   definition
   name
@@ -579,7 +466,7 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   topicCategory
  DS_AssociationTypeCode
  DS_InitiativeTypeCode
- MD_AggregateInformation !other namespace
+ MD_AggregateInformation !legacy
   metadataReference
   name
  MD_AssociatedResource
@@ -587,31 +474,11 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   initiativeType
   metadataReference
   name
- MD_DataIdentification
-  abstract
-  additionalDocumentation
-  associatedResource
-  citation
-  credit
+ MD_DataIdentification : AbstractMD_Identification
   defaultLocale
-  descriptiveKeywords
   environmentDescription
-  extent
-  graphicOverview
   otherLocale
-  pointOfContact
-  processingLevel
-  purpose
-  resourceConstraints
-  resourceFormat
-  resourceMaintenance
-  resourceSpecificUsage
-  spatialRepresentationType
-  spatialResolution
-  status
   supplementalInformation
-  temporalResolution
-  topicCategory
  MD_KeywordClass
   className
   conceptIdentifier
@@ -638,27 +505,6 @@ http://standards.iso.org/iso/19115/-3/mri/1.0
   usageDateTime
   userContactInfo
   userDeterminedLimitations
- SV_ServiceIdentification !other namespace
-  abstract
-  additionalDocumentation
-  associatedResource
-  citation
-  credit
-  descriptiveKeywords
-  extent
-  graphicOverview
-  pointOfContact
-  processingLevel
-  purpose
-  resourceConstraints
-  resourceFormat
-  resourceMaintenance
-  resourceSpecificUsage
-  spatialRepresentationType
-  spatialResolution
-  status
-  temporalResolution
-  topicCategory
 http://standards.iso.org/iso/19115/-3/mrl/1.0
  LE_Algorithm
   citation
@@ -740,71 +586,40 @@ http://standards.iso.org/iso/19115/-3/msr/1.0
  MD_GeometricObjects
   geometricObjectCount
   geometricObjectType
- MD_Georectified
-  axisDimensionProperties
-  cellGeometry
-  centrePoint
-  checkPoint
-  checkPointAvailability
-  checkPointDescription
-  cornerPoints
-  numberOfDimensions
-  pointInPixel
-  transformationDimensionDescription
-  transformationDimensionMapping
-  transformationParameterAvailability
- MD_Georeferenceable
-  axisDimensionProperties
-  cellGeometry
-  controlPointAvailability
-  geolocationInformation
-  georeferencedParameters
-  numberOfDimensions
-  orientationParameterAvailability
-  orientationParameterDescription
-  parameterCitation
-  transformationParameterAvailability
  MD_GridSpatialRepresentation
   axisDimensionProperties
   cellGeometry
   numberOfDimensions
   transformationParameterAvailability
+ MD_Georectified : MD_GridSpatialRepresentation
+  centerPoint/centrePoint
+  checkPoint
+  checkPointAvailability
+  checkPointDescription
+  cornerPoints
+  pointInPixel
+  transformationDimensionDescription
+  transformationDimensionMapping
+ MD_Georeferenceable : MD_GridSpatialRepresentation
+  controlPointAvailability
+  geolocationInformation
+  georeferencedParameters
+  orientationParameterAvailability
+  orientationParameterDescription
+  parameterCitation
  MD_TopologyLevelCode
  MD_VectorSpatialRepresentation
   geometricObjects
   topologyLevel
  MI_GCP
   accuracyReport
- MI_GCPCollection
+ MI_GCPCollection : AbstractMI_GeolocationInformation
   collectionIdentification
   collectionName
   coordinateReferenceSystem
   gcp
-  qualityInfo
- MI_Georectified
-  axisDimensionProperties
-  cellGeometry
-  centerPoint/centrePoint
-  checkPoint
-  checkPointAvailability
-  checkPointDescription
-  cornerPoints
-  numberOfDimensions
-  pointInPixel
-  transformationDimensionDescription
-  transformationDimensionMapping
-  transformationParameterAvailability
- MI_Georeferenceable
-  axisDimensionProperties
-  cellGeometry
-  controlPointAvailability
-  geolocationInformation
-  georeferencedParameters
-  numberOfDimensions
-  orientationParameterAvailability
-  orientationParameterDescription
-  parameterCitation
-  transformationParameterAvailability
+ MI_Georectified : MD_Georectified
+ MI_Georeferenceable : MD_Georeferenceable
 http://standards.iso.org/iso/19115/-3/srv/2.0
  DCPList
  SV_CoupledResource
@@ -831,7 +646,7 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
   repeatability
   valueType
  SV_ParameterDirection
- SV_ServiceIdentification
+ SV_ServiceIdentification : AbstractMD_Identification
   accessProperties
   containsChain
   containsOperations
@@ -844,74 +659,22 @@ http://standards.iso.org/iso/19115/-3/srv/2.0
   serviceType
   serviceTypeVersion
 http://standards.iso.org/iso/19157/-2/dqc/1.0
- AbstractDQ_Completeness !other namespace
-  dateTime
  AbstractDQ_Element !other namespace
   dateTime
- AbstractDQ_LogicalConsistency !other namespace
-  dateTime
- AbstractDQ_PositionalAccuracy !other namespace
-  dateTime
- AbstractDQ_TemporalAccuracy !other namespace
-  dateTime
- AbstractDQ_ThematicAccuracy !other namespace
-  dateTime
- DQ_AbsoluteExternalPositionalAccuracy !other namespace
-  dateTime
- DQ_AccuracyOfATimeMeasurement !other namespace
-  dateTime
- DQ_CompletenessCommission !other namespace
-  dateTime
- DQ_CompletenessOmission !other namespace
-  dateTime
- DQ_ConceptualConsistency !other namespace
-  dateTime
- DQ_DomainConsistency !other namespace
-  dateTime
- DQ_FormatConsistency !other namespace
-  dateTime
- DQ_GriddedDataPositionalAccuracy !other namespace
-  dateTime
- DQ_NonQuantitativeAttributeAccuracy !other namespace
-  dateTime
- DQ_QuantitativeAttributeAccuracy !other namespace
-  dateTime
- DQ_RelativeInternalPositionalAccuracy !other namespace
-  dateTime
- DQ_TemporalConsistency !other namespace
-  dateTime
- DQ_TemporalValidity !other namespace
-  dateTime
- DQ_ThematicClassificationCorrectness !other namespace
-  dateTime
- DQ_TopologicalConsistency !other namespace
-  dateTime
- QE_Usability !other namespace
-  dateTime
 http://standards.iso.org/iso/19157/-2/mdq/1.0
- AbstractDQ_Completeness
-  result
  AbstractDQ_Element
   result
- AbstractDQ_LogicalConsistency
-  result
- AbstractDQ_PositionalAccuracy
-  result
+ AbstractDQ_Completeness : AbstractDQ_Element
+ AbstractDQ_LogicalConsistency : AbstractDQ_Element
+ AbstractDQ_PositionalAccuracy : AbstractDQ_Element
  AbstractDQ_Result
- AbstractDQ_TemporalAccuracy !other namespace
-  result
- AbstractDQ_ThematicAccuracy
-  result
- DQ_AbsoluteExternalPositionalAccuracy
-  result
- DQ_AccuracyOfATimeMeasurement
-  result
- DQ_CompletenessCommission
-  result
- DQ_CompletenessOmission
-  result
- DQ_ConceptualConsistency
-  result
+ AbstractDQ_TemporalAccuracy : AbstractDQ_Element !other namespace
+ AbstractDQ_ThematicAccuracy : AbstractDQ_Element
+ DQ_AbsoluteExternalPositionalAccuracy : AbstractDQ_PositionalAccuracy
+ DQ_AccuracyOfATimeMeasurement : AbstractDQ_TemporalAccuracy
+ DQ_CompletenessCommission : AbstractDQ_Completeness
+ DQ_CompletenessOmission : AbstractDQ_Completeness
+ DQ_ConceptualConsistency : AbstractDQ_LogicalConsistency
  DQ_ConformanceResult
   explanation
   pass
@@ -919,39 +682,28 @@ http://standards.iso.org/iso/19157/-2/mdq/1.0
  DQ_DataQuality
   report
   scope
- DQ_DomainConsistency
-  result
+ DQ_DomainConsistency : AbstractDQ_LogicalConsistency
  DQ_EvaluationMethodTypeCode
- DQ_FormatConsistency
-  result
- DQ_GriddedDataPositionalAccuracy
-  result
- DQ_NonQuantitativeAttributeAccuracy !other namespace
-  result
- DQ_QuantitativeAttributeAccuracy
-  result
+ DQ_FormatConsistency : AbstractDQ_LogicalConsistency
+ DQ_GriddedDataPositionalAccuracy : AbstractDQ_PositionalAccuracy
+ DQ_NonQuantitativeAttributeAccuracy : AbstractDQ_ThematicAccuracy !other namespace
+ DQ_QuantitativeAttributeAccuracy : AbstractDQ_ThematicAccuracy
  DQ_QuantitativeResult
   value
   valueType/valueRecordType
   valueUnit
- DQ_RelativeInternalPositionalAccuracy
-  result
- DQ_TemporalConsistency
-  result
- DQ_TemporalValidity
-  result
- DQ_ThematicClassificationCorrectness
-  result
- DQ_TopologicalConsistency
-  result
+ DQ_RelativeInternalPositionalAccuracy : AbstractDQ_PositionalAccuracy
+ DQ_TemporalConsistency : AbstractDQ_TemporalAccuracy
+ DQ_TemporalValidity : AbstractDQ_TemporalAccuracy
+ DQ_ThematicClassificationCorrectness : AbstractDQ_ThematicAccuracy
+ DQ_TopologicalConsistency : AbstractDQ_LogicalConsistency
  QE_CoverageResult
   resultContentDescription
   resultFile
   resultFormat
   resultSpatialRepresentation
   spatialRepresentationType
- QE_Usability !other namespace
-  result
+ QE_Usability : AbstractDQ_Element !other namespace
 http://www.isotc211.org/2005/gts
  TM_Duration
  TM_PeriodDuration
