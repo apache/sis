@@ -29,6 +29,7 @@
       Both share the same syntax:
     </p>
     <ul>
+      <li>Lines starting with "*" character specify the legacy namespaces containing elements to rename.</li>
       <li>Lines with zero-space indentation are namespace URIs.</li>
       <li>Lines with one-space  indentation are XML type names.</li>
       <li>Lines with two-spaces indentation are property names.</li>
@@ -51,7 +52,11 @@
       For example in the following example, <code>Georectified.centerPoint</code> (from the old standard)
       is renamed as <code>Georectified.centrePoint</code> (new standard).
     </p>
-    <blockquote><pre>http://standards.iso.org/iso/19115/-3/<b>cit</b>/1.0
+    <blockquote><pre># Legacy namespace containing elements to rename:
+* http://www.isotc211.org/2005/gmd
+
+# New namespaces:
+http://standards.iso.org/iso/19115/-3/<b>cit</b>/1.0
  CI_Citation
   title
   edition

@@ -3,6 +3,15 @@
 #
 # See readme.html is source code for the syntax of this file.
 #
+# Apply to:
+* http://standards.iso.org/iso/19115/-2/gmi/1.0
+* http://www.isotc211.org/2005/gmi
+* http://www.isotc211.org/2005/gmd
+* http://www.isotc211.org/2005/srv
+* http://www.isotc211.org/2005/gco
+* http://www.isotc211.org/2005/gmx
+* http://www.opengis.net/gml
+
 http://standards.iso.org/iso/19115/-3/cit/1.0
  AbstractCI_Party
   contactInfo

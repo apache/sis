@@ -96,6 +96,13 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  */
 abstract class Transformer {
     /**
+     * Heading character for declaring a namespaces on which the remaining of the {@code Rename.lst} file applies.
+     * Lines with this prefix specify <em>legacy</em> namespaces to be renamed (the target of the renaming process),
+     * while lines without this prefix specify <em>new</em> namespaces.
+     */
+    private static final char TARGET_PREFIX = '*';
+
+    /**
      * Character used for separating an old name from the new name. For example in {@code SV_OperationMetadata},
      * {@code "DCP"} in ISO 19139:2007 has been renamed {@code "distributedComputingPlatform"} in ISO 19115-3.
      * This is encoded in {@value TransformingReader#FILENAME} file as {@code "DCP/distributedComputingPlatform"}.
@@ -111,7 +118,7 @@ abstract class Transformer {
     private static final char EXTENDS = ':';
 
     /**
-     * A flag after type name in files loaded by {@link #load(boolean, String, int)}, meaning that the type itself
+     * A flag after type name in files loaded by {@link #load(boolean, String, Set, int)}, meaning that the type itself
      * is in a different namespace than the properties listed below the type. For example in the following:
      *
      * {@preformat text
@@ -198,8 +205,8 @@ abstract class Transformer {
     /**
      * Returns {@code true} if the given string is a namespace URI, or {@code false} if it is a property name.
      * This method implements a very fast check based on the presence of {@code ':'} in {@code "http://foo.bar"}.
-     * It assumes that all namespaces declared in files loaded by {@link #load(boolean, String, int)} use the
-     * {@code "http"} protocol and no property name use the {@code ':'} character.
+     * It assumes that all namespaces declared in files loaded by {@link #load(boolean, String, Set, int)} use
+     * the {@code "http"} protocol and no property name use the {@code ':'} character.
      */
     static boolean isNamespace(final String candidate) {
         return (candidate.length() > 4) && (candidate.charAt(4) == ':');
@@ -235,10 +242,11 @@ abstract class Transformer {
      * </ul>
      *
      * @param  export    {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
-     * @param  filename  name of the file to load.
-     * @param  capacity  initial hash map capacity. This is only a hint.
+     * @param  filename  name of the file to load. Shall be consistent with the {@code export} flag.
+     * @param  targets   initially empty set where to add the namespaces on which the renaming will apply.
+     * @param  capacity  initial capacity for the hash map to be returned. This is only a hint.
      */
-    static Map<String, Map<String,String>> load(final boolean export, final String filename, final int capacity) {
+    static Map<String, Map<String,String>> load(final boolean export, final String filename, final Set<String> targets, final int capacity) {
         final Map<String, Map<String,String>> m = new HashMap<>(capacity);
         final Set<Class<?>> renameLoaders = new LinkedHashSet<>(8);
         renameLoaders.add(Transformer.class);
@@ -251,11 +259,18 @@ abstract class Transformer {
                 while ((line = in.readLine()) != null) {
                     final int length = line.length();
                     final int start = CharSequences.skipLeadingWhitespaces(line, 0, length);
-                    if (start < length && line.charAt(start) != '#') {
+                    final char startChar;
+                    if (start < length && (startChar = line.charAt(start)) != '#') {
+                        if (startChar == TARGET_PREFIX) {
+                            targets.add(CharSequences.trimWhitespaces(line, start+1, line.length()).toString());
+                            continue;
+                        }
                         String element = line.substring(start).trim();
                         switch (start) {
                             /*
                              * Begin a new namespace. Must be before any class or property.
+                             * All classes and properties read below this point will be associated
+                             * to that namespace, until a new namespace declaration is encountered.
                              */
                             case 0: {                                                   // New namespace URI.
                                 if (!isNamespace(element)) break;                       // Report illegal format.
@@ -281,6 +296,7 @@ abstract class Transformer {
                                     parent  = CharSequences.trimWhitespaces(element, s+1, element.length()).toString();
                                     element = CharSequences.trimWhitespaces(element, 0, s).toString();
                                     init = (k) -> {
+                                        // Inherit properties from another class.
                                         Map<String,String> properties = m.get(parent);
                                         if (properties != null) {
                                             properties = new HashMap<>(properties);
@@ -290,6 +306,7 @@ abstract class Transformer {
                                         throw new NoSuchElementException(parent);
                                     };
                                 } else {
+                                    // No property inheritance.
                                     init = (k) -> new HashMap<>();
                                 }
                                 element = element.intern();
@@ -524,7 +541,7 @@ abstract class Transformer {
     }
 
     /**
-     * Returns the map loaded by {@link #load(boolean, String, int)}.
+     * Returns the map loaded by {@link #load(boolean, String, Set, int)}.
      * This is a static field in the {@link TransformingReader} or {@link TransformingWriter} subclass.
      *
      * @param  namespace  the namespace URI for which to get the substitution map (never null).

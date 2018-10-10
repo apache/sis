@@ -84,7 +84,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(true, FILENAME, 60);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(true, FILENAME, Collections.emptySet(), 60);
 
     /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
@@ -214,7 +214,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     }
 
     /**
-     * Returns the map loaded by {@link #load(boolean, String, int)}.
+     * Returns the map loaded by {@link #load(boolean, String, Set, int)}.
      *
      * @param  namespace  the namespace URI for which to get the substitution map.
      * @return the substitution map for the given namespace.
@@ -338,7 +338,6 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      * @param  event  the event using JAXB namespaces.
      */
     @Override
-    @SuppressWarnings("unchecked")      // TODO: remove on JDK9
     public void add(XMLEvent event) throws XMLStreamException {
         switch (event.getEventType()) {
             case ATTRIBUTE: {
