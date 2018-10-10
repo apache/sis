@@ -433,7 +433,7 @@ public final strictfp class TestUtilities extends Static {
      *
      * @param  stopCondition  a condition which return {@code true} if this method can stop waiting,
      *         or {@code false} if it needs to ask again for garbage collection.
-     * @return {@code true} if the given condition has been meet, or {@code false} if we waited up
+     * @return {@code true} if the given condition has been met, or {@code false} if we waited up
      *         to the timeout without meeting the given condition.
      * @throws InterruptedException if this thread has been interrupted while waiting.
      */

@@ -186,7 +186,7 @@ final class Solver implements Matrix {                          // Not Cloneable
         final double[] LU = GeneralMatrix.getExtendedElements(X, size, size, noChange);
         final int lastRowOrColumn = size - 1;
         /*
-         * indexOfNaN array will be created only if at least one NaN value is found, and those NaN meet
+         * indexOfNaN array will be created only if at least one NaN value is found, and those NaN met
          * the conditions documented in the code below. In such case, the array will contain a sequence
          * of (i,j,s) where (i,j) are the indices where the NaN value has been found and s is the column
          * of the scale factor.

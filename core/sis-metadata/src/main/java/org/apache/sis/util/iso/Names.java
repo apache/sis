@@ -130,6 +130,8 @@ public final class Names extends Static {
     /**
      * Creates a local or scoped name from an array of parsed names. This method returns a local name if the
      * length of the {@code parsedNames} array is 1, or a scoped named if the length of the array is 2 or more.
+     * The first {@code parsedNames} element will be the {@linkplain AbstractName#head() head}
+     * and the last {@code parsedNames} element will be the {@link AbstractName#tip() tip}.
      *
      * @param  namespace    the namespace, or {@code null} for the global namespace.
      * @param  separator    the separator between the namespace and the generic name, or {@code null}

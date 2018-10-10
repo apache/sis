@@ -451,12 +451,12 @@ public final class DecimalFunctions extends Static {
      *       the amount of digits after the decimal separator.</li>
      *   <li>{@code fractionDigitsForValue(179.12499999999824, 3)} returns 11 because rounding the 3 last digits
      *       (i.e. rounding after the 11<sup>th</sup> digit) results in 179.125000000000.
-     *       Since the 4 last fraction digits are zero, the condition for allowing that rounding is meet.</li>
+     *       Since the 4 last fraction digits are zero, the condition for allowing that rounding is met.</li>
      *   <li>{@code fractionDigitsForValue(179.12499999999824, 2)} returns 14 because rounding the 2 last digits
      *       (i.e. rounding after the 12<sup>th</sup> digit) results in 179.124999999998.
-     *       The condition for 4 trailing zero fraction digits is not meet.</li>
+     *       The condition for 4 trailing zero fraction digits is not met.</li>
      *   <li>{@code fractionDigitsForValue(179.12499997999999, 3)} returns 14 because rounding the 3 last digits
-     *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not meet.</li>
+     *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not met.</li>
      * </ul>
      * </div>
      *

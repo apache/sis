@@ -161,7 +161,7 @@ public final class ShapeUtilities extends Static {
      * </ul>
      *
      * If no result point meets those conditions, then this method returns {@code null}.
-     * If two result points meet those conditions, then this method returns the point
+     * If two result points met those conditions, then this method returns the point
      * which is the closest to {@code line.getP1()}.
      *
      * @param  x1  <var>x</var> value of the first point on the line.

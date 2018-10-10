@@ -332,7 +332,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * This method does <strong>not</strong> verify if the ordinate values are between the axis minimum and
      * maximum values. This is because out-of-range values exist in practice but do not impact the working
      * of {@code add(…)}, {@code intersect(…)}, {@code contains(…)} and similar methods. This in contrast
-     * with the checks listed above, where failure to meet those conditions will cause the methods to
+     * with the checks listed above, where failure to met those conditions will cause the methods to
      * behave in an unexpected way.
      *
      * <div class="section">Implementation consistency</div>

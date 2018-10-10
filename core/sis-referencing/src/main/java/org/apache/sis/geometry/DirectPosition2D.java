@@ -49,7 +49,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * <div class="section">Caution when used in collections</div>
  * Do not mix instances of this class with ordinary {@link Point2D} instances
  * in a {@code HashSet} or as {@code HashMap} keys.
- * It is not possible to meet both {@link Point2D#hashCode()} and {@link DirectPosition#hashCode()}
+ * It is not possible to met both {@link Point2D#hashCode()} and {@link DirectPosition#hashCode()}
  * contracts, and this class chooses to implements the later. Consequently, the {@link #hashCode()}
  * method of this class is inconsistent with {@link Point2D#equals(Object)} but is consistent with
  * {@link DirectPosition#equals(Object)}.

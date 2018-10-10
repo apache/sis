@@ -51,7 +51,7 @@ import org.apache.sis.util.Numbers;
  * or contain instances of that {@code <E>} type. The type is enforced by parameterized type,
  * but some subclasses may put additional constraints. For example {@link MeasurementRange} will
  * additionally checks the units of measurement. Consequently every methods defined in this class
- * may throw an {@link IllegalArgumentException} if a given argument does not meet some constraint
+ * may throw an {@link IllegalArgumentException} if a given argument does not met some constraint
  * beyond the type.
  *
  * <div class="section">Relationship with ISO 19123 definition of range</div>

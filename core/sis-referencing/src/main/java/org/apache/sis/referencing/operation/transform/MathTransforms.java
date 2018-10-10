@@ -205,7 +205,7 @@ public final class MathTransforms extends Static {
      * @param  global  the transform to use globally where there is no suitable specialization.
      * @param  specializations  more accurate transforms available in some sub-areas.
      * @return a transform applying the given global transform except in sub-areas where specializations are available.
-     * @throws IllegalArgumentException if a constraint is not meet.
+     * @throws IllegalArgumentException if a constraint is not met.
      *
      * @since 1.0
      */

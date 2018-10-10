@@ -1008,7 +1008,7 @@ public final class Matrices extends Static {
 
     /**
      * Compares the given matrices for equality, using the given comparison strictness level.
-     * To be considered equal, the two matrices must meet the following conditions, which depend
+     * To be considered equal, the two matrices must met the following conditions, which depend
      * on the {@code mode} argument:
      *
      * <ul>

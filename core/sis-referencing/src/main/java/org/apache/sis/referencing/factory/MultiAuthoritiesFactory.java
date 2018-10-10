@@ -556,10 +556,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * <p>This iterator takes care of synchronization on the {@code Iterable<AuthorityFactory>} instances.
      * Note that despite the above-cited synchronization, the returned iterator is <strong>not</strong>
      * thread-safe: each thread needs to use its own iterator instance. However provided that the above
-     * condition is meet, threads can safely use their iterators concurrently.</p>
+     * condition is met, threads can safely use their iterators concurrently.</p>
      */
     final Iterator<AuthorityFactory> getAllFactories() {
-        return new LazySynchronizedIterator<AuthorityFactory>(providers);
+        return new LazySynchronizedIterator<>(providers);
     }
 
     /**

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.opengis.metadata.Metadata;
-import org.opengis.util.GenericName;
 
 
 /**
@@ -52,28 +52,26 @@ import org.opengis.util.GenericName;
  * @module
  */
 public interface Resource {
-
     /**
      * Returns the resource primary identifier.
-     * <p>
-     * This identifier can be used to uniquely identify a resource in the containing
-     * {@link DataStore}. For this identifier to be reliable the following
-     * conditions must be guaranted :
-     * </p>
+     * This identifier can be used to uniquely identify a resource in the containing {@link DataStore}.
+     * For this identifier to be reliable the following conditions must hold:
+     *
      * <ul>
      *   <li>It must be unique in the {@link DataStore} which contains it, if there is one.</li>
-     *   <li>It's value must not change after closing and reopening the {@link DataStore}.</li>
-     *   <li>This identifier must be present in the {@link Metadata} returned by {@link #getMetadata() }
-     *    in the field at path {@literal IdentificationInfon/Citation/Identifier}.
+     *   <li>It's value must not change after closing and reopening the {@link DataStore} on the same data.</li>
+     *   <li>This identifier must be consistent with the value returned by {@link #getMetadata()}
+     *       in the field at path {@literal identificationInfo/citation/identifier}.
      *   </li>
      * </ul>
-     * <p>
-     * If any of the above conditions isn't met, this identifier should be null. This
-     * case may happen when a resource is an intermediate result of an ongoing process
-     * or is an opportuniste resource like a sensor event.
-     * </p>
      *
-     * @return GenericName, can be null if the resource has no reliable identifier
+     * If any of the above conditions is not met, this identifier should be null.
+     * This case may happen when a resource is an intermediate result of an ongoing process
+     * or is a temporary resource generated on-the-fly, for example a sensor event.
+     *
+     * @return an identifier unique within the data store, or {@code null} if the resource has no reliable identifier.
+     *
+     * @since 1.0
      */
     GenericName getIdentifier();
 
