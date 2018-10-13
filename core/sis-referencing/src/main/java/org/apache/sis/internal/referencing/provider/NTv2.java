@@ -60,7 +60,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -277,7 +277,8 @@ public final class NTv2 extends AbstractProvider {
          * Current SIS implementation does not yet handle the above-cited hierarchy of grids.
          * For now we just take the first one.
          *
-         * <p>NTv2 grids contain also information about shifts accuracy. This is not yet handled by SIS.</p>
+         * <p>NTv2 grids contain also information about shifts accuracy. This is not yet handled by SIS,
+         * except for determining an approximate grid cell resolution.</p>
          */
         final DatumShiftGridFile<Angle,Angle> readGrid() throws IOException, FactoryException, NoninvertibleTransformException {
             if (--remainingGrids < 0) {
@@ -321,12 +322,12 @@ public final class NTv2 extends AbstractProvider {
                 throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "GS_COUNT", declared));
             }
             /*
-             * Construct the grid with the sign of longitude values reversed, in order to have longitude values
-             * increasing toward East. We set isCellValueRatio = true (by the arguments given to the constructor)
-             * because this is required by our InterpolatedTransform implementation. This setting implies that we
-             * divide translation values by dx or dy at reading time. Note that this free us from reversing the
-             * sign of longitude translations; instead, this reversal will be handled by grid.coordinateToGrid
-             * MathTransform and its inverse.
+             * Construct the grid. The sign of longitude translations will need to be reversed in order to have
+             * longitudes increasing toward East. We set isCellValueRatio = true (by the arguments given to the
+             * DatumShiftGridFile constructor) because this is required by InterpolatedTransform implementation.
+             * This setting implies that we divide translation values by dx or dy at reading time. Note that this
+             * free us from reversing the sign of longitude translations in the code below; instead, this reversal
+             * will be handled by grid.coordinateToGrid MathTransform and its inverse.
              */
             final DatumShiftGridFile.Float<Angle,Angle> grid = new DatumShiftGridFile.Float<>(2,
                     unit, unit, true, -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
@@ -338,8 +339,28 @@ public final class NTv2 extends AbstractProvider {
                 tx[i] = (float) (buffer.getFloat() / dx);
                 final double accuracy = Math.min(buffer.getFloat() / dy, buffer.getFloat() / dx);
                 if (accuracy > 0 && !(accuracy >= grid.accuracy)) {   // Use '!' for replacing the initial NaN.
-                    grid.accuracy = accuracy;
+                    grid.accuracy = accuracy;                         // Smallest non-zero accuracy.
                 }
+            }
+            /*
+             * We need an estimation of translation accuracy, in order to decide when to stop iterations
+             * during inverse transformations. If we did not found that information in the file, compute
+             * an arbitrary default accuracy derived from the variations found in actual values.
+             */
+            if (Double.isNaN(grid.accuracy)) {
+                double txmin = Double.POSITIVE_INFINITY;
+                double txmax = Double.NEGATIVE_INFINITY;
+                double tymin = Double.POSITIVE_INFINITY;
+                double tymax = Double.NEGATIVE_INFINITY;
+                for (int i=Math.min(tx.length, ty.length); --i >= 0;) {
+                    double x = tx[i];
+                    double y = ty[i];
+                    if (x < txmin) txmin = x;
+                    if (x > txmax) txmax = x;
+                    if (y < tymin) tymin = y;
+                    if (y > tymax) tymax = y;
+                }
+                grid.accuracy = Math.min(txmax - txmin, tymax - tymin) / 1000;
             }
             header.keySet().retainAll(Arrays.asList(overviewKeys));   // Keep only overview records.
             return DatumShiftGridCompressed.compress(grid, null, precision / Math.max(dx, dy));

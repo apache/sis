@@ -104,6 +104,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
 
     /**
      * The best translation accuracy that we can expect from this file.
+     * The unit of measurement depends on {@link #isCellValueRatio()}.
      *
      * <p>This field is initialized to {@link Double#NaN}. It is loader responsibility
      * to assign a value to this field after {@code DatumShiftGridFile} construction.</p>
@@ -235,13 +236,14 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
 
     /**
      * Suggests a precision for the translation values in this grid.
-     * The default implementation returns a value smaller than the accuracy.
+     * This information is used for deciding when to stop iterations in inverse transformations.
+     * The default implementation returns the {@linkplain #accuracy} divided by an arbitrary value.
      *
      * @return a precision for the translation values in this grid.
      */
     @Override
     public double getCellPrecision() {
-        return accuracy / 10;   // Division by 10 is arbitrary.
+        return accuracy / 10;               // Division by 10 is arbitrary.
     }
 
     /**

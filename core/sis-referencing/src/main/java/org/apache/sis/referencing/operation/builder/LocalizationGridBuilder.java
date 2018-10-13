@@ -96,12 +96,17 @@ public class LocalizationGridBuilder extends TransformBuilder {
 
     /**
      * The desired precision of inverse transformations in unit of source coordinates, or 0 in unspecified.
-     * If no {@link #sourceToGrid} transform has been specified, than this is in unit of grid cell.
+     * If no {@link #sourceToGrid} transform has been specified, then this is in unit of grid cells
+     * (i.e. a value of 1 is the size of one grid cell).
+     *
+     * @see #setDesiredPrecision(double)
      */
     private double precision;
 
     /**
-     * Arbitrary default {@link #precision} value. May change in any future SIS version.
+     * Arbitrary default {@link #precision} value, in unit of grid cells. Used if no explicit inverse transform
+     * precision has been specified. The {@code sourceToGrid} transform shall not be applied on this value.
+     * This default precision may change in any future SIS version.
      */
     static final double DEFAULT_PRECISION = 1E-7;
 
@@ -246,7 +251,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
     /**
      * Sets the desired precision of <em>inverse</em> transformations, in units of source coordinates.
      * If a conversion from "real world" to grid coordinates {@linkplain #setSourceToGrid has been specified},
-     * then the given precision is in "real world" units. Otherwise the precision is in units of grid cells.
+     * then the given precision is in "real world" units. Otherwise the precision is in units of grid cells
+     * (i.e. a value of 1 is the size of one grid cell).
      *
      * <div class="note"><b>Note:</b>
      * there is no method for setting the desired target precision because forward transformations <em>precision</em>
@@ -433,7 +439,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
         boolean isLinear = true;
         for (final double c : linear.correlation()) {
             isExact &= (c == 1);
-            if (c < 0.9999) {                               // Empirical threshold (may need to be revisited).
+            if (!(c >= 0.9999)) {                           // Empirical threshold (may need to be revisited).
                 isLinear = false;
                 break;
             }
