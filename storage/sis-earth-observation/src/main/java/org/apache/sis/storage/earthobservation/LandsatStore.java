@@ -16,24 +16,24 @@
  */
 package org.apache.sis.storage.earthobservation;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.Reader;
+import java.io.BufferedReader;
+import java.io.LineNumberReader;
+import java.io.IOException;
 import java.net.URI;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.setup.OptionKey;
+import org.opengis.metadata.Metadata;
+import org.opengis.util.GenericName;
+import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -86,6 +86,11 @@ public class LandsatStore extends DataStore {
     private Metadata metadata;
 
     /**
+     * The identifier, cached when first requested.
+     */
+    private GenericName identifier;
+
+    /**
      * Creates a new Landsat store from the given file, URL, stream or character reader.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -106,14 +111,37 @@ public class LandsatStore extends DataStore {
     }
 
     /**
-     * Returns a null value.
-     * TODO : implement this method when Coverage API will be finished.
+     * Returns the parameters used to open this Landsat data store.
+     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at
+     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return null.
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
      */
     @Override
-    public GenericName getIdentifier() {
-        return null;
+    public ParameterValueGroup getOpenParameters() {
+        return URIDataStore.parameters(provider, location);
+    }
+
+    /**
+     * Returns the value associated to {@code LANDSAT_SCENE_ID} in the Landsat metadata file.
+     * This value is fetched from
+     * <code>{@linkplain #getMetadata()}/​identificationInfo/​citation/​identifier</code>.
+     *
+     * @return the identifier fetched from metadata, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @since 1.0
+     */
+    @Override
+    public synchronized GenericName getIdentifier() throws DataStoreException {
+        if (identifier == null) {
+            identifier = super.getIdentifier();
+        }
+        return identifier;
     }
 
     /**
@@ -122,7 +150,7 @@ public class LandsatStore extends DataStore {
      * data quality, usage constraints and more.
      *
      * @return information about the dataset.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while reading the metadata.
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
@@ -139,22 +167,6 @@ public class LandsatStore extends DataStore {
             throw new DataStoreReferencingException(e);
         }
         return metadata;
-    }
-
-    /**
-     * Returns the parameters used to open this Landsat data store.
-     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at
-     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * This method may return {@code null} if the storage input can not be described by a URI
-     * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
-     *
-     * @return parameters used for opening this data store, or {@code null} if not available.
-     *
-     * @since 0.8
-     */
-    @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
     }
 
     /**
@@ -187,16 +199,5 @@ public class LandsatStore extends DataStore {
     @Override
     public synchronized void close() throws DataStoreException {
         metadata = null;
-    }
-
-    /**
-     * Returns a string representation of this Landsat store for debugging purpose.
-     * The content of the string returned by this method may change in any future SIS version.
-     *
-     * @return a string representation of this datastore for debugging purpose.
-     */
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + '[' + getDisplayName() + ']';
     }
 }

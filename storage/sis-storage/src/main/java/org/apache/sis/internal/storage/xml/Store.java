@@ -16,36 +16,31 @@
  */
 package org.apache.sis.internal.storage.xml;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Collections;
 import java.util.logging.LogRecord;
+import java.io.Closeable;
+import java.io.Reader;
+import java.io.InputStream;
+import java.io.IOException;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
-import org.apache.sis.internal.referencing.DefinitionVerifier;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.xml.XML;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.Identification;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+import org.apache.sis.xml.XML;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.referencing.DefinitionVerifier;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -106,32 +101,6 @@ final class Store extends URIDataStore {
             throw new UnsupportedStorageException(super.getLocale(), StoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
-    }
-
-    /**
-     * Returns the first identifier in the metadata.
-     *
-     * @return first metadata identifier or null if parsing fails or if there are
-     *         no identifiers.
-     */
-    @Override
-    public GenericName getIdentifier() {
-        try {
-            Metadata metadata = getMetadata();
-            if (metadata != null) {
-                for (Identification idt : metadata.getIdentificationInfo()) {
-                    Citation citation = idt.getCitation();
-                    if (citation != null) {
-                        for (Identifier id : citation.getIdentifiers()) {
-                            return NamedIdentifier.castOrCopy(id);
-                        }
-                    }
-                }
-            }
-        } catch (DataStoreException ex) {
-            return null;
-        }
-        return null;
     }
 
     /**

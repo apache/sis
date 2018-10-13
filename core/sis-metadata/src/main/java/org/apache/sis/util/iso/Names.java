@@ -97,7 +97,7 @@ public final class Names extends Static {
      * @param  factory    the factory to use for creating the namespace.
      * @param  namespace  the namespace string, taken as a whole (not parsed).
      * @param  separator  the separator between the namespace and the local part, or {@code null} for the default.
-     * @return the namespace object.
+     * @return the namespace object, or {@code null} if the given {@code namespace} was null or empty.
      */
     private static NameSpace createNameSpace(final NameFactory factory, final CharSequence namespace, final String separator) {
         if (namespace == null || namespace.length() == 0) {

@@ -501,7 +501,7 @@ public final class Citations extends Static {
              * we will avoid the StringBuilder creation in the vast majority of times.
              *
              * Note that 'µ' and its friends are not ignorable, so we do not remove them.
-             * This method is "getUnicodeIdentifier", not "getXmlIdentifier".
+             * This method is aimed for "getUnicodeIdentifier", not "getXmlIdentifier".
              */
             final int length = identifier.length();
             for (int i=0; i<length;) {

@@ -152,8 +152,8 @@ public final class Database {
             tablesByNames.add(store, table.featureType.getName(), table);
             hasGeometry |= table.hasGeometry;
         }
-        this.tables = tableList.toArray(new Table[tableList.size()]);
-        this.functions = analyzer.functions;
+        this.tables      = tableList.toArray(new Table[tableList.size()]);
+        this.functions   = analyzer.functions;
         this.hasGeometry = hasGeometry;
     }
 
@@ -175,7 +175,7 @@ public final class Database {
 
     /**
      * Stores information about tables in the given metadata.
-     * Only tables explicitely requested by the user are listed.
+     * Only tables explicitly requested by the user are listed.
      *
      * @param  metadata  information about the database.
      * @param  builder   where to add information about the tables.

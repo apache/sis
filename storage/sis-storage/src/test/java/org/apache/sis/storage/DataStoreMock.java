@@ -16,11 +16,10 @@
  */
 package org.apache.sis.storage;
 
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.util.GenericName;
+import org.apache.sis.storage.event.ChangeEvent;
+import org.apache.sis.storage.event.ChangeListener;
 
 
 /**
@@ -42,15 +41,6 @@ final strictfp class DataStoreMock extends DataStore {
      */
     DataStoreMock(final String name) {
         this.name = name;
-    }
-
-    /**
-     * Mock data store has no identifier.
-     * @return null
-     */
-    @Override
-    public GenericName getIdentifier() {
-        return null;
     }
 
     /**

@@ -16,68 +16,70 @@
  */
 package org.apache.sis.internal.storage.csv;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.Reader;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.time.DateTimeException;
-import java.time.Instant;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.time.Instant;
+import java.time.DateTimeException;
+import java.io.Reader;
+import java.io.BufferedReader;
+import java.io.LineNumberReader;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.FoliationRepresentation;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.MovingFeature;
-import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.URIDataStore;
-import org.apache.sis.internal.storage.io.IOUtilities;
-import org.apache.sis.internal.storage.io.RewindableLineReader;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.io.InvalidSeekException;
-import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.DataOptionKey;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
+import org.opengis.util.GenericName;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.FoliationRepresentation;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.io.RewindableLineReader;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.MovingFeature;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.InvalidSeekException;
+import org.apache.sis.measure.Units;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -307,16 +309,6 @@ final class Store extends URIDataStore implements FeatureSet {
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
-    }
-
-    /**
-     * CSV Identifier is identical to it's feature type name.
-     *
-     * @return CSV feature type name.
-     */
-    @Override
-    public GenericName getIdentifier() {
-        return featureType.getName();
     }
 
     /**
@@ -624,6 +616,17 @@ final class Store extends URIDataStore implements FeatureSet {
             return Foliation.valueOf(elements.get(1).toUpperCase(Locale.US));
         }
         return Foliation.TIME;      // Default value.
+    }
+
+    /**
+     * Returns an identifier for this CSV data store.
+     * This method returns the {@link #getType() type} name, which is itself derived from the file name.
+     *
+     * @return identifier for this CSV data store.
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        return featureType.getName();
     }
 
     /**

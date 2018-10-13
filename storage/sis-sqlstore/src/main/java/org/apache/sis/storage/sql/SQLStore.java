@@ -16,27 +16,28 @@
  */
 package org.apache.sis.storage.sql;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import javax.sql.DataSource;
-import org.apache.sis.internal.sql.feature.Database;
-import org.apache.sis.internal.sql.feature.Resources;
-import org.apache.sis.internal.storage.MetadataBuilder;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.lang.reflect.Method;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.internal.sql.feature.Database;
+import org.apache.sis.internal.sql.feature.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.util.GenericName;
 
 
 /**
@@ -52,6 +53,17 @@ import org.opengis.util.GenericName;
  * @module
  */
 public class SQLStore extends DataStore implements Aggregate {
+    /**
+     * Names of possible public getter methods for data source title, in preference order.
+     */
+    private static final String[] NAME_GETTERS = {
+            "getDescription",           // PostgreSQL, SQL Server
+            "getDataSourceName",        // Derby
+            "getDatabaseName",          // Derby, PostgreSQL, SQL Server
+            "getUrl",                   // PostgreSQL
+            "getURL"                    // SQL Server
+    };
+
     /**
      * The data source to use for obtaining connections to the database.
      */
@@ -132,12 +144,12 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
-     * SQL Datastore root resource has no identifier.
+     * SQL data store root resource has no identifier.
      *
-     * @return null
+     * @return {@code null}.
      */
     @Override
-    public GenericName getIdentifier() {
+    public GenericName getIdentifier() throws DataStoreException {
         return null;
     }
 
@@ -158,10 +170,11 @@ public class SQLStore extends DataStore implements Aggregate {
     /**
      * Returns the database model, analyzing the database schema when first needed.
      * This method performs the same work than {@link #model()}, but using an existing connection.
+     * Callers must own a synchronization lock on {@code this}.
      *
      * @param c  connection to the database.
      */
-    private synchronized Database model(final Connection c) throws DataStoreException, SQLException {
+    private Database model(final Connection c) throws DataStoreException, SQLException {
         if (model == null) {
             model = new Database(this, c, source, tableNames, listeners);
         }
@@ -188,6 +201,25 @@ public class SQLStore extends DataStore implements Aggregate {
                 model.listTables(c.getMetaData(), builder);
             } catch (SQLException e) {
                 throw new DataStoreException(Exceptions.unwrap(e));
+            }
+            /*
+             * Try to find a title from the data source description.
+             */
+            for (final String c : NAME_GETTERS) {
+                try {
+                    final Method method = source.getClass().getMethod(c);
+                    if (method.getReturnType() == String.class) {
+                        String name = (String) method.invoke(source);
+                        if (name != null && !(name = name.trim()).isEmpty()) {
+                            builder.addTitle(name);
+                            break;
+                        }
+                    }
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignore - try the next method.
+                } catch (ReflectiveOperationException e) {
+                    throw new DataStoreException(Exceptions.unwrap(e));
+                }
             }
             metadata = builder.build(true);
         }

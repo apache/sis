@@ -16,16 +16,17 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.Collections;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.feature.DefaultFeatureType;
+import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.feature.FeatureOperations;
-import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStore;
@@ -35,6 +36,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.WarningListeners;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Operation;
@@ -43,8 +46,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.PropertyIsEqualTo;
 import org.opengis.filter.expression.Expression;
-import org.opengis.geometry.Envelope;
-import org.opengis.util.GenericName;
+import org.apache.sis.filter.DefaultFilterFactory;
 
 
 /**

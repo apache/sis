@@ -18,13 +18,15 @@ package org.apache.sis.internal.storage;
 
 import java.util.Collection;
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListeners;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.metadata.Metadata;
-import org.opengis.util.GenericName;
 
 
 /**

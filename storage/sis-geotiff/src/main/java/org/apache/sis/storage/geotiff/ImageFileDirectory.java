@@ -17,29 +17,29 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.storage.AbstractResource;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.io.ChannelDataInput;
-import org.apache.sis.math.Vector;
-import org.apache.sis.measure.Units;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.GridCoverageResource;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.storage.AbstractResource;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.math.Vector;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -76,6 +76,14 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      * Used for fetching information like the input channel and where to report warnings.
      */
     private final Reader reader;
+
+    /**
+     * The identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
+     * The first image has the sequence number "1".
+     *
+     * @see #getIdentifier()
+     */
+    private final GenericName identifier;
 
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
@@ -339,10 +347,12 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      * Creates a new image file directory.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
+     * @param index   the image index as a sequence number starting with 0 for the first image.
      */
-    ImageFileDirectory(final Reader reader) {
+    ImageFileDirectory(final Reader reader, final int index) {
         super(reader.owner);
         this.reader = reader;
+        identifier = reader.nameFactory.createLocalName(reader.owner.identifier, String.valueOf(index + 1));
     }
 
     /**
@@ -367,13 +377,14 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
     }
 
     /**
-     * Datastore root resource has no identifier.
+     * Returns the identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
+     * The first image has the sequence number "1".
      *
-     * @return null
+     * @see #getMetadata()
      */
     @Override
     public GenericName getIdentifier() {
-        return null;
+        return identifier;
     }
 
     /**

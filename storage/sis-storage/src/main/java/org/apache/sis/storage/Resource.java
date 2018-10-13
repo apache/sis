@@ -53,27 +53,29 @@ import org.apache.sis.storage.event.ChangeListener;
  */
 public interface Resource {
     /**
-     * Returns the resource primary identifier.
+     * Returns the resource persistent identifier.
      * This identifier can be used to uniquely identify a resource in the containing {@link DataStore}.
      * For this identifier to be reliable the following conditions must hold:
      *
      * <ul>
-     *   <li>It must be unique in the {@link DataStore} which contains it, if there is one.</li>
-     *   <li>It's value must not change after closing and reopening the {@link DataStore} on the same data.</li>
-     *   <li>This identifier must be consistent with the value returned by {@link #getMetadata()}
-     *       in the field at path {@literal identificationInfo/citation/identifier}.
-     *   </li>
+     *   <li>It shall be unique in the {@link DataStore} which contains it, if there is one.</li>
+     *   <li>It's value shall not change after closing and reopening the {@link DataStore} on the same data.</li>
+     *   <li>It should be consistent with the <code>{@linkplain #getMetadata()}/​identificationInfo/​citation/​identifier</code> value.</li>
      * </ul>
      *
-     * If any of the above conditions is not met, this identifier should be null.
+     * If any of above conditions is not met, then this identifier should be {@code null}.
      * This case may happen when a resource is an intermediate result of an ongoing process
      * or is a temporary resource generated on-the-fly, for example a sensor event.
      *
-     * @return an identifier unique within the data store, or {@code null} if the resource has no reliable identifier.
+     * @return a persistent identifier unique within the data store, or {@code null} if this resource has no such identifier.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @see DataStore#getIdentifier()
+     * @see DataStore#findResource(String)
      *
      * @since 1.0
      */
-    GenericName getIdentifier();
+    GenericName getIdentifier() throws DataStoreException;
 
     /**
      * Returns information about this resource.

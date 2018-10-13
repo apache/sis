@@ -78,6 +78,17 @@ public final strictfp class NumericsTest extends TestCase {
     }
 
     /**
+     * Tests {@link Numerics#isUnsignedInteger(String)}.
+     */
+    @Test
+    public void testIsUnsignedInteger() {
+        assertFalse(Numerics.isUnsignedInteger(null));
+        assertFalse(Numerics.isUnsignedInteger(""));
+        assertTrue (Numerics.isUnsignedInteger("12345"));
+        assertFalse(Numerics.isUnsignedInteger("123A5"));
+    }
+
+    /**
      * Tests the {@link Numerics#epsilonEqual(double, double, ComparisonMode)} method.
      */
     @Test
