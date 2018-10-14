@@ -45,6 +45,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.collection.Cache;
@@ -167,7 +168,7 @@ public final class NTv2 extends AbstractProvider {
      *
      * @author  Simon Reynard (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
+     * @version 1.0
      * @since   0.7
      * @module
      */
@@ -345,22 +346,10 @@ public final class NTv2 extends AbstractProvider {
             /*
              * We need an estimation of translation accuracy, in order to decide when to stop iterations
              * during inverse transformations. If we did not found that information in the file, compute
-             * an arbitrary default accuracy derived from the variations found in actual values.
+             * an arbitrary default accuracy.
              */
             if (Double.isNaN(grid.accuracy)) {
-                double txmin = Double.POSITIVE_INFINITY;
-                double txmax = Double.NEGATIVE_INFINITY;
-                double tymin = Double.POSITIVE_INFINITY;
-                double tymax = Double.NEGATIVE_INFINITY;
-                for (int i=Math.min(tx.length, ty.length); --i >= 0;) {
-                    double x = tx[i];
-                    double y = ty[i];
-                    if (x < txmin) txmin = x;
-                    if (x > txmax) txmax = x;
-                    if (y < tymin) tymin = y;
-                    if (y > tymax) tymax = y;
-                }
-                grid.accuracy = Math.min(txmax - txmin, tymax - tymin) / 1000;
+                grid.accuracy = Units.DEGREE.getConverterTo(unit).convert(Formulas.ANGULAR_TOLERANCE);
             }
             header.keySet().retainAll(Arrays.asList(overviewKeys));   // Keep only overview records.
             return DatumShiftGridCompressed.compress(grid, null, precision / Math.max(dx, dy));

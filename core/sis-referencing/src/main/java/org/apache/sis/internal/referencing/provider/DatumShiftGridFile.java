@@ -345,7 +345,9 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
         private static final long serialVersionUID = -9221609983475286496L;
 
         /**
-         * The translation values.
+         * The translation values. {@code offsets.length} is the number of dimensions, and {@code offsets[dim].length}
+         * shall be the same for all {@code dim} value. Component {@code dim} of the translation vector at coordinate
+         * {@code gridX}, {@code gridY} is {@code offsets[dim][gridX + gridY*nx]}.
          */
         final float[][] offsets;
 
@@ -399,7 +401,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
         }
 
         /**
-         * Returns the number of shift dimension.
+         * Returns the number of shift dimensions.
          */
         @Override
         public final int getTranslationDimensions() {
