@@ -122,6 +122,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short CausedBy_1 = 11;
 
         /**
+         * {0} cells
+         */
+        public static final short CellCount_1 = 149;
+
+        /**
          * Character encoding
          */
         public static final short CharacterEncoding = 12;
@@ -160,6 +165,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Container
          */
         public static final short Container = 18;
+
+        /**
+         * Conversion
+         */
+        public static final short Conversion = 150;
 
         /**
          * Coordinate
@@ -262,6 +272,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DigitalElevationModel = 146;
 
         /**
+         * Dimension {0}
+         */
+        public static final short Dimension_1 = 148;
+
+        /**
          * Dimensions
          */
         public static final short Dimensions = 34;
@@ -317,6 +332,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short EntryCount_1 = 121;
 
         /**
+         * Envelope
+         */
+        public static final short Envelope = 151;
+
+        /**
          * Exit
          */
         public static final short Exit = 143;
@@ -350,6 +370,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Geographic identifier
          */
         public static final short GeographicIdentifier = 135;
+
+        /**
+         * Grid extent
+         */
+        public static final short GridExtent = 152;
 
         /**
          * Height
@@ -617,6 +642,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short RepresentativeValue = 141;
 
         /**
+         * Resolution
+         */
+        public static final short Resolution = 153;
+
+        /**
          * Root
          */
         public static final short Root = 90;
@@ -730,6 +760,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Unnamed
          */
         public static final short Unnamed = 108;
+
+        /**
+         * Unspecified
+         */
+        public static final short Unspecified = 154;
 
         /**
          * Untitled
