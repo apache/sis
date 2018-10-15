@@ -97,7 +97,7 @@ public final class Names extends Static {
      * @param  factory    the factory to use for creating the namespace.
      * @param  namespace  the namespace string, taken as a whole (not parsed).
      * @param  separator  the separator between the namespace and the local part, or {@code null} for the default.
-     * @return the namespace object.
+     * @return the namespace object, or {@code null} if the given {@code namespace} was null or empty.
      */
     private static NameSpace createNameSpace(final NameFactory factory, final CharSequence namespace, final String separator) {
         if (namespace == null || namespace.length() == 0) {
@@ -130,6 +130,8 @@ public final class Names extends Static {
     /**
      * Creates a local or scoped name from an array of parsed names. This method returns a local name if the
      * length of the {@code parsedNames} array is 1, or a scoped named if the length of the array is 2 or more.
+     * The first {@code parsedNames} element will be the {@linkplain AbstractName#head() head}
+     * and the last {@code parsedNames} element will be the {@link AbstractName#tip() tip}.
      *
      * @param  namespace    the namespace, or {@code null} for the global namespace.
      * @param  separator    the separator between the namespace and the generic name, or {@code null}

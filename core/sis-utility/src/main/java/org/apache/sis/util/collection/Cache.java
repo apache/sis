@@ -125,7 +125,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * This implementation assumes that there is no circular dependencies (or cyclic graph) between
  * the values in the cache. For example if creating <var>A</var> implies creating <var>B</var>,
  * then creating <var>B</var> is not allowed to implies (directly or indirectly) the creation of
- * <var>A</var>. If this rule is not meet, deadlock may occur randomly.
+ * <var>A</var>. If this condition is not met, deadlock may occur randomly.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)

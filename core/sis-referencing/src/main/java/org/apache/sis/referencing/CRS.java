@@ -853,7 +853,10 @@ public final class CRS extends Static {
      *
      * @since 0.8
      *
+     * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
      * @see GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
+     * @see org.apache.sis.geometry.Envelopes#compound(Envelope...)
+     * @see org.apache.sis.referencing.operation.transform.MathTransforms#compound(MathTransform...)
      */
     public static CoordinateReferenceSystem compound(final CoordinateReferenceSystem... components) throws FactoryException {
         ArgumentChecks.ensureNonNull("components", components);

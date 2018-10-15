@@ -25,11 +25,13 @@ import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.ParseException;
+import org.opengis.util.NameFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -48,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -124,6 +126,11 @@ final class Reader extends GeoTIFF {
     final MetadataBuilder metadata;
 
     /**
+     * The factory to use for creating image identifiers.
+     */
+    final NameFactory nameFactory;
+
+    /**
      * Creates a new GeoTIFF reader which will read data from the given input.
      * The input must be at the beginning of the GeoTIFF file.
      *
@@ -132,10 +139,11 @@ final class Reader extends GeoTIFF {
      */
     Reader(final GeoTiffStore owner, final ChannelDataInput input) throws IOException, DataStoreException {
         super(owner);
-        this.input    = input;
-        this.origin   = input.getStreamPosition();
-        this.metadata = new MetadataBuilder();
-        this.doneIFD  = new HashSet<>();
+        this.input       = input;
+        this.origin      = input.getStreamPosition();
+        this.metadata    = new MetadataBuilder();
+        this.doneIFD     = new HashSet<>();
+        this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note that we do not need to care
@@ -252,7 +260,7 @@ final class Reader extends GeoTIFF {
              * to get the pointer to the next IFD.
              */
             final int offsetSize = Integer.BYTES << intSizeExpansion;
-            final ImageFileDirectory dir = new ImageFileDirectory(this);
+            final ImageFileDirectory dir = new ImageFileDirectory(this, index);
             for (long remaining = readUnsignedShort(); --remaining >= 0;) {
                 /*
                  * Each entry in the Image File Directory has the following format:

@@ -164,9 +164,16 @@ public class MonolineFormatter extends Formatter {
     private static final boolean SHOW_LEVEL = true;
 
     /**
-     * Number of spaces to colorize at the beginning of lines that are continuation of a single log record.
+     * Number of characters or spaces to colorize at the beginning of lines that are continuation of a single log record.
+     * This count includes the {@link #CONTINUATION_MARK} character. Should not be smaller than 2 since the algorithm in
+     * this class needs one white space after {@link #CONTINUATION_MARK}.
      */
     private static final int CONTINUATION_MARGIN = 4;
+
+    /**
+     * The character to write at the beginning of lines that are continuation of a single log record.
+     */
+    static final char CONTINUATION_MARK = '┃', CONTINUATION_END = '╹';
 
     /**
      * Minimal number of stack trace elements to print before and after the "interesting" elements.
@@ -277,7 +284,21 @@ public class MonolineFormatter extends Formatter {
     private final PrintWriter printer;
 
     /**
-     * Constructs a default {@code MonolineFormatter}.
+     * Constructs a default {@code MonolineFormatter}. This no-argument constructor is invoked
+     * by the logging system if the {@code logging.properties} file contains the following line:
+     *
+     * {@preformat text
+     *   java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
+     * }
+     *
+     * @since 1.0
+     */
+    public MonolineFormatter() {
+        this(null);
+    }
+
+    /**
+     * Constructs a {@code MonolineFormatter} configured for the given handler.
      *
      * <div class="section">Auto-configuration from the handler</div>
      * Formatters are often associated to a particular handler. If this handler is known, giving it at
@@ -393,6 +414,8 @@ loop:   for (int i=0; ; i++) {
         }
         synchronized (buffer) {
             this.header = header;
+            buffer.setLength(0);
+            buffer.append(header);
         }
     }
 
@@ -626,7 +649,7 @@ loop:   for (int i=0; ; i++) {
     }
 
     /**
-     * Formats the given log record and return the formatted string.
+     * Formats the given log record and returns the formatted string.
      * See the <a href="#overview">class javadoc</a> for information on the log format.
      *
      * @param  record  the log record to be formatted.
@@ -648,7 +671,7 @@ loop:   for (int i=0; ; i++) {
             }
             buffer.setLength(header.length());
             /*
-             * Appends the time (e.g. "00:00:12.365"). The time pattern can be set either
+             * Append the time (e.g. "00:00:12.365"). The time pattern can be set either
              * programmatically by a call to 'setTimeFormat(…)', or in logging.properties
              * file with the "org.apache.sis.util.logging.MonolineFormatter.time" property.
              */
@@ -658,7 +681,7 @@ loop:   for (int i=0; ; i++) {
                 buffer.append(' ');
             }
             /*
-             * Appends the level (e.g. "FINE"). We do not provide the option to turn level off for now.
+             * Append the level (e.g. "FINE"). We do not provide the option to turn level off for now.
              * This level will be formatted with a colorized background if ANSI escape sequences are enabled.
              */
             int margin = buffer.length();
@@ -675,7 +698,7 @@ loop:   for (int i=0; ; i++) {
                 buffer.append(levelReset).append(' ');
             }
             /*
-             * Appends the logger name or source class name, in long of short form.
+             * Append the logger name or source class name, in long of short form.
              * The name may be formatted in bold characters if ANSI escape sequences are enabled.
              */
             String source;
@@ -709,9 +732,13 @@ loop:   for (int i=0; ; i++) {
             String bodyLineSeparator = writer.getLineSeparator();
             final String lineSeparator = System.lineSeparator();
             if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
-                final int highlight = Math.min(CONTINUATION_MARGIN, margin);
-                bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(highlight)
-                                                  + levelReset + CharSequences.spaces(margin - highlight + 1);
+                if (CONTINUATION_MARGIN != 0) {
+                    final int highlight = Math.min(CONTINUATION_MARGIN, margin);
+                    bodyLineSeparator = lineSeparator + levelColor + CONTINUATION_MARK + CharSequences.spaces(highlight - 1)
+                                                      + levelReset + CharSequences.spaces(margin - highlight + 1);
+                } else {
+                    bodyLineSeparator = lineSeparator;
+                }
                 writer.setLineSeparator(bodyLineSeparator);
             }
             if (faint) {
@@ -747,12 +774,34 @@ loop:   for (int i=0; ; i++) {
             } catch (IOException e) {
                 throw new AssertionError(e);
             }
-            buffer.setLength(CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length()));
+            /*
+             * We wrote the main content, but maybe with some extra lines. Trim the last lines by skipping white spaces
+             * and line separator (EOL). If the 'bodyLineSeparator' margin is found immediately before the white spaces
+             * and EOL that we skipped, we repeat this process until we find at least one non-white character after the
+             * 'bodyLineSeparator'.
+             */
+            int lastMargin = buffer.length();
+            do {
+                length = CharSequences.skipTrailingWhitespaces(buffer, 0, lastMargin);
+                lastMargin = buffer.lastIndexOf(bodyLineSeparator);
+                buffer.setLength(length);
+                length -= lastMargin;
+            } while (length > 0 && length <= bodyLineSeparator.length());
             if (faint) {
                 buffer.append(X364.NORMAL.sequence());
             }
-            buffer.append(lineSeparator);
-            return buffer.toString();
+            /*
+             * At this point we finished to write the message, except for the final line separator.
+             * If the message spans more than one line, there is CONTINUATION_MARK characters in the
+             * margin. Replace the last occurrence of those characters by CONTINUATION_END.
+             */
+            lastMargin = CharSequences.indexOf(buffer, CONTINUATION_MARK,
+                            lastMargin + lineSeparator.length(),
+                            lastMargin + bodyLineSeparator.length());
+            if (lastMargin >= 0) {
+                buffer.setCharAt(lastMargin, CONTINUATION_END);
+            }
+            return buffer.append(lineSeparator).toString();
         }
     }
 

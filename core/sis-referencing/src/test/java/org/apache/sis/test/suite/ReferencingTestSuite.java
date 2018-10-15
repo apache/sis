@@ -214,6 +214,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,
     org.apache.sis.referencing.operation.CoordinateOperationFinderTest.class,
     org.apache.sis.referencing.operation.DefaultCoordinateOperationFactoryTest.class,
+    org.apache.sis.referencing.operation.builder.ResidualGridTest.class,
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
 

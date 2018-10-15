@@ -22,7 +22,9 @@ import java.util.Locale;
 import java.text.ParsePosition;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import javax.measure.format.ParserException;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -204,6 +206,17 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests the assignation of two labels on the same unit.
+     */
+    @Test
+    public void testDuplicatedLabels() {
+        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        f.label(Units.DEGREE, "deg");
+        f.label(Units.DEGREE, "dd");        // For "decimal degrees"
+        roundtrip(f, "dd", "dd");
+    }
+
+    /**
      * Tests unit formatting with {@link UnitFormat.Style#UCUM}.
      */
     @Test
@@ -277,6 +290,18 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals("µg",      f.format(Units.KILOGRAM  .multiply(1E-9)));
         assertEquals("cg",      f.format(Units.GRAM      .divide  ( 100)));
         assertEquals("10⁻⁷⋅kg", f.format(Units.GRAM      .divide  (1E+4)));
+    }
+
+    /**
+     * Tests formatting of units raised to some powers.
+     */
+    @Test
+    public void testFormatPower() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        f.setStyle(UnitFormat.Style.SYMBOL);
+        assertEquals("m²",  f.format(Units.METRE     .pow(2)));
+        assertEquals("cm²", f.format(Units.CENTIMETRE.pow(2)));
+        assertEquals("in²", f.format(Units.INCH      .pow(2)));
     }
 
     /**
@@ -489,10 +514,20 @@ public final strictfp class UnitFormatTest extends TestCase {
         final UnitFormat f = new UnitFormat(Locale.UK);
         /*
          * Kilograms should be identified even if they appear in an expression.
-         * Current implementation creates a symbol early when it detect such case.
+         * Current implementation creates a symbol early when it detects such case.
          */
         assertEquals("mg∕m",  f.parse("10^-6.kg/m").getSymbol());
-//      assertEquals("μg∕m³", f.parse("μg.m-3").getSymbol());
+        assertEquals("µg∕m³", f.parse("μg.m-3").getSymbol());
+    }
+
+    /**
+     * Tests the parsing of {@code "1/l"}.
+     */
+    @Test
+    public void testParseInverseL() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        final Unit<?> u = f.parse("1/l");
+        assertEquals("1∕L", u.toString());
     }
 
     /**
@@ -532,7 +567,7 @@ public final strictfp class UnitFormatTest extends TestCase {
     public void testParsePosition() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         final ParsePosition pos = new ParsePosition(4);
-        assertSame(Units.CENTIMETRE, f.parse("ABC cm DEF", pos));
+        assertSame(Units.CENTIMETRE, f.parse("ABC cm foo", pos));
         assertEquals("ParsePosition.getIndex()", 6, pos.getIndex());
         assertEquals("ParsePosition.getErrorIndex()", -1, pos.getErrorIndex());
         /*
@@ -540,8 +575,8 @@ public final strictfp class UnitFormatTest extends TestCase {
          * We associate a random unit to that label, just for testing purpose.
          */
         pos.setIndex(4);
-        f.label(Units.HECTARE, "cm DEF");
-        assertSame(Units.HECTARE, f.parse("ABC cm DEF", pos));
+        f.label(Units.HECTARE, "cm foo");
+        assertEqualsIgnoreSymbol(Units.HECTARE, f.parse("ABC cm foo", pos));
         assertEquals("ParsePosition.getIndex()", 10, pos.getIndex());
         assertEquals("ParsePosition.getErrorIndex()", -1, pos.getErrorIndex());
     }
@@ -625,6 +660,23 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests parsing and formatting of custom symbol.
+     */
+    @Test
+    @DependsOnMethod({"testLabel", "testParseExponentiation"})
+    public void testParseAndFormatLabel() {
+        final Unit<Length> yard  = Units.METRE.multiply(0.9144);
+        final Unit<?>      yard2 = yard.pow(2);
+        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        f.label(yard, "yd");
+        roundtrip(f, "yd",    "yd",  yard);
+        roundtrip(f, "yd**2", "yd²", yard2);
+        roundtrip(f, "yd^2",  "yd²", yard2);
+        roundtrip(f, "yd2",   "yd²", yard2);
+        roundtrip(f, "yd²",   "yd²", yard2);
+    }
+
+    /**
      * Reminder for units parsing and formatting that still need improvement.
      * The "expected" values checked in this method are not really what we expect,
      * but they reflect the current behavior of Apache SIS units library. We keep
@@ -658,5 +710,22 @@ public final strictfp class UnitFormatTest extends TestCase {
         final Unit<?> unit = f.parse(symbol);
         final String actual = f.format(unit);
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Sames as {@link #roundtrip(UnitFormat, String, String)}, but also compare with the given units ignoring symbol.
+     */
+    private static void roundtrip(final UnitFormat f, final String symbol, final String expected, final Unit<?> reference) {
+        final Unit<?> unit = f.parse(symbol);
+        assertEqualsIgnoreSymbol(reference, unit);
+        final String actual = f.format(unit);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Asserts that the given units are equal, ignoring symbol.
+     */
+    private static void assertEqualsIgnoreSymbol(final Unit<?> actual, final Unit<?> expected) {
+        assertTrue(((AbstractUnit<?>) expected).equals(actual, ComparisonMode.DEBUG));
     }
 }

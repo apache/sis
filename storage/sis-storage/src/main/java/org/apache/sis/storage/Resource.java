@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.opengis.metadata.Metadata;
 
 
 /**
@@ -51,6 +52,31 @@ import org.opengis.metadata.Metadata;
  * @module
  */
 public interface Resource {
+    /**
+     * Returns the resource persistent identifier.
+     * This identifier can be used to uniquely identify a resource in the containing {@link DataStore}.
+     * For this identifier to be reliable the following conditions must hold:
+     *
+     * <ul>
+     *   <li>It shall be unique in the {@link DataStore} which contains it, if there is one.</li>
+     *   <li>It's value shall not change after closing and reopening the {@link DataStore} on the same data.</li>
+     *   <li>It should be consistent with the <code>{@linkplain #getMetadata()}/​identificationInfo/​citation/​identifier</code> value.</li>
+     * </ul>
+     *
+     * If any of above conditions is not met, then this identifier should be {@code null}.
+     * This case may happen when a resource is an intermediate result of an ongoing process
+     * or is a temporary resource generated on-the-fly, for example a sensor event.
+     *
+     * @return a persistent identifier unique within the data store, or {@code null} if this resource has no such identifier.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @see DataStore#getIdentifier()
+     * @see DataStore#findResource(String)
+     *
+     * @since 1.0
+     */
+    GenericName getIdentifier() throws DataStoreException;
+
     /**
      * Returns information about this resource.
      * If this resource is an {@link Aggregate}, then the metadata may enumerate characteristics

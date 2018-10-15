@@ -35,7 +35,6 @@ import javax.measure.IncommensurableException;
 import javax.measure.format.ParserException;
 
 import org.opengis.util.CodeList;
-import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
@@ -64,7 +63,6 @@ import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -167,14 +165,6 @@ final class MetadataReader extends MetadataBuilder {
      * which have been found in the NeCDF file.
      */
     private final String[] searchPath;
-
-    /**
-     * The name factory, created when first needed.
-     *
-     * The type is {@link NameFactory} on the JDK6 branch. However we have to force the SIS
-     * implementation on the GeoAPI 3.0 branch because the older interface is missing a method.
-     */
-    private transient DefaultNameFactory nameFactory;
 
     /**
      * The contact, used at metadata creation time for avoiding to construct identical objects
@@ -930,12 +920,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         newSampleDimension();
         final String name = trim(variable.getName());
         if (name != null) {
-            if (nameFactory == null) {
-                nameFactory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
-                // Real dependency injection to be used in a future version.
-            }
-            setBandIdentifier(nameFactory.createMemberName(null, name,
-                    nameFactory.createTypeName(null, variable.getDataTypeName())));
+            final DefaultNameFactory f = decoder.nameFactory;
+            setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
         }
         Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
         final String id = (v.length == 1) ? trim((String) v[0]) : null;

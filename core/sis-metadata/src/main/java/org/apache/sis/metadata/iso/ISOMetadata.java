@@ -187,7 +187,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * This method checks the {@linkplain Identifier#getAuthority() authority} for filtering ignorable
      * identifiers like ISBN/ISSN codes and XML attributes.
      * This convenience method is provided for implementation of public {@code getIdentifier(Identifier)}
-     * methods in subclasses having an {@code identifier} property with [0 … 1] cardinality.
+     * methods in subclasses having an {@code identifier} property with [0 … 1] multiplicity.
      *
      * @return an identifier from ISO 19115-3 conceptual model (excluding XML identifiers),
      *         or {@code null} if none.
@@ -201,7 +201,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     /**
      * Sets the identifier for metadata objects that are expected to contain at most one ISO 19115 identifier.
      * This convenience method is provided for implementation of public {@code setIdentifier(Identifier)} methods
-     * in subclasses having an {@code identifier} property with [0 … 1] cardinality.
+     * in subclasses having an {@code identifier} property with [0 … 1] multiplicity.
      * The default implementation removes all identifiers that would be returned by {@link #getIdentifier()}
      * before to add the given one in the {@link #identifiers} collection.
      *

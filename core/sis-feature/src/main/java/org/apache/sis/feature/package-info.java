@@ -41,7 +41,7 @@
  *
  *   <li><b>{@linkplain org.apache.sis.feature.DefaultFeatureType#isSimple() Simple features}</b><br>
  *       Are instances of a feature type with no association to other features, and where all attributes
- *       are constrained to the [1 … 1] cardinality. Such simple features are very common.</li>
+ *       have [1 … 1] multiplicity. Such simple features are very common.</li>
  * </ul>
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.

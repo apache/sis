@@ -41,7 +41,7 @@ public final class QuadTreeWriter {
      * @param directory
      *            the directory where the index file is located
      */
-    public static void writeTreeToFile(QuadTree tree, String directory) throws IOException{
+    public static void writeTreeToFile(QuadTree tree, String directory) throws IOException {
         createIdxDir(directory);
         writeTreeConfigsToFile(tree, directory);
         writeNodeToFile(tree.getRoot(), directory);
@@ -62,15 +62,15 @@ public final class QuadTreeWriter {
     }
 
     /**
-     * Write quad tree configerations to file.
+     * Write quad tree configurations to file.
      *
      * @param tree
      *            the quad tree
      * @param directory
-     *            the directory where the configerations file is located
+     *            the directory where the configurations file is located
      */
-    private static void writeTreeConfigsToFile(QuadTree tree, String directory) throws IOException{
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(directory + "tree_config.txt"))){
+    private static void writeTreeConfigsToFile(QuadTree tree, String directory) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(directory + "tree_config.txt"))) {
             writer.write("capacity;" + tree.getCapacity() + ";depth;" + tree.getDepth());
             writer.newLine();
             writer.close();
@@ -91,9 +91,8 @@ public final class QuadTreeWriter {
      * @param checkIfParent
      *            if true, checks if the node's child is not null and is a parent
      *            if false, only checks if the node's child is not null
-     * @return quad tree data string
      */
-    private static void writeChildrenToFile(QuadTreeNode node, Quadrant quadrant, BufferedWriter writer, String directory, boolean checkIfParent) throws IOException{
+    private static void writeChildrenToFile(QuadTreeNode node, Quadrant quadrant, BufferedWriter writer, String directory, boolean checkIfParent) throws IOException {
         if (checkIfParent){
             if (node.getChild(quadrant) != null && node.getChild(quadrant).getNodeType() == NodeType.GRAY) {
                 writeNodeToFile(node.getChild(quadrant), directory);
@@ -114,7 +113,7 @@ public final class QuadTreeWriter {
      * @param directory
      *            the directory where the index file is located
      */
-    private static void writeNodeToFile(QuadTreeNode node, String directory) throws IOException{
+    private static void writeNodeToFile(QuadTreeNode node, String directory) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(directory + "node_" + node.getId() + ".txt"))){
             if (node.getNodeType() == NodeType.GRAY) {
                 writeChildrenToFile(node, Quadrant.NW, writer, directory, false);
@@ -141,7 +140,7 @@ public final class QuadTreeWriter {
      * @return quad tree data string
      */
     private static String getQuadTreeDataString(Quadrant quadrant, final QuadTreeNode node) {
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
         str.append(quadrant.index());
         str.append(':');
         str.append(node.getNodeType().toString());

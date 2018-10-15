@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -31,6 +32,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
+import org.opengis.util.NameSpace;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
@@ -45,6 +49,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
@@ -78,13 +83,22 @@ import org.apache.sis.storage.event.ChangeListener;
 class Store extends DataStore implements StoreResource, Aggregate, DirectoryStream.Filter<Path> {
     /**
      * The data store for the root directory specified by the user.
+     * May be {@code this} if this store instance is for the root directory.
      */
-    private final DataStore originator;
+    private final Store originator;
 
     /**
-     * The {@link FolderStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     * The {@link FolderStoreProvider#LOCATION} parameter value.
      */
     protected final Path location;
+
+    /**
+     * An identifier for this folder, or {@code null} if this folder is the root specified by the user.
+     * Shall never be null for sub-folders found in the root folder.
+     *
+     * @see #identifier(NameFactory)
+     */
+    private GenericName identifier;
 
     /**
      * Formatting conventions of dates and numbers, or {@code null} if unspecified.
@@ -170,7 +184,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    private Store(final Store parent, final StorageConnector connector) throws DataStoreException {
+    private Store(final Store parent, final StorageConnector connector, final NameFactory nameFactory) throws DataStoreException {
         super(parent, connector);
         originator        = parent;
         location          = connector.getStorageAs(Path.class);
@@ -179,6 +193,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         encoding          = connector.getOption(OptionKey.ENCODING);
         children          = parent.children;
         componentProvider = parent.componentProvider;
+        identifier        = nameFactory.createLocalName(parent.identifier(nameFactory).scope(), super.getDisplayName());
     }
 
     /**
@@ -213,6 +228,32 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     }
 
     /**
+     * Returns the name of this folder.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return identifier(null);
+    }
+
+    /**
+     * Returns the name of this folder, creating it if needed.
+     * Only the root folder may have its creation delayed.
+     *
+     * @param  nameFactory  the factory to use for creating the root folder, or {@code null} for the default.
+     */
+    private synchronized GenericName identifier(NameFactory nameFactory) {
+        if (identifier == null) {
+            if (nameFactory == null) {
+                nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+            }
+            GenericName name = nameFactory.createLocalName(null, super.getDisplayName());
+            NameSpace   ns   = nameFactory.createNameSpace(name, Collections.singletonMap("separator", "/"));
+            identifier       = nameFactory.createLocalName(ns, ".");
+        }
+        return identifier;
+    }
+
+    /**
      * Returns information about the data store as a whole.
      * Those metadata contains the directory name in the resource title.
      *
@@ -222,11 +263,10 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     public synchronized Metadata getMetadata() {
         if (metadata == null) {
             final MetadataBuilder mb = new MetadataBuilder();
-            final String name = getDisplayName();
-            mb.addResourceScope(ScopeCode.valueOf("COLLECTION"), Resources.formatInternational(Resources.Keys.DirectoryContent_1, name));
+            mb.addResourceScope(ScopeCode.valueOf("COLLECTION"), Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
             mb.addLanguage(locale,   MetadataBuilder.Scope.RESOURCE);
             mb.addEncoding(encoding, MetadataBuilder.Scope.RESOURCE);
-            mb.addTitleOrIdentifier(name, MetadataBuilder.Scope.ALL);
+            mb.addTitleOrIdentifier(identifier.toString(), MetadataBuilder.Scope.RESOURCE);
             metadata = mb.build(true);
         }
         return metadata;
@@ -235,13 +275,17 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     /**
      * Returns all resources found in the folder given at construction time.
      * Only the resources recognized by a {@link DataStore} will be included.
-     * This includes sub-folders. Resources are in no particular order.
+     * Sub-folders are represented by other folder {@code Store} instances;
+     * their resources are available by invoking {@link Aggregate#components()}
+     * on them (this method does not traverse sub-folders recursively by itself).
+     * Resources are in no particular order.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) {
             final List<DataStore> resources = new ArrayList<>();
+            final NameFactory nameFactory = DefaultFactories.forBuildin(NameFactory.class);
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(location, this)) {
                 for (final Path candidate : stream) {
                     /*
@@ -272,7 +316,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
                             } else if (componentProvider.probeContent(connector).isSupported()) {
                                 next = componentProvider.open(connector);   // Open a file of specified format.
                             } else if (Files.isDirectory(candidate)) {
-                                next = new Store(this, connector);          // Open a sub-directory.
+                                next = new Store(this, connector, nameFactory);        // Open a sub-directory.
                             } else {
                                 connector.closeAllExcept(null);             // Not the format specified at construction time.
                                 continue;
@@ -283,7 +327,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
                                 listeners.warning(Level.FINE, null, ex);
                                 continue;
                             }
-                            next = new Store(this, connector);
+                            next = new Store(this, connector, nameFactory);
                         } catch (DataStoreException ex) {
                             try {
                                 connector.closeAllExcept(null);

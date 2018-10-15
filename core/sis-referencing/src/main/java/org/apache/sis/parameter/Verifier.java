@@ -240,29 +240,34 @@ final class Verifier {
     {
         final Verifier verifier = ensureValidValue(valueClass, validValues, null, null, convertedValue);
         if (verifier == null && valueDomain != null) {
-            if (!valueClass.isArray()) {
-                /*
-                 * Following assertion should never fail with DefaultParameterDescriptor instances.
-                 * It could fail if the user overrides DefaultParameterDescriptor.getValueDomain()
-                 * in a way that break the method contract.
-                 */
-                assert valueDomain.getElementType() == valueClass : valueDomain;
-                if (!((Range) valueDomain).contains((Comparable<?>) convertedValue)) {
-                    return new Verifier(false, Errors.Keys.ValueOutOfRange_4, true, null,
-                            valueDomain.getMinValue(), valueDomain.getMaxValue(), convertedValue);
-                }
-            } else {
-                /*
-                 * Following assertion should never fail under the same condition than above.
-                 */
-                assert valueDomain.getElementType() == Numbers.primitiveToWrapper(valueClass.getComponentType()) : valueDomain;
-                final int length = Array.getLength(convertedValue);
-                for (int i=0; i<length; i++) {
-                    final Object e = Array.get(convertedValue, i);
-                    if (!((Range) valueDomain).contains((Comparable<?>) e)) {
-                        return new Verifier(false, Errors.Keys.ValueOutOfRange_4, true, i,
-                                valueDomain.getMinValue(), valueDomain.getMaxValue(), e);
+            final boolean isArray = valueClass.isArray();
+            /*
+             * Following assertion should never fail with DefaultParameterDescriptor instances.
+             * It could fail if the user overrides DefaultParameterDescriptor.getValueDomain()
+             * in a way that break the method contract.
+             */
+            assert valueDomain.getElementType() == (isArray ? Numbers.primitiveToWrapper(valueClass.getComponentType()) : valueClass) : valueDomain;
+            final int length = isArray ? Array.getLength(convertedValue) : 1;
+            for (int i=0; i<length; i++) {
+                final Object value = isArray ? Array.get(convertedValue, i) : convertedValue;
+                if (!((Range) valueDomain).contains((Comparable<?>) value)) {
+                    final short errorKey;
+                    final Object[] arguments;
+                    final Object minValue = valueDomain.getMinValue();
+                    if ((minValue instanceof Number) && ((Number) minValue).doubleValue() == 0 && !valueDomain.isMinIncluded()
+                        && (value instanceof Number) && ((Number) value).doubleValue() < 0)
+                    {
+                        errorKey     = Errors.Keys.ValueNotGreaterThanZero_2;
+                        arguments    = new Object[2];
+                    } else {
+                        errorKey     = Errors.Keys.ValueOutOfRange_4;
+                        arguments    = new Object[4];
+                        arguments[1] = minValue;
+                        arguments[2] = valueDomain.getMaxValue();
                     }
+                    if (isArray) arguments[0] = i;
+                    arguments[arguments.length - 1] = value;
+                    return new Verifier(false, errorKey, true, arguments);
                 }
             }
         }

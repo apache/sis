@@ -57,6 +57,17 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     private static final long serialVersionUID = 4097466138698631914L;
 
     /**
+     * The non-empty symbol for {@link Units#UNITY}.
+     */
+    static final String ONE = "1";
+
+    /**
+     * Maximum number of multiplications or divisions in the symbol of the first unit
+     * for allowing the use of that symbol for inferring a new symbol.
+     */
+    private static final int MAX_OPERATIONS_IN_SYMBOL = 1;
+
+    /**
      * The type of quantity that uses this unit, or {@code null} if unknown.
      */
     final Class<Q> quantity;
@@ -110,40 +121,52 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * @param  operation  symbol to write after the symbol of this unit for generating the new unit symbol, or 0
      *                    for not inferring new symbol. Ignored if the condition documented in javadoc does not hold.
-     * @param  other      other units to append after the operation symbol, or {@code null} if none.
+     * @param  other      other units to append after the operation symbol, or {@code null} if none or should be ignored.
      *                    Ignored if the condition documented in javadoc does not hold.
      */
     private SystemUnit<?> create(final UnitDimension newDimension, final char operation, final Unit<?> other) {
+        /*
+         * Check if we are computing the inverse of the other unit. We are computing inverse
+         * if this unit is unity ("1") and is used as the numerator of a division. The unity
+         * symbol is an empty string but we will format it as "1".
+         */
+        String ts = getSymbol();
+        final boolean inverse = (ts != null && ts.isEmpty() && operation == DIVIDE);
         /*
          * Check if the SystemUnit to create is known to Units, provided that no dimensionless units
          * is involved. If a dimensionless unit is involved, we will try to build a symbol before to
          * check if the unit is known to Units. The reason is that there is many dimensionless units
          * with different symbols (rad, sr, psu, …).
          */
-        final boolean deferred = newDimension.isDimensionless() || dimension.isDimensionless() ||
+        final boolean deferred = newDimension.isDimensionless() || (!inverse && dimension.isDimensionless()) ||
                 (other != null && UnitDimension.isDimensionless(other.getDimension()));
         if (!deferred) {
             final SystemUnit<?> result = Units.get(newDimension);
             if (result != null) return result;
         }
+        /*
+         * Try to create a unit symbol as the concatenation of the symbols of the two units,
+         * with the operation symbol between them. If we can not, 'symbol' will stay null.
+         */
         String symbol = null;
         if (operation != 0) {
-            final String ts = getSymbol();
-            final boolean exponents = (operation == MULTIPLY || operation == DIVIDE);
-            if (invalidCharForSymbol(ts, exponents ? 1 : 0, exponents) == -1) {
-                if (other == null) {
-                    symbol = (ts + operation).intern();
-                } else {
+            final boolean allowExponents = (operation == MULTIPLY || operation == DIVIDE);
+            if (inverse || isValidSymbol(ts, allowExponents ? MAX_OPERATIONS_IN_SYMBOL : 0, allowExponents)) {
+                if (other != null) {
                     final String os = other.getSymbol();
-                    if (invalidCharForSymbol(os, 0, exponents) == -1) {
+                    if (isValidSymbol(os, 0, allowExponents)) {
+                        if (inverse) ts = ONE;
                         symbol = (ts + operation + os).intern();
                     }
+                } else if (!allowExponents) {
+                    symbol = (ts + operation).intern();             // The operation is an exponent.
                 }
             }
         }
         /*
-         * The check that we did not performed at the beginning of this method
-         * if any component were unitless.
+         * Performs now the check that we did not performed at the
+         * beginning of this method if any component was unitless.
+         * The difference is that we take unit symbol in account.
          */
         if (deferred) {
             final SystemUnit<?> result = Units.get(newDimension);
@@ -165,6 +188,18 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     }
 
     /**
+     * Returns {@code true} if the given unit symbol is valid.
+     *
+     * @param  symbol          the symbol to verify for validity.
+     * @param  maxMultiply     maximal number of multiplication symbol to accept.
+     * @param  allowExponents  whether to accept also exponent characters.
+     * @return {@code true} if the given symbol is valid.
+     */
+    private static boolean isValidSymbol(final String symbol, int maxMultiply, final boolean allowExponents) {
+        return invalidCharForSymbol(symbol, maxMultiply, allowExponents) == -1;
+    }
+
+    /**
      * If the given symbol contains an invalid character for a unit symbol, returns the character code point.
      * Otherwise if the given symbol is null or empty, returns -2. Otherwise (the symbol is valid) returns -1.
      *
@@ -175,11 +210,12 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      * {@link UnitFormat} to create a new one from the base units. The criterion for accepting a symbol or not (for
      * example how many multiplications) is arbitrary.</p>
      *
-     * @param  symbol     the symbol to verify for invalid characters.
-     * @param  multiply   maximal number of multiplication symbol to accept.
-     * @param  exponents  whether to accept also exponent characters.
+     * @param  symbol          the symbol to verify for invalid characters.
+     * @param  maxMultiply     maximal number of multiplication symbol to accept.
+     * @param  allowExponents  whether to accept also exponent characters.
+     * @return Unicode code point of the invalid character, or a negative value.
      */
-    private static int invalidCharForSymbol(final String symbol, int multiply, final boolean exponents) {
+    private static int invalidCharForSymbol(final String symbol, int maxMultiply, final boolean allowExponents) {
         if (symbol == null || symbol.isEmpty()) {
             return -2;
         }
@@ -187,8 +223,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
             final int c = symbol.codePointAt(i);
             if (!isSymbolChar(c)) {
                 if (c == MULTIPLY) {
-                    if (--multiply < 0) return c;
-                } else if (!exponents || !Characters.isSuperScript(c)) {
+                    if (--maxMultiply < 0) return c;
+                } else if (!allowExponents || !Characters.isSuperScript(c)) {
                     return c;
                 }
             }
@@ -505,7 +541,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * @param  inverse  wether to use the inverse of {@code other}.
      */
-    private <T extends Quantity<T>> Unit<?> product(final Unit<T> other, final boolean inverse) {
+    private <T extends Quantity<T>> Unit<?> product(final Unit<T> other, boolean inverse) {
         final Unit<T> intermediate = other.getSystemUnit();
         final Dimension dim = intermediate.getDimension();
         final UnitDimension newDimension;
@@ -517,14 +553,32 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
             operation = MULTIPLY;
             newDimension = dimension.multiply(dim);
         }
-        Unit<?> result = create(newDimension, operation, other);
-        if (intermediate != other) {
+        final boolean transformed = (intermediate != other);
+        Unit<?> result = create(newDimension, operation, transformed ? null : other);
+        if (transformed) {
             UnitConverter c = other.getConverterTo(intermediate);
             if (!c.isLinear()) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1, other));
             }
-            if (inverse) c = c.inverse();
-            result = result.transform(c);
+            if (!c.isIdentity()) {
+                if (inverse) c = c.inverse();
+                result = result.transform(c);
+                /*
+                 * If the system unit product is an Apache SIS implementation, try to infer a unit symbol
+                 * to be given to our customized 'transform' method. Otherwise fallback on standard API.
+                 */
+                if (result.getSymbol() == null && result instanceof ConventionalUnit<?>) {
+                    String ts = getSymbol();
+                    inverse &= (ts != null && ts.isEmpty());
+                    if (inverse || isValidSymbol(ts, MAX_OPERATIONS_IN_SYMBOL, true)) {
+                        final String os = other.getSymbol();
+                        if (isValidSymbol(os, 0, true)) {
+                            if (inverse) ts = ONE;
+                            result = ((ConventionalUnit<?>) result).forSymbol((ts + operation + os).intern());
+                        }
+                    }
+                }
+            }
         }
         return result;
     }

@@ -112,7 +112,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
                 c -= average;
                 c -= (compressed[i] = (short) Math.round(c));
                 if (!(Math.abs(c) < tolerance)) {                       // Use '!' for catching NaN values.
-                    return grid;    // Can not compress.
+                    return grid;                                        // Can not compress.
                 }
             }
             data[dim] = compressed;
@@ -196,7 +196,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
         if (iy < 0) {
             iy = 0;
             gridY = -1;
-        } else if (iy > ymax) {   // Subtraction of 2 already done by the constructor.
+        } else if (iy > ymax) {             // Subtraction of 2 already done by the constructor.
             iy = ymax;
             gridY = +1;
         }

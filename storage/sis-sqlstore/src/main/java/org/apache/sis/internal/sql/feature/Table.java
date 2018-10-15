@@ -212,7 +212,7 @@ final class Table extends AbstractFeatureSet {
         }
         /*
          * For each column in the table that is not a foreigner key, create an AttributeType of the same name.
-         * The Java type is inferred from the SQL type, and the attribute cardinality in inferred from the SQL
+         * The Java type is inferred from the SQL type, and the attribute multiplicity in inferred from the SQL
          * nullability. Attribute names are added in the 'attributeNames' and 'attributeColumns' list. Those
          * names are usually the same, except when a column is used both as a primary key and as foreigner key.
          */
@@ -513,6 +513,14 @@ final class Table extends AbstractFeatureSet {
     //     End of table structure visualization. Next methods are for fetching features.
     // ────────────────────────────────────────────────────────────────────────────────────────
 
+
+    /**
+     * Returns the table identifier composed of catalog, schema and table name.
+     */
+    @Override
+    public final GenericName getIdentifier() {
+        return featureType.getName().toFullyQualifiedName();
+    }
 
     /**
      * Returns the feature type inferred from the database structure analysis.

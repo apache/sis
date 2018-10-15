@@ -21,10 +21,16 @@ import java.util.Objects;
 import java.util.Collection;
 import java.io.Closeable;
 import java.io.IOException;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.system.DefaultFactories;
+
+// Branch-dependent imports
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
@@ -39,6 +45,18 @@ import org.apache.sis.util.logging.WarningListeners;
  * @module
  */
 public abstract class Decoder implements Closeable {
+    /**
+     * The data store identifier created from the global attributes, or {@code null} if none.
+     * Defined as a namespace for use as the scope of children resources (the variables).
+     * This is set by netCDF store constructor and shall not be modified afterward.
+     */
+    public NameSpace namespace;
+
+    /**
+     * The factory to use for creating variable identifiers.
+     */
+    public final DefaultNameFactory nameFactory;
+
     /**
      * The library for geometric objects, or {@code null} for the default.
      * This will be used only if there is geometric objects to create.
@@ -65,15 +83,16 @@ public abstract class Decoder implements Closeable {
      */
     protected Decoder(final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
-        this.geomlib   = geomlib;
-        this.listeners = listeners;
+        this.geomlib     = geomlib;
+        this.listeners   = listeners;
+        this.nameFactory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
     }
 
     /**
      * Returns a filename for formatting error message and for information purpose.
-     * The filename should not contain path.
+     * The filename should not contain path, but may contain file extension.
      *
-     * @return a filename to report in warning or error messages.
+     * @return a filename to include in warnings or error messages.
      */
     public abstract String getFilename();
 

@@ -39,7 +39,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -441,6 +441,24 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         e = create(0.0, -10, -0.0, 10);
         assertTrue(e.simplify());
         assertEnvelopeEquals(e, -180, -10, 180, 10);
+        verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#setEnvelope(Envelope)}.
+     */
+    @Test
+    public void testCopy() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setEnvelope(create(3, -5, -8, 2));
+        assertEnvelopeEquals(e, 3, -5, -8, 2);
+        verifyInvariants(e);
+        /*
+         * Tests with a different implementation, for testing another code path.
+         * Constructor argument are (x, y, width, height).
+         */
+        e.setEnvelope(new Envelope2D(null, -2, 3, 8, 5));
+        assertEnvelopeEquals(e, -2, 3, 6, 8);
         verifyInvariants(e);
     }
 

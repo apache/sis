@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.util.Map;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -31,12 +32,16 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
 import org.apache.sis.math.Vector;
+import org.apache.sis.geometry.DirectPosition1D;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -108,7 +113,8 @@ public class LinearTransformBuilder extends TransformBuilder {
      * Number of valid positions in the {@link #sources} or {@link #targets} arrays.
      * Note that the "valid" positions may contain {@link Double#NaN} ordinate values.
      * This field is only indicative if this {@code LinearTransformBuilder} instance
-     * has been created by {@link #LinearTransformBuilder(int...)}.
+     * has been created by {@link #LinearTransformBuilder(int...)} because we do not
+     * try to detect if user adds a new point or overwrites an existing one.
      */
     private int numPoints;
 
@@ -177,6 +183,8 @@ public class LinearTransformBuilder extends TransformBuilder {
     /**
      * Returns the grid size for the given dimension. It is caller's responsibility to ensure that
      * this method is invoked only on instances created by {@link #LinearTransformBuilder(int...)}.
+     *
+     * @see #getGridDimensions()
      */
     final int gridSize(final int srcDim) {
         return gridSize[srcDim];
@@ -214,11 +222,13 @@ public class LinearTransformBuilder extends TransformBuilder {
     /**
      * Returns the offset of the given source grid coordinate, or -1 if none. The algorithm implemented in this
      * method is inefficient, but should rarely be used. This is only a fallback when {@link #flatIndex(int[])}
-     * can not be used.
+     * can not be used. Callers is responsible to ensure that the number of dimensions match.
+     *
+     * @see ControlPoints#search(double[][], double[])
      */
     private int search(final int[] source) {
         assert gridSize == null;         // This method should not be invoked for points distributed on a grid.
-search: for (int j=0; j<numPoints; j++) {
+search: for (int j=numPoints; --j >= 0;) {
             for (int i=0; i<source.length; i++) {
                 if (source[i] != sources[i][j]) {
                     continue search;                            // Search another position for the same source.
@@ -256,6 +266,8 @@ search: for (int j=0; j<numPoints; j++) {
      * of known size. Callers must have verified the position dimension before to invoke this method.
      *
      * @throws IllegalArgumentException if an ordinate value is illegal.
+     *
+     * @see ControlPoints#flatIndex(DirectPosition)
      */
     private int flatIndex(final DirectPosition source) {
         assert sources == null;               // This method should not be invoked for randomly distributed points.
@@ -295,7 +307,8 @@ search: for (int j=0; j<numPoints; j++) {
 
     /**
      * Builds the exception message for an unexpected position dimension. This method assumes
-     * that positions are stored in this builder as they are read from user-provided collection.
+     * that positions are stored in this builder as they are read from user-provided collection,
+     * with {@link #numPoints} the index of the next point that we failed to add.
      */
     private String mismatchedDimension(final String name, final int expected, final int actual) {
         return Errors.format(Errors.Keys.MismatchedDimension_3, name + '[' + numPoints + ']', expected, actual);
@@ -306,6 +319,17 @@ search: for (int j=0; j<numPoints; j++) {
      */
     private static String noData() {
         return Resources.format(Resources.Keys.MissingValuesInLocalizationGrid);
+    }
+
+    /**
+     * Returns the number of dimensions in the source grid, or -1 if this builder is not backed by a grid.
+     * Contrarily to the other {@code get*Dimensions()} methods, this method does not throw exception.
+     *
+     * @see #getSourceDimensions()
+     * @see #gridSize(int)
+     */
+    final int getGridDimensions() {
+        return (gridSize != null) ? gridSize.length : -1;
     }
 
     /**
@@ -340,9 +364,16 @@ search: for (int j=0; j<numPoints; j++) {
     }
 
     /**
-     * Returns the envelope of source points. The lower and upper values are inclusive.
+     * Returns the envelope of source points. This method returns the known minimum and maximum values for each dimension,
+     * <strong>not</strong> expanded to encompass full cell surfaces. In other words, the returned envelope encompasses only
+     * {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}.
      *
-     * @return the envelope of source points.
+     * <p>If a grid size was {@link #LinearTransformBuilder(int...) specified at construction time},
+     * then those minimums and maximums are inferred from the grid size and are always integer values.
+     * Otherwise, the minimums and maximums are extracted from the control points and may be any floating point values.
+     * In any cases, the lower and upper values are inclusive.</p>
+     *
+     * @return the envelope of source points (cell centers), inclusive.
      * @throws IllegalStateException if the source points are not yet known.
      *
      * @since 1.0
@@ -381,11 +412,10 @@ search: for (int j=0; j<numPoints; j++) {
         }
         final int dim = points.length;
         final GeneralEnvelope envelope = new GeneralEnvelope(dim);
-        for (int i=0; i <dim; i++) {
-            final double[] data = points[i];
+        for (int i=0; i<dim; i++) {
             double lower = Double.POSITIVE_INFINITY;
             double upper = Double.NEGATIVE_INFINITY;
-            for (final double value : data) {
+            for (final double value : points[i]) {
                 if (value < lower) lower = value;
                 if (value > upper) upper = value;
             }
@@ -409,6 +439,7 @@ search: for (int j=0; j<numPoints; j++) {
      * the given map, and the target positions are the associated values in the map. The map should not contain two
      * entries with the same source position. Coordinate reference systems are ignored.
      * Null positions are silently ignored.
+     * Positions with NaN or infinite coordinates cause an exception to be thrown.
      *
      * <p>All source positions shall have the same number of dimensions (the <cite>source dimension</cite>),
      * and all target positions shall have the same number of dimensions (the <cite>target dimension</cite>).
@@ -424,6 +455,7 @@ search: for (int j=0; j<numPoints; j++) {
      *
      * @param  sourceToTarget  a map of source positions to target positions.
      *         Source positions are assumed precise and target positions are assumed uncertain.
+     * @throws IllegalArgumentException if the given positions contain NaN or infinite coordinate values.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...)
      *         created for a grid} but some source ordinates are not indices in that grid.
      * @throws MismatchedDimensionException if some positions do not have the expected number of dimensions.
@@ -474,19 +506,268 @@ search: for (int j=0; j<numPoints; j++) {
             int d;
             if ((d = src.getDimension()) != srcDim) throw new MismatchedDimensionException(mismatchedDimension("source", srcDim, d));
             if ((d = tgt.getDimension()) != tgtDim) throw new MismatchedDimensionException(mismatchedDimension("target", tgtDim, d));
+            boolean isValid = true;
             int index;
             if (gridSize != null) {
                 index = flatIndex(src);
             } else {
                 index = numPoints;
                 for (int i=0; i<srcDim; i++) {
-                    sources[i][index] = src.getOrdinate(i);
+                    isValid &= Double.isFinite(sources[i][index] = src.getOrdinate(i));
                 }
             }
             for (int i=0; i<tgtDim; i++) {
-                targets[i][index] = tgt.getOrdinate(i);
+                isValid &= Double.isFinite(targets[i][index] = tgt.getOrdinate(i));
             }
-            numPoints++;
+            /*
+             * If the point contains some NaN or infinite coordinate values, it is okay to leave it as-is
+             * (without incrementing 'numPoints') provided that we ensure that at least one value is NaN.
+             * For convenience, we set only the first coordinate to NaN. The ControlPoints map will check
+             * for the first coordinate too, so we need to keep this policy consistent.
+             */
+            if (isValid) {
+                numPoints++;
+            } else {
+                targets[0][index] = Double.NaN;
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMapping_2, src, tgt));
+            }
+        }
+    }
+
+    /**
+     * Returns all control points as a map. Values are source coordinates and keys are target coordinates.
+     * The map is unmodifiable and is guaranteed to contain only non-null keys and values.
+     * The map is a view: changes in this builder are immediately reflected in the returned map.
+     *
+     * @return all control points in this builder.
+     *
+     * @since 1.0
+     */
+    public Map<DirectPosition,DirectPosition> getControlPoints() {
+        return (gridSize != null) ? new ControlPoints() : new Ungridded();
+    }
+
+    /**
+     * Implementation of the map returned by {@link #getControlPoints()}. The default implementation
+     * is suitable for {@link LinearTransformBuilder} backed by a grid. For non-gridded sources, the
+     * {@link Ungridded} subclass shall be used instead.
+     */
+    private class ControlPoints extends AbstractMap<DirectPosition,DirectPosition> {
+        /**
+         * Creates a new map view of control points.
+         */
+        ControlPoints() {
+        }
+
+        /**
+         * Creates a point from the given data at the given offset. Before to invoke this method,
+         * caller should verify index validity and that the coordinate does not contain NaN values.
+         */
+        final DirectPosition position(final double[][] data, final int offset) {
+            switch (data.length) {
+                case 1: return new DirectPosition1D(data[0][offset]);
+                case 2: return new DirectPosition2D(data[0][offset], data[1][offset]);
+            }
+            final GeneralDirectPosition pos = new GeneralDirectPosition(data.length);
+            for (int i=0; i<data.length; i++) pos.setOrdinate(i, data[i][offset]);
+            return pos;
+        }
+
+        /**
+         * Returns the number of points to consider when searching in {@link #sources} or {@link #targets} arrays.
+         * For gridded data we can not rely on {@link #numPoints} because the coordinate values may be at any index,
+         * not necessarily at consecutive indices.
+         */
+        int domain() {
+            return gridLength;
+        }
+
+        /**
+         * Returns the index of the given coordinates in the given data array (source or target coordinates).
+         * This method is a copy of {@link LinearTransformBuilder#search(int[])}, but working on real values
+         * instead than integers and capable to work on {@link #targets} as well as {@link #sources}.
+         *
+         * <p>If the given coordinates contain NaN values, then this method will always return -1 even if the
+         * given data contains the same NaN values. We want this behavior because NaN mean that the point has
+         * not been set. There is no confusion with NaN values that users could have set explicitly because
+         * {@code setControlPoint} methods do not allow NaN values.</p>
+         *
+         * @see LinearTransformBuilder#search(int[])
+         */
+        final int search(final double[][] data, final double[] coord) {
+            if (data != null && coord.length == data.length) {
+search:         for (int j=domain(); --j >= 0;) {
+                    for (int i=0; i<coord.length; i++) {
+                        if (coord[i] != data[i][j]) {           // Intentionally want 'false' for NaN values.
+                            continue search;
+                        }
+                    }
+                    return j;
+                }
+            }
+            return -1;
+        }
+
+        /**
+         * Returns {@code true} if the given value is one of the target coordinates.
+         * This method requires a linear scan of the data.
+         */
+        @Override
+        public final boolean containsValue(final Object value) {
+            return (value instanceof Position) && search(targets, ((Position) value).getDirectPosition().getCoordinate()) >= 0;
+        }
+
+        /**
+         * Returns {@code true} if the given value is one of the source coordinates.
+         * This method is fast on gridded data, but requires linear scan on non-gridded data.
+         */
+        @Override
+        public final boolean containsKey(final Object key) {
+            return (key instanceof Position) && flatIndex(((Position) key).getDirectPosition()) >= 0;
+        }
+
+        /**
+         * Returns the target point for the given source point.
+         * This method is fast on gridded data, but requires linear scan on non-gridded data.
+         */
+        @Override
+        public final DirectPosition get(final Object key) {
+            if (key instanceof Position) {
+                final int index = flatIndex(((Position) key).getDirectPosition());
+                if (index >= 0) return position(targets, index);
+            }
+            return null;
+        }
+
+        /**
+         * Returns the index where to fetch a target position for the given source position in the flattened array.
+         * This is the same work as {@link LinearTransformBuilder#flatIndex(DirectPosition)}, but without throwing
+         * exception if the position is invalid. Instead, -1 is returned as a sentinel value for invalid source
+         * (including mismatched number of dimensions).
+         *
+         * <p>The default implementation assumes a grid. This method must be overridden by {@link Ungridded}.</p>
+         *
+         * @see LinearTransformBuilder#flatIndex(DirectPosition)
+         */
+        int flatIndex(final DirectPosition source) {
+            final double[][] targets = LinearTransformBuilder.this.targets;
+            if (targets != null) {
+                final int[] gridSize = LinearTransformBuilder.this.gridSize;
+                int i = gridSize.length;
+                if (i == source.getDimension()) {
+                    int offset = 0;
+                    while (i != 0) {
+                        final int size = gridSize[--i];
+                        final double ordinate = source.getOrdinate(i);
+                        final int index = (int) ordinate;
+                        if (index < 0 || index >= size || index != ordinate) {
+                            return -1;
+                        }
+                        offset = offset * size + index;
+                    }
+                    if (!Double.isNaN(targets[0][offset])) return offset;
+                }
+            }
+            return -1;
+        }
+
+        /**
+         * Returns an iterator over the entries.
+         * {@code DirectPosition} instances are created on-the-fly during the iteration.
+         *
+         * <p>The default implementation assumes a grid. This method must be overridden by {@link Ungridded}.</p>
+         */
+        @Override
+        protected EntryIterator<DirectPosition,DirectPosition> entryIterator() {
+            return new EntryIterator<DirectPosition,DirectPosition>() {
+                /**
+                 * Index in the flat arrays of the next entry to return.
+                 */
+                private int index = -1;
+
+                /**
+                 * Moves to the next entry and returns {@code true} if an entry has been found.
+                 * This method skips coordinates having NaN value. Those NaN values may happen
+                 * on gridded data (they mean that the point has not yet been set), but should
+                 * not happen on non-gridded data.
+                 */
+                @Override protected boolean next() {
+                    final double[][] targets = LinearTransformBuilder.this.targets;
+                    if (targets != null) {
+                        final double[] x = targets[0];
+                        final int gridLength = LinearTransformBuilder.this.gridLength;
+                        while (++index < gridLength) {
+                            if (!Double.isNaN(x[index])) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                /**
+                 * Reconstructs the source coordinates for the current index.
+                 * This method is the converse of {@code ControlPoints.flatIndex(DirectPosition)}.
+                 * It assumes gridded data; {@link Ungridded} will have to do a different work.
+                 */
+                @Override protected DirectPosition getKey() {
+                    final int[] gridSize = LinearTransformBuilder.this.gridSize;
+                    final int dim = gridSize.length;
+                    final GeneralDirectPosition pos = new GeneralDirectPosition(dim);
+                    int offset = index;
+                    for (int i=0; i<dim; i++) {
+                        final int size = gridSize[i];
+                        pos.setOrdinate(i, offset % size);
+                        offset /= size;
+                    }
+                    if (offset == 0) {
+                        return pos;
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                }
+
+                /**
+                 * Returns the target coordinates at current index.
+                 */
+                @Override protected DirectPosition getValue() {
+                    return position(targets, index);
+                }
+            };
+        }
+    }
+
+    /**
+     * Implementation of the map returned by {@link #getControlPoints()} when no grid is used.
+     * This implementation is simpler than the gridded case, but less efficient as some methods
+     * require a linear scan.
+     */
+    private final class Ungridded extends ControlPoints {
+        /** Overrides default method with more efficient implementation. */
+        @Override public boolean isEmpty() {return numPoints == 0;}
+        @Override public int     size()    {return numPoints;}
+        @Override        int     domain()  {return numPoints;}
+
+        /**
+         * Returns the index where to fetch a target position for the given source position
+         * in the flattened array. In non-gridded case, this operation requires linear scan.
+         */
+        @Override int flatIndex(final DirectPosition source) {
+            return search(sources, source.getCoordinate());
+        }
+
+        /**
+         * Returns an iterator over the entries.
+         * {@code DirectPosition} instances are created on-the-fly during the iteration.
+         */
+        @Override protected EntryIterator<DirectPosition,DirectPosition> entryIterator() {
+            return new EntryIterator<DirectPosition,DirectPosition>() {
+                private int index = -1;
+
+                @Override protected boolean        next()     {return ++index < numPoints;}
+                @Override protected DirectPosition getKey()   {return position(sources, index);}
+                @Override protected DirectPosition getValue() {return position(targets, index);}
+            };
         }
     }
 
@@ -504,7 +785,7 @@ search: for (int j=0; j<numPoints; j++) {
      *                 If this builder has been created with the {@link #LinearTransformBuilder()} constructor, then no constraint apply.
      * @param  target  the target coordinates, assumed uncertain.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...) created for a grid}
-     *         but some source ordinates are out of index range.
+     *         but some source ordinates are out of index range, or if {@code target} contains NaN of infinite numbers.
      * @throws MismatchedDimensionException if the source or target position does not have the expected number of dimensions.
      *
      * @since 0.8
@@ -547,8 +828,15 @@ search: for (int j=0; j<numPoints; j++) {
                 sources[i][index] = source[i];
             }
         }
+        boolean isValid = true;
         for (int i=0; i<tgtDim; i++) {
-            targets[i][index] = target[i];
+            isValid &= Double.isFinite(targets[i][index] = target[i]);
+        }
+        transform   = null;
+        correlation = null;
+        if (!isValid) {
+            if (gridSize == null) numPoints--;
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMapping_2, source, target));
         }
     }
 
@@ -586,12 +874,18 @@ search: for (int j=0; j<numPoints; j++) {
                 return null;
             }
         }
-        boolean isNaN = true;
+        /*
+         * A coordinate with NaN value means that the point has not been set.
+         * Not that the coordinate may have only one NaN value, not necessarily
+         * all of them, if the point has been deleted after insertion attempt.
+         */
         final double[] target = new double[targets.length];
         for (int i=0; i<target.length; i++) {
-            isNaN &= Double.isNaN(target[i] = targets[i][index]);
+            if (Double.isNaN(target[i] = targets[i][index])) {
+                return null;
+            }
         }
-        return isNaN ? null : target;
+        return target;
     }
 
     /**
@@ -606,6 +900,21 @@ search: for (int j=0; j<numPoints; j++) {
         for (int i=0; i<tgtDim; i++) {
             target[i] = targets[i][index];
         }
+    }
+
+    /**
+     * Returns the vector of source ordinate names.
+     * It is caller responsibility to ensure that this builder is not backed by a grid.
+     */
+    final Vector[] sources() {
+        if (sources != null) {
+            final Vector[] v = new Vector[sources.length];
+            for (int i=0; i<v.length; i++) {
+                v[i] = vector(sources[i]);
+            }
+            return v;
+        }
+        throw new IllegalStateException(noData());
     }
 
     /**

@@ -63,7 +63,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  *   <li>Methods for optionally specifying the feature type hierarchy: its {@linkplain #setSuperTypes super types}
  *       and whether the feature type is {@linkplain #setAbstract abstract}.</li>
  *   <li>Convenience methods for setting the {@linkplain #setNameSpace name space} and the
- *       {@linkplain #setDefaultCardinality default cardinality} of properties to be added to the feature type.</li>
+ *       {@linkplain #setDefaultMultiplicity default multiplicity} of properties to be added to the feature type.</li>
  *   <li>Methods for {@linkplain #addAttribute(Class) adding an attribute}, {@linkplain #addAssociation(DefaultFeatureType)
  *       an association} or {@linkplain #addProperty an operation}.</li>
  *   <li>Method for listing the previously added {@linkplain #properties() properties}.</li>
@@ -86,12 +86,12 @@ import org.apache.sis.feature.DefaultAttributeType;
  *
  * {@preformat text
  *   City
- *   ┌────────────┬─────────┬─────────────┬───────────────┐
- *   │ Name       │ Type    │ Cardinality │ Default value │
- *   ├────────────┼─────────┼─────────────┼───────────────┤
- *   │ name       │ String  │     [1 … 1] │ Utopia        │
- *   │ population │ Integer │     [1 … 1] │               │
- *   └────────────┴─────────┴─────────────┴───────────────┘
+ *   ┌────────────┬─────────┬──────────────┬───────────────┐
+ *   │ Name       │ Type    │ Multiplicity │ Default value │
+ *   ├────────────┼─────────┼──────────────┼───────────────┤
+ *   │ name       │ String  │   [1 … 1]    │ Utopia        │
+ *   │ population │ Integer │   [1 … 1]    │               │
+ *   └────────────┴─────────┴──────────────┴───────────────┘
  * }
  *
  * <p>{@code FeatureTypeBuilder} instances should be short lived.
@@ -141,14 +141,14 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * The default minimum number of property values.
      *
-     * @see #setDefaultCardinality(int, int)
+     * @see #setDefaultMultiplicity(int, int)
      */
     int defaultMinimumOccurs;
 
     /**
      * The default maximum number of property values.
      *
-     * @see #setDefaultCardinality(int, int)
+     * @see #setDefaultMultiplicity(int, int)
      */
     int defaultMaximumOccurs;
 
@@ -559,12 +559,21 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * @deprecated Renamed {@link #setDefaultMultiplicity(int, int)}. A cardinality is the actual number of elements
+     * in a set, while multiplicity is the range of cardinality that a set can have.
+     */
+    @Deprecated
+    public FeatureTypeBuilder setDefaultCardinality(final int minimumOccurs, final int maximumOccurs) {
+        return setDefaultMultiplicity(minimumOccurs, maximumOccurs);
+    }
+
+    /**
      * Sets the default minimum and maximum number of next attributes and associations to add.
      * Those defaults will applied to newly created attributes or associations,
      * for example in next calls to {@link #addAttribute(Class)}.
      * Attributes and associations added before this method call are not modified.
      *
-     * <p>If this method is not invoked, then the default cardinality is [1 … 1].</p>
+     * <p>If this method is not invoked, then the default multiplicity is [1 … 1].</p>
      *
      * @param  minimumOccurs  new default minimum number of property values.
      * @param  maximumOccurs  new default maximum number of property values.
@@ -572,8 +581,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @see PropertyTypeBuilder#setMinimumOccurs(int)
      * @see PropertyTypeBuilder#setMaximumOccurs(int)
+     *
+     * @since 1.0
      */
-    public FeatureTypeBuilder setDefaultCardinality(final int minimumOccurs, final int maximumOccurs) {
+    public FeatureTypeBuilder setDefaultMultiplicity(final int minimumOccurs, final int maximumOccurs) {
         if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
         }

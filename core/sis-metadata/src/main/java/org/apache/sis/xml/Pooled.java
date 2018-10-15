@@ -23,6 +23,7 @@ import java.util.ConcurrentModificationException;
 import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.UnaryOperator;
 import javax.xml.validation.Schema;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
@@ -146,7 +147,7 @@ abstract class Pooled {
      *
      * @see #getRootAdapters()
      */
-    private TypeRegistration[] rootAdapters;
+    private UnaryOperator<Object>[] rootAdapters;
 
     /**
      * The object to inform about warnings, or {@code null} if none.
@@ -381,8 +382,9 @@ abstract class Pooled {
                     return;
                 }
                 case TypeRegistration.ROOT_ADAPTERS: {
-                    rootAdapters = (TypeRegistration[]) value;
-                    // No clone for now because ROOT_ADAPTERS is not yet a public API.
+                    @SuppressWarnings("unchecked")
+                    UnaryOperator<Object>[] c = (UnaryOperator<Object>[]) value;
+                    rootAdapters = c;       // No clone for now because ROOT_ADAPTERS is not yet a public API.
                     return;
                 }
             }
@@ -487,7 +489,7 @@ abstract class Pooled {
      * @return a direct reference to the internal array of converters - do not modify.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final TypeRegistration[] getRootAdapters() {
+    final UnaryOperator<Object>[] getRootAdapters() {
         return rootAdapters;
     }
 

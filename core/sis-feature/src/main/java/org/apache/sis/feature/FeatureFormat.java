@@ -49,8 +49,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
 
-// Branch-dependent imports
-
 
 /**
  * Formats {@linkplain AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
@@ -62,13 +60,13 @@ import org.apache.sis.math.MathFunctions;
  *
  * {@preformat text
  *   City
- *   ┌────────────┬─────────┬─────────────┬───────────┐
- *   │ Name       │ Type    │ Cardinality │ Value     │
- *   ├────────────┼─────────┼─────────────┼───────────┤
- *   │ name       │ String  │ [1 … 1]     │ Paderborn │
- *   │ population │ Integer │ [1 … 1]     │ 143,174   │
- *   │ twin town  │ City    │ [0 … ∞]     │ Le Mans   │
- *   └────────────┴─────────┴─────────────┴───────────┘
+ *   ┌────────────┬─────────┬──────────────┬───────────┐
+ *   │ Name       │ Type    │ Multiplicity │ Value     │
+ *   ├────────────┼─────────┼──────────────┼───────────┤
+ *   │ name       │ String  │ [1 … 1]      │ Paderborn │
+ *   │ population │ Integer │ [1 … 1]      │ 143,174   │
+ *   │ twin town  │ City    │ [0 … ∞]      │ Le Mans   │
+ *   └────────────┴─────────┴──────────────┴───────────┘
  * }</div>
  *
  * <p><b>Limitations:</b></p>
@@ -233,8 +231,11 @@ public class FeatureFormat extends TabularFormat<Object> {
         TYPE(Vocabulary.Keys.Type),
 
         /**
-         * The minimum and maximum occurrences of attribute values. This is made from the numbers returned
-         * by {@link DefaultAttributeType#getMinimumOccurs()} and {@link DefaultAttributeType#getMaximumOccurs()}.
+         * Cardinality (for attributes) or multiplicity (for attribute types).
+         * The cardinality is the actual number of attribute values.
+         * The multiplicity is the minimum and maximum occurrences of attribute values.
+         * The multiplicity is made from the numbers returned by {@link DefaultAttributeType#getMinimumOccurs()}
+         * and {@link DefaultAttributeType#getMaximumOccurs()}.
          */
         CARDINALITY(Vocabulary.Keys.Cardinality),
 
@@ -367,8 +368,9 @@ public class FeatureFormat extends TabularFormat<Object> {
         boolean isFirstColumn = true;
         for (final Column column : visibleColumns) {
             short key = column.resourceKey;
-            if (key == Vocabulary.Keys.Value && feature == null) {
-                key = Vocabulary.Keys.DefaultValue;
+            if (feature == null) {
+                if (key == Vocabulary.Keys.Cardinality) key = Vocabulary.Keys.Multiplicity;
+                if (key == Vocabulary.Keys.Value)       key = Vocabulary.Keys.DefaultValue;
             }
             if (!isFirstColumn) nextColumn(table);
             table.append(resources.getString(key));

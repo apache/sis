@@ -157,34 +157,19 @@ public final class AxisDirections extends Static {
      * ({@code NORTH}, {@code EAST}, {@code UP}, {@code FUTURE}).
      * More specifically, the following conversion table is applied:
      *
-     * <table class="compact">
+     * <table class="sis">
      * <caption>Mapping to "absolute" directions</caption><tr>
-     * <td><table class="sis" summary="Geospatial directions">
-     *   <tr>
-     *     <th style="width: 50%">Direction</th>
-     *     <th style="width: 50%">Absolute value</th>
-     *   </tr>
-     *   <tr><td>{@code NORTH}</td> <td>{@code NORTH}</td></tr>
-     *   <tr><td>{@code SOUTH}</td> <td>{@code NORTH}</td></tr>
-     *   <tr><td>{@code EAST}</td>  <td>{@code EAST}</td></tr>
-     *   <tr><td>{@code WEST}</td>  <td>{@code EAST}</td></tr>
-     *   <tr><td>{@code UP}</td>    <td>{@code UP}</td></tr>
-     *   <tr><td>{@code DOWN}</td>  <td>{@code UP}</td></tr>
-     * </table></td>
-     * <td><table class="sis" summary="Other directions">
-     *   <tr>
-     *     <th style="width: 50%">Direction</th>
-     *     <th style="width: 50%">Absolute value</th>
-     *   </tr>
-     *   <tr><td>{@code DISPLAY_RIGHT}</td> <td>{@code DISPLAY_RIGHT}</td></tr>
-     *   <tr><td>{@code DISPLAY_LEFT}</td>  <td>{@code DISPLAY_RIGHT}</td></tr>
-     *   <tr><td>{@code DISPLAY_UP}</td>    <td>{@code DISPLAY_UP}</td></tr>
-     *   <tr><td>{@code DISPLAY_DOWN}</td>  <td>{@code DISPLAY_UP}</td></tr>
-     *   <tr><td>{@code FUTURE}</td>        <td>{@code FUTURE}</td></tr>
-     *   <tr><td>{@code PAST}</td>          <td>{@code FUTURE}</td></tr>
-     *   <tr><td>{@code CLOCKWISE}</td>     <td>{@code COUNTERCLOCKWISE}</td></tr>
-     * </table></td></tr>
-     *   <tr align="center"><td>{@code OTHER}</td><td>{@code OTHER}</td></tr>
+     * <tr><th>Directions</th>                                      <th>Absolute value</th></tr>
+     * <tr><td>{@code NORTH},           {@code SOUTH}</td>            <td>{@code NORTH}</td></tr>
+     * <tr><td>{@code EAST},            {@code WEST}</td>             <td>{@code EAST}</td></tr>
+     * <tr><td>{@code UP},              {@code DOWN}</td>             <td>{@code UP}</td></tr>
+     * <tr><td>{@code FUTURE},          {@code PAST}</td>             <td>{@code FUTURE}</td></tr>
+     * <tr><td>{@code COLUMN_POSITIVE}, {@code COLUMN_NEGATIVE}</td>  <td>{@code COLUMN_POSITIVE}</td></tr>
+     * <tr><td>{@code ROW_POSITIVE},    {@code ROW_NEGATIVE}</td>     <td>{@code ROW_POSITIVE}</td></tr>
+     * <tr><td>{@code DISPLAY_RIGHT},   {@code DISPLAY_LEFT}</td>     <td>{@code DISPLAY_RIGHT}</td></tr>
+     * <tr><td>{@code DISPLAY_UP},      {@code DISPLAY_DOWN}</td>     <td>{@code DISPLAY_UP}</td></tr>
+     * <tr><td>{@code CLOCKWISE},       {@code COUNTERCLOCKWISE}</td> <td>{@code COUNTERCLOCKWISE}</td></tr>
+     * <tr><td>{@code OTHER}</td>                                     <td>{@code OTHER}</td></tr>
      * </table>
      *
      * @param  dir  the direction for which to return the absolute direction, or {@code null}.
@@ -330,7 +315,7 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Returns {@code true} if the given direction is {@code COLUMN_POSITIVE}, {@code COLUMN_NEGATICE},
+     * Returns {@code true} if the given direction is {@code COLUMN_POSITIVE}, {@code COLUMN_NEGATIVE},
      * {@code ROW_POSITIVE} or {@code ROW_NEGATIVE}.
      *
      * @param  dir  the direction to test, or {@code null}.

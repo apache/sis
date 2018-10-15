@@ -165,7 +165,7 @@ public class MarshallerPool {
          * We presume that if the user specified his own JAXBContext, then he does not expect us to change the
          * classes that he wants to marshal.
          */
-        this(TypeRegistration.getSharedContext(), TypeRegistration.addDefaultRootAdapters(properties));
+        this(TypeRegistration.getSharedContext(), TypeRegistration.getPrivateInfo(properties));
     }
 
     /**

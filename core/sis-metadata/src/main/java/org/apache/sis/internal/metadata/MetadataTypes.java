@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.ImageDescription;
@@ -47,7 +48,7 @@ import org.opengis.metadata.spatial.Georeferenceable;
  * @since   0.3
  * @module
  */
-public final class MetadataTypes extends TypeRegistration {
+public final class MetadataTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**
      * Adds to the given collection the metadata types that should be given to the initial JAXB context.
      */
@@ -58,13 +59,13 @@ public final class MetadataTypes extends TypeRegistration {
     }
 
     /**
-     * Notifies that the {@code sis-metadata} module can marshal arbitrary implementations of some metadata interfaces.
+     * Returns the converter to apply before marshalling objects.
      *
-     * @return {@code true}.
+     * @return {@code this}.
      */
     @Override
-    protected boolean canMarshalInterfaces() {
-        return true;
+    protected UnaryOperator<Object> beforeMarshal() {
+        return this;
     }
 
     /**
@@ -78,7 +79,7 @@ public final class MetadataTypes extends TypeRegistration {
      * @return the given value as a type that can be marshalled, or {@code null}.
      */
     @Override
-    public Object toImplementation(final Object value) {
+    public Object apply(final Object value) {
         /*
          * Classes that are most likely to be used should be checked first.  If a type is a specialization
          * of another type (e.g. ImageDescription extends CoverageDescription), the specialized type shall

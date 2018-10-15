@@ -42,13 +42,13 @@ import org.apache.sis.feature.AbstractFeature;
  * <div class="note"><b>Examples:</b>
  * <p><i>Polylines created from points:</i>
  * a boat that record it's position every hour.
- * The list of all positions is stored in an attribute with [0 … ∞] cardinality.
+ * The list of all positions is stored in an attribute with [0 … ∞] multiplicity.
  * This class will extract each position and create a line as a new attribute.
  * Any change applied to the positions will be visible on the line.</p>
  *
  * <p><i>Polylines created from other polylines:</i>
  * a boat that record track every hour.
- * The list of all tracks is stored in an attribute with [0 … ∞] cardinality.
+ * The list of all tracks is stored in an attribute with [0 … ∞] multiplicity.
  * This class will extract each track and create a polyline as a new attribute.
  * Any change applied to the tracks will be visible on the polyline.</p>
  * </div>
@@ -72,7 +72,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
 
     /**
      * Name of the property to follow in order to get the geometries to add to a polyline.
-     * This property shall be a feature association, usually with [0 … ∞] cardinality.
+     * This property shall be a feature association, usually with [0 … ∞] multiplicity.
      */
     private final String association;
 
@@ -155,7 +155,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
 
         /**
          * Name of the property to follow in order to get the geometries to add to a polyline.
-         * This property shall be a feature association, usually with [0 … ∞] cardinality.
+         * This property shall be a feature association, usually with [0 … ∞] multiplicity.
          */
         private final String association;
 

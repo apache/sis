@@ -128,9 +128,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Returns a filename for formatting error message and for information purpose.
-     * The filename should not contain path.
+     * The filename should not contain path, but may contain file extension.
      *
-     * @return a filename to report in warning or error messages.
+     * @return a filename to include in warnings or error messages.
      */
     @Override
     public String getFilename() {

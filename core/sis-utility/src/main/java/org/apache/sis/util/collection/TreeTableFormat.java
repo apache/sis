@@ -29,6 +29,7 @@ import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
 import java.io.IOException;
 import java.text.Format;
+import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
@@ -42,11 +43,14 @@ import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Acyclic;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -175,9 +179,27 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * The set to be given to {@link Writer} constructor,
-     * created when first needed and reused for subsequent formating.
+     * created when first needed and reused for subsequent formatting.
      */
     private transient Set<TreeTable.Node> recursivityGuard;
+
+    /**
+     * A clone of the number format to be used with different settings (number of fraction digits, scientific notation).
+     * We use a clone for avoiding to change the setting of potentially user-supplied number format. This is used only
+     * for floating point numbers, not for integers.
+     */
+    private transient DecimalFormat adaptableFormat;
+
+    /**
+     * The default pattern used by {@link #adaptableFormat}.
+     * Used for switching back to default mode after scientific notation.
+     */
+    private transient String defaultPattern;
+
+    /**
+     * Whether {@link #adaptableFormat} is using scientific notation.
+     */
+    private transient boolean usingScientificNotation;
 
     /**
      * Creates a new tree table format.
@@ -771,7 +793,35 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                  * more uniform formatting.
                  */
                 final Format format = getFormat(value.getClass());
-                text = (format != null) ? format.format(value) : value.toString();
+                if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
+                    final double number = ((Number) value).doubleValue();
+                    if (number != (int) number) {   // Cast to 'int' instead of 'long' as a way to limit to about 2E9.
+                        /*
+                         * The default floating point format uses only 3 fraction digits. We adjust that to the number
+                         * of digits required by the number to format. We do that only if no NumberFormat was inferred
+                         * for the whole column (in order to keep column format uniform).  We use enough precision for
+                         * all fraction digits except the last 2, in order to let DecimalFormat round the number.
+                         */
+                        if (adaptableFormat == null) {
+                            adaptableFormat = (DecimalFormat) format.clone();
+                            defaultPattern = adaptableFormat.toPattern();
+                        }
+                        final int nf = DecimalFunctions.fractionDigitsForValue(number);
+                        final boolean preferScientificNotation = (nf > 20 || nf < 7);       // == (value < 1E-4 || value > 1E+9)
+                        if (preferScientificNotation != usingScientificNotation) {
+                            usingScientificNotation = preferScientificNotation;
+                            adaptableFormat.applyPattern(preferScientificNotation ? "0.0############E0" : defaultPattern);
+                        }
+                        if (!preferScientificNotation) {
+                            adaptableFormat.setMaximumFractionDigits(nf - 2);       // All significand fraction digits except last two.
+                        }
+                        text = adaptableFormat.format(value);
+                    } else {
+                        text = format.format(value);
+                    }
+                } else {
+                    text = (format != null) ? format.format(value) : value.toString();
+                }
             }
             append(text);
         }
@@ -935,6 +985,32 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         } finally {
             recursivityGuard.clear();
         }
+    }
+
+    /**
+     * Creates a new format to use for parsing and formatting values of the given type.
+     * This method is invoked by the first time that a format is needed for the given type.
+     * Subclasses can override this method if they want to configure the way dates, numbers
+     * or other objects are formatted.
+     * See {@linkplain org.apache.sis.io.CompoundFormat#createFormat(Class) parent class documentation}
+     * for more information.
+     *
+     * <p>The implementation in {@code TreeTableFormat} differs from the default implementation
+     * in the following aspects:</p>
+     * <ul>
+     *   <li>{@code UnitFormat} uses {@link UnitFormat.Style#NAME}.</li>
+     * </ul>
+     *
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
+     */
+    @Override
+    protected Format createFormat(final Class<?> valueType) {
+        final Format format = super.createFormat(valueType);
+        if (format instanceof UnitFormat) {
+            ((UnitFormat) format).setStyle(UnitFormat.Style.NAME);
+        }
+        return format;
     }
 
     /**

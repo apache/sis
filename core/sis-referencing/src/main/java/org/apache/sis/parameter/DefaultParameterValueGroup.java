@@ -199,7 +199,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      *
      * The list will verify those conditions and throws {@link org.opengis.parameter.InvalidParameterNameException},
      * {@link org.opengis.parameter.InvalidParameterCardinalityException} or other runtime exceptions if a condition
-     * is not meet.
+     * is not met.
      *
      * @return the values in this group.
      */

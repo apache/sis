@@ -17,12 +17,16 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Locale;
+import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.WarningListeners;
@@ -33,11 +37,15 @@ import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 
 // Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.identification.DataIdentification;
 
 
 /**
  * Base implementation of resources contained in data stores.
+ * This class provides default implementation of {@link #getIdentifier()} and {@link #getEnvelope()}
+ * methods which extract their information from the value returned by {@link #getMetadata()}.
+ * Subclasses should override those methods if they can provide those information more efficiently.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -93,6 +101,58 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
+     * Returns an identifier for this resource. The default implementation returns the first identifier
+     * of {@code Metadata/​identificationInfo/​citation}, provided that exactly one such citation is found.
+     * If more than one citation is found, then this method returns {@code null} since the identification
+     * is considered ambiguous. This is the same default implementation than {@link DataStore#getIdentifier()}.
+     *
+     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @see DataStore#getIdentifier()
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        return identifier(getMetadata());
+    }
+
+    /**
+     * Implementation of {@link #getIdentifier()}, provided as a separated method for implementations
+     * that do not extend {@code AbstractResource}.
+     *
+     * @param  metadata  the metadata from which to infer the identifier, or {@code null}.
+     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
+     *
+     * @see StoreUtilities#getAnyIdentifier(Metadata, boolean)
+     */
+    public static GenericName identifier(final Metadata metadata) {
+        if (metadata != null) {
+            Citation citation = null;
+            for (final Identification id : metadata.getIdentificationInfo()) {
+                final Citation c = id.getCitation();
+                if (c != null) {
+                    if (citation != null && citation != c) return null;                 // Ambiguity.
+                    citation = c;
+                }
+            }
+            if (citation != null) {
+                ReferenceIdentifier first = null;
+                for (final Identifier c : citation.getIdentifiers()) {
+                    if (c instanceof GenericName) {
+                        return (GenericName) c;
+                    } else if (first == null && c instanceof ReferenceIdentifier) {
+                        first = (ReferenceIdentifier) c;
+                    }
+                }
+                if (first != null) {
+                    return new NamedIdentifier(first);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the spatio-temporal envelope of this resource.
      * The default implementation computes the union of all {@link GeographicBoundingBox} in the resource metadata,
      * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
@@ -100,6 +160,8 @@ public abstract class AbstractResource implements Resource, Localized {
      *
      * @return the spatio-temporal resource extent, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
+     *
+     * @see org.apache.sis.storage.DataSet#getEnvelope()
      */
     public Envelope getEnvelope() throws DataStoreException {
         return envelope(getMetadata());
@@ -118,15 +180,13 @@ public abstract class AbstractResource implements Resource, Localized {
             for (final Identification identification : metadata.getIdentificationInfo()) {
                 if (identification instanceof DataIdentification) {
                     for (final Extent extent : ((DataIdentification) identification).getExtents()) {
-                        if (extent != null) {                                               // Paranoiac check.
-                            for (final GeographicExtent ge : extent.getGeographicElements()) {
-                                if (ge instanceof GeographicBoundingBox) {
-                                    final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
-                                    if (bounds == null) {
-                                        bounds = env;
-                                    } else {
-                                        bounds.add(env);
-                                    }
+                        for (final GeographicExtent ge : extent.getGeographicElements()) {
+                            if (ge instanceof GeographicBoundingBox) {
+                                final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
+                                if (bounds == null) {
+                                    bounds = env;
+                                } else {
+                                    bounds.add(env);
                                 }
                             }
                         }

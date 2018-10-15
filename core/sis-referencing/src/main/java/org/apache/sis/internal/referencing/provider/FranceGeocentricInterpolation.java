@@ -475,7 +475,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             tX[p] = -parseFloat(t.nextToken());     // See javadoc for the reason why we reverse the sign.
             tY[p] = -parseFloat(t.nextToken());
             tZ[p] = -parseFloat(t.nextToken());
-            final double accuracy = ACCURACY[Math.min(ACCURACY.length-1,
+            final double accuracy = ACCURACY[Math.min(ACCURACY.length - 1,
                     Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
             if (!(accuracy >= grid.accuracy)) {     // Use '!' for replacing the initial NaN.
                 grid.accuracy = accuracy;

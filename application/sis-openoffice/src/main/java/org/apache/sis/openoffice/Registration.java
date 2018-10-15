@@ -65,9 +65,11 @@ public final class Registration implements FilenameFilter {
      * Whether to force EPSG database startup early, for example in order to force database creation from SQL scripts.
      * The SQL scripts may be used if this module depends on {@code sis-epsg} module, or if {@code SIS_DATA} directory
      * contains a {@code "Databases/ExternalSources"} sub-directory. When such database creation is necessary, it may
-     * be less surprising for users to perform this lengthly task at add-in installation time instead than when the
+     * be less surprising for users to perform this lengthy task at add-in installation time instead than when the
      * formulas are first used. However if the add-in depend on {@code sis-embedded-data} instead, then early startup
      * is less useful since there is no database to create.
+     *
+     * @deprecated See <a href="https://issues.apache.org/jira/browse/SIS-430">SIS-430</a>
      */
     private static final boolean FORCE_EPSG_STARTUP = false;
 

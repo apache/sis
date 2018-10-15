@@ -221,7 +221,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
     /**
      * Tests the construction of a simple feature without super-types.
-     * A feature is said "simple" if the cardinality of all attributes is [1 … 1].
+     * A feature is said "simple" if the multiplicity of all attributes is [1 … 1].
      *
      * <p>Current implementation performs its tests on the {@link #city()} feature.</p>
      */
@@ -242,7 +242,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     /**
      * Tests the construction of a "complex" feature without super-types.
      * A feature is said "complex" if it contains at least one attribute
-     * with a cardinality different than [0 … 0] and [1 … 1].
+     * with a multiplicity different than [0 … 0] and [1 … 1].
      */
     @Test
     @DependsOnMethod("testSimple")

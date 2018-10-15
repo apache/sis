@@ -33,7 +33,14 @@
     avoid polluting the directory with dummy files as they appear in NetBeans.
   -->
   <target name="-post-init">
+    <available file="${src.local-src.dir}/.." type="dir" property="src.parent.exists"/>
+    <fail unless="src.parent.exists" message="Can not create &quot;${src.local-src.dir}&quot; because the parent directory does not exist."/>
+
+    <available file="${work.dir}/.." type="dir" property="wkd.parent.exists"/>
+    <fail unless="wkd.parent.exists" message="Can not create &quot;${work.dir}&quot; because the parent directory does not exist."/>
+
     <mkdir dir="${src.local-src.dir}"/>
+    <mkdir dir="${work.dir}"/>
   </target>
 
   <!--
@@ -106,6 +113,9 @@
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
+      </fileset>
+      <fileset dir="${project.root}/profiles/sis-french-profile/src/main/resources">
+        <include name="**/*.lst"/>
       </fileset>
     </copy>
 

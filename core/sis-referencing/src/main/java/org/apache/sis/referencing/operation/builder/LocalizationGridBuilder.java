@@ -32,6 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
@@ -77,6 +78,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
 
     /**
      * The transform for the linear part.
+     * Always created with a grid size specified to the constructor.
      */
     private final LinearTransformBuilder linear;
 
@@ -88,17 +90,23 @@ public class LocalizationGridBuilder extends TransformBuilder {
 
     /**
      * Conversions from source real-world coordinates to grid indices before interpolation.
+     * If there is no such conversion to apply, then this is the identity transform.
      */
     private LinearTransform sourceToGrid;
 
     /**
      * The desired precision of inverse transformations in unit of source coordinates, or 0 in unspecified.
-     * If no {@link #sourceToGrid} transform has been specified, than this is in unit of grid cell.
+     * If no {@link #sourceToGrid} transform has been specified, then this is in unit of grid cells
+     * (i.e. a value of 1 is the size of one grid cell).
+     *
+     * @see #setDesiredPrecision(double)
      */
     private double precision;
 
     /**
-     * Arbitrary default {@link #precision} value. May change in any future SIS version.
+     * Arbitrary default {@link #precision} value, in unit of grid cells. Used if no explicit inverse transform
+     * precision has been specified. The {@code sourceToGrid} transform shall not be applied on this value.
+     * This default precision may change in any future SIS version.
      */
     static final double DEFAULT_PRECISION = 1E-7;
 
@@ -109,7 +117,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param height  the number of rows in the grid of target positions.
      */
     public LocalizationGridBuilder(final int width, final int height) {
-        linear       = new LinearTransformBuilder(width, height);
+        linear = new LinearTransformBuilder(width, height);
         sourceToGrid = MathTransforms.identity(2);
     }
 
@@ -131,12 +139,64 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public LocalizationGridBuilder(final Vector sourceX, final Vector sourceY) {
         final Matrix fromGrid = new Matrix3();
-        linear = new LinearTransformBuilder(infer(sourceX, fromGrid, 0), infer(sourceY, fromGrid, 1));
+        final int width  = infer(sourceX, fromGrid, 0);
+        final int height = infer(sourceY, fromGrid, 1);
+        linear = new LinearTransformBuilder(width, height);
         try {
             sourceToGrid = MathTransforms.linear(fromGrid).inverse();
         } catch (NoninvertibleTransformException e) {
             // Should not happen because infer(…) verified that the coefficients are okay.
             throw (ArithmeticException) new ArithmeticException(e.getLocalizedMessage()).initCause(e);
+        }
+    }
+
+    /**
+     * Creates a new builder for a localization grid inferred from the given provider of control points.
+     * The {@linkplain LinearTransformBuilder#getSourceDimensions() number of source dimensions} in the
+     * given {@code localizations} argument shall be 2. The {@code localization} can be used in two ways:
+     *
+     * <ul class="verbose">
+     *   <li>If the {@code localizations} instance has been
+     *     {@linkplain LinearTransformBuilder#LinearTransformBuilder(int...) created with a fixed grid size},
+     *     then that instance is used as-is — it is not copied. It is okay to specify an empty instance and
+     *     to provide control points later by calls to {@link #setControlPoint(int, int, double...)}.</li>
+     *   <li>If the {@code localizations} instance has been
+     *     {@linkplain LinearTransformBuilder#LinearTransformBuilder() created for a grid of unknown size},
+     *     then this constructor tries to infer a grid size by inspection of the control points present in
+     *     {@code localizations} at the time this constructor is invoked. Changes in {@code localizations}
+     *     after construction will not be reflected in this new builder.</li>
+     * </ul>
+     *
+     * @param  localizations  the provider of control points for which to create a localization grid.
+     * @throws ArithmeticException if this constructor can not infer a reasonable grid size from the given localizations.
+     *
+     * @since 1.0
+     */
+    public LocalizationGridBuilder(final LinearTransformBuilder localizations) {
+        ArgumentChecks.ensureNonNull("localizations", localizations);
+        int n = localizations.getGridDimensions();
+        if (n == 2) {
+            linear = localizations;
+            sourceToGrid = MathTransforms.identity(2);
+        } else {
+            if (n < 0) {
+                final Vector[] sources = localizations.sources();
+                n = sources.length;
+                if (n == 2) {
+                    final Matrix fromGrid = new Matrix3();
+                    final int width  = infer(sources[0], fromGrid, 0);
+                    final int height = infer(sources[1], fromGrid, 1);
+                    linear = new LinearTransformBuilder(width, height);
+                    linear.setControlPoints(localizations.getControlPoints());
+                    try {
+                        sourceToGrid = MathTransforms.linear(fromGrid).inverse();
+                    } catch (NoninvertibleTransformException e) {
+                        throw (ArithmeticException) new ArithmeticException(e.getLocalizedMessage()).initCause(e);
+                    }
+                    return;
+                }
+            }
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTransformDimension_3, 0, 2, n));
         }
     }
 
@@ -191,7 +251,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
     /**
      * Sets the desired precision of <em>inverse</em> transformations, in units of source coordinates.
      * If a conversion from "real world" to grid coordinates {@linkplain #setSourceToGrid has been specified},
-     * then the given precision is in "real world" units. Otherwise the precision is in units of grid cells.
+     * then the given precision is in "real world" units. Otherwise the precision is in units of grid cells
+     * (i.e. a value of 1 is the size of one grid cell).
      *
      * <div class="note"><b>Note:</b>
      * there is no method for setting the desired target precision because forward transformations <em>precision</em>
@@ -316,13 +377,25 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Returns the envelope of source coordinates. This is the envelope of the grid domain
-     * (i.e. the ranges of valid {@code gridX} and {@code gridY} argument values in calls
-     * to {@code get/setControlPoint(…)} methods) transformed by the inverse of
-     * {@linkplain #getSourceToGrid() source to grid} transform.
-     * The lower and upper values are inclusive.
+     * Returns the envelope of source coordinates. The {@code fullArea} argument control whether
+     * the returned envelope shall encompass full surface of every cells or only their centers:
+     * <ul>
+     *   <li>If {@code true}, then the returned envelope encompasses full cell surfaces,
+     *       from lower border to upper border. In other words, the returned envelope encompasses all
+     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER cell corners}.</li>
+     *   <li>If {@code false}, then the returned envelope encompasses only
+     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}, inclusive.</li>
+     * </ul>
      *
-     * @return the envelope of grid points.
+     * This is the envelope of the grid domain (i.e. the ranges of valid {@code gridX} and {@code gridY} argument
+     * values in calls to {@code get/setControlPoint(…)} methods) transformed as below:
+     * <ol>
+     *   <li>expanded by ½ cell on each side if {@code fullArea} is {@code true}</li>
+     *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
+     * </ol>
+     *
+     * @param  fullArea whether the the envelope shall encompass the full cell surfaces instead than only their centers.
+     * @return the envelope of grid points, from lower corner to upper corner.
      * @throws IllegalStateException if the grid points are not yet known.
      * @throws TransformException if the envelope can not be calculated.
      *
@@ -330,8 +403,17 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @since 1.0
      */
-    public Envelope getSourceEnvelope() throws TransformException {
-        return Envelopes.transform(sourceToGrid.inverse(), linear.getSourceEnvelope());
+    public Envelope getSourceEnvelope(final boolean fullArea) throws TransformException {
+        Envelope envelope = linear.getSourceEnvelope();
+        if (fullArea) {
+            for (int i = envelope.getDimension(); --i >= 0;) {
+                final GeneralEnvelope ge = GeneralEnvelope.castOrCopy(envelope);
+                ge.setRange(i, ge.getLower(i) - 0.5,
+                               ge.getUpper(i) + 0.5);
+                envelope = ge;
+            }
+        }
+        return Envelopes.transform(sourceToGrid.inverse(), envelope);
     }
 
     /**
@@ -357,7 +439,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
         boolean isLinear = true;
         for (final double c : linear.correlation()) {
             isExact &= (c == 1);
-            if (c < 0.9999) {                               // Empirical threshold (may need to be revisited).
+            if (!(c >= 0.9999)) {                           // Empirical threshold (may need to be revisited).
                 isLinear = false;
                 break;
             }

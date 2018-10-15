@@ -147,7 +147,6 @@ class TransformingNamespaces implements NamespaceContext {
          * many prefixes can be created from the same namespace.</p>
          */
         @Override
-        @SuppressWarnings("unchecked")      // TODO: remove with JDK9
         public Iterator<String> getPrefixes(final String namespaceURI) {
             return context.getPrefixes(version.exportNS(namespaceURI));
         }
@@ -232,7 +231,6 @@ class TransformingNamespaces implements NamespaceContext {
          * Invoking this method fetched at most one prefix from the wrapped context.
          */
         @Override
-        @SuppressWarnings("unchecked")          // TODO: remove on JDK9
         public boolean hasNext() {
             while (next == null) {
                 while (prefixes == null) {

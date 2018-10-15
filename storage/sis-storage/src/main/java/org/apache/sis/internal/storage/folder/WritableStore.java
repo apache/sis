@@ -23,6 +23,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.io.IOException;
+import org.opengis.util.GenericName;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
@@ -91,11 +92,14 @@ final class WritableStore extends Store implements WritableAggregate {
         /*
          * Infer a filename from the resource identifier, if one can be found.
          * A suffix is added to the filename if available (some formats may have no suffix at all).
+         *
+         * TODO: find a more specific metadata property for this informtion.
          */
-        String filename = StoreUtilities.getIdentifier(resource.getMetadata());
-        if (filename == null) {
+        final GenericName identifier = resource.getIdentifier();
+        if (identifier == null) {
             throw new DataStoreException(message(Resources.Keys.MissingResourceIdentifier_1, StoreUtilities.getLabel(resource)));
         }
+        String filename = identifier.toString();
         final String[] suffixes = StoreUtilities.getFileSuffixes(componentProvider.getClass());
         if (suffixes.length != 0) {
             filename += '.' + suffixes[0];

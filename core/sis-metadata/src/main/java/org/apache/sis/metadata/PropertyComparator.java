@@ -243,7 +243,7 @@ final class PropertyComparator implements Comparator<Method> {
                 /*
                  * Do not happen, except when we have private methods or deprecated public methods
                  * used as bridge between legacy and more recent standards (e.g. ISO 19115:2003 to
-                 * ISO 19115:2014), especially when cardinality changed between the two standards.
+                 * ISO 19115:2014), especially when multiplicity changed between the two standards.
                  * Example: "extent"
                  */
                 final UML uml = method.getAnnotation(UML.class);

@@ -20,6 +20,7 @@ import java.util.EnumSet;
 import java.util.stream.Stream;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
@@ -85,22 +86,16 @@ public final class StoreUtilities extends Static {
      * Returns an identifier for a resource having the given metadata, or {@code null} if none.
      * This method checks the information returned by {@link Metadata#getIdentificationInfo()},
      * with precedence to {@link DataIdentification} over other kinds of {@link Identification}.
-     *
-     * @param  metadata  the metadata from which to get a data identifier, or {@code null}.
-     * @return a data identifier, or {@code null} if none.
-     */
-    public static String getIdentifier(final Metadata metadata) {
-        return Citations.removeIgnorableCharacters(getIdentifier(metadata, true));
-    }
-
-    /**
-     * Implementation of {@link #getIdentifier(Metadata)} to be shared with {@link #getLabel(Resource)}.
+     * This method does not check for ambiguity (if there is more than one identification info).
      *
      * @param  metadata  the metadata from which to get a data identifier, or {@code null}.
      * @param  unicode   whether to restrict to valid Unicode identifiers.
      * @return a data identifier, or {@code null} if none.
+     *
+     * @see AbstractResource#identifier(Metadata)
+     * @see Citations#removeIgnorableCharacters(String)
      */
-    private static String getIdentifier(final Metadata metadata, final boolean unicode) {
+    private static String getAnyIdentifier(final Metadata metadata, final boolean unicode) {
         String fallback = null;
         if (metadata != null) {
             for (final Identification md : metadata.getIdentificationInfo()) {
@@ -118,9 +113,9 @@ public final class StoreUtilities extends Static {
     }
 
     /**
-     * Returns a short label for the given resource. This method returns an identifier if possible,
-     * or the title otherwise. If neither an identifier or title can be found, then this method returns
-     * the kind of resource implemented by the given object.
+     * Returns a short label for the given resource. This method returns the display name if possible,
+     * or the identifier otherwise. If neither a display name, identifier or title can be found, then
+     * this method returns the kind of resource implemented by the given object.
      *
      * @param  resource  the resource for which to get a label.
      * @return a human-readable label for the given resource (not to be used as an identifier).
@@ -132,9 +127,14 @@ public final class StoreUtilities extends Static {
             title = ((DataStore) resource).getDisplayName();
         }
         if (title == null) {
-            title = getIdentifier(resource.getMetadata(), false);
-            if (title == null) {
-                title = Classes.getShortName(getInterface(resource.getClass()));
+            final GenericName identifier = resource.getIdentifier();
+            if (identifier != null) {
+                title = identifier.toString();
+            } else {
+                title = getAnyIdentifier(resource.getMetadata(), false);
+                if (title == null) {
+                    title = Classes.getShortName(getInterface(resource.getClass()));
+                }
             }
         }
         return title;
@@ -295,5 +295,17 @@ public final class StoreUtilities extends Static {
         try (Stream<AbstractFeature> stream = source.features(false)) {
             target.add(stream.iterator());
         }
+    }
+
+    /**
+     * Returns an error message for a resource not found. This is used for exception to be thrown
+     * as {@link org.apache.sis.storage.IllegalNameException}.
+     *
+     * @param  store       the store for which a resource has not been found.
+     * @param  identifier  the requested identifier.
+     * @return error message for the exception to be thrown.
+     */
+    public static String resourceNotFound(final DataStore store, final String identifier) {
+        return Resources.forLocale(store.getLocale()).getString(Resources.Keys.ResourceNotFound_2, store.getDisplayName(), identifier);
     }
 }

@@ -81,7 +81,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
 
     /**
      * Creates a converter using the given primary and fallback converters. This method may
-     * interchange the two converters in order to meet the {@linkplain #fallback} contract.
+     * interchange the two converters in order to met the {@linkplain #fallback} contract.
      *
      * @param  sourceClass  the {@linkplain #getSourceClass() source class}.
      * @param  targetClass  the {@linkplain #getTargetClass() target class}.

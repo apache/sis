@@ -461,7 +461,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @param  formatter  the formatter where to append the coordinate system.
      * @param  cs         the coordinate system to append.
      * @param  unit       the value of {@code ReferencingUtilities.getUnit(cs)}.
-     * @param  isWKT1    { @code true} if formatting WKT 1, or {@code false} for WKT 2.
+     * @param  isWKT1     {@code true} if formatting WKT 1, or {@code false} for WKT 2.
      */
     final void formatCS(final Formatter formatter, final CoordinateSystem cs, final Unit<?> unit, final boolean isWKT1) {
         assert unit == ReferencingUtilities.getUnit(cs) : unit;

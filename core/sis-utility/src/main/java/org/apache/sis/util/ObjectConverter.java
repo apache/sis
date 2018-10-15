@@ -66,7 +66,7 @@ import org.apache.sis.math.FunctionProperty;
  *       can not be declared injective because more than one <var>S</var> value can produce the same
  *       <var>T</var> value (namely {@code null}).</li>
  *   <li>If {@code apply(S)} throws an exception for unconvertible objects, then this {@code ObjectConverter}
- *       can be declared as an injective function if the other values meet the criteria.
+ *       can be declared as an injective function if the other values met the criteria.
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

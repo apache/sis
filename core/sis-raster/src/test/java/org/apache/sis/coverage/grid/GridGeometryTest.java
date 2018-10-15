@@ -24,7 +24,9 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -39,6 +41,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   1.0
  * @module
  */
+@DependsOn(GridExtentTest.class)
 public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Verifies grid extent coordinates.
@@ -186,5 +189,23 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertArrayEquals("resolution", new double[] {0.5, 0.25, Double.NaN, 3600}, grid.getResolution(false), STRICT);
         assertFalse("isConversionLinear", grid.isConversionLinear(0, 1, 2, 3));
         assertTrue ("isConversionLinear", grid.isConversionLinear(0, 1,    3));
+    }
+
+    /**
+     * Tests the construction from a geospatial envelope.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
+     */
+    @Test
+    public void testFromGeospatialEnvelope() throws TransformException {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        envelope.setRange(0, -70.001, +80.002);
+        envelope.setRange(1,   4.997,  15.003);
+        final MathTransform gridToCRS = MathTransforms.linear(Matrices.create(3, 3, new double[] {
+            0,   0.5, -90,
+            0.5, 0,  -180,
+            0,   0,     1}));
+        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CENTER, gridToCRS, envelope);
+        // TODO: verify values.
     }
 }

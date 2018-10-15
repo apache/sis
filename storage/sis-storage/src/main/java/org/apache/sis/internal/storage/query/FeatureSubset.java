@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.query;
 
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
@@ -63,6 +64,14 @@ final class FeatureSubset extends AbstractFeatureSet {
         super(source);
         this.source = source;
         this.query = query;
+    }
+
+    /**
+     * Returns {@code null} since this resource is a computation result.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return null;
     }
 
     /**

@@ -28,16 +28,14 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.io.IOException;
+import org.opengis.util.GenericName;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.feature.MovingFeature;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
@@ -52,7 +50,7 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * netCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: netCDF) specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -74,7 +72,7 @@ final class FeaturesInfo extends DiscreteSampling {
     private final VariableInfo time;
 
     /**
-     * The variable that contains <var>x</var> and <var>y</var> ordinate values (typically longitudes and latitudes).
+     * The variable that contains <var>x</var> and <var>y</var> coordinate values (typically longitudes and latitudes).
      * All variables in this array shall have the same length, and that length shall be the same than {@link #time}.
      */
     private final VariableInfo[] coordinates;
@@ -92,18 +90,20 @@ final class FeaturesInfo extends DiscreteSampling {
     /**
      * Creates a new discrete sampling parser for features identified by the given variable.
      *
+     * @param  decoder      the source of the features to create.
      * @param  counts       the count of instances per feature.
      * @param  identifiers  the feature identifiers.
-     * @param  library      the library for geometric objects, or {@code null} for the default.
-     * @param  listeners    the set of registered warning listeners for the data store.
+     * @param  time         the variable that contains time.
+     * @param  coordinates  the variable that contains <var>x</var> and <var>y</var> coordinate values.
+     * @param  properties   the variables that contain custom properties.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
     @SuppressWarnings("rawtypes")                               // Because of generic array creation.
-    private FeaturesInfo(final Vector counts, final VariableInfo identifiers, final VariableInfo time,
-            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties,
-            final GeometryLibrary library, final WarningListeners<DataStore> listeners)
+    private FeaturesInfo(final ChannelDecoder decoder,
+            final Vector counts, final VariableInfo identifiers, final VariableInfo time,
+            final Collection<VariableInfo> coordinates, final Collection<VariableInfo> properties)
     {
-        super(library, listeners);
+        super(decoder.geomlib, decoder.listeners);
         this.counts      = counts;
         this.identifiers = identifiers;
         this.coordinates = coordinates.toArray(new VariableInfo[coordinates.size()]);
@@ -145,8 +145,17 @@ final class FeaturesInfo extends DiscreteSampling {
             // TODO: add description.
             pt[i] = new DefaultAttributeType<>(info, valueClass, minOccurs, maxOccurs, null, characteristics);
         }
-        info.put(DefaultAttributeType.NAME_KEY, "Feature");     // TODO: find a better name.
+        String name = "Features";       // TODO: find a better name.
+        info.put(DefaultAttributeType.NAME_KEY, decoder.nameFactory.createLocalName(decoder.namespace, name));
         type = new DefaultFeatureType(info, false, null, pt);
+    }
+
+    /**
+     * Returns an identifier for the collection of features in the netCDF file.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return type.getName();
     }
 
     /**
@@ -273,8 +282,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                     }
                     final VariableInfo time = coordinates.remove("T");
                     if (time != null) {
-                        features.add(new FeaturesInfo(counts.read(), identifiers, time, coordinates.values(),
-                                properties, decoder.geomlib, decoder.listeners));
+                        features.add(new FeaturesInfo(decoder, counts.read(), identifiers, time, coordinates.values(), properties));
                     }
                 }
             }

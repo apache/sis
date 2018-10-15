@@ -190,7 +190,7 @@ final class Validator {
     }
 
     /**
-     * Verifies if the given value mets the cardinality constraint.
+     * Verifies if the given value is compliant with the cardinality constraint.
      *
      * @param report  where to add the result, or {@code null} if not yet created.
      */
