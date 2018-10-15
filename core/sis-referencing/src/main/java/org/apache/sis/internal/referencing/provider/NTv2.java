@@ -348,11 +348,12 @@ public final class NTv2 extends AbstractProvider {
              * during inverse transformations. If we did not found that information in the file, compute
              * an arbitrary default accuracy.
              */
+            final double size = Math.max(dx, dy);
             if (Double.isNaN(grid.accuracy)) {
-                grid.accuracy = Units.DEGREE.getConverterTo(unit).convert(Formulas.ANGULAR_TOLERANCE);
+                grid.accuracy = Units.DEGREE.getConverterTo(unit).convert(Formulas.ANGULAR_TOLERANCE) / size;
             }
             header.keySet().retainAll(Arrays.asList(overviewKeys));   // Keep only overview records.
-            return DatumShiftGridCompressed.compress(grid, null, precision / Math.max(dx, dy));
+            return DatumShiftGridCompressed.compress(grid, null, precision / size);
         }
 
         /**
