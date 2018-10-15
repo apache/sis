@@ -368,7 +368,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalCoordinateSystem_1 = 51;
 
         /**
-         * The “{1}” pattern can not be applied to formating of objects of type ‘{0}’.
+         * The “{1}” pattern can not be applied to formatting of objects of type ‘{0}’.
          */
         public static final short IllegalFormatPatternForClass_2 = 52;
 
@@ -381,6 +381,11 @@ public final class Errors extends IndexedResourceBundle {
          * The “{0}” language is not recognized.
          */
         public static final short IllegalLanguageCode_1 = 54;
+
+        /**
+         * Illegal mapping: {0} → {1}.
+         */
+        public static final short IllegalMapping_2 = 185;
 
         /**
          * Member “{0}” can not be associated to type “{1}”.

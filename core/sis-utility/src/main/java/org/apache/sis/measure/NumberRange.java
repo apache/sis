@@ -258,7 +258,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * <div class="note"><b>Note:</b> for creating left-bounded ranges of floating point values,
      * use one of the {@code create(…)} methods with a {@code POSITIVE_INFINITY} constant.
      * We do not provide variants for other integer types because this method is typically invoked for
-     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType cardinality of an attribute}.</div>
+     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType multiplicity of an attribute}.</div>
      *
      * @param  minValue       the minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -513,22 +513,17 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return the adjacent value.
      */
     private static double next(final Class<?> type, double value, final boolean up) {
-        if (!up) {
-            value = -value;
-        }
         if (Numbers.isInteger(type)) {
-            value++;
+            if (up) value++; else value--;
         } else if (type.equals(Float.class)) {
-            value = Math.nextUp((float) value);
+            final float fv = (float) value;
+            value = up ? Math.nextUp(fv) : Math.nextDown(fv);
         } else if (type.equals(Double.class)) {
-            value = Math.nextUp(value);
+            value = up ? Math.nextUp(value) : Math.nextDown(value);
         } else {
             // Thrown IllegalStateException instead than IllegalArgumentException because
             // the 'type' argument given to this method come from a NumberRange field.
             throw new IllegalStateException(Errors.format(Errors.Keys.NotAPrimitiveWrapper_1, type));
-        }
-        if (!up) {
-            value = -value;
         }
         return value;
     }

@@ -73,6 +73,7 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      * @param gridToTarget  conversion from grid coordinates to the final "real world" coordinates.
      * @param numDim        number of dimension of target coordinates.
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
+     * @param precision     desired precision of inverse transformations in unit of grid cells.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
             final int nx, final int ny, final int numDim, final double[] residuals, final double precision)
@@ -131,7 +132,8 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
 
     /**
      * Returns the desired precision in iterative calculation performed by inverse transform.
-     * The returned value is in unit of grid cell.
+     * The returned value is in unit of grid cell, i.e. a value of 1 is the size of one cell.
+     * This unit of measurement is fixed by {@link #isCellValueRatio()} = {@code true}.
      */
     @Override
     public double getCellPrecision() {

@@ -205,7 +205,7 @@ public final class MathTransforms extends Static {
      * @param  global  the transform to use globally where there is no suitable specialization.
      * @param  specializations  more accurate transforms available in some sub-areas.
      * @return a transform applying the given global transform except in sub-areas where specializations are available.
-     * @throws IllegalArgumentException if a constraint is not meet.
+     * @throws IllegalArgumentException if a constraint is not met.
      *
      * @since 1.0
      */
@@ -278,27 +278,28 @@ public final class MathTransforms extends Static {
      *       is equals to the sum of the target dimensions of all given transforms.</li>
      * </ul>
      *
-     * @param  transforms  the transforms to aggregate in a single transform, in the given order.
-     * @return the aggregation of all given transforms, or {@code null} if the given {@code transforms} array was empty.
+     * @param  components  the transforms to aggregate in a single transform, in the given order.
+     * @return the aggregation of all given transforms, or {@code null} if the given {@code components} array was empty.
      *
      * @see PassThroughTransform
-     * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
+     * @see org.apache.sis.referencing.CRS#compound(CoordinateReferenceSystem...)
+     * @see org.apache.sis.geometry.Envelopes#compound(Envelope...)
      *
      * @since 0.6
      */
-    public static MathTransform compound(final MathTransform... transforms) {
-        ArgumentChecks.ensureNonNull("transforms", transforms);
+    public static MathTransform compound(final MathTransform... components) {
+        ArgumentChecks.ensureNonNull("components", components);
         int sum = 0;
-        final int[] dimensions = new int[transforms.length];
-        for (int i=0; i<transforms.length; i++) {
-            final MathTransform tr = transforms[i];
-            ArgumentChecks.ensureNonNullElement("transforms", i, tr);
+        final int[] dimensions = new int[components.length];
+        for (int i=0; i<components.length; i++) {
+            final MathTransform tr = components[i];
+            ArgumentChecks.ensureNonNullElement("components", i, tr);
             sum += (dimensions[i] = tr.getSourceDimensions());
         }
         MathTransform compound = null;
         int firstAffectedOrdinate = 0;
-        for (int i=0; i<transforms.length; i++) {
-            MathTransform tr = transforms[i];
+        for (int i=0; i<components.length; i++) {
+            MathTransform tr = components[i];
             tr = passThrough(firstAffectedOrdinate, tr, sum - (firstAffectedOrdinate += dimensions[i]));
             if (compound == null) {
                 compound = tr;

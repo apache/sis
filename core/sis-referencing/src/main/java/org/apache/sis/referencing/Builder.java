@@ -735,7 +735,7 @@ public abstract class Builder<B extends Builder<B>> {
      *       with the same authority and the local part defined by {@code replacements[0]}.</li>
      *   <li>The second occurrence of a name associated to {@code authority} will be replaced by a new name
      *       with the same authority and the local part defined by {@code replacements[1]}.</li>
-     *   <li><i>etc.</i> until one of the following conditions is meet:
+     *   <li><i>etc.</i> until one of the following conditions is met:
      *     <ul>
      *       <li>There is no more name associated to the given authority in this {@code Builder}, in which case
      *           new names are inserted for all remaining elements in the {@code replacements} array.</li>
@@ -834,7 +834,7 @@ public abstract class Builder<B extends Builder<B>> {
      *       a new identifier with the same authority and the code defined by {@code replacements[0]}.</li>
      *   <li>The second occurrence of an identifier associated to {@code authority} will be replaced by a
      *       new identifier with the same authority and the local part defined by {@code replacements[1]}.</li>
-     *   <li><i>etc.</i> until one of the following conditions is meet:
+     *   <li><i>etc.</i> until one of the following conditions is met:
      *     <ul>
      *       <li>There is no more identifier associated to the given authority in this {@code Builder}, in which case
      *           new identifiers are inserted for all remaining elements in the {@code replacements} array.</li>

@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
  * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -250,6 +250,20 @@ public final class Characters extends Static {
      *         given character was not a superscript or a subscript.
      */
     public static char toNormalScript(char c) {
+        // Cast is safe because all return values are in the Basic Multilingual Plane (BMP).
+        return (char) toNormalScript((int) c);
+    }
+
+    /**
+     * Converts the given code point to normal script.
+     *
+     * @param  c  the character to convert.
+     * @return the given character as a normal script, or {@code c} if the
+     *         given character was not a superscript or a subscript.
+     *
+     * @since 1.0
+     */
+    public static int toNormalScript(int c) {
         switch (c) {
             case '\u2071': // Exceptions to the default case. They would be the ¹²³
             case '\u2072': // cases if they were not defined in the Latin-1 range.

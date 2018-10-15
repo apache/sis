@@ -20,15 +20,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
+import org.opengis.util.ScopedName;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.storage.AbstractResource;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -163,63 +165,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     }
 
     /**
-     * Returns a short name or label for this data store.
-     * The returned name can be used in user interfaces or in error messages.
-     * It may be a title in natural language, but should be relatively short.
-     * The name may be localized in the language specified by the value of {@link #getLocale()}
-     * if this data store is capable to produce a name in various languages.
-     *
-     * <p>This name should not be used as an identifier since there is no guarantee that the name
-     * is unique among data stores, and no guarantee that the name is the same in all locales.
-     * The name may also contain any Unicode characters, including characters usually not allowed
-     * in identifiers like white spaces.</p>
-     *
-     * <p>This method should never throw an exception since it may be invoked for producing error
-     * messages, in which case throwing an exception here would mask the original exception.</p>
-     *
-     * <p>Default implementation returns the {@link StorageConnector#getStorageName()} value,
-     * or {@code null} if this data store has been created by the no-argument constructor.
-     * Note that this default value may change in any future SIS version. Subclasses should
-     * override this method if they can provide a better name.</p>
-     *
-     * @return a short name of label for this data store, or {@code null} if unknown.
-     *
-     * @since 0.8
-     */
-    public String getDisplayName() {
-        return name;
-    }
-
-    /**
-     * The locale to use for formatting warnings and other messages. This locale if for user interfaces
-     * only – it has no effect on the data to be read or written from/to the data store.
-     *
-     * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
-     */
-    @Override
-    public synchronized Locale getLocale() {
-        return locale;
-    }
-
-    /**
-     * Sets the locale to use for formatting warnings and other messages.
-     * In a client-server architecture, it should be the locale on the <em>client</em> side.
-     *
-     * <p>This locale is used on a <cite>best-effort</cite> basis; whether messages will honor this locale or not
-     * depends on the code that logged warnings or threw exceptions. In Apache SIS implementation, this locale has
-     * better chances to be honored by the {@link DataStoreException#getLocalizedMessage()} method rather than
-     * {@code getMessage()}. See {@code getLocalizedMessage()} javadoc for more information.</p>
-     *
-     * @param locale  the new locale to use.
-     *
-     * @see DataStoreException#getLocalizedMessage()
-     */
-    public synchronized void setLocale(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
-    }
-
-    /**
      * Returns the parameters used to open this data store.
      * The collection of legal parameters is implementation-dependent
      * ({@linkplain org.apache.sis.parameter.DefaultParameterValue#getDescriptor() their description}
@@ -243,6 +188,114 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     public abstract ParameterValueGroup getOpenParameters();
 
     /**
+     * Sets the locale to use for formatting warnings and other messages.
+     * In a client-server architecture, it should be the locale on the <em>client</em> side.
+     *
+     * <p>This locale is used on a <cite>best-effort</cite> basis; whether messages will honor this locale or not
+     * depends on the code that logged warnings or threw exceptions. In Apache SIS implementation, this locale has
+     * better chances to be honored by the {@link DataStoreException#getLocalizedMessage()} method rather than
+     * {@code getMessage()}. See {@code getLocalizedMessage()} javadoc for more information.</p>
+     *
+     * @param locale  the new locale to use.
+     *
+     * @see DataStoreException#getLocalizedMessage()
+     */
+    public synchronized void setLocale(final Locale locale) {
+        ArgumentChecks.ensureNonNull("locale", locale);
+        this.locale = locale;
+    }
+
+    /**
+     * The locale to use for formatting warnings and other messages. This locale if for user interfaces
+     * only – it has no effect on the data to be read or written from/to the data store.
+     *
+     * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
+     */
+    @Override
+    public synchronized Locale getLocale() {
+        return locale;
+    }
+
+    /**
+     * Returns a short name or label for this data store.
+     * The returned name can be used in user interfaces or in error messages.
+     * It may be a title in natural language, but should be relatively short.
+     * The name may be localized in the language specified by the value of {@link #getLocale()}
+     * if this data store is capable to produce a name in various languages.
+     *
+     * <p>This name should not be used as an identifier since there is no guarantee that the name
+     * is unique among data stores, and no guarantee that the name is the same in all locales.
+     * The name may also contain any Unicode characters, including characters usually not allowed
+     * in identifiers like white spaces.</p>
+     *
+     * <p>This method should never throw an exception since it may be invoked for producing error
+     * messages, in which case throwing an exception here would mask the original exception.</p>
+     *
+     * <p>This method differs from {@link #getIdentifier()} in that it is typically a file name
+     * known at construction time instead than a property read from metadata.
+     * Default implementation returns the {@link StorageConnector#getStorageName()} value,
+     * or {@code null} if this data store has been created by the no-argument constructor.
+     * Subclasses should override this method if they can provide a better name.</p>
+     *
+     * @return a short name of label for this data store, or {@code null} if unknown.
+     *
+     * @see #getIdentifier()
+     * @see #getLocale()
+     *
+     * @since 0.8
+     */
+    public String getDisplayName() {
+        return name;
+    }
+
+    /**
+     * Returns an identifier for the root resource of this data store, or {@code null} if none.
+     * If this data store contains many resources (as in an {@link Aggregate}),
+     * the returned identifier shall be different than the identifiers of those child resources.
+     * In other words, the following equality shall hold without ambiguity:
+     *
+     * {@preformat java
+     *     findResource(getIdentifier().toString()) == this
+     * }
+     *
+     * Note that this identifier is not guaranteed to be unique between different {@code DataStore} instances;
+     * it only needs to be unique among the resources provided by this data store instance.
+     *
+     * <div class="section">Default implementation</div>
+     * <p>The default implementation searches for an identifier in the metadata,
+     * at the location shown below, provided that conditions are met:</p>
+     *
+     * <blockquote>
+     * <p><b>Path:</b> {@link Resource#getMetadata() metadata} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</p>
+     *
+     * <p><b>Condition:</b> default implementation returns a non-null identifier only if exactly one
+     * {@code citation} is found at above path. If two or more {@code citation} instances are found,
+     * the identification is considered ambiguous and {@code null} is returned.</p>
+     *
+     * <p><b>Selection:</b> the first identifier implementing the {@code GenericName} interface is returned.
+     * If there is no such identifier, then a {@link org.apache.sis.referencing.NamedIdentifier} is created
+     * from the first identifier. If there is no identifier at all, then {@code null} is returned.</p>
+     * </blockquote>
+     *
+     * Subclasses are encouraged to override this method with more efficient implementations.
+     *
+     * @return an identifier for the root resource of this data store, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @see #getMetadata()
+     * @see #getDisplayName()
+     *
+     * @since 1.0
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        return AbstractResource.identifier(getMetadata());
+    }
+
+    /**
      * Returns information about the data store as a whole. The returned metadata object can contain
      * information such as the spatiotemporal extent of all contained {@linkplain Resource resources},
      * contact information about the creator or distributor, data quality, update frequency, usage constraints,
@@ -251,20 +304,14 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @return information about resources in the data store, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading the data.
      *
-     * @see Resource#getMetadata()
+     * @see #getIdentifier()
      */
     @Override
     public abstract Metadata getMetadata() throws DataStoreException;
 
     /**
-     * Searches for a resource identified by the given identifier.
-     * The given identifier should match the following metadata element of a resource:
-     *
-     * <blockquote>{@link Resource#getMetadata() metadata} /
-     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
-     * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
-     * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</blockquote>
-     *
+     * Searches for a resource identified by the given identifier. The given identifier should be the string
+     * representation of the return value of {@link Resource#getIdentifier()} on the desired resource.
      * Implementation may also accept aliases for convenience. For example if the full name of a resource
      * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
      * provided that it does not introduce ambiguity.
@@ -272,14 +319,16 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * <p>The default implementation verifies if above criterion matches to this {@code DataStore}
      * (which is itself a resource), then iterates recursively over {@link Aggregate} components
      * if this data store is an aggregate.
-     * If a match is found without ambiguity, the associated resource is returned.
-     * Otherwise an exception is thrown. Subclasses are encouraged to override this method with a more efficient
-     * implementation.</p>
+     * If a match is found without ambiguity, the associated resource is returned. Otherwise an exception is thrown.
+     * Subclasses are encouraged to override this method with a more efficient implementation.</p>
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
      * @return resource associated to the given identifier (never {@code null}).
      * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
      * @throws DataStoreException if another kind of error occurred while searching resources.
+     *
+     * @see Resource#getIdentifier()
+     * @see FeatureNaming
      */
     public Resource findResource(final String identifier) throws DataStoreException {
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
@@ -287,8 +336,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         if (resource != null) {
             return resource;
         }
-        throw new IllegalNameException(Resources.forLocale(getLocale())
-                .getString(Resources.Keys.ResourceNotFound_2, getDisplayName(), identifier));
+        throw new IllegalNameException(StoreUtilities.resourceNotFound(this, identifier));
     }
 
     /**
@@ -304,15 +352,12 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
             final Map<Resource,Boolean> visited) throws DataStoreException
     {
         if (candidate != null && visited.put(candidate, Boolean.TRUE) == null) {
-            final Metadata metadata = candidate.getMetadata();
-            if (metadata != null) {
-                for (final Identification identification : metadata.getIdentificationInfo()) {
-                    if (identification != null) {                                                   // Paranoiac check.
-                        if (Citations.identifierMatches(identification.getCitation(), null, identifier)) {
-                            return candidate;
-                        }
-                    }
+            GenericName name = candidate.getIdentifier();
+            if (name != null) {
+                do if (identifier.equals(name.toString())) {
+                    return candidate;
                 }
+                while ((name instanceof ScopedName) && name != (name = ((ScopedName) name).tail()));
             }
             if (candidate instanceof Aggregate) {
                 Resource result = null;
@@ -384,4 +429,15 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     @Override
     public abstract void close() throws DataStoreException;
+
+    /**
+     * Returns a string representation of this data store for debugging purpose.
+     * The content of the string returned by this method may change in any future SIS version.
+     *
+     * @return a string representation of this data store for debugging purpose.
+     */
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + '[' + getDisplayName() + ']';
+    }
 }

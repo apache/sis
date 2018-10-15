@@ -23,24 +23,31 @@ import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.resources.Errors;
 
@@ -69,8 +76,17 @@ public class GeoTiffStore extends DataStore {
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     * This is used for information purpose only, not for actual reading operations.
+     *
+     * @see #getOpenParameters()
      */
     private final URI location;
+
+    /**
+     * The data store identifier created from the filename, or {@code null} if none.
+     * Defined as a namespace for use as the scope of children resources (the images).
+     */
+    final NameSpace identifier;
 
     /**
      * The metadata, or {@code null} if not yet created.
@@ -104,6 +120,46 @@ public class GeoTiffStore extends DataStore {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+        if (location != null) {
+            final NameFactory f = reader.nameFactory;
+            String filename = IOUtilities.filenameWithoutExtension(input.filename);
+            if (Numerics.isUnsignedInteger(filename)) filename += ".tiff";
+            identifier = f.createNameSpace(f.createLocalName(null, filename), null);
+        } else {
+            // Location not convertible to URI. The string representation is probably a class name, which is not useful.
+            identifier = null;
+        }
+    }
+
+    /**
+     * Returns the parameters used to open this GeoTIFF data store.
+     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at
+     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
+     * This method may return {@code null} if the storage input can not be described by a URI
+     * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
+     *
+     * @return parameters used for opening this data store, or {@code null} if not available.
+     *
+     * @since 0.8
+     */
+    @Override
+    public ParameterValueGroup getOpenParameters() {
+        return URIDataStore.parameters(provider, location);
+    }
+
+    /**
+     * Returns an identifier constructed from the name of the TIFF file.
+     * An identifier is available only if the storage input specified at construction time was something convertible to
+     * {@link java.net.URI}, for example an {@link java.net.URL}, {@link java.io.File} or {@link java.nio.file.Path}.
+     *
+     * @return the identifier derived from the filename, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @since 1.0
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        return (identifier != null) ? identifier.name() : null;
     }
 
     /**
@@ -135,7 +191,7 @@ public class GeoTiffStore extends DataStore {
                     dir.completeMetadata(builder, locale);
                 }
             } catch (IOException e) {
-                throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+                throw errorIO(e);
             } catch (FactoryException | ArithmeticException e) {
                 throw new DataStoreContentException(getLocale(), Constants.GEOTIFF, reader.input.filename, null).initCause(e);
             }
@@ -145,8 +201,9 @@ public class GeoTiffStore extends DataStore {
              * file did not specified any ImageDescription tag, then we will had the filename as a title instead than an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
-            if (location != null) {
-                builder.addTitleOrIdentifier(IOUtilities.filenameWithoutExtension(reader.input.filename), MetadataBuilder.Scope.ALL);
+            final GenericName id = getIdentifier();
+            if (id != null) {
+                builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL);
             }
             metadata = builder.build(true);
         }
@@ -154,19 +211,10 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
-     * Returns the parameters used to open this GeoTIFF data store.
-     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at
-     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * This method may return {@code null} if the storage input can not be described by a URI
-     * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
-     *
-     * @return parameters used for opening this data store, or {@code null} if not available.
-     *
-     * @since 0.8
+     * Returns the exception to throw when an I/O error occurred.
      */
-    @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
+    private DataStoreException errorIO(final IOException e) {
+        return new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
     }
 
     /**
@@ -178,6 +226,33 @@ public class GeoTiffStore extends DataStore {
             throw new DataStoreClosedException(getLocale(), Constants.GEOTIFF, StandardOpenOption.READ);
         }
         return r;
+    }
+
+    /**
+     * Returns the image at the given index. Images numbering starts at 1.
+     *
+     * @param  sequence  string representation of the image index, starting at 1.
+     * @return image at the given index.
+     * @throws DataStoreException if the requested image can not be obtained.
+     */
+    @Override
+    public Resource findResource(final String sequence) throws DataStoreException {
+        Exception cause;
+        int index;
+        try {
+            index = Integer.parseInt(sequence);
+            cause = null;
+        } catch (NumberFormatException e) {
+            index = 0;
+            cause = e;
+        }
+        if (index > 0) try {
+            ImageFileDirectory image = reader().getImageFileDirectory(index - 1);
+            if (image != null) return image;
+        } catch (IOException e) {
+            throw errorIO(e);
+        }
+        throw new IllegalNameException(StoreUtilities.resourceNotFound(this, sequence), cause);
     }
 
     /**

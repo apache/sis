@@ -35,6 +35,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -615,6 +616,17 @@ final class Store extends URIDataStore implements FeatureSet {
             return Foliation.valueOf(elements.get(1).toUpperCase(Locale.US));
         }
         return Foliation.TIME;      // Default value.
+    }
+
+    /**
+     * Returns an identifier for this CSV data store.
+     * This method returns the {@link #getType() type} name, which is itself derived from the file name.
+     *
+     * @return identifier for this CSV data store.
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        return featureType.getName();
     }
 
     /**

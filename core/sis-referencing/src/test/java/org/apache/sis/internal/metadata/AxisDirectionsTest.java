@@ -43,7 +43,7 @@ import static org.apache.sis.internal.metadata.AxisDirections.COUNTER_CLOCKWISE;
  * {@code sis-referencing} module because those tests use {@link HardCodedAxes} constants.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -65,6 +65,14 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals(UP,                AxisDirections.absolute(DOWN));
         assertEquals(FUTURE,            AxisDirections.absolute(FUTURE));
         assertEquals(FUTURE,            AxisDirections.absolute(PAST));
+        assertEquals(COLUMN_POSITIVE,   AxisDirections.absolute(COLUMN_POSITIVE));
+        assertEquals(COLUMN_POSITIVE,   AxisDirections.absolute(COLUMN_NEGATIVE));
+        assertEquals(ROW_POSITIVE,      AxisDirections.absolute(ROW_POSITIVE));
+        assertEquals(ROW_POSITIVE,      AxisDirections.absolute(ROW_NEGATIVE));
+        assertEquals(DISPLAY_RIGHT,     AxisDirections.absolute(DISPLAY_RIGHT));
+        assertEquals(DISPLAY_RIGHT,     AxisDirections.absolute(DISPLAY_LEFT));
+        assertEquals(DISPLAY_UP,        AxisDirections.absolute(DISPLAY_UP));
+        assertEquals(DISPLAY_UP,        AxisDirections.absolute(DISPLAY_DOWN));
         assertEquals(AWAY_FROM,         AxisDirections.absolute(AWAY_FROM));
         assertEquals(COUNTER_CLOCKWISE, AxisDirections.absolute(CLOCKWISE));
         assertEquals(COUNTER_CLOCKWISE, AxisDirections.absolute(COUNTER_CLOCKWISE));

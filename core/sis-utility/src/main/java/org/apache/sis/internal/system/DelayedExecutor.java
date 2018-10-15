@@ -39,7 +39,7 @@ import org.apache.sis.util.logging.Logging;
  * (profiling shows that even a single thread has very low activity), which reduces the interest of that class.
  * Combination of {@code ThreadPoolExecutor} super-class with {@code DelayedQueue} were not successful neither.
  *
- * <p>Given that it:</p>
+ * <p>Given that:</p>
  * <ul>
  *   <li>it seems difficult to configure {@code (Scheduled)ThreadPoolExecutor} in such a way
  *       that two or more threads are created only when really needed,</li>

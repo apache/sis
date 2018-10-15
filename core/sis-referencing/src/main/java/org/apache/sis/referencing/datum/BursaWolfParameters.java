@@ -520,7 +520,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @param  matrix     the matrix from which to get Bursa-Wolf parameters.
      * @param  tolerance  the tolerance error for the skew-symmetric matrix test, in units of PPM or arc-seconds (e.g. 1E-8).
-     * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
+     * @throws IllegalArgumentException if the specified matrix does not met the conditions.
      *
      * @see #getPositionVectorTransformation(Date)
      */

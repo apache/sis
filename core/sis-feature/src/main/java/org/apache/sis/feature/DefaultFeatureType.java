@@ -122,8 +122,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     private final boolean isAbstract;
 
     /**
-     * {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
-     * or operations. The feature type shall not contains associations.
+     * {@code true} if this feature type contains only attributes with [1 … 1] multiplicity, or operations.
+     * The feature type shall not contains associations.
      *
      * @see #isSimple()
      */
@@ -626,7 +626,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     }
 
     /**
-     * Returns {@code true} if this feature type contains only attributes constrained to the [1 … 1] cardinality,
+     * Returns {@code true} if this feature type contains only attributes with [1 … 1] multiplicity,
      * or operations (no feature association).
      * Such feature types can be handled as a {@linkplain org.apache.sis.util.iso.DefaultRecord records}.
      *
@@ -715,7 +715,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             /*
              * If the base property is an attribute, then the overriding property shall be either an attribute
              * or a parameterless operation producing an attribute.  The parameterless operation is considered
-             * has having a [1…1] cardinality.
+             * has having a [1…1] multiplicity.
              */
             if (base instanceof AttributeType<?>) {
                 final AttributeType<?> p0 = (AttributeType<?>) base;
@@ -736,7 +736,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 if (!p0.getValueClass().isAssignableFrom(p1.getValueClass())    ||
                     (minOccurs = p0.getMinimumOccurs()) > p1.getMinimumOccurs() ||
                     (maxOccurs = p0.getMaximumOccurs()) < p1.getMaximumOccurs() ||
-                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] cardinality for operations.
+                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] multiplicity for operations.
                 {
                     return false;
                 }
@@ -764,7 +764,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 final int minOccurs, maxOccurs;
                 if ((minOccurs = p0.getMinimumOccurs()) > p1.getMinimumOccurs() ||
                     (maxOccurs = p0.getMaximumOccurs()) < p1.getMaximumOccurs() ||
-                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] cardinality for operations.
+                    (p1 != other && (minOccurs > 1 || maxOccurs < 1)))             // [1…1] multiplicity for operations.
                 {
                     return false;
                 }

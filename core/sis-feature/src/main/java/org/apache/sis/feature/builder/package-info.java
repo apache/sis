@@ -43,13 +43,13 @@
  *
  * {@preformat text
  *   Capital ⇾ City
- *   ┌────────────┬─────────┬─────────────┬───────────────┐
- *   │ Name       │ Type    │ Cardinality │ Default value │
- *   ├────────────┼─────────┼─────────────┼───────────────┤
- *   │ name       │ String  │     [1 … 1] │ Utopia        │
- *   │ population │ Integer │     [1 … 1] │               │
- *   │ parliament │ String  │     [1 … 1] │               │
- *   └────────────┴─────────┴─────────────┴───────────────┘
+ *   ┌────────────┬─────────┬──────────────┬───────────────┐
+ *   │ Name       │ Type    │ Multiplicity │ Default value │
+ *   ├────────────┼─────────┼──────────────┼───────────────┤
+ *   │ name       │ String  │   [1 … 1]    │ Utopia        │
+ *   │ population │ Integer │   [1 … 1]    │               │
+ *   │ parliament │ String  │   [1 … 1]    │               │
+ *   └────────────┴─────────┴──────────────┴───────────────┘
  * }
  *
  * @author  Johann Sorel (Geomatys)

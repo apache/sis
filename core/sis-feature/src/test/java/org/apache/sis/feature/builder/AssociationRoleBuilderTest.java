@@ -37,7 +37,7 @@ import org.opengis.feature.FeatureAssociationRole;
  */
 public final strictfp class AssociationRoleBuilderTest extends TestCase {
     /**
-     * Tests the name, designation, definition, description and cardinality associated to the role.
+     * Tests the name, designation, definition, description and multiplicity associated to the role.
      */
     @Test
     public void testMetadata() {

@@ -435,7 +435,7 @@ final strictfp class PackageVerifier {
                         .append("Expected @XmlElement(required = ").append(info.isRequired).append(')').toString());
             }
             /*
-             * Following is a continuation of our check for cardinality, but also the beginning of the check
+             * Following is a continuation of our check for multiplicity, but also the beginning of the check
              * for return value type. The return type should be an interface with a UML annotation; we check
              * that this annotation contains the name of the expected type.
              */

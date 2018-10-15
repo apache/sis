@@ -64,7 +64,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         assertEquals("Forward 0°N",      0, log(tan(PI/4)),                   TOLERANCE);
         assertEquals("Inverse 0 m",      0, PI/2 - 2*atan(exp(0)),            TOLERANCE);
         assertEquals("Forward 90°S",     NEGATIVE_INFINITY, log(tan(0)),      TOLERANCE);
-        assertEquals("Forward (90+ε)°S", NaN,  log(tan(-nextUp(0))),          TOLERANCE);
+        assertEquals("Forward (90+ε)°S", NaN,  log(tan(nextDown(0))),         TOLERANCE);
         assertEquals("Inverse −∞",       PI/2, atan(exp(-NEGATIVE_INFINITY)), TOLERANCE);
         assertEquals("Inverse −∞ appr.", PI/2, atan(exp(LN_INFINITY + 1)),    TOLERANCE);
         /*

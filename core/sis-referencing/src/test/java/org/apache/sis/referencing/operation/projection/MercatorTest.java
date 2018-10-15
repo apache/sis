@@ -141,10 +141,10 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         assertEquals ("Forward 0°N",      0,                      transform(0),             tolerance);
         assertEquals ("Forward 90°N",     POSITIVE_INFINITY,      transform(+PI/2),         tolerance);
         assertEquals ("Forward 90°S",     NEGATIVE_INFINITY,      transform(-PI/2),         tolerance);
-        assertEquals ("Forward (90+ε)°N", POSITIVE_INFINITY,      transform(+nextUp(PI/2)), tolerance);
-        assertEquals ("Forward (90+ε)°S", NEGATIVE_INFINITY,      transform(-nextUp(PI/2)), tolerance);
-        assertBetween("Forward (90-ε)°N", +MIN_VALUE, +MAX_VALUE, transform(-nextUp(-PI/2)));
-        assertBetween("Forward (90-ε)°S", -MAX_VALUE, -MIN_VALUE, transform(+nextUp(-PI/2)));
+        assertEquals ("Forward (90+ε)°N", POSITIVE_INFINITY,      transform(nextUp  ( PI/2)), tolerance);
+        assertEquals ("Forward (90+ε)°S", NEGATIVE_INFINITY,      transform(nextDown(-PI/2)), tolerance);
+        assertBetween("Forward (90-ε)°N", +MIN_VALUE, +MAX_VALUE, transform(nextDown( PI/2)));
+        assertBetween("Forward (90-ε)°S", -MAX_VALUE, -MIN_VALUE, transform(nextUp  (-PI/2)));
 
         assertEquals ("Not a number",     NaN,   inverseTransform(NaN),                tolerance);
         assertEquals ("Inverse 0 m",      0,     inverseTransform(0),                  tolerance);

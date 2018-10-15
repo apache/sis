@@ -401,14 +401,26 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
-        final DirectPosition lower = envelope.getLowerCorner();
-        final DirectPosition upper = envelope.getUpperCorner();
         final int d = ordinates.length >>> 1;
-        for (int i=0; i<dimension; i++) {
-            final int iLower = beginIndex + i;
-            final int iUpper = iLower + d;
-            ordinates[iLower] = lower.getOrdinate(i);
-            ordinates[iUpper] = upper.getOrdinate(i);
+        if (envelope instanceof ArrayEnvelope) {
+            /*
+             * Optimization for a common case. This code path is used by Envelopes.compound(…).
+             * The main intent is to avoid the creation of temporary DirectPosition objects.
+             */
+            final double[] source = ((ArrayEnvelope) envelope).ordinates;
+            final int srcOffset = ((ArrayEnvelope) envelope).beginIndex();
+            System.arraycopy(source, srcOffset, ordinates, beginIndex, dimension);
+            System.arraycopy(source, srcOffset + (source.length >>> 1), ordinates, beginIndex + d, dimension);
+        } else {
+            @SuppressWarnings("null")
+            final DirectPosition lower = envelope.getLowerCorner();
+            final DirectPosition upper = envelope.getUpperCorner();
+            for (int i=0; i<dimension; i++) {
+                final int iLower = beginIndex + i;
+                final int iUpper = iLower + d;
+                ordinates[iLower] = lower.getOrdinate(i);
+                ordinates[iUpper] = upper.getOrdinate(i);
+            }
         }
         final CoordinateReferenceSystem envelopeCRS = envelope.getCoordinateReferenceSystem();
         if (envelopeCRS != null) {

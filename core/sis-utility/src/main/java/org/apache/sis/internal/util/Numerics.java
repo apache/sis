@@ -308,6 +308,27 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns {@code true} if the following text is non-null, non-empty
+     * and contains only digits from {@code '0'} to {@code '9'} inclusive.
+     *
+     * @param  text  the text to verify, or {@code null}.
+     * @return {@code true} if the given text is an unsigned integer.
+     */
+    public static boolean isUnsignedInteger(final String text) {
+        if (text != null) {
+            final int length = text.length();
+            if (length != 0) {
+                char c;
+                int i = 0;
+                while ((c = text.charAt(i)) >= '0' && c <= '9') {
+                    if (++i >= length) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Converts an unsigned {@code long} to a {@code float} value.
      *
      * @param  value  the unsigned {@code long} value.

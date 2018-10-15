@@ -111,6 +111,12 @@ public final class LegacyNamespaces {
     public static final String GTS = "http://www.isotc211.org/2005/gts";
 
     /**
+     * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "csw"}.
+     */
+    public static final String CSW = "http://www.opengis.net/cat/csw/2.0.2";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private LegacyNamespaces() {

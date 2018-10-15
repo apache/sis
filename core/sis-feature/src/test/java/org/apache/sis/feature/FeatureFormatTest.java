@@ -67,16 +67,16 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("World metropolis ⇾ Metropolis, University city\n" +
-                "┌──────────────┬─────────────────────┬─────────────┬───────────────┬────────────────────────────┐\n" +
-                "│ Name         │ Type                │ Cardinality │ Default value │ Characteristics            │\n" +
-                "├──────────────┼─────────────────────┼─────────────┼───────────────┼────────────────────────────┤\n" +
-                "│ city         │ String              │     [1 … 1] │ Utopia        │                            │\n" +
-                "│ population   │ Integer             │     [1 … 1] │               │                            │\n" +
-                "│ region       │ InternationalString │     [1 … 1] │               │                            │\n" +
-                "│ isGlobal     │ Boolean             │     [1 … 1] │               │                            │\n" +
-                "│ universities │ String              │     [0 … ∞] │               │                            │\n" +
-                "│ temperature  │ Float               │     [1 … 1] │               │ accuracy = 0.1, units = °C │\n" +
-                "└──────────────┴─────────────────────┴─────────────┴───────────────┴────────────────────────────┘\n", text);
+                "┌──────────────┬─────────────────────┬──────────────┬───────────────┬────────────────────────────┐\n" +
+                "│ Name         │ Type                │ Multiplicity │ Default value │ Characteristics            │\n" +
+                "├──────────────┼─────────────────────┼──────────────┼───────────────┼────────────────────────────┤\n" +
+                "│ city         │ String              │      [1 … 1] │ Utopia        │                            │\n" +
+                "│ population   │ Integer             │      [1 … 1] │               │                            │\n" +
+                "│ region       │ InternationalString │      [1 … 1] │               │                            │\n" +
+                "│ isGlobal     │ Boolean             │      [1 … 1] │               │                            │\n" +
+                "│ universities │ String              │      [0 … ∞] │               │                            │\n" +
+                "│ temperature  │ Float               │      [1 … 1] │               │ accuracy = 0.1, units = °C │\n" +
+                "└──────────────┴─────────────────────┴──────────────┴───────────────┴────────────────────────────┘\n", text);
     }
 
     /**
@@ -95,15 +95,15 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("Identified city ⇾ City\n" +
-                "┌────────────┬─────────┬─────────────┬─────────────────────┐\n" +
-                "│ Name       │ Type    │ Cardinality │ Default value       │\n" +
-                "├────────────┼─────────┼─────────────┼─────────────────────┤\n" +
-                "│ city       │ String  │     [1 … 1] │ Utopia              │\n" +
-                "│ population │ Integer │     [1 … 1] │                     │\n" +
-                "│ someId     │ String  │     [1 … 1] │ = city              │\n" +
-                "│ anotherId  │ String  │     [1 … 1] │ = <city:population> │\n" +
-                "│ new city   │ String  │     [1 … 1] │ = create(founder)   │\n" +
-                "└────────────┴─────────┴─────────────┴─────────────────────┘\n", text);
+                "┌────────────┬─────────┬──────────────┬─────────────────────┐\n" +
+                "│ Name       │ Type    │ Multiplicity │ Default value       │\n" +
+                "├────────────┼─────────┼──────────────┼─────────────────────┤\n" +
+                "│ city       │ String  │      [1 … 1] │ Utopia              │\n" +
+                "│ population │ Integer │      [1 … 1] │                     │\n" +
+                "│ someId     │ String  │      [1 … 1] │ = city              │\n" +
+                "│ anotherId  │ String  │      [1 … 1] │ = <city:population> │\n" +
+                "│ new city   │ String  │      [1 … 1] │ = create(founder)   │\n" +
+                "└────────────┴─────────┴──────────────┴─────────────────────┘\n", text);
     }
 
     /**
@@ -129,13 +129,13 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final FeatureFormat format = create();
         final String text = format.format(feature);
         assertMultilinesEquals("City for human ⇾ City\n" +
-                "┌────────────┬─────────┬─────────────┬───────────────┬─────────────┐\n" +
-                "│ Name       │ Type    │ Cardinality │ Default value │ Remarks     │\n" +
-                "├────────────┼─────────┼─────────────┼───────────────┼─────────────┤\n" +
-                "│ city       │ String  │     [1 … 1] │ Utopia        │             │\n" +
-                "│ population │ Integer │     [1 … 1] │               │             │\n" +
-                "│ highway    │ String  │     [0 … 2] │               │ Deprecated¹ │\n" +
-                "└────────────┴─────────┴─────────────┴───────────────┴─────────────┘\n" +
+                "┌────────────┬─────────┬──────────────┬───────────────┬─────────────┐\n" +
+                "│ Name       │ Type    │ Multiplicity │ Default value │ Remarks     │\n" +
+                "├────────────┼─────────┼──────────────┼───────────────┼─────────────┤\n" +
+                "│ city       │ String  │      [1 … 1] │ Utopia        │             │\n" +
+                "│ population │ Integer │      [1 … 1] │               │             │\n" +
+                "│ highway    │ String  │      [0 … 2] │               │ Deprecated¹ │\n" +
+                "└────────────┴─────────┴──────────────┴───────────────┴─────────────┘\n" +
                 "¹ Replaced by pedestrian areas.\n", text);
     }
 

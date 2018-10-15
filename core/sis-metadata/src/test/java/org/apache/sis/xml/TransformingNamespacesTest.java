@@ -50,7 +50,6 @@ public final strictfp class TransformingNamespacesTest extends TestCase implemen
      * Tests {@link TransformingNamespaces#getPrefixes(String)}.
      */
     @Test
-    @SuppressWarnings("unchecked")      // TODO: remove with JDK9
     public void testGetPrefixes() {
         final NamespaceContext fns = TransformingNamespaces.asXML(this, TransformVersion.ISO19139);
         final Iterator<String> it = fns.getPrefixes(LegacyNamespaces.GMD);

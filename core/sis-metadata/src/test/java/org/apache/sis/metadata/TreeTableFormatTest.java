@@ -146,12 +146,12 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  │   └─Attribute\n" +
             "  │       ├─Max value………………… 0.26\n" +
             "  │       ├─Min value………………… 0.25\n" +
-            "  │       └─Units…………………………… cm\n" +
+            "  │       └─Units…………………………… centimetre\n" +
             "  └─Attribute group (2 of 2)\n" +
             "      └─Attribute\n" +
             "          ├─Max value………………… 0.29\n" +
             "          ├─Min value………………… 0.28\n" +
-            "          └─Units…………………………… cm\n", text);
+            "          └─Units…………………………… centimetre\n", text);
     }
 
     /**

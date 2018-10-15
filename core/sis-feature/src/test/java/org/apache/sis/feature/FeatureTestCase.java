@@ -190,12 +190,12 @@ public abstract strictfp class FeatureTestCase extends TestCase {
         setAttributeValue("city", "Utopia", "Atlantide");
         /*
          * At this point we have the following "City" feature:
-         *   ┌────────────┬─────────┬─────────────┬───────────┐
-         *   │ Name       │ Type    │ Cardinality │ Value     │
-         *   ├────────────┼─────────┼─────────────┼───────────┤
-         *   │ city       │ String  │ [1 … 1]     │ Atlantide │
-         *   │ population │ Integer │ [1 … 1]     │           │
-         *   └────────────┴─────────┴─────────────┴───────────┘
+         *   ┌────────────┬─────────┬──────────────┬───────────┐
+         *   │ Name       │ Type    │ Multiplicity │ Value     │
+         *   ├────────────┼─────────┼──────────────┼───────────┤
+         *   │ city       │ String  │   [1 … 1]    │ Atlantide │
+         *   │ population │ Integer │   [1 … 1]    │           │
+         *   └────────────┴─────────┴──────────────┴───────────┘
          * Verify that attempt to set an illegal value fail.
          */
         try {
@@ -248,7 +248,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
         setAttributeValue("city", "Utopia", "New York");
         setAttributeValue("population", null, 8405837); // Estimation for 2013.
         /*
-         * Set the attribute value on a property having [0 … ∞] cardinality.
+         * Set the attribute value on a property having [0 … ∞] multiplicity.
          * The feature implementation should put the value in a list.
          */
         assertEquals("universities", Collections.emptyList(), getAttributeValue("universities"));

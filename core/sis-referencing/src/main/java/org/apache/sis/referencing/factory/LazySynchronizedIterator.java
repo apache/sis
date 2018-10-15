@@ -25,7 +25,7 @@ import org.apache.sis.internal.util.AbstractIterator;
  * All uses of an {@code Iterable<E>} (including its iterator) is synchronized on that {@code Iterable} instance.
  *
  * <p>Note that despite the above-cited synchronization, this iterator is <strong>not</strong> thread-safe:
- * each thread needs to use its own iterator instance. However provided that the above condition is meet,
+ * each thread needs to use its own iterator instance. However provided that the above condition is met,
  * different threads can safely use their iterators concurrently even if the underlying {@code Iterable}s
  * were not thread-safe, because of the synchronization on {@code Iterable<E>} instances.</p>
  *

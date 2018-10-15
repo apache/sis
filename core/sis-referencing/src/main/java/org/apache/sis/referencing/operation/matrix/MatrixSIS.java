@@ -755,7 +755,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Compares this matrix with the given object for equality. To be considered equal, the two
-     * objects must meet the following conditions, which depend on the {@code mode} argument:
+     * objects must met the following conditions, which depend on the {@code mode} argument:
      *
      * <ul>
      *   <li>{@link ComparisonMode#STRICT STRICT}:

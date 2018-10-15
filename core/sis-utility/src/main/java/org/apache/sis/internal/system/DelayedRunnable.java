@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -49,9 +49,19 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
     final long timestamp;
 
     /**
+     * Creates a new task to be executed after the given delay.
+     *
+     * @param delay  delay before execution of this task.
+     * @param unit   unit of measurement of given {@code delay}.
+     */
+    protected DelayedRunnable(final int delay, final TimeUnit unit) {
+        timestamp = System.nanoTime() + unit.toNanos(delay);
+    }
+
+    /**
      * Creates a new task to be executed at the given time.
      * It is user's responsibility to add the {@link System#nanoTime()} value
-     * to the delay he wants to wait.
+     * to the delay (s)he wants to wait.
      *
      * @param timestamp  time of execution of this task, in nanoseconds relative to {@link System#nanoTime()}.
      */

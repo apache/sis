@@ -73,7 +73,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  * (for example in order to use a {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS polar coordinate system}).
  *
  * <p>A {@code DerivedCRS} instance may also implement one of the interfaces listed below,
- * provided that the conditions in the right column are meet (derived from ISO 19162):</p>
+ * provided that the conditions in the right column are met (derived from ISO 19162):</p>
  *
  * <table class="sis">
  *   <caption>Derived CRS types</caption>

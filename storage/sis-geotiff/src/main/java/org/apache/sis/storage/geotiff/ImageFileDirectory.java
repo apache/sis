@@ -28,6 +28,7 @@ import javax.measure.quantity.Length;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -75,6 +76,14 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      * Used for fetching information like the input channel and where to report warnings.
      */
     private final Reader reader;
+
+    /**
+     * The identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
+     * The first image has the sequence number "1".
+     *
+     * @see #getIdentifier()
+     */
+    private final GenericName identifier;
 
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
@@ -338,10 +347,12 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      * Creates a new image file directory.
      *
      * @param reader  information about the input stream to read, the metadata and the character encoding.
+     * @param index   the image index as a sequence number starting with 0 for the first image.
      */
-    ImageFileDirectory(final Reader reader) {
+    ImageFileDirectory(final Reader reader, final int index) {
         super(reader.owner);
         this.reader = reader;
+        identifier = reader.nameFactory.createLocalName(reader.owner.identifier, String.valueOf(index + 1));
     }
 
     /**
@@ -363,6 +374,17 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      */
     private Charset encoding() {
         return reader.owner.encoding;
+    }
+
+    /**
+     * Returns the identifier as a sequence number in the namespace of the {@link GeoTiffStore}.
+     * The first image has the sequence number "1".
+     *
+     * @see #getMetadata()
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return identifier;
     }
 
     /**

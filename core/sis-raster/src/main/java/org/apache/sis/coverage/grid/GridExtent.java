@@ -19,14 +19,21 @@ package org.apache.sis.coverage.grid;
 import java.util.Arrays;
 import java.util.Optional;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.HashMap;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -64,6 +71,22 @@ public class GridExtent implements Serializable {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4717353677844056017L;
+
+    /**
+     * The dimension name types for given coordinate system axis directions.
+     * This map contains only the "positive" axis directions.
+     *
+     * @todo Verify if there is more directions to add as of ISO 19111:2018.
+     */
+    private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS;
+    static {
+        final Map<AxisDirection,DimensionNameType> dir = new HashMap<>(6);
+        dir.put(AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN);
+        dir.put(AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW);
+        dir.put(AxisDirection.UP,              DimensionNameType.VERTICAL);
+        dir.put(AxisDirection.FUTURE,          DimensionNameType.TIME);
+        AXIS_DIRECTIONS = dir;
+    }
 
     /**
      * Default axis types for the two-dimensional cases.
@@ -250,11 +273,88 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Creates a new grid extent by rounding the given envelope to (usually) nearest integers.
+     * The envelope coordinates shall be cell indices with lower values inclusive and upper values exclusive.
+     * Envelopes crossing the anti-meridian shall be {@linkplain GeneralEnvelope#simplify() simplified}.
+     * The envelope CRS is ignored, except for identifying dimension names for information purpose.
+     * The way floating point values are rounded to integers may be adjusted in any future version.
+     *
+     * <p><b>NOTE:</b> this constructor is not public because its contract is a bit approximative.</p>
+     *
+     * @param  envelope  the envelope containing cell indices to store in a {@code GridExtent}.
+     *
+     * @see #toCRS(MathTransform)
+     */
+    GridExtent(final AbstractEnvelope envelope) {
+        final int dimension = envelope.getDimension();
+        ordinates = allocate(dimension);
+        for (int i=0; i<dimension; i++) {
+            final double min = envelope.getLower(i);
+            final double max = envelope.getUpper(i);
+            if (min >= Long.MIN_VALUE && max <= Long.MAX_VALUE && min <= max) {
+                long lower = Math.round(min);
+                long upper = Math.round(max);
+                if (lower != upper) upper--;                                // For making the coordinate inclusive.
+                /*
+                 * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
+                 * For example if 'min' was 1.49999 and 'max' was 2.50001, the roundings will create a [1…3] range
+                 * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
+                 * before and after rounding. We attempt an adjustment only if the span mistmatch is ±1, otherwise
+                 * the difference is assumed to be caused by overflow. On the three values that can be affected by
+                 * the adjustment (min, max and span), we change only the number which is farthest from an integer
+                 * value.
+                 */
+                long error = (upper - lower) + 1;                           // Negative number if overflow.
+                if (error >= 0) {
+                    final double span = envelope.getSpan(i);
+                    final long extent = Math.round(span);
+                    if (extent != 0 && Math.abs(error -= extent) == 1) {
+                        final double dmin = Math.abs(min - Math.rint(min));
+                        final double dmax = Math.abs(max - Math.rint(max));
+                        final boolean adjustMax = (dmax >= dmin);
+                        if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
+                            if (adjustMax) upper = Math.subtractExact(upper, error);
+                            else lower = Math.addExact(lower, error);
+                        }
+                    }
+                }
+                ordinates[i] = lower;
+                ordinates[i + dimension] = upper;
+            } else {
+                throw new IllegalArgumentException(Resources.format(
+                        Resources.Keys.IllegalGridEnvelope_3, i, min, max));
+            }
+        }
+        /*
+         * At this point we finished to compute ordinate values.
+         * Now try to infer dimension types from the CRS axes.
+         * This is only for information purpose.
+         */
+        DimensionNameType[] axisTypes = null;
+        final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            for (int i=0; i<dimension; i++) {
+                final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                if (type != null) {
+                    if (axisTypes == null) {
+                        axisTypes = new DimensionNameType[dimension];
+                    }
+                    axisTypes[i] = type;
+                }
+            }
+        }
+        types = validateAxisTypes(axisTypes);
+    }
+
+    /**
      * Creates a new grid envelope as a copy of the given one.
      *
      * @param  extent  the grid envelope to copy.
      * @throws IllegalArgumentException if a coordinate value in the low part is
      *         greater than the corresponding coordinate value in the high part.
+     *
+     * @see #castOrCopy(GridEnvelope)
      */
     protected GridExtent(final GridEnvelope extent) {
         ArgumentChecks.ensureNonNull("extent", extent);
@@ -421,6 +521,8 @@ public class GridExtent implements Serializable {
      *
      * @param  gridToCRS  a transform from <em>pixel corner</em> to real world coordinates
      * @return this grid extent in real world coordinates.
+     *
+     * @see #GridExtent(AbstractEnvelope)
      */
     final GeneralEnvelope toCRS(final MathTransform gridToCRS) throws TransformException {
         final int dimension = getDimension();

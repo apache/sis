@@ -255,6 +255,16 @@ public class JoinFeatureSet extends AbstractFeatureSet {
     }
 
     /**
+     * Returns the name of the join operation resulting feature type.
+     *
+     * @return resulting feature type name.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return type.getName();
+    }
+
+    /**
      * Creates a minimal {@code properties} map for feature type or property type constructors.
      * This minimalist map contain only the mandatory entry, which is the name.
      */

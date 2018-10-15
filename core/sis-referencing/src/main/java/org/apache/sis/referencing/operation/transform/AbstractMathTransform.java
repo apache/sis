@@ -884,7 +884,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * equal or {@linkplain ComparisonMode#APPROXIMATIVE approximately} equal.
      * This method may conservatively returns {@code false} if unsure.
      *
-     * <p>The default implementation returns {@code true} if the following conditions are meet:</p>
+     * <p>The default implementation returns {@code true} if the following conditions are met:</p>
      * <ul>
      *   <li>{@code object} is an instance of the same class than {@code this}. We require the
      *       same class because there is no interface for the various kinds of transform.</li>

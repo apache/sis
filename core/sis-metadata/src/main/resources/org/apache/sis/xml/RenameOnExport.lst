@@ -1,14 +1,10 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements;
+# and to You under the Apache License, Version 2.0.
 #
-# Elements to rename during exports.
-# Lines with zero-space indentation are namespace URIs.
-# Lines with one-space  indentation are XML types.
-# Lines with two-spaces indentation are properties.
-# actual/exported means that a property needs to be renamed.
+# See readme.html is source code for the syntax of this file.
 #
 http://www.isotc211.org/2005/gmd
  MD_Georectified
-  centrePoint/centerPoint
- MI_Georectified !other namespace
   centrePoint/centerPoint
  DQ_QuantitativeResult
   valueRecordType/valueType
@@ -110,8 +106,7 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
   detectedPolarisation
  MI_CoverageDescription
   rangeElementDescription
- MI_ImageDescription
-  rangeElementDescription
+ MI_ImageDescription : MI_CoverageDescription
  MI_RangeElementDescription
   name
   definition
@@ -155,7 +150,7 @@ http://standards.iso.org/iso/19115/-2/gmi/1.0
   acquisitionInformation
  MI_Georeferenceable
   geolocationInformation
- MI_Georectified
+ MI_Georectified : MD_Georectified
   checkPoint
  MI_GCP
   geographicCoordinates

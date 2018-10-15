@@ -16,9 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+import java.util.List;
 import java.util.Collections;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -42,7 +44,7 @@ import static org.opengis.test.Validators.validate;
  * This class inherits the test methods defined in {@link TransformTestCase}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -226,5 +228,39 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         envelope.setRange(0, -0.5, 359.5);
         expected.setRange(0, -180, 180);
         assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+    }
+
+    /**
+     * Test {@link Envelopes#compound(Envelope...)} method.
+     *
+     * @throws FactoryException if an error occurred while creating the compound CRS.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testCompound() throws FactoryException {
+        final GeneralEnvelope element0 = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final GeneralEnvelope element1 = new GeneralEnvelope(HardCodedCRS.TIME);
+        final GeneralEnvelope expected = new GeneralEnvelope(3);
+        element0.setRange(0,   20,   30);
+        expected.setRange(0,   20,   30);
+        element0.setRange(1,   40,   45);
+        expected.setRange(1,   40,   45);
+        element1.setRange(0, 1000, 1010);
+        expected.setRange(2, 1000, 1010);
+        Envelope env = Envelopes.compound(element0, element1);
+        final List<SingleCRS> crs = CRS.getSingleComponents(env.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(expected, env);
+        assertEquals("crs.components.count", 2, crs.size());
+        assertSame("crs.components[0]", HardCodedCRS.WGS84, crs.get(0));
+        assertSame("crs.components[1]", HardCodedCRS.TIME, crs.get(1));
+        /*
+         * Try again without CRS in the second component.
+         * The compound envelope shall not have CRS anymore.
+         */
+        element1.setCoordinateReferenceSystem(null);
+        env = Envelopes.compound(element0, element1);
+        assertEnvelopeEquals(expected, env);
+        assertNull("crs.components", env.getCoordinateReferenceSystem());
     }
 }

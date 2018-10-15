@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
@@ -52,6 +53,17 @@ import org.apache.sis.util.Exceptions;
  * @module
  */
 public class SQLStore extends DataStore implements Aggregate {
+    /**
+     * Names of possible public getter methods for data source title, in preference order.
+     */
+    private static final String[] NAME_GETTERS = {
+            "getDescription",           // PostgreSQL, SQL Server
+            "getDataSourceName",        // Derby
+            "getDatabaseName",          // Derby, PostgreSQL, SQL Server
+            "getUrl",                   // PostgreSQL
+            "getURL"                    // SQL Server
+    };
+
     /**
      * The data source to use for obtaining connections to the database.
      */
@@ -132,6 +144,16 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * SQL data store root resource has no identifier.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        return null;
+    }
+
+    /**
      * Returns the database model, analyzing the database schema when first needed.
      */
     private synchronized Database model() throws DataStoreException {
@@ -148,10 +170,11 @@ public class SQLStore extends DataStore implements Aggregate {
     /**
      * Returns the database model, analyzing the database schema when first needed.
      * This method performs the same work than {@link #model()}, but using an existing connection.
+     * Callers must own a synchronization lock on {@code this}.
      *
      * @param c  connection to the database.
      */
-    private synchronized Database model(final Connection c) throws DataStoreException, SQLException {
+    private Database model(final Connection c) throws DataStoreException, SQLException {
         if (model == null) {
             model = new Database(this, c, source, tableNames, listeners);
         }
@@ -178,6 +201,25 @@ public class SQLStore extends DataStore implements Aggregate {
                 model.listTables(c.getMetaData(), builder);
             } catch (SQLException e) {
                 throw new DataStoreException(Exceptions.unwrap(e));
+            }
+            /*
+             * Try to find a title from the data source description.
+             */
+            for (final String c : NAME_GETTERS) {
+                try {
+                    final Method method = source.getClass().getMethod(c);
+                    if (method.getReturnType() == String.class) {
+                        String name = (String) method.invoke(source);
+                        if (name != null && !(name = name.trim()).isEmpty()) {
+                            builder.addTitle(name);
+                            break;
+                        }
+                    }
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignore - try the next method.
+                } catch (ReflectiveOperationException e) {
+                    throw new DataStoreException(Exceptions.unwrap(e));
+                }
             }
             metadata = builder.build(true);
         }

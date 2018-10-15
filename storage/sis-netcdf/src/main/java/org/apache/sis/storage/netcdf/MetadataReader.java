@@ -63,7 +63,6 @@ import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -167,11 +166,6 @@ final class MetadataReader extends MetadataBuilder {
      * which have been found in the NeCDF file.
      */
     private final String[] searchPath;
-
-    /**
-     * The name factory, created when first needed.
-     */
-    private transient NameFactory nameFactory;
 
     /**
      * The contact, used at metadata creation time for avoiding to construct identical objects
@@ -933,12 +927,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         newSampleDimension();
         final String name = trim(variable.getName());
         if (name != null) {
-            if (nameFactory == null) {
-                nameFactory = DefaultFactories.forBuildin(NameFactory.class);
-                // Real dependency injection to be used in a future version.
-            }
-            setBandIdentifier(nameFactory.createMemberName(null, name,
-                    nameFactory.createTypeName(null, variable.getDataTypeName())));
+            final NameFactory f = decoder.nameFactory;
+            setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
         }
         Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
         final String id = (v.length == 1) ? trim((String) v[0]) : null;

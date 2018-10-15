@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Collection;
+import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStore;
@@ -37,6 +40,7 @@ import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
+import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 
 
@@ -61,6 +65,9 @@ public class NetcdfStore extends DataStore implements Aggregate {
 
     /**
      * The {@link NetcdfStoreProvider#LOCATION} parameter value, or {@code null} if none.
+     * This is used for information purpose only, not for actual reading operations.
+     *
+     * @see #getOpenParameters()
      */
     private final URI location;
 
@@ -99,6 +106,14 @@ public class NetcdfStore extends DataStore implements Aggregate {
             throw new UnsupportedStorageException(super.getLocale(), NetcdfStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        String id = decoder.stringValue(ACDD.id);
+        if (id == null || (id = id.trim()).isEmpty()) {
+            id = decoder.getFilename();
+        }
+        if (id != null) {
+            final NameFactory f = decoder.nameFactory;
+            decoder.namespace = f.createNameSpace(f.createLocalName(null, id), null);
+        }
     }
 
     /**
@@ -134,6 +149,20 @@ public class NetcdfStore extends DataStore implements Aggregate {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns an identifier constructed from global attributes or the filename of the netCDF file.
+     *
+     * @return the identifier fetched from global attributes or the filename, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @since 1.0
+     */
+    @Override
+    public GenericName getIdentifier() throws DataStoreException {
+        final NameSpace namespace = decoder.namespace;
+        return (namespace != null) ? namespace.name() : null;
     }
 
     /**

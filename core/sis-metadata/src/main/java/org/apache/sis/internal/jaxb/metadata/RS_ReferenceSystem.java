@@ -28,7 +28,10 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  *
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
- * @since   0.3
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
+ *
+ * @since 0.3
  * @module
  */
 public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {

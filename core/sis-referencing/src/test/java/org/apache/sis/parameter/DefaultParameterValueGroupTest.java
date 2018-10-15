@@ -57,10 +57,10 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      * The descriptors of parameters to be tested by this class.
      * The default descriptors are:
      * <ul>
-     *   <li>One mandatory parameter (cardinality [1…1]).</li>
-     *   <li>One mandatory parameter (cardinality [1…1]).</li>
-     *   <li>One optional  parameter (cardinality [0…1]).</li>
-     *   <li>One optional  parameter (cardinality [0…2]) — invalid according ISO 19111, but supported by SIS.</li>
+     *   <li>One mandatory parameter (multiplicity [1…1]).</li>
+     *   <li>One mandatory parameter (multiplicity [1…1]).</li>
+     *   <li>One optional  parameter (multiplicity [0…1]).</li>
+     *   <li>One optional  parameter (multiplicity [0…2]) — invalid according ISO 19111, but supported by SIS.</li>
      * </ul>
      *
      * Some test methods may replace the default descriptor by an other one.
@@ -68,7 +68,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     private ParameterDescriptorGroup descriptor = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2;
 
     /**
-     * Creates values for all parameters defined by the {@linkplain #descriptor} (regardless their cardinality),
+     * Creates values for all parameters defined by the {@linkplain #descriptor} (regardless their multiplicity),
      * and assigns to them an integer value in sequence with the given step. For example if {@code step} is 10,
      * then this method will create parameters with values 10, 20, 30 and 40.
      */
@@ -323,7 +323,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertTrue  ("add(“Optional 3”)",  values.add(toAdd[2])); assertEquals("size", 3, values.size());
         assertTrue  ("add(“Optional 4”)",  values.add(toAdd[3])); assertEquals("size", 4, values.size());
         /*
-         * Test [1…1] cardinality.
+         * Test [1…1] multiplicity.
          */
         try {
             values.add(toAdd[1]);
@@ -335,7 +335,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         }
         assertEquals("size", 4, values.size()); // Size shall be unchanged.
         /*
-         * Test [0…1] cardinality.
+         * Test [0…1] multiplicity.
          */
         try {
             values.add(toAdd[2]);
@@ -347,7 +347,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         }
         assertEquals("size", 4, values.size()); // Size shall be unchanged.
         /*
-         * Test [0…2] cardinality.
+         * Test [0…2] multiplicity.
          */
         assertTrue("add(“Optional 4”)",values.add(toAdd[3]));
         assertEquals("size", 5, values.size());

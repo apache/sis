@@ -29,6 +29,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -203,7 +204,7 @@ public class GridGeometry implements Serializable {
     /**
      * Creates a new grid geometry from a grid envelope and a mapping from pixel coordinates to "real world" coordinates.
      * At least one of {@code extent}, {@code gridToCRS} or {@code crs} arguments shall be non-null.
-     * If {@code gridToCRS} is non-null, than {@code anchor} shall be non-null too with one of the following values:
+     * If {@code gridToCRS} is non-null, then {@code anchor} shall be non-null too with one of the following values:
      *
      * <ul>
      *   <li>{@link PixelInCell#CELL_CENTER} if conversions of cell indices by {@code gridToCRS} give "real world"
@@ -218,9 +219,12 @@ public class GridGeometry implements Serializable {
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
      * to always think about wether their <cite>grid to CRS</cite> transform is mapping pixel corner or center.</div>
      *
-     * <div class="note"><b>Upcoming API generalization:</b>
+     * <div class="warning"><b>Upcoming API generalization:</b>
      * the {@code extent} type of this method may be changed to {@code GridEnvelope} interface in a future Apache SIS version.
-     * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+     * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.
+     * In addition, the {@code PixelInCell} code list currently defined in the {@code org.opengis.referencing.datum} package
+     * may move in another package in a future GeoAPI version because this type is no longer defined by the ISO 19111 standard
+     * after the 2018 revision.</div>
      *
      * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
      * @param  anchor     {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
@@ -249,7 +253,7 @@ public class GridGeometry implements Serializable {
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
         GeneralEnvelope env = null;
-        if (extent != null && gridToCRS != null) {
+        if (extent != null && cornerToCRS != null) {
             env = extent.toCRS(cornerToCRS);
             env.setCoordinateReferenceSystem(crs);
         } else if (crs != null) {
@@ -263,14 +267,79 @@ public class GridGeometry implements Serializable {
          * The easiest way to estimate a resolution is then to ask for the derivative at some
          * arbitrary point. For this constructor, we take the grid center.
          */
-        final Matrix mat = MathTransforms.getMatrix(gridToCRS);
-        if (mat != null) {
-            resolution = resolution(mat, 1);
+        final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+        if (matrix != null) {
+            resolution = resolution(matrix, 1);
         } else if (extent != null && gridToCRS != null) {
             resolution = resolution(gridToCRS.derivative(extent.getCentroid()), 0);
         } else {
             resolution = null;
         }
+        nonLinears = findNonLinearTargets(gridToCRS);
+    }
+
+    /**
+     * Creates a new grid geometry from a geospatial envelope and a mapping from pixel coordinates to "real world" coordinates.
+     * At least one of {@code gridToCRS} or {@code envelope} arguments shall be non-null.
+     * If {@code gridToCRS} is non-null, then {@code anchor} shall be non-null too with one of the values documented in the
+     * {@link #GridGeometry(GridExtent, PixelInCell, MathTransform, CoordinateReferenceSystem) constructor expecting a grid
+     * extent}.
+     *
+     * <p>The given envelope shall encompass all cell surfaces, from the left border of leftmost pixel to the right border
+     * of the rightmost pixel and similarly along other axes. This constructor tries to store a geospatial envelope close
+     * to the specified envelope, but there is no guarantees that the envelope returned by {@link #getEnvelope()} will be
+     * equal to the given envelope. The envelope stored in the new {@code GridGeometry} may be slightly smaller, larger or
+     * shifted because the floating point values used in geospatial envelope can not always be mapped to the integer
+     * coordinates used in {@link GridExtent}.
+     * The rules for deciding whether coordinates should be rounded toward nearest integers,
+     * to {@linkplain Math#floor(double) floor} or to {@linkplain Math#ceil(double) ceil} values
+     * are implementation details and may be adjusted in any Apache SIS versions.</p>
+     *
+     * <p>Because of the uncertainties explained in above paragraph, this constructor should be used only in last resort,
+     * when the grid envelope is unknown. For determinist results, developers should prefer the
+     * {@linkplain #GridGeometry(GridExtent, PixelInCell, MathTransform, CoordinateReferenceSystem) constructor using grid extent}
+     * as much as possible. In particular, this constructor is not suitable for computing grid geometry of tiles in a tiled image,
+     * because the above-cited uncertainties may result in apparently random black lines between tiles.</p>
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The {@code PixelInCell} code list currently defined in the {@code org.opengis.referencing.datum} package
+     * may move in another package in a future GeoAPI version because this type is no longer defined by the
+     * ISO 19111 standard after the 2018 revision. This code list may be taken by ISO 19123 in a future revision.</div>
+     *
+     * @param  anchor     {@linkplain PixelInCell#CELL_CENTER Cell center} for OGC conventions or
+     *                    {@linkplain PixelInCell#CELL_CORNER cell corner} for Java2D/JAI conventions.
+     * @param  gridToCRS  the mapping from grid coordinates to "real world" coordinates, or {@code null} if unknown.
+     * @param  envelope   the geospatial envelope, including its coordinate reference system if available.
+     *                    There is no guarantees that the envelope actually stored in the {@code GridGeometry}
+     *                    will be equal to this specified envelope.
+     * @throws TransformException if the math transform can not compute the grid envelope or the resolution.
+     */
+    @SuppressWarnings("null")
+    public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope) throws TransformException {
+        if (gridToCRS == null) {
+            ArgumentChecks.ensureNonNull("envelope", envelope);
+        } else if (envelope != null) {
+            ensureDimensionMatches("envelope", gridToCRS.getTargetDimensions(), envelope.getDimension());
+        }
+        this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
+        this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
+        Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+        int numToIgnore = 1;
+        if (envelope != null && cornerToCRS != null) {
+            GeneralEnvelope env = Envelopes.transform(cornerToCRS.inverse(), envelope);
+            extent = new GridExtent(env);
+            env = extent.toCRS(cornerToCRS);
+            env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
+            this.envelope = new ImmutableEnvelope(env);
+            if (matrix == null) {
+                matrix = gridToCRS.derivative(extent.getCentroid());    // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
+                numToIgnore = 0;
+            }
+        } else {
+            this.extent   = null;
+            this.envelope = ImmutableEnvelope.castOrCopy(envelope);
+        }
+        resolution = (matrix != null) ? resolution(matrix, numToIgnore) : null;
         nonLinears = findNonLinearTargets(gridToCRS);
     }
 
@@ -374,6 +443,8 @@ public class GridGeometry implements Serializable {
      * Returns the bounding box of "real world" coordinates for this grid geometry.
      * This envelope is computed from the {@linkplain #getExtent() grid extent}, which is
      * {@linkplain #getGridToCRS(PixelInCell) transformed} to the "real world" coordinate system.
+     * The returned envelope encompasses all cell surfaces, from the left border of leftmost pixel
+     * to the right border of the rightmost pixel and similarly along other axes.
      *
      * @return the bounding box in "real world" coordinates (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no envelope —
@@ -747,16 +818,40 @@ public class GridGeometry implements Serializable {
             appendLabel(buffer, "Grid size", visible);
             if (dimension == 0) {
                 buffer.append("unspecified");
-            } else for (int i=0; i<dimension; i++) {
-                if (i != 0) buffer.append(" × ");
-                buffer.append(extent.getSize(i));
-            }
-            appendLabel(buffer, "Grid low", visible);
-            if (dimension == 0) {
-                buffer.append("unspecified");
-            } else for (int i=0; i<dimension; i++) {
-                if (i != 0) buffer.append(", ");
-                buffer.append(extent.getLow(i));
+            } else {
+                /*
+                 * Get the string representations of all GridExtent numbers before to write them.
+                 * We do that for computing their length, in order to apply right alignment.
+                 */
+                final int NUM_PROPERTIES = 3;
+                final int[] columnSizes = new int[dimension];
+                final String[] values = new String[dimension * NUM_PROPERTIES];      // Will contain (span, low, high) tuples.
+                for (int i=0; i<values.length; i++) {
+                    final long value;
+                    int margin = 0;
+                    final int dim = i / NUM_PROPERTIES;
+                    switch (i % NUM_PROPERTIES) {
+                        case 0: value = extent.getSize(dim); if (i != 0) margin = 1; break;
+                        case 1: value = extent.getLow (dim); break;
+                        case 2: value = extent.getHigh(dim); break;
+                        default: throw new AssertionError(i);
+                    }
+                    final int length = (values[i] = String.valueOf(value)).length() + margin;
+                    if (length > columnSizes[dim]) columnSizes[dim] = length;
+                }
+                for (int t=0; t<NUM_PROPERTIES; t++) {
+                    String separator = ", ";
+                    switch (t) {
+                        case 0: separator = " ×"; break;
+                        case 1: appendLabel(buffer, "Grid low",  visible); break;
+                        case 2: appendLabel(buffer, "Grid high", visible); break;
+                    }
+                    for (int i=0; i<dimension; i++) {
+                        if (i != 0) buffer.append(separator);
+                        final String value = values[i*NUM_PROPERTIES + t];
+                        buffer.append(CharSequences.spaces(columnSizes[i] - value.length())).append(value);
+                    }
+                }
             }
         }
         CoordinateSystem cs = null;
@@ -791,11 +886,15 @@ public class GridGeometry implements Serializable {
             appendLabel(buffer, "Resolution", visible);
             if (resolution == null) {
                 buffer.append("unspecified");
-            } for (int i=0; i<resolution.length; i++) {
+            } else for (int i=0; i<resolution.length; i++) {
                 if (i != 0) buffer.append(" × ");
                 buffer.append((float) resolution[i]);
                 if (cs != null) {
-                    buffer.append(' ').append(cs.getAxis(i).getUnit());
+                    final String unit = String.valueOf(cs.getAxis(i).getUnit());
+                    if (unit.isEmpty() || Character.isLetterOrDigit(unit.codePointAt(0))) {
+                        buffer.append(' ');
+                    }
+                    buffer.append(unit);
                 }
             }
         }

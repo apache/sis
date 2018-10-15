@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
@@ -32,7 +33,7 @@ import org.opengis.feature.FeatureType;
  * A wrapper around the UCAR {@code ucar.nc2.ft} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -52,6 +53,11 @@ final class FeaturesWrapper extends DiscreteSampling {
     FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final WarningListeners<DataStore> listeners) {
         super(factory, listeners);
         this.features = features;
+    }
+
+    @Override
+    public GenericName getIdentifier() {
+        throw new UnsupportedOperationException();      // TODO
     }
 
     @Override

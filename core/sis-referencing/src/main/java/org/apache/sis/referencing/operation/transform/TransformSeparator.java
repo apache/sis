@@ -162,7 +162,7 @@ public class TransformSeparator {
      * @param  sequence    the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
      * @param  dimensions  the user-supplied dimensions to add to the given sequence.
      * @param  max         the maximal value allowed, exclusive.
-     * @throws IllegalArgumentException if a {@code dimensions} value does not meet the conditions.
+     * @throws IllegalArgumentException if a {@code dimensions} value does not met the conditions.
      */
     private static int[] add(int[] sequence, final int[] dimensions, final int max) throws IllegalArgumentException {
         int offset = 0;
@@ -196,7 +196,7 @@ public class TransformSeparator {
      * @param  lower     the lower value of the range to add, inclusive.
      * @param  upper     the upper value of the range to add, exclusive.
      * @param  max       the maximal value allowed, exclusive.
-     * @throws IllegalArgumentException if the {@code lower} or {@code upper} value does not meet the conditions.
+     * @throws IllegalArgumentException if the {@code lower} or {@code upper} value does not met the conditions.
      */
     private static int[] add(int[] sequence, final int lower, final int upper, final int max) throws IllegalArgumentException {
         if (lower < 0 || lower > upper) {

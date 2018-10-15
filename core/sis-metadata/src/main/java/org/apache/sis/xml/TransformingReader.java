@@ -17,8 +17,10 @@
 package org.apache.sis.xml;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collections;
@@ -30,7 +32,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.util.collection.BackingStoreException;
 
 import static javax.xml.stream.XMLStreamConstants.*;
@@ -39,7 +40,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 /**
  * A XML reader replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
  * This class forwards every method calls to the wrapped {@link XMLEventReader}, but with some {@code namespaceURI}
- * modified before being transfered. This class uses a dictionary for identifying the XML namespaces expected by JAXB
+ * modified before being transferred. This class uses a dictionary for identifying the XML namespaces expected by JAXB
  * implementation. This is needed when a single namespace in a legacy schema has been splitted into many namespaces
  * in the newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3.
  * In such cases, we need to check which attribute is being mapped in order to determine the new namespace.
@@ -56,12 +57,32 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * This is used for mapping legacy ISO 19139:2007 namespace to newer ISO 19115-3:2016 ones,
      * where the same legacy {@code "http://www.isotc211.org/2005/gmd"} URI can be replaced by
      * different URIs under {@code "http://standards.iso.org/iso/19115/-3/…"} depending on the
-     * class name.
+     * class name. Syntax is documented in the <a href="readme.html">readme.html</a> page.
      */
     static final String FILENAME = "RenameOnImport.lst";
 
     /**
-     * The mapping from (<var>type</var>, <var>attribute</var>) pairs to namespaces.
+     * Namespaces of classes containing elements to move in different namespaces.
+     * This set will contain at least the following namespaces:
+     *
+     * <ul>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMI}</li>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMI_ALIAS}</li>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMD}</li>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#SRV}</li>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GCO}</li>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GMX}</li>
+     *   <li>{@value org.apache.sis.internal.xml.LegacyNamespaces#GML}</li>
+     * </ul>
+     *
+     * More namespaces may appear depending on the optional module on the classpath.
+     * For example {@code sis-french-profile} adds {@code "http://www.cnig.gouv.fr/2005/fra"}.
+     */
+    private static final Set<String> LEGACY_NAMESPACES = new HashSet<>(12);
+
+    /**
+     * The mapping from (<var>type</var>, <var>attribute</var>) pairs to new namespaces.
+     * This mapping will be applied only to namespaces enumerated in {@link #LEGACY_NAMESPACES}.
      *
      * <ul>
      *   <li>Keys are XML names of types, ignoring {@code "_TYPE"} suffix (e.g. {@code "CI_Citation"})</li>
@@ -77,7 +98,8 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(FILENAME, 250);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(false, FILENAME, LEGACY_NAMESPACES, 260);
+    // TODO: use Set.copyOf(…) with JDK10.
 
     /**
      * Returns the namespace for the given ISO type, or {@code null} if unknown.
@@ -209,7 +231,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * @param  event  the event read from the underlying event reader.
      * @return the converted event (may be the same instance).
      */
-    @SuppressWarnings("unchecked")      // TODO: remove on JDK9
     private XMLEvent convert(XMLEvent event) throws XMLStreamException {
         switch (event.getEventType()) {
             case ATTRIBUTE: {
@@ -280,11 +301,11 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     }
 
     /**
-     * Returns the map loaded by {@link #load(String, int)} if the given namespace is a known legacy namespace.
-     * This method returns a non-empty map only for legacy namespaces for which the {@value #FILENAME} file has
-     * been designed. This is necessary for avoiding confusion with classes of the same name defined in other
-     * standards. For example the {@code Record} class name is used by other standards like Catalog Service for
-     * the Web (OGC CSW), and we don't want to replace the namespace of CSW classes.
+     * Returns the map loaded by {@link #load(boolean, String, Set, int)} if the given namespace is a known legacy namespace.
+     * This method returns a non-empty map only for legacy namespaces for which the {@value #FILENAME} file has been designed.
+     * This is necessary for avoiding confusion with classes of the same name defined in other standards.
+     * For example the {@code Record} class name is used by other standards like Catalog Service for the Web (OGC CSW),
+     * and we don't want to replace the namespace of CSW classes.
      *
      * @param  namespace  the namespace URI for which to get the substitution map.
      * @return the substitution map for the given namespace, or an empty map if none.
@@ -293,16 +314,8 @@ final class TransformingReader extends Transformer implements XMLEventReader {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Map<String, Map<String,String>> renamingMap(final String namespace) {
         if (!namespace.isEmpty()) {
-            switch (removeTrailingSlash(namespace)) {
-                case LegacyNamespaces.GMI_ALIAS:
-                case LegacyNamespaces.GMI:
-                case LegacyNamespaces.GMD:
-                case LegacyNamespaces.SRV:
-                case LegacyNamespaces.GCO:
-                case LegacyNamespaces.GMX:
-                case LegacyNamespaces.GML: {
-                    return NAMESPACES;
-                }
+            if (LEGACY_NAMESPACES.contains(removeTrailingSlash(namespace))) {
+                return NAMESPACES;
             }
         }
         return Collections.emptyMap();

@@ -23,7 +23,7 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see org.apache.sis.profile.france
  *

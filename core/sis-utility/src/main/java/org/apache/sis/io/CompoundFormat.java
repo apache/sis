@@ -39,6 +39,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -92,7 +93,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * in case of error.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
@@ -121,8 +122,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     private final TimeZone timezone;
 
     /**
-     * The formats for smaller unit of information.
-     * Will be created only when first needed.
+     * The formats for smaller unit of information, created when first needed.
+     * {@code null} is used as a sentinel value meaning "no format".
      */
     private transient Map<Class<?>, Format> formats;
 
@@ -379,7 +380,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <li>Otherwise if a format can be {@linkplain #createFormat(Class) created}
      *       for the given type, cache the newly created format and return it.</li>
      *   <li>Otherwise do again the same checks for the {@linkplain Class#getSuperclass() super class}.</li>
-     *   <li>If no format can be created, returns {@code null}.</li>
+     *   <li>If no format is found for a concrete class, search again for
+     *       {@linkplain Classes#getAllInterfaces(Class) all implemented interfaces}.</li>
+     *   <li>If no format can be created, return {@code null}.</li>
      * </ol>
      *
      * See {@link #createFormat(Class)} for the list of value types recognized by the default
@@ -390,26 +393,33 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *         or {@code null} if none.
      */
     protected Format getFormat(final Class<?> valueType) {
-        Format format = null;
-        Map<Class<?>,Format> formats = this.formats;
-        for (Class<?> type = valueType; type != null; type = type.getSuperclass()) {
-            if (formats != null) {
-                format = formats.get(type);
-                if (format != null) {
-                    if (type != valueType) {
-                        formats.put(valueType, format);
+        if (formats == null) {
+            formats = new IdentityHashMap<>(4);
+        }
+        Format format = formats.get(valueType);
+        if (format == null && !formats.containsKey(valueType)) {
+            format = createFormat(valueType);
+            if (format == null) {
+                Class<?>   type = valueType;
+                Class<?>[] interfaces = null;
+                for (int i=-1;;) {
+                    if (i >= 0 || (type = type.getSuperclass()) == null) {      // Try parent classes first.
+                        if (interfaces == null) {
+                            interfaces = Classes.getAllInterfaces(valueType);   // Try interfaces after we tried all parent classes.
+                        }
+                        if (++i >= interfaces.length) break;                    // No format found - stop the search with format = null.
+                        type = interfaces[i];
                     }
-                    break;
+                    format = formats.get(type);
+                    if (format != null) break;                                  // Intentionally no formats.containsKey(type) check here.
+                    format = createFormat(type);
+                    if (format != null) {
+                        formats.put(type, format);
+                        break;
+                    }
                 }
             }
-            format = createFormat(type);
-            if (format != null) {
-                if (formats == null) {
-                    this.formats = formats = new IdentityHashMap<>(4);
-                }
-                formats.put(type, format);
-                break;
-            }
+            formats.put(valueType, format);                                     // Store result even null.
         }
         return format;
     }

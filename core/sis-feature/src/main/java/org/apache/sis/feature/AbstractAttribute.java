@@ -44,9 +44,9 @@ import org.opengis.feature.MultiValuedPropertyException;
  *
  * <ul>
  *   <li>A {@linkplain #getType() reference to an attribute type}
- *       which define the base Java type and domain of valid values.</li>
- *   <li>One or more {@linkplain #getValues() values}, which may be a singleton ([0 … 1] cardinality)
- *       or multi-valued ([0 … ∞] cardinality).</li>
+ *       which defines the base Java type and domain of valid values.</li>
+ *   <li>One or more {@linkplain #getValues() values}, which may be a singleton ([0 … 1] multiplicity)
+ *       or multi-valued ([0 … ∞] multiplicity).</li>
  *   <li>Optional {@linkplain #characteristics() characteristics} about the attribute
  *       (e.g. a <var>temperature</var> attribute may have a characteristic holding the measurement <var>accuracy</var>).
  *       Characteristics are often, but not necessarily, constant for all attributes of the same type in a dataset.</li>
@@ -408,7 +408,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *       </li><li>
      *         <p>If the attribute {@linkplain #getValue() value} is not an {@linkplain Class#isInstance instance}
      *         of the expected {@linkplain DefaultAttributeType#getValueClass() value class}, or if the number
-     *         of occurrences is not inside the cardinality range, or if any other constraint is violated, then
+     *         of occurrences is not inside the multiplicity range, or if any other constraint is violated, then
      *         a {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} is
      *         added for each violation with an
      *         {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getExplanation() explanation}
@@ -426,7 +426,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
-     * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] cardinality,
+     * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] multiplicity,
      * if no value has been assigned to that attribute, then this {@code quality()} method will return
      * the following data quality report:
      *

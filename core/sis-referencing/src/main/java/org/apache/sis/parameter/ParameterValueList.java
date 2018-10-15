@@ -296,7 +296,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
 
     /**
      * Removes the value at the specified index, provided that this removal is allowed by the
-     * parameter cardinality.
+     * parameter multiplicity.
      *
      * @param  index  the index of the value to remove.
      * @return the value removed at the given index.

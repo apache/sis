@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link MonolineFormatter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -65,10 +65,15 @@ public final strictfp class MonolineFormatterTest extends TestCase {
         final StringBuilder buffer = new StringBuilder(expected.length() + 40)
                 .append(levelLocalized)
                 .append(CharSequences.spaces(margin - levelLocalized.length()))
-                .append(expected, levelToReplace.length() + 1, expected.length()); // +1 is for skipping '\t'.
-        final String spaces = CharSequences.spaces(margin).toString();
+                .append(expected, levelToReplace.length() + 1, expected.length());      // +1 is for skipping '\t'.
+        final String spaces = MonolineFormatter.CONTINUATION_MARK
+                            + CharSequences.spaces(margin - 1).toString();
+        int positionOfLast = -1;
         for (int i=margin; (i=buffer.indexOf("\n\t", i)) >= 0; i += margin) {
-            buffer.replace(++i, i+1, spaces); // Replace only tabulation, leave new line.
+            buffer.replace(positionOfLast = ++i, i+1, spaces);                          // Replace only tabulation, leave new line.
+        }
+        if (positionOfLast >= 0) {
+            buffer.setCharAt(positionOfLast, MonolineFormatter.CONTINUATION_END);
         }
         return buffer.toString();
     }

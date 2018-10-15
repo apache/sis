@@ -16,11 +16,15 @@
  */
 package org.apache.sis.internal.jaxb;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
+import java.util.function.UnaryOperator;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.xml.bind.JAXBContext;
@@ -28,6 +32,8 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
 
 
 /**
@@ -42,7 +48,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.xml.MarshallerPool
  *
@@ -52,9 +58,9 @@ import org.apache.sis.internal.system.DefaultFactories;
 public abstract class TypeRegistration {
     /**
      * Undocumented (for now) marshaller property for specifying conversions to apply on root objects
-     * before marshalling. Conversions are applied by the {@link #toImplementation(Object)} method.
+     * before marshalling. Conversions are applied by {@link UnaryOperator} instances.
      *
-     * @see #addDefaultRootAdapters(Map)
+     * @see #getPrivateInfo(Map)
      */
     public static final String ROOT_ADAPTERS = "org.apache.sis.xml.rootAdapters";
 
@@ -66,12 +72,20 @@ public abstract class TypeRegistration {
     private static Reference<JAXBContext> context;
 
     /**
-     * The {@link TypeRegistration} instances found on the classpath for which the
-     * {@link #toImplementation(Object)} method has been overridden.
+     * Converters to apply before to marshal an object, or an empty array if none.
+     * This is {@code null} if not yet initialized or if classpath changed.
      *
-     * @see #addDefaultRootAdapters(Map)
+     * @see #getPrivateInfo(Map)
      */
-    private static TypeRegistration[] converters;
+    private static UnaryOperator<Object>[] converters;
+
+    /**
+     * The registrations, cached only a few seconds. We do not need to keep them a long time
+     * because {@link TypeRegistration} is used only for initializing some classes or fields.
+     *
+     * @see #services()
+     */
+    private static ServiceLoader<TypeRegistration> services;
 
     /**
      * Forces reloading of JAXB context and converters if the classpath changes.
@@ -82,6 +96,7 @@ public abstract class TypeRegistration {
                 synchronized (TypeRegistration.class) {
                     context    = null;
                     converters = null;
+                    services   = null;
                 }
             }
         });
@@ -97,75 +112,91 @@ public abstract class TypeRegistration {
      * Adds to the given collection every types that should be given to the initial JAXB context.
      * The types added by this method include only implementation classes having JAXB annotations.
      * If the module can also marshal arbitrary implementations of some interfaces (e.g. GeoAPI),
-     * then the {@link #canMarshalInterfaces()} method should be overridden.
+     * then the {@link #beforeMarshal()} method should be overridden.
      *
      * @param  addTo  the collection in which to add new types.
      */
     protected abstract void getTypes(final Collection<Class<?>> addTo);
 
     /**
-     * Returns {@code true} if the module can also marshal arbitrary implementation of some interfaces.
-     * If this method returns {@code true}, then the {@link #toImplementation(Object)} method shall be
-     * overridden.
+     * If some objects need to be converted before marshalling, the converter for performing those conversions.
+     * The converter {@code apply(Object)} method may return {@code null} if the value class is not recognized,
+     * or {@code value} if the class is recognized but the value does not need to be changed.
+     * Implementations will typically perform an {@code instanceof} check, then invoke one
+     * of the {@code castOrCopy(…)} static methods defined in various Apache SIS classes.
      *
-     * @return whether the module can also marshal arbitrary implementation of some interfaces.
+     * @return converter for the value to marshal, or {@code null} if there is no value to convert.
      *
      * @since 0.8
      */
-    protected boolean canMarshalInterfaces() {
+    protected UnaryOperator<Object> beforeMarshal() {
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if {@code "RenameOnImport.lst"} and/or {@code "RenameOnExport.lst"} files are provided.
+     * If {@code true}, then those files shall be located in the same directory than this {@code TypeRegistration}
+     * subclass.
+     *
+     * @param  export  {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
+     * @return whether {@code "RenameOnImport.lst"} and/or {@code "RenameOnExport.lst"} files are provided.
+     */
+    protected boolean hasRenameFile(boolean export) {
         return false;
     }
 
     /**
-     * If the given value needs to be converted before marshalling, apply the conversion now.
-     * Otherwise returns {@code null} if the value class is not recognized, or {@code value}
-     * if the class is recognized but the value does not need to be changed.
+     * Adds in the given set the classes to use for loading  {@code "RenameOnImport.lst"} and/or {@code "RenameOnExport.lst"} files.
+     * The given set should preserve insertion order, since the order in which files are loaded may matter.
      *
-     * <p>Subclasses that override this method will typically perform an {@code instanceof} check, then
-     * invoke one of the {@code castOrCopy(…)} static methods defined in various Apache SIS classes.</p>
-     *
-     * <p>This method is invoked only if {@link #canMarshalInterfaces()} returns {@code true}.</p>
-     *
-     * @param  value  the value to convert before marshalling.
-     * @return the value to marshall; or {@code null} if this method does not recognize the value class.
-     * @throws JAXBException if an error occurred while converting the given object.
-     *
-     * @since 0.8
+     * @param  export  {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
+     * @param  addTo   where to add the classes to use for loading the resource files.
      */
-    public Object toImplementation(final Object value) throws JAXBException {
-        return null;
+    public static synchronized void getRenameFileLoader(final boolean export, final Set<Class<?>> addTo) {
+        for (final TypeRegistration t : services()) {
+            if (t.hasRenameFile(export)) {
+                addTo.add(t.getClass());
+            }
+        }
+    }
+
+    /**
+     * Returns the {@code TypeRegistration} instances.
+     * Must be invoked in a synchronized block.
+     */
+    private static ServiceLoader<TypeRegistration> services() {
+        ServiceLoader<TypeRegistration> s = services;
+        if (s == null) {
+            services = s = DefaultFactories.createServiceLoader(TypeRegistration.class);
+            DelayedExecutor.schedule(new DelayedRunnable(1, TimeUnit.MINUTES) {
+                @Override public void run() {services = null;}
+            });
+        }
+        return s;
     }
 
     /**
      * Scans the classpath for root classes to put in JAXB context and for converters to those classes.
      * Those lists are determined dynamically from the SIS modules found on the classpath.
-     * The list of root classes is created only if the {@code getTypes} argument is {@code true}.
+     * This method does nothing if this class already has all required information.
+     *
+     * <p>The list of converters is cached (that result is stored in {@link #converters}) while the list
+     * of root classes in JAXB context is not cached. So the information about whether this method needs
+     * to fetch the list of root classes or not must be specified by the {@code getTypes} argument.</p>
      *
      * @param  getTypes  whether to get the root classes to put in JAXB context (may cause class loading).
      * @return if {@code getTypes} was {@code true}, the root classes to be bound in {@code JAXBContext}.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static Class<?>[] load(final boolean getTypes) {
-        /*
-         * Implementation note: do not keep the ServiceLoader in static field because:
-         *
-         * 1) It would cache more TypeRegistration instances than needed for this method call.
-         * 2) The ClassLoader between different invocations may be different in an OSGi context.
-         */
-        final ArrayList<Class<?>> types = new ArrayList<>();
-        final ArrayList<TypeRegistration> toImpl = (converters == null) ? new ArrayList<>() : null;
-        if (toImpl != null || getTypes) {
-            for (final TypeRegistration t : DefaultFactories.createServiceLoader(TypeRegistration.class)) {
-                if (getTypes) {
-                    t.getTypes(types);
-                }
-                if (toImpl != null && t.canMarshalInterfaces()) {
-                    toImpl.add(t);
-                }
-            }
-            if (toImpl != null) {
-                converters = toImpl.toArray(new TypeRegistration[toImpl.size()]);
-            }
+        final ArrayList<Class<?>>              types  = new ArrayList<>();
+        final ArrayList<UnaryOperator<Object>> toImpl = new ArrayList<>();
+        for (final TypeRegistration t : services()) {
+            if (getTypes) t.getTypes(types);
+            final UnaryOperator<Object> c = t.beforeMarshal();
+            if (c != null) toImpl.add(c);
         }
+        converters = toImpl.toArray(new UnaryOperator[toImpl.size()]);
         return types.toArray(new Class<?>[types.size()]);
     }
 
@@ -205,11 +236,11 @@ public abstract class TypeRegistration {
      *
      * @since 0.8
      */
-    public static Map<String,?> addDefaultRootAdapters(final Map<String,?> properties) {
+    public static Map<String,?> getPrivateInfo(final Map<String,?> properties) {
         if (properties != null && properties.containsKey(ROOT_ADAPTERS)) {
             return properties;
         }
-        TypeRegistration[] c;
+        UnaryOperator<Object>[] c;
         synchronized (TypeRegistration.class) {
             c = converters;
             if (c == null) {

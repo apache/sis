@@ -578,9 +578,9 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns a filename for formatting error message and for information purpose.
-     * The filename does not contain path.
+     * The filename does not contain path, but may contain file extension.
      *
-     * @return a filename to report in warning or error messages.
+     * @return a filename to include in warnings or error messages.
      */
     @Override
     public final String getFilename() {
