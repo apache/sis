@@ -67,6 +67,21 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Maximum number of rows or columns in Apache SIS matrices. We define a maximum because SIS is expected to work
+     * mostly with small matrices, because their sizes are related to the number of dimensions in coordinate systems.
+     * The maximum should not be greater than {@value Short#MAX_VALUE} in order to ensure that {@code rows * columns}
+     * stay below the {@link Integer#MAX_VALUE} / 2 limit.
+     *
+     * <p>We also use this value as a limit for the number of dimensions minus 1 (we need to subtract one because of
+     * the room needed for the translation column and the extra row in affine transforms).  Actually many Apache SIS
+     * classes have their number of dimensions limited mostly by the capacity of the {@code int} primitive type, but
+     * we nevertheless set the maximum number of dimensions to a lower value for catching probable errors. Note that
+     * this is not a "universal" limit through Apache SIS, as some algorithms impose a smaller number of dimensions.
+     * Some limits found in specific Apache SIS code are 20, {@value Integer#SIZE} or {@value Long#SIZE}.</p>
+     */
+    public static final int MAXIMUM_MATRIX_SIZE = Short.MAX_VALUE;
+
+    /**
      * Relative difference tolerated when comparing floating point numbers using
      * {@link org.apache.sis.util.ComparisonMode#APPROXIMATIVE}.
      *

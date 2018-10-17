@@ -37,6 +37,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
@@ -129,7 +130,8 @@ public class GridExtent implements Serializable {
      * @throws IllegalArgumentException if the given number of dimensions is excessive.
      */
     private static long[] allocate(final int dimension) throws IllegalArgumentException {
-        if (dimension > Integer.MAX_VALUE / 2) {
+        if (dimension >= Numerics.MAXIMUM_MATRIX_SIZE) {
+            // Actually the real limit is Integer.MAX_VALUE / 2, but a value too high is likely to be an error.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
         }
         return new long[dimension << 1];
