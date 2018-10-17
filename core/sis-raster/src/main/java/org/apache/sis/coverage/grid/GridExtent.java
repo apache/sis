@@ -16,11 +16,14 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Arrays;
-import java.util.Optional;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Locale;
+import java.io.Serializable;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
@@ -30,9 +33,11 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
@@ -125,7 +130,8 @@ public class GridExtent implements Serializable {
      * @throws IllegalArgumentException if the given number of dimensions is excessive.
      */
     private static long[] allocate(final int dimension) throws IllegalArgumentException {
-        if (dimension > Integer.MAX_VALUE / 2) {
+        if (dimension >= Numerics.MAXIMUM_MATRIX_SIZE) {
+            // Actually the real limit is Integer.MAX_VALUE / 2, but a value too high is likely to be an error.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
         }
         return new long[dimension << 1];
@@ -593,20 +599,59 @@ public class GridExtent implements Serializable {
      */
     @Override
     public String toString() {
-        final TableAppender table = new TableAppender(" ");
+        final StringBuilder out = new StringBuilder(256);
+        appendTo(out, Vocabulary.getResources((Locale) null), false);
+        return out.toString();
+    }
+
+    /**
+     * Writes a string representation of this grid envelope in the given buffer.
+     *
+     * @param out         where to write the string representation.
+     * @param vocabulary  resources for some words, or {@code null} if not yet fetched.
+     * @param tree        whether to format lines of a tree in the margin on the left.
+     */
+    final void appendTo(final StringBuilder out, final Vocabulary vocabulary, final boolean tree) {
+        final TableAppender table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
-            String name;
-            if ((types == null) || (name = Types.getCodeLabel(types[i])) == null) {
-                name = Integer.toString(i);
+            CharSequence name;
+            if ((types == null) || (name = Types.getCodeTitle(types[i])) == null) {
+                name = vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
             }
-            table.append(name).append(':').nextColumn();
-            table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-            table.append(Long.toString(ordinates[i])).nextColumn();
-            table.append("to").nextColumn();
-            table.append(Long.toString(ordinates[i + dimension])).nextLine();
+            final long lower = ordinates[i];
+            final long upper = ordinates[i + dimension];
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
+            if (tree) {
+                branch(table, i < dimension - 1);
+            }
+            table.append(name).append(": ").nextColumn();
+            table.append('[').nextColumn();
+            table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+            table.append(Long.toString(lower)).append(" … ").nextColumn();
+            table.append(Long.toString(upper)).append("] ") .nextColumn();
+            table.append('(').append(vocabulary.getString(Vocabulary.Keys.CellCount_1,
+                    Long.toUnsignedString(upper - lower + 1))).append(')').nextLine();
         }
-        return table.toString();
+        flush(table);
+    }
+
+    /**
+     * Formats the symbols on the left side of a node in a tree.
+     */
+    static void branch(final TableAppender table, final boolean hasMore) {
+        table.append(hasMore ? '├' : '└').append("─ ");
+    }
+
+    /**
+     * Writes the content of given table without throwing {@link IOException}.
+     * Shall be invoked only when the destination is known to be {@link StringBuilder}.
+     */
+    static void flush(final TableAppender table) {
+        try {
+            table.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

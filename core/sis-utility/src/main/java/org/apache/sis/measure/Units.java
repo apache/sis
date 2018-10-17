@@ -1619,7 +1619,7 @@ public final class Units extends Static {
      * for fetching the base units, and derives automatically other units from the information
      * found in the EPSG database. This method is also used by other classes not directly related
      * to the EPSG database, like {@link org.apache.sis.referencing.factory.CommonAuthorityFactory}
-     * which uses EPSG code for identifying units.</p>
+     * which uses EPSG codes for identifying units.</p>
      *
      * <p>The currently recognized values are:</p>
      * <table class="sis">

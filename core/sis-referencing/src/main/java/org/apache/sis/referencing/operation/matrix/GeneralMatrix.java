@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
@@ -199,8 +200,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * Ensures that the given matrix size is valid for this {@code GeneralMatrix} implementation.
      */
     private static void ensureValidSize(final int numRow, final int numCol) {
-        ArgumentChecks.ensureBetween("numRow", 1, Short.MAX_VALUE, numRow);
-        ArgumentChecks.ensureBetween("numCol", 1, Short.MAX_VALUE, numCol);
+        ArgumentChecks.ensureBetween("numRow", 1, Numerics.MAXIMUM_MATRIX_SIZE, numRow);
+        ArgumentChecks.ensureBetween("numCol", 1, Numerics.MAXIMUM_MATRIX_SIZE, numCol);
     }
 
     /**

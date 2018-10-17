@@ -229,7 +229,7 @@ public final class Utilities extends Static {
         final Iterator<?> it2 = object2.iterator();
         while (it1.hasNext()) {
             if (!it2.hasNext()) {
-                assert isNotDebug(mode) : mismatchedElement("Iterable", object1, object2, "size");
+                assert isNotDebug(mode) : mismatchedElement("Iterable", object1, object2, "sizes");
                 return false;
             }
             Object element1 = it1.next();
@@ -238,7 +238,7 @@ public final class Utilities extends Static {
                 continue;
             }
             if (!(object1 instanceof Set<?> && object2 instanceof Set<?>)) {
-                assert isNotDebug(mode) : mismatchedElement("Iterable", object1, object2, "element");
+                assert isNotDebug(mode) : mismatchedElement("Iterable", object1, object2, "elements");
                 return false;
             }
             /*
@@ -258,7 +258,7 @@ public final class Utilities extends Static {
             while (true) {
                 final Iterator<?> it = copy.iterator();
                 do if (!it.hasNext()) {
-                    assert isNotDebug(mode) : mismatchedElement("Set", object1, object2, "element");
+                    assert isNotDebug(mode) : mismatchedElement("Set", object1, object2, "elements");
                     return false; // An element has not been found.
                 } while (!deepEquals(it.next(), element2, mode));
                 it.remove();
@@ -303,7 +303,7 @@ public final class Utilities extends Static {
         if (type == null && object2 instanceof CheckedContainer<?>) {
             type = ((CheckedContainer<?>) object2).getElementType();
         }
-        return header + '<' + (type != null ? type.getSimpleName() : "?") + ">: " + tail + " not equals.";
+        return header + '<' + (type != null ? type.getSimpleName() : "?") + ">: " + tail + " not equal.";
     }
 
     /**

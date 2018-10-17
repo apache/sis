@@ -46,7 +46,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Verifies grid extent coordinates.
      */
-    private static void assertExtentEquals(final GridExtent extent, final long[] low, final long[] high) {
+    private static void assertExtentEquals(final long[] low, final long[] high, final GridExtent extent) {
         assertArrayEquals("extent.low",  low,  extent.getLow() .getCoordinateValues());
         assertArrayEquals("extent.high", high, extent.getHigh().getCoordinateValues());
     }
@@ -68,7 +68,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         final MathTransform trCorner = grid.getGridToCRS(PixelInCell.CELL_CORNER);
         assertSame("gridToCRS", identity, trCorner);
-        assertExtentEquals(grid.getExtent(), low, high);
+        assertExtentEquals(low, high, grid.getExtent());
         /*
          * Verify computed math transform.
          */
@@ -114,7 +114,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         final MathTransform trCenter = grid.getGridToCRS(PixelInCell.CELL_CENTER);
         assertSame("gridToCRS", identity, trCenter);
-        assertExtentEquals(grid.getExtent(), low, high);
+        assertExtentEquals(low, high, grid.getExtent());
         /*
          * Verify computed math transform.
          */
@@ -205,7 +205,17 @@ public final strictfp class GridGeometryTest extends TestCase {
             0,   0.5, -90,
             0.5, 0,  -180,
             0,   0,     1}));
-        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CENTER, gridToCRS, envelope);
-        // TODO: verify values.
+        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope);
+        assertExtentEquals(
+                new long[] {370, 40},
+                new long[] {389, 339}, grid.getExtent());
+        assertEnvelopeEquals(new GeneralEnvelope(
+                new double[] {-70,  5},
+                new double[] {+80, 15}), grid.getEnvelope(), STRICT);
+        assertArrayEquals("resolution", new double[] {0.5, 0.5}, grid.getResolution(false), STRICT);
+        assertMatrixEquals("gridToCRS", Matrices.create(3, 3, new double[] {
+                0, 0.5,  -89.75,
+                0.5, 0, -179.75,
+                0,   0,    1}), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
     }
 }

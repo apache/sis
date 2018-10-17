@@ -18,8 +18,12 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Locale;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.awt.image.RenderedImage;            // For javadoc only.
+import org.opengis.metadata.Identifier;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
@@ -27,18 +31,23 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
+import org.apache.sis.io.TableAppender;
 
 
 /**
@@ -323,7 +332,7 @@ public class GridGeometry implements Serializable {
         }
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
-        Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+        Matrix scales = MathTransforms.getMatrix(gridToCRS);
         int numToIgnore = 1;
         if (envelope != null && cornerToCRS != null) {
             GeneralEnvelope env = Envelopes.transform(cornerToCRS.inverse(), envelope);
@@ -331,15 +340,15 @@ public class GridGeometry implements Serializable {
             env = extent.toCRS(cornerToCRS);
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
-            if (matrix == null) {
-                matrix = gridToCRS.derivative(extent.getCentroid());    // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
+            if (scales == null) {
+                scales = gridToCRS.derivative(extent.getCentroid());    // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
                 numToIgnore = 0;
             }
         } else {
             this.extent   = null;
             this.envelope = ImmutableEnvelope.castOrCopy(envelope);
         }
-        resolution = (matrix != null) ? resolution(matrix, numToIgnore) : null;
+        resolution = (scales != null) ? resolution(scales, numToIgnore) : null;
         nonLinears = findNonLinearTargets(gridToCRS);
     }
 
@@ -788,12 +797,12 @@ public class GridGeometry implements Serializable {
      * Current implementation is equivalent to the following:
      *
      * {@preformat java
-     *   return toString(EXTENT | CRS | GRID_TO_CRS | RESOLUTION);
+     *   return toString(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION);
      * }
      */
     @Override
     public String toString() {
-        return toString(EXTENT | CRS | GRID_TO_CRS | RESOLUTION);
+        return toString(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION);
     }
 
     /**
@@ -801,114 +810,204 @@ public class GridGeometry implements Serializable {
      * The string representation is for debugging purpose only and may change
      * in any future SIS version.
      *
-     * @param  bitmask  any combination of {@link #EXTENT}, {@link #CRS},
-     *         {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+     * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE},
+     *         {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
      * @return a string representation of the given elements.
      */
     @Debug
     public String toString(final int bitmask) {
-        if ((bitmask & ~(EXTENT | CRS | GRID_TO_CRS | RESOLUTION)) != 0) {
+        if ((bitmask & ~(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION)) != 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
-        final boolean visible = Integer.bitCount(bitmask) >= 2;
-        final int dimension = (extent != null) ? extent.getDimension() : 0;
-        final StringBuilder buffer = new StringBuilder();
-        if ((bitmask & EXTENT) != 0) {
-            appendLabel(buffer, "Grid size", visible);
-            if (dimension == 0) {
-                buffer.append("unspecified");
-            } else {
-                /*
-                 * Get the string representations of all GridExtent numbers before to write them.
-                 * We do that for computing their length, in order to apply right alignment.
-                 */
-                final int NUM_PROPERTIES = 3;
-                final int[] columnSizes = new int[dimension];
-                final String[] values = new String[dimension * NUM_PROPERTIES];      // Will contain (span, low, high) tuples.
-                for (int i=0; i<values.length; i++) {
-                    final long value;
-                    int margin = 0;
-                    final int dim = i / NUM_PROPERTIES;
-                    switch (i % NUM_PROPERTIES) {
-                        case 0: value = extent.getSize(dim); if (i != 0) margin = 1; break;
-                        case 1: value = extent.getLow (dim); break;
-                        case 2: value = extent.getHigh(dim); break;
-                        default: throw new AssertionError(i);
-                    }
-                    final int length = (values[i] = String.valueOf(value)).length() + margin;
-                    if (length > columnSizes[dim]) columnSizes[dim] = length;
-                }
-                for (int t=0; t<NUM_PROPERTIES; t++) {
-                    String separator = ", ";
-                    switch (t) {
-                        case 0: separator = " ×"; break;
-                        case 1: appendLabel(buffer, "Grid low",  visible); break;
-                        case 2: appendLabel(buffer, "Grid high", visible); break;
-                    }
-                    for (int i=0; i<dimension; i++) {
-                        if (i != 0) buffer.append(separator);
-                        final String value = values[i*NUM_PROPERTIES + t];
-                        buffer.append(CharSequences.spaces(columnSizes[i] - value.length())).append(value);
-                    }
-                }
-            }
-        }
-        CoordinateSystem cs = null;
-        if ((bitmask & CRS) != 0) {
-            appendLabel(buffer, "CRS", visible);
-            CoordinateReferenceSystem crs;
-            if (envelope == null || (crs = envelope.getCoordinateReferenceSystem()) == null) {
-                buffer.append("unspecified");
-            } else {
-                buffer.append(crs.getName());
-                cs = crs.getCoordinateSystem();
-            }
-        }
-        if ((bitmask & GRID_TO_CRS) != 0) {
-            appendLabel(buffer, "Conversion", visible);
-            if (gridToCRS == null) {
-                buffer.append("unspecified");
-            } else {
-                buffer.append(gridToCRS.getSourceDimensions()).append("D → ")
-                      .append(gridToCRS.getTargetDimensions()).append('D');
-                long nonLinearDimensions = nonLinears;
-                String separator = " non linear in ";
-                while (nonLinearDimensions != 0) {
-                    final int i = Long.numberOfTrailingZeros(nonLinearDimensions);
-                    nonLinearDimensions &= ~(1L << i);
-                    buffer.append(separator).append(cs != null ? cs.getAxis(i).getName() : String.valueOf(i));
-                    separator = ", ";
-                }
-            }
-        }
-        if ((bitmask & RESOLUTION) != 0) {
-            appendLabel(buffer, "Resolution", visible);
-            if (resolution == null) {
-                buffer.append("unspecified");
-            } else for (int i=0; i<resolution.length; i++) {
-                if (i != 0) buffer.append(" × ");
-                buffer.append((float) resolution[i]);
-                if (cs != null) {
-                    final String unit = String.valueOf(cs.getAxis(i).getUnit());
-                    if (unit.isEmpty() || Character.isLetterOrDigit(unit.codePointAt(0))) {
-                        buffer.append(' ');
-                    }
-                    buffer.append(unit);
-                }
-            }
-        }
-        return buffer.append(System.lineSeparator()).toString();
+        return new Formatter(bitmask).toString();
     }
 
     /**
-     * Appends the given text to the given buffer, followed by colon and spaces.
-     * Adjusted for the specific needs of {@link #toString()} implementation.
+     * Helper class for formatting a {@link GridGeometry} instance.
      */
-    private static void appendLabel(final StringBuilder appendTo, final String label, final boolean visible) {
-        if (appendTo.length() != 0) appendTo.append(System.lineSeparator());
-        if (visible) {
-            appendTo.append(label).append(':').append(CharSequences.spaces(12 - label.length()));
+    private final class Formatter {
+        /**
+         * Combination of {@link #EXTENT}, {@link #ENVELOPE},
+         * {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         */
+        private final int bitmask;
+
+        /**
+         * Where to write the {@link GridGeometry} string representation.
+         */
+        private final StringBuilder buffer;
+
+        /**
+         * Platform-specific end-of-line characters.
+         */
+        private final String lineSeparator;
+
+        /**
+         * Localized words.
+         */
+        private final Vocabulary vocabulary;
+
+        /**
+         * The locale for the texts. Not used for numbers and dates.
+         */
+        private final Locale locale;
+
+        /**
+         * The coordinate reference system, or {@code null} if none.
+         */
+        private final CoordinateReferenceSystem crs;
+
+        /**
+         * The coordinate system, or {@code null} if none.
+         */
+        private final CoordinateSystem cs;
+
+        /**
+         * Creates a new formatter for the given combination of {@link #EXTENT}, {@link #ENVELOPE},
+         * {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         */
+        Formatter(final int bitmask) {
+            this.bitmask  = bitmask;
+            lineSeparator = System.lineSeparator();
+            locale        = Locale.getDefault(Locale.Category.DISPLAY);
+            vocabulary    = Vocabulary.getResources(locale);
+            buffer        = new StringBuilder(512);
+            crs           = (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
+            cs            = (crs != null) ? crs.getCoordinateSystem() : null;
+        }
+
+        /**
+         * Returns a string representation of the enclosing {@link GridGeometry} instance.
+         */
+        @Override
+        public final String toString() {
+            /*
+             * Example: Grid extent
+             * ├─ Dimension 0: [370 … 389]  (20 cells)
+             * └─ Dimension 1: [ 41 … 340] (300 cells)
+             */
+            if (section(EXTENT, Vocabulary.Keys.GridExtent, extent)) {
+                extent.appendTo(buffer, vocabulary, true);
+            }
+            /*
+             * Example: Envelope
+             * ├─ Geodetic latitude:  -69.75 … 80.25  Δφ = 0.5°
+             * └─ Geodetic longitude:   4.75 … 14.75  Δλ = 0.5°
+             */
+            if (section(ENVELOPE, Vocabulary.Keys.Envelope, envelope)) {
+                final boolean appendResolution = (bitmask & RESOLUTION) != 0 && resolution != null;
+                final TableAppender table = new TableAppender(buffer, "");
+                final int dimension = envelope.getDimension();
+                for (int i=0; i<dimension; i++) {
+                    final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
+                    final String name = (axis != null) ? axis.getName().getCode() :
+                            vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
+                    GridExtent.branch(table, i < dimension - 1);
+                    table.append(name).append(": ").nextColumn();
+                    table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                    table.append(Double.toString(envelope.getLower(i))).nextColumn();
+                    table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                    table.append(" … ").append(Double.toString(envelope.getUpper(i)));
+                    if (appendResolution) {
+                        final boolean isLinear = (i < Long.SIZE) && (nonLinears & (1L << i)) == 0;
+                        table.nextColumn();
+                        table.append("  Δ");
+                        if (axis != null) {
+                            table.append(axis.getAbbreviation());
+                        }
+                        table.nextColumn();
+                        table.append(' ').append(isLinear ? '=' : '≈').append(' ');
+                        appendResolution(table, i);
+                    }
+                    table.nextLine();
+                }
+                GridExtent.flush(table);
+            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, resolution)) {
+                /*
+                 * Example: Resolution
+                 * └─ 0.5° × 0.5°
+                 */
+                String separator = "└─ ";
+                for (int i=0; i<resolution.length; i++) {
+                    appendResolution(buffer.append(separator), i);
+                    separator = " × ";
+                }
+                buffer.append(lineSeparator);
+            }
+            /*
+             * Example: Coordinate reference system
+             * └─ EPSG:4326 — WGS 84 (φ,λ)
+             */
+            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, crs)) {
+                buffer.append("└─ ");
+                final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
+                if (id != null) {
+                    buffer.append(IdentifiedObjects.toString(id)).append(" — ");
+                }
+                buffer.append(crs.getName()).append(lineSeparator);
+            }
+            /*
+             * Example: Conversion
+             * └─ 2D → 2D non linear in 2
+             */
+            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, gridToCRS)) {
+                final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+                if (matrix != null) {
+                    String separator = "└─ ";
+                    for (final CharSequence line : CharSequences.splitOnEOL(Matrices.toString(matrix))) {
+                        buffer.append(separator).append(line).append(lineSeparator);
+                        separator = "   ";
+                    }
+                } else {
+                    buffer.append("└─ ").append(gridToCRS.getSourceDimensions()).append("D → ")
+                                        .append(gridToCRS.getTargetDimensions()).append('D');
+                    long nonLinearDimensions = nonLinears;
+                    String separator = " non linear in ";
+                    while (nonLinearDimensions != 0) {
+                        final int i = Long.numberOfTrailingZeros(nonLinearDimensions);
+                        nonLinearDimensions &= ~(1L << i);
+                        buffer.append(separator).append(cs != null ? cs.getAxis(i).getName() : String.valueOf(i));
+                        separator = ", ";
+                    }
+                    buffer.append(lineSeparator);
+                }
+            }
+            return buffer.toString();
+        }
+
+        /**
+         * Starts a new section for the given property.
+         *
+         * @param  property  one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         * @param  title     the {@link Vocabulary} key for the title to show for this section, if formatted.
+         * @param  value     the value to be formatted in that section.
+         * @return {@code true} if the caller shall format the value.
+         */
+        private boolean section(final int property, final short title, final Object value) {
+            if ((bitmask & property) != 0) {
+                buffer.append(vocabulary.getString(title)).append(lineSeparator);
+                if (value != null) {
+                    return true;
+                }
+                buffer.append("└─ ").append(vocabulary.getString(Vocabulary.Keys.Unspecified)).append(lineSeparator);
+            }
+            return false;
+        }
+
+        private void appendResolution(final Appendable out, final int dimension) {
+            try {
+                out.append(Float.toString((float) resolution[dimension]));
+                if (cs != null) {
+                    final String unit = String.valueOf(cs.getAxis(dimension).getUnit());
+                    if (unit.isEmpty() || Character.isLetterOrDigit(unit.codePointAt(0))) {
+                        out.append(' ');
+                    }
+                    out.append(unit);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 }
