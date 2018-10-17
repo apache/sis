@@ -868,8 +868,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently we can relax the check of
                      * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
                      */
+                    boolean debug = false;
                     if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                         if (mode.isIgnoringMetadata()) {
+                            debug = (mode == ComparisonMode.DEBUG);
                             mode = ComparisonMode.ALLOW_VARIANT;
                         }
                     } else try {
@@ -902,7 +904,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                             Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                     AbstractCoordinateOperation.class, "equals", e);
                         }
-                        return deepEquals(tr1, tr2, mode);
+                        if (deepEquals(tr1, tr2, mode)) return true;
+                        assert !debug || deepEquals(tr1, tr2, ComparisonMode.DEBUG);        // For locating the mismatch.
                     }
                 }
             }

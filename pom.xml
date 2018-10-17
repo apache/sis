@@ -19,6 +19,17 @@
   under the License.
 -->
 
+<!-- =============================================================================================
+     Maven 2 project configuration file
+     http://maven.apache.org/maven2/
+
+     Apache SIS build requires Java 10, but compilation result can be executed on Java 8.
+     Setting the SIS_DATA environment variable before build is optional but recommended.
+
+     Build development snapshot:    mvn clean install
+     Include EPSG database:         mvn install -Pnon-free
+     Run more extensive tests:      mvn test -Dorg.apache.sis.test.extensive=true
+     ============================================================================================= -->
 <project xmlns              = "http://maven.apache.org/POM/4.0.0"
          xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
@@ -513,7 +524,7 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <sis.non-free.version>0.8</sis.non-free.version>
+    <sis.non-free.version>1.0-M1</sis.non-free.version>
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
   </properties>
 
@@ -621,7 +632,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.0</version>
+        <version>2.22.1</version>
         <configuration>
           <includes>
             <include>**/*TestSuite.java</include>
