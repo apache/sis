@@ -71,7 +71,7 @@ public final class Numerics extends Static {
      * {@link org.apache.sis.util.ComparisonMode#APPROXIMATIVE}.
      *
      * <p>Historically, this was the relative tolerance threshold for considering two
-     * matrixes as equal. This value has been determined empirically in order to allow
+     * matrices as equal. This value has been determined empirically in order to allow
      * {@code org.apache.sis.referencing.operation.transform.ConcatenatedTransform} to
      * detect the cases where two {@link org.apache.sis.referencing.operation.transform.LinearTransform}
      * are equal for practical purpose. This threshold can be used as below:</p>
