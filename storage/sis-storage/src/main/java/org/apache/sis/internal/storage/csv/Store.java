@@ -50,13 +50,14 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.MovingFeature;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -434,7 +435,7 @@ final class Store extends URIDataStore implements FeatureSet {
                             Errors.Keys.MismatchedDimension_3, "@stboundedby(CRS)", spatialDimensionCount, dimension));
                 }
             }
-            if (dimension > Short.MAX_VALUE) {
+            if (dimension >= Numerics.MAXIMUM_MATRIX_SIZE) {
                 throw new DataStoreReferencingException(errors().getString(
                         Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
             }

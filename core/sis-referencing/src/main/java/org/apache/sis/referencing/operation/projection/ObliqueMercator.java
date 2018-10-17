@@ -241,7 +241,7 @@ public class ObliqueMercator extends ConformalProjection {
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.
          */
-        getContextualParameters().getMatrix(MatrixRole.NORMALIZATION).convertAfter(0, null, -λ0);
+        context.getMatrix(MatrixRole.NORMALIZATION).convertAfter(0, null, -λ0);
         final MatrixSIS denormalize = getContextualParameters().getMatrix(MatrixRole.DENORMALIZATION);
         final Matrix3 rotation = new Matrix3();
         rotation.m00 =   rotation.m11 = cos(γc);

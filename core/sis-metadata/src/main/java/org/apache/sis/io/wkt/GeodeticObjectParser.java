@@ -742,7 +742,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                                 new String[] {WKTKeywords.CS, type}, element.offset);
                     }
                 }
-                if (dimension <= 0 || dimension > 1000) {       // Arbitrary upper limit against badly formed CS.
+                if (dimension <= 0 || dimension >= Numerics.MAXIMUM_MATRIX_SIZE) {
                     final short key;
                     final Object[] args;
                     if (dimension <= 0) {

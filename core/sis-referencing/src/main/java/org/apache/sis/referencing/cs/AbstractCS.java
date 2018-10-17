@@ -406,11 +406,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
             }
             case DEBUG: {
-                final int d1 = axes.length;
-                final int d2 = ((CoordinateSystem) object).getDimension();
-                if (d1 != d2) {
-                    throw new AssertionError(Errors.format(Errors.Keys.MismatchedDimension_2, d1, d2));
-                }
+                final int d1, d2;
+                assert (d1 = axes.length) == (d2 = ((CoordinateSystem) object).getDimension())
+                        : Errors.format(Errors.Keys.MismatchedDimension_2, d1, d2);
                 // Fall through
             }
             default: {
