@@ -24,6 +24,8 @@ import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.MathFunctions;
 
 import static org.apache.sis.math.MathFunctions.truncate;
 
@@ -281,10 +283,27 @@ class SexagesimalConverter extends AbstractConverter {
          *   <li>value * 10000 = 465708.66000000003</li>
          *   <li>deg = 46, min = 57, deg = 8.660000000032596</li>
          * </ol>
+         *
+         * We perform a rounding based on the representation in base 10 because extractions of degrees and
+         * minutes fields from the sexagesimal value themselves use arithmetic in base 10. This conversion
+         * is used in contexts where the sexagesimal value, as shown in a number in base 10, is definitive.
+         *
+         * @param  remainder  the value to fix, after other fields (degrees and/or minutes) have been subtracted.
+         * @param  magnitude  value of {@code remainder} before the degrees and/or minutes were subtracted.
          */
-        private static double fixRoundingError(final double remainder) {
-            final double c = Math.rint(remainder * 1E+6) / 1E+6;
-            return (Math.abs(remainder - c) < 1E-9) ? c : remainder;
+        private static double fixRoundingError(double remainder, final double magnitude) {
+            /*
+             * We use 1 ULP because the double value parsed from a string representation was at 0.5 ULP
+             * from the real value, and the multiplication by 'divider' add another 0.5 ULP rounding error.
+             * Removal of degrees and/or minutes fields as integers do not add rounding errors.
+             */
+            int p = Math.getExponent(Math.ulp(magnitude));          // Power of 2 (negative for fractional value).
+            if (p < 0 && p >= -Numerics.SIGNIFICAND_SIZE) {         // Precision is a fraction digit >= Math.ulp(1).
+                p = Numerics.toExp10(-p);                           // Positive power of 10, rounded to lower value.
+                final double scale = MathFunctions.pow10(p);
+                remainder = Math.rint(remainder * scale) / scale;
+            }
+            return remainder;
         }
 
         /**
@@ -294,18 +313,18 @@ class SexagesimalConverter extends AbstractConverter {
          */
         @Override
         public double convert(final double angle) throws IllegalArgumentException {
-            double deg,min,sec;
+            double deg,min,sec,mgn;
             if (hasSeconds) {
-                sec = angle * divider;
+                sec = mgn = angle * divider;
                 deg = truncate(sec/10000); sec -= 10000*deg;
                 min = truncate(sec/  100); sec -=   100*min;
-                sec = fixRoundingError(sec);
+                sec = fixRoundingError(sec, mgn);
             } else {
                 sec = 0;
-                min = angle * divider;
+                min = mgn = angle * divider;
                 deg = truncate(min / 100);
                 min -= deg * 100;
-                min = fixRoundingError(min);
+                min = fixRoundingError(min, mgn);
             }
             if (min <= -60 || min >= 60) {                              // Do not enter for NaN
                 if (Math.abs(Math.abs(min) - 100) <= (EPS * 100)) {
