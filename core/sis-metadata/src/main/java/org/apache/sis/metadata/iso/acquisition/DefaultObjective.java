@@ -179,7 +179,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * thus providing a unified view of every kind of identifiers associated to this objective.
      *
      * <div class="note"><b>XML note:</b>
-     * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
+     * The {@code <mac:identifier>} element marshalled to XML will exclude all the above cited identifiers,
      * for compliance with ISO 19115 model. Those identifiers will appear in other XML elements or attributes.</div>
      *
      * @return identification of the objective.

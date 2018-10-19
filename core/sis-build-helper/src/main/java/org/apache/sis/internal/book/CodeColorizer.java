@@ -209,7 +209,7 @@ public final class CodeColorizer {
                 /*
                  * For more elaborated analysis than the above easy check, we need the Specifier enum of the
                  * first word. It may be a GeoAPI or SIS class name (e.g. "Citation" in "Citation.title"),
-                 * or a XML prefix (e.g. "gmd" in "gmd:CI_Citation").
+                 * or a XML prefix (e.g. "cit" in "cit:CI_Citation").
                  */
                 int c, i=0;
                 while (Character.isJavaIdentifierPart((c = word.charAt(i)))) {
@@ -244,7 +244,7 @@ public final class CodeColorizer {
         }
         /*
          * Found the specifier. The XML prefix case is handle in a special way because
-         * we do not highlight the "gmd", "gml", etc. prefixes in highlitht(…) method.
+         * we do not highlight the "cit", "gml", etc. prefixes in highlitht(…) method.
          */
         if (specifier == Specifier.XML_PREFIX) {
             specifier = Specifier.OGC;

@@ -695,7 +695,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds information about axes and cell geometry.
-     * This is the {@code <gmd:spatialRepresentationInfo>} element in XML.
+     * This is the {@code <mdb:spatialRepresentationInfo>} element in XML.
      *
      * @param  cs  the grid geometry (related to the netCDF coordinate system).
      */
@@ -878,7 +878,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Adds information about all netCDF variables. This is the {@code <gmd:contentInfo>} element in XML.
+     * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
     private void addContentInfo() {
@@ -918,7 +918,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds metadata about a sample dimension (or band) from the given variable.
-     * This is the {@code <gmd:dimension>} element in XML.
+     * This is the {@code <mrc:dimension>} element in XML.
      *
      * @param  variable  the netCDF variable.
      */
@@ -955,7 +955,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds metadata about the meaning of a sample value.
-     * This is the {@code <gmd:rangeElementDescription>} element in XML.
+     * This is the {@code <mrc:rangeElementDescription>} element in XML.
      *
      * <p><b>Note:</b> ISO 19115 range elements are approximately equivalent to
      * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>

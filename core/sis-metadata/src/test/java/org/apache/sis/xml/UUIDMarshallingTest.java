@@ -44,7 +44,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
     private static final String UUID_VALUE = "f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf";
 
     /**
-     * A XML with a {@code uuid} identifier in the {@code <gmd:CI_Series>} element.
+     * A XML with a {@code uuid} identifier in the {@code <cit:CI_Series>} element.
      */
     private static final String IDENTIFIED_XML =
             "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
@@ -62,7 +62,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
             "</cit:CI_Citation>";
 
     /**
-     * A XML with a {@code uuidref} identifier in the {@code <gmd:series>} element.
+     * A XML with a {@code uuidref} identifier in the {@code <cit:series>} element.
      * This XML declares the method body anyway, which is kind of contradictory with usage of reference.
      */
     private static final String REFERENCED_XML_WITH_BODY =
@@ -81,7 +81,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
             "</cit:CI_Citation>";
 
     /**
-     * A XML with a {@code uuidref} identifier in the {@code <gmd:series>} element.
+     * A XML with a {@code uuidref} identifier in the {@code <cit:series>} element.
      */
     private static final String REFERENCED_XML =
             "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
@@ -95,7 +95,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
     /**
      * Tests (un)marshalling of an object identified by the {@code uuid} attribute.
      * The element of interest for this test is the {@code "uuid"} attribute value
-     * in the {@code <gmd:CI_Series>} element of the following XML fragment:
+     * in the {@code <cit:CI_Series>} element of the following XML fragment:
      *
      * {@preformat xml
      *   <cit:CI_Citation>
@@ -112,7 +112,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      *   </cit:CI_Citation>
      * }
      *
-     * On an implementation note, the {@code uuid} and other attributes of the {@code <gmd:CI_Series>}
+     * On an implementation note, the {@code uuid} and other attributes of the {@code <cit:CI_Series>}
      * elements are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
@@ -146,7 +146,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      * This test does not try to resolve the reference, but only check that the identifier is properly saved.
      *
      * <p>The element of interest for this test is the {@code "uuidref"} part
-     * in the {@code <gmd:series>} property of the following XML fragment:</p>
+     * in the {@code <cit:series>} property of the following XML fragment:</p>
      *
      * {@preformat xml
      *   <cit:CI_Citation>
@@ -164,7 +164,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      * }
      *
      * On an implementation note, the {@code uuidref}, {@code xlink:href} and other attributes of the
-     * {@code <gmd:series>} element are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
+     * {@code <cit:series>} element are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
@@ -185,8 +185,8 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
         assertEquals("uuid", UUID_VALUE, map.get(IdentifierSpace.UUID));
         /*
          * Marshal the object back to XML and compare with the expected result. The result shall be
-         * slightly different than the original XML, since the UUID in the <gmd:series> element shall
-         * move to the <gmd:CI_Series> element. This is the expected behavior because we have a fully
+         * slightly different than the original XML, since the UUID in the <cit:series> element shall
+         * move to the <cit:CI_Series> element. This is the expected behavior because we have a fully
          * constructed object, not a reference to an object defined elsewhere.
          */
         final String actual = XML.marshal(citation);
@@ -195,7 +195,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
     }
 
     /**
-     * The same test than {@link #testReference()}, except that the {@code <gmd:CI_Series>} element is empty.
+     * The same test than {@link #testReference()}, except that the {@code <cit:CI_Series>} element is empty.
      * This situation shall force the creation of a new, empty, element for storing the {@code uuidref} information.
      *
      * @throws JAXBException if an error occurred during (un)marshalling.

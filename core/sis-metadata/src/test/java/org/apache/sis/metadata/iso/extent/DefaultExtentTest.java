@@ -84,7 +84,7 @@ public final strictfp class DefaultExtentTest extends TestUsingFile {
     }
 
     /**
-     * Tests the (un)marshalling of a {@code <gmd:EX_Extent>} object.
+     * Tests the (un)marshalling of a {@code <gex:EX_Extent>} object.
      * This test opportunistically tests setting {@code "gml:id"} value.
      *
      * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.

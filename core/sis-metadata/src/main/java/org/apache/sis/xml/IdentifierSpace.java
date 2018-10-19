@@ -30,13 +30,13 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * space are marshalled in the outer property element, as in the example below:
  *
  * {@preformat xml
- *   <gmd:CI_Citation>
- *     <gmd:series xlink:href="http://myReference">
- *       <gmd:CI_Series>
- *         <gmd:name>...</gmd:name>
- *       </gmd:CI_Series>
- *     </gmd:series>
- *   </gmd:CI_Citation>
+ *   <cit:CI_Citation>
+ *     <cit:series xlink:href="http://myReference">
+ *       <cit:CI_Series>
+ *         <cit:name>...</cit:name>
+ *       </cit:CI_Series>
+ *     </cit:series>
+ *   </cit:CI_Citation>
  * }
  *
  * The values defined in this interface can be used as keys in the map returned by

@@ -32,13 +32,13 @@
  *
  * {@preformat xml
  *   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
- *   <gmd:CI_Citation xmlns:gmd="http://www.isotc211.org/2005/gmd"
+ *   <cit:CI_Citation xmlns:gmd="http://www.isotc211.org/2005/gmd"
  *                    xmlns:gco="http://www.isotc211.org/2005/gco">
- *     <gmd:title>
+ *     <cit:title>
  *       <gco:CharacterString>Open Geospatial Consortium</gco:CharacterString>
- *     </gmd:title>
+ *     </cit:title>
  *     ... much more XML below this point ...
- *   </gmd:CI_Citation>
+ *   </cit:CI_Citation>
  * }
  *
  * <div class="section">Customizing the XML</div>

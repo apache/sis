@@ -248,7 +248,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
 
     /**
      * Ensures that the unmarshaller produces a warning when {@code <gco:CharacterString>} and
-     * {@code <gcx:FileName>} both exist inside the same {@code <gmd:MD_BrowseGraphic>}.
+     * {@code <gcx:FileName>} both exist inside the same {@code <mcc:MD_BrowseGraphic>}.
      *
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
@@ -266,7 +266,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testWarnings()} using the given {@code <gmd:fileName>} values.
+     * Implementation of {@link #testWarnings()} using the given {@code <mcc:fileName>} values.
      */
     private void testWarnings(final String first, final String second) throws JAXBException {
         final Warning listener = new Warning();

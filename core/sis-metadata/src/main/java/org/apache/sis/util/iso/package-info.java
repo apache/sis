@@ -21,7 +21,7 @@
  *
  * <ul>
  *   <li>Implementations of {@link org.opengis.util.InternationalString}
- *       (related to the {@code <gmd:textGroup>} XML element found in ISO specifications):
+ *       (related to the {@code <lan:textGroup>} XML element found in ISO specifications):
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.SimpleInternationalString}   for wrapping a single {@link java.lang.String};</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultInternationalString}  for providing many localizations in a {@link java.util.Map};</li>
