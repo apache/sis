@@ -46,7 +46,7 @@ public abstract class GMLAdapter {
      * The period identifier, or {@code null} if undefined.
      * This element is part of GML 3.1.1 specification.
      *
-     * <div class="section">Difference between {@code gmd:uuid} and {@code gml:id}</div>
+     * <div class="section">Difference between {@code gco:uuid} and {@code gml:id}</div>
      * <ul>
      *   <li>{@code id} is a standard <strong>GML</strong> attribute available on every
      *       object-with-identity. It has type={@code "xs:ID"} - i.e. it is a fragment

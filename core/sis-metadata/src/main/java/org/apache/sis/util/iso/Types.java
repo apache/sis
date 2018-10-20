@@ -68,17 +68,17 @@ import org.apache.sis.internal.system.Loggers;
  * by a {@link CodeList} value.
  *
  * <div class="note"><b>Example:</b>
- * in the following XML fragment, the {@code <gmi:type>} value is normally a {@code <gco:CharacterString>}
+ * in the following XML fragment, the {@code <mac:type>} value is normally a {@code <gco:CharacterString>}
  * but has been replaced by a {@code SensorType} code below:
  *
  * {@preformat xml
- *   <gmi:MI_Instrument>
- *     <gmi:type>
+ *   <mac:MI_Instrument>
+ *     <mac:type>
  *       <gmi:MI_SensorTypeCode
  *           codeList="http://standards.iso.org/…snip…/codelists.xml#CI_SensorTypeCode"
  *           codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
- *     </gmi:type>
- *   </gmi:MI_Instrument>
+ *     </mac:type>
+ *   </mac:MI_Instrument>
  * }
  * </div>
  *

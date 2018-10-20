@@ -47,9 +47,9 @@ import org.apache.sis.measure.Units;
  * (as a substitution for XML type {@code gco:Measure}):
  *
  * {@preformat xml
- *   <gmd:distance>
+ *   <mri:distance>
  *     <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
- *   </gmd:distance>
+ *   </mri:distance>
  * }
  *
  * while GML will rather use a a syntax like below:
