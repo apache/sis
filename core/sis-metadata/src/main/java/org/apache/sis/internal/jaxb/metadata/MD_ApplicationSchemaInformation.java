@@ -62,7 +62,7 @@ public final class MD_ApplicationSchemaInformation extends
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:MD_ApplicationSchemaInformation>} XML element.
+     * in a {@code <mas:MD_ApplicationSchemaInformation>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
@@ -74,7 +74,7 @@ public final class MD_ApplicationSchemaInformation extends
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:MD_ApplicationSchemaInformation>} XML element.
+     * inside the {@code <mas:MD_ApplicationSchemaInformation>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.

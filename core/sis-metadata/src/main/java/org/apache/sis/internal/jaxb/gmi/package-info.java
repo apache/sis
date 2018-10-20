@@ -26,7 +26,7 @@
  * <p>In SIS implementation, users need to care only about the public classes defined in
  * the {@link org.apache.sis.metadata.iso} package. When marshalling, the adapters will
  * inspect the properties that are ISO 19115-2 extensions and copy automatically the
- * {@code "gmd"} metadata into a {@code "gmi"} metadata if any ISO 19115-2 property is
+ * {@code "MD_"} metadata into a {@code "MI_"} metadata if any ISO 19115-2 property is
  * non-null or non-empty. This work is performed by a {@code castOrCopy} static method
  * defined in each class of this package.</p>
  *

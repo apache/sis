@@ -212,13 +212,13 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
              * doubt, we are better to marshal the full object. We are not loosing information since in the
              * later case, the identifiers will be marshalled as Strings by ISOMetadata. Example:
              *
-             *   <gmd:CI_Citation>
-             *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">      ☚ marshalled by this
-             *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">    ☚ marshalled by ISOMetadata
+             *   <cit:CI_Citation>
+             *     <cit:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">      ☚ marshalled by this
+             *       <cit:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">    ☚ marshalled by ISOMetadata
              *         ...
-             *       </gmd:CI_Series>
-             *     </gmd:series>
-             *   </gmd:CI_Citation>
+             *       </cit:CI_Series>
+             *     </cit:series>
+             *   </cit:CI_Citation>
              *
              * We do not try to parse UUID or XLink objects from String because it should be the job of
              * org.apache.sis.internal.jaxb.ModifiableIdentifierMap.put(Citation, String).

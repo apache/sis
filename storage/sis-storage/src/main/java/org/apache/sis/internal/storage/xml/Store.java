@@ -49,7 +49,7 @@ import org.apache.sis.setup.OptionKey;
  * The current implementation recognizes the following objects:
  *
  * <ul>
- *   <li>{@link Metadata}, typically built from the {@code <gmd:MD_Metadata>} XML element.</li>
+ *   <li>{@link Metadata}, typically built from the {@code <mdb:MD_Metadata>} XML element.</li>
  *   <li>{@link ReferenceSystem}, accessible by {@link Metadata#getReferenceSystemInfo()}.</li>
  * </ul>
  *

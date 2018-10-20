@@ -214,8 +214,8 @@ public final strictfp class GridGeometryTest extends TestCase {
                 new double[] {+80, 15}), grid.getEnvelope(), STRICT);
         assertArrayEquals("resolution", new double[] {0.5, 0.5}, grid.getResolution(false), STRICT);
         assertMatrixEquals("gridToCRS", Matrices.create(3, 3, new double[] {
-                0, 0.5,  -89.75,
-                0.5, 0, -179.75,
-                0,   0,    1}), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+                0,   0.5, -89.75,
+                0.5, 0,  -179.75,
+                0,   0,     1}), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
     }
 }
