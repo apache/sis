@@ -60,7 +60,7 @@ public final class LE_ProcessStepReport extends PropertyType<LE_ProcessStepRepor
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmi:LE_ProcessStepReport>} XML element.
+     * in a {@code <mrl:LE_ProcessStepReport>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
@@ -72,7 +72,7 @@ public final class LE_ProcessStepReport extends PropertyType<LE_ProcessStepRepor
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmi:LE_ProcessStepReport>} XML element.
+     * inside the {@code <mrl:LE_ProcessStepReport>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.

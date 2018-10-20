@@ -60,7 +60,7 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:CI_Citation>} XML element.
+     * in a {@code <cit:CI_Citation>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
@@ -72,7 +72,7 @@ public class CI_Citation extends PropertyType<CI_Citation, Citation> {
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:CI_Citation>} XML element.
+     * inside the {@code <cit:CI_Citation>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.

@@ -99,7 +99,7 @@ public final class XML extends Static {
      * {@link CharSequence} recognized by {@link org.apache.sis.util.Locales#parse(String)}.
      *
      * <p>This property is mostly for marshallers. However this property can also be used at
-     * unmarshalling time, for example if a {@code <gmd:PT_FreeText>} element containing
+     * unmarshalling time, for example if a {@code <lan:PT_FreeText>} element containing
      * many localized strings need to be represented in a Java {@link String} object. In
      * such case, the unmarshaller will try to pickup a string in the language specified
      * by this property.</p>

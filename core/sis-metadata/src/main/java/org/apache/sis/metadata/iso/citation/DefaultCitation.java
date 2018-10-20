@@ -370,7 +370,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * providing a unified view of every kind of identifiers associated to this citation.
      *
      * <div class="note"><b>XML note:</b>
-     * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
+     * The {@code <cit:identifier>} element marshalled to XML will exclude all the above cited identifiers,
      * for ISO 19115-3 compliance. Those identifiers will appear in other XML elements or attributes.</div>
      *
      * @return the identifiers, or an empty collection if none.

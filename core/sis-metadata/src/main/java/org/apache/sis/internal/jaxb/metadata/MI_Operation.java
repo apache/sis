@@ -60,7 +60,7 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmi:MI_Operation>} XML element.
+     * in a {@code <mac:MI_Operation>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
@@ -72,7 +72,7 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmi:MI_Operation>} XML element.
+     * inside the {@code <mac:MI_Operation>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.

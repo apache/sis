@@ -252,13 +252,13 @@ public class ReferenceResolver {
      *   <th>As {@code <gcx:Anchor>}</th>
      * </tr><tr>
      * <td>
-     *   <pre> &lt;gmd:country&gt;
+     *   <pre> &lt;cit:country&gt;
      *     &lt;gco:CharacterString&gt;France&lt;/gco:CharacterString&gt;
-     * &lt;/gmd:country&gt;</pre>
+     * &lt;/cit:country&gt;</pre>
      * </td><td>
-     *   <pre> &lt;gmd:country&gt;
+     *   <pre> &lt;cit:country&gt;
      *     &lt;gcx:Anchor xlink:href="SDN:C320:2:FR"&gt;France&lt;/gcx:Anchor&gt;
-     * &lt;/gmd:country&gt;</pre>
+     * &lt;/cit:country&gt;</pre>
      * </td></tr>
      * </table>
      *

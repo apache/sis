@@ -58,7 +58,7 @@ public class MD_KeywordClass extends PropertyType<MD_KeywordClass, DefaultKeywor
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
-     * in a {@code <gmd:MD_KeywordClass>} XML element.
+     * in a {@code <mri:MD_KeywordClass>} XML element.
      *
      * @param  metadata  the metadata element to marshall.
      * @return a {@code PropertyType} wrapping the given the metadata element.
@@ -70,7 +70,7 @@ public class MD_KeywordClass extends PropertyType<MD_KeywordClass, DefaultKeywor
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:MD_KeywordClass>} XML element.
+     * inside the {@code <mri:MD_KeywordClass>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return the metadata to be marshalled.

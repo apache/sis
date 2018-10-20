@@ -129,13 +129,13 @@ final class ObjectReference {
      * However a previous value may exit in unusual (probably not very valid) XML, as in the following example:
      *
      * {@preformat xml
-     *   <gmd:CI_Citation>
-     *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
-     *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *   <cit:CI_Citation>
+     *     <cit:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *       <cit:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
      *         ...
-     *       </gmd:CI_Series>
-     *     </gmd:series>
-     *   </gmd:CI_Citation>
+     *       </cit:CI_Series>
+     *     </cit:series>
+     *   </cit:CI_Citation>
      * }
      *
      * In such situation, this method is silent if the two identifiers are equal, or logs a warning and restores

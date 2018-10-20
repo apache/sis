@@ -39,19 +39,19 @@ package org.apache.sis.xml;
  *   <th>Unknown {@code Series} element</th>
  * </tr><tr><td>
  * {@preformat xml
- *   <gmd:CI_Citation>
- *     <gmd:series>
- *       <gmd:CI_Series>
+ *   <cit:CI_Citation>
+ *     <cit:series>
+ *       <cit:CI_Series>
  *         <!-- Some content here -->
- *       </gmd:CI_Series>
- *     </gmd:series>
- *   </gmd:CI_Citation>
+ *       </cit:CI_Series>
+ *     </cit:series>
+ *   </cit:CI_Citation>
  * }
  * </td><td>
  * {@preformat xml
- *   <gmd:CI_Citation>
- *     <gmd:series nilReason="unknown"/>
- *   </gmd:CI_Citation>
+ *   <cit:CI_Citation>
+ *     <cit:series nilReason="unknown"/>
+ *   </cit:CI_Citation>
  * }
  * </td></tr></table>
  *
