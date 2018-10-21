@@ -198,6 +198,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class,
     org.apache.sis.io.wkt.WKTParserTest.class,
+    org.apache.sis.io.wkt.ComparisonWithEPSG.class,
 
     // Geodetic object creations from authority codes.
     org.apache.sis.referencing.factory.GIGS2001.class,

@@ -151,7 +151,7 @@ public final strictfp class TestFactorySource {
             factory = null;
             final int n = ((ConcurrentAuthorityFactory) af).countAvailableDataAccess();
             af.close();
-            assertBetween("Since we ran all tests sequantially, should have no more than 1 Data Access Object (DAO).", 0, 1, n);
+            assertBetween("Since we ran all tests sequentially, should have no more than 1 Data Access Object (DAO).", 0, 1, n);
         }
     }
 }

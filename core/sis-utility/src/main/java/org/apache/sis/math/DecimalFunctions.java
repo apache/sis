@@ -46,7 +46,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * since base 10 is not more "real" than base 2 for natural phenomenon.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  *
  * @see MathFunctions#pow10(int)
  * @see Math#log10(double)
@@ -56,7 +56,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  */
 public final class DecimalFunctions extends Static {
     /**
-     * The greatest power of 10 such as {@code Math.pow(10, E10_FOR_ZERO) == 0}.
+     * The greatest power of 10 such as {@code Math.pow(10, EXPONENT_FOR_ZERO) == 0}.
      * This is the exponent in {@code parseDouble("1E-324")} &lt; {@link Double#MIN_VALUE},
      * which is stored as zero because non-representable as a {@code double} value.
      * The next power, {@code parseDouble("1E-323")}, is a non-zero {@code double} value.
@@ -475,5 +475,84 @@ public final class DecimalFunctions extends Static {
             }
         }
         return digits;
+    }
+
+    /**
+     * Returns {@code true} if the given numbers or equal or differ only by {@code accurate}
+     * having more non-zero trailing decimal fraction digits than {@code approximate}.
+     *
+     * <table class="sis">
+     *   <caption>Examples</caption>
+     *   <tr><th>Accurate</th> <th>Approximate</th> <th>Result</th> <th>Comment</th></tr>
+     *   <tr><td>0.123456</td> <td>0.123</td>       <td>true</td>   <td>Differ on in digits not specified by {@code approximate}.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method can no distinguish missing digits from trailing zeros.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123001</td>    <td>false</td>  <td>No missing digits, and some of them differ.</td></tr>
+     *   <tr><td>0.123</td>    <td>0.123456</td>    <td>false</td>  <td>{@code approximate} and {@code accurate} can not be interchanged.</td></tr>
+     * </table>
+     *
+     * <div class="note"><b>Use case:</b>
+     * this method is useful when {@code approximate} is a number parsed by {@link Double#parseDouble(String)}
+     * and the data producer may have rounded too many fraction digits when formatting the numbers.
+     * In some cases we can suspect what the real value may be and want to ensure that a replacement
+     * would not contradict the provided value. This happen for example in Well Known Text format,
+     * where the following element is sometime written with the conversion factor rounded:
+     *
+     * {@preformat wkt
+     *   AngleUnit["degree", 0.017453292519943295]      // Expected
+     *   AngleUnit["degree", 0.01745329252]             // Given by some providers
+     * }
+     * </div>
+     *
+     * @param  accurate     the most accurate number.
+     * @param  approximate  the number which may have missing decimal fraction digits.
+     * @return whether the two number are equal, ignoring missing decimal fraction digits in {@code approximate}.
+     *
+     * @since 1.0
+     */
+    public static boolean equalsIgnoreMissingFractionDigits(double accurate, double approximate) {
+        final double delta = Math.abs(accurate - approximate);
+        if (delta < 1) {
+            /*
+             * Compute the position of the first digit that differ, expressed as a power of 10.
+             * For example if the numbers are 0.123 and 0.12378, then the first digit to differ
+             * is 7 at position 10⁻⁴. Consequently the position of the last same digit is 10⁻³.
+             * Dividing numbers by that last position result in numbers where all the different
+             * digits are fraction digits (123 and 123.78 in above example).
+             */
+            int p = Numerics.toExp10(MathFunctions.getExponent(delta));     // Rounded twice toward floor (may be too low).
+            p = Math.max(p - (EXPONENT_FOR_ZERO + 1), 0);                   // Convert to index in POW10 array.
+            if (p+1 < POW10.length && POW10[p+1] <= delta) p++;             // If p was too low, adjust.
+            p = (-2*EXPONENT_FOR_ZERO - 3) - p;                             // Index of power of opposite sign - 1.
+            if (p >= 0 && p < POW10.length) {
+                double scale = POW10[p];                                    // Factor for moving difference to fraction digits.
+                assert delta*scale >= 0.1 : delta;
+                final double diffInFractions = approximate * scale;
+                /*
+                 * The difference should not be in any digit provided by 'approximate'.
+                 * This means that after we moved the difference in fraction digits,
+                 * the approximate number should have no such fractions. We use 1 ULP
+                 * tolerance because the string representation of 'double' type has a
+                 * 0.5 ULP accuracy and the multiplication adds a 0.5 ULP rounding error.
+                 */
+                approximate = Math.rint(diffInFractions);
+                if (Math.abs(approximate - diffInFractions) <= Math.ulp(diffInFractions)) {
+                    /*
+                     * At this point we determined that all difference (now stored as fraction digits)
+                     * are decimal fraction digits that were not specified in the approximate number.
+                     * We will compare the approximate number with the accurate one ignoring those digits,
+                     * but before doing so we may need to adjust too aggressive scale factor. For example
+                     * if the approximate number is 0.123 and the accurate one is 0.123004, then the scale
+                     * factor of 100000 is too aggressive; it should be 1000.
+                     */
+                    while (approximate % 10 == 0 && scale >= 10) {
+                        approximate /= 10;
+                        scale /= 10;
+                    }
+                    accurate *= scale;
+                    return Math.abs(approximate - accurate) <= 0.5;
+                }
+            }
+        }
+        return Double.doubleToLongBits(accurate) == Double.doubleToLongBits(approximate);
     }
 }
