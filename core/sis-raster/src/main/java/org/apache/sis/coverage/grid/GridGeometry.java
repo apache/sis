@@ -79,7 +79,6 @@ import org.apache.sis.io.TableAppender;
  * In order to check if a property is defined, use {@link #isDefined(int)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @author  Alessio Fabiani (Geosolutions)
  * @version 1.0
  * @since   1.0
  * @module
