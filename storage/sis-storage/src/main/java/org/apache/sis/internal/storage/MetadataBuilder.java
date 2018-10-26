@@ -33,6 +33,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
@@ -65,6 +66,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.internal.simple.SimpleDuration;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadataScope;
@@ -1758,10 +1760,10 @@ parse:      for (int i = 0; i < length;) {
      * @param  envelope  the extent to add in the metadata, or {@code null} for no-operation.
      * @throws TransformException if an error occurred while converting the given envelope to extents.
      */
-    public final void addExtent(final AbstractEnvelope envelope) throws TransformException {
+    public final void addExtent(final Envelope envelope) throws TransformException {
         if (envelope != null) {
             addReferenceSystem(envelope.getCoordinateReferenceSystem());
-            if (!envelope.isAllNaN()) {
+            if (!(envelope instanceof AbstractEnvelope && ((AbstractEnvelope) envelope).isAllNaN())) {
                 extent().addElements(envelope);
             }
         }
@@ -1974,6 +1976,22 @@ parse:      for (int i = 0; i < length;) {
             final DefaultResolution r = new DefaultResolution();
             r.setDistance(shared(distance));
             addIfNotPresent(identification().getSpatialResolutions(), r);
+        }
+    }
+
+    /**
+     * Adds a temporal resolution in days.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/temporalResolution}</li>
+     * </ul>
+     *
+     * @param  duration  the resolution in days, or {@code NaN} for no-operation.
+     */
+    public final void addTemporalResolution(final double duration) {
+        if (!Double.isNaN(duration)) {
+            addIfNotPresent(identification().getTemporalResolutions(), new SimpleDuration(duration));
         }
     }
 
