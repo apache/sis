@@ -34,6 +34,7 @@ import org.opengis.referencing.operation.*;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -608,8 +609,22 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 context.setTarget(normalized);
             }
         } else if (identifier == GEOCENTRIC_CONVERSION) {
-            parameters = (isGeographicToGeocentric ? GeographicToGeocentric.PARAMETERS
-                                                   : GeocentricToGeographic.PARAMETERS).createValue();
+            /*
+             * Geographic ↔︎ Geocentric conversion. The "dim" parameter is Apache SIS specific but is guaranteed
+             * to be present since we use SIS parameter descriptors directly. The default number of dimension is 3,
+             * but we specify the value unconditionally anyway as a safety.
+             */
+            final ParameterDescriptorGroup descriptor;
+            final GeodeticCRS geographic;
+            if (isGeographicToGeocentric) {
+                geographic = sourceCRS;
+                descriptor = GeographicToGeocentric.PARAMETERS;
+            } else {
+                geographic = targetCRS;
+                descriptor = GeocentricToGeographic.PARAMETERS;
+            }
+            parameters = descriptor.createValue();
+            parameters.parameter("dim").setValue(geographic.getCoordinateSystem().getDimension());
         } else {
             /*
              * Coordinate system change (including change in the number of dimensions) without datum shift.

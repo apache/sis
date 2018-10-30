@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.Transformation;
 /**
  * Base class for providers that perform an operation on geographic or geocentric coordinates.
  * In the geographic case, those operations can have two-dimensional and three-dimensional variants
- * by adding or omitting the ellipsoidal height. Sometime those variants are explicitely declared
+ * by adding or omitting the ellipsoidal height. Sometime those variants are explicitly declared
  * in the EPSG database and are implemented in this package as separated operations. Sometime those
  * variants are specific to Apache SIS and can be fetched only by a call to {@link #redimension(int, int)}.
  *
