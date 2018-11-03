@@ -20,8 +20,10 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import javax.annotation.Generated;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
@@ -57,6 +59,11 @@ public final class Resources extends IndexedResourceBundle {
          */
         private Keys() {
         }
+
+        /**
+         * Bounding box crosses the antimeridian.
+         */
+        public static final short BoxCrossesAntiMeridian = 3;
 
         /**
          * This metadata element is already initialized with value “{0}”.
@@ -124,5 +131,31 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg0) throws MissingResourceException
     {
         return forLocale(null).getString(key, arg0);
+    }
+
+    /**
+     * The international string to be returned by {@link formatInternational}.
+     */
+    private static final class International extends ResourceInternationalString {
+        private static final long serialVersionUID = 7465539282825054584L;
+
+        International(short key)                           {super(key);}
+        International(short key, Object args)              {super(key, args);}
+        @Override protected KeyConstants getKeyConstants() {return Resources.Keys.INSTANCE;}
+        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
+            return forLocale(locale);
+        }
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key  the key for the desired string.
+     * @return an international string for the given key.
+     */
+    public static InternationalString formatInternational(final short key) {
+        return new International(key);
     }
 }

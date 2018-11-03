@@ -17,9 +17,6 @@
 package org.apache.sis.metadata;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.text.Format;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,7 +30,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.jaxb.SpecializedIdentifier;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.util.TreeFormatCustomization;
-import org.apache.sis.internal.system.LocalizedStaticObject;
 import org.apache.sis.internal.system.Semaphores;
 
 
@@ -47,6 +43,7 @@ import org.apache.sis.internal.system.Semaphores;
  *   <li>{@link TableColumn#NAME}       - the human-readable property name, inferred from the identifier and index.</li>
  *   <li>{@link TableColumn#TYPE}       - the base interface of property values.</li>
  *   <li>{@link TableColumn#VALUE}      - the property value.</li>
+ *   <li>{@link TableColumn#REMARKS}    - remarks on the property value.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -68,16 +65,9 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
         TableColumn.INDEX,
         TableColumn.NAME,
         TableColumn.TYPE,
-        TableColumn.VALUE
+        TableColumn.VALUE,
+        TableColumn.REMARKS
     });
-
-    /**
-     * The {@link TreeTableFormat} to use for the {@link #toString()} method implementation.
-     * Created when first needed. Would need to be reset to {@code null} on locale or timezone
-     * changes, but we do not yet have any listener for such information.
-     */
-    @LocalizedStaticObject
-    private static Format format;
 
     /**
      * The root of the metadata tree.
@@ -140,27 +130,21 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
      */
     @Override
     public String toString() {
-        synchronized (TreeTableView.class) {
-            if (format == null) {
-                final TreeTableFormat f = new TreeTableFormat(
-                        Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault());
-                f.setColumns(TableColumn.NAME, TableColumn.VALUE);
-                format = f;
+        /*
+         * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+         * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
+         * for all unused properties. Users should not see behavioral difference, except if they override
+         * some getters with an implementation invoking other getters. However in such cases, users would
+         * have been exposed to null values at XML marshalling time anyway.
+         */
+        final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+        try {
+            synchronized (MetadataFormat.INSTANCE) {
+                return MetadataFormat.INSTANCE.format(this);
             }
-            /*
-             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
-             * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
-             * for all unused properties. Users should not see behavioral difference, except if they override
-             * some getters with an implementation invoking other getters. However in such cases, users would
-             * have been exposed to null values at XML marshalling time anyway.
-             */
-            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
-            try {
-                return format.format(this);
-            } finally {
-                if (!allowNull) {
-                    Semaphores.clear(Semaphores.NULL_COLLECTION);
-                }
+        } finally {
+            if (!allowNull) {
+                Semaphores.clear(Semaphores.NULL_COLLECTION);
             }
         }
     }
