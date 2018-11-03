@@ -61,7 +61,7 @@ import static java.lang.Math.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Statistics#toString()
  *
@@ -338,37 +338,26 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             }
         }
         /*
-         * Initialize the NumberFormat for formatting integers without scientific notation.
-         * This is necessary since the format may have been modified by a previous execution
-         * of this method.
-         */
-        final Format format = getFormat(Double.class);
-        if (format instanceof DecimalFormat) {
-            ((DecimalFormat) format).applyPattern("#0");        // Also disable scientific notation.
-        } else if (format instanceof NumberFormat) {
-            setFractionDigits((NumberFormat) format, 0);
-        }
-        /*
          * Iterates over the rows to format (count, minimum, maximum, mean, RMS, standard deviation),
-         * then iterate over columns (statistics on sample values, on the first derivatives, etc.)
-         * The NumberFormat configuration may be different for each column, but we can skip many
-         * reconfiguration in the common case where there is only one column.
+         * then iterate over columns (statistics on first set of sample values, on second set, etc.)
+         * The NumberFormat configuration may be different for each column.
          */
-        boolean needsConfigure = false;
-        for (int i=0; i<KEYS.length; i++) {
-            switch (i) {
-                case 1: if (!showNaNCount) continue; else break;
-                // Case 0 and 1 use the above configuration for integers.
-                // Case 2 unconditionally needs a reconfiguration for floating point values.
-                // Case 3 and others need reconfiguration only if there is more than one column.
-                case 2: needsConfigure = true; break;
-                case 3: needsConfigure = (stats[0].differences() != null); break;
+        final Format countFormat = getFormat(Integer.class);
+        final Format valueFormat = getFormat(Double.class);
+        final Format[] formats = new Format[stats.length];
+        for (int i=0; i<formats.length; i++) {
+            formats[i] = configure(valueFormat, stats[i], i != 0);
+        }
+        for (int line=0; line < KEYS.length; line++) {
+            if (line == 1 & !showNaNCount) {
+                continue;
             }
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
-            table.append(resources.getString(KEYS[i])).append(':');
-            for (final Statistics s : stats) {
+            table.append(resources.getString(KEYS[line])).append(':');
+            for (int i=0; i<stats.length; i++) {
+                final Statistics s = stats[i];
                 final Number value;
-                switch (i) {
+                switch (line) {
                     case 0:  value = s.count();    break;
                     case 1:  value = s.countNaN(); break;
                     case 2:  value = s.minimum();  break;
@@ -376,14 +365,11 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
                     case 4:  value = s.mean();     break;
                     case 5:  value = s.rms();      break;
                     case 6:  value = s.standardDeviation(allPopulation); break;
-                    default: throw new AssertionError(i);
-                }
-                if (needsConfigure) {
-                    configure(format, s);
+                    default: throw new AssertionError(line);
                 }
                 table.append(beforeFill);
                 table.nextColumn(fillCharacter);
-                table.append(format.format(value));
+                table.append((line >= 2 ? formats[i] : countFormat).format(value));
                 table.setCellAlignment(TableAppender.ALIGN_RIGHT);
             }
             table.append(lineSeparator);
@@ -420,44 +406,69 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  format  the formatter to configure.
      * @param  stats   the statistics for which to configure the formatter.
+     * @param  clone   whether to clone the given format before to modify it.
+     * @return the formatter to use. May be a clone of the given formatter.
      */
-    private void configure(final Format format, final Statistics stats) {
+    private static Format configure(final Format format, final Statistics stats, final boolean clone) {
         final double minimum  = stats.minimum();
         final double maximum  = stats.maximum();
         final double extremum = max(abs(minimum), abs(maximum));
-        if ((extremum >= 1E+10 || extremum <= 1E-4) && format instanceof DecimalFormat) {
+        int multiplier = 1;
+        if (format instanceof DecimalFormat) {
+            DecimalFormat df = (DecimalFormat) format;
+            multiplier = df.getMultiplier();
             /*
-             * The above threshold is high so that geocentric and projected coordinates in metres
-             * are not formatted with scientific notation (a threshold of 1E+7 is not enough).
-             * The number of decimal digits in the pattern is arbitrary.
+             * Check for scientific notation: the threshold below is high so that geocentric and projected
+             * coordinates in metres are not formatted with scientific notation (a 1E+7 threshold is not
+             * enough). If the numbers seem to require scientific notation, switch to that notation only
+             * if the user has not already set a different number pattern.
              */
-            ((DecimalFormat) format).applyPattern("0.00000E00");
-        } else {
-            /*
-             * Computes a representative range of values. We take 2 standard deviations away
-             * from the mean. Assuming that data have a gaussian distribution, this is 97.7%
-             * of data. If the data have a uniform distribution, then this is 100% of data.
-             */
-            double delta;
-            final double mean = stats.mean();
-            delta = 2 * stats.standardDeviation(true); // 'true' is for avoiding NaN when count == 1.
-            delta = min(maximum, mean+delta) - max(minimum, mean-delta); // Range of 97.7% of values.
-            delta = max(delta/stats.count(), ulp(extremum)); // Mean delta for uniform distribution, not finer than 'double' accuracy.
-            if (format instanceof NumberFormat) {
-                setFractionDigits((NumberFormat) format, max(0, ADDITIONAL_DIGITS
-                        + DecimalFunctions.fractionDigitsForDelta(delta, false)));
-            } else {
-                // A future version could configure DateFormat here.
+            if (multiplier == 1 && (extremum >= 1E+10 || extremum <= 1E-4)) {
+                final String pattern = df.toPattern();
+                for (int i = pattern.length(); --i >= 0;) {
+                    switch (pattern.charAt(i)) {
+                        case '\'':                // Quote character: if present, user probably personalized the pattern.
+                        case '¤':                 // Currency sign: not asked by super.createFormat(…), so assumed user format.
+                        case 'E': return format;  // Scientific notation: not asked by super.createFormat(…), so assumed user format.
+                    }
+                }
+                /*
+                 * Apply the scientific notation on a clone in order to avoid misleading
+                 * this 'configure' method next time we will format a Statistics object.
+                 * The number of decimal digits in the pattern is arbitrary.
+                 */
+                df = (DecimalFormat) df.clone();
+                df.applyPattern("0.00000E00");
+                return df;
             }
         }
-    }
-
-    /**
-     * Convenience method for setting the minimum and maximum fraction digits of the given format.
-     */
-    private static void setFractionDigits(final NumberFormat format, final int digits) {
-        format.setMinimumFractionDigits(digits);
-        format.setMaximumFractionDigits(digits);
+        /*
+         * Computes a representative range of values. We take 2 standard deviations away
+         * from the mean. Assuming that data have a gaussian distribution, this is 97.7%
+         * of data. If the data have a uniform distribution, then this is 100% of data.
+         */
+        double delta;
+        final double mean = stats.mean();
+        delta = 2 * stats.standardDeviation(true);                      // 'true' is for avoiding NaN when count == 1.
+        delta = min(maximum, mean+delta) - max(minimum, mean-delta);    // Range of 97.7% of values.
+        delta = max(delta/stats.count(), ulp(extremum));                // Mean delta for uniform distribution, not finer than 'double' accuracy.
+        if (format instanceof NumberFormat) {
+            int digits = DecimalFunctions.fractionDigitsForDelta(delta, false);
+            digits -= DecimalFunctions.floorLog10(multiplier);
+            digits = max(0, digits + ADDITIONAL_DIGITS);
+            NumberFormat nf = (NumberFormat) format;
+            if (digits != nf.getMinimumFractionDigits() ||
+                digits != nf.getMaximumFractionDigits())
+            {
+                if (clone) nf = (NumberFormat) nf.clone();
+                nf.setMinimumFractionDigits(digits);
+                nf.setMaximumFractionDigits(digits);
+            }
+            return nf;
+        } else {
+            // A future version could configure DateFormat here.
+        }
+        return format;
     }
 
     /**

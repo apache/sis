@@ -478,6 +478,31 @@ public final class DecimalFunctions extends Static {
     }
 
     /**
+     * Computes {@code (int) floor(log10(x))}. For values greater than one, this is the number of digits - 1
+     * in the decimal representation of the given number. For values smaller than one, this is the number of
+     * fraction digits required for showing the first non-zero decimal digit.
+     *
+     * @param  x  the value for which to compute the logarithm. Must be greater than zero.
+     * @return logarithm of the given value, rounded toward zero.
+     * @throws ArithmeticException if the given value is zero, negative, infinity or NaN.
+     *
+     * @see MathFunctions#pow10(int)
+     *
+     * @since 1.0
+     */
+    public static int floorLog10(final double x) {
+        if (x > 0) {
+            int p = Numerics.toExp10(MathFunctions.getExponent(x));         // Rounded twice toward floor (may be too low).
+            final int i = p - EXPONENT_FOR_ZERO;                            // Convert to index in POW10 array + 1.
+            if (i >= 0 && i < POW10.length) {
+                if (POW10[i] <= x) p++;                                     // If p is too low, adjust.
+                return p;
+            }
+        }
+        throw new ArithmeticException(String.valueOf(x));
+    }
+
+    /**
      * Returns {@code true} if the given numbers or equal or differ only by {@code accurate}
      * having more non-zero trailing decimal fraction digits than {@code approximate}.
      *

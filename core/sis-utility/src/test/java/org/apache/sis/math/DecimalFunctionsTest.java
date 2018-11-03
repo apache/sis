@@ -269,6 +269,33 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link DecimalFunctions#floorLog10(double)} method.
+     */
+    @Test
+    public void testFloorLog10() {
+        assertEquals(   0, floorLog10(   1));
+        assertEquals(   0, floorLog10(   9));
+        assertEquals(   1, floorLog10(  10));
+        assertEquals(   1, floorLog10(  11));
+        assertEquals(   1, floorLog10(  99));
+        assertEquals(   2, floorLog10( 100));
+        assertEquals(   2, floorLog10( 999));
+        assertEquals(   3, floorLog10(1000));
+        assertEquals(  -1, floorLog10(0.100));
+        assertEquals(  -2, floorLog10(0.099));
+        assertEquals(  -2, floorLog10(0.010));
+        assertEquals(  -3, floorLog10(0.009));
+        assertEquals(  -3, floorLog10(0.001));
+        assertEquals( 308, floorLog10(MAX_VALUE));
+        assertEquals(-324, floorLog10(MIN_VALUE));
+        try {floorLog10( 0);                fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(-1);                fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(NaN);               fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(NEGATIVE_INFINITY); fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(POSITIVE_INFINITY); fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+    }
+
+    /**
      * Tests {@link DecimalFunctions#equalsIgnoreMissingFractionDigits(double, double)}.
      * This test uses the conversion factor from degrees to radians as a use case.
      * This factor is written as {@code ANGLEUNIT["degree", 0.01745329252]} in some
