@@ -18,10 +18,16 @@
 
 /**
  * Maven plugins (others than {@link org.apache.sis.util.resources.ResourceCompilerMojo}) used
- * for building Apache SIS. See the Maven-generated module description for more information.
+ * for building Apache SIS.
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.internal.maven.JarCollector} collects all JAR files and their dependencies
+ *     in a single {@code target/binaries} directory, using hard links instead than copying the files.</li>
+ *   <li>{@link org.apache.sis.internal.maven.Assembler} builds the Apache SIS distribution file.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
