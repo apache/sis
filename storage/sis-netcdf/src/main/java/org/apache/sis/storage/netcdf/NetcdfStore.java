@@ -99,7 +99,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
         location = connector.getStorageAs(URI.class);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
-        } catch (IOException e) {
+        } catch (IOException | ArithmeticException e) {
             throw new DataStoreException(e);
         }
         if (decoder == null) {

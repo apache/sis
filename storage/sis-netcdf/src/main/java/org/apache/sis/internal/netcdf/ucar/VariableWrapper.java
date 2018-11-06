@@ -118,6 +118,14 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
+     */
+    @Override
+    public boolean isUnlimited() {
+        return variable.isUnlimited();
+    }
+
+    /**
      * Returns {@code true} if this variable seems to be a coordinate system axis.
      */
     @Override

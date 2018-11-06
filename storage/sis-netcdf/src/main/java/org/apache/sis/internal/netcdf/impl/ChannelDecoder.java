@@ -69,7 +69,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -214,7 +214,7 @@ public final class ChannelDecoder extends Decoder {
      * <ul>
      *   <li>Magic number: 'C','D','F'</li>
      *   <li>Version number: 1 or 2</li>
-     *   <li>Number of records</li>
+     *   <li>Number of records | {@value #STREAMING}</li>
      *   <li>List of netCDF dimensions  (see {@link #readDimensions(int)})</li>
      *   <li>List of global attributes  (see {@link #readAttributes(int)})</li>
      *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
@@ -226,6 +226,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while reading the channel.
      * @throws DataStoreException if the content of the given channel is not a netCDF file.
+     * @throws ArithmeticException if a variable is too large.
      */
     public ChannelDecoder(final ChannelDataInput input, final Charset encoding, final GeometryLibrary geomlib,
             final WarningListeners<DataStore> listeners) throws IOException, DataStoreException
@@ -277,9 +278,9 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        attributeMap = attributes;
-        this.variables = variables;
-        variableMap = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
+        this.attributeMap = attributes;
+        this.variables    = variables;
+        this.variableMap  = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
     }
 
     /**
@@ -470,13 +471,14 @@ public final class ChannelDecoder extends Decoder {
         for (int i=0; i<nelems; i++) {
             final String name = readName();
             int length = input.readInt();
-            if (length == 0) {
+            boolean isUnlimited = (length == 0);
+            if (isUnlimited) {
                 length = numrecs;
                 if (length == STREAMING) {
                     throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
                 }
             }
-            dimensions[i] = new Dimension(name, length);
+            dimensions[i] = new Dimension(name, length, isUnlimited);
         }
         dimensionMap = Dimension.toCaseInsensitiveNameMap(dimensions, NAME_LOCALE);
         return dimensions;
@@ -565,8 +567,15 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
             variables[j] = new VariableInfo(input, name, varDims, attributes,
-                    DataType.valueOf(input.readInt()), input.readInt(), readOffset());
+                    DataType.valueOf(input.readInt()), input.readInt(), readOffset(), listeners);
         }
+        /*
+         * The VariableInfo constructor determined if the variables are "unlimited" or not.
+         * The number of unlimited variable determines to padding to apply, because of an
+         * historical particularity in netCDF format. Those final adjustment can be done
+         * only after we finished creating all variables.
+         */
+        VariableInfo.complete(variables);
         return variables;
     }
 

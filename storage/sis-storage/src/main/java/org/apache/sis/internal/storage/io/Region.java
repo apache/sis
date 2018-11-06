@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.storage.io;
 
+import org.apache.sis.internal.util.Numerics;
+
 
 /**
  * A sub-area in a <var>n</var>-dimensional hyper-rectangle, optionally with sub-sampling.
@@ -29,16 +31,11 @@ package org.apache.sis.internal.storage.io;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
 public final class Region {
-    /**
-     * Total length of the sequence of values, ignoring sub-area and sub-sampling.
-     */
-    final long sourceLength;
-
     /**
      * The size after reading only the sub-region at the given sub-sampling.
      * The length of this array is the hyper-rectangle dimension.
@@ -54,7 +51,7 @@ public final class Region {
     final long startAt;
 
     /**
-     * Number of values to skip after having read a values.
+     * Number of values to skip after having read values.
      *
      * <ol>
      *   <li>{@code skips[0]} is the number of values to skip after each single value on the same line.</li>
@@ -69,12 +66,6 @@ public final class Region {
     final long[] skips;
 
     /**
-     * Number of dimensions for which we can collapse the read operations in a single operation because their
-     * data are contiguous. This is the index of the first non-zero element in the {@link #skips} array.
-     */
-    final int contiguousDataDimension;
-
-    /**
      * Creates a new region. It is caller's responsibility to ensure that:
      * <ul>
      *   <li>all arrays have the same length</li>
@@ -82,6 +73,7 @@ public final class Region {
      *   <li>{@code regionLower[i] >= 0} for all <var>i</var></li>
      *   <li>{@code regionLower[i] < regionUpper[i] <= size[i]} for all <var>i</var></li>
      *   <li>{@code subsamplings[i] > 0} for all <var>i</var></li>
+     *   <li>The total length of data to read does not exceed {@link Integer#MAX_VALUE}.</li>
      * </ul>
      *
      * @param size          the number of elements along each dimension.
@@ -97,27 +89,35 @@ public final class Region {
         long stride   = 1;
         long skip     = 0;
         for (int i=0; i<dimension;) {
-            final int  step  =  subsamplings[i];
-            final long lower =  regionLower [i];
-            final long count = (regionUpper [i] - lower + (step-1)) / step;      // (upper-lower)/step rounded toward up, provided all values are positive.
+            final int  step  = subsamplings[i];
+            final long lower =  regionLower[i];
+            final long count = Numerics.ceilDiv(regionUpper[i] - lower, step);
             final long upper = lower + ((count-1) * step + 1);
             final long span  = size[i];
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
             targetSize[i] = Math.toIntExact(count);
 
-            position += stride * lower;
-            skip     += stride * (span - (upper - lower));
-            skips[i] += stride * (step - 1);
-            stride   *= span;
+            position = Math.addExact(position, Math.multiplyExact(stride, lower));
+            skip     = Math.addExact(skip,     Math.multiplyExact(stride, span - (upper - lower)));
+            skips[i] = Math.addExact(skips[i], Math.multiplyExact(stride, step - 1));
+            stride   = Math.multiplyExact(stride, span);
             skips[++i] = skip;
         }
         startAt = position;
-        sourceLength = stride;
-        int i;
-        for (i=0; i<dimension; i++) {
-            if (skips[i] != 0) break;
-        }
-        contiguousDataDimension = i;
+    }
+
+    /**
+     * Increases the number of bytes that need to be skipped before incrementing the index
+     * in the last dimension of the hyper-cube. Current implementation allows to alter the
+     * reading for the last dimension only, because this is the only dimension needed for
+     * supporting netCDF "unlimited" dimension. Future versions may expand to other dimensions
+     * if needed.
+     *
+     * @param n  number of bytes to skip.
+     */
+    public void skipAfterLastDimension(final long n) {
+        final int i = skips.length - 2;                     // Reminder: skips.length == dimension + 1.
+        skips[i] = Math.addExact(skips[i], n);
     }
 
     /**
@@ -127,6 +127,19 @@ public final class Region {
      */
     public final int getDimension() {
         return targetSize.length;
+    }
+
+    /**
+     * Number of dimensions for which we can collapse the read operations in a single operation because their
+     * data are contiguous. This is the index of the first non-zero element in the {@link #skips} array.
+     */
+    final int contiguousDataDimension() {
+        final int dimension = skips.length - 1;
+        int i;
+        for (i=0; i<dimension; i++) {
+            if (skips[i] != 0) break;
+        }
+        return i;
     }
 
     /**

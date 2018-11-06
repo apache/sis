@@ -32,9 +32,9 @@ import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.math.Vector;
 
 
@@ -45,7 +45,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -78,11 +78,30 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final String name;
 
     /**
-     * The dimensions of this variable, in order. When iterating over the values stored in this variable
-     * (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[0]}
-     * varies faster, followed by index in the domain of {@code dimensions[1]}, <i>etc.</i>
+     * The dimensions of this variable, in the order they appear in netCDF file. When iterating over the values stored in
+     * this variable (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[length-1]}
+     * varies faster, followed by index in the domain of {@code dimensions[length-2]}, <i>etc.</i>
      */
     final Dimension[] dimensions;
+
+    /**
+     * The offset (in bytes) to apply for moving to the next record in variable data, or -1 if unknown.
+     * A record is a <var>n-1</var> dimensional cube spanning all dimensions except the unlimited one.
+     * This concept is relevant only for {@linkplain #isUnlimited() unlimited variables}.
+     * For other kind of variables, this field is ignored and its value can be arbitrary.
+     *
+     * <p>On construction, this field is initialized to the number of bytes in this variable, omitting
+     * the unlimited dimension (if any), or 0 if unknown. After {@link #complete(VariableInfo[])} has
+     * been invoked, this field is modified as below:</p>
+     *
+     * <ul>
+     *   <li>For {@linkplain #isUnlimited() unlimited variables}, this is the number of bytes to
+     *       skip <strong>after</strong> the data has been read for reading the next record.</li>
+     *   <li>For other variables, this field is ignored. In current implementation it is left to
+     *       the size of this variable, and kept for information purpose only.</li>
+     * </ul>
+     */
+    private long offsetToNextRecord;
 
     /**
      * The attributes associates to the variable, or an empty map if none.
@@ -148,8 +167,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  dimensions  the dimensions of this variable.
      * @param  attributes  the attributes associates to the variable, or an empty map if none.
      * @param  dataType    the netCDF type of data, or {@code null} if unknown.
-     * @param  size        the variable size, used for verification purpose only.
+     * @param  size        the variable size. May be inaccurate and ignored.
      * @param  offset      the offset where the variable data begins in the netCDF file.
+     * @param  warnings    where to report warnings, if any.
      */
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
@@ -157,7 +177,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                  final Map<String,Object>    attributes,
                        DataType              dataType,
                  final int                   size,
-                 final long                  offset) throws DataStoreException
+                 final long                  offset,
+                 final WarningListeners<?>   warnings) throws DataStoreException
     {
         final Object isUnsigned = attributes.get(CDM.UNSIGNED);
         if (isUnsigned != null) {
@@ -170,11 +191,31 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         /*
          * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
+         * Instead we compute the length ourselves, excluding the unlimited dimension.
          */
-        if (dataType != null && dataType.number >= Numbers.BYTE && dataType.number <= Numbers.DOUBLE) {
+        if (dataType != null) {
+            offsetToNextRecord = dataType.size();               // May be zero if unknown data type.
+            for (int i=0; i<dimensions.length; i++) {
+                final Dimension dim = dimensions[i];
+                if (!dim.isUnlimited) {
+                    offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
+                } else if (i != 0) {
+                    // Unlimited dimension, if any, must be first in a netCDF 3 classic format.
+                    throw new DataStoreException(warnings.getLocale(), "netCDF", input.filename, null);
+                }
+            }
+        }
+        /*
+         * Prepare the object to be used for reading data cube efficiently from the input channel.
+         * Note that 'dataType' can not be null if 'offsetToNextRecord' is non-zero.
+         */
+        if (offsetToNextRecord != 0) {
             reader = new HyperRectangleReader(dataType.number, input, offset);
         } else {
             reader = null;
+            if (size != -1) {                   // Maximal unsigned value, means possible overflow.
+                offsetToNextRecord = Integer.toUnsignedLong(size);
+            }
         }
         /*
          * If the "_CoordinateAliasForDimension" attribute is defined, then its value will be used
@@ -206,6 +247,42 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             this.meanings = meanings;
         } else {
             meanings = null;
+        }
+    }
+
+    /**
+     * Performs the final adjustment of the {@link #offsetToNextRecord} field of all the given variables.
+     * This method applies padding except for the special case documented in netCDF specification:
+     * <cite>"In the special case when there is only one {@linkplain #isUnlimited() record variable}
+     * and it is of type character, byte, or short, no padding is used between record slabs,
+     * so records after the first record do not necessarily start on four-byte boundaries"</cite>.
+     *
+     * <p>After padding has been applied, this method set the {@link #offsetToNextRecord} of all unlimited
+     * variables to the number of bytes to skip before reading the next record.</p>
+     */
+    static void complete(final VariableInfo[] variables) {
+        final VariableInfo[] unlimited = new VariableInfo[variables.length];
+        int     count     = 0;                  // Number of valid elements in the 'unlimited' array.
+        long    total     = 0;                  // Sum of the size of all variables having a unlimited dimension.
+        boolean isUnknown = false;              // True if 'total' is actually unknown.
+        for (final VariableInfo variable : variables) {
+            if (variable.isUnlimited()) {
+                // Apply 4 bytes padding.
+                final long offsetToNextRecord = Math.addExact(variable.offsetToNextRecord, Integer.BYTES - 1) & ~(Integer.BYTES - 1);
+                unlimited[count++] = variable;
+                isUnknown |= (offsetToNextRecord == 0);
+                total = Math.addExact(total, offsetToNextRecord);
+            }
+        }
+        if (isUnknown) {
+            // If at least one unlimited variable has unknown size, the whole record stride is unknown.
+            for (int i=0; i<count; i++) {
+                unlimited[i].offsetToNextRecord = -1;
+            }
+        } else if (count == 1) {
+            unlimited[0].offsetToNextRecord = 0;        // Special case cited in method javadoc.
+        } else for (int i=0; i<count; i++) {
+            unlimited[i].offsetToNextRecord = total - unlimited[i].offsetToNextRecord;
         }
     }
 
@@ -257,6 +334,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     public boolean isEnumeration() {
         return meanings != null;
+    }
+
+    /**
+     * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
+     * In netCDF 3 classic format, only the first dimension can be unlimited.
+     */
+    @Override
+    public boolean isUnlimited() {
+        // The constructor verified that only the first dimension is unlimited.
+        return (dimensions.length != 0) && dimensions[0].isUnlimited;
     }
 
     /**
@@ -416,26 +503,22 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             if (reader == null) {
                 throw new DataStoreContentException(unknownType());
             }
-            long length = 1;
-            boolean overflow = false;
-            for (final Dimension dimension : dimensions) {
-                length *= dimension.length();
-                if (length > Integer.MAX_VALUE) {
-                    overflow = true;
-                }
-            }
-            if (overflow) {
-                throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
-            }
-            final int dimension = dimensions.length;
-            final long[] size  = new long[dimension];
-            final int [] sub   = new int [dimension];
+            final int    dimension    = dimensions.length;
+            final long[] regionLower  = new long[dimension];
+            final long[] regionUpper  = new long[dimension];
+            final int [] subsamplings = new int [dimension];
             for (int i=0; i<dimension; i++) {
-                sub [i] = 1;
-                size[i] = dimensions[(dimension - 1) - i].length();
+                regionUpper [i] = dimensions[(dimension - 1) - i].length();
+                subsamplings[i] = 1;
             }
-            values = Vector.create(reader.read(new Region(size, new long[dimension], size, sub)), dataType.isUnsigned)
-                    .compress(0);
+            final Region region = new Region(regionUpper, regionLower, regionUpper, subsamplings);
+            if (isUnlimited()) {
+                if (offsetToNextRecord < 0) {
+                    throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, name));
+                }
+                region.skipAfterLastDimension(offsetToNextRecord / dataType.size());
+            }
+            values = Vector.create(reader.read(region), dataType.isUnsigned).compress(0);
         }
         return values;
     }

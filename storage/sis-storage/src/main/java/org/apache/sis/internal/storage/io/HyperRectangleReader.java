@@ -33,7 +33,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -116,14 +116,15 @@ public final class HyperRectangleReader {
      * @throws IOException if an error occurred while transferring data from the channel.
      */
     public Object read(final Region region) throws IOException {
-        final int contiguousDataLength = region.targetLength(region.contiguousDataDimension);
-        final long[] strides = new long[region.getDimension() - region.contiguousDataDimension];
+        final int contiguousDataDimension = region.contiguousDataDimension();
+        final int contiguousDataLength = region.targetLength(contiguousDataDimension);
+        final long[] strides = new long[region.getDimension() - contiguousDataDimension];
         final int[]   cursor = new int[strides.length];
         final int  sizeShift = reader.dataSizeShift();
         long  streamPosition = origin + (region.startAt << sizeShift);
         int    arrayPosition = 0;
         for (int i=0; i<strides.length; i++) {
-            strides[i] = (region.skips[i + region.contiguousDataDimension] + contiguousDataLength) << sizeShift;
+            strides[i] = (region.skips[i + contiguousDataDimension] + contiguousDataLength) << sizeShift;
             assert (strides[i] > 0) : i;
         }
         try {
@@ -141,7 +142,7 @@ loop:       do {
                      * new row, or a new plane, or a new cube?). This determine how many bytes we have to
                      * skip.
                      */
-                    if (++cursor[i] < region.targetSize[region.contiguousDataDimension + i]) {
+                    if (++cursor[i] < region.targetSize[contiguousDataDimension + i]) {
                         streamPosition += strides[i];
                         arrayPosition  += contiguousDataLength;
                         continue loop;

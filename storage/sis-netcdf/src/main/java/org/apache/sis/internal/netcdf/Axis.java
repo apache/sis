@@ -42,6 +42,8 @@ import org.apache.sis.util.ArraysExt;
 public final class Axis {
     /**
      * The attributes to use for fetching dimension (in ISO-19115 sense) information, or {@code null} if unknown.
+     * Example: {@code "geospatial_lat_min"}, {@code "geospatial_lat_resolution"}, {@code DimensionNameType.ROW}.
+     * This is used by {@link org.apache.sis.storage.netcdf.MetadataReader} for information purpose only.
      */
     public final AttributeNames.Dimension attributeNames;
 
