@@ -22,9 +22,10 @@ import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -34,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -73,6 +74,17 @@ final class GridGeometryInfo extends GridGeometry {
     GridGeometryInfo(final Dimension[] domain, final VariableInfo[] range) {
         this.domain = domain;
         this.range  = range;
+    }
+
+    /**
+     * Returns the name of the netCDF file containing this grid geometry, or {@code null} if unknown.
+     */
+    private String getFilename() {
+        for (final VariableInfo info : range) {
+            final String filename = info.getFilename();
+            if (filename != null) return filename;
+        }
+        return null;
     }
 
     /**
@@ -122,7 +134,7 @@ final class GridGeometryInfo extends GridGeometry {
         for (int i=0; i<range.length; i++) {
             final VariableInfo v = range[i];
             if (variables.put(v, i) != null) {
-                throw new DataStoreException(Errors.format(Errors.Keys.DuplicatedElement_1, v.getName()));
+                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedReference_2, getFilename(), v.getName()));
             }
         }
         /*

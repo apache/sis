@@ -21,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.logging.WarningListeners;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 
 
@@ -29,7 +30,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
  * All those objects share in common a {@link #getName()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -74,5 +75,15 @@ public abstract class NamedElement {
                 return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
             }
         }, namesLocale);
+    }
+
+    /**
+     * Returns the resources to use for warnings or error messages.
+     *
+     * @param  listeners  where the warnings are sent. Used for inferring the locale.
+     * @return the resources for the locales specified by the given argument.
+     */
+    protected static Resources resources(final WarningListeners<?> listeners) {
+        return Resources.forLocale(listeners != null ? listeners.getLocale() : null);
     }
 }

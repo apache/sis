@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.io;
 
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -107,17 +108,20 @@ public final class Region {
     }
 
     /**
-     * Increases the number of bytes that need to be skipped before incrementing the index
-     * in the last dimension of the hyper-cube. Current implementation allows to alter the
-     * reading for the last dimension only, because this is the only dimension needed for
-     * supporting netCDF "unlimited" dimension. Future versions may expand to other dimensions
-     * if needed.
+     * Increases the number of values between two consecutive index values in the given dimension of the hyper-cube.
+     * The strides are computed automatically at construction time, but this method can be invoked in some rare cases
+     * where those values need to be modified (example: for adapting to the layout of netCDF "unlimited" variable).
      *
-     * @param n  number of bytes to skip.
+     * <div class="note"><b>Example:</b> in a cube of dimension 10×10×10, the number of values between indices
+     * (0,0,1) and (0,0,2) is 100. Invoking {@code increaseStride(1, 4)} will increase this value to 104.
+     * {@link HyperRectangleReader} will still read only the requested 100 values, but will skip 4 more values
+     * when moving from plane 1 to plane 2.</div>
+     *
+     * @param  dimension  dimension for which to increase the stride.
+     * @param  skip       additional number of values to skip after we finished reading a block of data in the specified dimension.
      */
-    public void skipAfterLastDimension(final long n) {
-        final int i = skips.length - 2;                     // Reminder: skips.length == dimension + 1.
-        skips[i] = Math.addExact(skips[i], n);
+    public void increaseStride(final int dimension, final long skip) {
+        skips[dimension] = Math.addExact(skips[dimension], skip);
     }
 
     /**
@@ -152,5 +156,23 @@ public final class Region {
             length *= targetSize[i];
         }
         return Math.toIntExact(length);
+    }
+
+    /**
+     * Returns a string representation of this region for debugging purpose.
+     *
+     * @return a string representation of this region.
+     */
+    @Override
+    public String toString() {
+        final TableAppender table = new TableAppender(" ");
+        table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+        table.append("size").nextColumn();
+        table.append("skip").nextLine();
+        for (int i=0; i<targetSize.length; i++) {
+            table.append(String.valueOf(targetSize[i])).nextColumn();
+            table.append(String.valueOf(skips[i])).nextLine();
+        }
+        return table.toString();
     }
 }

@@ -274,7 +274,7 @@ public final class ChannelDecoder extends Decoder {
                         default:        throw malformedHeader();
                     }
                 } catch (InvalidParameterCardinalityException e) {
-                    throw new DataStoreContentException(e.getLocalizedMessage(), e);
+                    throw malformedHeader().initCause(e);
                 }
             }
         }
@@ -323,18 +323,24 @@ public final class ChannelDecoder extends Decoder {
      * Returns an exception for a malformed header. This is used only after we have determined
      * that the file should be a netCDF one, but we found some inconsistency or unknown tags.
      */
-    private DataStoreException malformedHeader() {
+    private DataStoreContentException malformedHeader() {
         return new DataStoreContentException(listeners.getLocale(), "netCDF", getFilename(), null);
     }
 
     /**
      * Ensures that {@code nelems} is not a negative value.
      */
-    private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
+    private void ensureNonNegative(final int nelems, final int tag) throws DataStoreContentException {
         if (nelems < 0) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1,
-                    getFilename() + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1, tagPath(tagName(tag))));
         }
+    }
+
+    /**
+     * Returns the name of a tag to show in error message. The returned name include the filename.
+     */
+    private String tagPath(final String name) {
+        return getFilename() + DefaultNameSpace.DEFAULT_SEPARATOR + name;
     }
 
     /**
@@ -367,7 +373,7 @@ public final class ChannelDecoder extends Decoder {
      * Reads a string from the channel in the {@link #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
      */
-    private String readName() throws IOException, DataStoreException {
+    private String readName() throws IOException, DataStoreContentException {
         final int length = input.readInt();
         if (length < 0) {
             throw malformedHeader();
@@ -387,7 +393,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @return the value, or {@code null} if it was an empty string or an empty array.
      */
-    private Object readValues(final DataType type, final int length) throws IOException, DataStoreException {
+    private Object readValues(final DataType type, final int length) throws IOException, DataStoreContentException {
         if (length == 0) {
             return null;
         }
@@ -466,7 +472,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  nelems  the number of dimensions to read.
      * @return the dimensions in the order they are declared in the netCDF file.
      */
-    private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
+    private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreContentException {
         final Dimension[] dimensions = new Dimension[nelems];
         for (int i=0; i<nelems; i++) {
             final String name = readName();
@@ -475,7 +481,7 @@ public final class ChannelDecoder extends Decoder {
             if (isUnlimited) {
                 length = numrecs;
                 if (length == STREAMING) {
-                    throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                    throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, tagPath("numrecs")));
                 }
             }
             dimensions[i] = new Dimension(name, length, isUnlimited);
@@ -784,6 +790,7 @@ public final class ChannelDecoder extends Decoder {
         if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
             return FeaturesInfo.create(this);
         } catch (IllegalArgumentException e) {
+            // Not a problem with content, but rather with configuration.
             throw new DataStoreException(e.getLocalizedMessage(), e);
         }
         return new FeaturesInfo[0];

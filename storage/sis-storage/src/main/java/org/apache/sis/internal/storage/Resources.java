@@ -97,7 +97,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_3 = 2;
 
         /**
-         * Can not read line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
+         * Can not read after column {3} of line {2} of “{1}” as part of a file in the {0} format.
          */
         public static final short CanNotReadFile_4 = 3;
 

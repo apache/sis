@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage.io;
 
 import java.io.IOException;
 import java.nio.Buffer;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -34,12 +33,15 @@ interface DataTransfer {
     /**
      * Returns a file identifier for error messages or debugging purpose.
      */
-    @Debug
     String filename();
 
     /**
      * Returns the size of the Java primitive type which is the element of the array.
-     * The size is expressed as the number of bits to shift.
+     * The size is expressed as the number of bits to shift:
+     *
+     * {@code java
+     *     dataSize = 1 << dataSizeShift;
+     * }
      */
     int dataSizeShift();
 

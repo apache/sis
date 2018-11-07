@@ -59,6 +59,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Can not compute data location for “{1}” variable in the “{0}” netCDF file.
+         */
+        public static final short CanNotComputeVariablePosition_2 = 6;
+
+        /**
          * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;
@@ -69,9 +74,24 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DimensionNotFound_3 = 1;
 
         /**
+         * Duplicated reference to “{1}” in netCDF file “{0}”.
+         */
+        public static final short DuplicatedReference_2 = 7;
+
+        /**
+         * The declared size of variable “{1}” in netCDF file “{0}” is {2} bytes greater than expected.
+         */
+        public static final short MismatchedVariableSize_3 = 8;
+
+        /**
          * Variable “{1}” in file “{0}” has a dimension “{3}” while we expected “{2}”.
          */
         public static final short UnexpectedDimensionForVariable_4 = 2;
+
+        /**
+         * NetCDF file “{0}” uses unsupported data type {2} for variable “{1}”.
+         */
+        public static final short UnsupportedDataType_3 = 5;
 
         /**
          * Variable “{1}” is not found in the “{0}” file.

@@ -21,9 +21,7 @@ import java.nio.ByteBuffer;
 import java.io.IOException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -57,10 +55,10 @@ public final class HyperRectangleReader {
      * @param  dataType  the type of elements to read, as one of the constants defined in {@link Numbers}.
      * @param  input     the channel from which to read the values, together with a buffer for transferring data.
      * @param  origin    the position in the channel of the first sample value in the hyper-rectangle.
-     * @throws DataStoreException if the given {@code dataType} is not one of the supported values.
+     * @throws DataStoreContentException if the given {@code dataType} is not one of the supported values.
      */
     public HyperRectangleReader(final byte dataType, final ChannelDataInput input, final long origin)
-            throws DataStoreException
+            throws DataStoreContentException
     {
         switch (dataType) {
             case Numbers.BYTE:      reader = input.new BytesReader  (           null); break;
@@ -102,9 +100,17 @@ public final class HyperRectangleReader {
      *
      * @return the file identifier.
      */
-    @Debug
     public String filename() {
         return reader.filename();
+    }
+
+    /**
+     * Returns the number of bytes in each value to be read.
+     *
+     * @return number of bytes per value.
+     */
+    public int dataSize() {
+        return 1 << reader.dataSizeShift();
     }
 
     /**
