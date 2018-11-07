@@ -179,6 +179,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  size        the variable size. May be inaccurate and ignored.
      * @param  offset      the offset where the variable data begins in the netCDF file.
      * @param  listeners   where to report warnings, if any.
+     * @throws ArithmeticException if the variable size exceeds {@link Long#MAX_VALUE}.
+     * @throws DataStoreContentException if a logical error is detected.
      */
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
@@ -289,6 +291,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      *
      * <p>After padding has been applied, this method set the {@link #offsetToNextRecord} of all unlimited
      * variables to the number of bytes to skip before reading the next record.</p>
+     *
+     * @throws ArithmeticException if the stride between two records exceeds {@link Long#MAX_VALUE}.
      */
     static void complete(final VariableInfo[] variables) {
         final VariableInfo[] unlimited = new VariableInfo[variables.length];
@@ -531,6 +535,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * The vector is cached and returned as-is in all future invocation of this method.
+     *
+     * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -580,6 +586,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  areaUpper    index after the last value to read along each dimension, as unsigned integers.
      * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
      * @return the data as an array of a Java primitive type.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreContentException {

@@ -91,6 +91,7 @@ final class GridGeometryWrapper extends GridGeometry {
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     public Axis[] getAxes() throws IOException, DataStoreException {

@@ -537,10 +537,10 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  nelems         the number of variables to read.
      * @param  allDimensions  the dimensions previously read by {@link #readDimensions(int)}.
+     * @throws DataStoreContentException if a logical error is detected.
+     * @throws ArithmeticException if a variable is too large.
      */
-    private VariableInfo[] readVariables(final int nelems, final Dimension[] allDimensions)
-            throws IOException, DataStoreException
-    {
+    private VariableInfo[] readVariables(final int nelems, final Dimension[] allDimensions) throws IOException, DataStoreException {
         if (allDimensions == null) {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
@@ -789,8 +789,8 @@ public final class ChannelDecoder extends Decoder {
     public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
         if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
             return FeaturesInfo.create(this);
-        } catch (IllegalArgumentException e) {
-            // Not a problem with content, but rather with configuration.
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            // Illegal argument is not a problem with content, but rather with configuration.
             throw new DataStoreException(e.getLocalizedMessage(), e);
         }
         return new FeaturesInfo[0];

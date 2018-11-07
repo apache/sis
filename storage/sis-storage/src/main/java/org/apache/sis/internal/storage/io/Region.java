@@ -81,6 +81,8 @@ public final class Region {
      * @param regionLower   index of the first value to read or write along each dimension.
      * @param regionUpper   index after the last value to read or write along each dimension.
      * @param subsamplings  sub-sampling along each dimension. Shall be greater than zero.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
+     *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
     public Region(final long[] size, final long[] regionLower, final long[] regionUpper, final int[] subsamplings) {
         final int dimension = size.length;

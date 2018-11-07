@@ -209,6 +209,7 @@ public abstract class Variable extends NamedElement {
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read() throws IOException, DataStoreException;
 
@@ -231,6 +232,7 @@ public abstract class Variable extends NamedElement {
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
 

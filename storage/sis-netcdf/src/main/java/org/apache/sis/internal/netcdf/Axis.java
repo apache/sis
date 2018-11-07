@@ -78,6 +78,7 @@ public final class Axis {
      * @param  sourceSizes       the number of cell elements along that axis.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Axis(final GridGeometry owner, final Object axis, final AttributeNames.Dimension attributeNames,
             final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException

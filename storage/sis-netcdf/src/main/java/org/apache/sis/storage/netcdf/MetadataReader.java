@@ -698,6 +698,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * This is the {@code <mdb:spatialRepresentationInfo>} element in XML.
      *
      * @param  cs  the grid geometry (related to the netCDF coordinate system).
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final GridGeometry cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
@@ -1014,6 +1015,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @return the ISO metadata object.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Metadata read() throws IOException, DataStoreException {
         addResourceScope(ScopeCode.DATASET, null);

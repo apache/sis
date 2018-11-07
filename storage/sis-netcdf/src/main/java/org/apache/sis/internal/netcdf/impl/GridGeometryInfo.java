@@ -122,6 +122,7 @@ final class GridGeometryInfo extends GridGeometry {
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     public Axis[] getAxes() throws IOException, DataStoreException {
@@ -187,6 +188,8 @@ final class GridGeometryInfo extends GridGeometry {
     /**
      * Returns a coordinate for the given two-dimensional grid coordinate axis.
      * This is (indirectly) a callback method for {@link #getAxes()}.
+     *
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     protected double coordinateForAxis(final Object axis, final int j, final int i) throws IOException, DataStoreException {
