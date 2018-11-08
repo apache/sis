@@ -53,7 +53,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * Miscellaneous utility methods for test cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -268,18 +268,19 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Returns a unlocalized string representation of {@code NAME} and {@code VALUE} columns of the given tree table.
+     * Returns a unlocalized string representation of {@code NAME}, {@code VALUE} and {@code REMARKS} columns
+     * of the given tree table. They are the columns included in default string representation of metadata.
      * Dates and times, if any, will be formatted using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
      * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
      *
      * @param  table  the table for which to get a string representation.
      * @return a unlocalized string representation of the given tree table.
      */
-    public static String formatNameAndValue(final TreeTable table) {
+    public static String formatMetadata(final TreeTable table) {
         synchronized (TestUtilities.class) {
             if (tableFormat == null) {
                 final TreeTableFormat f = new TreeTableFormat(null, null);
-                f.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                f.setColumns(TableColumn.NAME, TableColumn.VALUE, TableColumn.REMARKS);
                 tableFormat = f;
             }
             return tableFormat.format(table);

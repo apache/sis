@@ -28,7 +28,7 @@ import org.apache.sis.storage.DataStoreException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -89,6 +89,14 @@ public abstract class Variable extends NamedElement {
         }
         return buffer.toString();
     }
+
+    /**
+     * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
+     * In netCDF 3 classic format, only the first dimension can be unlimited.
+     *
+     * @return whether this variable can grow.
+     */
+    public abstract boolean isUnlimited();
 
     /**
      * Returns {@code true} if the given variable can be used for generating an image.
@@ -201,6 +209,7 @@ public abstract class Variable extends NamedElement {
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read() throws IOException, DataStoreException;
 
@@ -223,6 +232,7 @@ public abstract class Variable extends NamedElement {
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
 
@@ -237,6 +247,9 @@ public abstract class Variable extends NamedElement {
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
+        }
+        if (isUnlimited()) {
+            buffer.append(" (unlimited)");
         }
         return buffer.toString();
     }

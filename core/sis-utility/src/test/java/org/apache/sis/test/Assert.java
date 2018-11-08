@@ -86,7 +86,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
     public static void assertAlmostEquals(final Object expected, final Object actual) {
         assertFalse("Shall not be strictly equals",          Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
         assertFalse("Shall be slightly different",           Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue ("Shall be approximately equals",         Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
         assertTrue ("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
     }
 
@@ -98,7 +98,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @param  actual    the actual object.
      */
     public static void assertEqualsIgnoreMetadata(final Object expected, final Object actual) {
-        assertTrue("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue("Shall be approximately equals",         Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
         assertTrue("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
         assertTrue("Shall be equal, ignoring metadata",     Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
     }

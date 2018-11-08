@@ -103,6 +103,12 @@ public class DataStoreException extends Exception implements LocalizedException 
      * or {@link javax.xml.stream.XMLStreamReader#getLocation()} method.
      * If the given {@code store} argument is not one of the recognized types, then it is ignored.
      *
+     * <p>Examples of messages created by this constructor:</p>
+     * <ul>
+     *   <li>Can not read <var>“Foo”</var> as a file in the <var>Bar</var> format.</li>
+     *   <li>Can not read after column 10 or line 100 of <var>“Foo”</var> as part of a file in the <var>Bar</var> format.</li>
+     * </ul>
+     *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
      * @param format    short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
      * @param filename  name of the file or data store where the error occurred.

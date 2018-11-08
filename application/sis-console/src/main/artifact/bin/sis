@@ -20,16 +20,6 @@ BASE_DIR="`dirname $0`/.."
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
 
-# Unpack the JAR file when first needed.
-if [ ! -f $BASE_DIR/lib/sis.jar ]
-then
-  if ! unpack200 --remove-pack-file $BASE_DIR/lib/sis.pack.gz $BASE_DIR/lib/sis.jar
-  then
-    echo Can not install Apache SIS.
-    exit 1
-  fi
-fi
-
 # Execute SIS with any optional JAR that the user may put in the 'lib' directory.
 java -classpath "$BASE_DIR/lib/*" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \

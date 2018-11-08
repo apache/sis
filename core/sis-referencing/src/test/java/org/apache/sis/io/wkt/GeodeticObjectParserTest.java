@@ -56,7 +56,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Tests {@link GeodeticObjectParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -1119,7 +1119,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                "GEOGCS[“WGS 84”,\n" +
                "  DATUM[“World Geodetic System 1984”,\n" +
                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
-               "    PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”], UNIT[“degree”, 0.01745]],\n" +    // Truncated scale factor.
+               "    PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”], UNIT[“degree”, 0.01746]],\n" +    // Inaccurate scale factor.
                "  UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]");
 
         verifyGeographicCRS(0, crs);

@@ -631,18 +631,6 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     }
 
     /**
-     * Writes the column separator to the given appendable. This is a helper method for the
-     * {@link Writer} inner class,  defined here because it uses many protected fields from
-     * the superclass.  Accessing those fields from the inner class generate many synthetic
-     * methods, so we are better to define only one method here doing the work.
-     */
-    final void writeColumnSeparator(final Appendable out) throws IOException {
-        // We have a TableAppender instance if and only if there is 2 or more columns.
-        ((TableAppender) out.append(beforeFill)).nextColumn(fillCharacter);
-        out.append(columnSeparator);
-    }
-
-    /**
      * Creates string representation of the node values. Tabulations are replaced by spaces,
      * and line feeds are replaced by the Pilcrow character. This is necessary in order to
      * avoid conflict with the characters expected by {@link TableAppender}.
@@ -881,7 +869,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             }
             for (int i=0; i<=n; i++) {
                 if (i != 0) {
-                    writeColumnSeparator(out);
+                    // We have a TableAppender instance if and only if there is 2 or more columns.
+                    writeColumnSeparator(i, (TableAppender) out);
                 }
                 columnFormat = formats[i];
                 formatValue(values[i], false);
@@ -1011,6 +1000,39 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             ((UnitFormat) format).setStyle(UnitFormat.Style.NAME);
         }
         return format;
+    }
+
+    /**
+     * Writes characters between columns. The default implementation applies the configuration
+     * specified by {@link #setColumnSeparatorPattern(String)} as below:
+     *
+     * <blockquote><code>
+     * out.append({@linkplain #beforeFill beforeFill});
+     * out.nextColumn({@linkplain #fillCharacter fillCharacter});
+     * out.append({@linkplain #columnSeparator columnSeparator});
+     * </code></blockquote>
+     *
+     * The output with default values is like below:
+     *
+     * {@preformat text
+     *   root
+     *     └─column0…… column1…… column2…… column3
+     * }
+     *
+     * Subclasses can override this method if different column separators are desired.
+     * Note however that doing so may prevent the {@link #parse parse(…)} method to work.
+     *
+     * @param  nextColumn  zero-based index of the column to be written after the separator.
+     * @param  out         where to write the column separator.
+     *
+     * @see TableAppender#nextColumn(char)
+     *
+     * @since 1.0
+     */
+    protected void writeColumnSeparator(final int nextColumn, final TableAppender out) {
+        out.append(beforeFill);
+        out.nextColumn(fillCharacter);
+        out.append(columnSeparator);
     }
 
     /**

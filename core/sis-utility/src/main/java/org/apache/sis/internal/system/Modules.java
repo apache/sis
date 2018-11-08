@@ -65,6 +65,11 @@ public final class Modules {
     /**
      * The {@value} module name.
      */
+    public static final String RASTER = "org.apache.sis.raster";
+
+    /**
+     * The {@value} module name.
+     */
     public static final String STORAGE = "org.apache.sis.storage";
 
     /**

@@ -39,6 +39,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
@@ -466,6 +467,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
                 return DefaultFormat.getInstance(valueType);
             } else if (valueType == Number.class) {
                 return NumberFormat.getInstance(locale);
+            } else if (Numbers.isInteger(valueType)) {
+                return NumberFormat.getIntegerInstance(locale);
             }
         } else if (valueType == Date.class) {
             final DateFormat format;

@@ -33,7 +33,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -183,6 +183,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     @DependsOnMethod("testSplit")
     public void testParseDoubles() {
+        assertEquals(0, parseDoubles("", ',').length);
         assertArrayEquals(new double[] {5, 1.5, Double.NaN, -8}, parseDoubles("5 , 1.5,, -8 ", ','), 0.0);
     }
 
@@ -192,6 +193,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     @DependsOnMethod("testSplit")
     public void testParseFloats() {
+        assertEquals(0, parseFloats("", ',').length);
         assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8}, parseFloats("5 , 1.5,, -8 ", ','), 0f);
     }
 
@@ -201,6 +203,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     @DependsOnMethod("testSplit")
     public void testParseLongs() {
+        assertEquals(0, parseLongs("", ',', 10).length);
         assertArrayEquals(new long[] {5, 2, -8}, parseLongs("5 , 2, -8 ", ',', 10));
     }
 
@@ -210,6 +213,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     @DependsOnMethod("testSplit")
     public void testParseInts() {
+        assertEquals(0, parseInts("", ',', 10).length);
         assertArrayEquals(new int[] {5, 2, -8}, parseInts("5 , 2, -8 ", ',', 10));
     }
 
@@ -219,6 +223,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     @DependsOnMethod("testSplit")
     public void testParseShorts() {
+        assertEquals(0, parseShorts("", ',', 10).length);
         assertArrayEquals(new short[] {5, 2, -8}, parseShorts("5 , 2, -8 ", ',', 10));
     }
 
@@ -228,6 +233,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     @DependsOnMethod("testSplit")
     public void testParseBytes() {
+        assertEquals(0, parseBytes("", ',', 10).length);
         assertArrayEquals(new byte[] {5, 2, -8}, parseBytes("5 , 2, -8 ", ',', 10));
     }
 

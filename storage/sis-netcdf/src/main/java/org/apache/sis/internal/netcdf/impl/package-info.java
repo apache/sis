@@ -25,6 +25,7 @@
  * <ul>
  *   <li><a href="http://www.opengeospatial.org/standards/netcdf">NetCDF standards on OGC web site</a></li>
  *   <li><a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a></li>
+ *   <li><a href="https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html">NetCDF on UCAR web site.</a></li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)

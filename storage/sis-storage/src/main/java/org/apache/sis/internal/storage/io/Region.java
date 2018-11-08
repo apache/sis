@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.storage.io;
 
+import org.apache.sis.io.TableAppender;
+import org.apache.sis.internal.util.Numerics;
+
 
 /**
  * A sub-area in a <var>n</var>-dimensional hyper-rectangle, optionally with sub-sampling.
@@ -29,16 +32,11 @@ package org.apache.sis.internal.storage.io;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
 public final class Region {
-    /**
-     * Total length of the sequence of values, ignoring sub-area and sub-sampling.
-     */
-    final long sourceLength;
-
     /**
      * The size after reading only the sub-region at the given sub-sampling.
      * The length of this array is the hyper-rectangle dimension.
@@ -54,7 +52,7 @@ public final class Region {
     final long startAt;
 
     /**
-     * Number of values to skip after having read a values.
+     * Number of values to skip after having read values.
      *
      * <ol>
      *   <li>{@code skips[0]} is the number of values to skip after each single value on the same line.</li>
@@ -69,12 +67,6 @@ public final class Region {
     final long[] skips;
 
     /**
-     * Number of dimensions for which we can collapse the read operations in a single operation because their
-     * data are contiguous. This is the index of the first non-zero element in the {@link #skips} array.
-     */
-    final int contiguousDataDimension;
-
-    /**
      * Creates a new region. It is caller's responsibility to ensure that:
      * <ul>
      *   <li>all arrays have the same length</li>
@@ -82,12 +74,15 @@ public final class Region {
      *   <li>{@code regionLower[i] >= 0} for all <var>i</var></li>
      *   <li>{@code regionLower[i] < regionUpper[i] <= size[i]} for all <var>i</var></li>
      *   <li>{@code subsamplings[i] > 0} for all <var>i</var></li>
+     *   <li>The total length of data to read does not exceed {@link Integer#MAX_VALUE}.</li>
      * </ul>
      *
      * @param size          the number of elements along each dimension.
      * @param regionLower   index of the first value to read or write along each dimension.
      * @param regionUpper   index after the last value to read or write along each dimension.
      * @param subsamplings  sub-sampling along each dimension. Shall be greater than zero.
+     * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
+     *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
     public Region(final long[] size, final long[] regionLower, final long[] regionUpper, final int[] subsamplings) {
         final int dimension = size.length;
@@ -97,27 +92,38 @@ public final class Region {
         long stride   = 1;
         long skip     = 0;
         for (int i=0; i<dimension;) {
-            final int  step  =  subsamplings[i];
-            final long lower =  regionLower [i];
-            final long count = (regionUpper [i] - lower + (step-1)) / step;      // (upper-lower)/step rounded toward up, provided all values are positive.
+            final int  step  = subsamplings[i];
+            final long lower =  regionLower[i];
+            final long count = Numerics.ceilDiv(regionUpper[i] - lower, step);
             final long upper = lower + ((count-1) * step + 1);
             final long span  = size[i];
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
             targetSize[i] = Math.toIntExact(count);
 
-            position += stride * lower;
-            skip     += stride * (span - (upper - lower));
-            skips[i] += stride * (step - 1);
-            stride   *= span;
+            position = Math.addExact(position, Math.multiplyExact(stride, lower));
+            skip     = Math.addExact(skip,     Math.multiplyExact(stride, span - (upper - lower)));
+            skips[i] = Math.addExact(skips[i], Math.multiplyExact(stride, step - 1));
+            stride   = Math.multiplyExact(stride, span);
             skips[++i] = skip;
         }
         startAt = position;
-        sourceLength = stride;
-        int i;
-        for (i=0; i<dimension; i++) {
-            if (skips[i] != 0) break;
-        }
-        contiguousDataDimension = i;
+    }
+
+    /**
+     * Increases the number of values between two consecutive index values in the given dimension of the hyper-cube.
+     * The strides are computed automatically at construction time, but this method can be invoked in some rare cases
+     * where those values need to be modified (example: for adapting to the layout of netCDF "unlimited" variable).
+     *
+     * <div class="note"><b>Example:</b> in a cube of dimension 10×10×10, the number of values between indices
+     * (0,0,1) and (0,0,2) is 100. Invoking {@code increaseStride(1, 4)} will increase this value to 104.
+     * {@link HyperRectangleReader} will still read only the requested 100 values, but will skip 4 more values
+     * when moving from plane 1 to plane 2.</div>
+     *
+     * @param  dimension  dimension for which to increase the stride.
+     * @param  skip       additional number of values to skip after we finished reading a block of data in the specified dimension.
+     */
+    public void increaseStride(final int dimension, final long skip) {
+        skips[dimension] = Math.addExact(skips[dimension], skip);
     }
 
     /**
@@ -130,6 +136,19 @@ public final class Region {
     }
 
     /**
+     * Number of dimensions for which we can collapse the read operations in a single operation because their
+     * data are contiguous. This is the index of the first non-zero element in the {@link #skips} array.
+     */
+    final int contiguousDataDimension() {
+        final int dimension = skips.length - 1;
+        int i;
+        for (i=0; i<dimension; i++) {
+            if (skips[i] != 0) break;
+        }
+        return i;
+    }
+
+    /**
      * Returns the total number of values to be read from the sub-region while applying the sub-sampling.
      * This method takes in account only the given number of dimensions.
      */
@@ -139,5 +158,23 @@ public final class Region {
             length *= targetSize[i];
         }
         return Math.toIntExact(length);
+    }
+
+    /**
+     * Returns a string representation of this region for debugging purpose.
+     *
+     * @return a string representation of this region.
+     */
+    @Override
+    public String toString() {
+        final TableAppender table = new TableAppender(" ");
+        table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+        table.append("size").nextColumn();
+        table.append("skip").nextLine();
+        for (int i=0; i<targetSize.length; i++) {
+            table.append(String.valueOf(targetSize[i])).nextColumn();
+            table.append(String.valueOf(skips[i])).nextLine();
+        }
+        return table.toString();
     }
 }

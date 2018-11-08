@@ -823,15 +823,23 @@ public class ChannelDataInput extends ChannelData {
      * @return the string decoded from the {@code length} next bytes.
      * @throws IOException if an error occurred while reading the bytes, or if the given encoding is invalid.
      */
-    public final String readString(final int length, final Charset encoding) throws IOException {
+    public final String readString(int length, final Charset encoding) throws IOException {
+        final byte[] array;
+        int position;
         if (buffer.hasArray() && length <= buffer.capacity()) {
             ensureBufferContains(length);
-            final int position = buffer.position(); // Must be after 'ensureBufferContains(int)'.
+            position = buffer.position();           // Must be after 'ensureBufferContains(int)'.
             buffer.position(position + length);     // Before 'new String' for consistency with the 'else' block in case of UnsupportedEncodingException.
-            return new String(buffer.array(), buffer.arrayOffset() + position, length, encoding);
+            array = buffer.array();
+            position += buffer.arrayOffset();
         } else {
-            return new String(readBytes(length), encoding);
+            array = readBytes(length);
+            position = 0;
         }
+        while (length > 0 && array[position + (length - 1)] == 0) {
+            length--;                               // Skip trailing 0 (end of string in C/C++ languages).
+        }
+        return new String(array, position, length, encoding);
     }
 
     /**

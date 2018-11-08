@@ -69,7 +69,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -165,12 +165,14 @@ public final class ChannelDecoder extends Decoder {
      * character data may use other encodings. The variable attribute “_Encoding” is reserved for this
      * purpose in future implementations."
      *
-     * @todo "_Encoding" attribute not yet parsed.
+     * In current Apache SIS implementation, the "_Encoding" attribute value takes effect only on the
+     * attributes declared after the "_Encoding" attribute. If the attribute is a variable attribute,
+     * its effect is local to that variable.
      *
      * @see #NAME_ENCODING
      * @see #readValues(DataType, int)
      */
-    private final Charset encoding;
+    private Charset encoding;
 
     /**
      * The variables found in the netCDF file.
@@ -214,7 +216,7 @@ public final class ChannelDecoder extends Decoder {
      * <ul>
      *   <li>Magic number: 'C','D','F'</li>
      *   <li>Version number: 1 or 2</li>
-     *   <li>Number of records</li>
+     *   <li>Number of records | {@value #STREAMING}</li>
      *   <li>List of netCDF dimensions  (see {@link #readDimensions(int)})</li>
      *   <li>List of global attributes  (see {@link #readAttributes(int)})</li>
      *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
@@ -226,6 +228,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while reading the channel.
      * @throws DataStoreException if the content of the given channel is not a netCDF file.
+     * @throws ArithmeticException if a variable is too large.
      */
     public ChannelDecoder(final ChannelDataInput input, final Charset encoding, final GeometryLibrary geomlib,
             final WarningListeners<DataStore> listeners) throws IOException, DataStoreException
@@ -273,13 +276,13 @@ public final class ChannelDecoder extends Decoder {
                         default:        throw malformedHeader();
                     }
                 } catch (InvalidParameterCardinalityException e) {
-                    throw new DataStoreContentException(e.getLocalizedMessage(), e);
+                    throw malformedHeader().initCause(e);
                 }
             }
         }
-        attributeMap = attributes;
-        this.variables = variables;
-        variableMap = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
+        this.attributeMap = attributes;
+        this.variables    = variables;
+        this.variableMap  = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
     }
 
     /**
@@ -322,18 +325,24 @@ public final class ChannelDecoder extends Decoder {
      * Returns an exception for a malformed header. This is used only after we have determined
      * that the file should be a netCDF one, but we found some inconsistency or unknown tags.
      */
-    private DataStoreException malformedHeader() {
+    private DataStoreContentException malformedHeader() {
         return new DataStoreContentException(listeners.getLocale(), "netCDF", getFilename(), null);
     }
 
     /**
      * Ensures that {@code nelems} is not a negative value.
      */
-    private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
+    private void ensureNonNegative(final int nelems, final int tag) throws DataStoreContentException {
         if (nelems < 0) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1,
-                    getFilename() + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1, tagPath(tagName(tag))));
         }
+    }
+
+    /**
+     * Returns the name of a tag to show in error message. The returned name include the filename.
+     */
+    private String tagPath(final String name) {
+        return getFilename() + DefaultNameSpace.DEFAULT_SEPARATOR + name;
     }
 
     /**
@@ -366,7 +375,7 @@ public final class ChannelDecoder extends Decoder {
      * Reads a string from the channel in the {@link #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
      */
-    private String readName() throws IOException, DataStoreException {
+    private String readName() throws IOException, DataStoreContentException {
         final int length = input.readInt();
         if (length < 0) {
             throw malformedHeader();
@@ -386,7 +395,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @return the value, or {@code null} if it was an empty string or an empty array.
      */
-    private Object readValues(final DataType type, final int length) throws IOException, DataStoreException {
+    private Object readValues(final DataType type, final int length) throws IOException, DataStoreContentException {
         if (length == 0) {
             return null;
         }
@@ -465,18 +474,19 @@ public final class ChannelDecoder extends Decoder {
      * @param  nelems  the number of dimensions to read.
      * @return the dimensions in the order they are declared in the netCDF file.
      */
-    private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
+    private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreContentException {
         final Dimension[] dimensions = new Dimension[nelems];
         for (int i=0; i<nelems; i++) {
             final String name = readName();
             int length = input.readInt();
-            if (length == 0) {
+            boolean isUnlimited = (length == 0);
+            if (isUnlimited) {
                 length = numrecs;
                 if (length == STREAMING) {
-                    throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                    throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, tagPath("numrecs")));
                 }
             }
-            dimensions[i] = new Dimension(name, length);
+            dimensions[i] = new Dimension(name, length, isUnlimited);
         }
         dimensionMap = Dimension.toCaseInsensitiveNameMap(dimensions, NAME_LOCALE);
         return dimensions;
@@ -505,6 +515,11 @@ public final class ChannelDecoder extends Decoder {
             final Object value = readValues(DataType.valueOf(input.readInt()), input.readInt());
             if (value != null) {
                 attributes.add(new AbstractMap.SimpleEntry<>(name, value));
+                if (name.equals("_Encoding")) try {
+                    encoding = Charset.forName(name);
+                } catch (IllegalArgumentException e) {
+                    listeners.warning(Errors.format(Errors.Keys.CanNotReadPropertyInFile_2, getFilename(), "_Encoding"), e);
+                }
             }
         }
         return CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
@@ -529,10 +544,10 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  nelems         the number of variables to read.
      * @param  allDimensions  the dimensions previously read by {@link #readDimensions(int)}.
+     * @throws DataStoreContentException if a logical error is detected.
+     * @throws ArithmeticException if a variable is too large.
      */
-    private VariableInfo[] readVariables(final int nelems, final Dimension[] allDimensions)
-            throws IOException, DataStoreException
-    {
+    private VariableInfo[] readVariables(final int nelems, final Dimension[] allDimensions) throws IOException, DataStoreException {
         if (allDimensions == null) {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
@@ -560,13 +575,25 @@ public final class ChannelDecoder extends Decoder {
                 ensureNonNegative(na, tag);
                 switch (tag) {
                     // More cases may be added later if they appear to exist.
-                    case ATTRIBUTE: attributes = readAttributes(na); break;
-                    default:        throw malformedHeader();
+                    case ATTRIBUTE: {
+                        final Charset globalEncoding = encoding;
+                        attributes = readAttributes(na);
+                        encoding = globalEncoding;
+                        break;
+                    }
+                    default: throw malformedHeader();
                 }
             }
             variables[j] = new VariableInfo(input, name, varDims, attributes,
-                    DataType.valueOf(input.readInt()), input.readInt(), readOffset());
+                    DataType.valueOf(input.readInt()), input.readInt(), readOffset(), listeners);
         }
+        /*
+         * The VariableInfo constructor determined if the variables are "unlimited" or not.
+         * The number of unlimited variable determines to padding to apply, because of an
+         * historical particularity in netCDF format. Those final adjustment can be done
+         * only after we finished creating all variables.
+         */
+        VariableInfo.complete(variables);
         return variables;
     }
 
@@ -774,7 +801,8 @@ public final class ChannelDecoder extends Decoder {
     public DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException {
         if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) try {
             return FeaturesInfo.create(this);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            // Illegal argument is not a problem with content, but rather with configuration.
             throw new DataStoreException(e.getLocalizedMessage(), e);
         }
         return new FeaturesInfo[0];

@@ -31,7 +31,6 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
@@ -115,6 +114,14 @@ final class VariableWrapper extends Variable {
             default:     return DataType.UNKNOWN;
         }
         return type.unsigned(variable.isUnsigned());
+    }
+
+    /**
+     * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
+     */
+    @Override
+    public boolean isUnlimited() {
+        return variable.isUnlimited();
     }
 
     /**
@@ -234,7 +241,7 @@ final class VariableWrapper extends Variable {
         try {
             array = variable.read(new Section(areaLower, size, subsampling));
         } catch (InvalidRangeException e) {
-            throw new DataStoreContentException(e);
+            throw new DataStoreException(e);
         }
         return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }

@@ -29,6 +29,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -1134,7 +1135,7 @@ public final class Matrices extends Static {
                          * IEEE 754 'double' accuracy for not giving a false sense of precision.
                          */
                         if (element.indexOf('E') < 0) {
-                            final int accuracy = (int) Math.ceil(-Math.log10(Math.ulp(value)));
+                            final int accuracy = -DecimalFunctions.floorLog10(Math.ulp(value));
                             maximumPaddingZeros[flatIndex] = (byte) (accuracy - numFractionDigits);
                         }
                     }

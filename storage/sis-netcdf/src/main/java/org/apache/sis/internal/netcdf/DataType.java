@@ -37,7 +37,7 @@ import org.apache.sis.util.Numbers;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -159,6 +159,23 @@ public enum DataType {
         this.isUnsigned     = isUnsigned;
         this.opposite       = opposite;
         this.rasterDataType = rasterDataType;
+    }
+
+    /**
+     * Returns the number of bytes for this data type, or 0 if unknown.
+     *
+     * @return number of bytes for this data type, or 0 if unknown.
+     */
+    public final int size() {
+        switch (number) {
+            case Numbers.BYTE:    return Byte.BYTES;
+            case Numbers.SHORT:   return Short.BYTES;
+            case Numbers.INTEGER: // Same as float
+            case Numbers.FLOAT:   return Float.BYTES;
+            case Numbers.LONG:    // Same as double
+            case Numbers.DOUBLE:  return Double.BYTES;
+            default:              return 0;
+        }
     }
 
     /**

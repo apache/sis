@@ -20,6 +20,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.util.collection.BackingStoreException;
 
 
@@ -30,7 +31,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * {@link Latitude} instances instead of {@link Double}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -88,6 +89,24 @@ final class SpecialCases extends PropertyAccessor {
             }
         }
         return type;
+    }
+
+    /**
+     * Returns a remark or warning to format with the value at the given index, or {@code null} if none.
+     * This is used for notifying the user that a geographic box is spanning the anti-meridian.
+     */
+    @Override
+    CharSequence remarks(final int index, final Object metadata) {
+        if (index == eastBoundLongitude) {
+            Object east = super.get(index, metadata);
+            if (east != null) {
+                Object west = super.get(westBoundLongitude, metadata);
+                if (west != null && (Double) east < (Double) west) {
+                    return Resources.formatInternational(Resources.Keys.BoxCrossesAntiMeridian);
+                }
+            }
+        }
+        return super.remarks(index, metadata);
     }
 
     /**

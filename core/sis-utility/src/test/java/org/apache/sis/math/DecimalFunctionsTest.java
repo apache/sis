@@ -33,7 +33,7 @@ import static org.apache.sis.math.DecimalFunctions.*;
  * Tests the {@link DecimalFunctions} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -266,5 +266,58 @@ public final strictfp class DecimalFunctionsTest extends TestCase {
         assertEquals("Expected rounding",    11, fractionDigitsForValue( 179.12499999999824, 3));
         assertEquals("Expected no rounding", 14, fractionDigitsForValue( 179.12499999999824, 2));
         assertEquals("Expected no rounding", 14, fractionDigitsForValue( 179.12499997999999, 3));
+    }
+
+    /**
+     * Tests {@link DecimalFunctions#floorLog10(double)} method.
+     */
+    @Test
+    public void testFloorLog10() {
+        assertEquals(   0, floorLog10(   1));
+        assertEquals(   0, floorLog10(   9));
+        assertEquals(   1, floorLog10(  10));
+        assertEquals(   1, floorLog10(  11));
+        assertEquals(   1, floorLog10(  99));
+        assertEquals(   2, floorLog10( 100));
+        assertEquals(   2, floorLog10( 999));
+        assertEquals(   3, floorLog10(1000));
+        assertEquals(  -1, floorLog10(0.100));
+        assertEquals(  -2, floorLog10(0.099));
+        assertEquals(  -2, floorLog10(0.010));
+        assertEquals(  -3, floorLog10(0.009));
+        assertEquals(  -3, floorLog10(0.001));
+        assertEquals( 308, floorLog10(MAX_VALUE));
+        assertEquals(-324, floorLog10(MIN_VALUE));
+        try {floorLog10( 0);                fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(-1);                fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(NaN);               fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(NEGATIVE_INFINITY); fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+        try {floorLog10(POSITIVE_INFINITY); fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+    }
+
+    /**
+     * Tests {@link DecimalFunctions#equalsIgnoreMissingFractionDigits(double, double)}.
+     * This test uses the conversion factor from degrees to radians as a use case.
+     * This factor is written as {@code ANGLEUNIT["degree", 0.01745329252]} in some
+     * Well Known Texts, while we expect 7 more digits for IEEE 754 double precision.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>
+     */
+    @Test
+    public void testEqualsIgnoreMissingFractionDigits() {
+        // Examples given in equalsIgnoreMissingFractionDigits comments.
+        assertTrue (equalsIgnoreMissingFractionDigits(0.123456, 0.123));
+        assertFalse(equalsIgnoreMissingFractionDigits(0.12378,  0.123));
+        assertTrue (equalsIgnoreMissingFractionDigits(0.12378,  0.124));
+        assertTrue (equalsIgnoreMissingFractionDigits(0.123004, 0.123));
+        assertTrue (equalsIgnoreMissingFractionDigits(0.123001, 0.123));
+        assertFalse(equalsIgnoreMissingFractionDigits(0.123456, 0.123001));
+        assertFalse(equalsIgnoreMissingFractionDigits(0.123,    0.123001));
+        assertFalse(equalsIgnoreMissingFractionDigits(0.123,    0.123456));
+
+        // Required for SIS-377 fix.
+        assertTrue (equalsIgnoreMissingFractionDigits(0.017453292519943295, 0.01745329252));
+        assertFalse(equalsIgnoreMissingFractionDigits(0.017453292519943295, 0.01745329251));
+        assertFalse(equalsIgnoreMissingFractionDigits(0.017453292519943295, 0.01745329253));
     }
 }
