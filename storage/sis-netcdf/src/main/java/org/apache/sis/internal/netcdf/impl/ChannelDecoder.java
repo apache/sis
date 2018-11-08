@@ -165,12 +165,14 @@ public final class ChannelDecoder extends Decoder {
      * character data may use other encodings. The variable attribute “_Encoding” is reserved for this
      * purpose in future implementations."
      *
-     * @todo "_Encoding" attribute not yet parsed.
+     * In current Apache SIS implementation, the "_Encoding" attribute value takes effect only on the
+     * attributes declared after the "_Encoding" attribute. If the attribute is a variable attribute,
+     * its effect is local to that variable.
      *
      * @see #NAME_ENCODING
      * @see #readValues(DataType, int)
      */
-    private final Charset encoding;
+    private Charset encoding;
 
     /**
      * The variables found in the netCDF file.
@@ -513,6 +515,11 @@ public final class ChannelDecoder extends Decoder {
             final Object value = readValues(DataType.valueOf(input.readInt()), input.readInt());
             if (value != null) {
                 attributes.add(new AbstractMap.SimpleEntry<>(name, value));
+                if (name.equals("_Encoding")) try {
+                    encoding = Charset.forName(name);
+                } catch (IllegalArgumentException e) {
+                    listeners.warning(Errors.format(Errors.Keys.CanNotReadPropertyInFile_2, getFilename(), "_Encoding"), e);
+                }
             }
         }
         return CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
@@ -568,8 +575,13 @@ public final class ChannelDecoder extends Decoder {
                 ensureNonNegative(na, tag);
                 switch (tag) {
                     // More cases may be added later if they appear to exist.
-                    case ATTRIBUTE: attributes = readAttributes(na); break;
-                    default:        throw malformedHeader();
+                    case ATTRIBUTE: {
+                        final Charset globalEncoding = encoding;
+                        attributes = readAttributes(na);
+                        encoding = globalEncoding;
+                        break;
+                    }
+                    default: throw malformedHeader();
                 }
             }
             variables[j] = new VariableInfo(input, name, varDims, attributes,
