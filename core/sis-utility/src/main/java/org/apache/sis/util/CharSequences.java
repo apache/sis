@@ -72,7 +72,7 @@ import static java.lang.Character.*;
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see StringBuilders
  *
@@ -779,6 +779,17 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
+     * Returns {@code true} if {@link #split(CharSequence, char)} parsed an empty string.
+     */
+    private static boolean isEmpty(final CharSequence[] tokens) {
+        switch (tokens.length) {
+            case 0:  return true;
+            case 1:  return tokens[0].length() == 0;
+            default: return false;
+        }
+    }
+
+    /**
      * {@linkplain #split(CharSequence, char) Splits} the given text around the given character,
      * then {@linkplain Double#parseDouble(String) parses} each item as a {@code double}.
      * Empty sub-sequences are parsed as {@link Double#NaN}.
@@ -793,6 +804,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             throws NumberFormatException
     {
         final CharSequence[] tokens = split(values, separator);
+        if (isEmpty(tokens)) return ArraysExt.EMPTY_DOUBLE;
         final double[] parsed = new double[tokens.length];
         for (int i=0; i<tokens.length; i++) {
             final String token = trimWhitespaces(tokens[i]).toString();
@@ -816,6 +828,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             throws NumberFormatException
     {
         final CharSequence[] tokens = split(values, separator);
+        if (isEmpty(tokens)) return ArraysExt.EMPTY_FLOAT;
         final float[] parsed = new float[tokens.length];
         for (int i=0; i<tokens.length; i++) {
             final String token = trimWhitespaces(tokens[i]).toString();
@@ -839,6 +852,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             throws NumberFormatException
     {
         final CharSequence[] tokens = split(values, separator);
+        if (isEmpty(tokens)) return ArraysExt.EMPTY_LONG;
         final long[] parsed = new long[tokens.length];
         for (int i=0; i<tokens.length; i++) {
             parsed[i] = Long.parseLong(trimWhitespaces(tokens[i]).toString(), radix);
@@ -861,6 +875,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             throws NumberFormatException
     {
         final CharSequence[] tokens = split(values, separator);
+        if (isEmpty(tokens)) return ArraysExt.EMPTY_INT;
         final int[] parsed = new int[tokens.length];
         for (int i=0; i<tokens.length; i++) {
             parsed[i] = Integer.parseInt(trimWhitespaces(tokens[i]).toString(), radix);
@@ -883,6 +898,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             throws NumberFormatException
     {
         final CharSequence[] tokens = split(values, separator);
+        if (isEmpty(tokens)) return ArraysExt.EMPTY_SHORT;
         final short[] parsed = new short[tokens.length];
         for (int i=0; i<tokens.length; i++) {
             parsed[i] = Short.parseShort(trimWhitespaces(tokens[i]).toString(), radix);
@@ -905,6 +921,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             throws NumberFormatException
     {
         final CharSequence[] tokens = split(values, separator);
+        if (isEmpty(tokens)) return ArraysExt.EMPTY_BYTE;
         final byte[] parsed = new byte[tokens.length];
         for (int i=0; i<tokens.length; i++) {
             parsed[i] = Byte.parseByte(trimWhitespaces(tokens[i]).toString(), radix);

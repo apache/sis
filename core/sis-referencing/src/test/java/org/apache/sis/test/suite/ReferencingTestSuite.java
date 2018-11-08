@@ -192,6 +192,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.MathTransformParserTest.class,
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class,
+    org.apache.sis.io.wkt.ComparisonWithEPSG.class,
 
     // Following tests use indirectly EPSG factory.
     org.apache.sis.referencing.CommonCRSTest.class,

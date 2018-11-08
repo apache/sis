@@ -41,6 +41,21 @@ import static org.junit.Assert.*;
 @SuppressWarnings("UnnecessaryBoxing")
 public final strictfp class NumericsTest extends TestCase {
     /**
+     * Tests {@link Numerics#ceilDiv(int, int)} and {@link Numerics#ceilDiv(long, long)}.
+     */
+    @Test
+    public void testCeilDiv() {
+        assertEquals( 4,  ceilDiv( 12,  3 ));
+        assertEquals( 4L, ceilDiv( 12L, 3L));
+        assertEquals( 3,  ceilDiv(  8,  3 ));
+        assertEquals( 3L, ceilDiv(  8L, 3L));
+        assertEquals(-4,  ceilDiv(-12,  3 ));
+        assertEquals(-4L, ceilDiv(-12L, 3L));
+        assertEquals(-2,  ceilDiv( -8,  3 ));
+        assertEquals(-2L, ceilDiv( -8L, 3L));
+    }
+
+    /**
      * Tests the {@link Numerics#cached(Object)} method.
      */
     @Test

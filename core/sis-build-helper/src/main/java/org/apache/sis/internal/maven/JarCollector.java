@@ -44,10 +44,10 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * Collects <code>.jar</code> files in a single "{@code target/binaries}" directory.
  * Dependencies are collected as well, except if already presents. This mojo uses hard links
  * on platforms that support them. If hard links are not supported, then this mojo will instead
- * creates a "{@code target/binaries/content.txt}" file listing the dependencies.
+ * creates a "{@code target/binaries/other_dependencies.txt}" file listing the dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -223,8 +223,8 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
 
     /**
      * Creates a link from the given source file to the given target file.
-     * On JDK6 or on platform that do not support links, this method rather
-     * updates the <code>content.txt</code> file.
+     * On platforms that do not support links, this method rather updates
+     * the {@value Filenames#OTHER_DEPENDENCIES_FILE} file.
      *
      * @param  file  the source file to read.
      * @param  copy  the destination file to create.
@@ -237,17 +237,17 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
             return;
         } catch (UnsupportedOperationException | FileSystemException e) {
             /*
-             * If hard links are not supported, edit the "content.txt" file instead.
+             * If hard links are not supported, edit the "other_dependencies.txt" file instead.
              * Note that a hard link may be unsupported because the source and target
              * are on different Windows drives or mount points, in which case we get
              * a FileSystemException instead than UnsupportedOperationException.
              */
         }
         /*
-         * If we can not use hard links, creates or updates a "target/content.txt" file instead.
+         * If we can not use hard links, creates or updates a "target/other_dependencies.txt" file instead.
          * This file will contains the list of all dependencies, without duplicated values.
          */
-        final File dependenciesFile = new File(copy.getParentFile(), CONTENT_FILE);
+        final File dependenciesFile = new File(copy.getParentFile(), OTHER_DEPENDENCIES_FILE);
         final Set<String> dependencies = loadDependencyList(dependenciesFile);
         if (dependencies.add(file.getPath())) {
             // Save the dependencies list only if it has been modified.
@@ -261,9 +261,9 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
     }
 
     /**
-     * Loads the {@value #CONTENT_FILE} from the given directory, if it exists.
-     * Otherwise returns an empty but modifiable set. This method is invoked on
-     * platforms that do not support hard links.
+     * Loads the {@value #OTHER_DEPENDENCIES_FILE} from the given directory, if it exists.
+     * Otherwise returns an empty but modifiable set. This method is invoked on platforms
+     * that do not support hard links.
      */
     private static Set<String> loadDependencyList(final File dependenciesFile) throws IOException {
         final Set<String> dependencies = new LinkedHashSet<>();

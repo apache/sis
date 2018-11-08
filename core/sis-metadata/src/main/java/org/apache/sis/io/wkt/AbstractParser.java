@@ -330,7 +330,7 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses the given unit symbol.
+     * Parses the given unit name or symbol.
      */
     final Unit<?> parseUnit(final String text) throws ParserException {
         if (unitFormat == null) {

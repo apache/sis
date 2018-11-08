@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.floorDiv;
+import static org.apache.sis.internal.util.Numerics.ceilDiv;
 
 
 /**
@@ -165,13 +166,6 @@ public abstract class PixelIterator {
         tileUpperY      =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
         windowWidth     = (window != null) ? window.width  : 0;
         windowHeight    = (window != null) ? window.height : 0;
-    }
-
-    /**
-     * Returns {@code numerator / denominator} rounded toward positive infinity.
-     */
-    private static int ceilDiv(final int numerator, final int denominator) {
-        return -floorDiv(-numerator, denominator);
     }
 
     /**

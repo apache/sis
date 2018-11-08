@@ -20,9 +20,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FilenameFilter;
 import java.io.FileInputStream;
-import java.io.FilterOutputStream;
-import java.util.LinkedHashMap;
+import java.io.InputStream;
 import java.util.Map;
+import java.util.Set;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,20 +44,27 @@ import static org.apache.sis.internal.maven.Filenames.*;
 
 
 /**
- * Creates a ZIP files containing the content of the <code>application/sis-console/src/main/artifact</code>
- * directory together with the Pack200 file created by <code>BundleCreator</code>.
+ * Creates a ZIP file containing the Apache SIS binary distribution.
+ * The created file contains:
+ *
+ * <ul>
+ *   <li>the content of the <code>application/sis-console/src/main/artifact</code> directory;</li>
+ *   <li>the JAR files of all modules and their dependencies, without their native resources;</li>
+ *   <li>the native resources in a separated {@code lib/} directory.</li>
+ * </ul>
+ *
  * This MOJO can be invoked from the command line in the {@code sis-console} module as below:
  *
  * <blockquote><code>mvn package org.apache.sis.core:sis-build-helper:dist</code></blockquote>
  *
  * <p><b>Current limitation:</b>
  * The current implementation uses some hard-coded paths and filenames.
- * See the <cite>Distribution file and Pack200 bundle</cite> section in
+ * See the <cite>Distribution file</cite> section in
  * <a href="http://sis.apache.org/build.html">Build from source</a> page
  * for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -93,42 +107,33 @@ public final class Assembler extends AbstractMojo implements FilenameFilter {
         if (!sourceDirectory.isDirectory()) {
             throw new MojoExecutionException("Directory not found: " + sourceDirectory);
         }
-        final File targetDirectory = new File(rootDirectory, TARGET_DIRECTORY);
-        final String version = project.getVersion();
-        final String artifactBase = FINALNAME_PREFIX + version;
-        final Map<String,byte[]> nativeFiles = new LinkedHashMap<>();
-        try {
-            final File targetFile = new File(distributionDirectory(targetDirectory), artifactBase + ".zip");
-            try (ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile)) {
-                zip.setLevel(9);
-                appendRecursively(sourceDirectory, artifactBase, zip, new byte[8192]);
-                /*
-                 * At this point, all the "application/sis-console/src/main/artifact" and sub-directories
-                 * have been zipped.  Now generate the Pack200 file and zip it directly (without creating
-                 * a temporary "sis.pack.gz" file).
-                 */
-                final Packer packer = new Packer(project.getName(), version, BundleCreator.files(project), targetDirectory, nativeFiles);
-                ZipArchiveEntry entry = new ZipArchiveEntry(artifactBase + '/' + LIB_DIRECTORY + '/' + FATJAR_FILE + PACK_EXTENSION);
-                entry.setMethod(ZipArchiveEntry.STORED);
+        final String artifactBase = FINALNAME_PREFIX + project.getVersion();
+        final File targetFile = distributionFile(rootDirectory, artifactBase + ".zip");
+        try (ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile)) {
+            zip.setLevel(9);
+            appendRecursively(sourceDirectory, artifactBase, zip);
+            /*
+             * At this point, all the "application/sis-console/src/main/artifact" and sub-directories
+             * have been zipped. Now append the JAR files for each module and their dependencies.
+             */
+            final Map<String,byte[]> nativeFiles = new LinkedHashMap<>();
+            for (final File file : files(project)) {
+                ZipArchiveEntry entry = new ZipArchiveEntry(artifactBase + '/' + LIB_DIRECTORY + '/' + file.getName());
                 zip.putArchiveEntry(entry);
-                packer.preparePack200(FATJAR_FILE + ".jar").pack(new FilterOutputStream(zip) {
-                    /** Closes the archive entry, not the ZIP file. */
-                    @Override public void close() throws IOException {
-                        zip.closeArchiveEntry();
-                    }
-                });
-                /*
-                 * At this point we finished creating all entries in the ZIP file, except native resources.
-                 * Copy them now.
-                 */
-                for (final Map.Entry<String,byte[]> nf : nativeFiles.entrySet()) {
-                    entry = new ZipArchiveEntry(artifactBase + '/' + LIB_DIRECTORY + '/' + nf.getKey());
-                    entry.setUnixMode(0555);        // Readable and executable for all, but not writable.
-                    zip.putArchiveEntry(entry);
-                    zip.write(nf.getValue());
-                    zip.closeArchiveEntry();
-                    nf.setValue(null);
-                }
+                appendJAR(file, zip, nativeFiles);
+                zip.closeArchiveEntry();
+            }
+            /*
+             * At this point we finished creating all entries in the ZIP file, except native resources.
+             * Copy them now.
+             */
+            for (final Map.Entry<String,byte[]> nf : nativeFiles.entrySet()) {
+                ZipArchiveEntry entry = new ZipArchiveEntry(artifactBase + '/' + LIB_DIRECTORY + '/' + nf.getKey());
+                entry.setUnixMode(0555);        // Readable and executable for all, but not writable.
+                zip.putArchiveEntry(entry);
+                zip.write(nf.getValue());
+                zip.closeArchiveEntry();
+                nf.setValue(null);
             }
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
@@ -136,14 +141,31 @@ public final class Assembler extends AbstractMojo implements FilenameFilter {
     }
 
     /**
+     * Returns all files to include for the given Maven project.
+     */
+    private static Set<File> files(final MavenProject project) throws MojoExecutionException {
+        final Set<File> files = new LinkedHashSet<>();
+        files.add(project.getArtifact().getFile());
+        for (final Artifact dep : project.getArtifacts()) {
+            final String scope = dep.getScope();
+            if (Artifact.SCOPE_COMPILE.equalsIgnoreCase(scope) ||
+                Artifact.SCOPE_RUNTIME.equalsIgnoreCase(scope))
+            {
+                files.add(dep.getFile());
+            }
+        }
+        if (files.remove(null)) {
+            throw new MojoExecutionException("Invocation of this MOJO shall be done together with a \"package\" Maven phase.");
+        }
+        return files;
+    }
+
+    /**
      * Adds the given file in the ZIP file. If the given file is a directory, then this method
      * recursively adds all files contained in this directory. This method is invoked for zipping
-     * the "application/sis-console/src/main/artifact" directory and sub-directories before to zip
-     * the Pack200 file.
+     * the "application/sis-console/src/main/artifact" directory and sub-directories before to zip.
      */
-    private void appendRecursively(final File file, String relativeFile, final ZipArchiveOutputStream out,
-            final byte[] buffer) throws IOException
-    {
+    private void appendRecursively(final File file, String relativeFile, final ZipArchiveOutputStream out) throws IOException {
         if (file.isDirectory()) {
             relativeFile += '/';
         }
@@ -154,17 +176,13 @@ public final class Assembler extends AbstractMojo implements FilenameFilter {
         out.putArchiveEntry(entry);
         if (!entry.isDirectory()) {
             try (FileInputStream in = new FileInputStream(file)) {
-                // TODO: use InputStream.transferTo(OutputStream) with JDK9.
-                int n;
-                while ((n = in.read(buffer)) >= 0) {
-                    out.write(buffer, 0, n);
-                }
+                in.transferTo(out);
             }
         }
         out.closeArchiveEntry();
         if (entry.isDirectory()) {
             for (final String filename : file.list(this)) {
-                appendRecursively(new File(file, filename), relativeFile.concat(filename), out, buffer);
+                appendRecursively(new File(file, filename), relativeFile.concat(filename), out);
             }
         }
     }
@@ -179,5 +197,75 @@ public final class Assembler extends AbstractMojo implements FilenameFilter {
     @Override
     public boolean accept(final File directory, final String filename) {
         return !filename.isEmpty() && filename.charAt(0) != '.' && !filename.equals(CONTENT_FILE);
+    }
+
+    /**
+     * Returns {@code true} if the given JAR file contains at least one resource in the
+     * {@value Filenames#NATIVE_DIRECTORY} directory. Those files will need to be rewritten
+     * in order to exclude those resources.
+     */
+    private static boolean hasNativeResources(final ZipFile in) {
+        final Enumeration<? extends ZipEntry> entries = in.entries();
+        while (entries.hasMoreElements()) {
+            if (entries.nextElement().getName().startsWith(NATIVE_DIRECTORY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Copies a JAR file in the given ZIP file, except the native resources which are stored in the given map.
+     *
+     * @param  file         the JAR file to copy.
+     * @param  bundle       destination where to copy the JAR file.
+     * @param  nativeFiles  where to store the native resources.
+     */
+    private void appendJAR(final File file, final ZipArchiveOutputStream bundle, final Map<String,byte[]> nativeFiles)
+            throws IOException
+    {
+        try (ZipFile in = new ZipFile(file)) {
+            if (hasNativeResources(in)) {
+                final ZipOutputStream out = new ZipOutputStream(bundle);
+                out.setLevel(9);
+                final Enumeration<? extends ZipEntry> entries = in.entries();
+                while (entries.hasMoreElements()) {
+                    final ZipEntry entry = entries.nextElement();
+                    final String    name = entry.getName();
+                    try (InputStream eis = in.getInputStream(entry)) {
+                        if (!name.startsWith(NATIVE_DIRECTORY)) {
+                            out.putNextEntry(new ZipEntry(name));
+                            eis.transferTo(out);                            // Copy the entry verbatim.
+                            out.closeEntry();
+                        } else if (!entry.isDirectory()) {
+                            final long size = entry.getSize();              // For memorizing the entry without copying it now.
+                            if (size <= 0 || size > Integer.MAX_VALUE) {
+                                throw new IOException(String.format("Errors while copying %s:%n"
+                                        + "Unsupported size for \"%s\" entry: %d", file, name, size));
+                            }
+                            final byte[] content = new byte[(int) size];
+                            final int actual = eis.read(content);
+                            if (actual != size) {
+                                throw new IOException(String.format("Errors while copying %s:%n"
+                                        + "Expected %d bytes in \"%s\" but found %d", file, size, name, actual));
+                            }
+                            if (nativeFiles.put(name.substring(NATIVE_DIRECTORY.length()), content) != null) {
+                                throw new IOException(String.format("Errors while copying %s:%n"
+                                        + "Duplicated entry: %s", file, name));
+                            }
+                        }
+                    }
+                }
+                out.finish();
+                return;
+            }
+        }
+        /*
+         * If the JAR file has no native resources to exclude, we can copy the JAR file verbatim.
+         * This is faster than inflating and deflating again the JAR file.
+         */
+        try (FileInputStream in = new FileInputStream(file)) {
+            in.transferTo(bundle);
+        }
     }
 }

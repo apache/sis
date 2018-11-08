@@ -147,6 +147,40 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns the smallest (closest to negative infinity) long value that is greater than or equals to x/y.
+     *
+     * @param  x  the dividend.
+     * @param  y  the divisor.
+     * @return x/y rounded toward positive infinity.
+     *
+     * @see Math#floorDiv(int, int)
+     */
+    public static int ceilDiv(final int x, final int y) {
+        int r = x / y;
+        if ((x ^ y) >= 0 && (r * y != x)) {
+            r++;
+        }
+        return r;
+    }
+
+    /**
+     * Returns the smallest (closest to negative infinity) long value that is greater than or equals to x/y.
+     *
+     * @param  x  the dividend.
+     * @param  y  the divisor.
+     * @return x/y rounded toward positive infinity.
+     *
+     * @see Math#floorDiv(long, long)
+     */
+    public static long ceilDiv(final long x, final long y) {
+        long r = x / y;
+        if ((x ^ y) >= 0 && (r * y != x)) {
+            r++;
+        }
+        return r;
+    }
+
+    /**
      * If the given value is presents in the cache, returns the cached value.
      * Otherwise returns the given value as-is.
      *

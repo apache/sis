@@ -59,22 +59,21 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * {@code org.apache.metadata} hierarchy because of the immutable nature of referencing objects.</p>
  *
  * <div class="section">Text, URN and XML representations</div>
- * The XML representation of {@link DefaultIdentifier} is similar to the {@link ImmutableIdentifier}
- * one except for the {@code "MD_"} prefix. Example:
+ * The XML representation of {@link DefaultIdentifier} is as the following example:
  *
  * {@preformat xml
- *   <gmd:MD_Identifier
- *     <gmd:code>
+ *   <mcc:MD_Identifier
+ *     <mcc:code>
  *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
- *     <gmd:authority>
- *       <gmd:CI_Citation>
- *         <gmd:title>
+ *     </mcc:code>
+ *     <mcc:authority>
+ *       <cit:CI_Citation>
+ *         <cit:title>
  *           <gco:CharacterString>EPSG</gco:CharacterString>
- *         </gmd:title>
- *       </gmd:CI_Citation>
- *     </gmd:authority>
- *   </gmd:MD_Identifier>
+ *         </cit:title>
+ *       </cit:CI_Citation>
+ *     </mcc:authority>
+ *   </mcc:MD_Identifier>
  * }
  *
  * <div class="section">Limitations</div>

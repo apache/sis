@@ -122,7 +122,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "GRAM",                "M",            "g",     "gram",                    Units.GRAM);
         verify(declared, "MOLE",                "N",            "mol",   "mole",                    Units.MOLE);
         verify(declared, "UNITY",               "",             "",       null,                     Units.UNITY);
-        verify(declared, "PERCENT",             "",             "%",     "percentage",              Units.PERCENT);
+        verify(declared, "PERCENT",             "",             "%",     "percent",                 Units.PERCENT);
         verify(declared, "PPM",                 "",             "ppm",   "parts per million",       Units.PPM);
         verify(declared, "PSU",                 "",             "psu",   "practical salinity unit", Units.PSU);
         verify(declared, "PIXEL",               "",             "px",    "pixel",                   Units.PIXEL);
@@ -479,6 +479,23 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.CUBIC_METRE,       f.parse("m2.m"));
         assertSame(Units.METRES_PER_SECOND, f.parse("m∕s"));
         assertSame(Units.HERTZ,             f.parse("1/s"));
+    }
+
+    /**
+     * Tests parsing of symbols containing terms separated by spaces.
+     * This is valid only when using {@link UnitFormat#parse(CharSequence)}.
+     */
+    public void testParseTermsSeparatedBySpace() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRES_PER_SECOND, f.parse("m s**-1"));
+        try {
+            f.parse("degree minute");
+            fail("Should not accept unknown sentence even if each individual word is known.");
+        } catch (ParserException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("degree"));
+            assertTrue(message, message.contains("minute"));
+        }
     }
 
     /**

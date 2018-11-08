@@ -161,7 +161,7 @@ final class DefaultFormat extends Format {
 
     /**
      * Unconditionally returns {@code this} since this format does not contain any modifiable field.
-     * This same {@code DefaultFormat} instances can be shared.
+     * The same {@code DefaultFormat} instances can be shared.
      */
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")

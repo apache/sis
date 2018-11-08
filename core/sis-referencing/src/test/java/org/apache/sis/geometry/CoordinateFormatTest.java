@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Michael Hausegger
  *
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.measure.AngleFormatTest
  *
@@ -239,7 +239,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     @Test
     public void testGetPattern() {
         CoordinateFormat coordinateFormat = new CoordinateFormat(Locale.UK, null);
-        assertEquals("#,##0.###", coordinateFormat.getPattern(Byte.class));
+        assertEquals("#,##0.###", coordinateFormat.getPattern(Float.class));
         assertNull(coordinateFormat.getPattern(Object.class));
         assertNull(coordinateFormat.getPattern(Class.class));
     }

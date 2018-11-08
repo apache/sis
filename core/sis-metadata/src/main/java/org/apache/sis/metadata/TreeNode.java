@@ -59,7 +59,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * depends on the instantiation order).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -229,6 +229,13 @@ class TreeNode implements Node {
     CharSequence getName() {
         return CharSequences.camelCaseToSentence(Classes.getShortName(
                 table.standard.getInterface(key()))).toString();
+    }
+
+    /**
+     * Gets remarks about the value in this node, or {@code null} if none.
+     */
+    CharSequence getRemarks() {
+        return null;
     }
 
     /**
@@ -408,6 +415,14 @@ class TreeNode implements Node {
                 }
             }
             return type;
+        }
+
+        /**
+         * Gets remarks about the value in this node, or {@code null} if none.
+         */
+        @Override
+        CharSequence getRemarks() {
+            return accessor.remarks(indexInData, metadata);
         }
 
         /**
@@ -841,6 +856,8 @@ class TreeNode implements Node {
                     value = children.getParentTitle();
                 }
             }
+        } else if (column == TableColumn.REMARKS) {
+            value = getRemarks();
         }
         return column.getElementType().cast(value);
     }

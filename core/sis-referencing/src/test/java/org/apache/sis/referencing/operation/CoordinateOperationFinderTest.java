@@ -70,7 +70,7 @@ import static org.apache.sis.test.Assert.*;
  * Contrarily to {@link CoordinateOperationRegistryTest}, tests in this class are run without EPSG geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -401,6 +401,36 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         verifyTransform(new double[] {4205.669137,     6.491944,   4778.904260},    // Paris prime meridian
                         new double[] {4201737.725,   177938.072,   4779224.260});   // Greenwich prime meridian
         validate();
+    }
+
+    /**
+     * Tests conversion from geographic to geocentric coordinate reference system and conversely.
+     * Both two-dimensional and three-dimensional cases are tested.
+     *
+     * @throws FactoryException if the operation can not be created.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-376">SIS-376</a>
+     */
+    @Test
+    public void testGeocentricConversions() throws FactoryException {
+        testGeocentricConversion(HardCodedCRS.WGS84_3D,   HardCodedCRS.GEOCENTRIC);
+        testGeocentricConversion(HardCodedCRS.WGS84,      HardCodedCRS.GEOCENTRIC);
+        testGeocentricConversion(HardCodedCRS.GEOCENTRIC, HardCodedCRS.WGS84_3D);
+        testGeocentricConversion(HardCodedCRS.GEOCENTRIC, HardCodedCRS.WGS84);
+    }
+
+    /**
+     * Tests a single case of Geographic ↔︎ Geocentric conversions.
+     */
+    private void testGeocentricConversion(final CoordinateReferenceSystem sourceCRS,
+                                          final CoordinateReferenceSystem targetCRS)
+            throws FactoryException
+    {
+        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        assertSame      ("sourceCRS", sourceCRS,               operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,               operation.getTargetCRS());
+        assertEquals    ("name",      "Geocentric conversion", operation.getName().getCode());
+        assertInstanceOf("operation", Conversion.class,        operation);
     }
 
     /**

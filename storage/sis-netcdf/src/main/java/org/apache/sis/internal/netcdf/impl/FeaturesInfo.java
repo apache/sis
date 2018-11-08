@@ -170,6 +170,7 @@ final class FeaturesInfo extends DiscreteSampling {
      * Creates new discrete sampling parsers from the attribute values found in the given decoder.
      *
      * @throws IllegalArgumentException if the geometric object library is not available.
+     * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     static FeaturesInfo[] create(final ChannelDecoder decoder) throws IOException, DataStoreException {
         final List<FeaturesInfo> features = new ArrayList<>(3);     // Will usually contain at most one element.
@@ -331,6 +332,9 @@ search: for (final VariableInfo counts : decoder.variables) {
 
         /**
          * Executes the given action only on the next feature, if any.
+         *
+         * @throws ArithmeticException if the size of a variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+         * @throws BackingStoreException if an {@link IOException} or {@link DataStoreException} occurred.
          *
          * @todo current reading process implies lot of seeks, which is inefficient.
          */

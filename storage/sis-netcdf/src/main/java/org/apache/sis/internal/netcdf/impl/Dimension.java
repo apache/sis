@@ -26,7 +26,7 @@ import org.apache.sis.internal.netcdf.NamedElement;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -42,14 +42,22 @@ final class Dimension extends NamedElement {
     final int length;
 
     /**
+     * Whether this dimension is the "record" (also known as "unlimited") dimension.
+     * There is at most one record dimension in a well-formed netCDF file.
+     */
+    final boolean isUnlimited;
+
+    /**
      * Creates a new dimension of the given name and length.
      *
-     * @param name    the dimension name.
-     * @param length  the number of grid cell value along this dimension, as an unsigned number.
+     * @param name         the dimension name.
+     * @param length       the number of grid cell value along this dimension, as an unsigned number.
+     * @param isUnlimited  whether this dimension is the "record" (also known as "unlimited") dimension.
      */
-    Dimension(final String name, final int length) {
-        this.name   = name;
-        this.length = length;
+    Dimension(final String name, final int length, final boolean isUnlimited) {
+        this.name        = name;
+        this.length      = length;
+        this.isUnlimited = isUnlimited;
     }
 
     /**
@@ -72,6 +80,10 @@ final class Dimension extends NamedElement {
      */
     @Override
     public String toString() {
-        return name + '[' + length() + ']';
+        final StringBuilder buffer = new StringBuilder(name).append('[').append(length()).append(']');
+        if (isUnlimited) {
+            buffer.append(" (unlimited)");
+        }
+        return buffer.toString();
     }
 }

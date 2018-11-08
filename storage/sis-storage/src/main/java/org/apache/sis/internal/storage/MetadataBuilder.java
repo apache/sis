@@ -33,6 +33,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
@@ -1770,10 +1771,10 @@ parse:      for (int i = 0; i < length;) {
      * @param  envelope  the extent to add in the metadata, or {@code null} for no-operation.
      * @throws TransformException if an error occurred while converting the given envelope to extents.
      */
-    public final void addExtent(final AbstractEnvelope envelope) throws TransformException {
+    public final void addExtent(final Envelope envelope) throws TransformException {
         if (envelope != null) {
             addReferenceSystem(envelope.getCoordinateReferenceSystem());
-            if (!envelope.isAllNaN()) {
+            if (!(envelope instanceof AbstractEnvelope && ((AbstractEnvelope) envelope).isAllNaN())) {
                 extent().addElements(envelope);
             }
         }

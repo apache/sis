@@ -87,7 +87,7 @@
     </plugins>
   </build>
 
-  <!-- Create the binary distribution file, including PACK200 bundle. -->
+  <!-- Create the binary distribution file. -->
   <profiles>
     <profile>
       <id>apache-release</id>

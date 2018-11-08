@@ -159,7 +159,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "  ├─Language (1 of 2)………………………………… en_US\n" +
                 "  ├─Language (2 of 2)………………………………… en\n" +
                 "  └─Character set…………………………………………… US-ASCII\n",
-            TestUtilities.formatNameAndValue(create().asTreeTable()));
+            TestUtilities.formatMetadata(create().asTreeTable()));
     }
 
     /**

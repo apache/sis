@@ -292,8 +292,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         }
 
         /**
-         * Tries to set the given parameter values. This method should be invoked only when completing parameters
-         * without explicit values. This approach complete the work done in {@code DefaultMathTransformFactory},
+         * Tries to set the given parameter value. This method should be invoked only when completing parameters
+         * without explicit values. This approach completes the work done in {@code DefaultMathTransformFactory},
          * which already completed the {@code src_semi_major}, {@code src_semi_minor}, {@code tgt_semi_major} and
          * {@code tgt_semi_minor} parameters.
          *

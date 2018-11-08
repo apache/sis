@@ -892,6 +892,11 @@ public class MetadataStandard implements Serializable {
      *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
      *       metadata class have a setter method for the property represented by the node.</li>
+     *
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#REMARKS}<br>
+     *       Remarks or warning on the property value. This is rarely present.
+     *       It is provided when the value may look surprising, for example the longitude values
+     *       in a geographic bounding box spanning the anti-meridian.</li>
      * </ul>
      *
      * <div class="section">Write operations</div>

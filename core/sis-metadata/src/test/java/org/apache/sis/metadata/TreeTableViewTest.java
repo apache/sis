@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -28,7 +29,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.toTreeStructure;
-import static org.apache.sis.test.TestUtilities.formatNameAndValue;
+import static org.apache.sis.test.TestUtilities.formatMetadata;
 
 
 /**
@@ -73,13 +74,13 @@ public final strictfp class TreeTableViewTest extends TestCase {
 
     /**
      * Tests {@link TreeTableView#toString()}.
-     * Since the result is locale-dependant, we can not compare against an exact string.
+     * Since the result is locale-dependent, we can not compare against an exact string.
      * We will only compare the beginning of each line.
      */
     @Test
     public void testToString() {
         final TreeTableView metadata = create(ValueExistencePolicy.COMPACT);
-        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata));                         // Locale-independent
+        assertMultilinesEquals(EXPECTED, formatMetadata(metadata));                             // Locale-independent
         assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString()));     // Locale-dependent.
     }
 
@@ -102,6 +103,27 @@ public final strictfp class TreeTableViewTest extends TestCase {
         try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
             deserialized = in.readObject();
         }
-        assertMultilinesEquals(EXPECTED, formatNameAndValue((TreeTableView) deserialized));
+        assertMultilinesEquals(EXPECTED, formatMetadata((TreeTableView) deserialized));
+    }
+
+    /**
+     * Tests formatting a tree containing a remark. We use a geographic bounding box spanning the anti-meridian.
+     * In this test the longitude value and the remarks and separated by "……" characters, but this is because we
+     * use the default {@link org.apache.sis.util.collection.TreeTableFormat}. When using {@link MetadataFormat}
+     * specialization, the formatting is a little bit different
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testRemarks() {
+        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(170, -160, -30, 40);
+        final String text = formatMetadata(bbox.asTreeTable());
+        assertMultilinesEquals(
+                "Geographic bounding box\n" +
+                "  ├─West bound longitude…… 170°E\n" +
+                "  ├─East bound longitude…… 160°W…… Bounding box crosses the antimeridian.\n" +   // See method javadoc.
+                "  ├─South bound latitude…… 30°S\n" +
+                "  ├─North bound latitude…… 40°N\n" +
+                "  └─Extent type code……………… true\n", text);
     }
 }

@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Map;
 import java.util.Collections;
+import java.util.Arrays;
 import java.util.Locale;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -40,8 +41,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.measure.Units;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
@@ -55,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  *
@@ -83,6 +85,27 @@ class MathTransformParser extends AbstractParser {
      */
     private static final Unit<?>[] BASE_UNITS = {
         Units.METRE, Units.RADIAN, Units.UNITY, Units.SECOND
+    };
+
+    /**
+     * Some conversion factors applied to {@link #UNIT_KEYWORDS} for which rounding errors are found in practice.
+     * Some Well Known Texts define factors with low accuracy, as in {@code ANGLEUNIT["degree", 0.01745329252]}.
+     * This causes the parser to fail to recognize that the unit is degree and to convert angles with that factor.
+     * This may result in surprising behavior like <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>.
+     * This array is a workaround for that problem, adding the missing accuracy to factors. Only factors having many
+     * digits need to appear here. For example there is no need to declare the conversion factor for foot (0.3048)
+     * because that factor requires only 4 fraction digits, which are usually present in WKT.
+     *
+     * <p>Values in each array <strong>must</strong> be sorted in ascending order.</p>
+     */
+    private static final double[][] CONVERSION_FACTORS = {
+        {0.3047972654,              // Clarke's foot
+         0.30480060960121924,       // US survey foot
+         1609.3472186944375},       // US survey mile
+        {Math.PI/(180*60*60),       // Arc-second:  4.84813681109536E-6
+         Math.PI/(180*60),          // Arc-minute:  2.908882086657216E-4
+         Math.PI/(200),             // Grad:        1.5707963267948967E-2
+         Math.PI/(180)}             // Degree:      1.7453292519943295E-2
     };
 
     /**
@@ -227,6 +250,8 @@ class MathTransformParser extends AbstractParser {
      * @param  parent  the parent element.
      * @return the {@code "UNIT"} element, or {@code null} if none.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
+     *
+     * @see GeodeticObjectParser#parseScaledUnit(Element, String, Unit)
      */
     final Unit<?> parseUnit(final Element parent) throws ParseException {
         final Element element = parent.pullElement(OPTIONAL, UNIT_KEYWORDS);
@@ -234,14 +259,23 @@ class MathTransformParser extends AbstractParser {
             return null;
         }
         final String  name   = element.pullString("name");
-        final double  factor = element.pullDouble("factor");
+        double        factor = element.pullDouble("factor");
         final int     index  = element.getKeywordIndex() - 1;
         final Unit<?> unit   = parseUnitID(element);
         element.close(ignoredElements);
         if (unit != null) {
             return unit;
         }
+        /*
+         * Conversion factor can be applied only if the base dimension (angle, linear, scale, etc.) is known.
+         * However before to apply that factor, we may need to fix rounding errors found in some WKT strings.
+         * In particular, the conversion factor for degrees is sometime written as 0.01745329252 instead of
+         * 0.017453292519943295.
+         */
         if (index >= 0 && index < BASE_UNITS.length) {
+            if (index < CONVERSION_FACTORS.length) {
+                factor = completeUnitFactor(CONVERSION_FACTORS[index], factor);
+            }
             return BASE_UNITS[index].multiply(factor);
         }
         // If we can not infer the base type, we have to rely on the name.
@@ -251,6 +285,51 @@ class MathTransformParser extends AbstractParser {
             throw new UnparsableObjectException(errorLocale, Errors.Keys.UnknownUnit_1,
                     new Object[] {name}, element.offset).initCause(e);
         }
+    }
+
+    /**
+     * If the unit conversion factor specified in the Well Known Text is missing some fraction digits,
+     * try to complete them. The main use case is to replace 0.01745329252 by 0.017453292519943295 in
+     * degree units.
+     *
+     * @param  predefined  some known conversion factors, in ascending order.
+     * @param  factor      the conversion factor specified in the Well Known Text element.
+     * @return the conversion factor to use.
+     */
+    private static double completeUnitFactor(final double[] predefined, final double factor) {
+        int i = Arrays.binarySearch(predefined, factor);
+        if (i < 0) {
+            i = Math.max(~i, 1);
+            double accurate = predefined[i-1];
+            if (i < predefined.length) {
+                double next = predefined[i];
+                if (next - factor < factor - accurate) {
+                    accurate = next;
+                }
+            }
+            if (DecimalFunctions.equalsIgnoreMissingFractionDigits(accurate, factor)) {
+                return accurate;
+            }
+        }
+        return factor;
+    }
+
+    /**
+     * If the unit conversion factor specified in the Well Known Text is missing some fraction digits,
+     * try to complete them. The main use case is to replace 0.01745329252 by 0.017453292519943295 in
+     * degree units.
+     *
+     * @param  baseUnit  the base unit for which to complete the conversion factor.
+     * @param  factor    the conversion factor specified in the Well Known Text element.
+     * @return the conversion factor to use.
+     */
+    static double completeUnitFactor(final Unit<?> baseUnit, final double factor) {
+        for (int i=CONVERSION_FACTORS.length; --i>=0;) {
+            if (BASE_UNITS[i] == baseUnit) {
+                return completeUnitFactor(CONVERSION_FACTORS[i], factor);
+            }
+        }
+        return factor;
     }
 
     /**

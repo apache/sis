@@ -62,6 +62,7 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
@@ -451,12 +452,14 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @param  precision  the desired precision in metres.
          */
         public void setPrecision(final double precision) {
-            final double p = Math.floor(Math.log10(precision));
-            if (!Double.isFinite(p)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "precision", precision));
+            final int p;
+            try {
+                p = DecimalFunctions.floorLog10(precision);
+            } catch (ArithmeticException e) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "precision", precision), e);
             }
             // The -3 is an arbitrary limit to millimetre precision.
-            int n = Math.max(-3, Math.min(METRE_PRECISION_DIGITS + 1, (int) p));
+            int n = Math.max(-3, Math.min(METRE_PRECISION_DIGITS + 1, p));
             digits = (byte) (METRE_PRECISION_DIGITS - n);
         }
 

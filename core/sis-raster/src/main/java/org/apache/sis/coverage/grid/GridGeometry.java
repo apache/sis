@@ -41,9 +41,11 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
@@ -77,7 +79,6 @@ import org.apache.sis.io.TableAppender;
  * In order to check if a property is defined, use {@link #isDefined(int)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @author  Alessio Fabiani (Geosolutions)
  * @version 1.0
  * @since   1.0
  * @module
@@ -276,14 +277,16 @@ public class GridGeometry implements Serializable {
          * The easiest way to estimate a resolution is then to ask for the derivative at some
          * arbitrary point. For this constructor, we take the grid center.
          */
+        double[] resolution = null;
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
         if (matrix != null) {
             resolution = resolution(matrix, 1);
-        } else if (extent != null && gridToCRS != null) {
+        } else if (extent != null && gridToCRS != null) try {
             resolution = resolution(gridToCRS.derivative(extent.getCentroid()), 0);
-        } else {
-            resolution = null;
+        } catch (TransformException e) {
+            recoverableException(e);
         }
+        this.resolution = resolution;
         nonLinears = findNonLinearTargets(gridToCRS);
     }
 
@@ -340,9 +343,11 @@ public class GridGeometry implements Serializable {
             env = extent.toCRS(cornerToCRS);
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
-            if (scales == null) {
+            if (scales == null) try {
                 scales = gridToCRS.derivative(extent.getCentroid());    // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
                 numToIgnore = 0;
+            } catch (TransformException e) {
+                recoverableException(e);
             }
         } else {
             this.extent   = null;
@@ -366,6 +371,14 @@ public class GridGeometry implements Serializable {
             throw new MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
         }
+    }
+
+    /**
+     * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
+     * that they can be silently ignored in most cases.
+     */
+    private static void recoverableException(final TransformException exception) {
+        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, "transform", exception);
     }
 
     /**

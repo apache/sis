@@ -17,18 +17,18 @@
 package org.apache.sis.internal.maven;
 
 import java.io.File;
-import java.io.IOException;
+import org.apache.maven.plugin.MojoExecutionException;
 
 
 /**
  * Hard-coded file and directory names used by this package.
  *
  * <p><b>Reminder:</b>
- * If the above constants are modified, please remind to edit the <cite>Distribution file
- * and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code> file.</p>
+ * If the above constants are modified, please remind to edit the <cite>Distribution file</cite>
+ * section in the <code>site/content/build.mdtext</code> file.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -51,13 +51,19 @@ final class Filenames {
      * dependencies on platforms that do not support hard links. Also the file to ignore when copying
      * entries in a ZIP file.
      */
+    static final String OTHER_DEPENDENCIES_FILE = "other_dependencies.txt";
+
+    /**
+     * The file to ignore when copying entries in a ZIP file.
+     * Those files appear in the {@value #ARTIFACT_PATH} directory.
+     */
     static final String CONTENT_FILE = "content.txt";
 
     /**
      * The sub-directory inside {@value #TARGET_DIRECTORY} containing pack files.
      * This directory will be automatically created if it does not already exist.
      */
-    static final String DISTRIBUTION_DIRECTORY = "distribution";
+    private static final String DISTRIBUTION_DIRECTORY = "distribution";
 
     /**
      * The path to the directory (relative to the project directory) to zip for creating the distribution ZIP file.
@@ -65,27 +71,22 @@ final class Filenames {
     static final String ARTIFACT_PATH = "src/main/artifact";
 
     /**
-     * The name of the sub-directory inside {@value #ARTIFACT_PATH} where the Pack200 file will be located.
+     * The name of the sub-directory inside {@value #ARTIFACT_PATH} where the JAR files will be located.
      * Note that we will not write in the real directory, but only in the directory structure which is
      * reproduced in the ZIP file.
      */
     static final String LIB_DIRECTORY = "lib";
 
     /**
-     * The name (without extension) of the big JAR file which will contains everything.
-     * This file will be located in the {@value #LIB_DIRECTORY} directory.
+     * The prefix of native resources in JAR files. All those resources will be excluded from
+     * the JAR copied in the zip file and stored in a {@code nativeFiles} map instead.
      */
-    static final String FATJAR_FILE = "sis";
+    static final String NATIVE_DIRECTORY = "native/";
 
     /**
      * The prefix of the final filename. This is hard coded for now.
      */
     static final String FINALNAME_PREFIX = "apache-sis-";
-
-    /**
-     * The extension for Pack200 files.
-     */
-    static final String PACK_EXTENSION = ".pack.gz";
 
     /**
      * Do not allow instantiation of this class.
@@ -94,17 +95,18 @@ final class Filenames {
     }
 
     /**
-     * Returns the distribution directory, creating it if needed.
+     * Returns the distribution file, creating its directory if needed.
      *
-     * @param  targetDirectory  the {@code target} directory.
+     * @param  rootDirectory  the project root directory.
+     * @param  filename       name of the file to create.
      */
-    static File distributionDirectory(final File targetDirectory) throws IOException {
-        final File outDirectory = new File(targetDirectory, DISTRIBUTION_DIRECTORY);
+    static File distributionFile(final String rootDirectory, final String filename) throws MojoExecutionException {
+        final File outDirectory = new File(new File(rootDirectory, TARGET_DIRECTORY), DISTRIBUTION_DIRECTORY);
         if (!outDirectory.isDirectory()) {
             if (!outDirectory.mkdir()) {
-                throw new IOException("Can't create the \"" + DISTRIBUTION_DIRECTORY + "\" directory.");
+                throw new MojoExecutionException("Can't create the \"" + DISTRIBUTION_DIRECTORY + "\" directory.");
             }
         }
-        return outDirectory;
+        return new File(outDirectory, filename);
     }
 }

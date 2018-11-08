@@ -667,6 +667,15 @@ class PropertyAccessor {
     }
 
     /**
+     * Returns a remark or warning to format with the value at the given index, or {@code null} if none.
+     * This is provided when the value may look surprising, for example the longitude values in a geographic
+     * bounding box spanning the anti-meridian.
+     */
+    CharSequence remarks(int index, Object metadata) {
+        return null;
+    }
+
+    /**
      * Returns {@code true} if the {@link #implementation} class has at least one setter method.
      */
     final boolean isWritable() {
@@ -1100,7 +1109,7 @@ class PropertyAccessor {
      *
      * @see #count()
      */
-    public int count(final Object metadata, final ValueExistencePolicy valuePolicy, final int mode)
+    final int count(final Object metadata, final ValueExistencePolicy valuePolicy, final int mode)
             throws BackingStoreException
     {
         assert type.isInstance(metadata) : metadata;

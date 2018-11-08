@@ -554,6 +554,7 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <trimStackTrace>false</trimStackTrace>
               <environmentVariables>
                 <SIS_DATA>${session.executionRootDirectory}/target</SIS_DATA>
               </environmentVariables>
@@ -686,6 +687,7 @@
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>source-release-assembly</id>
@@ -924,7 +926,7 @@
         <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.4.11.v20180605</version>
+          <version>9.4.12.v20180830</version>
         </plugin>
       </plugins>
     </pluginManagement>

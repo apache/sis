@@ -161,6 +161,17 @@ public class TableColumn<V> implements CheckedContainer<V> {
             Number.class, Vocabulary.Keys.Value);
 
     /**
+     * Frequently-used constant for a column of remarks.
+     * The column {@linkplain #getHeader() header} is <cite>"Remarks"</cite> (eventually localized) and
+     * the column elements are typically instances of {@link String} or {@link InternationalString},
+     * depending on whether the data provide localization support or not.
+     *
+     * @since 1.0
+     */
+    public static final TableColumn<CharSequence> REMARKS = new Constant<>("REMARKS",
+            CharSequence.class, Vocabulary.Keys.Remarks);
+
+    /**
      * A map containing only the {@link #NAME} column.
      * This is the default set of columns when parsing a tree table.
      */

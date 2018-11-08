@@ -21,9 +21,7 @@ import java.nio.ByteBuffer;
 import java.io.IOException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -33,7 +31,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -57,10 +55,10 @@ public final class HyperRectangleReader {
      * @param  dataType  the type of elements to read, as one of the constants defined in {@link Numbers}.
      * @param  input     the channel from which to read the values, together with a buffer for transferring data.
      * @param  origin    the position in the channel of the first sample value in the hyper-rectangle.
-     * @throws DataStoreException if the given {@code dataType} is not one of the supported values.
+     * @throws DataStoreContentException if the given {@code dataType} is not one of the supported values.
      */
     public HyperRectangleReader(final byte dataType, final ChannelDataInput input, final long origin)
-            throws DataStoreException
+            throws DataStoreContentException
     {
         switch (dataType) {
             case Numbers.BYTE:      reader = input.new BytesReader  (           null); break;
@@ -102,9 +100,17 @@ public final class HyperRectangleReader {
      *
      * @return the file identifier.
      */
-    @Debug
     public String filename() {
         return reader.filename();
+    }
+
+    /**
+     * Returns the number of bytes in each value to be read.
+     *
+     * @return number of bytes per value.
+     */
+    public int dataSize() {
+        return 1 << reader.dataSizeShift();
     }
 
     /**
@@ -116,14 +122,15 @@ public final class HyperRectangleReader {
      * @throws IOException if an error occurred while transferring data from the channel.
      */
     public Object read(final Region region) throws IOException {
-        final int contiguousDataLength = region.targetLength(region.contiguousDataDimension);
-        final long[] strides = new long[region.getDimension() - region.contiguousDataDimension];
+        final int contiguousDataDimension = region.contiguousDataDimension();
+        final int contiguousDataLength = region.targetLength(contiguousDataDimension);
+        final long[] strides = new long[region.getDimension() - contiguousDataDimension];
         final int[]   cursor = new int[strides.length];
         final int  sizeShift = reader.dataSizeShift();
         long  streamPosition = origin + (region.startAt << sizeShift);
         int    arrayPosition = 0;
         for (int i=0; i<strides.length; i++) {
-            strides[i] = (region.skips[i + region.contiguousDataDimension] + contiguousDataLength) << sizeShift;
+            strides[i] = (region.skips[i + contiguousDataDimension] + contiguousDataLength) << sizeShift;
             assert (strides[i] > 0) : i;
         }
         try {
@@ -141,7 +148,7 @@ loop:       do {
                      * new row, or a new plane, or a new cube?). This determine how many bytes we have to
                      * skip.
                      */
-                    if (++cursor[i] < region.targetSize[region.contiguousDataDimension + i]) {
+                    if (++cursor[i] < region.targetSize[contiguousDataDimension + i]) {
                         streamPosition += strides[i];
                         arrayPosition  += contiguousDataLength;
                         continue loop;

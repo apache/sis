@@ -22,9 +22,10 @@ import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -34,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -76,6 +77,17 @@ final class GridGeometryInfo extends GridGeometry {
     }
 
     /**
+     * Returns the name of the netCDF file containing this grid geometry, or {@code null} if unknown.
+     */
+    private String getFilename() {
+        for (final VariableInfo info : range) {
+            final String filename = info.getFilename();
+            if (filename != null) return filename;
+        }
+        return null;
+    }
+
+    /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      */
@@ -110,6 +122,7 @@ final class GridGeometryInfo extends GridGeometry {
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     public Axis[] getAxes() throws IOException, DataStoreException {
@@ -122,7 +135,7 @@ final class GridGeometryInfo extends GridGeometry {
         for (int i=0; i<range.length; i++) {
             final VariableInfo v = range[i];
             if (variables.put(v, i) != null) {
-                throw new DataStoreException(Errors.format(Errors.Keys.DuplicatedElement_1, v.getName()));
+                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedReference_2, getFilename(), v.getName()));
             }
         }
         /*
@@ -175,6 +188,8 @@ final class GridGeometryInfo extends GridGeometry {
     /**
      * Returns a coordinate for the given two-dimensional grid coordinate axis.
      * This is (indirectly) a callback method for {@link #getAxes()}.
+     *
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
     protected double coordinateForAxis(final Object axis, final int j, final int i) throws IOException, DataStoreException {

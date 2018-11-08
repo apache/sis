@@ -16,6 +16,8 @@
  */
 package org.apache.sis.math;
 
+import java.text.Format;
+import java.text.NumberFormat;
 import java.util.Locale;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -28,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link StatisticsFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -89,5 +91,41 @@ public final strictfp class StatisticsFormatTest extends TestCase {
                 "│ Root Mean Square:   │       14.44 │  6.40 │    6.40 │\n" +
                 "│ Standard deviation: │        6.49 │  6.99 │    6.19 │\n" +
                 "└─────────────────────┴─────────────┴───────┴─────────┘\n", text);
+    }
+
+    /**
+     * Tests the formatting of {@code Statistics} with customized number format.
+     *
+     * @since 1.0
+     */
+    @Test
+    @DependsOnMethod("testFormattingWithoutHeader")
+    public void testFormattingPercent() {
+        final Statistics statistics = new Statistics("Percent");
+        statistics.accept(0.1);
+        statistics.accept(0.8);
+        statistics.accept(0.6);
+        statistics.accept(0.3);
+        statistics.accept(0.1);
+        statistics.accept(0.7);
+
+        final StatisticsFormat format = new StatisticsFormat(Locale.US, null, null) {
+            @Override protected Format createFormat(final Class<?> valueType) {
+                if (Number.class == valueType) {
+                    return NumberFormat.getPercentInstance(getLocale());
+                } else {
+                    return super.createFormat(valueType);
+                }
+            }
+        };
+        final String text = format.format(statistics);
+        assertMultilinesEquals(
+                "                    Percent\n" +
+                "Number of values:         6\n" +
+                "Minimum value:        10.0%\n" +
+                "Maximum value:        80.0%\n" +
+                "Mean value:           43.3%\n" +
+                "Root Mean Square:     51.6%\n" +
+                "Standard deviation:   30.8%\n", text);
     }
 }

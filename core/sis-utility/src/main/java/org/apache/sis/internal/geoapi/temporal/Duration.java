@@ -14,21 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.geoapi.temporal;
 
 
 /**
- * Maven plugins (others than {@link org.apache.sis.util.resources.ResourceCompilerMojo}) used
- * for building Apache SIS.
+ * Placeholder for a GeoAPI interfaces not present in GeoAPI 3.0.
  *
- * <ul>
- *   <li>{@link org.apache.sis.internal.maven.JarCollector} collects all JAR files and their dependencies
- *     in a single {@code target/binaries} directory, using hard links instead than copying the files.</li>
- *   <li>{@link org.apache.sis.internal.maven.Assembler} builds the Apache SIS distribution file.</li>
- * </ul>
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   1.0
  * @version 1.0
- * @since   0.3
  * @module
  */
-package org.apache.sis.internal.maven;
+public interface Duration {
+}

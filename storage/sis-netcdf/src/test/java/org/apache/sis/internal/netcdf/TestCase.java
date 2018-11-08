@@ -36,7 +36,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Base class of netCDF tests. Subclasses shall override the {@link #createDecoder(TestData)}.
+ * Base class of netCDF tests. The base class uses the UCAR decoder, which is taken as a reference implementation.
+ * Subclasses testing Apache SIS implementation needs to override the {@link #createDecoder(TestData)}.
  *
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
@@ -59,6 +60,9 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * The decoders cached by {@link #selectDataset(TestData)}.
+     * The make is non-empty only during the execution of a single test class.
+     *
+     * @see #closeAllDecoders()
      */
     private static final Map<TestData,Decoder> DECODERS = new EnumMap<>(TestData.class);
 

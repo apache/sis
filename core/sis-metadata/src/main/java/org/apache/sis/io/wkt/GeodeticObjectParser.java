@@ -91,7 +91,7 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -622,6 +622,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "UNIT"} element as an {@link Unit} object, or {@code null} if none.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
      *
+     * @see #parseUnit(Element)
+     *
      * @todo Authority code is currently discarded after parsing. We may consider to create a subclass of
      *       {@link Unit} which implements {@link IdentifiedObject} in a future version.
      */
@@ -635,7 +637,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String name   = element.pullString("name");
         final double factor = element.pullDouble("factor");
-        Unit<Q> unit   = baseUnit.multiply(factor);
+        Unit<Q> unit   = baseUnit.multiply(completeUnitFactor(baseUnit, factor));
         Unit<?> verify = parseUnitID(element);
         element.close(ignoredElements);
         /*

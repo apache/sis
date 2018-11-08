@@ -65,6 +65,7 @@ public abstract class GridGeometry {
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Axis[] getAxes() throws IOException, DataStoreException;
 
@@ -80,6 +81,7 @@ public abstract class GridGeometry {
      * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     protected abstract double coordinateForAxis(Object axis, int j, int i) throws IOException, DataStoreException;
 }
