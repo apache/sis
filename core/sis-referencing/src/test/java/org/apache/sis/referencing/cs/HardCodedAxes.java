@@ -30,7 +30,7 @@ import org.apache.sis.measure.Units;
  * Collection of axes for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -174,13 +174,13 @@ public final strictfp class HardCodedAxes {
      * Axis for radius in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
-     * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is upper-case <cite>"R"</cite>.
+     * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is lower-case <cite>"r"</cite>.
      *
      * <div class="note"><b>Note:</b>
-     * The uses upper-case <cite>"R"</cite> come from EPSG dataset 8.9.
+     * EPSG dataset 8.9 uses upper-case <cite>"R"</cite>.
      * ISO 19111 and 19162 use lower-case <cite>"r"</cite> instead,
      * but with "awayFrom" direction instead of "geocentricRadius".
-     * In this class, <cite>"r"</cite> is taken by {@link #DISTANCE}.</div>
+     * In this class, <cite>"r"</cite> is also used by {@link #DISTANCE}.</div>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -191,7 +191,7 @@ public final strictfp class HardCodedAxes {
      * @see #GRAVITY_RELATED_HEIGHT
      * @see #DEPTH
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create(AxisNames.GEOCENTRIC_RADIUS, "R",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create(AxisNames.GEOCENTRIC_RADIUS, "r",
             AxisDirection.UP, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
     /**
@@ -199,12 +199,11 @@ public final strictfp class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain Units#DEGREE degrees}.
-     * The ISO 19111 name is <cite>"spherical longitude"</cite> and the abbreviation is "θ" (theta).
+     * The ISO 19111 name is <cite>"spherical longitude"</cite> (also called <cite>"azimuthal angle"</cite>)
+     * and the abbreviation is "θ" (theta).
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "long" abbreviation which
      * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.
-     * ISO mentions also the symbol Ω, but it is not clear if it applies to longitude or latitude.
-     * The "θ" abbreviation used here is found in ISO 19162.
      * See {@link AxisNames#SPHERICAL_LONGITUDE} for other information.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
@@ -224,13 +223,13 @@ public final strictfp class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain Units#DEGREE degrees}.
-     * The ISO 19111 name is <cite>"spherical latitude"</cite> and the abbreviation is "φ′" (phi prime).
+     * The ISO 19111 name is <cite>"spherical latitude"</cite> (also called <cite>"polar (zenith) angle"</cite>)
+     * and the abbreviation is "Ω".
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "lat" abbreviation
-     * which is replaced by "φ′". Note that other conventions exist, in which the meaning of φ and θ are
-     * interchanged or in which this axis is named "elevation" and is oriented toward "Up".
-     * Other conventions use symbol Ψ or Ω.
-     * The "φ" abbreviation used here is found in ISO 19162.
+     * which is replaced by "Ω". Note that other conventions exist, in which the meaning of φ and θ are interchanged
+     * or in which this axis is named "elevation" and is oriented toward "Up".
+     * Other conventions use symbol Ψ or φ′.
      * See {@link AxisNames#SPHERICAL_LATITUDE} for other information.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
@@ -239,7 +238,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LONGITUDE
      */
-    public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create(AxisNames.SPHERICAL_LATITUDE, "φ′",
+    public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create(AxisNames.SPHERICAL_LATITUDE, "Ω",
             AxisDirection.NORTH, Units.DEGREE, -90, 90, RangeMeaning.EXACT);
 
     /**

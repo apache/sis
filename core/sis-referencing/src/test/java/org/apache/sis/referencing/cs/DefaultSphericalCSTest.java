@@ -41,7 +41,7 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
      * Expected axes are:
      *
      * <ol>
-     *   <li>Spherical latitude (φ′)</li>
+     *   <li>Spherical latitude (Ω)</li>
      *   <li>Spherical longitude (θ)</li>
      *   <li>Geocentric radius (R)</li>
      * </ol>
@@ -49,7 +49,7 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
     @Test
     public void testGeodetic() {
         final DefaultSphericalCS cs = HardCodedCS.SPHERICAL;
-        assertEquals("EPSG abbreviation for geocentric radius should be upper-case", "R", cs.getAxis(2).getAbbreviation());
+        assertEquals("EPSG abbreviation for geocentric radius should be lower-case", "r", cs.getAxis(2).getAbbreviation());
 
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);

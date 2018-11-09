@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Transliterator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -87,7 +87,7 @@ public final strictfp class TransliteratorTest extends TestCase {
     @Test
     public void testToShortAxisName() {
         assertShortAxisNameEquals("Latitude",            new Geographic(AxisNames.GEODETIC_LATITUDE,   "φ"));
-        assertShortAxisNameEquals("Spherical latitude",  new Geocentric(AxisNames.SPHERICAL_LATITUDE,  "φ′"));
+        assertShortAxisNameEquals("Spherical latitude",  new Geocentric(AxisNames.SPHERICAL_LATITUDE,  "Ω"));
         assertShortAxisNameEquals("Longitude",           new Geographic(AxisNames.GEODETIC_LONGITUDE,  "λ"));
         assertShortAxisNameEquals("Spherical longitude", new Geocentric(AxisNames.SPHERICAL_LONGITUDE, "θ"));
     }
@@ -102,7 +102,7 @@ public final strictfp class TransliteratorTest extends TestCase {
         assertEquals("B", "φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "B"));
         assertEquals("L", "λ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.EAST,  "L"));
         assertEquals("U", "θ",  t.toUnicodeAbbreviation("polar",       AxisDirection.OTHER, "U"));
-        assertEquals("U", "φ′", t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH, "U"));
+        assertEquals("U", "Ω",  t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH, "U"));
         assertEquals("V", "θ",  t.toUnicodeAbbreviation("spherical",   AxisDirection.EAST,  "V"));
     }
 
@@ -112,7 +112,7 @@ public final strictfp class TransliteratorTest extends TestCase {
     @Test
     public void testToLatinAbbreviation() {
         assertAbbreviationEquals("B", new Geographic(AxisNames.GEODETIC_LATITUDE,   "φ"));
-        assertAbbreviationEquals("U", new Geocentric(AxisNames.SPHERICAL_LATITUDE,  "φ′"));
+        assertAbbreviationEquals("U", new Geocentric(AxisNames.SPHERICAL_LATITUDE,  "Ω"));
         assertAbbreviationEquals("L", new Geographic(AxisNames.GEODETIC_LONGITUDE,  "λ"));
         assertAbbreviationEquals("V", new Geocentric(AxisNames.SPHERICAL_LONGITUDE, "θ"));
     }

@@ -64,7 +64,7 @@ import org.apache.sis.util.Characters;
  *       (<var>B</var>, <var>L</var>) from German “Breite” and “Länge” used in academic texts worldwide, or
  *       (<var>lat</var>, <var>long</var>).</li>
  *   <li>(<var>U</var>) for (θ) in {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS polar coordinate systems}.</li>
- *   <li>(<var>U</var>, <var>V</var>) for (φ′, θ) in
+ *   <li>(<var>U</var>, <var>V</var>) for (Ω, θ) in
  *       {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical coordinate systems}.</li>
  * </ul>
  *
@@ -89,7 +89,7 @@ import org.apache.sis.util.Characters;
  * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  *
  * @see org.apache.sis.util.Characters#isValidWKT(int)
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
@@ -311,7 +311,7 @@ public abstract class Transliterator implements Serializable {
      *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
      *   <li>φ → <var>B</var> (from German <cite>Breite</cite>) if used in an
      *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
-     *   <li>φ or φ′ or φ<sub>c</sub> → <var>U</var> if used in a
+     *   <li>φ or φ′ or φ<sub>c</sub> or Ω → <var>U</var> if used in a
      *       {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}, regardless of whether the
      *       coordinate system follows <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">physics,
      *       mathematics or other conventions</a>.</li>
@@ -360,6 +360,12 @@ public abstract class Transliterator implements Serializable {
                         }
                         break;
                     }
+                    case 'Ω': {                    // Used instead of 'φ' in ISO 19111.
+                        if (cs instanceof SphericalCS) {
+                            abbreviation = "U";
+                        }
+                        break;
+                    }
                     case 'λ': {
                         if (cs instanceof EllipsoidalCS) {
                             abbreviation = "L";    // From German "Länge", used in academic texts worldwide.
@@ -395,7 +401,7 @@ public abstract class Transliterator implements Serializable {
      * <ul>
      *   <li><var>P</var> or <var>L</var> → λ if {@code csType} is {@code "ellipsoidal"}.</li>
      *   <li><var>B</var> → φ  if {@code csType} is {@code "ellipsoidal"}.</li>
-     *   <li><var>U</var> → φ′ if {@code csType} is {@code "spherical"}, regardless of coordinate system convention.</li>
+     *   <li><var>U</var> → Ω  if {@code csType} is {@code "spherical"}, regardless of coordinate system convention.</li>
      *   <li><var>V</var> → θ  if {@code csType} is {@code "spherical"}, regardless of coordinate system convention.</li>
      *   <li><var>U</var> → θ  if {@code csType} is {@code "polar"}.</li>
      * </ul>
@@ -411,7 +417,7 @@ public abstract class Transliterator implements Serializable {
             final String condition;
             switch (abbreviation.charAt(0)) {
                 case 'U': if (WKTKeywords.polar.equals(csType)) return "θ";
-                          replacement = "φ′"; condition = WKTKeywords.spherical;   break;
+                          replacement = "Ω";  condition = WKTKeywords.spherical;   break;
                 case 'V': replacement = "θ";  condition = WKTKeywords.spherical;   break;
                 case 'L': replacement = "λ";  condition = WKTKeywords.ellipsoidal; break;
                 case 'P': // Transliteration of "phi".
