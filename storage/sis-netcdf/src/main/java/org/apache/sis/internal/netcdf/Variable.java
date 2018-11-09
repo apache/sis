@@ -19,8 +19,13 @@ package org.apache.sis.internal.netcdf;
 import java.util.Collection;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.apache.sis.math.Vector;
+import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -39,9 +44,30 @@ public abstract class Variable extends NamedElement {
     public static final int MIN_DIMENSION = 2;
 
     /**
-     * Creates a new variable.
+     * The unit of measurement, parsed from {@link #getUnitsString()} when first needed.
+     * We do not try to parse the unit at construction time because this variable may be
+     * never requested by the user.
      */
-    protected Variable() {
+    private Unit<?> unit;
+
+    /**
+     * Whether an attempt to parse the unit has already be done. This is used for avoiding
+     * to report the same failure many times when {@link #unit} stay null.
+     */
+    private boolean unitParsed;
+
+    /**
+     * Where to report warnings, if any.
+     */
+    protected final WarningListeners<?> listeners;
+
+    /**
+     * Creates a new variable.
+     *
+     * @param listeners where to report warnings.
+     */
+    protected Variable(final WarningListeners<?> listeners) {
+        this.listeners = listeners;
     }
 
     /**
@@ -62,14 +88,39 @@ public abstract class Variable extends NamedElement {
     /**
      * Returns the unit of measurement as a string, or {@code null} if none.
      *
+     * <p>Note: the UCAR library has its own API for handling units (e.g. {@link ucar.nc2.units.SimpleUnit}).
+     * However as of November 2018, this API does not allow us to identify the quantity type except for some
+     * special cases. We will parse the unit symbol ourselves instead, but we still need the full unit string
+     * for parsing also its {@linkplain Axis#direction direction}.</p>
+     *
      * @return the unit of measurement, or {@code null}.
      */
-    public abstract String getUnitsString();
+    protected abstract String getUnitsString();
+
+    /**
+     * Returns the unit of measurement for this variable, or {@code null} if unknown.
+     * This method parse the units from {@link #getUnitsString()} when first needed.
+     *
+     * @return the unit of measurement, or {@code null}.
+     */
+    public final Unit<?> getUnit() {
+        if (!unitParsed) {
+            unitParsed = true;                          // Set first for avoiding to report errors many times.
+            final String symbols = getUnitsString();
+            if (symbols != null) try {
+                unit = Units.valueOf(symbols);
+            } catch (ParserException e) {
+                listeners.warning(Errors.getResources(listeners.getLocale())
+                        .getString(Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols), e);
+            }
+        }
+        return unit;
+    }
 
     /**
      * Returns the variable data type.
      *
-     * @return the variable data type, or {@code UNKNOWN} if unknown.
+     * @return the variable data type, or {@link DataType#UNKNOWN} if unknown.
      */
     public abstract DataType getDataType();
 
@@ -180,6 +231,15 @@ public abstract class Variable extends NamedElement {
      * @return the sequence of {@link String} or {@link Number} values for the named attribute.
      */
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
+
+    /**
+     * Returns the value of the given attribute as a string. This is a convenience method
+     * for {@link #getAttributeValues(String, boolean)} when a singleton value is expected.
+     *
+     * @param  attributeName  the name of the attribute for which to get the values.
+     * @return the singleton attribute value, or {@code null} if none or ambiguous.
+     */
+    public abstract String getAttributeString(final String attributeName);
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.

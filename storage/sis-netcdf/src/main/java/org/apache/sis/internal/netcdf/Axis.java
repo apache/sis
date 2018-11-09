@@ -16,13 +16,25 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.io.IOException;
+import javax.measure.Unit;
+import org.opengis.util.GenericName;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
+import ucar.nc2.constants.CDM;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -40,6 +52,33 @@ import org.apache.sis.util.ArraysExt;
  * @module
  */
 public final class Axis {
+    /**
+     * The abbreviation, also used as a way to identify the axis type. Possible values are:
+     * <ul>
+     *   <li>λ for longitude</li>
+     *   <li>φ for latitude</li>
+     *   <li>t for time</li>
+     *   <li>h for ellipsoidal height</li>
+     *   <li>H for geoidal height</li>
+     *   <li>D for depth</li>
+     *   <li>E for easting</li>
+     *   <li>N for northing</li>
+     *   <li>θ for spherical longitude (azimuthal angle)</li>
+     *   <li>Ω for spherical latitude (polar angle)</li>
+     *   <li>r for geocentric radius</li>
+     *   <li>x,y,z for axes that are labeled as such, without more information.</li>
+     *   <li>zero for unknown axes.</li>
+     * </ul>
+     *
+     * @see AxisDirections#fromAbbreviation(char)
+     */
+    private final char abbreviation;
+
+    /**
+     * The axis direction, or {@code null} if unknown.
+     */
+    private final AxisDirection direction;
+
     /**
      * The attributes to use for fetching dimension (in ISO-19115 sense) information, or {@code null} if unknown.
      * Example: {@code "geospatial_lat_min"}, {@code "geospatial_lat_resolution"}, {@code DimensionNameType.ROW}.
@@ -66,26 +105,76 @@ public final class Axis {
     public final int[] sourceSizes;
 
     /**
+     * Values of coordinates on this axis for given grid indices. This variables is often one-dimensional,
+     * but can also be two-dimensional.
+     */
+    private final Variable coordinates;
+
+    /**
      * Constructs a new axis associated to an arbitrary number of grid dimension.
      * In the particular case where the number of dimensions is equals to 2, this constructor will detect
      * by itself which grid dimension varies fastest and reorder in-place the elements in the given arrays
      * (those array are modified, not cloned).
      *
      * @param  owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
-     * @param  axis              an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
+     * @param  axis              an implementation-dependent object representing the axis.
      * @param  attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
+     * @param  abbreviation      axis abbreviation, also identifying its type. This is a controlled vocabulary.
+     * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
      * @param  sourceDimensions  the index of the grid dimension associated to this axis.
      * @param  sourceSizes       the number of cell elements along that axis.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final GridGeometry owner, final Object axis, final AttributeNames.Dimension attributeNames,
-            final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException
+    public Axis(final GridGeometry owner, final Variable axis, final AttributeNames.Dimension attributeNames,
+                final char abbreviation, final String direction, final int[] sourceDimensions, final int[] sourceSizes)
+                throws IOException, DataStoreException
     {
+        /*
+         * Try to get the axis direction from one of the following sources, in preference order:
+         *
+         *   1) The "positive" attribute value, which can be "up" or "down".
+         *   2) The abbreviation, which indirectly tells us the axis type inferred by UCAR library.
+         *   3) The direction in unit of measurement formatted as "degrees east" or "degrees north".
+         *
+         * Choice #1 is preferred because it tells us the direction of increasing values. By contrast,
+         * choice #2 said nothing about that. However if we find an inconsistency between directions
+         * inferred in those different ways, we give precedence to choices #2 and #3 in that order.
+         * Choice #1 is not considered authoritative because it applies (in principle) to only one of axis.
+         */
+        AxisDirection dir = Types.forCodeName(AxisDirection.class, direction, false);
+        AxisDirection check = AxisDirections.fromAbbreviation(abbreviation);
+        final boolean isSigned = (dir != null);     // Whether is specify the direction of positive values.
+        boolean isConsistent = true;
+        if (dir == null) {
+            dir = check;
+        } else if (check != null) {
+            isConsistent = AxisDirections.absolute(dir).equals(check);
+        }
+        if (isConsistent) {
+            check = direction(axis.getUnitsString());
+            if (dir == null) {
+                dir = check;
+            } else if (check != null) {
+                isConsistent = AxisDirections.absolute(dir).equals(AxisDirections.absolute(check));
+            }
+        }
+        if (!isConsistent) {
+            // TODO: report a warning here.
+            if (isSigned) {
+                dir = check;
+                if (AxisDirections.isOpposite(check)) {
+                    dir = AxisDirections.opposite(dir);
+                }
+            }
+        }
+        this.direction        = dir;
+        this.abbreviation     = abbreviation;
         this.attributeNames   = attributeNames;
         this.sourceDimensions = sourceDimensions;
         this.sourceSizes      = sourceSizes;
+        this.coordinates      = axis;
         if (sourceDimensions.length == 2) {
             final int up0  = sourceSizes[0];
             final int up1  = sourceSizes[1];
@@ -104,24 +193,49 @@ public final class Axis {
     }
 
     /**
-     * Returns the axis direction for the given unit of measurement as a sign relative to the given direction.
+     * Returns the axis direction for the given unit of measurement, or {@code null} if unknown.
      * This method performs the second half of the work of parsing "degrees_east" or "degrees_west" units.
      *
-     * @param  unit      the string representation of the netCDF unit, or {@code null}.
-     * @param  positive  the direction to take as positive value: {@link AxisDirection#EAST} or {@link AxisDirection#NORTH}.
-     * @return the axis direction as a sign relative to the positive direction, or 0 if unrecognized.
+     * @param  unit  the string representation of the netCDF unit, or {@code null}.
+     * @return the axis direction, or {@code null} if unrecognized.
      */
-    public static int direction(final String unit, final AxisDirection positive) {
+    public static AxisDirection direction(final String unit) {
         if (unit != null) {
-            final int s = unit.indexOf('_');
+            int s = unit.indexOf('_');
+            if (s < 0) {
+                s = unit.indexOf(' ');
+            }
             if (s > 0) {
-                final AxisDirection dir = Types.forCodeName(AxisDirection.class, unit.substring(s+1), false);
-                if (dir != null) {
-                    if (dir.equals(positive)) return +1;
-                    if (dir.equals(AxisDirections.opposite(positive))) return -1;
-                }
+                return Types.forCodeName(AxisDirection.class, unit.substring(s+1), false);
             }
         }
-        return 0;
+        return null;
+    }
+
+    private CoordinateSystemAxis toISO() {
+        final String name = coordinates.getName().trim();
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(CoordinateSystemAxis.NAME_KEY, name);
+        /*
+         * Aliases (optional property)
+         */
+        final List<GenericName> aliases = new ArrayList<>(2);
+        final String standardName = coordinates.getAttributeString(CF.STANDARD_NAME);
+        if (standardName != null) {
+            aliases.add(new NamedIdentifier(Citations.NETCDF, standardName));
+        }
+        final String alt = coordinates.getAttributeString(CDM.LONG_NAME);
+        if (alt != null && !alt.equals(standardName)) {
+            aliases.add(new NamedIdentifier(Citations.NETCDF, alt));
+        }
+        properties.put(CoordinateSystemAxis.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
+
+        String a = Character.toString(abbreviation).intern();   // TODO: need default value is zero.
+        AxisDirection dir = direction;
+        if (dir == null) {
+            dir = AxisDirection.OTHER;
+        }
+        Unit<?> unit = coordinates.getUnit();       // TODO: need default value if null.
+        return new DefaultCoordinateSystemAxis(properties, a, dir, unit);
     }
 }

@@ -21,11 +21,13 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
+import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -109,7 +111,7 @@ final class GridGeometryInfo extends GridGeometry {
 
     /**
      * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
-     * is associated. See {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper.getAxes()} for a
+     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper#getAxes()} for a
      * closer look on the relationship between this algorithm and the UCAR library.
      *
      * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
@@ -125,7 +127,7 @@ final class GridGeometryInfo extends GridGeometry {
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    public Axis[] getAxes() throws IOException, DataStoreException {
+    protected Axis[] createAxes() throws IOException, DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the same order than the indices, but not necessarily. The intent is to reduce the
@@ -178,9 +180,9 @@ final class GridGeometryInfo extends GridGeometry {
                     }
                 }
             }
-            axes[targetDim] = new Axis(this, axis, attributeNames,
-                                       ArraysExt.resize(indices, i),
-                                       ArraysExt.resize(sizes, i));
+            char abbreviation = 0;
+            axes[targetDim] = new Axis(this, axis, attributeNames, abbreviation, axis.getAttributeString(CF.POSITIVE),
+                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         return axes;
     }
@@ -192,7 +194,7 @@ final class GridGeometryInfo extends GridGeometry {
      * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected double coordinateForAxis(final Object axis, final int j, final int i) throws IOException, DataStoreException {
+    protected double coordinateForAxis(final Variable axis, final int j, final int i) throws IOException, DataStoreException {
         final VariableInfo v = (VariableInfo) axis;
         final int n = v.dimensions[0].length;
         return v.read().doubleValue(j + n*i);

@@ -53,7 +53,7 @@ import org.apache.sis.storage.DataStoreException;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -82,7 +82,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      *
      * @see #getVariables()
      */
-    private transient Variable[] variables;
+    private transient VariableWrapper[] variables;
 
     /**
      * The discrete sampling features, or {@code null} if none.
@@ -350,12 +350,26 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     public Variable[] getVariables() {
         if (variables == null) {
             final List<? extends VariableIF> all = file.getVariables();
-            variables = new Variable[(all != null) ? all.size() : 0];
+            variables = new VariableWrapper[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(all.get(i));
+                variables[i] = new VariableWrapper(listeners, all.get(i));
             }
         }
         return variables;
+    }
+
+    /**
+     * Returns the Apache SIS wrapper for the given UCAR variable. The given variable shall be non-null
+     * and should be one of the variables wrapped by the instances returned by {@link #getVariables()}.
+     */
+    final VariableWrapper getWrapperFor(final VariableIF variable) {
+        for (VariableWrapper c : (VariableWrapper[]) getVariables()) {
+            if (c.isWrapperFor(variable)) {
+                return c;
+            }
+        }
+        // We should not reach this point, but let be safe.
+        return new VariableWrapper(listeners, variable);
     }
 
     /**
@@ -409,7 +423,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
             geometries = new GridGeometry[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridGeometryWrapper(systems.get(i));
+                geometries[i] = new GridGeometryWrapper(this, systems.get(i));
             }
         }
         return geometries;

@@ -33,6 +33,13 @@ import org.apache.sis.storage.DataStoreException;
  */
 public abstract class GridGeometry {
     /**
+     * The axes, created when first needed.
+     *
+     * @see #getAxes()
+     */
+    private Axis[] axes;
+
+    /**
      * Constructs a new grid geometry information.
      */
     protected GridGeometry() {
@@ -59,15 +66,32 @@ public abstract class GridGeometry {
     /**
      * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
      * value returned by {@link #getTargetDimensions()}, but the caller should be robust to inconsistencies.
+     * The axis order is as declared in the netCDF file (reverse of "natural" order).
      *
-     * <p>This method is used mostly for producing ISO 19115 metadata. It is typically invoked only once.</p>
+     * <p>This method returns a direct reference to the cached array; do not modify.</p>
      *
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract Axis[] getAxes() throws IOException, DataStoreException;
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public final Axis[] getAxes() throws IOException, DataStoreException {
+        if (axes == null) {
+            axes = createAxes();
+        }
+        return axes;
+    }
+
+    /**
+     * Creates the axes to be returned by {@link #getAxes()}. This method is invoked only once when first needed.
+     *
+     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    protected abstract Axis[] createAxes() throws IOException, DataStoreException;
 
     /**
      * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly) a callback
@@ -75,7 +99,7 @@ public abstract class GridGeometry {
      * they get reordered by the {@link Axis} constructor. In the netCDF UCAR API, this method maps directly to
      * {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
-     * @param  axis  an implementation-dependent object representing the two-dimensional axis, or {@code null} if none.
+     * @param  axis  an implementation-dependent object representing the two-dimensional axis.
      * @param  j     the fastest varying (right-most) index.
      * @param  i     the slowest varying (left-most) index.
      * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
@@ -83,5 +107,5 @@ public abstract class GridGeometry {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    protected abstract double coordinateForAxis(Object axis, int j, int i) throws IOException, DataStoreException;
+    protected abstract double coordinateForAxis(Variable axis, int j, int i) throws IOException, DataStoreException;
 }

@@ -30,6 +30,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
 
 
@@ -46,7 +47,7 @@ final class VariableWrapper extends Variable {
     /**
      * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
-    private final VariableIF variable;
+    final VariableIF variable;
 
     /**
      * The variable without enhancements. May be the same instance than {@link #variable}
@@ -60,7 +61,8 @@ final class VariableWrapper extends Variable {
     /**
      * Creates a new variable wrapping the given netCDF interface.
      */
-    VariableWrapper(VariableIF v) {
+    VariableWrapper(final WarningListeners<?> listeners, VariableIF v) {
+        super(listeners);
         variable = v;
         if (v instanceof VariableEnhanced) {
             v = ((VariableEnhanced) v).getOriginalVariable();
@@ -91,7 +93,7 @@ final class VariableWrapper extends Variable {
      * Returns the unit of measurement as a string, or {@code null} if none.
      */
     @Override
-    public String getUnitsString() {
+    protected String getUnitsString() {
         return variable.getUnitsString();
     }
 
@@ -200,6 +202,19 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the value of the given attribute as a string. This is a convenience method
+     * for {@link #getAttributeValues(String, boolean)} when a singleton value is expected.
+     *
+     * @param  attributeName  the name of the attribute for which to get the values.
+     * @return the singleton attribute value, or {@code null} if none or ambiguous.
+     */
+    @Override
+    public String getAttributeString(final String attributeName) {
+        Object[] values = getAttributeValues(attributeName, false);
+        return (values.length == 1) ? values[0].toString() : null;
+    }
+
+    /**
      * Returns the names of all attributes in the given list.
      */
     static List<String> toNames(final List<Attribute> attributes) {
@@ -244,5 +259,12 @@ final class VariableWrapper extends Variable {
             throw new DataStoreException(e);
         }
         return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+    }
+
+    /**
+     * Returns {@code true} if this Apache SIS variable is a wrapper for the given UCAR variable.
+     */
+    final boolean isWrapperFor(final VariableIF v) {
+        return (variable == v) || (raw == v);
     }
 }

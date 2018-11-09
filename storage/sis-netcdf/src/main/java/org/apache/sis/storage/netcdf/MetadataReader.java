@@ -63,6 +63,7 @@ import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -834,7 +835,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 }
                 boolean reverse = false;
                 if (positive != null) {
-                    reverse = Axis.direction(symbol, positive) < 0;
+                    reverse = AxisDirections.opposite(positive).equals(Axis.direction(symbol));
                 } else if (dim.POSITIVE != null) {
                     // For now, only the vertical axis have a "positive" attribute.
                     reverse = CF.POSITIVE_DOWN.equals(stringValue(dim.POSITIVE));
@@ -930,24 +931,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final NameFactory f = decoder.nameFactory;
             setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
         }
-        Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
-        final String id = (v.length == 1) ? trim((String) v[0]) : null;
+        final String id = trim(variable.getAttributeString(CF.STANDARD_NAME));
         if (id != null && !id.equals(name)) {
-            v = variable.getAttributeValues(ACDD.standard_name_vocabulary, false);
-            addBandName(v.length == 1 ? (String) v[0] : null, id);
+            addBandName(variable.getAttributeString(ACDD.standard_name_vocabulary), id);
         }
         final String description = trim(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
             addBandDescription(description);
         }
-        final String units = variable.getUnitsString();
-        if (units != null) try {
-            setSampleUnits(Units.valueOf(units));
-        } catch (ParserException e) {
-            warning(Errors.Keys.CanNotAssignUnitToVariable_2, name, units, e);
-        }
+        setSampleUnits(variable.getUnit());
         double scale  = Double.NaN;
         double offset = Double.NaN;
+        Object[] v;
         v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
         v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
         setTransferFunction(scale, offset);

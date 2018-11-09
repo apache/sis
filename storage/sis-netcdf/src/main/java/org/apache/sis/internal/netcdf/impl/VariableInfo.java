@@ -164,11 +164,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final String[] meanings;
 
     /**
-     * Where to report warnings, if any.
-     */
-    private final WarningListeners<?> listeners;
-
-    /**
      * Creates a new variable.
      *
      * @param  input       the channel together with a buffer for reading the variable data.
@@ -191,6 +186,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                  final long                  offset,
                  final WarningListeners<?>   listeners) throws DataStoreContentException
     {
+        super(listeners);
         final Object isUnsigned = attributes.get(CDM.UNSIGNED);
         if (isUnsigned != null) {
             dataType = dataType.unsigned(booleanValue(isUnsigned));
@@ -199,7 +195,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         this.dimensions = dimensions;
         this.attributes = attributes;
         this.dataType   = dataType;
-        this.listeners  = listeners;
         /*
          * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
@@ -354,9 +349,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the unit of measurement as a string, or {@code null} if none.
      */
     @Override
-    public String getUnitsString() {
-        final Object value = getAttributeValue(CDM.UNITS);
-        return (value instanceof String) ? (String) value : null;
+    protected String getUnitsString() {
+        return getAttributeString(CDM.UNITS);
     }
 
     /**
@@ -478,6 +472,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
         final Object value = getAttributeValue(attributeName);
         return numeric ? numberValues(value) : stringValues(value);
+    }
+
+    /**
+     * Returns the value of the given attribute as a string, or {@code null} if none.
+     */
+    @Override
+    public String getAttributeString(final String attributeName) {
+        final Object value = getAttributeValue(attributeName);
+        return (value instanceof String) ? (String) value : null;
     }
 
     /**
