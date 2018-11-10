@@ -1149,14 +1149,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                 warnings.getUnknownElementLocations("Ext2").toArray());
 
         assertMultilinesEquals("Parsing of “WGS 84” done, but some elements were ignored.\n" +
-                               " • Unexpected scale factor 0.017 for unit of measurement “°”.\n" +
+                               " • Unexpected scale factor 0.01746 for unit of measurement “°”.\n" +
                                " • The text contains unknown elements:\n" +
                                "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
                                "    ‣ “Ext1” in SPHEROID.\n" +
                                "    ‣ “Ext2” in SPHEROID.", warnings.toString(Locale.US));
 
         assertMultilinesEquals("La lecture de « WGS 84 » a été faite, mais en ignorant certains éléments.\n" +
-                               " • Le facteur d’échelle 0,017 est inattendu pour l’unité de mesure « ° ».\n" +
+                               " • Le facteur d’échelle 0,01746 est inattendu pour l’unité de mesure « ° ».\n" +
                                " • Le texte contient des éléments inconnus :\n" +
                                "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
                                "    ‣ « Ext1 » dans SPHEROID.\n" +

@@ -40,6 +40,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
@@ -122,7 +123,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * The object to use for formatting messages. This object
      * will be constructed only when first needed.
      */
-    private transient MessageFormat format;
+    private transient AutoMessageFormat format;
 
     /**
      * The key of the last resource requested. If the same resource is requested multiple times,
@@ -531,22 +532,23 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 /*
                  * Constructs a new MessageFormat for formatting the arguments.
                  */
-                format = new MessageFormat(pattern, getLocale());
+                format  = new AutoMessageFormat(pattern, getLocale());
                 lastKey = key;
             } else if (key != lastKey) {
                 /*
-                 * Method MessageFormat.applyPattern(...) is costly! We will avoid
+                 * Method MessageFormat.applyPattern(…) is costly! We will avoid
                  * calling it again if the format already has the right pattern.
                  */
                 format.applyPattern(pattern);
                 lastKey = key;
             }
             try {
+                format.configure(arguments);
                 return format.format(arguments);
             } catch (RuntimeException e) {
                 /*
                  * Safety against badly implemented toString() method
-                 * in libraries that we don't control.
+                 * in libraries that we do not control.
                  */
                 return "[Unformattable message: " + e + ']';
             }

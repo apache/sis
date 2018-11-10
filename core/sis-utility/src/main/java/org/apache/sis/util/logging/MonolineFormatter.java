@@ -34,6 +34,7 @@ import java.util.logging.*;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.ArgumentChecks;
@@ -245,7 +246,7 @@ public class MonolineFormatter extends Formatter {
     /**
      * The message format, or {@code null} if not yet created.
      */
-    private transient MessageFormat messageFormat;
+    private transient AutoMessageFormat messageFormat;
 
     /**
      * Value of the last call to {@link MessageFormat#applyPattern(String)}. Saved in order to avoid
@@ -841,13 +842,14 @@ loop:   for (int i=0; ; i++) {
                 if (c >= '0' && c <= '9') {
                     synchronized (buffer) {
                         if (messageFormat == null) {
-                            messageFormat = new MessageFormat(message);
+                            messageFormat = new AutoMessageFormat(message);
                         } else if (!message.equals(messagePattern)) {
                             messageFormat.applyPattern(message);
                         }
                         messagePattern = message;
                         final int base = buffer.length();
                         try {
+                            messageFormat.configure(parameters);
                             message = messageFormat.format(parameters, buffer, new FieldPosition(0)).substring(base);
                         } finally {
                             buffer.setLength(base);
