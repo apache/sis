@@ -149,6 +149,11 @@
             </exclusion>
           </exclusions>
         </dependency>
+        <dependency>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derby</artifactId>
+          <scope>runtime</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
@@ -181,7 +186,6 @@
         <version>${project.version}</version>
         <configuration>
           <oxtName>apache-sis-${project.version}</oxtName>
-          <pack200>true</pack200>
         </configuration>
         <executions>
           <execution>

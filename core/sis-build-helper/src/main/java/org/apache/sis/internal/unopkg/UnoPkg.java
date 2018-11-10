@@ -17,11 +17,10 @@
 package org.apache.sis.internal.unopkg;
 
 import java.io.*;
-import java.util.Map;
+import java.util.Enumeration;
 import java.util.zip.CRC32;
-import java.util.jar.JarFile;
-import java.util.jar.Pack200;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -33,14 +32,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import static java.util.jar.Pack200.Packer;
-
 
 /**
  * Creates an {@code .oxt} package for <a href="http://www.openoffice.org">OpenOffice.org</a> addins.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -52,6 +49,14 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     static final String SOURCE_DIRECTORY = "src/main/unopkg";
 
     /**
+     * Module to decompress. We inflate the {@value} module because Derby is much slower
+     * when using an embedded database in a compressed ZIP file compared to flat storage.
+     * Since the JAR files are distributed in a ZIP file anyway, inflating that file has
+     * little impact on the final ZIP file size.
+     */
+    private static final String TO_INFLATE = "sis-embedded-data";
+
+    /**
      * The encoding for text files to read and write.
      */
     private static final String ENCODING = "UTF-8";
@@ -59,7 +64,12 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     /**
      * The string to replace by the final name.
      */
-    private static final String SUBSTITUTE = "${project.build.finalName}";
+    private static final String FILTERED_NAME = "${project.build.finalName}";
+
+    /**
+     * The string to replace by the version number.
+     */
+    private static final String FILTERED_VERSION = "${project.version}";
 
     /**
      * Base directory of the module to compile.
@@ -83,34 +93,23 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     private String finalName;
 
     /**
+     * In {@code description.xml}, all occurrences of {@code ${project.version}}
+     * will be replaced by this value.
+     */
+    @Parameter(property="project.version", required=true, readonly=true)
+    private String version;
+
+    /**
      * The name for the {@code .oxt} file to create, without the {@code ".oxt"} filename extension.
      */
     @Parameter(property="project.build.finalName", required=true, readonly=true)
     private String oxtName;
 
     /**
-     * {@code true} for using Pack200 compression. If {@code true}, then the add-in registration
-     * class needs to unpack the files itself before use. The default value is {@code false}.
-     */
-    @Parameter(defaultValue="false")
-    private String pack200;
-
-    /**
      * The Maven project running this plugin.
      */
     @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
-
-    /**
-     * The prefix to be added before JAR file names.
-     * To be determined by heuristic rule.
-     */
-    private transient String prefix;
-
-    /**
-     * Apply prefix only for dependencies of this group.
-     */
-    private transient String prefixGroup;
 
     /**
      * Invoked by reflection for creating the MOJO.
@@ -144,20 +143,6 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        final int i = finalName.indexOf(project.getArtifactId());
-        prefix = (i >= 0) ? finalName.substring(0, i) : "";
-        prefixGroup = project.getGroupId();
-        try {
-            createPackage();
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error creating the oxt file.", e);
-        }
-    }
-
-    /**
-     * Creates the {@code .oxt} file.
-     */
-    private void createPackage() throws IOException {
         final String  manifestName = "META-INF/manifest.xml";
         final File sourceDirectory = new File(baseDirectory, SOURCE_DIRECTORY);
         final File outputDirectory = new File(this.outputDirectory);
@@ -171,72 +156,54 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                 copyFiltered(manifestFile, out, manifestName);
             }
             /*
-             * Copies the RDB files.
+             * Copies files from "unopkg" source directory. This include binary files like RDB,
+             * but also XML file. We apply filtering on the "description.xml" file in order to
+             * set the version number automatically.
              */
-            for (int i=0; i<rdbs.length; i++) {
-                copy(rdbs[i], out, null);
+            for (final File rdb : rdbs) {
+                final String name = rdb.getName();
+                if (name.endsWith(".xml")) {
+                    copyFiltered(rdb, out, name);
+                } else {
+                    copy(rdb, out);
+                }
             }
             /*
-             * Copies the JAR (and any additional JARs provided in the output directory).
-             * Do not pack this JAR, because it contains the code needed to inflate the
-             * PACK200 file.
+             * Copies the JAR for this module and any additional JARs provided in the output directory.
              */
-            for (int i=0; i<jars.length; i++) {
-                copy(jars[i], out, null);
+            for (final File jar : jars) {
+                copy(jar, out);
             }
             /*
-             * Copies the dependencies, optionally in a single PACK200 entry.
-             * We discard most debug information because stack traces are not
-             * easy to get from an application running in OpenOffice anyway.
+             * Copies the dependencies.
              */
-            Pack200.Packer packer = null;
-            if (Boolean.parseBoolean(pack200)) {
-                packer = Pack200.newPacker();
-                final Map<String,String> p = packer.properties();
-                p.put(Packer.EFFORT,            "9");               // take more time choosing codings for better compression.
-                p.put(Packer.SEGMENT_LIMIT,     "-1");              // use largest-possible archive segments (>10% better compression).
-                p.put(Packer.KEEP_FILE_ORDER,   Packer.FALSE);      // reorder files for better compression.
-                p.put(Packer.MODIFICATION_TIME, Packer.LATEST);     // smear modification times to a single value.
-                p.put(Packer.CODE_ATTRIBUTE_PFX+"LineNumberTable",    Packer.STRIP);        // discard debug attributes.
-                p.put(Packer.CODE_ATTRIBUTE_PFX+"LocalVariableTable", Packer.STRIP);        // discard debug attributes.
-                p.put(Packer.CLASS_ATTRIBUTE_PFX+"SourceFile",        Packer.STRIP);        // discard debug attributes.
-                p.put(Packer.DEFLATE_HINT,      Packer.TRUE);       // transmitting a single request to use "compress" mode.
-                p.put(Packer.UNKNOWN_ATTRIBUTE, Packer.ERROR);      // throw an error if an attribute is unrecognized.
-            }
             for (final Artifact artifact : project.getArtifacts()) {
                 final String scope = artifact.getScope();
                 if (Artifact.SCOPE_COMPILE.equalsIgnoreCase(scope) ||
                     Artifact.SCOPE_RUNTIME.equalsIgnoreCase(scope))
                 {
                     final File file = artifact.getFile();
-                    String name = file.getName();
-                    if (artifact.getGroupId().startsWith(prefixGroup) && !name.startsWith(prefix)) {
-                        name = prefix + name;
-                    }
-                    if (packer != null && name.endsWith(".jar")) {
-                        name = name.substring(0, name.length() - 3) + "pack";
-                        try (JarFile jar = new FilteredJarFile(file)) {
-                            out.putNextEntry(new ZipEntry(name));
-                            packer.pack(jar, out);
-                            out.closeEntry();
-                        }
+                    final String name = file.getName();
+                    if (name.startsWith(TO_INFLATE)) {
+                        copyInflated(file, out);
                     } else {
-                        copy(file, out, name);
+                        copy(file, out);
                     }
                 }
             }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error creating the oxt file.", e);
         }
     }
 
     /**
      * Copies the content of the specified binary file to the specified output stream.
      *
-     * @param  name  the ZIP entry name, or {@code null} for using the name of the given file.
+     * @param  file    the regular file to copy inside the ZIP file.
+     * @param  bundle  the ZIP file where to copy the given regular file.
      */
-    private static void copy(final File file, final ZipOutputStream out, String name) throws IOException {
-        if (name == null) {
-            name = file.getName();
-        }
+    private static void copy(final File file, final ZipOutputStream bundle) throws IOException {
+        final String name = file.getName();
         final ZipEntry entry = new ZipEntry(name);
         if (name.endsWith(".png")) {
             final long size = file.length();
@@ -245,38 +212,71 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
             entry.setCompressedSize(size);
             entry.setCrc(getCRC32(file));
         }
-        out.putNextEntry(entry);
+        bundle.putNextEntry(entry);
         try (InputStream in = new FileInputStream(file)) {
-            final byte[] buffer = new byte[4*1024];
-            int length;
-            while ((length = in.read(buffer)) >= 0) {
-                out.write(buffer, 0, length);
-            }
+            in.transferTo(bundle);
         }
-        out.closeEntry();
+        bundle.closeEntry();
     }
 
     /**
      * Copies the content of the specified ASCII file to the specified output stream.
+     *
+     * @param  file    the regular file to copy inside the ZIP file.
+     * @param  bundle  the ZIP file where to copy the given regular file.
+     * @param  name    the ZIP entry name.
      */
-    private void copyFiltered(final File file, final ZipOutputStream out, String name) throws IOException {
-        if (name == null) {
-            name = file.getName();
-        }
+    private void copyFiltered(final File file, final ZipOutputStream bundle, final String name) throws IOException {
         final ZipEntry entry = new ZipEntry(name);
-        out.putNextEntry(entry);
-        final Writer writer = new OutputStreamWriter(out, ENCODING);
+        bundle.putNextEntry(entry);
+        final Writer writer = new OutputStreamWriter(bundle, ENCODING);
         try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), ENCODING))) {
-            String line; while ((line=in.readLine()) != null) {
-                int r=-1; while ((r=line.indexOf(SUBSTITUTE, r+1)) >= 0) {
-                    line = line.substring(0, r) + finalName + line.substring(r + SUBSTITUTE.length());
-                }
+            String line;
+            while ((line = in.readLine()) != null) {
+                line = line.replace(FILTERED_NAME, finalName);
+                line = line.replace(FILTERED_VERSION, version);
                 writer.write(line);
                 writer.write('\n');
             }
         }
         writer.flush();
-        out.closeEntry();
+        bundle.closeEntry();
+    }
+
+    /**
+     * Copies a JAR file in the given ZIP file, but without compression for the files
+     * in {@code SIS_DATA} directory.
+     *
+     * @param  file    the JAR file to copy.
+     * @param  bundle  destination where to copy the JAR file.
+     */
+    private static void copyInflated(final File file, final ZipOutputStream bundle) throws IOException {
+        final ZipEntry entry = new ZipEntry(file.getName());
+        bundle.putNextEntry(entry);
+        final ZipOutputStream out = new ZipOutputStream(bundle);
+        out.setLevel(9);
+        try (ZipFile in = new ZipFile(file)) {
+            final Enumeration<? extends ZipEntry> entries = in.entries();
+            while (entries.hasMoreElements()) {
+                final ZipEntry   inEntry  = entries.nextElement();
+                final String     name     = inEntry.getName();
+                final ZipEntry   outEntry = new ZipEntry(name);
+                if (name.startsWith("SIS_DATA")) {
+                    final long size = inEntry.getSize();
+                    outEntry.setMethod(ZipOutputStream.STORED);
+                    outEntry.setSize(size);
+                    outEntry.setCompressedSize(size);
+                    outEntry.setCrc(inEntry.getCrc());
+                }
+                try (InputStream inStream = in.getInputStream(inEntry)) {
+                    out.putNextEntry(outEntry);
+                    inStream.transferTo(out);
+                    out.closeEntry();
+                }
+            }
+        }
+        out.finish();
+        bundle.closeEntry();
     }
 
     /**
