@@ -504,7 +504,7 @@ public abstract class Initializer {
      * @return the data source.
      * @throws Exception if the data source can not be created.
      */
-    static DataSource forJavaDB(final String path) throws Exception {
+    private static DataSource forJavaDB(final String path) throws Exception {
         try {
             return forJavaDB(path, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
