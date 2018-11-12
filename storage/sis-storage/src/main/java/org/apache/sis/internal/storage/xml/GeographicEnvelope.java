@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * Base class of geographic bounding boxes to expose also as an envelope and an ISO-19115 extent.
+ * Base class of geographic bounding boxes to expose also as an envelope and an ISO 19115 extent.
  * This base class does not contain any field. It is aimed to be sub-classed by data stores which
  * will add their own JAXB annotations. The only methods that subclasses need to implement are:
  *

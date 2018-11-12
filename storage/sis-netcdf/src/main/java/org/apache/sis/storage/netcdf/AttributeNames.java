@@ -977,7 +977,7 @@ public class AttributeNames {
         public final String POSITIVE;
 
         /**
-         * The default ISO-19115 dimension name type, or {@code null} if none.
+         * The default ISO 19115 dimension name type, or {@code null} if none.
          * By default, {@link DimensionNameType#COLUMN} is associated to longitudes and {@link DimensionNameType#ROW}
          * to latitudes since geographic maps in netCDF files are typically shown horizontally.
          *
@@ -991,7 +991,7 @@ public class AttributeNames {
         /**
          * Creates a new set of attribute names.
          *
-         * @param type        the default ISO-19115 dimension name type, or {@code null} if none.
+         * @param type        the default ISO 19115 dimension name type, or {@code null} if none.
          * @param min         the attribute name for the minimal value of the bounding box.
          * @param max         the attribute name for the maximal value of the bounding box.
          * @param span        the attribute name for the difference between the minimal and maximal values.

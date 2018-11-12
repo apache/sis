@@ -24,7 +24,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The ISO-19103 {@code Measure} with a unit of measure defined in the {@code gco} namespace
+ * The ISO 19103 {@code Measure} with a unit of measure defined in the {@code gco} namespace
  * associated to the {@code http://www.isotc211.org/2005/gco} URL.
  *
  * <p>This class is identical to {@link GO_Distance} except for the name of the element,

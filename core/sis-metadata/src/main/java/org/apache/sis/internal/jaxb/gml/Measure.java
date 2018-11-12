@@ -109,7 +109,7 @@ public final class Measure {
     }
 
     /**
-     * Constructs a representation of the measure as defined in ISO-19103 standard,
+     * Constructs a representation of the measure as defined in ISO 19103 standard,
      * with the UOM attribute like {@code "gmxUom.xml#xpointer(//*[@gml:id='m'])"}.
      *
      * @param value  the value of the measure.
