@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import ucar.ma2.Array;
@@ -71,6 +72,20 @@ final class VariableWrapper extends Variable {
             }
         }
         raw = v;
+    }
+
+    /**
+     * Returns the name of the netCDF file containing this variable, or {@code null} if unknown.
+     */
+    @Override
+    public String getFilename() {
+        if (variable instanceof ucar.nc2.Variable) {
+            String name = ((ucar.nc2.Variable) variable).getDatasetLocation();
+            if (name != null) {
+                return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
+            }
+        }
+        return null;
     }
 
     /**

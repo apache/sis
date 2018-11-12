@@ -90,6 +90,14 @@ final class GridGeometryInfo extends GridGeometry {
     }
 
     /**
+     * Returns a name for this grid geometry, for information purpose only.
+     */
+    @Override
+    public String getName() {
+        return getFilename();
+    }
+
+    /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      */

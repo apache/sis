@@ -23,10 +23,11 @@ import java.util.HashMap;
 import java.io.IOException;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.netcdf.AttributeNames;
@@ -51,7 +52,7 @@ import ucar.nc2.constants.CF;
  * @since 0.3
  * @module
  */
-public final class Axis {
+public final class Axis extends NamedElement {
     /**
      * The abbreviation, also used as a way to identify the axis type. Possible values are:
      * <ul>
@@ -128,45 +129,47 @@ public final class Axis {
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Axis(final GridGeometry owner, final Variable axis, final AttributeNames.Dimension attributeNames,
-                final char abbreviation, final String direction, final int[] sourceDimensions, final int[] sourceSizes)
+                char abbreviation, final String direction, final int[] sourceDimensions, final int[] sourceSizes)
                 throws IOException, DataStoreException
     {
         /*
-         * Try to get the axis direction from one of the following sources, in preference order:
+         * Try to get the axis direction from one of the following sources,
+         * in preference order (unless an inconsistency is detected):
          *
          *   1) The "positive" attribute value, which can be "up" or "down".
          *   2) The abbreviation, which indirectly tells us the axis type inferred by UCAR library.
          *   3) The direction in unit of measurement formatted as "degrees east" or "degrees north".
          *
-         * Choice #1 is preferred because it tells us the direction of increasing values. By contrast,
-         * choice #2 said nothing about that. However if we find an inconsistency between directions
-         * inferred in those different ways, we give precedence to choices #2 and #3 in that order.
-         * Choice #1 is not considered authoritative because it applies (in principle) to only one of axis.
+         * Choice #1 is preferred because it is the only one telling us the direction of increasing values.
+         * However if we find an inconsistency between directions inferred in those different ways, then we
+         * give precedence to choices #2 and #3 in that order. Choice #1 is not considered authoritative
+         * because it applies (in principle) only to vertical axis.
          */
         AxisDirection dir = Types.forCodeName(AxisDirection.class, direction, false);
         AxisDirection check = AxisDirections.fromAbbreviation(abbreviation);
-        final boolean isSigned = (dir != null);     // Whether is specify the direction of positive values.
+        final boolean isSigned = (dir != null);     // Whether 'dir' takes in account the direction of positive values.
         boolean isConsistent = true;
         if (dir == null) {
             dir = check;
         } else if (check != null) {
-            isConsistent = AxisDirections.absolute(dir).equals(check);
+            isConsistent = AxisDirections.isColinear(dir, check);
         }
         if (isConsistent) {
             check = direction(axis.getUnitsString());
             if (dir == null) {
                 dir = check;
             } else if (check != null) {
-                isConsistent = AxisDirections.absolute(dir).equals(AxisDirections.absolute(check));
+                isConsistent = AxisDirections.isColinear(dir, check);
             }
         }
         if (!isConsistent) {
-            // TODO: report a warning here.
+            axis.warning(owner.getClass(), "getAxes",               // Caller of this constructor.
+                         Resources.Keys.AmbiguousAxisDirection_4, axis.getFilename(), axis.getName(), dir, check);
             if (isSigned) {
-                dir = check;
-                if (AxisDirections.isOpposite(check)) {
-                    dir = AxisDirections.opposite(dir);
+                if (AxisDirections.isOpposite(dir)) {
+                    check = AxisDirections.opposite(check);         // Apply the sign of 'dir' on 'check'.
                 }
+                dir = check;
             }
         }
         this.direction        = dir;
@@ -212,30 +215,69 @@ public final class Axis {
         return null;
     }
 
-    private CoordinateSystemAxis toISO() {
-        final String name = coordinates.getName().trim();
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(CoordinateSystemAxis.NAME_KEY, name);
+    /**
+     * Returns the name of this axis.
+     *
+     * @return the name of this element.
+     */
+    @Override
+    public final String getName() {
+        return coordinates.getName().trim();
+    }
+
+    /**
+     * Creates an ISO 19111 axis from the information stored in this netCDF axis.
+     *
+     * @param  factory  the factory to use for creating the coordinate system axis.
+     */
+    final CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
         /*
-         * Aliases (optional property)
+         * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
+         * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
+         * because this is controlled vocabulary.
          */
+        final String name = getName();
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(CoordinateSystemAxis.NAME_KEY, name);                        // Intentionally no namespace.
         final List<GenericName> aliases = new ArrayList<>(2);
         final String standardName = coordinates.getAttributeString(CF.STANDARD_NAME);
         if (standardName != null) {
-            aliases.add(new NamedIdentifier(Citations.NETCDF, standardName));
+            final NamedIdentifier std = new NamedIdentifier(Citations.NETCDF, standardName);
+            if (standardName.equals(name)) {
+                properties.put(CoordinateSystemAxis.NAME_KEY, std);                 // Store as primary name.
+            } else {
+                aliases.add(std);                                                   // Store as alias.
+            }
         }
+        /*
+         * The long name is stored as an optional description of the primary name.
+         * It is also stored as an alias if not redundant with other names.
+         */
         final String alt = coordinates.getAttributeString(CDM.LONG_NAME);
-        if (alt != null && !alt.equals(standardName)) {
-            aliases.add(new NamedIdentifier(Citations.NETCDF, alt));
+        if (alt != null && !similar(alt, name)) {
+            properties.put(org.opengis.metadata.Identifier.DESCRIPTION_KEY, alt);   // Description associated to primary name.
+            if (!similar(alt, standardName)) {
+                aliases.add(new NamedIdentifier(null, alt));                        // Additional alias.
+            }
         }
-        properties.put(CoordinateSystemAxis.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
-
-        String a = Character.toString(abbreviation).intern();   // TODO: need default value is zero.
-        AxisDirection dir = direction;
-        if (dir == null) {
-            dir = AxisDirection.OTHER;
+        if (!aliases.isEmpty()) {
+            properties.put(CoordinateSystemAxis.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
         }
-        Unit<?> unit = coordinates.getUnit();       // TODO: need default value if null.
-        return new DefaultCoordinateSystemAxis(properties, a, dir, unit);
+        /*
+         * Axis abbreviation, direction and unit of measurement are mandatory.
+         * If any of them is null, creation of CoordinateSystemAxis is likely
+         * to fail with an InvalidGeodeticParameterException. But we let the
+         * factory to choose, in case users specify their own factory.
+         */
+        final Unit<?> unit = coordinates.getUnit();
+        final String abbr;
+        if (abbreviation != 0) {
+            abbr = Character.toString(abbreviation).intern();
+        } else if (direction != null && unit != null) {
+            abbr = AxisDirections.suggestAbbreviation(name, direction, unit);
+        } else {
+            abbr = null;
+        }
+        return factory.createCoordinateSystemAxis(properties, abbr, direction, unit);
     }
 }

@@ -16,7 +16,13 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.io.IOException;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.storage.DataStoreException;
 
 
@@ -31,7 +37,7 @@ import org.apache.sis.storage.DataStoreException;
  * @since 0.3
  * @module
  */
-public abstract class GridGeometry {
+public abstract class GridGeometry extends NamedElement {
     /**
      * The axes, created when first needed.
      *
@@ -108,4 +114,15 @@ public abstract class GridGeometry {
      * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     protected abstract double coordinateForAxis(Variable axis, int j, int i) throws IOException, DataStoreException;
+
+    final CoordinateSystem createCoordinateSystem(final CSFactory factory) throws IOException, DataStoreException, FactoryException {
+        final Axis[] axes = getAxes();
+        final CoordinateSystemAxis[] csAxes = new CoordinateSystemAxis[axes.length];
+        for (int i=0; i<axes.length; i++) {
+            csAxes[i] = axes[i].toISO(factory);
+        }
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(CoordinateSystem.NAME_KEY, getName());
+        return factory.createEllipsoidalCS(null, csAxes[0], csAxes[1]);
+    }
 }

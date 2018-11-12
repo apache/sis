@@ -424,7 +424,7 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals("Ω",   AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,            Units.DEGREE));
         assertEquals("h",   AxisDirections.suggestAbbreviation("Ellipsoidal height",     UP,               Units.METRE));
         assertEquals("H",   AxisDirections.suggestAbbreviation("Gravity-related height", UP,               Units.METRE));
-        assertEquals("φ",   AxisDirections.suggestAbbreviation("Elevation",              UP,               Units.METRE));
+        assertEquals("α",   AxisDirections.suggestAbbreviation("Elevation",              UP,               Units.DEGREE));
         assertEquals("r",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               Units.METRE));
         assertEquals("r",   AxisDirections.suggestAbbreviation("Distance",               AWAY_FROM,        Units.METRE));
         assertEquals("θ",   AxisDirections.suggestAbbreviation("Bearing",                CLOCKWISE,        Units.DEGREE));
@@ -448,6 +448,30 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals("SSE", AxisDirections.suggestAbbreviation("not needed",             SOUTH_SOUTH_EAST, Units.METRE));
         assertEquals("NNW", AxisDirections.suggestAbbreviation("not needed",             NORTH_NORTH_WEST, Units.METRE));
         assertEquals("ENE", AxisDirections.suggestAbbreviation("not needed",             EAST_NORTH_EAST,  Units.METRE));
+    }
+
+    /**
+     * Tests {@link AxisDirections#fromAbbreviation(char)}.
+     * This tests reuse some of the case tested by {@link #testSuggestAbbreviation()}.
+     * The intent is to ensure that those two methods are consistent with each other.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testFromAbbreviation() {
+        assertEquals(EAST,   AxisDirections.fromAbbreviation('λ'));
+        assertEquals(NORTH,  AxisDirections.fromAbbreviation('φ'));
+        assertEquals(EAST,   AxisDirections.fromAbbreviation('θ'));
+        assertEquals(NORTH,  AxisDirections.fromAbbreviation('Ω'));
+        assertEquals(UP,     AxisDirections.fromAbbreviation('h'));
+        assertEquals(UP,     AxisDirections.fromAbbreviation('H'));
+        assertEquals(UP,     AxisDirections.fromAbbreviation('r'));
+        assertEquals(DOWN,   AxisDirections.fromAbbreviation('D'));
+        assertEquals(FUTURE, AxisDirections.fromAbbreviation('t'));
+        assertEquals(NORTH,  AxisDirections.fromAbbreviation('N'));
+        assertEquals(SOUTH,  AxisDirections.fromAbbreviation('S'));
+        assertEquals(EAST,   AxisDirections.fromAbbreviation('E'));
+        assertEquals(WEST,   AxisDirections.fromAbbreviation('W'));
     }
 
     /**

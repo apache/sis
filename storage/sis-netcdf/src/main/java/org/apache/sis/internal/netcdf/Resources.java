@@ -59,6 +59,12 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * NetCDF file “{0}” provides an ambiguous axis direction for variable “{1}”. It could be
+         * {2} or {3}.
+         */
+        public static final short AmbiguousAxisDirection_4 = 9;
+
+        /**
          * Can not compute data location for “{1}” variable in the “{0}” netCDF file.
          */
         public static final short CanNotComputeVariablePosition_2 = 6;

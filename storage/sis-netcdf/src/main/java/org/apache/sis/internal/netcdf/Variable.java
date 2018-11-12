@@ -17,12 +17,15 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
@@ -59,7 +62,7 @@ public abstract class Variable extends NamedElement {
     /**
      * Where to report warnings, if any.
      */
-    protected final WarningListeners<?> listeners;
+    private final WarningListeners<?> listeners;
 
     /**
      * Creates a new variable.
@@ -69,6 +72,14 @@ public abstract class Variable extends NamedElement {
     protected Variable(final WarningListeners<?> listeners) {
         this.listeners = listeners;
     }
+
+    /**
+     * Returns the name of the netCDF file containing this variable, or {@code null} if unknown.
+     * This is used for information purpose only.
+     *
+     * @return name of the netCDF file containing this variable, or {@code null} if unknown.
+     */
+    public abstract String getFilename();
 
     /**
      * Returns the name of this variable, or {@code null} if none.
@@ -295,6 +306,31 @@ public abstract class Variable extends NamedElement {
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
+
+    /**
+     * Returns the resources to use for warnings or error messages.
+     *
+     * @return the resources for the locales specified by the given argument.
+     */
+    protected final Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
+    }
+
+    /**
+     * Reports a warning to the listeners specified at construction time.
+     *
+     * @param  caller     the caller class to report, preferably a public class.
+     * @param  method     the caller method to report, preferable a public method.
+     * @param  key        one or {@link Resources.Keys} constants.
+     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     */
+    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
+        final LogRecord record = resources().getLogRecord(Level.WARNING, key, arguments);
+        record.setLoggerName(Modules.NETCDF);
+        record.setSourceClassName(caller.getCanonicalName());
+        record.setSourceMethodName(method);
+        listeners.warning(record);
+    }
 
     /**
      * Returns a string representation of this variable for debugging purpose.

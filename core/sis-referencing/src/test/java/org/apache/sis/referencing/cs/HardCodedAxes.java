@@ -415,7 +415,7 @@ public final strictfp class HardCodedAxes {
      * This is part of an engineering spherical coordinate system
      * (not to be confused with geodetic spherical coordinate system).
      */
-    public static final DefaultCoordinateSystemAxis ELEVATION = create("Elevation", "φ",
+    public static final DefaultCoordinateSystemAxis ELEVATION = create("Elevation", "α",
             AxisDirection.UP, Units.DEGREE, -90, +90, RangeMeaning.WRAPAROUND);
 
     /**

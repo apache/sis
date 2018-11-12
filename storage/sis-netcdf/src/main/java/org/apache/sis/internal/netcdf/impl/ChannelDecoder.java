@@ -36,6 +36,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
+import java.util.AbstractList;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import javax.measure.format.ParserException;
@@ -282,7 +283,35 @@ public final class ChannelDecoder extends Decoder {
         }
         this.attributeMap = attributes;
         this.variables    = variables;
-        this.variableMap  = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
+        this.variableMap  = toCaseInsensitiveNameMap(variables);
+    }
+
+    /**
+     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
+     * If the name of an element is not all lower cases, then this method also adds an entry for the
+     * lower cases version of that name in order to allow case-insensitive searches.
+     *
+     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
+     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
+     *
+     * @param  <E>       the type of elements.
+     * @param  elements  the elements to store in the map, or {@code null} if none.
+     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
+     */
+    private static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements) {
+        return CollectionsExt.toCaseInsensitiveNameMap(new AbstractList<Map.Entry<String,E>>() {
+            @Override
+            public int size() {
+                return elements.length;
+            }
+
+            @Override
+            public Map.Entry<String,E> get(final int index) {
+                final E e = elements[index];
+                return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
+            }
+        }, NAME_LOCALE);
     }
 
     /**
@@ -488,7 +517,7 @@ public final class ChannelDecoder extends Decoder {
             }
             dimensions[i] = new Dimension(name, length, isUnlimited);
         }
-        dimensionMap = Dimension.toCaseInsensitiveNameMap(dimensions, NAME_LOCALE);
+        dimensionMap = toCaseInsensitiveNameMap(dimensions);
         return dimensions;
     }
 

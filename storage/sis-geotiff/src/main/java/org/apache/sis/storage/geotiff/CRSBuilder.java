@@ -38,7 +38,6 @@ import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -53,17 +52,15 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.util.FactoryException;
 
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
@@ -77,7 +74,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
-import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -137,7 +133,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * @since 0.8
  * @module
  */
-final class CRSBuilder {
+final class CRSBuilder extends ReferencingFactoryContainer {
     /**
      * Number of {@code short} values in each GeoKey entry.
      */
@@ -217,27 +213,6 @@ final class CRSBuilder {
     private GeodeticAuthorityFactory epsgFactory;
 
     /**
-     * Factory for creating geodetic objects from their components, or {@code null} if not yet fetched.
-     * Constructing a CRS from its components requires parsing many {@link GeoKeys}.
-     *
-     * <div class="note"><b>Note:</b> we do not yet split this field into 3 separated fields for datums,
-     * coordinate systems and coordinate reference systems objects because it is not needed with Apache SIS
-     * implementation of those factories. However we may revisit this choice if we want to let the user specify
-     * his own factories.</div>
-     *
-     * @see #objectFactory()
-     */
-    private GeodeticObjectFactory objectFactory;
-
-    /**
-     * Factory for fetching operation methods and creating defining conversions.
-     * This is needed only for user-defined projected coordinate reference system.
-     *
-     * @see #operationFactory()
-     */
-    private CoordinateOperationFactory operationFactory;
-
-    /**
      * Name of the last object created. This is used by {@link #properties(Object)} for reusing existing instance
      * if possible. This is useful in GeoTIFF files since the same name is used for different geodetic components,
      * for example the datum and the ellipsoid.
@@ -302,37 +277,9 @@ final class CRSBuilder {
     }
 
     /**
-     * Returns the factory for creating geodetic objects from their components.
-     * The factory is fetched when first needed.
-     *
-     * @return the object factory (never {@code null}).
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
-     */
-    private GeodeticObjectFactory objectFactory() {
-        if (objectFactory == null) {
-            objectFactory = DefaultFactories.forBuildin(CRSFactory.class, GeodeticObjectFactory.class);
-        }
-        return objectFactory;
-    }
-
-    /**
-     * Returns the factory for fetching operation methods and creating defining conversions.
-     * The factory is fetched when first needed.
-     *
-     * @return the operation factory (never {@code null}).
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
-     */
-    private CoordinateOperationFactory operationFactory() {
-        if (operationFactory == null) {
-            operationFactory = CoordinateOperations.factory();
-        }
-        return operationFactory;
-    }
-
-    /**
      * Returns a map with the given name associated to {@value org.opengis.referencing.IdentifiedObject#NAME_KEY}.
      * The given name shall be either an instance of {@link String} or {@link Identifier}.
-     * This is an helper method for creating geodetic objects with {@link #objectFactory}.
+     * This is an helper method for creating geodetic objects with {@link #crsFactory()}.
      */
     private Map<String,?> properties(Object name) {
         if (name == null) {
@@ -753,7 +700,7 @@ final class CRSBuilder {
                 if (crs == null) {
                     missingValue(GeoKeys.GeographicType);
                 } else {
-                    crs = objectFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                    crs = crsFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
             }
         }
@@ -920,7 +867,7 @@ final class CRSBuilder {
                      * This is because the citation value is for the CRS (e.g. "WGS84") while the prime
                      * meridian names are very different (e.g. "Paris", "Madrid", etc).
                      */
-                    return objectFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
+                    return datumFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
                 }
                 break;                      // Default to Greenwich.
             }
@@ -990,14 +937,14 @@ final class CRSBuilder {
                 double inverseFlattening = getAsDouble(GeoKeys.InvFlattening);
                 final Ellipsoid ellipsoid;
                 if (!Double.isNaN(inverseFlattening)) {
-                    ellipsoid = objectFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
+                    ellipsoid = datumFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
                 } else {
                     /*
                      * If the inverse flattening factory was not defined, fallback on semi-major axis length.
                      * This is a less common way to define ellipsoid (the most common way uses flattening).
                      */
                     final double semiMinor = getMandatoryDouble(GeoKeys.SemiMinorAxis);
-                    ellipsoid = objectFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
+                    ellipsoid = datumFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
                 }
                 lastName = ellipsoid.getName();
                 return ellipsoid;
@@ -1076,7 +1023,7 @@ final class CRSBuilder {
                 String              name      = getOrDefault(names, DATUM);
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
-                final GeodeticDatum datum     = objectFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
+                final GeodeticDatum datum     = datumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
                 name = Utilities.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
                 lastName = datum.getName();
                 try {
@@ -1249,7 +1196,7 @@ final class CRSBuilder {
                 if (!Units.DEGREE.equals(angularUnit)) {
                     cs = replaceAngularUnit(cs, angularUnit);
                 }
-                final GeographicCRS crs = objectFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeographicCRS crs = crsFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1319,7 +1266,7 @@ final class CRSBuilder {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final GeocentricCRS crs = objectFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeocentricCRS crs = crsFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1458,7 +1405,7 @@ final class CRSBuilder {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final ProjectedCRS crs = objectFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
+                final ProjectedCRS crs = crsFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1693,7 +1640,7 @@ final class CRSBuilder {
                 if (!Units.METRE.equals(unit)) {
                     cs = (VerticalCS) CoordinateSystems.replaceLinearUnit(cs, unit);
                 }
-                return objectFactory().createVerticalCRS(properties(name), datum, cs);
+                return crsFactory().createVerticalCRS(properties(name), datum, cs);
             }
             default: {
                 return epsgFactory().createVerticalCRS(String.valueOf(epsg));

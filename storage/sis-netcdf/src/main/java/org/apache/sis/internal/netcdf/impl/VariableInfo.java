@@ -19,8 +19,6 @@ package org.apache.sis.internal.netcdf.impl;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import ucar.nc2.constants.CF;
@@ -29,7 +27,6 @@ import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
@@ -224,12 +221,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             final long actual = Integer.toUnsignedLong(size);
             if (actual != expected) {
                 if (expected != 0) {
-                    final LogRecord record = resources(listeners).getLogRecord(Level.WARNING,
+                    warning(ChannelDecoder.class, "readVariables",          // Caller of this constructor.
                             Resources.Keys.MismatchedVariableSize_3, getFilename(), name, actual - expected);
-                    record.setLoggerName(Modules.NETCDF);
-                    record.setSourceClassName(ChannelDecoder.class.getName());      // Caller of this constructor.
-                    record.setSourceMethodName("readVariables");
-                    listeners.warning(record);
                 }
                 if (actual > offsetToNextRecord) {
                     offsetToNextRecord = actual;
@@ -317,7 +310,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the name of the netCDF file containing this variable, or {@code null} if unknown.
      */
-    final String getFilename() {
+    @Override
+    public String getFilename() {
         return (reader != null) ? reader.filename() : null;
     }
 
@@ -574,7 +568,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         if (isUnlimited()) {
             final int dataSize = reader.dataSize();
             if (offsetToNextRecord < 0 || (offsetToNextRecord % dataSize) != 0) {
-                throw new DataStoreContentException(resources(listeners)
+                throw new DataStoreContentException(resources()
                         .getString(Resources.Keys.CanNotComputeVariablePosition_2, getFilename(), name));
             }
             region.increaseStride(dimensions.length - 1, offsetToNextRecord / dataSize);
@@ -648,7 +642,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the error message for an unknown data type.
      */
     private String unknownType() {
-        return resources(listeners).getString(Resources.Keys.UnsupportedDataType_3, getFilename(), name, dataType);
+        return resources().getString(Resources.Keys.UnsupportedDataType_3, getFilename(), name, dataType);
     }
 
     /**

@@ -16,13 +16,8 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.Locale;
-import java.util.Map;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.util.Characters;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -49,41 +44,25 @@ public abstract class NamedElement {
     public abstract String getName();
 
     /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
-     * If the name of an element is not all lower cases, then this method also adds an entry for the
-     * lower cases version of that name in order to allow case-insensitive searches.
+     * Returns {@code true} if the given names are considered equals for the purpose of netCDF decoder.
+     * Two names are considered similar if they are equal ignoring case and characters that are not valid
+     * for an Unicode identifier.
      *
-     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
-     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
-     *
-     * @param  <E>          the type of elements.
-     * @param  elements     the elements to store in the map, or {@code null} if none.
-     * @param  namesLocale  the locale to use for creating the "all lower cases" names.
-     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
-     * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
+     * @param  s1  the first characters sequence to compare, or {@code null}.
+     * @param  s2  the second characters sequence to compare, or {@code null}.
+     * @return whether the two characters sequences are considered similar names.
      */
-    public static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements, final Locale namesLocale) {
-        return CollectionsExt.toCaseInsensitiveNameMap(new AbstractList<Map.Entry<String,E>>() {
-            @Override
-            public int size() {
-                return elements.length;
-            }
-
-            @Override
-            public Map.Entry<String,E> get(final int index) {
-                final E e = elements[index];
-                return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
-            }
-        }, namesLocale);
+    protected static boolean similar(final CharSequence s1, final CharSequence s2) {
+        return CharSequences.equalsFiltered(s1, s2, Characters.Filter.UNICODE_IDENTIFIER, true);
     }
 
     /**
-     * Returns the resources to use for warnings or error messages.
+     * Returns a string representation of this element. Current implementation returns only the element class and name.
      *
-     * @param  listeners  where the warnings are sent. Used for inferring the locale.
-     * @return the resources for the locales specified by the given argument.
+     * @return string representation of this element for debugging purposes.
      */
-    protected static Resources resources(final WarningListeners<?> listeners) {
-        return Resources.forLocale(listeners != null ? listeners.getLocale() : null);
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[\"" + getName() + "\"]";
     }
 }
