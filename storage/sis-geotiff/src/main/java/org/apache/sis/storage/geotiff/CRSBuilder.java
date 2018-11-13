@@ -279,7 +279,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     /**
      * Returns a map with the given name associated to {@value org.opengis.referencing.IdentifiedObject#NAME_KEY}.
      * The given name shall be either an instance of {@link String} or {@link Identifier}.
-     * This is an helper method for creating geodetic objects with {@link #crsFactory()}.
+     * This is an helper method for creating geodetic objects with {@link #getCRSFactory()}.
      */
     private Map<String,?> properties(Object name) {
         if (name == null) {
@@ -700,7 +700,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (crs == null) {
                     missingValue(GeoKeys.GeographicType);
                 } else {
-                    crs = crsFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                    crs = getCRSFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
             }
         }
@@ -867,7 +867,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                      * This is because the citation value is for the CRS (e.g. "WGS84") while the prime
                      * meridian names are very different (e.g. "Paris", "Madrid", etc).
                      */
-                    return datumFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
+                    return getDatumFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
                 }
                 break;                      // Default to Greenwich.
             }
@@ -937,14 +937,14 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 double inverseFlattening = getAsDouble(GeoKeys.InvFlattening);
                 final Ellipsoid ellipsoid;
                 if (!Double.isNaN(inverseFlattening)) {
-                    ellipsoid = datumFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
+                    ellipsoid = getDatumFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
                 } else {
                     /*
                      * If the inverse flattening factory was not defined, fallback on semi-major axis length.
                      * This is a less common way to define ellipsoid (the most common way uses flattening).
                      */
                     final double semiMinor = getMandatoryDouble(GeoKeys.SemiMinorAxis);
-                    ellipsoid = datumFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
+                    ellipsoid = getDatumFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
                 }
                 lastName = ellipsoid.getName();
                 return ellipsoid;
@@ -1023,7 +1023,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 String              name      = getOrDefault(names, DATUM);
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
-                final GeodeticDatum datum     = datumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
+                final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
                 name = Utilities.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
                 lastName = datum.getName();
                 try {
@@ -1196,7 +1196,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (!Units.DEGREE.equals(angularUnit)) {
                     cs = replaceAngularUnit(cs, angularUnit);
                 }
-                final GeographicCRS crs = crsFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeographicCRS crs = getCRSFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1266,7 +1266,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final GeocentricCRS crs = crsFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeocentricCRS crs = getCRSFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1405,7 +1405,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final ProjectedCRS crs = crsFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
+                final ProjectedCRS crs = getCRSFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1463,7 +1463,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
                 final String              type        = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method      = operationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
+                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.
@@ -1516,7 +1516,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                         }
                     }
                 }
-                final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
+                final Conversion c = getCoordinateOperationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
                 return c;
             }
@@ -1640,7 +1640,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (!Units.METRE.equals(unit)) {
                     cs = (VerticalCS) CoordinateSystems.replaceLinearUnit(cs, unit);
                 }
-                return crsFactory().createVerticalCRS(properties(name), datum, cs);
+                return getCRSFactory().createVerticalCRS(properties(name), datum, cs);
             }
             default: {
                 return epsgFactory().createVerticalCRS(String.valueOf(epsg));

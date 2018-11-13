@@ -78,7 +78,7 @@ public class ReferencingFactoryContainer {
      *
      * @return the Datum factory (never {@code null}).
      */
-    public final DatumFactory datumFactory() {
+    public final DatumFactory getDatumFactory() {
         if (datumFactory == null) {
             datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
         }
@@ -90,7 +90,7 @@ public class ReferencingFactoryContainer {
      *
      * @return the Coordinate System factory (never {@code null}).
      */
-    public final CSFactory csFactory() {
+    public final CSFactory getCSFactory() {
         if (csFactory == null) {
             csFactory = DefaultFactories.forBuildin(CSFactory.class);
         }
@@ -102,7 +102,7 @@ public class ReferencingFactoryContainer {
      *
      * @return the Coordinate Reference System factory (never {@code null}).
      */
-    public final CRSFactory crsFactory() {
+    public final CRSFactory getCRSFactory() {
         if (crsFactory == null) {
             crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
         }
@@ -116,7 +116,7 @@ public class ReferencingFactoryContainer {
      *
      * @return the Coordinate Operation factory (never {@code null}).
      */
-    public final CoordinateOperationFactory operationFactory() {
+    public final CoordinateOperationFactory getCoordinateOperationFactory() {
         if (operationFactory == null) {
             operationFactory = CoordinateOperations.factory();
         }
@@ -128,7 +128,7 @@ public class ReferencingFactoryContainer {
      *
      * @return the Math Transform factory (never {@code null}).
      */
-    public final MathTransformFactory mtFactory() {
+    public final MathTransformFactory getMathTransformFactory() {
         if (mtFactory == null) {
             mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
         }
