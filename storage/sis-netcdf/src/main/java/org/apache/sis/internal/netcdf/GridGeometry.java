@@ -18,11 +18,15 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CRSFactory;
 import org.apache.sis.storage.DataStoreException;
 
 
@@ -115,14 +119,42 @@ public abstract class GridGeometry extends NamedElement {
      */
     protected abstract double coordinateForAxis(Variable axis, int j, int i) throws IOException, DataStoreException;
 
-    final CoordinateSystem createCoordinateSystem(final CSFactory factory) throws IOException, DataStoreException, FactoryException {
-        final Axis[] axes = getAxes();
-        final CoordinateSystemAxis[] csAxes = new CoordinateSystemAxis[axes.length];
-        for (int i=0; i<axes.length; i++) {
-            csAxes[i] = axes[i].toISO(factory);
+    /**
+     * Creates the coordinate reference system.
+     *
+     * @param  csFactory   the factory to use for creating coordinate systems.
+     * @param  crsFactory  the factory to use for creating coordinate reference systems.
+     */
+    final void createCRS(final CSFactory csFactory, final CRSFactory crsFactory)
+            throws IOException, DataStoreException, FactoryException
+    {
+        final List<Axis> spherical   = new ArrayList<>();       // Spherical latitude, longitude and radius.
+        final List<Axis> ellipsoidal = new ArrayList<>();       // Geodetic latitude and longitude.
+        final List<Axis> projected   = new ArrayList<>();       // Easting and northing.
+        final List<Axis> compound    = new ArrayList<>();       // Geoidal height and/or time.
+        final List<Axis> engineering = new ArrayList<>();       // Everything else.
+        for (final Axis axis : getAxes()) {
+            final List<Axis> addTo;
+            switch (axis.abbreviation) {
+                case 'E': case 'N':            addTo = projected;   break;
+                case 'λ': case 'φ':            addTo = ellipsoidal; break;
+                case 'θ': case 'Ω': case 'r':  addTo = spherical;   break;
+                case 'H': case 'D': case 't':  addTo = compound;    break;
+                case 'h': projected.add(axis); addTo = ellipsoidal; break;  // Can be ellipsoidal or projected.
+                default:                       addTo = engineering; break;
+            }
+            addTo.add(axis);
         }
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(CoordinateSystem.NAME_KEY, getName());
-        return factory.createEllipsoidalCS(null, csAxes[0], csAxes[1]);
+        if (!ellipsoidal.isEmpty()) {
+            final CoordinateSystemAxis[] axes = Axis.toISO(ellipsoidal, csFactory);
+            final EllipsoidalCS cs;
+            switch (axes.length) {
+                case 2: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1]);          break;
+                case 3: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1], axes[2]); break;
+                default: // TODO
+            }
+        }
     }
 }

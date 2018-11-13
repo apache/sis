@@ -26,7 +26,6 @@ import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import ucar.nc2.VariableIF;
@@ -127,18 +126,17 @@ final class GridGeometryWrapper extends GridGeometry {
              * on Earth, but we nevertheless get them now for making MetadataReader work easier.
              */
             char abbreviation = 0;
-            AttributeNames.Dimension attributeNames = null;
             final AxisType type = axis.getAxisType();
             if (type != null) switch (type) {
                 case GeoX:            abbreviation = 'x'; break;
                 case GeoY:            abbreviation = 'y'; break;
                 case GeoZ:            abbreviation = 'z'; break;
-                case Lon:             abbreviation = 'λ'; attributeNames = AttributeNames.LONGITUDE; break;
-                case Lat:             abbreviation = 'φ'; attributeNames = AttributeNames.LATITUDE; break;
+                case Lon:             abbreviation = 'λ'; break;
+                case Lat:             abbreviation = 'φ'; break;
                 case Pressure:        // Fallthrough: consider as Height
-                case Height:          abbreviation = 'H'; attributeNames = AttributeNames.VERTICAL; break;
+                case Height:          abbreviation = 'H'; break;
                 case RunTime:         // Fallthrough: consider as Time
-                case Time:            abbreviation = 't'; attributeNames = AttributeNames.TIME; break;
+                case Time:            abbreviation = 't'; break;
                 case RadialAzimuth:   abbreviation = 'θ'; break;    // Spherical longitude
                 case RadialElevation: abbreviation = 'Ω'; break;    // Spherical latitude
                 case RadialDistance:  abbreviation = 'r'; break;    // Geocentric radius
@@ -164,7 +162,7 @@ final class GridGeometryWrapper extends GridGeometry {
                  * package, we can proceed as if the dimension does not exist ('i' not incremented).
                  */
             }
-            axes[targetDim] = new Axis(this, decoder.getWrapperFor(axis), attributeNames, abbreviation,
+            axes[targetDim] = new Axis(this, decoder.getWrapperFor(axis), abbreviation,
                     axis.getPositive(), ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         return axes;

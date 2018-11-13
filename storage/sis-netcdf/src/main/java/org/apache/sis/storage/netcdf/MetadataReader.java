@@ -715,34 +715,39 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             if (axis.sourceSizes.length >= 1) {
                 setAxisLength(dim, axis.sourceSizes[0]);
             }
-            final AttributeNames.Dimension attributeNames = axis.attributeNames;
-            if (attributeNames != null) {
-                final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
-                setAxisName(dim, name);
-                final String res = stringValue(attributeNames.RESOLUTION);
-                if (res != null) try {
-                    /*
-                     * ACDD convention recommends to write units after the resolution.
-                     * Examples: "100 meters", "0.1 degree".
-                     */
-                    final int s = res.indexOf(' ');
-                    final double value;
-                    Unit<?> units = null;
-                    if (s < 0) {
-                        value = numericValue(attributeNames.RESOLUTION);
-                    } else {
-                        value = Double.parseDouble(res.substring(0, s).trim());
-                        final String symbol = res.substring(s+1).trim();
-                        if (!symbol.isEmpty()) try {
-                            units = Units.valueOf(symbol);
-                        } catch (ParserException e) {
-                            warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
-                        }
+            final AttributeNames.Dimension attributeNames;
+            switch (axis.abbreviation) {
+                case 'λ': case 'θ':           attributeNames = AttributeNames.LONGITUDE; break;
+                case 'φ': case 'Ω':           attributeNames = AttributeNames.LATITUDE;  break;
+                case 'h': case 'H': case 'D': attributeNames = AttributeNames.VERTICAL;  break;
+                case 't': case 'T':           attributeNames = AttributeNames.TIME;      break;
+                default : continue;
+            }
+            final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
+            setAxisName(dim, name);
+            final String res = stringValue(attributeNames.RESOLUTION);
+            if (res != null) try {
+                /*
+                 * ACDD convention recommends to write units after the resolution.
+                 * Examples: "100 meters", "0.1 degree".
+                 */
+                final int s = res.indexOf(' ');
+                final double value;
+                Unit<?> units = null;
+                if (s < 0) {
+                    value = numericValue(attributeNames.RESOLUTION);
+                } else {
+                    value = Double.parseDouble(res.substring(0, s).trim());
+                    final String symbol = res.substring(s+1).trim();
+                    if (!symbol.isEmpty()) try {
+                        units = Units.valueOf(symbol);
+                    } catch (ParserException e) {
+                        warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
                     }
-                    setAxisResolution(dim, value, units);
-                } catch (NumberFormatException e) {
-                    warning(e);
                 }
+                setAxisResolution(dim, value, units);
+            } catch (NumberFormatException e) {
+                warning(e);
             }
         }
         setCellGeometry(CellGeometry.AREA);

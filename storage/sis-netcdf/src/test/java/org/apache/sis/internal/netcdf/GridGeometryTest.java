@@ -18,7 +18,6 @@ package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.opengis.test.dataset.TestData;
@@ -85,8 +84,8 @@ public strictfp class GridGeometryTest extends TestCase {
         final Axis x = axes[1];
         final Axis y = axes[0];
 
-        assertSame(AttributeNames.LONGITUDE, x.attributeNames);
-        assertSame(AttributeNames.LATITUDE,  y.attributeNames);
+        assertEquals('λ', x.abbreviation);
+        assertEquals('φ', y.abbreviation);
 
         assertArrayEquals(new int[] {1}, x.sourceDimensions);
         assertArrayEquals(new int[] {0}, y.sourceDimensions);
@@ -111,10 +110,10 @@ public strictfp class GridGeometryTest extends TestCase {
         final Axis z = axes[1];
         final Axis t = axes[0];
 
-        assertNull("Not geographic",        x.attributeNames);
-        assertNull("Not geographic",        y.attributeNames);
-        assertSame(AttributeNames.VERTICAL, z.attributeNames);
-        assertSame(AttributeNames.TIME,     t.attributeNames);
+        assertEquals('x', x.abbreviation);
+        assertEquals('y', y.abbreviation);
+        assertEquals('H', z.abbreviation);
+        assertEquals('t', t.abbreviation);
 
         assertArrayEquals(new int[] {3}, x.sourceDimensions);
         assertArrayEquals(new int[] {2}, y.sourceDimensions);

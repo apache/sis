@@ -17,6 +17,9 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
@@ -25,7 +28,6 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import ucar.nc2.constants.CF;
 
@@ -43,17 +45,32 @@ import ucar.nc2.constants.CF;
  */
 final class GridGeometryInfo extends GridGeometry {
     /**
-     * Mapping from values of the {@code "_CoordinateAxisType"} attribute to the
-     * {@code AttributeNames.Dimension} constant.
+     * Mapping from values of the {@code "_CoordinateAxisType"} attribute or axis name to the abbreviation.
+     * Keys are lower cases and values are controlled vocabulary documented in {@link Axis#abbreviation}.
+     *
+     * @see #getAxisType(String)
      */
-    private static final Object[] AXIS_TYPES = {
-        "Lon",      AttributeNames.LONGITUDE,
-        "Lat",      AttributeNames.LATITUDE,
-        "Pressure", AttributeNames.VERTICAL,
-        "Height",   AttributeNames.VERTICAL,
-        "RunTime",  AttributeNames.TIME,
-        "Time",     AttributeNames.TIME
-    };
+    private static final Map<String,Character> AXIS_TYPES = new HashMap<>(26);
+    static {
+        addAxisTypes('λ', "longitude", "lon", "long");
+        addAxisTypes('φ', "latitude",  "lat");
+        addAxisTypes('H', "pressure", "height", "altitude", "elevation", "elev");
+        addAxisTypes('D', "depth");
+        addAxisTypes('t', "t", "time", "runtime");
+        addAxisTypes('x', "x", "geox");
+        addAxisTypes('y', "y", "geoy");
+        addAxisTypes('z', "z", "geoz");
+    }
+
+    /**
+     * Adds a sequence of axis types or variable names for the given abbreviation.
+     */
+    private static void addAxisTypes(final char abbreviation, final String... names) {
+        final Character c = abbreviation;
+        for (final String name : names) {
+            AXIS_TYPES.put(name, c);
+        }
+    }
 
     /**
      * Describes the input values expected by the function converting grid indices to geodetic coordinates.
@@ -94,7 +111,29 @@ final class GridGeometryInfo extends GridGeometry {
      */
     @Override
     public String getName() {
-        return getFilename();
+        final StringBuilder buffer = new StringBuilder();
+        for (final VariableInfo variable : range) {
+            if (buffer.length() != 0) {
+                buffer.append(' ');
+            }
+            buffer.append(variable.getName());
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Returns the axis type for an axis of the given name, or 0 if unknown.
+     * If non-zero, then the returned code is one of the controlled vocabulary
+     * documented in {@link Axis#abbreviation}.
+     */
+    private static char getAxisType(final String name) {
+        if (name != null) {
+            final Character abbreviation = AXIS_TYPES.get(name.toLowerCase(Locale.US));
+            if (abbreviation != null) {
+                return abbreviation;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -156,19 +195,9 @@ final class GridGeometryInfo extends GridGeometry {
         for (final SortedMap.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
             final int targetDim = entry.getValue();
             final VariableInfo axis = entry.getKey();
-            /*
-             * The AttributeNames are for ISO 19115 metadata. They are not used for locating grid cells
-             * on Earth, but we nevertheless get them now for making MetadataReader work easier.
-             */
-            AttributeNames.Dimension attributeNames = null;
-            final String type = axis.getAxisType();
-            if (type != null) {
-                for (int i=0; i<AXIS_TYPES.length; i+=2) {
-                    if (type.equalsIgnoreCase((String) AXIS_TYPES[i])) {
-                        attributeNames = (AttributeNames.Dimension) AXIS_TYPES[i+1];
-                        break;
-                    }
-                }
+            char abbreviation = getAxisType(axis.getAxisType());
+            if (abbreviation == 0) {
+                abbreviation = getAxisType(axis.getName());
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
@@ -188,8 +217,7 @@ final class GridGeometryInfo extends GridGeometry {
                     }
                 }
             }
-            char abbreviation = 0;
-            axes[targetDim] = new Axis(this, axis, attributeNames, abbreviation, axis.getAttributeString(CF.POSITIVE),
+            axes[targetDim] = new Axis(this, axis, abbreviation, axis.getAttributeString(CF.POSITIVE),
                                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         return axes;

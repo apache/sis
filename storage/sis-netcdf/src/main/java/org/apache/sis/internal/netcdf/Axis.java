@@ -30,7 +30,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
@@ -54,7 +53,10 @@ import ucar.nc2.constants.CF;
  */
 public final class Axis extends NamedElement {
     /**
-     * The abbreviation, also used as a way to identify the axis type. Possible values are:
+     * The abbreviation, also used as a way to identify the axis type.
+     * This is a controlled vocabulary: if any abbreviation is changed,
+     * then we need to search for all usages in the code and update it.
+     * Possible values are:
      * <ul>
      *   <li>λ for longitude</li>
      *   <li>φ for latitude</li>
@@ -73,19 +75,12 @@ public final class Axis extends NamedElement {
      *
      * @see AxisDirections#fromAbbreviation(char)
      */
-    private final char abbreviation;
+    public final char abbreviation;
 
     /**
      * The axis direction, or {@code null} if unknown.
      */
     private final AxisDirection direction;
-
-    /**
-     * The attributes to use for fetching dimension (in ISO 19115 sense) information, or {@code null} if unknown.
-     * Example: {@code "geospatial_lat_min"}, {@code "geospatial_lat_resolution"}, {@code DimensionNameType.ROW}.
-     * This is used by {@link org.apache.sis.storage.netcdf.MetadataReader} for information purpose only.
-     */
-    public final AttributeNames.Dimension attributeNames;
 
     /**
      * The indices of the grid dimension associated to this axis. The length of this array is often 1.
@@ -119,7 +114,6 @@ public final class Axis extends NamedElement {
      *
      * @param  owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
      * @param  axis              an implementation-dependent object representing the axis.
-     * @param  attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
      * @param  abbreviation      axis abbreviation, also identifying its type. This is a controlled vocabulary.
      * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
      * @param  sourceDimensions  the index of the grid dimension associated to this axis.
@@ -128,9 +122,8 @@ public final class Axis extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final GridGeometry owner, final Variable axis, final AttributeNames.Dimension attributeNames,
-                char abbreviation, final String direction, final int[] sourceDimensions, final int[] sourceSizes)
-                throws IOException, DataStoreException
+    public Axis(final GridGeometry owner, final Variable axis, char abbreviation, final String direction,
+                final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException
     {
         /*
          * Try to get the axis direction from one of the following sources,
@@ -174,7 +167,6 @@ public final class Axis extends NamedElement {
         }
         this.direction        = dir;
         this.abbreviation     = abbreviation;
-        this.attributeNames   = attributeNames;
         this.sourceDimensions = sourceDimensions;
         this.sourceSizes      = sourceSizes;
         this.coordinates      = axis;
@@ -226,11 +218,27 @@ public final class Axis extends NamedElement {
     }
 
     /**
+     * Creates ISO 19111 axes from the information stored in given netCDF axes.
+     *
+     * @param  axes     the axes to convert to ISO data structure.
+     * @param  factory  the factory to use for creating the coordinate system axis.
+     * @return the ISO axes.
+     */
+    static CoordinateSystemAxis[] toISO(final List<Axis> axes, final CSFactory factory) throws FactoryException {
+        final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[axes.size()];
+        for (int i=0; i<iso.length; i++) {
+            iso[i] = axes.get(i).toISO(factory);
+        }
+        return iso;
+    }
+
+    /**
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
+     * @return the ISO axis.
      */
-    final CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
+    private CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
         /*
          * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
          * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
