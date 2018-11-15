@@ -21,7 +21,7 @@ import java.util.logging.LogRecord;
 
 
 /**
- * A log record to be logged without stack trace, unless the user specified it explicitely.
+ * A log record to be logged without stack trace, unless the user specified it explicitly.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

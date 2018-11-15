@@ -16,18 +16,16 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.cs.CSFactory;
-import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.NullArgumentException;
 
 
 /**
@@ -48,6 +46,19 @@ public abstract class GridGeometry extends NamedElement {
      * @see #getAxes()
      */
     private Axis[] axes;
+
+    /**
+     * The coordinate reference system, created when first needed.
+     * May be {@code null} even after we attempted to create it.
+     *
+     * @see #getCoordinateReferenceSystem(Decoder)
+     */
+    private CoordinateReferenceSystem crs;
+
+    /**
+     * Whether we determined the {@link #crs} value, which may be {@code null}.
+     */
+    private boolean isCRSDetermined;
 
     /**
      * Constructs a new grid geometry information.
@@ -120,41 +131,37 @@ public abstract class GridGeometry extends NamedElement {
     protected abstract double coordinateForAxis(Variable axis, int j, int i) throws IOException, DataStoreException;
 
     /**
-     * Creates the coordinate reference system.
+     * Returns the coordinate reference system, or {@code null} if none.
+     * This method creates the CRS the first time it is invoked and cache the result.
      *
-     * @param  csFactory   the factory to use for creating coordinate systems.
-     * @param  crsFactory  the factory to use for creating coordinate reference systems.
+     * @param   decoder  the decoder for which CRS are constructed.
+     * @return  the CRS for this grid geometry, or {@code null}.
+     * @throws  IOException if an I/O operation was necessary but failed.
+     * @throws  DataStoreException if the CRS can not be constructed.
      */
-    final void createCRS(final CSFactory csFactory, final CRSFactory crsFactory)
-            throws IOException, DataStoreException, FactoryException
-    {
-        final List<Axis> spherical   = new ArrayList<>();       // Spherical latitude, longitude and radius.
-        final List<Axis> ellipsoidal = new ArrayList<>();       // Geodetic latitude and longitude.
-        final List<Axis> projected   = new ArrayList<>();       // Easting and northing.
-        final List<Axis> compound    = new ArrayList<>();       // Geoidal height and/or time.
-        final List<Axis> engineering = new ArrayList<>();       // Everything else.
-        for (final Axis axis : getAxes()) {
-            final List<Axis> addTo;
-            switch (axis.abbreviation) {
-                case 'E': case 'N':            addTo = projected;   break;
-                case 'λ': case 'φ':            addTo = ellipsoidal; break;
-                case 'θ': case 'Ω': case 'r':  addTo = spherical;   break;
-                case 'H': case 'D': case 't':  addTo = compound;    break;
-                case 'h': projected.add(axis); addTo = ellipsoidal; break;  // Can be ellipsoidal or projected.
-                default:                       addTo = engineering; break;
+    public final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder) throws IOException, DataStoreException {
+        if (!isCRSDetermined) try {
+            final List<CRSBuilder<?,?>> builders = new ArrayList<>();
+            final Axis[] axes = getAxes();
+            for (int i=axes.length; --i >= 0;) {                // NetCDF order is reverse of "natural" order.
+                CRSBuilder.dispatch(builders, axes[i]);
             }
-            addTo.add(axis);
-        }
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(CoordinateSystem.NAME_KEY, getName());
-        if (!ellipsoidal.isEmpty()) {
-            final CoordinateSystemAxis[] axes = Axis.toISO(ellipsoidal, csFactory);
-            final EllipsoidalCS cs;
-            switch (axes.length) {
-                case 2: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1]);          break;
-                case 3: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1], axes[2]); break;
-                default: // TODO
+            final SingleCRS[] components = new SingleCRS[builders.size()];
+            for (int i=0; i < components.length; i++) {
+                components[i] = builders.get(i).build(decoder);
             }
+            switch (components.length) {
+                case 0:  break;                                 // Leave 'crs' to null.
+                case 1:  crs = components[0]; break;
+                default: crs = decoder.getCRSFactory().createCompoundCRS(
+                                        Collections.singletonMap(CoordinateSystem.NAME_KEY, getName()), components);
+            }
+            isCRSDetermined = true;
+        } catch (FactoryException | NullArgumentException ex) {
+            // TODO: avoid reporting the full exception stack trace (maybe leverage QuietLogRecord).
+            warning(decoder.listeners, GridGeometry.class, "getCoordinateReferenceSystem", ex, null,
+                    Resources.Keys.CanNotCreateCRS_3, decoder.getFilename(), getName(), ex.getLocalizedMessage());
         }
+        return crs;
     }
 }

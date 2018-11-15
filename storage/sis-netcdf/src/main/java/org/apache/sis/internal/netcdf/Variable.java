@@ -16,16 +16,14 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Locale;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
@@ -75,7 +73,7 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the name of the netCDF file containing this variable, or {@code null} if unknown.
-     * This is used for information purpose only.
+     * This is used for information purpose or error message formatting only.
      *
      * @return name of the netCDF file containing this variable, or {@code null} if unknown.
      */
@@ -97,7 +95,8 @@ public abstract class Variable extends NamedElement {
     public abstract String getDescription();
 
     /**
-     * Returns the unit of measurement as a string, or {@code null} if none.
+     * Returns the unit of measurement as a string, or {@code null} or an empty string if none.
+     * The empty string can not be used for meaning "dimensionless unit"; some text is required.
      *
      * <p>Note: the UCAR library has its own API for handling units (e.g. {@link ucar.nc2.units.SimpleUnit}).
      * However as of November 2018, this API does not allow us to identify the quantity type except for some
@@ -118,11 +117,11 @@ public abstract class Variable extends NamedElement {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
             final String symbols = getUnitsString();
-            if (symbols != null) try {
+            if (symbols != null && !symbols.isEmpty()) try {
                 unit = Units.valueOf(symbols);
-            } catch (ParserException e) {
-                listeners.warning(Errors.getResources(listeners.getLocale())
-                        .getString(Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols), e);
+            } catch (ParserException ex) {
+                warning(listeners, Variable.class, "getUnit", ex, Errors.getResources(listeners.getLocale()),
+                        Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
             }
         }
         return unit;
@@ -308,12 +307,19 @@ public abstract class Variable extends NamedElement {
     public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
 
     /**
+     * Returns the locale to use for warnings and error messages.
+     */
+    final Locale getLocale() {
+        return listeners.getLocale();
+    }
+
+    /**
      * Returns the resources to use for warnings or error messages.
      *
-     * @return the resources for the locales specified by the given argument.
+     * @return the resources for the locales specified to the decoder.
      */
     protected final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
+        return Resources.forLocale(getLocale());
     }
 
     /**
@@ -325,11 +331,7 @@ public abstract class Variable extends NamedElement {
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
     protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
-        final LogRecord record = resources().getLogRecord(Level.WARNING, key, arguments);
-        record.setLoggerName(Modules.NETCDF);
-        record.setSourceClassName(caller.getCanonicalName());
-        record.setSourceMethodName(method);
-        listeners.warning(record);
+        warning(listeners, caller, method, null, null, key, arguments);
     }
 
     /**

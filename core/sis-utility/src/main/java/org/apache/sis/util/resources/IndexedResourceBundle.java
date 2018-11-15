@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
@@ -425,6 +426,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             } else if (element instanceof Range<?>) {
                 final Range<?> range = (Range<?>) element;
                 replacement = new RangeFormat(getLocale(), range.getElementType()).format(range);
+            } else if (element instanceof Unit<?>) {
+                String s = element.toString();
+                if (s.isEmpty()) s = "1";
+                replacement = s;
             }
             /*
              * No need to check for Numbers or Dates instances, since they are

@@ -70,6 +70,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotComputeVariablePosition_2 = 6;
 
         /**
+         * Can not create the Coordinate Reference System for grid geometry “{1}” in the “{0}” netCDF
+         * file. The reason is: {2}
+         */
+        public static final short CanNotCreateCRS_3 = 11;
+
+        /**
          * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;
@@ -88,6 +94,12 @@ public final class Resources extends IndexedResourceBundle {
          * The declared size of variable “{1}” in netCDF file “{0}” is {2} bytes greater than expected.
          */
         public static final short MismatchedVariableSize_3 = 8;
+
+        /**
+         * Reference system of type ‘{1}’ can not have {2} axes. The axes found in the “{0}” netCDF
+         * file are: {3}.
+         */
+        public static final short UnexpectedAxisCount_4 = 10;
 
         /**
          * Variable “{1}” in file “{0}” has a dimension “{3}” while we expected “{2}”.

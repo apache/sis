@@ -47,6 +47,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.WarningListeners;
@@ -67,6 +68,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
@@ -147,13 +149,6 @@ final class MetadataReader extends MetadataBuilder {
     private static final char QUOTE = '"';
 
     /**
-     * The vertical coordinate reference system to be given to the object created by {@link #addExtent()}.
-     *
-     * @todo Should be set to {@code CommonCRS.MEAN_SEA_LEVEL}.
-     */
-    private static final VerticalCRS VERTICAL_CRS = null;
-
-    /**
      * The source of netCDF attributes from which to infer ISO metadata.
      * This source is set at construction time.
      *
@@ -184,6 +179,12 @@ final class MetadataReader extends MetadataBuilder {
      * are often identical except for their role attribute.
      */
     private transient Responsibility pointOfContact;
+
+    /**
+     * The vertical coordinate reference system to be given to the object created by {@link #addExtent()}.
+     * This is set to the first vertical CRS found.
+     */
+    private VerticalCRS verticalCRS;
 
     /**
      * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
@@ -553,7 +554,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds a {@code DataIdentification/Citation} element if at least one of the required attributes is non-null.
-     * This method will initialize the {@link #pointOfContact} field, than reuse it if non-null and suitable.
+     * This method will initialize the {@link #pointOfContact} field, then reuses it if non-null and suitable.
      *
      * <p>This method opportunistically collects the name of all publishers.
      * Those names are useful to {@link #addIdentificationInfo(Set)}.</p>
@@ -687,9 +688,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
         try {
-            setFormat("NetCDF");
+            setFormat(NetcdfStoreProvider.NAME);
         } catch (MetadataStoreException e) {
-            addFormatName("NetCDF");
+            addFormatName(NetcdfStoreProvider.NAME);
             warning(e);
         }
     }
@@ -756,6 +757,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     /**
      * Adds the extent declared in the current group. For more consistent results, the caller should restrict
      * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
+     * The {@link #verticalCRS} field should have been set before to invoke this method.
      *
      * @return {@code true} if at least one numerical value has been added.
      */
@@ -776,7 +778,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * If at least one vertical coordinate is available, add a VerticalExtent.
          */
         if (fillExtent(VERTICAL, Units.METRE, null, extent, 0)) {
-            addVerticalExtent(extent[0], extent[1], VERTICAL_CRS);
+            addVerticalExtent(extent[0], extent[1], verticalCRS);
             hasExtent = true;
         }
         /*
@@ -1018,9 +1020,15 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Metadata read() throws IOException, DataStoreException {
+        for (final GridGeometry cs : decoder.getGridGeometries()) {
+            final CoordinateReferenceSystem crs = cs.getCoordinateReferenceSystem(decoder);
+            addReferenceSystem(crs);
+            if (verticalCRS == null) {
+                verticalCRS = CRS.getVerticalComponent(crs, false);
+            }
+        }
         addResourceScope(ScopeCode.DATASET, null);
-        Set<InternationalString> publisher = addCitation();
-        addIdentificationInfo(publisher);
+        addIdentificationInfo(addCitation());
         for (final String service : SERVICES) {
             final String name = stringValue(service);
             if (name != null) {

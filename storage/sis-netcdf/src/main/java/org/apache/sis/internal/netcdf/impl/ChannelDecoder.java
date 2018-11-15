@@ -243,7 +243,7 @@ public final class ChannelDecoder extends Decoder {
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "netCDF", getFilename()));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, FORMAT_NAME, getFilename()));
         }
         /*
          * Check the version number.
@@ -252,7 +252,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, "netCDF", version));
+            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, FORMAT_NAME, version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -355,7 +355,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a netCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreContentException malformedHeader() {
-        return new DataStoreContentException(listeners.getLocale(), "netCDF", getFilename(), null);
+        return new DataStoreContentException(listeners.getLocale(), FORMAT_NAME, getFilename(), null);
     }
 
     /**

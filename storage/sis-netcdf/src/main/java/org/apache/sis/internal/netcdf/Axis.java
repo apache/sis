@@ -33,6 +33,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -74,6 +75,7 @@ public final class Axis extends NamedElement {
      * </ul>
      *
      * @see AxisDirections#fromAbbreviation(char)
+     * @see CRSBuilder#dispatch(List, Axis)
      */
     public final char abbreviation;
 
@@ -91,7 +93,7 @@ public final class Axis extends NamedElement {
      * for ISO 19115 {@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}
      * metadata property.
      */
-    public final int[] sourceDimensions;
+    final int[] sourceDimensions;
 
     /**
      * The number of cell elements along the source grid dimensions. The length of this array shall be
@@ -104,7 +106,7 @@ public final class Axis extends NamedElement {
      * Values of coordinates on this axis for given grid indices. This variables is often one-dimensional,
      * but can also be two-dimensional.
      */
-    private final Variable coordinates;
+    final Variable coordinates;
 
     /**
      * Constructs a new axis associated to an arbitrary number of grid dimension.
@@ -156,7 +158,7 @@ public final class Axis extends NamedElement {
             }
         }
         if (!isConsistent) {
-            axis.warning(owner.getClass(), "getAxes",               // Caller of this constructor.
+            axis.warning(GridGeometry.class, "getAxes",             // Caller of this constructor.
                          Resources.Keys.AmbiguousAxisDirection_4, axis.getFilename(), axis.getName(), dir, check);
             if (isSigned) {
                 if (AxisDirections.isOpposite(dir)) {
@@ -218,27 +220,12 @@ public final class Axis extends NamedElement {
     }
 
     /**
-     * Creates ISO 19111 axes from the information stored in given netCDF axes.
-     *
-     * @param  axes     the axes to convert to ISO data structure.
-     * @param  factory  the factory to use for creating the coordinate system axis.
-     * @return the ISO axes.
-     */
-    static CoordinateSystemAxis[] toISO(final List<Axis> axes, final CSFactory factory) throws FactoryException {
-        final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[axes.size()];
-        for (int i=0; i<iso.length; i++) {
-            iso[i] = axes.get(i).toISO(factory);
-        }
-        return iso;
-    }
-
-    /**
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
      * @return the ISO axis.
      */
-    private CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
+    final CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
         /*
          * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
          * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
@@ -272,12 +259,21 @@ public final class Axis extends NamedElement {
             properties.put(CoordinateSystemAxis.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
         }
         /*
-         * Axis abbreviation, direction and unit of measurement are mandatory.
-         * If any of them is null, creation of CoordinateSystemAxis is likely
-         * to fail with an InvalidGeodeticParameterException. But we let the
-         * factory to choose, in case users specify their own factory.
+         * Axis abbreviation, direction and unit of measurement are mandatory. If any of them is null,
+         * creation of CoordinateSystemAxis is likely to fail with an InvalidGeodeticParameterException.
+         * We provide default values for the most well-accepted values and leave other values to null.
+         * Those null values can be accepted if users specify their own factory.
          */
-        final Unit<?> unit = coordinates.getUnit();
+        Unit<?> unit = coordinates.getUnit();
+        if (unit == null) {
+            switch (abbreviation) {
+                /*
+                 * TODO: consider moving those default values in a separated class,
+                 * for example a netCDF-specific CSFactory, for allowing users to override.
+                 */
+                case 'λ': case 'φ': unit = Units.DEGREE; break;
+            }
+        }
         final String abbr;
         if (abbreviation != 0) {
             abbr = Character.toString(abbreviation).intern();

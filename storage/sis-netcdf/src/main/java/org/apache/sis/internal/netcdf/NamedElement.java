@@ -16,8 +16,14 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.StringJoiner;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
@@ -44,6 +50,23 @@ public abstract class NamedElement {
     public abstract String getName();
 
     /**
+     * Creates a name for a {@code NamedElement} made of other components.
+     * Current implementation returns a separated list of component names.
+     *
+     * @param  components  the component of the named object.
+     * @param  count       number of valid elements in the {@code components} array.
+     * @param  delimiter   the separator between component names.
+     * @return a name for an object composed of the given components.
+     */
+    protected static String listNames(final NamedElement[] components, final int count, final String delimiter) {
+        final StringJoiner joiner = new StringJoiner(delimiter);
+        for (int i=0; i<count; i++) {
+            joiner.add(components[i].getName());
+        }
+        return joiner.toString();
+    }
+
+    /**
      * Returns {@code true} if the given names are considered equals for the purpose of netCDF decoder.
      * Two names are considered similar if they are equal ignoring case and characters that are not valid
      * for an Unicode identifier.
@@ -54,6 +77,33 @@ public abstract class NamedElement {
      */
     protected static boolean similar(final CharSequence s1, final CharSequence s2) {
         return CharSequences.equalsFiltered(s1, s2, Characters.Filter.UNICODE_IDENTIFIER, true);
+    }
+
+    /**
+     * Reports a warning to the specified listeners.
+     *
+     * @param  listeners  the listeners where to report the warning.
+     * @param  caller     the caller class to report, preferably a public class.
+     * @param  method     the caller method to report, preferable a public method.
+     * @param  exception  the exception that occurred, or {@code null} if none.
+     * @param  resources  the resources bundle for {@code key} and {@code arguments}, or {@code null} for {@link Resources}.
+     * @param  key        one or {@link Resources.Keys} constants.
+     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     */
+    static void warning(final WarningListeners<?> listeners, final Class<?> caller, final String method,
+            final Exception exception, IndexedResourceBundle resources, final short key, final Object... arguments)
+    {
+        if (resources == null) {
+            resources = Resources.forLocale(listeners.getLocale());
+        }
+        final LogRecord record = resources.getLogRecord(Level.WARNING, key, arguments);
+        record.setLoggerName(Modules.NETCDF);
+        record.setSourceClassName(caller.getCanonicalName());
+        record.setSourceMethodName(method);
+        if (exception != null) {
+            record.setThrown(exception);
+        }
+        listeners.warning(record);
     }
 
     /**

@@ -105,7 +105,9 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the unit of measurement as a string, or {@code null} if none.
+     * Returns the unit of measurement as a string, or an empty strong if none.
+     * Note that the UCAR library represents missing unit by an empty string,
+     * which is ambiguous with dimensionless unit.
      */
     @Override
     protected String getUnitsString() {

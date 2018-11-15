@@ -24,6 +24,7 @@ import java.lang.reflect.Array;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
+import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
@@ -204,7 +205,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                     offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
                 } else if (i != 0) {
                     // Unlimited dimension, if any, must be first in a netCDF 3 classic format.
-                    throw new DataStoreContentException(listeners.getLocale(), "netCDF", input.filename, null);
+                    throw new DataStoreContentException(listeners.getLocale(), Decoder.FORMAT_NAME, input.filename, null);
                 }
             }
             reader = new HyperRectangleReader(dataType.number, input, offset);

@@ -111,14 +111,7 @@ final class GridGeometryInfo extends GridGeometry {
      */
     @Override
     public String getName() {
-        final StringBuilder buffer = new StringBuilder();
-        for (final VariableInfo variable : range) {
-            if (buffer.length() != 0) {
-                buffer.append(' ');
-            }
-            buffer.append(variable.getName());
-        }
-        return buffer.toString();
+        return listNames(range, range.length, " ");
     }
 
     /**
