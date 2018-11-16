@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.Date;
+import java.time.Instant;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -42,8 +43,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * The Apache SIS implementation provides the following methods in addition to the OGC/ISO properties:
  *
  * <ul>
- *   <li>{@link #toDate(double)} for converting a temporal position to a {@link Date}.</li>
- *   <li>{@link #toValue(Date)} for converting a {@link Date} to a temporal position.</li>
+ *   <li>{@link #toInstant(double)} for converting a temporal position to a {@link Date}.</li>
+ *   <li>{@link #toValue(Instant)} for converting a {@link Instant} to a temporal position.</li>
  * </ul>
  *
  * <p><b>Used with datum type:</b>
@@ -58,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
@@ -209,7 +210,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
-     * Initialize the fields required for {@link #toDate} and {@link #toValue} operations.
+     * Initialize the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
      */
     private void initializeConverter() {
         origin   = datum.getOrigin().getTime();
@@ -257,6 +258,27 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * Convert the given value into an instant object.
+     * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
+     *
+     * <p>This method is the converse of {@link #toValue(Instant)}.</p>
+     *
+     * @param  value  a value in this axis unit.
+     * @return the value as an instant, or {@code null} if the given value is NaN or infinite.
+     *
+     * @since 1.0
+     */
+    public Instant toInstant(final double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return null;
+        }
+        if (toMillis == null) {
+            initializeConverter();
+        }
+        return Instant.ofEpochMilli(Math.round(toMillis.convert(value)) + origin);
+    }
+
+    /**
      * Convert the given value into a {@link Date} object.
      * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
      *
@@ -264,7 +286,10 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @param  value  a value in this axis unit.
      * @return the value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
+     *
+     * @deprecated Replaced by {@link #toInstant(double)}.
      */
+    @Deprecated
     public Date toDate(final double value) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             return null;
@@ -276,6 +301,27 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * Convert the given instant into a value in this axis unit.
+     * If the given instant is {@code null}, then this method returns {@link Double#NaN NaN}.
+     *
+     * <p>This method is the converse of {@link #toInstant(double)}.</p>
+     *
+     * @param  time  the value as an instant, or {@code null}.
+     * @return the value in this axis unit, or {@link Double#NaN NaN} if the given instant is {@code null}.
+     *
+     * @since 1.0
+     */
+    public double toValue(final Instant time) {
+        if (time == null) {
+            return Double.NaN;
+        }
+        if (toMillis == null) {
+            initializeConverter();
+        }
+        return toMillis.inverse().convert(time.toEpochMilli() - origin);
+    }
+
+    /**
      * Convert the given {@linkplain Date date} into a value in this axis unit.
      * If the given time is {@code null}, then this method returns {@link Double#NaN NaN}.
      *
@@ -283,7 +329,10 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @param  time  the value as a {@linkplain Date date}, or {@code null}.
      * @return the value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
+     *
+     * @deprecated Replaced by {@link #toValue(Instant)}.
      */
+    @Deprecated
     public double toValue(final Date time) {
         if (time == null) {
             return Double.NaN;

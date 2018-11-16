@@ -92,6 +92,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
@@ -231,8 +232,8 @@ public final class ServicesForMetadata extends ReferencingServices {
         final int dim = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), temporalCRS.getCoordinateSystem());
         assert dim >= 0 : crs; // Should not fail since 'temporalCRS' has been extracted from 'crs' by the caller.
         final DefaultTemporalCRS converter = DefaultTemporalCRS.castOrCopy(temporalCRS);
-        target.setBounds(converter.toDate(envelope.getMinimum(dim)),
-                         converter.toDate(envelope.getMaximum(dim)));
+        target.setBounds(TemporalUtilities.toDate(converter.toInstant(envelope.getMinimum(dim))),
+                         TemporalUtilities.toDate(converter.toInstant(envelope.getMaximum(dim))));
     }
 
     /**
