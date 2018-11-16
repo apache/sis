@@ -18,10 +18,15 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Locale;
 import java.util.Collection;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
+import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
+import java.time.format.DateTimeParseException;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
@@ -40,6 +45,11 @@ import org.apache.sis.util.resources.Errors;
  */
 public abstract class Variable extends NamedElement {
     /**
+     * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
+     */
+    private static final Pattern TIME_PATTERN = Pattern.compile("(.+)\\Wsince\\W(.+)", Pattern.CASE_INSENSITIVE);
+
+    /**
      * Minimal number of dimension for accepting a variable as a coverage variable.
      */
     public static final int MIN_DIMENSION = 2;
@@ -50,6 +60,12 @@ public abstract class Variable extends NamedElement {
      * never requested by the user.
      */
     private Unit<?> unit;
+
+    /**
+     * If the unit is a temporal unit of the form "days since 1970-01-01 00:00:00", the epoch.
+     * Otherwise {@code null}.
+     */
+    private Instant epoch;
 
     /**
      * Whether an attempt to parse the unit has already be done. This is used for avoiding
@@ -116,15 +132,37 @@ public abstract class Variable extends NamedElement {
     public final Unit<?> getUnit() {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
-            final String symbols = getUnitsString();
+            String symbols = getUnitsString();
             if (symbols != null && !symbols.isEmpty()) try {
+                final Matcher parts = TIME_PATTERN.matcher(symbols);
+                if (parts.matches()) {
+                    /*
+                     * If we enter in this block, the unit is of the form "days since 1970-01-01 00:00:00".
+                     * The TIME_PATTERN splits the string in two parts, "days" and "1970-01-01 00:00:00".
+                     * The parse method will replace the space between date and time by 'T' letter.
+                     */
+                    epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+                    symbols = parts.group(1);
+                }
                 unit = Units.valueOf(symbols);
-            } catch (ParserException ex) {
+            } catch (ParserException | DateTimeParseException ex) {
                 warning(listeners, Variable.class, "getUnit", ex, Errors.getResources(listeners.getLocale()),
                         Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
             }
         }
         return unit;
+    }
+
+    /**
+     * Returns the epoch of the temporal unit, or {@code null} if none.
+     *
+     * @return the epoch, or {@code null}.
+     */
+    final Instant getEpoch() {
+        if (epoch == null) {
+            getUnit();          // Epoch calculation as a side-effect.
+        }
+        return epoch;
     }
 
     /**

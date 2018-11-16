@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.metadata.Identifier;
@@ -559,7 +560,7 @@ public enum CommonCRS {
         GeographicCRS object = cachedNormalized;
         if (object == null) {
             DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
-            crs = crs.forConvention(AxesConvention.RIGHT_HANDED); // Equivalent to NORMALIZED in our cases, but faster.
+            crs = crs.forConvention(AxesConvention.RIGHT_HANDED);       // Equivalent to NORMALIZED in our cases, but faster.
             synchronized (this) {
                 object = cachedNormalized;
                 if (object == null) {
@@ -1366,6 +1367,7 @@ public enum CommonCRS {
 
         /**
          * Creates the coordinate system associated to this vertical object.
+         * This is used only for CRS not identified by an EPSG code.
          * This method does not cache the coordinate system.
          */
         private VerticalCS cs() {
@@ -1479,7 +1481,7 @@ public enum CommonCRS {
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.4
+     * @version 1.0
      * @since   0.4
      * @module
      */
@@ -1575,6 +1577,27 @@ public enum CommonCRS {
          */
         synchronized void clear() {
             cached = null;
+        }
+
+        /**
+         * Returns the enumeration value for the given epoch, or {@code null} if none.
+         * If the epoch is January 1st, 1970, then this method returns {@link #UNIX}.
+         *
+         * @param  epoch  the epoch for which to get an enumeration value, or {@code null}.
+         * @return the enumeration value for the given epoch, or {@code null} if none.
+         *
+         * @since 1.0
+         */
+        public static Temporal forEpoch(final Instant epoch) {
+            if (epoch != null) {
+                final long e = epoch.toEpochMilli();
+                for (final Temporal candidate : values()) {
+                    if (candidate.epoch == e) {
+                        return candidate;
+                    }
+                }
+            }
+            return null;
         }
 
         /**

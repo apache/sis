@@ -82,7 +82,7 @@ public final class Axis extends NamedElement {
     /**
      * The axis direction, or {@code null} if unknown.
      */
-    private final AxisDirection direction;
+    final AxisDirection direction;
 
     /**
      * The indices of the grid dimension associated to this axis. The length of this array is often 1.
@@ -220,6 +220,23 @@ public final class Axis extends NamedElement {
     }
 
     /**
+     * Returns the unit of measurement of this axis, or {@code null} if unknown.
+     *
+     * @return the unit of measurement, or {@code null} if unknown.
+     */
+    public final Unit<?> getUnit() {
+        return coordinates.getUnit();
+    }
+
+    /**
+     * Returns {@code true} if the given axis specifies the same direction and unit of measurement than this axis.
+     * This is used for testing is a predefined axis can be used instead than invoking {@link #toISO(CSFactory)}.
+     */
+    final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
+        return axis.getDirection().equals(direction) && axis.getUnit().equals(getUnit());
+    }
+
+    /**
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
@@ -264,7 +281,7 @@ public final class Axis extends NamedElement {
          * We provide default values for the most well-accepted values and leave other values to null.
          * Those null values can be accepted if users specify their own factory.
          */
-        Unit<?> unit = coordinates.getUnit();
+        Unit<?> unit = getUnit();
         if (unit == null) {
             switch (abbreviation) {
                 /*
