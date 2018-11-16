@@ -20,6 +20,7 @@ import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import javax.measure.Unit;
 import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
@@ -27,12 +28,15 @@ import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.VariableEnhanced;
+import ucar.nc2.units.SimpleUnit;
+import ucar.nc2.units.DateUnit;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -112,6 +116,46 @@ final class VariableWrapper extends Variable {
     @Override
     protected String getUnitsString() {
         return variable.getUnitsString();
+    }
+
+    /**
+     * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
+     * This method is called by {@link #getUnit()}. This implementation delegates the work to the UCAR
+     * library and converts the result to {@link Unit} and {@link java.time.Instant} objects.
+     */
+    @Override
+    protected Unit<?> parseUnit(final String symbols) throws Exception {
+        if (TIME_PATTERN.matcher(symbols).matches()) {
+            /*
+             * UCAR library has to methods for getting epoch: getDate() and getDateOrigin().
+             * The former takes in account numbers that may appear before the unit, for example
+             * "2 hours since 1970-01-01 00:00:00". If there is no such number, then the two methods
+             * are equivalent.
+             */
+            final DateUnit temporal = new DateUnit(symbols);
+            epoch = temporal.getDate().toInstant();
+            return Units.SECOND.multiply(temporal.getTimeUnit().getValueInSeconds());
+        } else {
+            /*
+             * For all other units, we get the base unit (meter, radian, Kelvin, etc.) and multiply by the scale factor.
+             * We also need to take the offset in account for constructing the °C unit as a unit shifted from its Kelvin
+             * base. The UCAR library does not provide method giving directly this information, so we infer it indirectly
+             * by converting value zero.
+             */
+            final SimpleUnit ucar = SimpleUnit.factoryWithExceptions(symbols);
+            if (ucar.isUnknownUnit()) {
+                return Units.valueOf(symbols);
+            }
+            final String baseUnit = ucar.getUnitString();
+            Unit<?> unit = Units.valueOf(baseUnit);
+            final double scale  = ucar.getValue();
+            final double offset = ucar.convertTo(0, SimpleUnit.factoryWithExceptions(baseUnit));
+            unit = unit.shift(offset);
+            if (!Double.isNaN(scale)) {
+                unit = unit.multiply(scale);
+            }
+            return unit;
+        }
     }
 
     /**

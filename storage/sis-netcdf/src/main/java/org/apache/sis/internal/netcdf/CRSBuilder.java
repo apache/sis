@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
-import java.util.Date;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
@@ -35,6 +34,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultSphericalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -534,13 +534,15 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /** Creates a {@link VerticalDatum} for <cite>"Unknown datum based on …"</cite>. */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
-            final Instant epoch = getFirstAxis().coordinates.getEpoch();
+            final Axis axis = getFirstAxis();
+            axis.getUnit();                                     // Force epoch parsing if not already done.
+            Instant epoch = axis.coordinates.epoch;
             final CommonCRS.Temporal c = CommonCRS.Temporal.forEpoch(epoch);
             if (c != null) {
                 datum = c.datum();
             } else {
                 properties = properties("Time since " + epoch);
-                datum = factory.createTemporalDatum(properties, (epoch != null) ? Date.from(epoch) : null);
+                datum = factory.createTemporalDatum(properties, TemporalUtilities.toDate(epoch));
             }
         }
 

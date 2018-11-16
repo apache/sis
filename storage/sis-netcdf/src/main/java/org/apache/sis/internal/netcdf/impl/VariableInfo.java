@@ -19,8 +19,10 @@ package org.apache.sis.internal.netcdf.impl;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.IOException;
+import java.util.regex.Matcher;
 import java.lang.reflect.Array;
+import java.io.IOException;
+import javax.measure.Unit;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
@@ -31,10 +33,12 @@ import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
 
@@ -346,6 +350,25 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     protected String getUnitsString() {
         return getAttributeString(CDM.UNITS);
+    }
+
+    /**
+     * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
+     * This method is called by {@link #getUnit()}.
+     */
+    @Override
+    protected Unit<?> parseUnit(String symbols) {
+        final Matcher parts = TIME_PATTERN.matcher(symbols);
+        if (parts.matches()) {
+            /*
+             * If we enter in this block, the unit is of the form "days since 1970-01-01 00:00:00".
+             * The TIME_PATTERN splits the string in two parts, "days" and "1970-01-01 00:00:00".
+             * The parse method will replace the space between date and time by 'T' letter.
+             */
+            epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+            symbols = parts.group(1);
+        }
+        return Units.valueOf(symbols);
     }
 
     /**
