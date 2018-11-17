@@ -93,6 +93,27 @@ final class GridGeometryWrapper extends GridGeometry {
     }
 
     /**
+     * Returns the number of cells along each source dimension, in "natural" order.
+     * This method may return {@code null} if the grid shape can not be determined.
+     *
+     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order, or {@code null}.
+     */
+    @Override
+    protected long[] getShape() {
+        final List<Dimension> domain = netcdfCS.getDomain();
+        final int    dim  = domain.size();
+        final long[] size = new long[dim];
+        for (int i=0; i<dim; i++) {
+            final int length = domain.get(i).getLength();
+            if (length <= 0) {
+                return null;
+            }
+            size[(dim-1) - i] = length;
+        }
+        return size;
+    }
+
+    /**
      * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
      * is associated.
      *

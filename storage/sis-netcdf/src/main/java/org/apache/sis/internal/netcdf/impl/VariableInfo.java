@@ -576,7 +576,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
             final Region region = new Region(upper, lower, upper, subsampling);
             applyUnlimitedDimensionStride(region);
-            values = Vector.create(reader.read(region), dataType.isUnsigned).compress(0);
+            values = createDecimalVector(reader.read(region), dataType.isUnsigned).compress(0);
         }
         return values;
     }

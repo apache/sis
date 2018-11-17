@@ -21,9 +21,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.metadata.spatial.DimensionNameType;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
 
@@ -83,6 +88,14 @@ public abstract class GridGeometry extends NamedElement {
      * @return number of CRS dimensions.
      */
     public abstract int getTargetDimensions();
+
+    /**
+     * Returns the number of cells along each source dimension, in "natural" order.
+     * This method may return {@code null} if the grid shape can not be determined.
+     *
+     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order, or {@code null}.
+     */
+    protected abstract long[] getShape();
 
     /**
      * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
@@ -163,5 +176,73 @@ public abstract class GridGeometry extends NamedElement {
                     Resources.Keys.CanNotCreateCRS_3, decoder.getFilename(), getName(), ex.getLocalizedMessage());
         }
         return crs;
+    }
+
+    /**
+     * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
+     *
+     * @param   decoder  the decoder for which grid geometries are constructed.
+     * @throws  IOException if an I/O operation was necessary but failed.
+     * @throws  DataStoreException if the CRS can not be constructed.
+     */
+    @SuppressWarnings("fallthrough")
+    public final void createGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+        final Axis[] axes = getAxes();      // In netCDF order (reverse of "natural" order).
+        /*
+         * Build the grid extent if the shape is available. The shape may not be available
+         * if a dimension has unlimited length. The dimension names are informative only.
+         */
+        final GridExtent extent;
+        final long[] high = getShape();
+        if (high != null) {
+            final DimensionNameType[] names = new DimensionNameType[high.length];
+            switch (names.length) {
+                default: names[1] = DimensionNameType.ROW;      // Fall through
+                case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
+                case 0:  break;
+            }
+            for (final Axis axis : axes) {
+                if (axis.sourceDimensions.length == 1) {
+                    final DimensionNameType name;
+                    if (AxisDirections.isVertical(axis.direction)) {
+                        name = DimensionNameType.VERTICAL;
+                    } else if (AxisDirections.isTemporal(axis.direction)) {
+                        name = DimensionNameType.TIME;
+                    } else {
+                        continue;
+                    }
+                    final int dim = axis.sourceDimensions[0];
+                    if (dim >= 0 && dim < names.length) {
+                        names[names.length - 1 - dim] = name;
+                    }
+                }
+            }
+            extent = new GridExtent(names, new long[high.length], high, false);
+        } else {
+            extent = null;
+        }
+        /*
+         * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
+         * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
+         * The order of dimensions in the transform is the reverse of the netCDF axis order.
+         */
+        int srcEnd = getSourceDimensions();
+        int tgtEnd = getTargetDimensions();
+        final Matrix gridToCRS = Matrices.createZero(tgtEnd-- + 1, srcEnd-- + 1);
+        for (int i=axes.length; --i >= 0;) {
+            final Axis axis = axes[i];
+            final int tgtDim = tgtEnd - i;
+            if (axis.sourceDimensions.length == 1) {
+                final int srcDim = srcEnd - axis.sourceDimensions[0];
+                if (axis.coordinates.trySetTransform(gridToCRS, srcDim, tgtDim)) {
+                    continue;
+                }
+            }
+            for (int srcDim : axis.sourceDimensions) {
+                gridToCRS.setElement(tgtDim, srcEnd - srcDim, 1);
+                // TODO: prepare non-linear transform here for later concatenation.
+            }
+        }
+        // TODO
     }
 }

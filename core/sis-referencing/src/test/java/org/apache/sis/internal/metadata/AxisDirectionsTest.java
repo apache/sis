@@ -182,6 +182,16 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link AxisDirections#isTemporal(AxisDirection)}.
+     */
+    @Test
+    public void testIsTemporal() {
+        for (final AxisDirection dir : AxisDirection.values()) {
+            assertEquals(dir.name(), dir == FUTURE || dir == PAST, AxisDirections.isTemporal(dir));
+        }
+    }
+
+    /**
      * Tests {@link AxisDirections#isGeocentric(AxisDirection)}.
      */
     @Test

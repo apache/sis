@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.awt.image.DataBuffer;
 import java.time.Instant;
 import javax.measure.Unit;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.math.Vector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
@@ -326,6 +327,60 @@ public abstract class Variable extends NamedElement {
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
+
+    /**
+     * Wraps the given data in a {@link Vector} with the assumption that accuracy in base 10 matters.
+     * This method is suitable for coordinate axis variables, but should not be used for the main data.
+     *
+     * @param  data        the data to wrap in a vector.
+     * @param  isUnsigned  whether the data type is an unsigned type.
+     * @return vector wrapping the given data.
+     */
+    protected static Vector createDecimalVector(final Object data, final boolean isUnsigned) {
+        if (data instanceof float[]) {
+            return Vector.createForDecimal((float[]) data);
+        } else {
+            return Vector.create(data, isUnsigned);
+        }
+    }
+
+    /**
+     * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
+     * This method is invoked only for variables that represent a coordinate system axis.
+     * Setting the coefficient is possible only if values in this variable are regular,
+     * i.e. the difference between two consecutive values is constant.
+     *
+     * @param  gridToCRS  the matrix in which to set scale and offset coefficient.
+     * @param  srcDim     the source dimension, which is a dimension of the grid. Identifies the matrix column of scale factor.
+     * @param  tgtDim     the target dimension, which is a dimension of the CRS.  Identifies the matrix row of scale factor.
+     * @return whether this method successfully set the scale and offset coefficients.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim)
+            throws IOException, DataStoreException
+    {
+        final Vector values = read();
+        final int n = values.size() - 1;
+        if (n >= 1) {
+            final double first = values.doubleValue(0);
+            final double last  = values.doubleValue(n);
+            double error;
+            if (getDataType() == DataType.FLOAT) {
+                error = Math.max(Math.ulp((float) first), Math.ulp((float) last));
+            } else {
+                error = Math.max(Math.ulp(first), Math.ulp(last));
+            }
+            error = Math.max(Math.ulp(last - first), error) / n;
+            final Number increment = values.increment(error);
+            if (increment != null) {
+                gridToCRS.setElement(tgtDim, srcDim, increment.doubleValue());
+                gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, first);
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Returns the locale to use for warnings and error messages.

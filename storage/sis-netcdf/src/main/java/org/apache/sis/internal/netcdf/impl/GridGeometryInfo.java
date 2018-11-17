@@ -39,6 +39,7 @@ import ucar.nc2.constants.CF;
  * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
@@ -86,6 +87,7 @@ final class GridGeometryInfo extends GridGeometry {
 
     /**
      * Constructs a new grid geometry information.
+     * The {@code domain} and {@code range} arrays often have the same length, but not necessarily.
      *
      * @param  domain  describes the input values of the "grid to CRS" conversion.
      * @param  range   the output values of the "grid to CRS" conversion.
@@ -147,6 +149,21 @@ final class GridGeometryInfo extends GridGeometry {
     @Override
     public int getTargetDimensions() {
         return range.length;
+    }
+
+    /**
+     * Returns the number of cells along each source dimension, in "natural" order.
+     *
+     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order.
+     */
+    @Override
+    protected long[] getShape() {
+        final int    dim  = domain.length;
+        final long[] size = new long[dim];
+        for (int i=0; i<dim; i++) {
+            size[(dim-1) - i] = Integer.toUnsignedLong(domain[i].length);
+        }
+        return size;
     }
 
     /**

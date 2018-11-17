@@ -28,8 +28,10 @@ import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.VariableEnhanced;
+import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
@@ -319,7 +321,26 @@ final class VariableWrapper extends Variable {
         } catch (InvalidRangeException e) {
             throw new DataStoreException(e);
         }
-        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+        return createDecimalVector(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+    }
+
+    /**
+     * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
+     * This method is invoked only for variables that represent a coordinate system axis.
+     */
+    @Override
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim)
+            throws IOException, DataStoreException
+    {
+        if (variable instanceof CoordinateAxis1D) {
+            final CoordinateAxis1D axis = (CoordinateAxis1D) variable;
+            if (axis.isRegular()) {
+                gridToCRS.setElement(tgtDim, srcDim, axis.getIncrement());
+                gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, axis.getStart());
+                return true;
+            }
+        }
+        return super.trySetTransform(gridToCRS, srcDim, tgtDim);
     }
 
     /**

@@ -272,6 +272,17 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the given direction is {@code FUTURE} or {@code PAST}.
+     *
+     * @param  dir  the direction to test, or {@code null}.
+     * @return {@code true} if the direction is temporal, or {@code false} otherwise.
+     */
+    public static boolean isTemporal(final AxisDirection dir) {
+        if (dir == null) return false;
+        return ((dir.ordinal() - FUTURE.ordinal()) & ~1) == 0;
+    }
+
+    /**
      * Returns {@code true} if the given direction is {@code GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
      * or {@code GEOCENTRIC_Z}.
      *
