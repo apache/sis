@@ -43,8 +43,8 @@ import javax.measure.format.ParserException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
@@ -208,7 +208,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #getGridGeometries()
      */
-    private transient GridGeometry[] gridGeometries;
+    private transient Grid[] gridGeometries;
 
     /**
      * Creates a new decoder for the given file.
@@ -845,7 +845,7 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public GridGeometry[] getGridGeometries() {
+    public Grid[] getGridGeometries() {
         if (gridGeometries == null) {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are
@@ -868,13 +868,13 @@ public final class ChannelDecoder extends Decoder {
              * to share them.
              */
             final Set<VariableInfo> axes = new LinkedHashSet<>(4);
-            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
+            final Map<List<Dimension>, GridInfo> dimsToGG = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
                     continue;
                 }
                 final List<Dimension> dimensions = Arrays.asList(variable.dimensions);
-                GridGeometryInfo gridGeometry = dimsToGG.get(dimensions);
+                GridInfo gridGeometry = dimsToGG.get(dimensions);
                 if (gridGeometry == null) {
                     /*
                      * Found a new list of dimensions for which no axes have been created yet.
@@ -889,13 +889,13 @@ nextVar:    for (final VariableInfo variable : variables) {
                         }
                         axes.addAll(axis);
                     }
-                    gridGeometry = new GridGeometryInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                    gridGeometry = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
                     dimsToGG.put(dimensions, gridGeometry);
                     axes.clear();
                 }
                 variable.gridGeometry = gridGeometry;
             }
-            gridGeometries = dimsToGG.values().toArray(new GridGeometry[dimsToGG.size()]);
+            gridGeometries = dimsToGG.values().toArray(new Grid[dimsToGG.size()]);
         }
         return gridGeometries;
     }

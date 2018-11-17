@@ -25,7 +25,7 @@ import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import ucar.nc2.VariableIF;
@@ -42,7 +42,7 @@ import ucar.nc2.VariableIF;
  * @since   0.3
  * @module
  */
-final class GridGeometryWrapper extends GridGeometry {
+final class GridWrapper extends Grid {
     /**
      * The decoder which is creating this grid geometry.
      * Used for fetching the variables when first needed.
@@ -59,7 +59,7 @@ final class GridGeometryWrapper extends GridGeometry {
      *
      * @param  cs  the netCDF coordinate system.
      */
-    GridGeometryWrapper(final DecoderWrapper decoder, final CoordinateSystem cs) {
+    GridWrapper(final DecoderWrapper decoder, final CoordinateSystem cs) {
         this.decoder = decoder;
         netcdfCS = cs;
     }

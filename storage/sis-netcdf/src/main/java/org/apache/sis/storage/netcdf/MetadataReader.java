@@ -60,7 +60,7 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
@@ -702,7 +702,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  cs  the grid geometry (related to the netCDF coordinate system).
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    private void addSpatialRepresentationInfo(final GridGeometry cs) throws IOException, DataStoreException {
+    private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
         for (int i=axes.length; i>0;) {
             final int dim = axes.length - i;
@@ -1020,7 +1020,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Metadata read() throws IOException, DataStoreException {
-        for (final GridGeometry cs : decoder.getGridGeometries()) {
+        for (final Grid cs : decoder.getGridGeometries()) {
             final CoordinateReferenceSystem crs = cs.getCoordinateReferenceSystem(decoder);
             addReferenceSystem(crs);
             if (verticalCRS == null) {
@@ -1041,7 +1041,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
-        for (final GridGeometry cs : decoder.getGridGeometries()) {
+        for (final Grid cs : decoder.getGridGeometries()) {
             if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION &&
                 cs.getTargetDimensions() >= Variable.MIN_DIMENSION)
             {

@@ -76,6 +76,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateCRS_3 = 11;
 
         /**
+         * Can not create the grid geometry “{1}” in the “{0}” netCDF file. The reason is: {2}
+         */
+        public static final short CanNotCreateGridGeometry_3 = 12;
+
+        /**
          * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;

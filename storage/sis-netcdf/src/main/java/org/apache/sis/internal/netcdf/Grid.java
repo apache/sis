@@ -21,20 +21,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
 
 
 /**
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
+ * More than one variable may share the same grid.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -44,7 +50,7 @@ import org.apache.sis.util.NullArgumentException;
  * @since 0.3
  * @module
  */
-public abstract class GridGeometry extends NamedElement {
+public abstract class Grid extends NamedElement {
     /**
      * The axes, created when first needed.
      *
@@ -66,9 +72,20 @@ public abstract class GridGeometry extends NamedElement {
     private boolean isCRSDetermined;
 
     /**
+     * The geometry of this grid (is extent, its CRS and its conversion to the CRS).
+     * May be {@code null} even after we attempted to create it.
+     */
+    private GridGeometry geometry;
+
+    /**
+     * Whether we determined the {@link #geometry} value, which may be {@code null}.
+     */
+    private boolean isGeometryDetermined;
+
+    /**
      * Constructs a new grid geometry information.
      */
-    protected GridGeometry() {
+    protected Grid() {
     }
 
     /**
@@ -154,6 +171,7 @@ public abstract class GridGeometry extends NamedElement {
      */
     public final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder) throws IOException, DataStoreException {
         if (!isCRSDetermined) try {
+            isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
             final Axis[] axes = getAxes();
             for (int i=axes.length; --i >= 0;) {                // NetCDF order is reverse of "natural" order.
@@ -169,80 +187,94 @@ public abstract class GridGeometry extends NamedElement {
                 default: crs = decoder.getCRSFactory().createCompoundCRS(
                                         Collections.singletonMap(CoordinateSystem.NAME_KEY, getName()), components);
             }
-            isCRSDetermined = true;
         } catch (FactoryException | NullArgumentException ex) {
-            // TODO: avoid reporting the full exception stack trace (maybe leverage QuietLogRecord).
-            warning(decoder.listeners, GridGeometry.class, "getCoordinateReferenceSystem", ex, null,
-                    Resources.Keys.CanNotCreateCRS_3, decoder.getFilename(), getName(), ex.getLocalizedMessage());
+            canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
         }
         return crs;
     }
 
     /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
+     * This is the public object exposed to users.
      *
-     * @param   decoder  the decoder for which grid geometries are constructed.
+     * @param   decoder   the decoder for which grid geometries are constructed.
+     * @return  the public grid geometry (may be {@code null}).
      * @throws  IOException if an I/O operation was necessary but failed.
      * @throws  DataStoreException if the CRS can not be constructed.
      */
     @SuppressWarnings("fallthrough")
-    public final void createGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
-        final Axis[] axes = getAxes();      // In netCDF order (reverse of "natural" order).
-        /*
-         * Build the grid extent if the shape is available. The shape may not be available
-         * if a dimension has unlimited length. The dimension names are informative only.
-         */
-        final GridExtent extent;
-        final long[] high = getShape();
-        if (high != null) {
-            final DimensionNameType[] names = new DimensionNameType[high.length];
-            switch (names.length) {
-                default: names[1] = DimensionNameType.ROW;      // Fall through
-                case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
-                case 0:  break;
+    public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+        if (!isGeometryDetermined) try {
+            isGeometryDetermined = true;        // Set now for avoiding new attempts if creation fail.
+            final Axis[] axes = getAxes();      // In netCDF order (reverse of "natural" order).
+            /*
+             * Build the grid extent if the shape is available. The shape may not be available
+             * if a dimension has unlimited length. The dimension names are informative only.
+             */
+            final GridExtent extent;
+            final long[] high = getShape();
+            if (high != null) {
+                final DimensionNameType[] names = new DimensionNameType[high.length];
+                switch (names.length) {
+                    default: names[1] = DimensionNameType.ROW;      // Fall through
+                    case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
+                    case 0:  break;
+                }
+                for (final Axis axis : axes) {
+                    if (axis.sourceDimensions.length == 1) {
+                        final DimensionNameType name;
+                        if (AxisDirections.isVertical(axis.direction)) {
+                            name = DimensionNameType.VERTICAL;
+                        } else if (AxisDirections.isTemporal(axis.direction)) {
+                            name = DimensionNameType.TIME;
+                        } else {
+                            continue;
+                        }
+                        final int dim = axis.sourceDimensions[0];
+                        if (dim >= 0 && dim < names.length) {
+                            names[names.length - 1 - dim] = name;
+                        }
+                    }
+                }
+                extent = new GridExtent(names, new long[high.length], high, false);
+            } else {
+                extent = null;
             }
-            for (final Axis axis : axes) {
+            /*
+             * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
+             * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
+             * The order of dimensions in the transform is the reverse of the netCDF axis order.
+             */
+            int srcEnd = getSourceDimensions();
+            int tgtEnd = getTargetDimensions();
+            final Matrix affine = Matrices.createZero(tgtEnd + 1, srcEnd + 1);
+            affine.setElement(tgtEnd--, srcEnd--, 1);
+            for (int i=axes.length; --i >= 0;) {
+                final Axis axis = axes[i];
+                final int tgtDim = tgtEnd - i;
                 if (axis.sourceDimensions.length == 1) {
-                    final DimensionNameType name;
-                    if (AxisDirections.isVertical(axis.direction)) {
-                        name = DimensionNameType.VERTICAL;
-                    } else if (AxisDirections.isTemporal(axis.direction)) {
-                        name = DimensionNameType.TIME;
-                    } else {
+                    final int srcDim = srcEnd - axis.sourceDimensions[0];
+                    if (axis.coordinates.trySetTransform(affine, srcDim, tgtDim)) {
                         continue;
                     }
-                    final int dim = axis.sourceDimensions[0];
-                    if (dim >= 0 && dim < names.length) {
-                        names[names.length - 1 - dim] = name;
-                    }
+                }
+                for (int srcDim : axis.sourceDimensions) {
+                    affine.setElement(tgtDim, srcEnd - srcDim, 1);
+                    // TODO: prepare non-linear transform here for later concatenation.
                 }
             }
-            extent = new GridExtent(names, new long[high.length], high, false);
-        } else {
-            extent = null;
+            MathTransform gridToCRS = MathTransforms.linear(affine);
+            geometry = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, getCoordinateReferenceSystem(decoder));
+        } catch (TransformException ex) {
+            canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }
-        /*
-         * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
-         * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
-         * The order of dimensions in the transform is the reverse of the netCDF axis order.
-         */
-        int srcEnd = getSourceDimensions();
-        int tgtEnd = getTargetDimensions();
-        final Matrix gridToCRS = Matrices.createZero(tgtEnd-- + 1, srcEnd-- + 1);
-        for (int i=axes.length; --i >= 0;) {
-            final Axis axis = axes[i];
-            final int tgtDim = tgtEnd - i;
-            if (axis.sourceDimensions.length == 1) {
-                final int srcDim = srcEnd - axis.sourceDimensions[0];
-                if (axis.coordinates.trySetTransform(gridToCRS, srcDim, tgtDim)) {
-                    continue;
-                }
-            }
-            for (int srcDim : axis.sourceDimensions) {
-                gridToCRS.setElement(tgtDim, srcEnd - srcDim, 1);
-                // TODO: prepare non-linear transform here for later concatenation.
-            }
-        }
-        // TODO
+        return geometry;
+    }
+
+    /**
+     * Logs a warning about a CRS or grid geometry that can not be created.
+     */
+    private void canNotCreate(final Decoder decoder, final String caller, final short key, final Exception ex) {
+        warning(decoder.listeners, Grid.class, caller, ex, null, key, decoder.getFilename(), getName(), ex.getLocalizedMessage());
     }
 }

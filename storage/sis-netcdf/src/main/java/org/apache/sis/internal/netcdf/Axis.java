@@ -47,7 +47,7 @@ import ucar.nc2.constants.CF;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see GridGeometry#getAxes()
+ * @see Grid#getAxes()
  *
  * @since 0.3
  * @module
@@ -124,7 +124,7 @@ public final class Axis extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final GridGeometry owner, final Variable axis, char abbreviation, final String direction,
+    public Axis(final Grid owner, final Variable axis, char abbreviation, final String direction,
                 final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException
     {
         /*
@@ -158,7 +158,7 @@ public final class Axis extends NamedElement {
             }
         }
         if (!isConsistent) {
-            axis.warning(GridGeometry.class, "getAxes",             // Caller of this constructor.
+            axis.warning(Grid.class, "getAxes",                 // Caller of this constructor.
                          Resources.Keys.AmbiguousAxisDirection_4, axis.getFilename(), axis.getName(), dir, check);
             if (isSigned) {
                 if (AxisDirections.isOpposite(dir)) {

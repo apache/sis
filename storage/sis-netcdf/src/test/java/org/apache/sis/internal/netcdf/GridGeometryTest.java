@@ -28,7 +28,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests the {@link GridGeometry} implementation. The default implementation tests
+ * Tests the {@link Grid} implementation. The default implementation tests
  * {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper} since the UCAR
  * library is our reference implementation. However subclasses can override the
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
@@ -49,19 +49,19 @@ public strictfp class GridGeometryTest extends TestCase {
      * @param  geometries  the grid geometries created by {@link Decoder}.
      * @return the grid geometries to test.
      */
-    protected GridGeometry[] filter(final GridGeometry[] geometries) {
+    protected Grid[] filter(final Grid[] geometries) {
         return geometries;
     }
 
     /**
-     * Tests {@link GridGeometry#getSourceDimensions()} and {@link GridGeometry#getTargetDimensions()}.
+     * Tests {@link Grid#getSourceDimensions()} and {@link Grid#getTargetDimensions()}.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
     public void testDimensions() throws IOException, DataStoreException {
-        GridGeometry geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries()));
+        Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries()));
         assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 2, geometry.getTargetDimensions());
 
@@ -71,7 +71,7 @@ public strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#getAxes()} on a two-dimensional dataset.
+     * Tests {@link Grid#getAxes()} on a two-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -95,7 +95,7 @@ public strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#getAxes()} on a four-dimensional dataset.
+     * Tests {@link Grid#getAxes()} on a four-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.

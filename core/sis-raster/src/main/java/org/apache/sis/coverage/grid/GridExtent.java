@@ -532,11 +532,11 @@ public class GridExtent implements Serializable {
      */
     final GeneralEnvelope toCRS(final MathTransform gridToCRS) throws TransformException {
         final int dimension = getDimension();
-        final GeneralEnvelope envope = new GeneralEnvelope(dimension);
+        final GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
-            envope.setRange(i, ordinates[i], ordinates[i + dimension] + 1.0);
+            envelope.setRange(i, ordinates[i], ordinates[i + dimension] + 1.0);
         }
-        return Envelopes.transform(gridToCRS, envope);
+        return Envelopes.transform(gridToCRS, envelope);
     }
 
     /**

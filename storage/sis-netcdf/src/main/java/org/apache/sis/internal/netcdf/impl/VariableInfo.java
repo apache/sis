@@ -138,7 +138,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
      */
-    GridGeometryInfo gridGeometry;
+    GridInfo gridGeometry;
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name

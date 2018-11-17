@@ -42,7 +42,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
@@ -94,7 +94,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      *
      * @see #getGridGeometries()
      */
-    private transient GridGeometry[] geometries;
+    private transient Grid[] geometries;
 
     /**
      * Creates a new decoder for the given netCDF file. While this constructor accepts arbitrary
@@ -410,7 +410,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
-    public GridGeometry[] getGridGeometries() throws IOException {
+    public Grid[] getGridGeometries() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = null;
             if (file instanceof NetcdfDataset) {
@@ -421,9 +421,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 }
                 systems = ds.getCoordinateSystems();
             }
-            geometries = new GridGeometry[(systems != null) ? systems.size() : 0];
+            geometries = new Grid[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridGeometryWrapper(this, systems.get(i));
+                geometries[i] = new GridWrapper(this, systems.get(i));
             }
         }
         return geometries;

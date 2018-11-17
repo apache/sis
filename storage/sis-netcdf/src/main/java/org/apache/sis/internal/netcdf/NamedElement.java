@@ -101,6 +101,7 @@ public abstract class NamedElement {
         record.setSourceClassName(caller.getCanonicalName());
         record.setSourceMethodName(method);
         if (exception != null) {
+            // TODO: avoid reporting the full exception stack trace (maybe leverage QuietLogRecord).
             record.setThrown(exception);
         }
         listeners.warning(record);

@@ -25,7 +25,7 @@ import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -44,7 +44,7 @@ import ucar.nc2.constants.CF;
  * @since   0.3
  * @module
  */
-final class GridGeometryInfo extends GridGeometry {
+final class GridInfo extends Grid {
     /**
      * Mapping from values of the {@code "_CoordinateAxisType"} attribute or axis name to the abbreviation.
      * Keys are lower cases and values are controlled vocabulary documented in {@link Axis#abbreviation}.
@@ -92,7 +92,7 @@ final class GridGeometryInfo extends GridGeometry {
      * @param  domain  describes the input values of the "grid to CRS" conversion.
      * @param  range   the output values of the "grid to CRS" conversion.
      */
-    GridGeometryInfo(final Dimension[] domain, final VariableInfo[] range) {
+    GridInfo(final Dimension[] domain, final VariableInfo[] range) {
         this.domain = domain;
         this.range  = range;
     }
@@ -168,8 +168,8 @@ final class GridGeometryInfo extends GridGeometry {
 
     /**
      * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
-     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper#getAxes()} for a
-     * closer look on the relationship between this algorithm and the UCAR library.
+     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridWrapper#getAxes()} for a closer look
+     * on the relationship between this algorithm and the UCAR library.
      *
      * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
