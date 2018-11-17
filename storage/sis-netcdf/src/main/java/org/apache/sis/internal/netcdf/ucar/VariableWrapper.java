@@ -127,20 +127,20 @@ final class VariableWrapper extends Variable {
     protected Unit<?> parseUnit(final String symbols) throws Exception {
         if (TIME_PATTERN.matcher(symbols).matches()) {
             /*
-             * UCAR library has to methods for getting epoch: getDate() and getDateOrigin().
-             * The former takes in account numbers that may appear before the unit, for example
+             * UCAR library has two methods for getting epoch: getDate() and getDateOrigin().
+             * The former adds to the origin the number that may appear before the unit, for example
              * "2 hours since 1970-01-01 00:00:00". If there is no such number, then the two methods
-             * are equivalent.
+             * are equivalent. It is not clear that adding such number is the right thing to do.
              */
             final DateUnit temporal = new DateUnit(symbols);
-            epoch = temporal.getDate().toInstant();
+            epoch = temporal.getDateOrigin().toInstant();
             return Units.SECOND.multiply(temporal.getTimeUnit().getValueInSeconds());
         } else {
             /*
              * For all other units, we get the base unit (meter, radian, Kelvin, etc.) and multiply by the scale factor.
              * We also need to take the offset in account for constructing the °C unit as a unit shifted from its Kelvin
              * base. The UCAR library does not provide method giving directly this information, so we infer it indirectly
-             * by converting value zero.
+             * by converting the 0 value.
              */
             final SimpleUnit ucar = SimpleUnit.factoryWithExceptions(symbols);
             if (ucar.isUnknownUnit()) {
