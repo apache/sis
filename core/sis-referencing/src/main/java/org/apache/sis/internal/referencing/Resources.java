@@ -88,6 +88,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
         /**
+         * Can not find a coordinate reference system common to all given envelopes.
+         */
+        public static final short CanNotFindCommonCRS = 82;
+
+        /**
          * Can not infer a grid size from the given values in {0} range.
          */
         public static final short CanNotInferGridSizeFromValues_1 = 75;

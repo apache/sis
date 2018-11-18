@@ -23,14 +23,17 @@ import java.util.NoSuchElementException;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.referencing.NamedIdentifier;
 
 
 /**
@@ -292,7 +295,31 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     @Override
     public GenericName getIdentifier() throws DataStoreException {
-        return AbstractResource.identifier(getMetadata());
+        final Metadata metadata = getMetadata();
+        if (metadata != null) {
+            Citation citation = null;
+            for (final Identification id : metadata.getIdentificationInfo()) {
+                final Citation c = id.getCitation();
+                if (c != null) {
+                    if (citation != null && citation != c) return null;                 // Ambiguity.
+                    citation = c;
+                }
+            }
+            if (citation != null) {
+                Identifier first = null;
+                for (final Identifier c : citation.getIdentifiers()) {
+                    if (c instanceof GenericName) {
+                        return (GenericName) c;
+                    } else if (first == null) {
+                        first = c;
+                    }
+                }
+                if (first != null) {
+                    return new NamedIdentifier(first);
+                }
+            }
+        }
+        return null;
     }
 
     /**

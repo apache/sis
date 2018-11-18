@@ -250,6 +250,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.CurveExtremumTest.class,
     org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
+    org.apache.sis.geometry.EnvelopeReducerTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.internal.metadata.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,

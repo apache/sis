@@ -30,12 +30,11 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
@@ -57,7 +56,7 @@ import org.apache.sis.measure.Units;
  * @since 0.8
  * @module
  */
-final class ImageFileDirectory extends AbstractResource implements GridCoverageResource {
+final class ImageFileDirectory extends AbstractGridResource {
     /**
      * Possible value for the {@link #tileTagFamily} field. That field tells whether image tiling
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.

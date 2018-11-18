@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.io.IOException;
-import org.opengis.util.GenericName;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
@@ -150,14 +149,6 @@ final class FeaturesInfo extends DiscreteSampling {
         String name = "Features";       // TODO: find a better name.
         info.put(DefaultAttributeType.NAME_KEY, decoder.nameFactory.createLocalName(decoder.namespace, name));
         type = new DefaultFeatureType(info, false, null, pt);
-    }
-
-    /**
-     * Returns an identifier for the collection of features in the netCDF file.
-     */
-    @Override
-    public GenericName getIdentifier() {
-        return type.getName();
     }
 
     /**

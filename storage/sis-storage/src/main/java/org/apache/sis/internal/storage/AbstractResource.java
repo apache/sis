@@ -18,16 +18,8 @@ package org.apache.sis.internal.storage;
 
 import java.util.Locale;
 import org.opengis.util.GenericName;
-import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.metadata.identification.Identification;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.geometry.GeneralEnvelope;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.Resource;
@@ -35,6 +27,9 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 
 
 /**
@@ -49,6 +44,16 @@ import org.apache.sis.storage.event.ChangeListener;
  * @module
  */
 public abstract class AbstractResource implements Resource, Localized {
+    /**
+     * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
+     * If non-null, this metadata shall contain at least the resource {@linkplain #getIdentifier() identifier}.
+     *
+     * <p>Those metadata are created by {@link #getMetadata()} when first needed.
+     * Subclasses can set a value to this field directly if they wish to bypass the
+     * default metadata creation process.</p>
+     */
+    protected Metadata metadata;
+
     /**
      * The set of registered warning listeners for the data store, or {@code null} if none.
      */
@@ -97,98 +102,35 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Returns an identifier for this resource. The default implementation returns the first identifier
-     * of {@code Metadata/​identificationInfo/​citation}, provided that exactly one such citation is found.
-     * If more than one citation is found, then this method returns {@code null} since the identification
-     * is considered ambiguous. This is the same default implementation than {@link DataStore#getIdentifier()}.
+     * Returns the spatio-temporal envelope of this resource.
+     * The default implementation returns {@code null}.
      *
-     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
-     * @throws DataStoreException if an error occurred while fetching the identifier.
+     * @return the spatio-temporal resource extent, or {@code null} if none.
      *
-     * @see DataStore#getIdentifier()
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
-    @Override
-    public GenericName getIdentifier() throws DataStoreException {
-        return identifier(getMetadata());
-    }
-
-    /**
-     * Implementation of {@link #getIdentifier()}, provided as a separated method for implementations
-     * that do not extend {@code AbstractResource}.
-     *
-     * @param  metadata  the metadata from which to infer the identifier, or {@code null}.
-     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
-     *
-     * @see StoreUtilities#getAnyIdentifier(Metadata, boolean)
-     */
-    public static GenericName identifier(final Metadata metadata) {
-        if (metadata != null) {
-            Citation citation = null;
-            for (final Identification id : metadata.getIdentificationInfo()) {
-                final Citation c = id.getCitation();
-                if (c != null) {
-                    if (citation != null && citation != c) return null;                 // Ambiguity.
-                    citation = c;
-                }
-            }
-            if (citation != null) {
-                Identifier first = null;
-                for (final Identifier c : citation.getIdentifiers()) {
-                    if (c instanceof GenericName) {
-                        return (GenericName) c;
-                    } else if (first == null) {
-                        first = c;
-                    }
-                }
-                if (first != null) {
-                    return new NamedIdentifier(first);
-                }
-            }
-        }
+    public Envelope getEnvelope() throws DataStoreException {
         return null;
     }
 
     /**
-     * Returns the spatio-temporal envelope of this resource.
-     * The default implementation computes the union of all {@link GeographicBoundingBox} in the resource metadata,
-     * assuming the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
-     * (usually WGS 84).
-     *
-     * @return the spatio-temporal resource extent, or {@code null} if none.
-     * @throws DataStoreException if an error occurred while reading or computing the envelope.
-     *
-     * @see org.apache.sis.storage.DataSet#getEnvelope()
+     * Returns a description of this set of features.
+     * Current implementation sets only the resource name; this may change in any future Apache SIS version.
      */
-    public Envelope getEnvelope() throws DataStoreException {
-        return envelope(getMetadata());
-    }
-
-    /**
-     * Implementation of {@link #getEnvelope()}, provided as a separated method for
-     * {@link org.apache.sis.storage.DataSet} implementations that do not extend {@code AbstractResource}.
-     *
-     * @param  metadata  the metadata from which to compute the envelope, or {@code null}.
-     * @return the spatio-temporal resource extent, or {@code null} if none.
-     */
-    public static Envelope envelope(final Metadata metadata) {
-        GeneralEnvelope bounds = null;
-        if (metadata != null) {
-            for (final Identification identification : metadata.getIdentificationInfo()) {
-                for (final Extent extent : identification.getExtents()) {
-                    for (final GeographicExtent ge : extent.getGeographicElements()) {
-                        if (ge instanceof GeographicBoundingBox) {
-                            final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
-                            if (bounds == null) {
-                                bounds = env;
-                            } else {
-                                bounds.add(env);
-                            }
-                        }
-                    }
-                }
+    @Override
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (metadata == null) {
+            final DefaultMetadata metadata = new DefaultMetadata();
+            final GenericName name = getIdentifier();
+            if (name != null) {                         // Paranoiac check (should never be null).
+                final DefaultCitation citation = new DefaultCitation(name.toInternationalString());
+                final DefaultDataIdentification identification = new DefaultDataIdentification();
+                identification.setCitation(citation);
             }
+            metadata.transition(DefaultMetadata.State.FINAL);
+            this.metadata = metadata;
         }
-        return bounds;
+        return metadata;
     }
 
     /**

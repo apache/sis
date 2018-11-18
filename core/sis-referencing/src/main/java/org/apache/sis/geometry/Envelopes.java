@@ -156,6 +156,46 @@ public final class Envelopes extends Static {
     }
 
     /**
+     * Computes the union of all given envelopes, transforming them to a common CRS if necessary.
+     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#add(Envelope)
+     * union is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
+     * {@linkplain CRS#suggestCommonTarget common CRS} before union is computed.
+     * The CRS of the returned envelope may different than the CRS of all given envelopes.
+     *
+     * @param  envelopes  the envelopes for which to compute union. Null elements are ignored.
+     * @return union of given envelopes, or {@code null} if the given array does not contain non-null elements.
+     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     *
+     * @see GeneralEnvelope#add(Envelope)
+     *
+     * @since 1.0
+     */
+    public static GeneralEnvelope union(final Envelope... envelopes) throws TransformException {
+        return EnvelopeReducer.UNION.reduce(envelopes);
+    }
+
+    /**
+     * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
+     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
+     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
+     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
+     * The CRS of the returned envelope may different than the CRS of all given envelopes.
+     *
+     * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
+     * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
+     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     *
+     * @see GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 1.0
+     */
+    public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
+        return EnvelopeReducer.INTERSECT.reduce(envelopes);
+    }
+
+    /**
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
      */

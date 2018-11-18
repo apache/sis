@@ -442,8 +442,9 @@ public final class CRS extends Static {
      * for choosing a common CRS which is less likely to fail.</div>
      *
      * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
-     *                           or {@code null} if unknown.
+     *                           or {@code null} if unknown. Will be intersected with CRS domains of validity.
      * @param  sourceCRS         the coordinate reference systems for which a common target CRS is desired.
+     *                           May contain {@code null} elements, in which case this method returns {@code null}.
      * @return a CRS that may be used as a common target for all the given source CRS in the given region of interest,
      *         or {@code null} if this method did not find a common target CRS. The returned CRS may be different than
      *         all given CRS.
