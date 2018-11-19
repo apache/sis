@@ -25,7 +25,6 @@ import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
@@ -1210,7 +1209,8 @@ final class ImageFileDirectory extends AbstractGridResource {
     }
 
     @Override
-    public Metadata getMetadata() throws DataStoreContentException {
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        super.createMetadata(metadata);
         /*
          * TODO:
          *   - Modify ImageFileDirectory.completeMetadata(…) with the addition of a boolean telling that
@@ -1222,7 +1222,6 @@ final class ImageFileDirectory extends AbstractGridResource {
          *   - Invoke that method from here if GeoTiffStore already has a metadata, or conversely from
          *     GeoTiffStore if ImageResource already has a metadata.
          */
-        return null;
     }
 
     /**

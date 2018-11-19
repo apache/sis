@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.Resource;
@@ -27,16 +28,21 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 
 
 /**
- * Base implementation of resources contained in data stores.
- * This class provides default implementation of {@link #getIdentifier()} and {@link #getEnvelope()}
- * methods which extract their information from the value returned by {@link #getMetadata()}.
- * Subclasses should override those methods if they can provide those information more efficiently.
+ * Base implementation of resources contained in data stores. This class provides a {@link #getMetadata()}
+ * which extracts information from other methods. Subclasses shall or should override the following methods:
+ *
+ * <ul>
+ *   <li>{@link #getIdentifier()} (mandatory)</li>
+ *   <li>{@link #getEnvelope()} (recommended)</li>
+ *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
+ * </ul>
+ *
+ * {@section Thread safety}
+ * Default methods of this abstract class are thread-safe.
+ * Synchronization, when needed, uses {@code this} lock.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -47,17 +53,14 @@ public abstract class AbstractResource implements Resource, Localized {
     /**
      * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
      * If non-null, this metadata shall contain at least the resource {@linkplain #getIdentifier() identifier}.
-     *
-     * <p>Those metadata are created by {@link #getMetadata()} when first needed.
-     * Subclasses can set a value to this field directly if they wish to bypass the
-     * default metadata creation process.</p>
+     * Those metadata are created by {@link #getMetadata()} when first needed.
      */
-    protected Metadata metadata;
+    private Metadata metadata;
 
     /**
      * The set of registered warning listeners for the data store, or {@code null} if none.
      */
-    protected final WarningListeners<DataStore> listeners;
+    private final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new resource.
@@ -102,11 +105,11 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Returns the spatio-temporal envelope of this resource.
-     * The default implementation returns {@code null}.
+     * Returns the spatio-temporal envelope of this resource. This information is part of API only in some kind of resources
+     * like {@link org.apache.sis.storage.FeatureSet}. But the method is provided in this base class for convenience and for
+     * allowing {@link #getMetadata()} to use this information if available. The default implementation returns {@code null}.
      *
      * @return the spatio-temporal resource extent, or {@code null} if none.
-     *
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     public Envelope getEnvelope() throws DataStoreException {
@@ -114,23 +117,40 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Returns a description of this set of features.
-     * Current implementation sets only the resource name; this may change in any future Apache SIS version.
+     * Returns a description of this resource. This method invokes {@link #createMetadata(MetadataBuilder)}
+     * the first time it is invoked, then cache the result.
+     *
+     * @return information about this resource (never {@code null} in this implementation).
+     * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
+    public final synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            final DefaultMetadata metadata = new DefaultMetadata();
-            final GenericName name = getIdentifier();
-            if (name != null) {                         // Paranoiac check (should never be null).
-                final DefaultCitation citation = new DefaultCitation(name.toInternationalString());
-                final DefaultDataIdentification identification = new DefaultDataIdentification();
-                identification.setCitation(citation);
-            }
-            metadata.transition(DefaultMetadata.State.FINAL);
-            this.metadata = metadata;
+            final MetadataBuilder builder = new MetadataBuilder();
+            createMetadata(builder);
+            metadata = builder.build(true);
         }
         return metadata;
+    }
+
+    /**
+     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates
+     * metadata based on information provided by {@link #getIdentifier()} and {@link #getEnvelope()}.
+     * Subclasses should override if they can provide more information.
+     *
+     * @param  metadata  the builder where to set metadata properties.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        final GenericName name = getIdentifier();
+        if (name != null) {
+            metadata.addTitle(name.toInternationalString());
+        }
+        try {
+            metadata.addExtent(getEnvelope());
+        } catch (TransformException | UnsupportedOperationException e) {
+            listeners.warning(null, e);
+        }
     }
 
     /**

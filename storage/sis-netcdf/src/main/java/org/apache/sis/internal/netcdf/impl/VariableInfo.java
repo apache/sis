@@ -28,12 +28,14 @@ import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.logging.WarningListeners;
@@ -137,6 +139,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * The grid geometry associated to this variable,
      * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
+     *
+     * @see #getGridGeometry(Decoder)
      */
     GridInfo gridGeometry;
 
@@ -416,8 +420,25 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
+     * The grid geometries are opportunistically cached in {@code VariableInfo} instances after they have
+     * been computed by {@link ChannelDecoder#getGridGeometries()}.
+     * The same grid geometry may be shared by many variables.
+     *
+     * @see ChannelDecoder#getGridGeometries()
+     */
+    @Override
+    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+        if (gridGeometry == null) {
+            decoder.getGridGeometries();            // Force calculation of grid geometries if not already done.
+        }
+        return gridGeometry;
+    }
+
+    /**
      * Returns the names of the dimensions of this variable.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
+     * This information is used for completing ISO 19115 metadata.
      */
     @Override
     public String[] getGridDimensionNames() {
@@ -431,11 +452,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
+     * This method is used mostly for building string representations of this variable.
      *
      * @return the number of grid cells for each dimension, as unsigned integers.
      */
     @Override
-    public int[] getGridEnvelope() {
+    public int[] getShape() {
         final int[] shape = new int[dimensions.length];
         for (int i=0; i<shape.length; i++) {
             shape[i] = dimensions[i].length;

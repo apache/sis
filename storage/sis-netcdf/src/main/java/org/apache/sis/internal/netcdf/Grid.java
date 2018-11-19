@@ -111,6 +111,8 @@ public abstract class Grid extends NamedElement {
      * This method may return {@code null} if the grid shape can not be determined.
      *
      * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order, or {@code null}.
+     *
+     * @see Variable#getShape()
      */
     protected abstract long[] getShape();
 

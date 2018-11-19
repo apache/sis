@@ -52,7 +52,7 @@ final class GridWrapper extends Grid {
     /**
      * The netCDF coordinate system to wrap.
      */
-    private final CoordinateSystem netcdfCS;
+    final CoordinateSystem netcdfCS;
 
     /**
      * Creates a new grid geometry for the given netCDF coordinate system.

@@ -89,7 +89,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getName()}</li>
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
-     *   <li>{@link Variable#getGridEnvelope()} length</li>
+     *   <li>{@link Variable#getShape()} length</li>
      *   <li>{@link Variable#isCoordinateSystemAxis()}</li>
      *   <li>{@link Variable#isCoverage(int)}</li>
      * </ul>
@@ -126,7 +126,7 @@ public strictfp class VariableTest extends TestCase {
             assertEquals(name, expected[propertyIndex++], name);
             assertEquals(name, expected[propertyIndex++], variable.getDescription());
             assertEquals(name, expected[propertyIndex++], dataType);
-            assertEquals(name, expected[propertyIndex++], variable.getGridEnvelope().length);
+            assertEquals(name, expected[propertyIndex++], variable.getShape().length);
             assertEquals(name, expected[propertyIndex++], variable.isCoordinateSystemAxis());
             assertEquals(name, expected[propertyIndex++], variable.isCoverage(2));
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
@@ -137,7 +137,7 @@ public strictfp class VariableTest extends TestCase {
     }
 
     /**
-     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}
+     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getShape()}
      * on a simple two-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -154,11 +154,11 @@ public strictfp class VariableTest extends TestCase {
 
         assertArrayEquals("getGridEnvelope()", new int[] {
             73, 73
-        }, variable.getGridEnvelope());
+        }, variable.getShape());
     }
 
     /**
-     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}
+     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getShape()}
      * on a compound four-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -175,7 +175,7 @@ public strictfp class VariableTest extends TestCase {
 
         assertArrayEquals("getGridEnvelope()", new int[] {
             1, 4, 19, 38
-        }, variable.getGridEnvelope());
+        }, variable.getShape());
     }
 
     /**

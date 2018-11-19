@@ -28,7 +28,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * @since   1.0
  * @module
  */
-public interface GridCoverageResource extends Resource {
+public interface GridCoverageResource extends DataSet {
     /**
      * Returns the valid extent of grid coordinates together with the transform
      * from those grid coordinates to real world coordinates.

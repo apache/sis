@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Collection;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
@@ -49,6 +50,13 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * By contrast, {@code NetcdfStoreProvider} uses upper-case "N" because it is considered at the beginning of sentences.
      */
     public static final String FORMAT_NAME = "netCDF";
+
+    /**
+     * The path to the netCDF file, or {@code null} if unknown.
+     * This is set by netCDF store constructor and shall not be modified afterward.
+     * This is used for information purpose only, not for actual reading operation.
+     */
+    public Path location;
 
     /**
      * The data store identifier created from the global attributes, or {@code null} if none.

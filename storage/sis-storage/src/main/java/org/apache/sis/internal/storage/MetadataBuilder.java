@@ -1910,7 +1910,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/referenceSystemInfo}</li>
      * </ul>
      *
+     * This method does not add the envelope provided by {@link GridGeometry#getEnvelope()}.
+     * That envelope appears in a separated node, which can be added by {@link #addExtent(Envelope)}.
+     * This separation is required by {@link AbstractGridResource} for instance.
+     *
      * @param  description    a general description of the "grid to CRS" transformation, or {@code null} if none.
+     *                        Can also be specified later by a call to {@link #setGridToCRS(CharSequence)}.
      * @param  grid           the grid extent, "grid to CRS" transform and target CRS, or {@code null} if none.
      * @param  addResolution  whether to declare the resolutions. Callers should set this argument to {@code false} if they intend
      *                        to provide the resolution themselves, or if grid axes are not in the same order than CRS axes.

@@ -371,6 +371,8 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  envelope  the source envelope.
      * @param  target    the target extent where to store envelope information.
      * @throws TransformException if a coordinate transformation was required and failed.
+     * @throws UnsupportedOperationException if this method requires an Apache SIS module
+     *         which has been found on the classpath.
      */
     @Override
     public void addElements(final Envelope envelope, final DefaultExtent target) throws TransformException {

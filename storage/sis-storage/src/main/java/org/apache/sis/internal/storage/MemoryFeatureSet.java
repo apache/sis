@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage;
 
 import java.util.Collection;
 import java.util.stream.Stream;
-import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListeners;
@@ -29,8 +28,8 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * Set of features stored in memory.
- * Metadata and features are specified at construction time.
+ * Set of features stored in memory. Features are specified at construction time.
+ * Metadata can be specified by overriding {@link #createMetadata(MetadataBuilder)}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -38,7 +37,7 @@ import org.opengis.feature.FeatureType;
  * @since   1.0
  * @module
  */
-public final class MemoryFeatureSet extends AbstractFeatureSet {
+public class MemoryFeatureSet extends AbstractFeatureSet {
     /**
      * The type specified at construction time and returned by {@link #getType()}.
      */
@@ -56,11 +55,10 @@ public final class MemoryFeatureSet extends AbstractFeatureSet {
      * (this is not verified).
      *
      * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
-     * @param metadata   information about this resource, or {@code null} for inferring default metadata.
      * @param type       the type of all features in the given collection.
      * @param features   collection of stored features. This collection will not be copied.
      */
-    public MemoryFeatureSet(final WarningListeners<DataStore> listeners, Metadata metadata,
+    public MemoryFeatureSet(final WarningListeners<DataStore> listeners,
                             final FeatureType type, final Collection<Feature> features)
     {
         super(listeners);
@@ -68,7 +66,6 @@ public final class MemoryFeatureSet extends AbstractFeatureSet {
         ArgumentChecks.ensureNonNull("features", features);
         this.type     = type;
         this.features = features;
-        this.metadata = metadata;
     }
 
     /**
@@ -79,6 +76,16 @@ public final class MemoryFeatureSet extends AbstractFeatureSet {
     @Override
     public FeatureType getType() {
         return type;
+    }
+
+    /**
+     * Returns the number of features in this set.
+     *
+     * @return the number of features.
+     */
+    @Override
+    protected Integer getFeatureCount() {
+        return features.size();
     }
 
     /**

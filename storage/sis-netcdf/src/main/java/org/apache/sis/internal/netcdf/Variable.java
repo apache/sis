@@ -166,7 +166,7 @@ public abstract class Variable extends NamedElement {
     public final String getDataTypeName() {
         final StringBuilder buffer = new StringBuilder(20);
         buffer.append(getDataType().name().toLowerCase());
-        final int[] shape = getGridEnvelope();
+        final int[] shape = getShape();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
         }
@@ -203,7 +203,7 @@ public abstract class Variable extends NamedElement {
      */
     public final boolean isCoverage(final int minSpan) {
         int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final int length : getGridEnvelope()) {
+        for (final int length : getShape()) {
             if (Integer.toUnsignedLong(length) >= minSpan) {
                 numVectors++;
             }
@@ -226,8 +226,21 @@ public abstract class Variable extends NamedElement {
     public abstract boolean isCoordinateSystemAxis();
 
     /**
+     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
+     * Not all variables have a grid geometry. For example collections of features do not have such grid.
+     * The same grid geometry may be shared by many variables.
+     *
+     * @param  decoder  the decoder to use for constructing the grid geometry if needed.
+     * @return the grid geometry for this variable, or {@code null} if none.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    public abstract Grid getGridGeometry(Decoder decoder) throws IOException, DataStoreException;
+
+    /**
      * Returns the names of the dimensions of this variable, in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
+     * This information is used for completing ISO 19115 metadata.
      *
      * @return the names of all dimension of the grid, in netCDF order (reverse of "natural" order).
      */
@@ -236,13 +249,17 @@ public abstract class Variable extends NamedElement {
     /**
      * Returns the length (number of cells) of each grid dimension, in the order they are declared in the netCDF file.
      * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
+     * Values shall be handled as unsigned 32 bits integers.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0, 0, …, 0).</p>
+     * The lower corner is always (0, 0, …, 0). This method is used by {@link #isCoverage(int)} method,
+     * or for building string representations of this variable.</p>
      *
-     * @return the number of grid cells for each dimension, in netCDF order (reverse of "natural" order).
+     * @return the number of grid cells for each dimension, as unsigned integer in netCDF order (reverse of "natural" order).
+     *
+     * @see Grid#getShape()
      */
-    public abstract int[] getGridEnvelope();
+    public abstract int[] getShape();
 
     /**
      * Returns the names of all attributes associated to this variable.
@@ -310,7 +327,7 @@ public abstract class Variable extends NamedElement {
      * Constraints on the argument values are:
      *
      * <ul>
-     *   <li>All arrays length shall be equal to the length of the {@link #getGridEnvelope()} array.</li>
+     *   <li>All arrays length shall be equal to the length of the {@link #getShape()} array.</li>
      *   <li>For each index <var>i</var>, value of {@code area[i]} shall be in the range from 0 inclusive
      *       to {@code Integer.toUnsignedLong(getGridEnvelope()[i])} exclusive.</li>
      * </ul>
@@ -418,7 +435,7 @@ public abstract class Variable extends NamedElement {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(getName()).append(" : ").append(getDataType());
-        final int[] shape = getGridEnvelope();
+        final int[] shape = getShape();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
         }

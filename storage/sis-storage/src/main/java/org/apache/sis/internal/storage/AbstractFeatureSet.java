@@ -30,7 +30,20 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * Base implementation of feature sets contained in data stores.
+ * Base implementation of feature sets contained in data stores. This class provides a {@link #getMetadata()}
+ * which extracts information from other methods. Subclasses shall or should override the following methods:
+ *
+ * <ul>
+ *   <li>{@link #getType()} (mandatory)</li>
+ *   <li>{@link #getFeatureCount()} (recommended)</li>
+ *   <li>{@link #getEnvelope()} (recommended)</li>
+ *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
+ *   <li>{@link #features(boolean parallel)} (mandatory)</li>
+ * </ul>
+ *
+ * {@section Thread safety}
+ * Default methods of this abstract class are thread-safe.
+ * Synchronization, when needed, uses {@code this} lock.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -73,6 +86,30 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
             return type.getName();
         }
         return null;
+    }
+
+    /**
+     * Returns an estimation of the number of features in this set, or {@code null} if unknown.
+     * The default implementation returns {@code null}.
+     *
+     * @return estimation of the number of features, or {@code null}.
+     */
+    protected Integer getFeatureCount() {
+        return null;
+    }
+
+    /**
+     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates metadata
+     * based on information provided by {@link #getType()}, {@link #getIdentifier()} and {@link #getEnvelope()}.
+     * Subclasses should override if they can provide more information.
+     *
+     * @param  metadata  the builder where to set metadata properties.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    @Override
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        super.createMetadata(metadata);
+        metadata.addFeatureType(getType(), getFeatureCount());
     }
 
     /**

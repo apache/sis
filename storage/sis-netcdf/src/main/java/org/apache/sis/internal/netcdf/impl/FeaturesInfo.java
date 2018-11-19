@@ -293,6 +293,16 @@ search: for (final VariableInfo counts : decoder.variables) {
     }
 
     /**
+     * Returns the number of features in this set.
+     *
+     * @return the number of features.
+     */
+    @Override
+    protected Integer getFeatureCount() {
+        return counts.size();
+    }
+
+    /**
      * Returns the stream of features.
      *
      * @param  parallel  ignored, since current version does not support parallelism.

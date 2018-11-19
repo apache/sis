@@ -27,6 +27,7 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
+import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.units.SimpleUnit;
@@ -34,11 +35,14 @@ import ucar.nc2.units.DateUnit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
+import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.Units;
+import ucar.nc2.dataset.CoordinateSystem;
 
 
 /**
@@ -198,8 +202,31 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
+     * This method searches for a grid previously computed by {@link DecoderWrapper#getGridGeometries()}.
+     * The same grid geometry may be shared by many variables.
+     *
+     * @see DecoderWrapper#getGridGeometries()
+     */
+    @Override
+    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+        if (variable instanceof Enhancements) {
+            final List<CoordinateSystem> cs = ((Enhancements) variable).getCoordinateSystems();
+            if (cs != null && !cs.isEmpty()) {
+                for (final Grid grid : decoder.getGridGeometries()) {
+                    if (cs.contains(((GridWrapper) grid).netcdfCS)) {
+                        return grid;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the names of the dimensions of this variable.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
+     * This information is used for completing ISO 19115 metadata.
      */
     @Override
     public String[] getGridDimensionNames() {
@@ -214,9 +241,10 @@ final class VariableWrapper extends Variable {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
+     * This method is used mostly for building string representations of this variable.
      */
     @Override
-    public int[] getGridEnvelope() {
+    public int[] getShape() {
         return variable.getShape();
     }
 

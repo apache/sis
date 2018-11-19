@@ -17,6 +17,7 @@
 package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.net.URI;
 import java.util.List;
 import java.util.Collection;
@@ -97,6 +98,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         location = connector.getStorageAs(URI.class);
+        final Path path = connector.getStorageAs(Path.class);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException | ArithmeticException e) {
@@ -106,6 +108,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
             throw new UnsupportedStorageException(super.getLocale(), NetcdfStoreProvider.NAME,
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
+        decoder.location = path;
         String id = decoder.stringValue(ACDD.id);
         if (id == null || (id = id.trim()).isEmpty()) {
             id = decoder.getFilename();
@@ -199,7 +202,13 @@ public class NetcdfStore extends DataStore implements Aggregate {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) try {
-            components = UnmodifiableArrayList.wrap(decoder.getDiscreteSampling());
+            Resource[] resources = decoder.getDiscreteSampling();
+            final List<Resource> list = GridResource.list(decoder);
+            if (!list.isEmpty()) {
+                list.addAll(UnmodifiableArrayList.wrap(resources));
+                resources = list.toArray(new Resource[list.size()]);
+            }
+            components = UnmodifiableArrayList.wrap(resources);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

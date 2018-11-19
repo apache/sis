@@ -70,7 +70,7 @@ public final strictfp class JoinFeatureSetTest extends TestCase {
         builder.addAttribute( String.class).setName("myNameSpace", "att1");
         builder.addAttribute(Integer.class).setName("myNameSpace", "att2");
         final FeatureType type1 = builder.build();
-        featureSet1 = new MemoryFeatureSet(null, null, type1, Arrays.asList(
+        featureSet1 = new MemoryFeatureSet(null, type1, Arrays.asList(
                 newFeature1(type1, "fid_1_0", "str1",   1),
                 newFeature1(type1, "fid_1_1", "str2",   2),
                 newFeature1(type1, "fid_1_2", "str3",   3),
@@ -82,7 +82,7 @@ public final strictfp class JoinFeatureSetTest extends TestCase {
         builder.addAttribute(Integer.class).setName("otherNameSpace", "att3");
         builder.addAttribute( Double.class).setName("otherNameSpace", "att4");
         final FeatureType type2 = builder.build();
-        featureSet2 = new MemoryFeatureSet(null, null, type2, Arrays.asList(
+        featureSet2 = new MemoryFeatureSet(null, type2, Arrays.asList(
                 newFeature2(type2, "fid_2_0",  1, 10),
                 newFeature2(type2, "fid_2_1",  2, 20),
                 newFeature2(type2, "fid_2_2",  2, 30),

@@ -68,4 +68,18 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         }
         return null;
     }
+
+    /**
+     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates
+     * metadata based on information provided by {@link #getIdentifier()} and {@link #getGridGeometry()}.
+     * Subclasses should override if they can provide more information.
+     *
+     * @param  metadata  the builder where to set metadata properties.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    @Override
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        super.createMetadata(metadata);
+        metadata.addSpatialRepresentation(null, getGridGeometry(), false);
+    }
 }
