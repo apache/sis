@@ -379,17 +379,22 @@ public abstract class Variable extends NamedElement {
     {
         final Vector values = read();
         final int n = values.size() - 1;
-        if (n >= 1) {
+        if (n >= 0) {
             final double first = values.doubleValue(0);
-            final double last  = values.doubleValue(n);
-            double error;
-            if (getDataType() == DataType.FLOAT) {
-                error = Math.max(Math.ulp((float) first), Math.ulp((float) last));
+            Number increment;
+            if (n >= 1) {
+                final double last = values.doubleValue(n);
+                double error;
+                if (getDataType() == DataType.FLOAT) {
+                    error = Math.max(Math.ulp((float) first), Math.ulp((float) last));
+                } else {
+                    error = Math.max(Math.ulp(first), Math.ulp(last));
+                }
+                error = Math.max(Math.ulp(last - first), error) / n;
+                increment = values.increment(error);
             } else {
-                error = Math.max(Math.ulp(first), Math.ulp(last));
+                increment = Double.NaN;
             }
-            error = Math.max(Math.ulp(last - first), error) / n;
-            final Number increment = values.increment(error);
             if (increment != null) {
                 gridToCRS.setElement(tgtDim, srcDim, increment.doubleValue());
                 gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, first);

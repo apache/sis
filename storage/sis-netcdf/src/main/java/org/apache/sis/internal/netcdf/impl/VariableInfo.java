@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Matcher;
@@ -151,7 +154,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      *
      * @see #isCoordinateSystemAxis()
      */
-    private final boolean isCoordinateSystemAxis;
+    private boolean isCoordinateSystemAxis;
 
     /**
      * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
@@ -252,8 +255,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 }
             }
             isCoordinateSystemAxis = dimensions[0].name.equals(value);
-        } else {
-            isCoordinateSystemAxis = false;
         }
         /*
          * Verify if this variable is an enumeration. If yes, we remove the attributes that define the
@@ -292,11 +293,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @throws ArithmeticException if the stride between two records exceeds {@link Long#MAX_VALUE}.
      */
     static void complete(final VariableInfo[] variables) {
+        final Set<CharSequence> referencedAsAxis = new HashSet<>();
         final VariableInfo[] unlimited = new VariableInfo[variables.length];
         int     count        = 0;               // Number of valid elements in the 'unlimited' array.
         long    recordStride = 0;               // Sum of the size of all variables having a unlimited dimension.
         boolean isUnknown    = false;           // True if 'total' is actually unknown.
         for (final VariableInfo variable : variables) {
+            // Opportunistically store names of all axes listed in "coordinates" attributes of all variables.
+            referencedAsAxis.addAll(Arrays.asList(CharSequences.split(variable.getAttributeString(CF.COORDINATES), ' ')));
             if (variable.isUnlimited()) {
                 final long paddedSize = variable.paddedSize();
                 unlimited[count++] = variable;
@@ -313,6 +317,33 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             unlimited[0].offsetToNextRecord = 0;        // Special case cited in method javadoc.
         } else for (int i=0; i<count; i++) {
             unlimited[i].offsetToNextRecord = recordStride - unlimited[i].offsetToNextRecord;
+        }
+        /*
+         * If some variables have a "coordinates" attribute listing names of variables used as axes,
+         * mark those variables as axes. We perform this check as a complement for the check done in
+         * the constructor in order to detect two-dimensional axes. Example:
+         *
+         *    dimensions:
+         *        Y = 471 ;
+         *        X = 720 ;
+         *    variables:
+         *        float lon(Y, X) ;                       // Not detected as coordinate axis by the constructor.
+         *            lon:long_name = "longitude" ;
+         *            lon:units = "degree_east" ;
+         *        float lat(Y, X) ;                       // Not detected as coordinate axis by the constructor.
+         *            lat:long_name = "latitude" ;
+         *            lat:units = "degree_north" ;
+         *        short temperature(Y, X) ;
+         *            temperature:long_name = "Potential Temperature" ;
+         *            temperature:coordinates = "lon lat" ;
+         */
+        if (!referencedAsAxis.isEmpty()) {
+            for (final VariableInfo variable : variables) {
+                if (referencedAsAxis.remove(variable.name)) {
+                    variable.isCoordinateSystemAxis = true;
+                    if (referencedAsAxis.isEmpty()) break;
+                }
+            }
         }
     }
 
@@ -405,6 +436,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns {@code true} if this variable seems to be a coordinate system axis,
      * determined by comparing its name with the name of all dimensions in the netCDF file.
+     * Also determined by inspection of {@code "coordinates"} attribute on other variables.
      */
     @Override
     public boolean isCoordinateSystemAxis() {

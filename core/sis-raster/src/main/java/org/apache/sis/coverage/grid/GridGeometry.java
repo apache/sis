@@ -264,7 +264,7 @@ public class GridGeometry implements Serializable {
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
         GeneralEnvelope env = null;
         if (extent != null && cornerToCRS != null) {
-            env = extent.toCRS(cornerToCRS);
+            env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             env.setCoordinateReferenceSystem(crs);
         } else if (crs != null) {
             env = new GeneralEnvelope(crs);
@@ -340,7 +340,7 @@ public class GridGeometry implements Serializable {
         if (envelope != null && cornerToCRS != null) {
             GeneralEnvelope env = Envelopes.transform(cornerToCRS.inverse(), envelope);
             extent = new GridExtent(env);
-            env = extent.toCRS(cornerToCRS);
+            env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
@@ -377,7 +377,7 @@ public class GridGeometry implements Serializable {
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
      */
-    private static void recoverableException(final TransformException exception) {
+    static void recoverableException(final Exception exception) {
         Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, "transform", exception);
     }
 
@@ -922,7 +922,7 @@ public class GridGeometry implements Serializable {
                     table.append(Double.toString(envelope.getLower(i))).nextColumn();
                     table.setCellAlignment(TableAppender.ALIGN_LEFT);
                     table.append(" … ").append(Double.toString(envelope.getUpper(i)));
-                    if (appendResolution) {
+                    if (appendResolution && !Double.isNaN(resolution[i])) {
                         final boolean isLinear = (i < Long.SIZE) && (nonLinears & (1L << i)) == 0;
                         table.nextColumn();
                         table.append("  Δ");

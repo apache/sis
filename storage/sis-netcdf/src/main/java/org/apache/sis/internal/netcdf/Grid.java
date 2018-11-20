@@ -260,9 +260,21 @@ public abstract class Grid extends NamedElement {
                         continue;
                     }
                 }
-                for (int srcDim : axis.sourceDimensions) {
-                    affine.setElement(tgtDim, srcEnd - srcDim, 1);
+                /*
+                 * If we have not been able to set coefficients in the matrix (because the transform is non-linear),
+                 * set a single scale factor to 1 in the matrix row; we will concatenate later with a non-linear transform.
+                 * The coefficient that we set to 1 is the one for the source dimension which is not already taken by another row.
+                 */
+findFree:       for (int srcDim : axis.sourceDimensions) {
+                    srcDim = srcEnd - srcDim;
+                    for (int j=affine.getNumRow(); --j>=0;) {
+                        if (affine.getElement(j, srcDim) != 0) {
+                            continue findFree;
+                        }
+                    }
+                    affine.setElement(tgtDim, srcDim, 1);
                     // TODO: prepare non-linear transform here for later concatenation.
+                    break;
                 }
             }
             MathTransform gridToCRS = MathTransforms.linear(affine);

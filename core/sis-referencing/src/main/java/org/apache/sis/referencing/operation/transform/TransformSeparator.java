@@ -48,7 +48,7 @@ import org.apache.sis.util.ArraysExt;
  * The output dimensions can be verified with a call to {@link #getTargetDimensions()}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -393,7 +393,7 @@ public class TransformSeparator {
             }
         } else {
             /*
-             * At this point there is at least one source dimensions to take in account.
+             * At this point there is at least one source dimension to take in account.
              * Source dimensions are more difficult to process than target dimensions.
              */
             final int[] requested = targetDimensions;
@@ -422,18 +422,18 @@ public class TransformSeparator {
         /*
          * We are done. But do a final verification on the number of dimensions.
          */
-        int type     = 0;
+        int side     = 0;
         int expected = sourceDimensions.length;
         int actual   = tr.getSourceDimensions();
         if (actual == expected) {
-            type     = 1;
+            side     = 1;
             expected = targetDimensions.length;
             actual   = tr.getTargetDimensions();
             if (actual == expected) {
                 return tr;
             }
         }
-        throw new FactoryException(Resources.format(Resources.Keys.MismatchedTransformDimension_3, type, expected, actual));
+        throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateTransform_3, side, expected, actual));
     }
 
     /**
@@ -552,14 +552,14 @@ public class TransformSeparator {
         final Matrix matrix = MathTransforms.getMatrix(step);
         if (matrix != null) {
             targetDimensions = null;
-            int startOfRow = 0;
-            boolean isLastRowAccepted = false;
+            int startOfRow = 0;                         // Index of next row to be stored in the 'elements' array.
+            boolean isLastRowAccepted = false;          // To be set to 'true' if we complete successfully up to last row.
             final int numFilteredColumns = (dimensions.length + 1);
             double[] elements = new double[(numTgt + 1) * numFilteredColumns];
 reduce:     for (int j=0; j <= numTgt; j++) {
                 /*
                  * For each target dimension (i.e. a matrix row), find the matrix elements (excluding translation
-                 * terms in the last column) for each source dimension to be kept. If a dependancy to at least one
+                 * terms in the last column) for each source dimension to be kept. If a dependency to at least one
                  * discarded input dimension is found, then the whole output dimension is discarded.
                  */
                 int filteredColumn = 0;
@@ -575,20 +575,29 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                         continue reduce;
                     }
                 }
+                /*
+                 * We reach this point only if we determined that for current matrix row, all dependencies are listed
+                 * in the array of source dimensions to keep. The matrix coefficients for that row are copied in the
+                 * 'elements' array.
+                 */
                 elements[startOfRow + filteredColumn++] = matrix.getElement(j, numSrc);  // Copy the translation term.
                 assert filteredColumn == numFilteredColumns : filteredColumn;            // We should have used all values in the 'dimensions' array.
                 startOfRow += numFilteredColumns;
-                if (j == numTgt) {
-                    /*
-                     * In an affine transform, the last row is usually [0 0 0 … 1].
-                     * This is not a real dimension, but nevertheless mandatory.
-                     */
-                    isLastRowAccepted = true;
-                } else {
+                /*
+                 * In an affine transform, the last row is usually [0 0 0 … 1].
+                 * This is not a real dimension, but nevertheless mandatory and
+                 * needs to be identified as valid by above code.
+                 */
+                isLastRowAccepted = (j == numTgt);
+                if (!isLastRowAccepted) {                           // Update target dimensions for every rows except the last one.
                     targetDimensions = insert(targetDimensions, j);
                 }
             }
             if (isLastRowAccepted) {
+                if (targetDimensions == null) {
+                    targetDimensions = ArraysExt.EMPTY_INT;
+                    return MathTransforms.identity(0);
+                }
                 elements = ArraysExt.resize(elements, startOfRow);
                 return factory.createAffineTransform(Matrices.create(startOfRow / numFilteredColumns, numFilteredColumns, elements));
             }

@@ -118,6 +118,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotSeparateTargetDimension_1 = 7;
 
         /**
+         * Can not separate the transform because result would have {2} {0,choice,0#source|1#target}
+         * dimension{2,choice,1#|2#s} instead of {1}.
+         */
+        public static final short CanNotSeparateTransform_3 = 83;
+
+        /**
          * Can not transform envelope to a geodetic reference system.
          */
         public static final short CanNotTransformEnvelopeToGeodetic = 8;

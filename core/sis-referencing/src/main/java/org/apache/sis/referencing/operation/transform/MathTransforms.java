@@ -80,7 +80,7 @@ public final class MathTransforms extends Static {
      * @return an identity transform of the specified dimension.
      */
     public static LinearTransform identity(final int dimension) {
-        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
+        ArgumentChecks.ensurePositive("dimension", dimension);
         return IdentityTransform.create(dimension);
     }
 

@@ -23,6 +23,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
@@ -30,6 +33,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
 import static org.opengis.test.Assert.*;
 
 
@@ -37,7 +41,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link TransformSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -109,12 +113,12 @@ public final strictfp class TransformSeparatorTest extends TestCase {
      */
     @Test
     public void testLinearTransform() throws FactoryException {
-        Matrix matrix = Matrices.create(4, 4, new double[] {
+        Matrix matrix = new Matrix4(
             2, 0, 0, 7,                                         // Some random values.
             0, 5, 0, 6,
             1, 0, 3, 8,
             0, 0, 0, 1
-        });
+        );
         final TransformSeparator s = new TransformSeparator(MathTransforms.linear(matrix));
         /*
          * Trivial case: no dimension specified, we should get the transform unchanged.
@@ -177,6 +181,28 @@ public final strictfp class TransformSeparatorTest extends TestCase {
             // This is the expected exception.
             assertNotNull(e.getMessage());
         }
+    }
+
+    /**
+     * Tests separation of a linear transform containing {@link Double#NaN} values.
+     *
+     * @throws FactoryException if an error occurred while creating a new transform.
+     */
+    @Test
+    public void testIncompleteTransform() throws FactoryException {
+        Matrix matrix = new Matrix4(
+            1,   0,   0,   7,
+            0,   0,   1,   8,
+            0, NaN,   0,   6,
+            0,   0,   0,   1
+        );
+        TransformSeparator s = new TransformSeparator(MathTransforms.linear(matrix));
+        s.addSourceDimensions(1);
+        assertMatrixEquals("transform", new Matrix2(
+               NaN, 6,
+                 0, 1
+        ), ((LinearTransform) s.separate()).getMatrix(), STRICT);
+        assertArrayEquals(new int[] {2}, s.getTargetDimensions());
     }
 
     /**
@@ -257,11 +283,11 @@ public final strictfp class TransformSeparatorTest extends TestCase {
          * Filter source dimensions. If we ask only for dimensions not in the pass-through transform,
          * then TransformSeparator should return an affine transform.
          */
-        matrix = Matrices.create(3, 3, new double[] {
+        matrix = new Matrix3(
             1, 0, 0,
             0, 1, 0,
             0, 0, 1
-        });
+        );
         s.clear();
         s.addSourceDimensions(0, 6);
         r = s.separate();

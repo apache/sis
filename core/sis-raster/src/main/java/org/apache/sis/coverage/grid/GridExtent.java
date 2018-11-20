@@ -24,11 +24,13 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArgumentChecks;
@@ -42,6 +44,8 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.iso.Types;
 
@@ -289,7 +293,7 @@ public class GridExtent implements Serializable {
      *
      * @param  envelope  the envelope containing cell indices to store in a {@code GridExtent}.
      *
-     * @see #toCRS(MathTransform)
+     * @see #toCRS(MathTransform, MathTransform)
      */
     GridExtent(final AbstractEnvelope envelope) {
         final int dimension = envelope.getDimension();
@@ -525,18 +529,78 @@ public class GridExtent implements Serializable {
      * Transforms this grid extent to a "real world" envelope using the given transform.
      * The transform shall map <em>pixel corner</em> to real world coordinates.
      *
-     * @param  gridToCRS  a transform from <em>pixel corner</em> to real world coordinates
+     * @param  cornerToCRS  a transform from <em>pixel corners</em> to real world coordinates.
+     * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
+     *                      If different, then this is assumed to map pixel centers instead than pixel corners.
      * @return this grid extent in real world coordinates.
      *
      * @see #GridExtent(AbstractEnvelope)
      */
-    final GeneralEnvelope toCRS(final MathTransform gridToCRS) throws TransformException {
+    final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS) throws TransformException {
         final int dimension = getDimension();
-        final GeneralEnvelope envelope = new GeneralEnvelope(dimension);
+        GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
             envelope.setRange(i, ordinates[i], ordinates[i + dimension] + 1.0);
         }
-        return Envelopes.transform(gridToCRS, envelope);
+        envelope = Envelopes.transform(cornerToCRS, envelope);
+        if (envelope.isEmpty()) try {
+            /*
+             * If the envelope contains some NaN values, try to replace them by constant values inferred from the math transform.
+             * We must use the MathTransform specified by the user (gridToCRS), not necessarily the cornerToCRS transform, because
+             * because inferring a 'cornerToCRS' by translation a 'centertoCRS' by 0.5 pixels increase the amount of NaN values in
+             * the matrix. For giving a chance to TransformSeparator to perform its work, we need the minimal amount of NaN values.
+             */
+            final boolean isCenter = (gridToCRS != cornerToCRS);
+            TransformSeparator separator = null;
+            for (int srcDim=0; srcDim < dimension; srcDim++) {
+                if (ordinates[srcDim + dimension] == 0 && ordinates[srcDim] == 0) {
+                    /*
+                     * At this point we found a grid dimension with [0 … 0] range. Only this specific range is processed because
+                     * it is assumed associated to NaN scale factors in the 'gridToCRS' matrix, since the resolution is computed
+                     * by 0/0.  We require the range to be [0 … 0] instead of [n … n] because if grid indices are not zero, then
+                     * we would need to know the scale factors for computing the offset.
+                     */
+                    if (separator == null) {
+                        separator = new TransformSeparator(gridToCRS);
+                    }
+                    separator.addSourceDimensionRange(srcDim, srcDim + 1);
+                    final Matrix component = MathTransforms.getMatrix(separator.separate());
+                    if (component != null) {
+                        final int[] targets = separator.getTargetDimensions();
+                        for (int j=0; j<targets.length; j++) {
+                            final int tgtDim = targets[j];
+                            double lower = envelope.getLower(tgtDim);
+                            double upper = envelope.getUpper(tgtDim);
+                            final double value = component.getElement(j, component.getNumCol() - 1);
+                            /*
+                             * Replace only the envelope NaN values by the translation term (non-NaN values are left unchanged).
+                             * If the gridToCRS map pixel corners, then we update only the lower bound since the transform maps
+                             * lower-left corner; the upper bound is unknown. If the gridToCRS maps pixel center, then we update
+                             * both lower and upper bounds to a value assumed to be in the center; the span is set to zero.
+                             */
+                            if (isCenter) {
+                                double span = upper - value;
+                                if (Double.isNaN(span)) {
+                                    span = value - lower;
+                                    if (Double.isNaN(span)) {
+                                        span = 0;
+                                    }
+                                }
+                                if (Double.isNaN(lower)) lower = value - span;
+                                if (Double.isNaN(upper)) upper = value + span;
+                            } else if (Double.isNaN(lower)) {
+                                lower = value;
+                            }
+                            envelope.setRange(tgtDim, lower, upper);
+                        }
+                    }
+                    separator.clear();
+                }
+            }
+        } catch (FactoryException e) {
+            GridGeometry.recoverableException(e);
+        }
+        return envelope;
     }
 
     /**
