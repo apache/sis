@@ -127,7 +127,7 @@ public class StorageConnector implements Serializable {
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
      * telling that before reseting the {@code view}, we need to reset the {@code source} first. This flag should
      * can be unset if any change in the position of {@code view} is immediately reflected in the position of
-     * {@code source}, and vis-versa.
+     * {@code source}, and vice-versa.
      *
      * @see Coupled#cascadeOnReset()
      */
@@ -362,7 +362,7 @@ public class StorageConnector implements Serializable {
         /**
          * {@code true} if calls to {@link #reset()} should cascade to {@link #wrapperFor}.
          * This is {@code false} if any change in the position of {@link #view} is immediately
-         * reflected in the position of {@link #wrapperFor}, and vis-versa.
+         * reflected in the position of {@link #wrapperFor}, and vice-versa.
          */
         final boolean cascadeOnReset() {
             return (cascade & CASCADE_ON_RESET) != 0;

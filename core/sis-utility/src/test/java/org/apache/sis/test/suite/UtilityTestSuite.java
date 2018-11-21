@@ -57,6 +57,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.FractionTest.class,
     org.apache.sis.math.VectorTest.class,
+    org.apache.sis.math.RepeatedVectorTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.DecimalFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,

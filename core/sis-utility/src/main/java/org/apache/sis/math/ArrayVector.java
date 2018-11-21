@@ -17,6 +17,7 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -27,10 +28,10 @@ import org.apache.sis.measure.NumberRange;
 
 /**
  * A vector backed by an array of a primitive type. This class does not copy the array,
- * so changes in the underlying array is reflected in this vector and vis-versa.
+ * so changes in the underlying array is reflected in this vector and vice-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -243,6 +244,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override int indexOf(final int toSearch, int index, final boolean equality) {
+            final long first = Double.doubleToLongBits(array[toSearch]);
+            while (index < array.length && (first == Double.doubleToLongBits(array[index])) != equality) index++;
+            return index;
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<Double> range(final IntSupplier indices, int n) {
             double min = Double.POSITIVE_INFINITY;
@@ -263,6 +271,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns a copy of current data as a floating point array. */
         @Override public float[] floatValues() {
             return Numerics.copyAsFloats(array);
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -317,6 +330,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override int indexOf(final int toSearch, int index, final boolean equality) {
+            final int first = Float.floatToIntBits(array[toSearch]);
+            while (index < array.length && (first == Float.floatToIntBits(array[index])) != equality) index++;
+            return index;
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override final NumberRange<?> range(final IntSupplier indices, int n) {
             float min = Float.POSITIVE_INFINITY;
@@ -341,6 +361,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns a copy of current data as a floating point array. */
         @Override public final float[] floatValues() {
             return array.clone();
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -372,6 +397,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override NumberRange<?> createRange(final float min, final float max) {
             return NumberRange.create(DecimalFunctions.floatToDouble(min), true,
                                       DecimalFunctions.floatToDouble(max), true);
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public int hashCode() {
+            int hash = 0;
+            final int size = size();
+            for (int i=0; i<size; i++) {
+                hash = PRIME * hash + Double.hashCode(doubleValue(i));
+            }
+            return hash;
         }
     }
 
@@ -419,6 +454,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final long first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             long min = Long.MAX_VALUE;
@@ -458,6 +500,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 return inc;
             }
             return null;
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -506,6 +553,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final int first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             int min = Integer.MAX_VALUE;
@@ -548,6 +602,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 }
             }
             return null;
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -597,6 +656,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final short first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             short min = Short.MAX_VALUE;
@@ -614,6 +680,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * (except if the increment is zero) and the implicit conversion of 'short' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
+        }
     }
 
     /**
@@ -663,6 +734,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final byte first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             byte min = Byte.MAX_VALUE;
@@ -680,6 +758,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
+        }
     }
 
     /**

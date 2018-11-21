@@ -23,6 +23,7 @@ import java.util.RandomAccess;
 import java.util.function.IntSupplier;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -45,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *
  * <div class="section">Instantiation</div>
  * Instances of {@code Vector} are usually created by calls to the {@link #create(Object, boolean)} static method.
- * The supplied array is not cloned – changes to the primitive array are reflected in the vector, and vis-versa.
+ * The supplied array is not cloned – changes to the primitive array are reflected in the vector, and vice-versa.
  * Vectors can be a view over a subsection of the given array, or can provide a view of the elements in reverse order,
  * <i>etc</i>. The example below creates a view over a subsection:
  *
@@ -84,7 +85,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * without concern about whether the data were really stored as {@code double} or as {@code float} values.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -104,7 +105,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * </ul>
      *
      * The given argument is not cloned.
-     * Consequently changes in the underlying array are reflected in this vector, and vis-versa.
+     * Consequently changes in the underlying array are reflected in this vector, and vice-versa.
      *
      * <div class="section">Unsigned integers</div>
      * Java has no primitive support for unsigned integers. But some file formats use unsigned integers,
@@ -225,6 +226,18 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @see org.apache.sis.util.collection.CheckedContainer#getElementType()
      */
     public abstract Class<? extends Number> getElementType();
+
+    /**
+     * Returns an estimation of the number of bits used by each value in this vector.
+     * This is an estimation only and should be used only as a hint.
+     */
+    private int getBitCount() {
+        try {
+            return Numbers.primitiveBitCount(getElementType());
+        } catch (IllegalArgumentException e) {
+            return Integer.SIZE;                    // Assume references compressed on 32 bits.
+        }
+    }
 
     /**
      * Returns {@code true} if this vector contains only integer values.
@@ -454,6 +467,127 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract Number set(int index, Number value);
 
     /**
+     * Returns the index of the first value which is equal (if {@code equality} is true)
+     * or different (if {@code equality} is false) to the value at the {@code toSearch} index.
+     * Subclasses should override if they can provide a more efficient implementation.
+     *
+     * @param  toSearch   index of the value to search.
+     * @param  index      index of the first value where to start the search.
+     * @param  equality   whether we search the first equal value, or the first different value.
+     * @return index of the value found, or the vector size if the value has not been found.
+     */
+    int indexOf(final int toSearch, int index, final boolean equality) {
+        final Number first = get(toSearch);
+        final int size = size();
+        while (index < size && first.equals(get(index)) != equality) index++;
+        return index;
+    }
+
+    /**
+     * Detects repetition patterns in the values contained in this vector. The repetitions detected by this method are
+     * patterns that at repeated at a regular interval on the whole vector; this method does not search for repetitions
+     * occurring at irregular intervals. This method returns an array of typically 0, 1 or 2 elements where zero element
+     * means that no repetition has been found, one element describes a repetition (see the example below), and two elements
+     * describes a repetition of the repetitions (examples below). More elements (deeper recursivity) are theoretically
+     * possible but not yet implemented.
+     *
+     * <p>If the values in this vector are of the form (<var>x</var>, <var>x</var>, …, <var>x</var>, <var>y</var>, <var>y</var>,
+     * …, <var>y</var>, <var>z</var>, <var>z</var>, …, <var>z</var>, …), then the first integer in the returned array is the
+     * number of consecutive <var>x</var> values before the <var>y</var> values. That number of occurrences must be the same
+     * than the number of consecutive <var>y</var> values before the <var>z</var> values, the number of consecutive <var>z</var>
+     * values before the next values, and so on until the end of the vector.</p>
+     *
+     * <div class="note"><b>Examples:</b>
+     * in the following vector, each value is repeated 3 times. So the array returned by this method would be {@code {4}},
+     * meaning that the first number appears 4 times, followed by a new number appearing 4 times, followed by a new number
+     * appearing 4 times, and so on until the end of the vector.
+     *
+     * {@preformat text
+     *    10, 10, 10, 10,
+     *    12, 12, 12, 12,
+     *    15, 15, 15, 15
+     * }</div>
+     *
+     * For the next level (the second integer in the returned array), this method represents above repetitions by single entities
+     * then reapplies the same repetition detection. This method processes has if the (<var>x</var>, <var>x</var>, …, <var>x</var>,
+     * <var>y</var>, <var>y</var>, …, <var>y</var>, <var>z</var>, <var>z</var>, …, <var>z</var>, …) vector was replaced by a new
+     * (<b>x</b>, <b>y</b>, <b>z</b>, …) vector, then the same detection algorithm was applied recursively.
+     *
+     * <div class="note"><b>Examples:</b>
+     * in the following vector, each value is repeated 2 times, then the sequence of 12 values is itself repeated 2 times.
+     * So the array returned by this method would be {@code {3,4}}, meaning that the first number appears 3 times, followed
+     * by a new number appearing 3 times, <i>etc.</i> until we counted 4 groups of 3 numbers. Then the whole sequence is
+     * repeated until the end of the vector.
+     *
+     * {@preformat text
+     *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18,
+     *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18,
+     *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18
+     * }</div>
+     *
+     * <p>This method is useful for analyzing the localization grid provided by some files (for example in netCDF format).
+     * Those grids sometime have constant longitude for the same column index, or constant latitude for the same row index.
+     * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.</p>
+     *
+     * @return the number of times that entities (numbers, or group of numbers) appears consecutively with identical values.
+     *         If no such repetition is found, an empty array.
+     *
+     * @since 1.0
+     */
+    public int[] repetitions() {
+        final int size = size();
+        if (size >= 2) {
+            /*
+             * For the firt level of repetitions, we rely on a method to be overridden by subclasses
+             * for detecting the length of consecutive identical numbers. We could have use the more
+             * generic algorithm based on 'equals(int, int, Vector, int)' instead, but this approach
+             * is faster.
+             */
+            int r0 = 0;
+            for (int i=0; i < size; i += r0) {
+                final int p = r0;
+                r0 = indexOf(i, i+1, false) - i;
+                if (r0 <= 1 || (p % r0) != 0) {
+                    r0 = 1;
+                    break;
+                }
+            }
+            /*
+             * At this point r0 is the number of identical consecutive numbers in vectors like (x,x,x, y,y,y, z,z,z)
+             * and shall not be modified anymore for the rest of this method. This is the first integer value in the
+             * array to be returned. Following algorithm applies to deeper levels.
+             */
+            final int skip = (r0 == 1) ? 1 : 0;     // Optimization (code below would work with skip = 0 all the times).
+            int r = 0;
+nextMatch:  for (;;) {
+                r += r0;
+                if (skip != 0) {
+                    r = indexOf(0, r, true);        // Optimization for reducing the number of method calls when r0 = 1.
+                }
+                if (r >= size) break;
+                if (equals(skip, Math.min(r0, size - r), this, r + skip)) {
+                    /*
+                     * Found a possible repetition of length r. Verify if this repetition pattern is observed until
+                     * the end of the vector. If not, we will search for the next possible repetition.
+                     */
+                    for (int i=r; i<size; i += r) {
+                        if (!equals(0, Math.min(r, size - i), this, i)) {
+                            continue nextMatch;
+                        }
+                    }
+                    break;      // At this point we verified that the repetition is observed until the vector end.
+                }
+            }
+            if (r < size) {
+                return new int[] {r0, r / r0};
+            } else if (r0 != 1) {
+                return new int[] {r0};
+            }
+        }
+        return ArraysExt.EMPTY_INT;
+    }
+
+    /**
      * Returns {@code a-b} as a signed value, throwing an exception if the result overflows a {@code long}.
      * The given values will be interpreted as unsigned values if this vector {@linkplain #isUnsigned() is unsigned}.
      *
@@ -600,7 +734,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * the element at index <code>(first + step*<var>i</var>)</code> in this vector.
      *
      * <p>This method does not copy the values. Consequently any modification to the
-     * values of this vector will be reflected in the returned view and vis-versa.</p>
+     * values of this vector will be reflected in the returned view and vice-versa.</p>
      *
      * @param  first   index of the first value to be included in the returned view.
      * @param  step    the index increment in this vector between two consecutive values
@@ -613,8 +747,24 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector subSampling(final int first, final int step, final int length) {
-        if (step == 1 && first == 0 && length == size()) {
+        final int size = size();
+        if (step == 1 && first == 0 && length == size) {
             return this;
+        }
+        final long last = first + step * (length - 1L);
+        if (first < 0 || first >= size || last < 0 || last >= size || length < 0) {
+            final short key;
+            final Object arg1, arg2;
+            if (step == 1) {
+                key  = Errors.Keys.IllegalRange_2;
+                arg1 = first;
+                arg2 = last;
+            } else {
+                key  = Errors.Keys.IllegalArgumentValue_2;
+                arg1 = "range";
+                arg2 = "[" + first + ':' + step + ':' + last + ']';
+            }
+            throw new IndexOutOfBoundsException(Errors.format(key, arg1, arg2));
         }
         return createSubSampling(first, step, length);
     }
@@ -644,8 +794,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         final int length;
 
         /** Creates a new view over the given range. */
-        protected SubSampling(final int first, final int step, final int length) {
-            ensureValid(first, step, length);
+        SubSampling(final int first, final int step, final int length) {
             this.first  = first;
             this.step   = step;
             this.length = length;
@@ -771,7 +920,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     /**
      * Returns a view which contains the values of this vector at the given indexes.
      * This method does not copy the values, consequently any modification to the
-     * values of this vector will be reflected in the returned view and vis-versa.
+     * values of this vector will be reflected in the returned view and vice-versa.
      *
      * <p>The indexes do not need to be in any particular order. The same index can be repeated
      * more than once. Thus it is possible to create a vector larger than the original vector.</p>
@@ -871,7 +1020,6 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
         /** Delegates to the enclosing vector. */
         @Override Vector createSubSampling(int first, final int step, final int length) {
-            ensureValid(first, step, length);
             final int[] ni = new int[length];
             if (step == 1) {
                 System.arraycopy(indices, first, ni, 0, length);
@@ -905,26 +1053,6 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
                     }
                 }, n);
             }
-        }
-    }
-
-    /**
-     * Ensures that the range created from the given parameters is valid.
-     */
-    static void ensureValid(final int first, final int step, final int length) {
-        if (length < 0) {
-            final short key;
-            final Object arg1, arg2;
-            if (step == 1) {
-                key  = Errors.Keys.IllegalRange_2;
-                arg1 = first;
-                arg2 = first + length;
-            } else {
-                key  = Errors.Keys.IllegalArgumentValue_2;
-                arg1 = "range";
-                arg2 = "[" + first + ':' + step + ':' + (first + step*length) + ']';
-            }
-            throw new IllegalArgumentException(Errors.format(key, arg1, arg2));
         }
     }
 
@@ -991,7 +1119,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  tolerance  maximal difference allowed between original and compressed vectors (can be zero).
      * @return a more compact vector with the same data than this vector, or {@code this}.
      */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    @SuppressWarnings({"fallthrough", "ReturnOfCollectionOrArrayField"})
     public Vector compress(final double tolerance) {
         final int length = size();
         final Number inc = increment(tolerance);
@@ -1008,6 +1136,23 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
             final Double NaN = Numerics.valueOf(Double.NaN);
             return new SequenceVector.Doubles(getElementType(), NaN, NaN, length);
         } while (isNaN(i++));
+        /*
+         * Verify if the vector contains repetitions. If yes, then we can keep only a subregion of this vector.
+         * The thresholds below are arbitrary; they are used for deciding if it is worth to remove repetitions,
+         * keeping in mind that RepeatedVector consumes about 8 words in memory in addition to the base vector.
+         * Assuming that RepeatedVector divides the vector length by 2, we need at least 16 integers before to
+         * compensate. Another threshold is to verify that we do not see a repetition because some values from
+         * the vector beginning appears at the vector end. As an arbitrary threshold, the repetition at vector
+         * end must be at least 1/4 of the vector size.
+         */
+        if (length > 20*Integer.SIZE / getBitCount()) {
+            final int[] repetitions = repetitions();
+            switch (repetitions.length) {
+                default: if (length - repetitions[1] < length/4) break;               // Otherwise fallthrough.
+                case 1:  return new RepeatedVector(this, repetitions, tolerance);
+                case 0:  break;
+            }
+        }
         /*
          * Try to copy the values in a more compact format.
          * We will use a vector backed by IntegerList in order to use only the amount of bits needed,
@@ -1102,5 +1247,74 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
             separator = ", ";
         }
         return buffer.append(']').toString();
+    }
+
+    /**
+     * The prime number used in hash code computation. Must be the same than the prime number used
+     * in {@link Arrays#hashCode(Object[])} computation. More generally, or {@link #hashCode()}
+     * implementations must be the same than {@code hashCode(…)} implementations in {@link Arrays}.
+     */
+    static final int PRIME = 31;
+
+    /**
+     * Returns a hash code for the values in this vector. The hash code is computed as if this vector was converted
+     * to an array of {@link Number}s, then the {@link Arrays#hashCode(Object[])} method invoked for that array.
+     *
+     * @return a hash code value for the values in this vector.
+     *
+     * @since 1.0
+     */
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        final int size = size();
+        for (int i=0; i<size; i++) {
+            hash = PRIME * hash + get(i).hashCode();
+        }
+        return hash;
+    }
+
+    /**
+     * Returns {@code true} if the given object is a vector containing the same values than this vector.
+     * This method performs the comparison as if the two vectors where converted to arrays of {@link Number}s,
+     * then the {@link Arrays#equals(Object[], Object[])} method invoked for those arrays.
+     *
+     * @param  object  the other object to compare with this vector.
+     * @return {@code true} if the given object is a vector containing the same values than this vector.
+     *
+     * @since 1.0
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) return true;
+        if (object instanceof Vector) {
+            final Vector other = (Vector) object;
+            final int size = size();
+            if (size == other.size()) {
+                return equals(0, size, other, 0);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if this vector in the given range is equals to the specified vector.
+     * NaN values are considered equal to all other NaN values, and -0.0 is different than +0.0.
+     *
+     * @param  lower        index of the first value to compare in this vector, inclusive.
+     * @param  upper        index after the last value to compare in this vector.
+     * @param  other        the other vector to compare values with this vector. May be {@code this}.
+     * @param  otherOffset  index of the first element to compare in the other vector.
+     * @return whether values over the specified range of the two vectors are equal.
+     *
+     * @todo Override in {@link ArrayVector} on JDK9.
+     */
+    private boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+        while (lower < upper) {
+            if (!get(lower++).equals(other.get(otherOffset++))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
