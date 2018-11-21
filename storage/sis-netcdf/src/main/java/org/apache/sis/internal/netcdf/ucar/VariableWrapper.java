@@ -357,7 +357,7 @@ final class VariableWrapper extends Variable {
      * This method is invoked only for variables that represent a coordinate system axis.
      */
     @Override
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
             throws IOException, DataStoreException
     {
         if (variable instanceof CoordinateAxis1D) {
@@ -368,7 +368,7 @@ final class VariableWrapper extends Variable {
                 return true;
             }
         }
-        return super.trySetTransform(gridToCRS, srcDim, tgtDim);
+        return super.trySetTransform(gridToCRS, srcDim, tgtDim, values);
     }
 
     /**

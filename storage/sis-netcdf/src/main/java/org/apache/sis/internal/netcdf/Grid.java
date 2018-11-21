@@ -25,13 +25,13 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
@@ -196,6 +196,43 @@ public abstract class Grid extends NamedElement {
     }
 
     /**
+     * Builds the grid extent if the shape is available. The shape may not be available
+     * if a dimension has unlimited length. The dimension names are informative only.
+     *
+     * @param  axes  value of {@link #getAxes()}. Should be the same as {@link #axes}.
+     */
+    @SuppressWarnings("fallthrough")
+    private GridExtent getExtent(final Axis[] axes) {
+        final long[] high = getShape();
+        if (high == null) {
+            return null;
+        }
+        final DimensionNameType[] names = new DimensionNameType[high.length];
+        switch (names.length) {
+            default: names[1] = DimensionNameType.ROW;      // Fall through
+            case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
+            case 0:  break;
+        }
+        for (final Axis axis : axes) {
+            if (axis.sourceDimensions.length == 1) {
+                final DimensionNameType name;
+                if (AxisDirections.isVertical(axis.direction)) {
+                    name = DimensionNameType.VERTICAL;
+                } else if (AxisDirections.isTemporal(axis.direction)) {
+                    name = DimensionNameType.TIME;
+                } else {
+                    continue;
+                }
+                final int dim = axis.sourceDimensions[0];
+                if (dim >= 0 && dim < names.length) {
+                    names[names.length - 1 - dim] = name;
+                }
+            }
+        }
+        return new GridExtent(names, new long[high.length], high, false);
+    }
+
+    /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
      * This is the public object exposed to users.
      *
@@ -204,44 +241,10 @@ public abstract class Grid extends NamedElement {
      * @throws  IOException if an I/O operation was necessary but failed.
      * @throws  DataStoreException if the CRS can not be constructed.
      */
-    @SuppressWarnings("fallthrough")
     public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
             isGeometryDetermined = true;        // Set now for avoiding new attempts if creation fail.
             final Axis[] axes = getAxes();      // In netCDF order (reverse of "natural" order).
-            /*
-             * Build the grid extent if the shape is available. The shape may not be available
-             * if a dimension has unlimited length. The dimension names are informative only.
-             */
-            final GridExtent extent;
-            final long[] high = getShape();
-            if (high != null) {
-                final DimensionNameType[] names = new DimensionNameType[high.length];
-                switch (names.length) {
-                    default: names[1] = DimensionNameType.ROW;      // Fall through
-                    case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
-                    case 0:  break;
-                }
-                for (final Axis axis : axes) {
-                    if (axis.sourceDimensions.length == 1) {
-                        final DimensionNameType name;
-                        if (AxisDirections.isVertical(axis.direction)) {
-                            name = DimensionNameType.VERTICAL;
-                        } else if (AxisDirections.isTemporal(axis.direction)) {
-                            name = DimensionNameType.TIME;
-                        } else {
-                            continue;
-                        }
-                        final int dim = axis.sourceDimensions[0];
-                        if (dim >= 0 && dim < names.length) {
-                            names[names.length - 1 - dim] = name;
-                        }
-                    }
-                }
-                extent = new GridExtent(names, new long[high.length], high, false);
-            } else {
-                extent = null;
-            }
             /*
              * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
@@ -249,37 +252,61 @@ public abstract class Grid extends NamedElement {
              */
             int srcEnd = getSourceDimensions();
             int tgtEnd = getTargetDimensions();
+            final int[] deferred = new int[axes.length];
+            final List<MathTransform> nonLinears = new ArrayList<>();
             final Matrix affine = Matrices.createZero(tgtEnd + 1, srcEnd + 1);
             affine.setElement(tgtEnd--, srcEnd--, 1);
             for (int i=axes.length; --i >= 0;) {
-                final Axis axis = axes[i];
-                final int tgtDim = tgtEnd - i;
-                if (axis.sourceDimensions.length == 1) {
-                    final int srcDim = srcEnd - axis.sourceDimensions[0];
-                    if (axis.coordinates.trySetTransform(affine, srcDim, tgtDim)) {
-                        continue;
-                    }
+                if (!axes[i].trySetTransform(affine, srcEnd, tgtEnd - i, nonLinears)) {
+                    deferred[nonLinears.size() - 1] = i;
                 }
-                /*
-                 * If we have not been able to set coefficients in the matrix (because the transform is non-linear),
-                 * set a single scale factor to 1 in the matrix row; we will concatenate later with a non-linear transform.
-                 * The coefficient that we set to 1 is the one for the source dimension which is not already taken by another row.
-                 */
-findFree:       for (int srcDim : axis.sourceDimensions) {
+            }
+            /*
+             * If we have not been able to set coefficients in the matrix (because the transform is non-linear),
+             * set a single scale factor to 1 in the matrix row; we will concatenate later with a non-linear transform.
+             * The coefficient that we set to 1 is the one for the source dimension which is not already taken by another row.
+             */
+            final MathTransformFactory factory = decoder.getMathTransformFactory();
+            for (int i=0; i<nonLinears.size(); i++) {
+                final int d = deferred[i];
+findFree:       for (int srcDim : axes[d].sourceDimensions) {
                     srcDim = srcEnd - srcDim;
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
                         }
                     }
+                    final int tgtDim = tgtEnd - d;
                     affine.setElement(tgtDim, srcDim, 1);
-                    // TODO: prepare non-linear transform here for later concatenation.
+                    /*
+                     * Prepare non-linear transform here for later concatenation.
+                     * TODO: what to do if the transform is null?
+                     */
+                    MathTransform tr = nonLinears.get(i);
+                    if (tr != null) {
+                        tr = factory.createPassThroughTransform(srcDim, tr, (srcEnd + 1) - (srcDim + tr.getSourceDimensions()));
+                        nonLinears.set(i, tr);
+                    }
                     break;
                 }
             }
-            MathTransform gridToCRS = MathTransforms.linear(affine);
-            geometry = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, getCoordinateReferenceSystem(decoder));
-        } catch (TransformException ex) {
+            /*
+             * Final transform, as the concatenation of the non-linear transforms followed by the affine transform.
+             * We concatenate the affine transform last because it may change axis order.
+             */
+            MathTransform gridToCRS = null;
+            nonLinears.add(factory.createAffineTransform(affine));
+            for (final MathTransform tr : nonLinears) {
+                if (tr != null) {
+                    if (gridToCRS == null) {
+                        gridToCRS = tr;
+                    } else {
+                        gridToCRS = factory.createConcatenatedTransform(gridToCRS, tr);
+                    }
+                }
+            }
+            geometry = new GridGeometry(getExtent(axes), PixelInCell.CELL_CENTER, gridToCRS, getCoordinateReferenceSystem(decoder));
+        } catch (FactoryException | TransformException ex) {
             canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }
         return geometry;

@@ -27,13 +27,17 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
+import org.apache.sis.math.Vector;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -300,5 +304,85 @@ public final class Axis extends NamedElement {
             abbr = null;
         }
         return factory.createCoordinateSystemAxis(properties, abbr, direction, unit);
+    }
+
+    /**
+     * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
+     * Source and target dimensions used by this method are in "natural" order (reverse of netCDF order).
+     * Setting the coefficient is possible only if values in this variable are regular,
+     * i.e. the difference between two consecutive values is constant.
+     *
+     * <p>If this method returns {@code true}, then the {@code nonLinears} list is left unchanged.
+     * If this method returns {@code false}, then a non-linear transform or {@code null} has been
+     * added to the {@code nonLinears} list.</p>
+     *
+     * @param  gridToCRS   the matrix in which to set scale and offset coefficient.
+     * @param  srcEnd      number of source dimensions (grid dimensions) - 1. Identifies the last column in the matrix.
+     * @param  tgtDim      the target dimension, which is a dimension of the CRS. Identifies the matrix row of scale factor.
+     * @param  nonLinears  where to add a non-linear transform if we can not compute a linear one. {@code null} may be added.
+     * @return whether this method successfully set the scale and offset coefficients.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    final boolean trySetTransform(final Matrix gridToCRS, final int srcEnd, final int tgtDim,
+            final List<MathTransform> nonLinears) throws IOException, DataStoreException
+    {
+        /*
+         * Normal case where the axis has only one dimension.
+         */
+        if (sourceDimensions.length == 1) {
+            final int srcDim = srcEnd - sourceDimensions[0];
+            if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, null)) {
+                return true;
+            } else {
+                nonLinears.add(MathTransforms.interpolate(null, coordinates.read().doubleValues()));
+                return false;
+            }
+        }
+        /*
+         * In netCDF files, axes are sometime associated to two-dimensional localization grids.
+         * If this is the case, then the following block checks if we can reduce those grids to
+         * one-dimensional vector. For example the following localisation grids:
+         *
+         *    10 10 10 10                  10 12 15 20
+         *    12 12 12 12        or        10 12 15 20
+         *    15 15 15 15                  10 12 15 20
+         *    20 20 20 20                  10 12 15 20
+         *
+         * can be reduced to a one-dimensional {10 12 15 20} vector (orientation matter however).
+         *
+         * Note: following block is currently restricted to the two-dimensional case, but it could
+         * be generalized to n-dimensional case if we resolve the default case in the switch statement.
+         */
+        if (sourceDimensions.length == 2) {
+            Vector data = coordinates.read();
+            final int[] repetitions = data.repetitions();           // Detects repetitions as illustrated above.
+            for (int i=0; i<sourceDimensions.length; i++) {
+                final int srcDim = srcEnd - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
+                final int length = sourceSizes[i];
+                int step = 1;
+                for (int j=0; j<sourceDimensions.length; j++) {
+                    int previous = srcEnd - sourceDimensions[j];
+                    if (previous < srcDim) step *= sourceSizes[j];
+                }
+                final boolean condition;
+                switch (srcDim) {
+                    case 0:  condition = repetitions.length > 1 && (repetitions[1] % length) == 0; break;
+                    case 1:  condition = repetitions.length > 0 && (repetitions[0] % step)   == 0; break;
+                    default: throw new AssertionError();        // I don't know yet how to generalize to n dimensions.
+                }
+                if (condition) {                                // Repetition length shall be grid size (or a multiple).
+                    data = data.subSampling(0, step, length);
+                    if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, data)) {
+                        return true;
+                    } else {
+                        nonLinears.add(MathTransforms.interpolate(null, data.doubleValues()));
+                        return false;
+                    }
+                }
+            }
+        }
+        nonLinears.add(null);
+        return false;
     }
 }

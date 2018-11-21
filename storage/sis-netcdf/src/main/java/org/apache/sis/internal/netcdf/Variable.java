@@ -363,6 +363,7 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
+     * Source and target dimensions given to this method are in "natural" order (reverse of netCDF order).
      * This method is invoked only for variables that represent a coordinate system axis.
      * Setting the coefficient is possible only if values in this variable are regular,
      * i.e. the difference between two consecutive values is constant.
@@ -370,14 +371,17 @@ public abstract class Variable extends NamedElement {
      * @param  gridToCRS  the matrix in which to set scale and offset coefficient.
      * @param  srcDim     the source dimension, which is a dimension of the grid. Identifies the matrix column of scale factor.
      * @param  tgtDim     the target dimension, which is a dimension of the CRS.  Identifies the matrix row of scale factor.
+     * @param  values     the vector to use for computing scale and offset, or {@code null} if it has not been read yet.
      * @return whether this method successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, Vector values)
             throws IOException, DataStoreException
     {
-        final Vector values = read();
+        if (values == null) {
+            values = read();
+        }
         final int n = values.size() - 1;
         if (n >= 0) {
             final double first = values.doubleValue(0);
