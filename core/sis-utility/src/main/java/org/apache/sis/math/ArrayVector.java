@@ -251,8 +251,24 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other instanceof Doubles) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final double[] cmp = ((Doubles) other).array;
+                while (lower < upper) {
+                    if (Double.doubleToLongBits(array[lower++]) != Double.doubleToLongBits(cmp[otherOffset++])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<Double> range(final IntSupplier indices, int n) {
+            // TODO: try to paralellize with streams.
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
             while (--n >= 0) {
@@ -331,10 +347,25 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Finds index of a match or mismatch (depending on {@code equality}). */
-        @Override int indexOf(final int toSearch, int index, final boolean equality) {
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
             final int first = Float.floatToIntBits(array[toSearch]);
             while (index < array.length && (first == Float.floatToIntBits(array[index])) != equality) index++;
             return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final float[] cmp = ((Floats) other).array;
+                while (lower < upper) {
+                    if (Float.floatToIntBits(array[lower++]) != Float.floatToIntBits(cmp[otherOffset++])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
@@ -461,6 +492,21 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final long[] cmp = ((Longs) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             long min = Long.MAX_VALUE;
@@ -558,6 +604,21 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             final int first = array[toSearch];
             while (index < array.length && (first == array[index]) != equality) index++;
             return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final int[] cmp = ((Integers) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
@@ -663,6 +724,21 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return index;
         }
 
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final short[] cmp = ((Shorts) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             short min = Short.MAX_VALUE;
@@ -739,6 +815,21 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             final byte first = array[toSearch];
             while (index < array.length && (first == array[index]) != equality) index++;
             return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final byte[] cmp = ((Bytes) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */

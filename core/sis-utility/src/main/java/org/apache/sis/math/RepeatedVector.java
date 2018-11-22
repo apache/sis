@@ -199,7 +199,9 @@ final class RepeatedVector extends Vector implements Serializable {
     }
 
     /**
-     * Returns {@code this} since this vector is considered already compressed.
+     * Returns {@code this} since this vector is considered already compressed. Actually it may be possible to compress more
+     * if the {@linkplain #base} vector has been modified after {@code RepeatedVector} construction. But it should not happen
+     * since this vector is read-only and {@link Vector#compress(double)} recommends to not keep reference to the original vector.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
+import java.util.StringJoiner;
 import java.util.function.IntSupplier;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
@@ -538,7 +539,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         final int size = size();
         if (size >= 2) {
             /*
-             * For the firt level of repetitions, we rely on a method to be overridden by subclasses
+             * For the first level of repetitions, we rely on a method to be overridden by subclasses
              * for detecting the length of consecutive identical numbers. We could have use the more
              * generic algorithm based on 'equals(int, int, Vector, int)' instead, but this approach
              * is faster.
@@ -556,13 +557,33 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              * At this point r0 is the number of identical consecutive numbers in vectors like (x,x,x, y,y,y, z,z,z)
              * and shall not be modified anymore for the rest of this method. This is the first integer value in the
              * array to be returned. Following algorithm applies to deeper levels.
+             *
+             * The 'skip' variable is an optimization. Code below would work with skip = 0 all the times, but this is
+             * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing an amount of values that
+             * we can skip in the special case where r0 = 1 increases the speed a lot.
              */
-            final int skip = (r0 == 1) ? 1 : 0;     // Optimization (code below would work with skip = 0 all the times).
+            final int skip = (r0 == 1) ? indexOf(0, 1, false) : 0;
             int r = 0;
 nextMatch:  for (;;) {
                 r += r0;
                 if (skip != 0) {
-                    r = indexOf(0, r, true);        // Optimization for reducing the number of method calls when r0 = 1.
+                    /*
+                     * Optimization for reducing the number of method calls when r0 = 1: the default algorithm is to
+                     * search for a position multiple of 'r0' where all values since the beginning of the vector are
+                     * repeated. But if 'r0' is 1, the default algorithms perform a costly check at every positions.
+                     * To avoid that, we use 'indexOf' for searching the index of the next position where a match may
+                     * exist (we don't care anymore about multiples of r0 since r0 is 1). If the first expected values
+                     * are constants, we use 'indexOf' again for checking efficiently those constants.
+                     */
+                    r = indexOf(0, r, true);
+                    if (skip != 1) {
+                        if (r + skip >= size) break;
+                        final int end = indexOf(r, r+1, false);
+                        if (end - r != skip) {
+                            r = end - 1;
+                            continue;
+                        }
+                    }
                 }
                 if (r >= size) break;
                 if (equals(skip, Math.min(r0, size - r), this, r + skip)) {
@@ -655,19 +676,29 @@ nextMatch:  for (;;) {
              *     doubleValue(i)  =  first + increment*i
              *
              * The intent is that if tolerance = 0 and this method returns a non-null value, then replacing
-             * this vector by an instance of SequenceVector should produce exactely the same double values.
+             * this vector by an instance of SequenceVector should produce exactly the same double values,
+             * in the limit of the accuracy allowed by the floating point values.
              */
             if (type >= Numbers.FLOAT && type <= Numbers.DOUBLE) {
                 final double first = doubleValue(0);
                 final double inc = (doubleValue(--i) - first) / i;
-                while (i >= 1) {
-                    if (!(Math.abs(first + inc*i - doubleValue(i--)) <= tolerance)) {       // Use '!' for catching NaN.
-                        return null;
-                    }
-                }
                 if (type == Numbers.FLOAT) {
+                    while (i >= 1) {
+                        final float  value = floatValue(i);
+                        final double delta = Math.abs(first + inc*i-- - value);
+                        final double accur = Math.ulp(value);
+                        if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use '!' for catching NaN.
+                            return null;
+                        }
+                    }
                     final float f = (float) inc;
-                    if (f == inc) return f;             // Use the java.lang.Float wrapper class if possible.
+                    if (f == inc) return f;                            // Use the java.lang.Float wrapper class if possible.
+                } else {
+                    while (i >= 1) {
+                        if (!(Math.abs(first + inc*i - doubleValue(i--)) <= tolerance)) {       // Use '!' for catching NaN.
+                            return null;
+                        }
+                    }
                 }
                 return inc;
             }
@@ -885,6 +916,17 @@ nextMatch:  for (;;) {
             }
             return Vector.this.range(supplier, n);
         }
+
+        /**
+         * If the vector can not be compressed, copies data in a new vector in order to have a smaller vector
+         * than the one backing this view. This is advantageous only on the assumption that user do not keep
+         * a reference to the original vector after {@link Vector#compress(double)} call.
+         */
+        @Override
+        public Vector compress(final double tolerance) {
+            final Vector c = super.compress(tolerance);
+            return (c != this) ? c : copy();
+        }
     }
 
     /**
@@ -1053,6 +1095,17 @@ nextMatch:  for (;;) {
                     }
                 }, n);
             }
+        }
+
+        /**
+         * If the vector can not be compressed, copies data in a new vector in order to have a smaller vector
+         * than the one backing this view. This is advantageous only on the assumption that user do not keep
+         * a reference to the original vector after {@link Vector#compress(double)} call.
+         */
+        @Override
+        public Vector compress(final double tolerance) {
+            final Vector c = super.compress(tolerance);
+            return (c != this) ? c : copy();
         }
     }
 
@@ -1228,6 +1281,67 @@ nextMatch:  for (;;) {
     }
 
     /**
+     * Returns a copy of this vector. The returned vector is writable, and changes in that vector has no effect
+     * on this original vector. The copy is not a clone since it may not be an instance of the same class.
+     *
+     * @return a copy of this vector.
+     */
+    final Vector copy() {
+        final Object array;
+        final int size = size();
+        switch (Numbers.getEnumConstant(getElementType())) {
+            case Numbers.DOUBLE: {
+                array = doubleValues();
+                break;
+            }
+            case Numbers.FLOAT: {
+                array = floatValues();
+                if (size != 0 && get(0) instanceof Double) {
+                    return createForDecimal((float[]) array);
+                }
+                break;
+            }
+            case Numbers.LONG: {
+                final long[] data = new long[size];
+                for (int i=0; i<size; i++) {
+                    data[i] = longValue(i);
+                }
+                array = data;
+                break;
+            }
+            case Numbers.INTEGER: {
+                final int[] data = new int[size];
+                for (int i=0; i<size; i++) {
+                    data[i] = (int) longValue(i);           // For handling both signed and unsigned integers.
+                }
+                array = data;
+                break;
+            }
+            case Numbers.SHORT: {
+                final short[] data = new short[size];
+                for (int i=0; i<size; i++) {
+                    data[i] = (short) intValue(i);          // For handling both signed and unsigned integers.
+                }
+                array = data;
+                break;
+            }
+            case Numbers.BYTE: {
+                final byte[] data = new byte[size];
+                for (int i=0; i<size; i++) {
+                    data[i] = (byte) intValue(i);           // For handling both signed and unsigned integers.
+                }
+                array = data;
+                break;
+            }
+            default: {
+                array = toArray(new Number[size]);
+                break;
+            }
+        }
+        return ArrayVector.newInstance(array, isUnsigned());
+    }
+
+    /**
      * Returns a string representation of this vector.
      *
      * @return a string representation of this vector.
@@ -1236,17 +1350,12 @@ nextMatch:  for (;;) {
      */
     @Override
     public String toString() {
+        final StringJoiner buffer = new StringJoiner(", ", "[", "]");
         final int length = size();
-        if (length == 0) {
-            return "[]";
-        }
-        final StringBuilder buffer = new StringBuilder();
-        String separator = "[";
         for (int i=0; i<length; i++) {
-            buffer.append(separator).append(stringValue(i));
-            separator = ", ";
+            buffer.add(stringValue(i));
         }
-        return buffer.append(']').toString();
+        return buffer.toString();
     }
 
     /**
@@ -1306,10 +1415,8 @@ nextMatch:  for (;;) {
      * @param  other        the other vector to compare values with this vector. May be {@code this}.
      * @param  otherOffset  index of the first element to compare in the other vector.
      * @return whether values over the specified range of the two vectors are equal.
-     *
-     * @todo Override in {@link ArrayVector} on JDK9.
      */
-    private boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+    boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
         while (lower < upper) {
             if (!get(lower++).equals(other.get(otherOffset++))) {
                 return false;
