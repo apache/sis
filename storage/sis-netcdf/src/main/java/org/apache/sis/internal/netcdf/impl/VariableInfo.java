@@ -300,7 +300,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         boolean isUnknown    = false;           // True if 'total' is actually unknown.
         for (final VariableInfo variable : variables) {
             // Opportunistically store names of all axes listed in "coordinates" attributes of all variables.
-            referencedAsAxis.addAll(Arrays.asList(CharSequences.split(variable.getAttributeString(CF.COORDINATES), ' ')));
+            referencedAsAxis.addAll(Arrays.asList(variable.getCoordinateVariables()));
             if (variable.isUnlimited()) {
                 final long paddedSize = variable.paddedSize();
                 unlimited[count++] = variable;
@@ -393,7 +393,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     protected Unit<?> parseUnit(String symbols) {
-        final Matcher parts = TIME_PATTERN.matcher(symbols);
+        final Matcher parts = TIME_UNIT_PATTERN.matcher(symbols);
         if (parts.matches()) {
             /*
              * If we enter in this block, the unit is of the form "days since 1970-01-01 00:00:00".
@@ -449,6 +449,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     final String getAxisType() {
         final Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
         return (value instanceof String) ? (String) value : null;
+    }
+
+    /**
+     * Returns the names of variables to use as axes for this variable, or an empty array if none.
+     */
+    final CharSequence[] getCoordinateVariables() {
+        return CharSequences.split(getAttributeString(CF.COORDINATES), ' ');
     }
 
     /**
@@ -607,6 +614,26 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean readTriesToCompress() {
+        return true;
+    }
+
+    /**
+     * Sets the values in this variable. The values are normally read from the netCDF file by the {@link #read()} method,
+     * but this {@code setValues(Object)} method may also be invoked if we want to overwrite those values.
+     *
+     * @param  array  the values as an array of primitive type (for example {@code float[]}.
+     */
+    final void setValues(final Object array) {
+        values = createDecimalVector(array, dataType.isUnsigned).compress(0);
+    }
+
+    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * The vector is cached and returned as-is in all future invocation of this method.
@@ -630,7 +657,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
             final Region region = new Region(upper, lower, upper, subsampling);
             applyUnlimitedDimensionStride(region);
-            values = createDecimalVector(reader.read(region), dataType.isUnsigned).compress(0);
+            setValues(reader.read(region));
         }
         return values;
     }
@@ -664,9 +691,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreContentException {
+    public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
+        }
+        if (values != null) {
+            throw new DataStoreException();     // TODO: create a view.
         }
         /*
          * NetCDF sorts datas in reverse dimension order. Example:

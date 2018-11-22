@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
 
@@ -188,7 +190,7 @@ final class GridInfo extends Grid {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the same order than the indices, but not necessarily. The intent is to reduce the
-         * amount of disk seek operations.
+         * amount of disk seek operations. Data loading may happen in this method through Axis constructor.
          */
         final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();
         for (int i=0; i<range.length; i++) {
@@ -208,6 +210,11 @@ final class GridInfo extends Grid {
             char abbreviation = getAxisType(axis.getAxisType());
             if (abbreviation == 0) {
                 abbreviation = getAxisType(axis.getName());
+                if (abbreviation == 0) {
+                    if (Units.isTemporal(axis.getUnit())) {
+                        abbreviation = 't';
+                    }
+                }
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
@@ -244,5 +251,27 @@ final class GridInfo extends Grid {
         final VariableInfo v = (VariableInfo) axis;
         final int n = v.dimensions[0].length;
         return v.read().doubleValue(j + n*i);
+    }
+
+    /**
+     * Returns a hash code for this grid. A map of {@code GridInfo} is used by
+     * {@link ChannelDecoder#getGridGeometries()} for sharing existing instances.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(domain) ^ Arrays.hashCode(range);
+    }
+
+    /**
+     * Compares the grid with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof GridInfo) {
+            final GridInfo that = (GridInfo) other;
+            return Arrays.equals(domain, that.domain) &&
+                   Arrays.equals(range,  that.range);
+        }
+        return false;
     }
 }

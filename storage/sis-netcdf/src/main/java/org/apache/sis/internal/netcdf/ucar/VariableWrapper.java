@@ -131,7 +131,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected Unit<?> parseUnit(final String symbols) throws Exception {
-        if (TIME_PATTERN.matcher(symbols).matches()) {
+        if (TIME_UNIT_PATTERN.matcher(symbols).matches()) {
             /*
              * UCAR library has two methods for getting epoch: getDate() and getDateOrigin().
              * The former adds to the origin the number that may appear before the unit, for example
@@ -314,6 +314,16 @@ final class VariableWrapper extends Variable {
             names[i] = attributes.get(i).getShortName();
         }
         return UnmodifiableArrayList.wrap(names);
+    }
+
+    /**
+     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
+     *
+     * @return {@code false}.
+     */
+    @Override
+    protected boolean readTriesToCompress() {
+        return false;
     }
 
     /**

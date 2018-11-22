@@ -25,11 +25,10 @@ import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.time.DateTimeException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -110,14 +109,6 @@ public final class ChannelDecoder extends Decoder {
      * @see #findAttribute(String)
      */
     static final Locale NAME_LOCALE = Locale.US;
-
-    /**
-     * The pattern to use for separating the component of a time unit.
-     * An example of time unit is <cite>"days since 1970-01-01T00:00:00Z"</cite>.
-     *
-     * @see #numberToDate(String, Number[])
-     */
-    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("\\s+since\\s+", Pattern.CASE_INSENSITIVE);
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -626,6 +617,18 @@ public final class ChannelDecoder extends Decoder {
         return variables;
     }
 
+    /**
+     * Checks and potentially modifies the content of this dataset for conventions other than CF-conventions.
+     * This method should be invoked after construction for handling the particularities of some datasets
+     * (HYCOM, …).
+     *
+     * @throws IOException if an error occurred while reading the channel.
+     * @throws DataStoreContentException if an error occurred while interpreting the netCDF file content.
+     */
+    public final void applyOtherConventions() throws IOException, DataStoreContentException {
+        HYCOM.convert(this, variables);
+    }
+
 
 
     // --------------------------------------------------------------------------------------------
@@ -791,10 +794,10 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public Date[] numberToDate(final String symbol, final Number... values) {
         final Date[] dates = new Date[values.length];
-        final String[] parts = TIME_UNIT_PATTERN.split(symbol);
-        if (parts.length == 2) try {
-            final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts[1])).getTime();
+        final Matcher parts = Variable.TIME_UNIT_PATTERN.matcher(symbol);
+        if (parts.matches()) try {
+            final UnitConverter converter = Units.valueOf(parts.group(1)).getConverterToAny(Units.MILLISECOND);
+            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts.group(2))).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
@@ -851,7 +854,7 @@ public final class ChannelDecoder extends Decoder {
              * First, find all variables which are used as coordinate system axis. The keys in the map are
              * the grid dimensions which are the domain of the variable (i.e. the sources of the conversion
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
-             * we try to make this code robust to unusual netCDF files.
+             * more complicated netCDF files (e.g. using two-dimensional localisation grids) also exist.
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
@@ -862,25 +865,34 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
             /*
-             * For each variables, get the list of all axes associated to their dimensions. The association
-             * is given by the above 'dimToVars' map. More than one variable may have the same dimensions,
-             * and consequently the same axes, so we will remember the previously created instances in order
-             * to share them.
+             * For each variable, get its list of axes. More than one variable may have the same list of axes,
+             * so we remember the previously created instances in order to share the grid geometry instances.
              */
             final Set<VariableInfo> axes = new LinkedHashSet<>(4);
-            final Map<List<Dimension>, GridInfo> dimsToGG = new LinkedHashMap<>();
+            final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
                     continue;
                 }
-                final List<Dimension> dimensions = Arrays.asList(variable.dimensions);
-                GridInfo gridGeometry = dimsToGG.get(dimensions);
-                if (gridGeometry == null) {
-                    /*
-                     * Found a new list of dimensions for which no axes have been created yet.
-                     * If and only if we can find all axes, then create the GridGeometryInfo.
-                     * This is a "all or nothing" operation.
-                     */
+                /*
+                 * The axes can be inferred in two ways: if the variable contains a "coordinates" attribute,
+                 * that attribute lists explicitly the variables to use as axes. Otherwise we have to infer
+                 * the axes from the variable dimensions, using the 'dimToVars' map computed at the beginning
+                 * of this method. If and only if we can find all axes, we create the GridGeometryInfo.
+                 * This is a "all or nothing" operation.
+                 */
+                final CharSequence[] coordinates = variable.getCoordinateVariables();
+                if (coordinates.length != 0) {
+                    for (int i=coordinates.length; --i >= 0;) {
+                        final VariableInfo axis = findVariable(coordinates[i].toString());
+                        if (axis == null) {
+                            axes.clear();
+                            break;
+                        }
+                        axes.add(axis);
+                    }
+                }
+                if (axes.isEmpty()) {
                     for (final Dimension dimension : variable.dimensions) {
                         final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
@@ -889,13 +901,20 @@ nextVar:    for (final VariableInfo variable : variables) {
                         }
                         axes.addAll(axis);
                     }
-                    gridGeometry = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
-                    dimsToGG.put(dimensions, gridGeometry);
-                    axes.clear();
+                }
+                /*
+                 * Creates the grid geometry using the given domain and range,
+                 * reusing existing instance if one exists.
+                 */
+                GridInfo gridGeometry = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                GridInfo existing = shared.putIfAbsent(gridGeometry, gridGeometry);
+                if (existing != null) {
+                    gridGeometry = existing;
                 }
                 variable.gridGeometry = gridGeometry;
+                axes.clear();
             }
-            gridGeometries = dimsToGG.values().toArray(new Grid[dimsToGG.size()]);
+            gridGeometries = shared.values().toArray(new Grid[shared.size()]);
         }
         return gridGeometries;
     }

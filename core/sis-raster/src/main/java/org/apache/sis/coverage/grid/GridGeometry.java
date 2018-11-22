@@ -980,7 +980,7 @@ public class GridGeometry implements Serializable {
                     while (nonLinearDimensions != 0) {
                         final int i = Long.numberOfTrailingZeros(nonLinearDimensions);
                         nonLinearDimensions &= ~(1L << i);
-                        buffer.append(separator).append(cs != null ? cs.getAxis(i).getName() : String.valueOf(i));
+                        buffer.append(separator).append(cs != null ? cs.getAxis(i).getName().getCode() : String.valueOf(i));
                         separator = ", ";
                     }
                     buffer.append(lineSeparator);

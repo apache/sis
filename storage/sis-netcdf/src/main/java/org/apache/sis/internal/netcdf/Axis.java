@@ -356,28 +356,32 @@ public final class Axis extends NamedElement {
          */
         if (sourceDimensions.length == 2) {
             Vector data = coordinates.read();
-            final int[] repetitions = data.repetitions();           // Detects repetitions as illustrated above.
-            for (int i=0; i<sourceDimensions.length; i++) {
-                final int srcDim = srcEnd - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
-                final int length = sourceSizes[i];
-                int step = 1;
-                for (int j=0; j<sourceDimensions.length; j++) {
-                    int previous = srcEnd - sourceDimensions[j];
-                    if (previous < srcDim) step *= sourceSizes[j];
-                }
-                final boolean condition;
-                switch (srcDim) {
-                    case 0:  condition = repetitions.length > 1 && (repetitions[1] % length) == 0; break;
-                    case 1:  condition = repetitions.length > 0 && (repetitions[0] % step)   == 0; break;
-                    default: throw new AssertionError();        // I don't know yet how to generalize to n dimensions.
-                }
-                if (condition) {                                // Repetition length shall be grid size (or a multiple).
-                    data = data.subSampling(0, step, length);
-                    if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, data)) {
-                        return true;
-                    } else {
-                        nonLinears.add(MathTransforms.interpolate(null, data.doubleValues()));
-                        return false;
+            if (!coordinates.readTriesToCompress() || data.getClass().getSimpleName().equals("RepeatedVector")) {
+                final int[] repetitions = data.repetitions();       // Detects repetitions as illustrated above.
+                if (repetitions.length != 0) {
+                    for (int i=0; i<sourceDimensions.length; i++) {
+                        final int srcDim = srcEnd - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
+                        final int length = sourceSizes[i];
+                        int step = 1;
+                        for (int j=0; j<sourceDimensions.length; j++) {
+                            int previous = srcEnd - sourceDimensions[j];
+                            if (previous < srcDim) step *= sourceSizes[j];
+                        }
+                        final boolean condition;
+                        switch (srcDim) {
+                            case 0:  condition = repetitions.length > 1 && (repetitions[1] % length) == 0; break;
+                            case 1:  condition =                           (repetitions[0] % step)   == 0; break;
+                            default: throw new AssertionError();        // I don't know yet how to generalize to n dimensions.
+                        }
+                        if (condition) {                                // Repetition length shall be grid size (or a multiple).
+                            data = data.subSampling(0, step, length);
+                            if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, data)) {
+                                return true;
+                            } else {
+                                nonLinears.add(MathTransforms.interpolate(null, data.doubleValues()));
+                                return false;
+                            }
+                        }
                     }
                 }
             }

@@ -53,6 +53,8 @@ import org.apache.sis.util.NullArgumentException;
 public abstract class Grid extends NamedElement {
     /**
      * The axes, created when first needed.
+     * The ordering of axes is based on the order in which dimensions are declared for variables using this grid.
+     * This is not necessarily the same order than the order in which variables are listed in the netCDF file.
      *
      * @see #getAxes()
      */

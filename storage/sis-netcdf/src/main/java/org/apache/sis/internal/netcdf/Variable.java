@@ -42,8 +42,11 @@ import org.apache.sis.util.resources.Errors;
 public abstract class Variable extends NamedElement {
     /**
      * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
+     *
+     * @see #parseUnit(String)
+     * @see Decoder#numberToDate(String, Number[])
      */
-    protected static final Pattern TIME_PATTERN = Pattern.compile("(.+)\\Wsince\\W(.+)", Pattern.CASE_INSENSITIVE);
+    public static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(.+)\\Wsince\\W(.+)", Pattern.CASE_INSENSITIVE);
 
     /**
      * Minimal number of dimension for accepting a variable as a coverage variable.
@@ -54,18 +57,23 @@ public abstract class Variable extends NamedElement {
      * The unit of measurement, parsed from {@link #getUnitsString()} when first needed.
      * We do not try to parse the unit at construction time because this variable may be
      * never requested by the user.
+     *
+     * @see #getUnit()
      */
     private Unit<?> unit;
 
     /**
      * If the unit is a temporal unit of the form "days since 1970-01-01 00:00:00", the epoch.
-     * Otherwise {@code null}. This value can be set
+     * Otherwise {@code null}. This value can be set by subclasses as a side-effect of their
+     * {@link #parseUnit(String)} method implementation.
      */
     protected Instant epoch;
 
     /**
      * Whether an attempt to parse the unit has already be done. This is used for avoiding
      * to report the same failure many times when {@link #unit} stay null.
+     *
+     * @see #getUnit()
      */
     private boolean unitParsed;
 
@@ -127,6 +135,26 @@ public abstract class Variable extends NamedElement {
      * @throws Exception if the unit can not be parsed. This wide exception type is used by the UCAR library.
      */
     protected abstract Unit<?> parseUnit(String symbols) throws Exception;
+
+    /**
+     * Sets the unit of measurement and the epoch to the same value than the given variable.
+     * This method is not used in CF-compliant files; it is reserved for the handling of some
+     * particular conventions, for example HYCOM.
+     *
+     * @param  other      the variable from which to copy unit and epoch, or {@code null} if none.
+     * @param  overwrite  if non-null, set to the given unit instead than the unit of {@code other}.
+     * @return the epoch (may be {@code null}).
+     */
+    public final Instant setUnit(final Variable other, Unit<?> overwrite) {
+        if (other != null) {
+            unit  = other.getUnit();        // May compute the epoch as a side effect.
+            epoch = other.epoch;
+        }
+        if (overwrite != null) {
+            unit = overwrite;
+        }
+        return epoch;
+    }
 
     /**
      * Returns the unit of measurement for this variable, or {@code null} if unknown.
@@ -289,6 +317,14 @@ public abstract class Variable extends NamedElement {
      * @return the singleton attribute value, or {@code null} if none or ambiguous.
      */
     public abstract String getAttributeString(final String attributeName);
+
+    /**
+     * Whether {@link #read()} invoked {@link Vector#compress(double)} on the returned vector.
+     * This information is used for avoiding to do twice some potentially costly operations.
+     *
+     * @return whether {@link #read()} invokes {@link Vector#compress(double)}.
+     */
+    protected abstract boolean readTriesToCompress();
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
