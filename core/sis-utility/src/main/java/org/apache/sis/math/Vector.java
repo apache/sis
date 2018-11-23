@@ -530,12 +530,18 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Those grids sometime have constant longitude for the same column index, or constant latitude for the same row index.
      * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.</p>
      *
+     * @param  candidates  probable values, or {@code null} or an empty array if unknown. If non-empty, those values will be used
+     *         for narrowing the search, which may improve performances. There is no guarantees that the values returned by this
+     *         method will be among the given candidates.
      * @return the number of times that entities (numbers, or group of numbers) appears consecutively with identical values.
      *         If no such repetition is found, an empty array.
      *
      * @since 1.0
      */
-    public int[] repetitions() {
+    public int[] repetitions(int... candidates) {
+        if (candidates != null && candidates.length == 0) {
+            candidates = null;
+        }
         final int size = size();
         if (size >= 2) {
             /*
@@ -545,7 +551,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              * is faster.
              */
             int r0 = 0;
-            for (int i=0; i < size; i += r0) {
+            for (int i=0; i < size-1; i += r0) {
                 final int p = r0;
                 r0 = indexOf(i, i+1, false) - i;
                 if (r0 <= 1 || (p % r0) != 0) {
@@ -562,30 +568,38 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing an amount of values that
              * we can skip in the special case where r0 = 1 increases the speed a lot.
              */
+            int candidateIndex = 0;
             final int skip = (r0 == 1) ? indexOf(0, 1, false) : 0;
             int r = 0;
-nextMatch:  for (;;) {
-                r += r0;
-                if (skip != 0) {
-                    /*
-                     * Optimization for reducing the number of method calls when r0 = 1: the default algorithm is to
-                     * search for a position multiple of 'r0' where all values since the beginning of the vector are
-                     * repeated. But if 'r0' is 1, the default algorithms perform a costly check at every positions.
-                     * To avoid that, we use 'indexOf' for searching the index of the next position where a match may
-                     * exist (we don't care anymore about multiples of r0 since r0 is 1). If the first expected values
-                     * are constants, we use 'indexOf' again for checking efficiently those constants.
-                     */
-                    r = indexOf(0, r, true);
-                    if (skip != 1) {
-                        if (r + skip >= size) break;
-                        final int end = indexOf(r, r+1, false);
-                        if (end - r != skip) {
-                            r = end - 1;
-                            continue;
+search:     for (;;) {
+                if (candidates != null) {
+                    do {
+                        if (candidateIndex >= candidates.length) break search;
+                        r = r0 * candidates[candidateIndex++];
+                    } while (r <= 0 || r >= size);
+                } else {
+                    r += r0;
+                    if (skip != 0) {
+                        /*
+                         * Optimization for reducing the number of method calls when r0 = 1: the default algorithm is to
+                         * search for a position multiple of 'r0' where all values since the beginning of the vector are
+                         * repeated. But if 'r0' is 1, the default algorithms perform a costly check at every positions.
+                         * To avoid that, we use 'indexOf' for searching the index of the next position where a match may
+                         * exist (we don't care anymore about multiples of r0 since r0 is 1). If the first expected values
+                         * are constants, we use 'indexOf' again for checking efficiently those constants.
+                         */
+                        r = indexOf(0, r, true);
+                        if (skip != 1) {
+                            if (r + skip >= size) break;
+                            final int end = indexOf(r, r+1, false);
+                            if (end - r != skip) {
+                                r = end - 1;
+                                continue;
+                            }
                         }
                     }
+                    if (r >= size) break;
                 }
-                if (r >= size) break;
                 if (equals(skip, Math.min(r0, size - r), this, r + skip)) {
                     /*
                      * Found a possible repetition of length r. Verify if this repetition pattern is observed until
@@ -593,7 +607,7 @@ nextMatch:  for (;;) {
                      */
                     for (int i=r; i<size; i += r) {
                         if (!equals(0, Math.min(r, size - i), this, i)) {
-                            continue nextMatch;
+                            continue search;
                         }
                     }
                     break;      // At this point we verified that the repetition is observed until the vector end.
@@ -1199,7 +1213,7 @@ nextMatch:  for (;;) {
          * end must be at least 1/4 of the vector size.
          */
         if (length > 20*Integer.SIZE / getBitCount()) {
-            final int[] repetitions = repetitions();
+            final int[] repetitions = repetitions(MathFunctions.divisors(length));
             switch (repetitions.length) {
                 default: if (length - repetitions[1] < length/4) break;               // Otherwise fallthrough.
                 case 1:  return new RepeatedVector(this, repetitions, tolerance);

@@ -18,9 +18,12 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.AbstractMap;
+import java.util.AbstractList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
@@ -35,7 +38,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
-import java.util.AbstractList;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import javax.measure.format.ParserException;
@@ -868,7 +870,8 @@ public final class ChannelDecoder extends Decoder {
              * For each variable, get its list of axes. More than one variable may have the same list of axes,
              * so we remember the previously created instances in order to share the grid geometry instances.
              */
-            final Set<VariableInfo> axes = new LinkedHashSet<>(4);
+            final Set<VariableInfo> axes = new LinkedHashSet<>(8);
+            final Set<Dimension> usedDimensions = new HashSet<>(8);
             final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
@@ -881,38 +884,50 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * of this method. If and only if we can find all axes, we create the GridGeometryInfo.
                  * This is a "all or nothing" operation.
                  */
+                axes.clear();
+                usedDimensions.clear();
                 final CharSequence[] coordinates = variable.getCoordinateVariables();
                 if (coordinates.length != 0) {
                     for (int i=coordinates.length; --i >= 0;) {
                         final VariableInfo axis = findVariable(coordinates[i].toString());
                         if (axis == null) {
+                            usedDimensions.clear();
                             axes.clear();
                             break;
                         }
                         axes.add(axis);
-                    }
-                }
-                if (axes.isEmpty()) {
-                    for (final Dimension dimension : variable.dimensions) {
-                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
-                        if (axis == null) {
-                            axes.clear();
-                            continue nextVar;
-                        }
-                        axes.addAll(axis);
+                        usedDimensions.addAll(Arrays.asList(axis.dimensions));
                     }
                 }
                 /*
-                 * Creates the grid geometry using the given domain and range,
-                 * reusing existing instance if one exists.
+                 * In theory the "coordinates" attribute would enumerate all axis needed for covering all dimensions,
+                 * and we would not need to check for variables having dimension names. However in practice there is
+                 * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
-                GridInfo gridGeometry = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                int mixedFlag = axes.isEmpty() ? 0 : 1;
+                for (final Dimension dimension : variable.dimensions) {
+                    if (usedDimensions.add(dimension)) {
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
+                        if (axis == null) {
+                            continue nextVar;
+                        }
+                        axes.addAll(axis);
+                        mixedFlag |= 2;
+                    }
+                }
+                /*
+                 * Creates the grid geometry using the given domain and range, reusing existing instance if one exists.
+                 * We usually try to preserve axis order as declared in the netCDF file. But if we mixed axes inferred
+                 * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
+                 * are better to sort them.
+                 */
+                GridInfo gridGeometry = new GridInfo(variable.dimensions,
+                        axes.toArray(new VariableInfo[axes.size()]), mixedFlag == 3);
                 GridInfo existing = shared.putIfAbsent(gridGeometry, gridGeometry);
                 if (existing != null) {
                     gridGeometry = existing;
                 }
                 variable.gridGeometry = gridGeometry;
-                axes.clear();
             }
             gridGeometries = shared.values().toArray(new Grid[shared.size()]);
         }

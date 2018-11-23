@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
@@ -32,10 +33,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -254,7 +257,7 @@ public abstract class Grid extends NamedElement {
              */
             int srcEnd = getSourceDimensions();
             int tgtEnd = getTargetDimensions();
-            final int[] deferred = new int[axes.length];
+            final int[] deferred = new int[axes.length];                    // Indices of axes that have been deferred.
             final List<MathTransform> nonLinears = new ArrayList<>();
             final Matrix affine = Matrices.createZero(tgtEnd + 1, srcEnd + 1);
             affine.setElement(tgtEnd--, srcEnd--, 1);
@@ -264,32 +267,88 @@ public abstract class Grid extends NamedElement {
                 }
             }
             /*
-             * If we have not been able to set coefficients in the matrix (because the transform is non-linear),
-             * set a single scale factor to 1 in the matrix row; we will concatenate later with a non-linear transform.
-             * The coefficient that we set to 1 is the one for the source dimension which is not already taken by another row.
+             * If we have not been able to set some coefficients in the matrix (because some transforms are non-linear),
+             * set a single scale factor to 1 in the matrix row. The coefficient that we set to 1 is the one for the source
+             * dimension which is not already taken by another row.
              */
-            final MathTransformFactory factory = decoder.getMathTransformFactory();
-            for (int i=0; i<nonLinears.size(); i++) {
+            final int[] sourceDimensions = new int[nonLinears.size()];
+            Arrays.fill(sourceDimensions, -1);
+            for (int i=0; i<sourceDimensions.length; i++) {
                 final int d = deferred[i];
-findFree:       for (int srcDim : axes[d].sourceDimensions) {
+                final Axis axis = axes[d];
+findFree:       for (int srcDim : axis.sourceDimensions) {
                     srcDim = srcEnd - srcDim;
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
                         }
                     }
+                    sourceDimensions[i] = srcDim;
                     final int tgtDim = tgtEnd - d;
                     affine.setElement(tgtDim, srcDim, 1);
-                    /*
-                     * Prepare non-linear transform here for later concatenation.
-                     * TODO: what to do if the transform is null?
-                     */
-                    MathTransform tr = nonLinears.get(i);
-                    if (tr != null) {
-                        tr = factory.createPassThroughTransform(srcDim, tr, (srcEnd + 1) - (srcDim + tr.getSourceDimensions()));
-                        nonLinears.set(i, tr);
-                    }
                     break;
+                }
+            }
+            /*
+             * Search for non-linear transforms not yet constructed. It may be because the transform requires a
+             * two-dimensional localization grid. Those transforms require two variables, i.e. "two-dimensional"
+             * axes come in pairs.
+             */
+            final MathTransformFactory factory = decoder.getMathTransformFactory();
+            for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
+                if (nonLinears.get(i) == null) {
+                    final Axis axis = axes[deferred[i]];
+                    if (axis.sourceDimensions.length == 2) {
+                        final int d1 = axis.sourceDimensions[0];
+                        final int d2 = axis.sourceDimensions[1];
+                        for (int j=i; ++j < nonLinears.size();) {
+                            if (nonLinears.get(j) == null) {
+                                final Axis other = axes[deferred[j]];
+                                if (other.sourceDimensions.length == 2) {
+                                    final int o1 = other.sourceDimensions[0];
+                                    final int o2 = other.sourceDimensions[1];
+                                    if ((o1 == d1 && o2 == d2) || (o1 == d2 && o2 == d1)) {
+                                        /*
+                                         * Found two axes for the same set of dimensions, which implies that they have
+                                         * the same shape (width and height).  In current implementation, we also need
+                                         * those axes to be at consecutive source dimensions.
+                                         */
+                                        final int srcDim   = sourceDimensions[i];
+                                        final int otherDim = sourceDimensions[j];
+                                        if (Math.abs(srcDim - otherDim) == 1) {
+                                            final int width  = axis.sourceSizes[0];
+                                            final int height = axis.sourceSizes[1];
+                                            final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
+                                            final Vector v1 =  axis.coordinates.read();
+                                            final Vector v2 = other.coordinates.read();
+                                            final double[] target = new double[2];
+                                            int index = 0;
+                                            for (int y=0; y<height; y++) {
+                                                for (int x=0; x<width; x++) {
+                                                    target[0] = v1.doubleValue(index);
+                                                    target[1] = v2.doubleValue(index);
+                                                    grid.setControlPoint(x, y, target);
+                                                    index++;
+                                                }
+                                            }
+                                            /*
+                                             * Replace the first transform by the two-dimensional localization grid and
+                                             * remove the other transform. Removals need to be done in arrays too.
+                                             */
+                                            nonLinears.set(i, grid.create(factory));
+                                            nonLinears.remove(j);
+                                            final int n = nonLinears.size() - j;
+                                            System.arraycopy(deferred,         j+1, deferred,         j, n);
+                                            System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
+                                            if (otherDim < srcDim) {
+                                                sourceDimensions[i] = otherDim;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             /*
@@ -297,14 +356,17 @@ findFree:       for (int srcDim : axes[d].sourceDimensions) {
              * We concatenate the affine transform last because it may change axis order.
              */
             MathTransform gridToCRS = null;
+            final int nonLinearCount = nonLinears.size();
             nonLinears.add(factory.createAffineTransform(affine));
-            for (final MathTransform tr : nonLinears) {
+            for (int i=0; i <= nonLinearCount; i++) {
+                MathTransform tr = nonLinears.get(i);
                 if (tr != null) {
-                    if (gridToCRS == null) {
-                        gridToCRS = tr;
-                    } else {
-                        gridToCRS = factory.createConcatenatedTransform(gridToCRS, tr);
+                    if (i < nonLinearCount) {
+                        final int srcDim = sourceDimensions[i];
+                        tr = factory.createPassThroughTransform(srcDim, tr,
+                                        (srcEnd + 1) - (srcDim + tr.getSourceDimensions()));
                     }
+                    gridToCRS = (gridToCRS == null) ? tr : factory.createConcatenatedTransform(gridToCRS, tr);
                 }
             }
             geometry = new GridGeometry(getExtent(axes), PixelInCell.CELL_CENTER, gridToCRS, getCoordinateReferenceSystem(decoder));

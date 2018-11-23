@@ -106,10 +106,10 @@ final class RepeatedVector extends Vector implements Serializable {
     }
 
     /**
-     * Creates a vector of repeated data from the result of a call to {@link Vector#repetitions()}.
+     * Creates a vector of repeated data from the result of a call to {@link Vector#repetitions(int...)}.
      *
      * @param base         the vector on which this vector is derived from.
-     * @param repetitions  results of {@link Vector#repetitions()}. Must be non-empty.
+     * @param repetitions  results of {@link Vector#repetitions(int...)}. Must be non-empty.
      * @param tolerance    tolerance factor for compression of the base vector.
      */
     RepeatedVector(final Vector base, final int[] repetitions, final double tolerance) {
@@ -177,10 +177,10 @@ final class RepeatedVector extends Vector implements Serializable {
 
     /**
      * Returns the parameters used by this {@code RepeatedVector} instance on the assumption
-     * that they are the result of a previous invocation to {@link Vector#repetitions()}.
+     * that they are the result of a previous invocation to {@link Vector#repetitions(int...)}.
      */
     @Override
-    public int[] repetitions() {
+    public int[] repetitions(final int... candidates) {
         if (cycleLength * occurrences >= size) {
             return new int[] {occurrences};
         } else {

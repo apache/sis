@@ -48,6 +48,9 @@ import ucar.nc2.constants.CF;
  * Whether the array length is 1 or 2 depends on whether the wrapped netCDF axis is an instance of
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
+ * <p>The natural ordering of axes is based on the order in which dimensions are declared for a variable.
+ * This is not necessarily the same order than the order in which variables are listed in the netCDF file.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
@@ -56,7 +59,7 @@ import ucar.nc2.constants.CF;
  * @since 0.3
  * @module
  */
-public final class Axis extends NamedElement {
+public final class Axis extends NamedElement implements Comparable<Axis> {
     /**
      * The abbreviation, also used as a way to identify the axis type.
      * This is a controlled vocabulary: if any abbreviation is changed,
@@ -241,6 +244,19 @@ public final class Axis extends NamedElement {
     }
 
     /**
+     * Compares this axis with the given axis for ordering based on the dimensions declared in a variable.
+     * This is used for sorting axes in the same order than the dimension order on the variable using axes.
+     * This order is not necessarily the same than the order in which variables are listed in the netCDF file.
+     *
+     * @param  other  the other axis to compare to this axis.
+     * @return -1 if this axis should be before {@code other}, +1 if it should be after.
+     */
+    @Override
+    public int compareTo(final Axis other) {
+        return sourceDimensions[0] - other.sourceDimensions[0];
+    }
+
+    /**
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
@@ -327,37 +343,41 @@ public final class Axis extends NamedElement {
     final boolean trySetTransform(final Matrix gridToCRS, final int srcEnd, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
-        /*
-         * Normal case where the axis has only one dimension.
-         */
-        if (sourceDimensions.length == 1) {
-            final int srcDim = srcEnd - sourceDimensions[0];
-            if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, null)) {
-                return true;
-            } else {
-                nonLinears.add(MathTransforms.interpolate(null, coordinates.read().doubleValues()));
-                return false;
+        switch (sourceDimensions.length) {
+            /*
+             * Defined as a matter of principle, but should never happen.
+             */
+            case 0: return true;
+            /*
+             * Normal case where the axis has only one dimension.
+             */
+            case 1: {
+                final int srcDim = srcEnd - sourceDimensions[0];
+                if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, null)) {
+                    return true;
+                } else {
+                    nonLinears.add(MathTransforms.interpolate(null, coordinates.read().doubleValues()));
+                    return false;
+                }
             }
-        }
-        /*
-         * In netCDF files, axes are sometime associated to two-dimensional localization grids.
-         * If this is the case, then the following block checks if we can reduce those grids to
-         * one-dimensional vector. For example the following localisation grids:
-         *
-         *    10 10 10 10                  10 12 15 20
-         *    12 12 12 12        or        10 12 15 20
-         *    15 15 15 15                  10 12 15 20
-         *    20 20 20 20                  10 12 15 20
-         *
-         * can be reduced to a one-dimensional {10 12 15 20} vector (orientation matter however).
-         *
-         * Note: following block is currently restricted to the two-dimensional case, but it could
-         * be generalized to n-dimensional case if we resolve the default case in the switch statement.
-         */
-        if (sourceDimensions.length == 2) {
-            Vector data = coordinates.read();
-            if (!coordinates.readTriesToCompress() || data.getClass().getSimpleName().equals("RepeatedVector")) {
-                final int[] repetitions = data.repetitions();       // Detects repetitions as illustrated above.
+            /*
+             * In netCDF files, axes are sometime associated to two-dimensional localization grids.
+             * If this is the case, then the following block checks if we can reduce those grids to
+             * one-dimensional vector. For example the following localisation grids:
+             *
+             *    10 10 10 10                  10 12 15 20
+             *    12 12 12 12        or        10 12 15 20
+             *    15 15 15 15                  10 12 15 20
+             *    20 20 20 20                  10 12 15 20
+             *
+             * can be reduced to a one-dimensional {10 12 15 20} vector (orientation matter however).
+             *
+             * Note: following block is currently restricted to the two-dimensional case, but it could
+             * be generalized to n-dimensional case if we resolve the default case in the switch statement.
+             */
+            case 2: {
+                Vector data = coordinates.read();
+                final int[] repetitions = data.repetitions(sourceSizes);    // Detects repetitions as illustrated above.
                 if (repetitions.length != 0) {
                     for (int i=0; i<sourceDimensions.length; i++) {
                         final int srcDim = srcEnd - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
@@ -385,6 +405,11 @@ public final class Axis extends NamedElement {
                     }
                 }
             }
+            /*
+             * Localization grid of 3 dimensions or more are theoretically possible, but uncommon.
+             * Such grids are not yet supported. Note that we can read three or more dimensional data;
+             * it is only the localization grid which is limited to one or two dimensions.
+             */
         }
         nonLinears.add(null);
         return false;
