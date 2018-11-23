@@ -122,11 +122,11 @@ public class GridExtent implements Serializable {
     private final DimensionNameType[] types;
 
     /**
-     * Minimum and maximum grid ordinates. The first half contains minimum ordinates (inclusive),
-     * while the last half contains maximum ordinates (<strong>inclusive</strong>). Note that the
+     * Minimum and maximum grid coordinates. The first half contains minimum coordinates (inclusive),
+     * while the last half contains maximum coordinates (<strong>inclusive</strong>). Note that the
      * later is the opposite of Java2D usage but conform to ISO specification.
      */
-    private final long[] ordinates;
+    private final long[] coordinates;
 
     /**
      * Creates a new array of coordinates with the given number of dimensions.
@@ -142,17 +142,17 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Checks if ordinate values in the low part are less than or
-     * equal to the corresponding ordinate value in the high part.
+     * Checks if coordinate values in the low part are less than or
+     * equal to the corresponding coordinate value in the high part.
      *
      * @throws IllegalArgumentException if a coordinate value in the low part is
      *         greater than the corresponding coordinate value in the high part.
      */
-    private static void checkCoherence(final long[] ordinates) throws IllegalArgumentException {
-        final int dimension = ordinates.length >>> 1;
+    private static void checkCoherence(final long[] coordinates) throws IllegalArgumentException {
+        final int dimension = coordinates.length >>> 1;
         for (int i=0; i<dimension; i++) {
-            final long lower = ordinates[i];
-            final long upper = ordinates[i + dimension];
+            final long lower = coordinates[i];
+            final long upper = coordinates[i + dimension];
             if (lower > upper) {
                 throw new IllegalArgumentException(Resources.format(
                         Resources.Keys.IllegalGridEnvelope_3, i, lower, upper));
@@ -208,7 +208,7 @@ public class GridExtent implements Serializable {
      * @param axisTypes  the axis types, or {@code null} if unspecified.
      */
     private GridExtent(final int dimension, final DimensionNameType[] axisTypes) {
-        ordinates = allocate(dimension);
+        coordinates = allocate(dimension);
         types = validateAxisTypes(axisTypes);
     }
 
@@ -223,9 +223,9 @@ public class GridExtent implements Serializable {
     public GridExtent(final long width, final long height) {
         ArgumentChecks.ensureStrictlyPositive("width",  width);
         ArgumentChecks.ensureStrictlyPositive("height", height);
-        ordinates = new long[4];
-        ordinates[2] = width  - 1;
-        ordinates[3] = height - 1;
+        coordinates = new long[4];
+        coordinates[2] = width  - 1;
+        coordinates[3] = height - 1;
         types = DEFAULT_TYPES;
     }
 
@@ -247,12 +247,12 @@ public class GridExtent implements Serializable {
      * The {@code axisTypes} array shall not contain duplicated elements,
      * but may contain {@code null} elements if the type of some axes are unknown.</p>
      *
-     * @param  axisTypes  the type of each grid axis, or {@code null} if unspecified.
-     * @param  low    the valid minimum grid coordinate (always inclusive), or {@code null} for all zeros.
-     * @param  high   the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
+     * @param  axisTypes       the type of each grid axis, or {@code null} if unspecified.
+     * @param  low             the valid minimum grid coordinates (always inclusive), or {@code null} for all zeros.
+     * @param  high            the valid maximum grid coordinates, inclusive or exclusive depending on the next argument.
      * @param  isHighIncluded  {@code true} if the {@code high} values are inclusive (as in ISO 19123 specification),
-     *         or {@code false} if they are exclusive (as in Java2D usage).
-     *         This argument does not apply to {@code low} values, which are always inclusive.
+     *                         or {@code false} if they are exclusive (as in Java2D usage).
+     *                         This argument does not apply to {@code low} values, which are always inclusive.
      * @throws IllegalArgumentException if a coordinate value in the low part is
      *         greater than the corresponding coordinate value in the high part.
      *
@@ -268,17 +268,17 @@ public class GridExtent implements Serializable {
         if (axisTypes != null && axisTypes.length != dimension) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
         }
-        ordinates = allocate(dimension);
+        coordinates = allocate(dimension);
         if (low != null) {
-            System.arraycopy(low, 0, ordinates, 0, dimension);
+            System.arraycopy(low, 0, coordinates, 0, dimension);
         }
-        System.arraycopy(high, 0, ordinates, dimension, dimension);
+        System.arraycopy(high, 0, coordinates, dimension, dimension);
         if (!isHighIncluded) {
-            for (int i=dimension; i < ordinates.length; i++) {
-                ordinates[i] = Math.decrementExact(ordinates[i]);
+            for (int i=dimension; i < coordinates.length; i++) {
+                coordinates[i] = Math.decrementExact(coordinates[i]);
             }
         }
-        checkCoherence(ordinates);
+        checkCoherence(coordinates);
         types = validateAxisTypes(axisTypes);
     }
 
@@ -297,7 +297,7 @@ public class GridExtent implements Serializable {
      */
     GridExtent(final AbstractEnvelope envelope) {
         final int dimension = envelope.getDimension();
-        ordinates = allocate(dimension);
+        coordinates = allocate(dimension);
         for (int i=0; i<dimension; i++) {
             final double min = envelope.getLower(i);
             final double max = envelope.getUpper(i);
@@ -328,15 +328,15 @@ public class GridExtent implements Serializable {
                         }
                     }
                 }
-                ordinates[i] = lower;
-                ordinates[i + dimension] = upper;
+                coordinates[i] = lower;
+                coordinates[i + dimension] = upper;
             } else {
                 throw new IllegalArgumentException(Resources.format(
                         Resources.Keys.IllegalGridEnvelope_3, i, min, max));
             }
         }
         /*
-         * At this point we finished to compute ordinate values.
+         * At this point we finished to compute coordinate values.
          * Now try to infer dimension types from the CRS axes.
          * This is only for information purpose.
          */
@@ -369,12 +369,12 @@ public class GridExtent implements Serializable {
     protected GridExtent(final GridEnvelope extent) {
         ArgumentChecks.ensureNonNull("extent", extent);
         final int dimension = extent.getDimension();
-        ordinates = allocate(dimension);
+        coordinates = allocate(dimension);
         for (int i=0; i<dimension; i++) {
-            ordinates[i] = extent.getLow(i);
-            ordinates[i + dimension] = extent.getHigh(i);
+            coordinates[i] = extent.getLow(i);
+            coordinates[i + dimension] = extent.getHigh(i);
         }
-        checkCoherence(ordinates);
+        checkCoherence(coordinates);
         types = (extent instanceof GridExtent) ? ((GridExtent) extent).types : null;
     }
 
@@ -400,7 +400,7 @@ public class GridExtent implements Serializable {
      * @return the number of dimensions.
      */
     public final int getDimension() {
-        return ordinates.length >>> 1;
+        return coordinates.length >>> 1;
     }
 
     /**
@@ -413,7 +413,7 @@ public class GridExtent implements Serializable {
      *       before to become public API, in order to use the interface in return type.
      */
     GridCoordinatesView getLow() {
-        return new GridCoordinatesView(ordinates, 0);
+        return new GridCoordinatesView(coordinates, 0);
     }
 
     /**
@@ -426,7 +426,7 @@ public class GridExtent implements Serializable {
      *       before to become public API, in order to use the interface in return type.
      */
     GridCoordinatesView getHigh() {
-        return new GridCoordinatesView(ordinates, getDimension());
+        return new GridCoordinatesView(coordinates, getDimension());
     }
 
     /**
@@ -442,7 +442,7 @@ public class GridExtent implements Serializable {
      */
     public long getLow(final int index) {
         ArgumentChecks.ensureValidIndex(getDimension(), index);
-        return ordinates[index];
+        return coordinates[index];
     }
 
     /**
@@ -459,7 +459,7 @@ public class GridExtent implements Serializable {
     public long getHigh(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
-        return ordinates[index + dimension];
+        return coordinates[index + dimension];
     }
 
     /**
@@ -478,7 +478,7 @@ public class GridExtent implements Serializable {
     public long getSize(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
-        return Math.incrementExact(Math.subtractExact(ordinates[dimension + index], ordinates[index]));
+        return Math.incrementExact(Math.subtractExact(coordinates[dimension + index], coordinates[index]));
     }
 
     /**
@@ -493,7 +493,7 @@ public class GridExtent implements Serializable {
         final int dimension = getDimension();
         final GeneralDirectPosition center = new GeneralDirectPosition(dimension);
         for (int i=0; i<dimension; i++) {
-            center.setOrdinate(i, ((double) ordinates[i] + (double) ordinates[i + dimension] + 1.0) * 0.5);
+            center.setOrdinate(i, ((double) coordinates[i] + (double) coordinates[i + dimension] + 1.0) * 0.5);
         }
         return center;
     }
@@ -540,7 +540,7 @@ public class GridExtent implements Serializable {
         final int dimension = getDimension();
         GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
-            envelope.setRange(i, ordinates[i], ordinates[i + dimension] + 1.0);
+            envelope.setRange(i, coordinates[i], coordinates[i + dimension] + 1.0);
         }
         envelope = Envelopes.transform(cornerToCRS, envelope);
         if (envelope.isEmpty()) try {
@@ -553,7 +553,7 @@ public class GridExtent implements Serializable {
             final boolean isCenter = (gridToCRS != cornerToCRS);
             TransformSeparator separator = null;
             for (int srcDim=0; srcDim < dimension; srcDim++) {
-                if (ordinates[srcDim + dimension] == 0 && ordinates[srcDim] == 0) {
+                if (coordinates[srcDim + dimension] == 0 && coordinates[srcDim] == 0) {
                     /*
                      * At this point we found a grid dimension with [0 … 0] range. Only this specific range is processed because
                      * it is assumed associated to NaN scale factors in the 'gridToCRS' matrix, since the resolution is computed
@@ -604,6 +604,42 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Returns a new grid envelope with the specified dimension added after this grid envelope dimensions.
+     *
+     * @param  axisType        the type of the grid axis to add, or {@code null} if unspecified.
+     * @param  low             the valid minimum grid coordinate (always inclusive).
+     * @param  high            the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
+     * @param  isHighIncluded  {@code true} if the {@code high} value is inclusive (as in ISO 19123 specification),
+     *                         or {@code false} if it is exclusive (as in Java2D usage).
+     *                         This argument does not apply to {@code low} value, which is always inclusive.
+     * @return a new grid envelope with the specified dimension added.
+     * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
+     */
+    public GridExtent append(final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+        if (!isHighIncluded) {
+            high = Math.decrementExact(high);
+        }
+        final int dimension = getDimension();
+        final int newDim    = dimension + 1;
+        DimensionNameType[] axisTypes = null;
+        if (types != null || axisType != null) {
+            if (types != null) {
+                axisTypes = Arrays.copyOf(types, newDim);
+            } else {
+                axisTypes = new DimensionNameType[newDim];
+            }
+            axisTypes[dimension] = axisType;
+        }
+        final GridExtent ex = new GridExtent(newDim, axisTypes);
+        System.arraycopy(coordinates, 0,         ex.coordinates, 0,      dimension);
+        System.arraycopy(coordinates, dimension, ex.coordinates, newDim, dimension);
+        ex.coordinates[dimension]          = low;
+        ex.coordinates[dimension + newDim] = high;
+        checkCoherence(ex.coordinates);
+        return ex;
+    }
+
+    /**
      * Returns a new grid envelope that encompass only some dimensions of this grid envelope.
      * This method copies this grid envelope into a new grid envelope, beginning at dimension
      * {@code lower} and extending to dimension {@code upper-1} inclusive. Thus the dimension
@@ -626,8 +662,8 @@ public class GridExtent implements Serializable {
             axisTypes = Arrays.copyOfRange(axisTypes, lower, upper);
         }
         final GridExtent sub = new GridExtent(newDim, axisTypes);
-        System.arraycopy(ordinates, lower,           sub.ordinates, 0,      newDim);
-        System.arraycopy(ordinates, lower+dimension, sub.ordinates, newDim, newDim);
+        System.arraycopy(coordinates, lower,           sub.coordinates, 0,      newDim);
+        System.arraycopy(coordinates, lower+dimension, sub.coordinates, newDim, newDim);
         return sub;
     }
 
@@ -639,7 +675,7 @@ public class GridExtent implements Serializable {
      */
     @Override
     public int hashCode() {
-        return Arrays.hashCode(ordinates) + Arrays.hashCode(types) ^ (int) serialVersionUID;
+        return Arrays.hashCode(coordinates) + Arrays.hashCode(types) ^ (int) serialVersionUID;
     }
 
     /**
@@ -652,7 +688,7 @@ public class GridExtent implements Serializable {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == GridExtent.class) {
             final GridExtent other = (GridExtent) object;
-            return Arrays.equals(ordinates, other.ordinates) && Arrays.equals(types, other.types);
+            return Arrays.equals(coordinates, other.coordinates) && Arrays.equals(types, other.types);
         }
         return false;
     }
@@ -683,8 +719,8 @@ public class GridExtent implements Serializable {
             if ((types == null) || (name = Types.getCodeTitle(types[i])) == null) {
                 name = vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
             }
-            final long lower = ordinates[i];
-            final long upper = ordinates[i + dimension];
+            final long lower = coordinates[i];
+            final long upper = coordinates[i + dimension];
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
             if (tree) {
                 branch(table, i < dimension - 1);

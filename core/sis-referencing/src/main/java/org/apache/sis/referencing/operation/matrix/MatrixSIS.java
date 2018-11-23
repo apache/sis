@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Matrices
  *
@@ -579,7 +579,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public double[] multiply(final double[] vector) {
         final int numCol = getNumCol();
         if (vector.length != numCol) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2,  numCol, vector.length));
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, numCol, vector.length));
         }
         final double[] target = new double[getNumRow()];
         final DoubleDouble ele = new DoubleDouble();
@@ -594,6 +594,53 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             sum.clear();
         }
         return target;
+    }
+
+    /**
+     * Multiplies this matrix by a translation matrix. Invoking this method is equivalent to invoking
+     * <code>{@linkplain #multiply(Matrix) multiply}(T)</code> where <var>T</var> is a matrix like
+     * below (size varies):
+     *
+     * {@preformat math
+     *        ┌                    ┐
+     *        │ 1  0  0  vector[0] │
+     *    T = │ 0  1  0  vector[1] │
+     *        │ 0  0  1  vector[2] │
+     *        │ 0  0  0  vector[3] │
+     *        └                    ┘
+     * }
+     *
+     * The length of the given vector must be equals to the number of columns in this matrix.
+     * The last vector element is 1 for an affine transform, but other values are allowed.
+     * This matrix will be modified in-place.
+     *
+     * <p>If this matrix is used for coordinate conversions, then converting a position with
+     * the resulting matrix is equivalent to first translating the point by the given vector,
+     * then applying the conversion represented by the original matrix.</p>
+     *
+     * @param  vector  a vector representing a translation to be applied before this matrix.
+     *
+     * @since 1.0
+     *
+     * @see AffineTransform#translate(double, double)
+     */
+    public void translate(final double[] vector) {
+        final int numCol = getNumCol();
+        if (vector.length != numCol) {
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, numCol, vector.length));
+        }
+        final int numRow = getNumRow();
+        final DoubleDouble s = new DoubleDouble();
+        final DoubleDouble t = new DoubleDouble();
+        for (int j=0; j<numRow; j++) {
+            s.clear();
+            for (int i=0; i<numCol; i++) {
+                get(j, i, t);
+                t.multiply(vector[i]);
+                s.add(t);
+            }
+            set(j, numCol-1, s);
+        }
     }
 
     /**

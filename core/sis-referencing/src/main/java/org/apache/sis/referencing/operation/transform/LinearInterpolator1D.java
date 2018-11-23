@@ -124,7 +124,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
                 return LinearTransform1D.create(slope, offset);
             }
             value = values[i];
-        } while (Numerics.epsilonEqual(value, offset + slope*i,
+        } while (Numerics.epsilonEqual(value, offset + slope*i,     // TODO: use Math.fma with JDK9.
                         Math.max(Math.abs(value), as) * Numerics.COMPARISON_THRESHOLD));
         /*
          * If the values are in decreasing order, reverse their sign so we get increasing order.

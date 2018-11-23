@@ -234,7 +234,7 @@ public abstract class Grid extends NamedElement {
                 }
             }
         }
-        return new GridExtent(names, new long[high.length], high, false);
+        return new GridExtent(names, null, high, false);
     }
 
     /**

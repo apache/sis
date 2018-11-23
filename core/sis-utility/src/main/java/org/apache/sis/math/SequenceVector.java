@@ -184,6 +184,7 @@ abstract class SequenceVector extends Vector implements Serializable {
         @Override public double doubleValue(final int index) {
             ArgumentChecks.ensureValidIndex(length, index);
             return first + increment*index;
+            // TODO: use Math.fma with JDK9.
         }
 
         /** Computes the value at the given index. */
@@ -209,6 +210,7 @@ abstract class SequenceVector extends Vector implements Serializable {
         /** Computes the minimal and maximal values in this vector. */
         @SuppressWarnings({"unchecked","rawtypes"})
         @Override public NumberRange<?> range() {
+            // TODO: use Math.fma with JDK9.
             double min = first;
             double max = first + increment * (length - 1);
             if (max < min) {

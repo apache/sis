@@ -36,6 +36,14 @@ import static org.junit.Assert.*;
  */
 public final strictfp class GridExtentTest extends TestCase {
     /**
+     * Verifies the low and high values in the specified dimension of the given extent
+     */
+    private static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
+        assertEquals("low",  low,  extent.getLow (dimension));
+        assertEquals("high", high, extent.getHigh(dimension));
+    }
+
+    /**
      * Tests the {@link GridExtent#GridExtent(AbstractEnvelope)} constructor.
      */
     @Test
@@ -71,10 +79,35 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Verifies the low and high values in the specified dimension of the given extent
+     * Tests {@link GridExtent#append(DimensionNameType, long, long, boolean)}.
      */
-    private static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
-        assertEquals("low",  low,  extent.getLow (dimension));
-        assertEquals("high", high, extent.getHigh(dimension));
+    @Test
+    public void testAppend() {
+        GridExtent extent = new GridExtent(new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
+                                           new long[] {100, 200}, new long[] {500, 800}, true);
+        extent = extent.append(DimensionNameType.TIME, 40, 50, false);
+        assertEquals("dimension", 3, extent.getDimension());
+        assertExtentEquals(extent, 0, 100, 500);
+        assertExtentEquals(extent, 1, 200, 800);
+        assertExtentEquals(extent, 2,  40,  49);
+        assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
+        assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
+        assertEquals(DimensionNameType.TIME,   extent.getAxisType(2).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#subExtent(int, int)}.
+     */
+    @Test
+    public void testSubExtent() {
+        GridExtent extent = new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+        extent = extent.subExtent(0, 2);
+        assertEquals("dimension", 2, extent.getDimension());
+        assertExtentEquals(extent, 0, 100, 499);
+        assertExtentEquals(extent, 1, 200, 799);
+        assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
+        assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
     }
 }

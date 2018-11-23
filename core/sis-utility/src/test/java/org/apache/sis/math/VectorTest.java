@@ -252,7 +252,7 @@ public final strictfp class VectorTest extends TestCase {
     }
 
     /**
-     * Tests {@link Vector#repetitions()}.
+     * Tests {@link Vector#repetitions(int...)}.
      */
     @Test
     public void testRepetitions() {

@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -128,5 +128,18 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     public void testMultiplyVector() {
         testMultiplyVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
         testMultiplyVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+    }
+
+    /**
+     * Tests {@link MatrixSIS#translate(double[])}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testTranslateVector() {
+        testTranslateVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
+//      testTranslateVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+        // TODO: revisit commented-out test after using Math.fma with JDK9.
     }
 }

@@ -28,7 +28,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -132,5 +132,16 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
     @Test
     public void testMultiplyVector() {
         testMultiplyVector(new Matrix3());
+    }
+
+    /**
+     * Tests {@link MatrixSIS#translate(double[])}
+     * using {@link java.awt.geom.AffineTransform} as a reference implementation.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testTranslateVector() {
+        testTranslateVector(new Matrix3());
     }
 }

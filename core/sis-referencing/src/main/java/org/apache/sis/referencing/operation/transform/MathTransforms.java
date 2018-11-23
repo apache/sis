@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -33,8 +34,10 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Static;
 
 
@@ -499,6 +502,57 @@ public final class MathTransforms extends Static {
             return AffineTransforms2D.toMatrix((AffineTransform) transform);
         }
         return null;
+    }
+
+    /**
+     * Returns the coefficients of an affine transform in the vicinity of the given position.
+     * If the given transform is linear, then this method produces a result identical to {@link #getMatrix(MathTransform)}.
+     * Otherwise the returned matrix can be used for {@linkplain #linear(Matrix) building a linear transform} which can be
+     * used as an approximation of the given transform for short distances around the given position.
+     *
+     * @param  transform  the transform to approximate by an affine transform, or {@code null}.
+     * @param  position   position around which to get the coefficient of an affine transform approximation.
+     * @return the matrix of the given transform around the given position, or {@code null} if the given transform was null.
+     * @throws TransformException if an error occurred while transforming the given position or computing the derivative at
+     *         that position.
+     *
+     * @since 1.0
+     */
+    public static Matrix getMatrix(final MathTransform transform, final DirectPosition position) throws TransformException {
+        if (transform == null) {
+            return null;
+        }
+        final int srcDim = transform.getSourceDimensions();
+        ArgumentChecks.ensureDimensionMatches("position", srcDim, position);
+        final Matrix affine = getMatrix(transform);
+        if (affine != null) {
+            return affine;
+        }
+        final int tgtDim = transform.getTargetDimensions();
+        double[] pts = new double[Math.max(srcDim + 1, tgtDim)];
+        for (int i=0; i<srcDim; i++) {
+            pts[i] = position.getOrdinate(i);
+        }
+        final Matrix d = derivativeAndTransform(transform, pts, 0, pts, 0);
+        final MatrixSIS a = Matrices.createZero(tgtDim + 1, srcDim + 1);
+        for (int j=0; j<tgtDim; j++) {
+            for (int i=0; i<srcDim; i++) {
+                a.setElement(j, i, d.getElement(j, i));
+            }
+            a.setElement(j, srcDim, pts[j]);
+            pts[j] = -position.getOrdinate(j);                  // To be used by a.translate(pts) later.
+        }
+        a.setElement(tgtDim, srcDim, 1);
+        /*
+         * At this point, the translation column in the matrix is set as if the coordinate system origin
+         * was at the given position. We want to keep the original coordinate system origin. We do that
+         * be applying a translation in the opposite direction before the affine transform. Translation
+         * terms were opportunistically set in the previous loop.
+         */
+        pts = ArraysExt.resize(pts, srcDim + 1);
+        pts[srcDim] = 1;
+        a.translate(pts);
+        return a;
     }
 
     /**

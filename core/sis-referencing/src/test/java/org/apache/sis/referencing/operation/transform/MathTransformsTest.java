@@ -17,11 +17,15 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -32,7 +36,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link MathTransforms}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -119,5 +123,38 @@ public final strictfp class MathTransformsTest extends TestCase {
             0,  0,  0,  0,  7,  0, -9,
             0,  0,  0,  0,  0,  0,  1
         }), MathTransforms.getMatrix(r), STRICT);
+    }
+
+    /**
+     * Tests {@link MathTransforms#getMatrix(MathTransform, DirectPosition)}.
+     *
+     * @throws TransformException if an error occurred while computing the derivative.
+     */
+    @Test
+    public void testGetMatrix() throws TransformException {
+        // Prepare a transform with a non-linear component.
+        MathTransform tr = MathTransforms.interpolate(null, new double[] {2, 6, 14, 15});
+        tr = MathTransforms.passThrough(1, tr, 1);
+        tr = MathTransforms.concatenate(tr, MathTransforms.linear(new Matrix4(
+            5,  0,  0,  9,
+            0,  1,  0,  0,
+            0,  0,  2, -7,
+            0,  0,  0,  1)));
+
+        // In the following position, only 1.5 matter because only dimension 1 is non-linear.
+        final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
+        final Matrix affine = MathTransforms.getMatrix(tr, pos);
+        assertMatrixEquals("Affine approximation", new Matrix4(
+            5,  0,  0,  9,
+            0,  8,  0, -2,
+            0,  0,  2, -7,
+            0,  0,  0,  1), affine, STRICT);
+        /*
+         * Transformation using above approximation shall produce the same result than the original
+         * transform if we do the comparison at the position where the approximation has been computed.
+         */
+        DirectPosition expected = tr.transform(pos, null);
+        DirectPosition actual = MathTransforms.linear(affine).transform(pos, null);
+        assertEquals(expected, actual);
     }
 }
