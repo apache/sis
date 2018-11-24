@@ -155,6 +155,35 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
+     * If the given transform is already an instance of {@link LinearTransform}, then it is returned.
+     * Otherwise an approximation for the given position is created using the
+     * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that position.
+     *
+     * <p><b>Invariant:</b> transforming the given position using the given transform produces the same result
+     * (ignoring rounding error) than transforming the same position using the returned transform.</p>
+     *
+     * @param  transform  the transform to approximate by an affine transform.
+     * @param  position   position in source CRS around which to get the an affine transform approximation.
+     * @return a transform approximating the given transform around the given position.
+     * @throws TransformException if an error occurred while transforming the given position
+     *         or computing the derivative at that position.
+     *
+     * @since 1.0
+     *
+     * @see #getMatrix(MathTransform, DirectPosition)
+     */
+    public static LinearTransform linear(final MathTransform transform, final DirectPosition position) throws TransformException {
+        if (transform instanceof LinearTransform) {
+            // We accept null position here for consistency with MathTransform.derivative(DirectPosition).
+            ArgumentChecks.ensureDimensionMatches("position", transform.getSourceDimensions(), position);
+            return (LinearTransform) transform;
+        } else {
+            return linear(getMatrix(transform, position));
+        }
+    }
+
+    /**
      * Creates a transform for the <i>y=f(x)</i> function where <var>y</var> are computed by a linear interpolation.
      * Both {@code preimage} (the <var>x</var>) and {@code values} (the <var>y</var>) arguments can be null:
      *
@@ -510,24 +539,26 @@ public final class MathTransforms extends Static {
      * Otherwise the returned matrix can be used for {@linkplain #linear(Matrix) building a linear transform} which can be
      * used as an approximation of the given transform for short distances around the given position.
      *
-     * @param  transform  the transform to approximate by an affine transform, or {@code null}.
-     * @param  position   position around which to get the coefficient of an affine transform approximation.
-     * @return the matrix of the given transform around the given position, or {@code null} if the given transform was null.
+     * @param  transform  the transform to approximate by an affine transform.
+     * @param  position   position in source CRS around which to get the coefficients of an affine transform approximation.
+     * @return the matrix of the given transform around the given position.
      * @throws TransformException if an error occurred while transforming the given position or computing the derivative at
      *         that position.
      *
      * @since 1.0
+     *
+     * @see #linear(MathTransform, DirectPosition)
      */
     public static Matrix getMatrix(final MathTransform transform, final DirectPosition position) throws TransformException {
-        if (transform == null) {
-            return null;
-        }
+        ArgumentChecks.ensureNonNull("transform", transform);
         final int srcDim = transform.getSourceDimensions();
-        ArgumentChecks.ensureDimensionMatches("position", srcDim, position);
+        ArgumentChecks.ensureDimensionMatches("position", srcDim, position);            // Null position is okay for now.
         final Matrix affine = getMatrix(transform);
         if (affine != null) {
             return affine;
+            // We accept null position here for consistency with MathTransform.derivative(DirectPosition).
         }
+        ArgumentChecks.ensureNonNull("position", position);
         final int tgtDim = transform.getTargetDimensions();
         double[] pts = new double[Math.max(srcDim + 1, tgtDim)];
         for (int i=0; i<srcDim; i++) {
