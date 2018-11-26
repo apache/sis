@@ -289,15 +289,18 @@ public class GridExtent implements Serializable {
      * The envelope CRS is ignored, except for identifying dimension names for information purpose.
      * The way floating point values are rounded to integers may be adjusted in any future version.
      *
-     * <p><b>NOTE:</b> this constructor is not public because its contract is a bit approximative.</p>
+     * <p><b>NOTE:</b> this constructor is not public because its contract is a bit approximate.</p>
      *
-     * @param  envelope  the envelope containing cell indices to store in a {@code GridExtent}.
+     * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
+     * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
+     * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
+     *                             The length of this array shall be equal to the {@code envelope} dimension.
      *
      * @see #toCRS(MathTransform, MathTransform)
      */
-    GridExtent(final AbstractEnvelope envelope) {
+    GridExtent(final AbstractEnvelope envelope, final GridExtent enclosing, final int[] modifiedDimensions) {
         final int dimension = envelope.getDimension();
-        coordinates = allocate(dimension);
+        coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
         for (int i=0; i<dimension; i++) {
             final double min = envelope.getLower(i);
             final double max = envelope.getUpper(i);
@@ -328,8 +331,20 @@ public class GridExtent implements Serializable {
                         }
                     }
                 }
-                coordinates[i] = lower;
-                coordinates[i + dimension] = upper;
+                /*
+                 * At this point the grid range has been computed (lower to upper).
+                 * Update the coordinates accordingly.
+                 */
+                final int m = getDimension();
+                if (enclosing != null) {
+                    final int lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
+                    final int hi = lo + m;
+                    if (lower > coordinates[lo]) coordinates[lo] = Math.min(coordinates[hi], lower);
+                    if (upper < coordinates[hi]) coordinates[hi] = Math.max(coordinates[lo], upper);
+                } else {
+                    coordinates[i]   = lower;
+                    coordinates[i+m] = upper;
+                }
             } else {
                 throw new IllegalArgumentException(Resources.format(
                         Resources.Keys.IllegalGridEnvelope_3, i, min, max));
@@ -340,21 +355,25 @@ public class GridExtent implements Serializable {
          * Now try to infer dimension types from the CRS axes.
          * This is only for information purpose.
          */
-        DimensionNameType[] axisTypes = null;
-        final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-        if (crs != null) {
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            for (int i=0; i<dimension; i++) {
-                final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
-                if (type != null) {
-                    if (axisTypes == null) {
-                        axisTypes = new DimensionNameType[dimension];
+        if (enclosing != null) {
+            types = enclosing.types;
+        } else {
+            DimensionNameType[] axisTypes = null;
+            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+            if (crs != null) {
+                final CoordinateSystem cs = crs.getCoordinateSystem();
+                for (int i=0; i<dimension; i++) {
+                    final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                    if (type != null) {
+                        if (axisTypes == null) {
+                            axisTypes = new DimensionNameType[dimension];
+                        }
+                        axisTypes[i] = type;
                     }
-                    axisTypes[i] = type;
                 }
             }
+            types = validateAxisTypes(axisTypes);
         }
-        types = validateAxisTypes(axisTypes);
     }
 
     /**
@@ -534,7 +553,7 @@ public class GridExtent implements Serializable {
      *                      If different, then this is assumed to map pixel centers instead than pixel corners.
      * @return this grid extent in real world coordinates.
      *
-     * @see #GridExtent(AbstractEnvelope)
+     * @see #GridExtent(AbstractEnvelope, GridExtent, int[])
      */
     final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS) throws TransformException {
         final int dimension = getDimension();

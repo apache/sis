@@ -592,6 +592,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Options = 83;
 
         /**
+         * Origin in a cell center
+         */
+        public static final short OriginInCellCenter = 155;
+
+        /**
          * Other surface
          */
         public static final short OtherSurface = 84;

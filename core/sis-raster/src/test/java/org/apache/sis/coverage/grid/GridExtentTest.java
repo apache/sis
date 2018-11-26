@@ -44,14 +44,14 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope)} constructor.
+     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope, GridExtent, int[])} constructor.
      */
     @Test
     public void testCreateFromEnvelope() {
         final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.IMAGE);
         env.setRange(0, -23.01, 30.107);
         env.setRange(1,  12.97, 18.071);
-        GridExtent extent = new GridExtent(env);
+        GridExtent extent = new GridExtent(env, null, null);
         assertExtentEquals(extent, 0, -23, 29);
         assertExtentEquals(extent, 1,  13, 17);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
@@ -59,7 +59,7 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope)} constructor.
+     * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope, GridExtent, int[])} constructor.
      */
     @Test
     public void testRoundings() {
@@ -69,7 +69,7 @@ public final strictfp class GridExtentTest extends TestCase {
         env.setRange(2, 1.49998, 3.50001);      // Round to [1…4), stored as [1…2] (not [1…3]) because the span is close to 2.
         env.setRange(3, 1.49999, 3.50002);      // Round to [1…4), stored as [2…3] because the upper part is closer to integer.
         env.setRange(4, 1.2,     3.8);          // Round to [1…4), stores as [1…3] because the span is not close enough to integer.
-        GridExtent extent = new GridExtent(env);
+        GridExtent extent = new GridExtent(env, null, null);
         assertExtentEquals(extent, 0, 1, 2);
         assertExtentEquals(extent, 1, 1, 2);
         assertExtentEquals(extent, 2, 1, 2);

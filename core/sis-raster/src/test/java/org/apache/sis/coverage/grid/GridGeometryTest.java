@@ -26,6 +26,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -177,10 +178,10 @@ public final strictfp class GridGeometryTest extends TestCase {
                 },
                 new long[] {0,     0, 2, 6},
                 new long[] {100, 200, 3, 9}, false);
-        final MathTransform horizontal = MathTransforms.linear(Matrices.create(3, 3, new double[] {
+        final MathTransform horizontal = MathTransforms.linear(new Matrix3(
                 0.5, 0,    12,
                 0,   0.25, -2,
-                0,   0,     1}));
+                0,   0,     1));
         final MathTransform vertical  = MathTransforms.interpolate(null, new double[] {1, 2, 4, 10});
         final MathTransform temporal  = MathTransforms.linear(3600, 60);
         final MathTransform gridToCRS = MathTransforms.compound(horizontal, vertical, temporal);
@@ -201,10 +202,10 @@ public final strictfp class GridGeometryTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
-        final MathTransform gridToCRS = MathTransforms.linear(Matrices.create(3, 3, new double[] {
+        final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
             0,   0.5, -90,
             0.5, 0,  -180,
-            0,   0,     1}));
+            0,   0,     1));
         final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope);
         assertExtentEquals(
                 new long[] {370, 40},
@@ -213,9 +214,43 @@ public final strictfp class GridGeometryTest extends TestCase {
                 new double[] {-70,  5},
                 new double[] {+80, 15}), grid.getEnvelope(), STRICT);
         assertArrayEquals("resolution", new double[] {0.5, 0.5}, grid.getResolution(false), STRICT);
-        assertMatrixEquals("gridToCRS", Matrices.create(3, 3, new double[] {
+        assertMatrixEquals("gridToCRS", new Matrix3(
                 0,   0.5, -89.75,
                 0.5, 0,  -179.75,
-                0,   0,     1}), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+                0,   0,     1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+    }
+
+    /**
+     * Tests {@link GridGeometry#getExtent(Envelope)}.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
+     */
+    @Test
+    @DependsOnMethod("testFromGeospatialEnvelope")
+    public void testGetExtent() throws TransformException {
+        GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_3D);
+        envelope.setRange(0, -80, 120);
+        envelope.setRange(1, -12,  21);
+        envelope.setRange(2,  10,  25);
+        final MathTransform gridToCRS = MathTransforms.linear(new Matrix4(
+            0,   0.5, 0,  -90,
+            0.5, 0,   0, -180,
+            0,   0,   2,    3,
+            0,   0,   0,    1));
+        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope);
+        assertExtentEquals(
+                new long[] {336,  20,  4},
+                new long[] {401, 419, 10}, grid.getExtent());
+        /*
+         * Set the region of interest as a two-dimensional envelope. The vertical dimension is omitted.
+         * The result should be that all grid indices in the vertical dimension are kept unchanged.
+         */
+        envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, -70.001, +80.002);
+        envelope.setRange(1,   4.997,  15.003);
+        final GridExtent extent = grid.getExtent(envelope);
+        assertExtentEquals(
+                new long[] {370,  40,  4},
+                new long[] {389, 339, 10}, extent);
     }
 }

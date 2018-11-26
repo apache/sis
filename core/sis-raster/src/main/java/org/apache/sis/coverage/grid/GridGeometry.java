@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.util.FactoryException;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -41,6 +42,8 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.resources.Vocabulary;
@@ -48,8 +51,11 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
+
+import static org.apache.sis.referencing.CRS.findOperation;
 
 
 /**
@@ -339,7 +345,7 @@ public class GridGeometry implements Serializable {
         int numToIgnore = 1;
         if (envelope != null && cornerToCRS != null) {
             GeneralEnvelope env = Envelopes.transform(cornerToCRS.inverse(), envelope);
-            extent = new GridExtent(env);
+            extent = new GridExtent(env, null, null);
             env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
@@ -497,6 +503,70 @@ public class GridGeometry implements Serializable {
             return extent;
         }
         throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
+    }
+
+    /**
+     * Returns the coordinate range of the grid intersecting the given spatiotemporal region.
+     * The given envelope can be expressed in any coordinate reference system (CRS).
+     * That envelope CRS may have fewer dimensions than this grid geometry CRS,
+     * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
+     * In other words, the dimensions not found in the given {@code areaOfInterest} will be unfiltered (not discarded).
+     *
+     * <p>If the envelope CRS is not specified, then it is assumed the same than the CRS of this grid geometry.
+     * In such case the envelope needs to contain all dimensions.</p>
+     *
+     * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed).
+     * @return a grid extent of the same dimension than the grid geometry which intersects the given area of interest.
+     * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
+     * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
+     */
+    public GridExtent getExtent(final Envelope areaOfInterest) throws IncompleteGridGeometryException, TransformException {
+        ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
+        if (extent == null) {
+            throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
+        }
+        MathTransform gridToAOI = cornerToCRS;
+        if (gridToAOI == null) {
+            throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
+        }
+        int[] modifiedDimensions = null;
+        try {
+            /*
+             * If the envelope CRS is different than the expected CRS, concatenate the envelope transformation
+             * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
+             * transforms - because transforming envelopes twice add errors.
+             */
+            if (envelope != null) {
+                final CoordinateReferenceSystem sourceCRS = envelope.getCoordinateReferenceSystem();
+                if (sourceCRS != null) {
+                    final CoordinateReferenceSystem targetCRS = areaOfInterest.getCoordinateReferenceSystem();
+                    if (targetCRS != null && !Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
+                        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
+                        bbox.setBounds(areaOfInterest);
+                        gridToAOI = MathTransforms.concatenate(gridToAOI, findOperation(sourceCRS, targetCRS, bbox).getMathTransform());
+                    }
+                }
+            }
+            /*
+             * If the envelope dimensions does not encompass all grid dimensions, the envelope is probably non-invertible.
+             * We need to reduce the number of grid dimensions in the transform for having a one-to-one relationship.
+             */
+            final int modifiedDimensionCount = gridToAOI.getTargetDimensions();
+            ArgumentChecks.ensureDimensionMatches("areaOfInterest", modifiedDimensionCount, areaOfInterest);
+            if (modifiedDimensionCount < gridToAOI.getSourceDimensions()) {
+                final TransformSeparator sep = new TransformSeparator(gridToAOI);
+                sep.setTrimSourceDimensions(true);
+                gridToAOI = sep.separate();
+                modifiedDimensions = sep.getSourceDimensions();
+                if (modifiedDimensions.length != modifiedDimensionCount) {
+                    throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions));
+                }
+            }
+        } catch (FactoryException e) {
+            throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
+        }
+        final GridExtent sub = new GridExtent(Envelopes.transform(gridToAOI.inverse(), areaOfInterest), extent, modifiedDimensions);
+        return sub.equals(extent) ? extent : sub;
     }
 
     /*
@@ -999,7 +1069,11 @@ public class GridGeometry implements Serializable {
          */
         private boolean section(final int property, final short title, final Object value) {
             if ((bitmask & property) != 0) {
-                buffer.append(vocabulary.getString(title)).append(lineSeparator);
+                buffer.append(vocabulary.getString(title));
+                if (title == Vocabulary.Keys.Conversion) {
+                    buffer.append(" (").append(vocabulary.getString(Vocabulary.Keys.OriginInCellCenter).toLowerCase(locale)).append(')');
+                }
+                buffer.append(lineSeparator);
                 if (value != null) {
                     return true;
                 }

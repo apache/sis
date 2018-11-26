@@ -309,4 +309,58 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         assertEquals("firstAffectedOrdinate", 1, ((PassThroughTransform) r).firstAffectedOrdinate);
         assertEquals("numTrailingOrdinates",  2, ((PassThroughTransform) r).numTrailingOrdinates);
     }
+
+    /**
+     * Tests {@link TransformSeparator#getTrimSourceDimensions()}.
+     *
+     * @throws FactoryException if an error occurred while creating a new transform.
+     */
+    @Test
+    @DependsOnMethod("testLinearTransform")
+    public void testGetTrimSourceDimensions() throws FactoryException {
+        MathTransform tr = MathTransforms.linear(Matrices.create(3, 4, new double[] {
+            0,   0.5, 0,  -90,
+            0.5, 0,   0, -180,
+            0,   0,   0,    1}));
+        /*
+         * Verify that TransformSeparator does not trim anything if not requested so.
+         */
+        TransformSeparator s = new TransformSeparator(tr);
+        assertFalse("trimSourceDimensions", s.getTrimSourceDimensions());
+        assertSame("No source dimensions should be trimmed if not requested.", tr, s.separate());
+        assertArrayEquals(new int[] {0, 1, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1   }, s.getTargetDimensions());
+        /*
+         * Trim the last dimension (most common case).
+         */
+        final Matrix expected = new Matrix3(
+            0,   0.5, -90,
+            0.5, 0,  -180,
+            0,   0,     1);
+        s.setTrimSourceDimensions(true);
+        assertTrue("trimSourceDimensions", s.getTrimSourceDimensions());
+        MathTransform reduced = s.separate();
+        assertNotEquals("separate()", tr, reduced);
+        assertArrayEquals(new int[] {0, 1}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
+        assertMatrixEquals("separate()", expected, MathTransforms.getMatrix(reduced), STRICT);
+        /*
+         * Trim the first dimension.
+         */
+        tr = MathTransforms.linear(Matrices.create(3, 4, new double[] {
+            0, 0,   0.5, -90,
+            0, 0.5, 0,  -180,
+            0, 0,   0,     1}));
+
+        s = new TransformSeparator(tr);
+        s.setTrimSourceDimensions(true);
+        reduced = s.separate();
+        assertNotEquals("separate()", tr, reduced);
+        assertArrayEquals(new int[] {1, 2}, s.getSourceDimensions());
+        assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
+        assertMatrixEquals("separate()", new Matrix3(
+            0,   0.5, -90,
+            0.5, 0,  -180,
+            0,   0,     1), MathTransforms.getMatrix(reduced), STRICT);
+    }
 }

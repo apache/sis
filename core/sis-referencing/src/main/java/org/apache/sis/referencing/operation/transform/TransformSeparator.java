@@ -21,6 +21,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Resources;
@@ -96,6 +97,14 @@ public class TransformSeparator {
     protected final MathTransformFactory factory;
 
     /**
+     * Whether to remove unused source dimensions. If {@code true}, then {@link #separate()} will try to
+     * reduce the set of source dimensions to the smallest set required for computing the target dimensions.
+     *
+     * @see #getTrimSourceDimensions()
+     */
+    private boolean trimSourceDimensions;
+
+    /**
      * Constructs a separator for the given transform.
      *
      * @param transform  the transform to separate.
@@ -118,13 +127,16 @@ public class TransformSeparator {
     }
 
     /**
-     * Clears any {@linkplain #getSourceDimensions() source} and {@linkplain #getTargetDimensions() target dimension}
-     * settings. This method can be invoked when the same {@code MathTransform} needs to be separated in more than one
-     * part, for example an horizontal and a vertical component.
+     * Resets this transform separator in the same state than after construction. This method clears any
+     * {@linkplain #getSourceDimensions() source dimensions} and {@linkplain #getTargetDimensions() target dimensions}
+     * settings together with the {@linkplain #trimSourceDimensions trim source dimensions} flag.
+     * This method can be invoked when the same {@code MathTransform} needs to be separated in more than one part,
+     * for example an horizontal and a vertical component.
      */
     public void clear() {
         sourceDimensions = null;
         targetDimensions = null;
+        trimSourceDimensions = false;
     }
 
     /**
@@ -276,7 +288,9 @@ public class TransformSeparator {
      * <ol class="verbose">
      *   <li>Source dimensions have been explicitly set by at least one call to {@link #addSourceDimensions(int...)}
      *       or {@link #addSourceDimensionRange(int, int)} since construction or since last call to {@link #clear()}.
-     *       In such case, this method returns all specified source dimensions.</li>
+     *       In such case, this method returns all specified source dimensions if {@link #getTrimSourceDimensions()}
+     *       is {@code false}, or a subset of the specified source dimensions if {@code getTrimSourceDimensions()}
+     *       is {@code true} and {@link #separate()} has been invoked.</li>
      *
      *   <li>No source dimensions were set but {@link #separate()} has been invoked.
      *       In such case, this method returns the sequence of source dimensions that {@code separate()} chooses to retain.
@@ -358,6 +372,31 @@ public class TransformSeparator {
     }
 
     /**
+     * Returns whether to remove unused source dimensions. If {@code true}, then {@link #separate()} will try
+     * to reduce the set of source dimensions to the smallest set required for computing the target dimensions.
+     * The default value is {@code false}.
+     *
+     * @return whether to remove unused source dimensions after transform separation.
+     *
+     * @since 1.0
+     */
+    public boolean getTrimSourceDimensions() {
+        return trimSourceDimensions;
+    }
+
+    /**
+     * Sets whether to remove unused source dimensions.
+     * The default value is {@code false}.
+     *
+     * @param trim whether to remove unused source dimensions after transform separation.
+     *
+     * @since 1.0
+     */
+    public void setTrimSourceDimensions(final boolean trim) {
+        trimSourceDimensions = trim;
+    }
+
+    /**
      * Separates the math transform specified at construction time for given dimension indices.
      * This method creates a math transform that use only the {@linkplain #addSourceDimensions(int...) specified
      * source dimensions} and return only the {@linkplain #addTargetDimensions(int...) specified target dimensions}.
@@ -420,7 +459,8 @@ public class TransformSeparator {
             }
         }
         /*
-         * We are done. But do a final verification on the number of dimensions.
+         * We are done for the separation based on specified dimensions. Do a final verification on the number of dimensions.
+         * Then, if the user asked the minimal set of source dimensions, verify if we can remove some of those dimensions.
          */
         int side     = 0;
         int expected = sourceDimensions.length;
@@ -430,6 +470,9 @@ public class TransformSeparator {
             expected = targetDimensions.length;
             actual   = tr.getTargetDimensions();
             if (actual == expected) {
+                if (trimSourceDimensions) {
+                    tr = removeUnusedSourceDimensions(tr);
+                }
                 return tr;
             }
         }
@@ -627,7 +670,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * The number and nature of inputs stay unchanged. For example if the supplied {@code transform}
      * has (<var>longitude</var>, <var>latitude</var>, <var>height</var>) outputs, then a filtered
      * transform may keep only the (<var>longitude</var>, <var>latitude</var>) part for the same inputs.
-     * In most cases, the filtered transform is non-invertible since it loose informations.
+     * In most cases, the filtered transform is non-invertible since it looses information.
      *
      * @param  step        the transform for which to retain only a subset of the target dimensions.
      * @param  dimensions  indices of the target dimensions of {@code step} to retain.
@@ -676,6 +719,74 @@ reduce:     for (int j=0; j <= numTgt; j++) {
         }
         matrix.setElement(dimensions.length, numTgt, 1);
         return factory.createConcatenatedTransform(step, factory.createAffineTransform(matrix));
+    }
+
+    /**
+     * Removes the sources dimensions that are not required for computing the target dimensions.
+     * This method is invoked only if {@link #trimSourceDimensions} is {@code true}.
+     * This method can operate only on the first transform of a transformation chain.
+     * If this method succeed, then {@link #sourceDimensions} will be updated.
+     *
+     * <p>This method can process only linear transforms (potentially indirectly through a concatenated transform).
+     * Actually it would be possible to also process pass-through transform followed by a linear transform, but this
+     * case should have been optimized during transform concatenation. If it is not the case, consider improving the
+     * {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)} method instead then
+     * this one.</p>
+     *
+     * @param  head  the first transform of a transformation chain.
+     * @return the reduced transform, or {@code head} if this method did not reduced the transform.
+     */
+    private MathTransform removeUnusedSourceDimensions(final MathTransform head) {
+        Matrix m = MathTransforms.getMatrix(head);
+        if (m != null) {
+            int[] retainedDimensions = ArraysExt.EMPTY_INT;
+            final int dimension = m.getNumCol() - 1;            // Number of source dimensions (ignore translations column).
+            final int numRows   = m.getNumRow();                // Number of target dimensions + 1.
+            for (int i=0; i<dimension; i++) {
+                for (int j=0; j<numRows; j++) {
+                    if (m.getElement(j,i) != 0) {
+                        // Found a source dimension which is required by target dimension.
+                        final int length = retainedDimensions.length;
+                        retainedDimensions = Arrays.copyOf(retainedDimensions, length+1);
+                        retainedDimensions[length] = i;
+                        break;
+                    }
+                }
+            }
+            if (retainedDimensions.length != dimension) {
+                /*
+                 * If we do not retain all dimensions, remove the matrix columns corresponding to the excluded
+                 * source dimensions and create a new transform. We remove consecutive columns in single calls
+                 * to 'removeColumns', from 'lower' inclusive to 'upper' exclusive.
+                 */
+                int upper = dimension;
+                for (int i = retainedDimensions.length; --i >= -1;) {
+                    final int keep = (i >= 0) ? retainedDimensions[i] : -1;
+                    final int lower = keep + 1;                                     // First column to exclude.
+                    if (lower != upper) {
+                        // Remove source dimensions that are not retained.
+                        m = MatrixSIS.castOrCopy(m).removeColumns(lower, upper);
+                    }
+                    upper = keep;
+                }
+                /*
+                 * If the user specified source dimensions, the indices need to be adjusted.
+                 * This loop has no effect if all source dimensions were kept before this method call.
+                 */
+                for (int i=0; i<retainedDimensions.length; i++) {
+                    retainedDimensions[i] = sourceDimensions[retainedDimensions[i]];
+                }
+                sourceDimensions = retainedDimensions;
+                return MathTransforms.linear(m);
+            }
+        } else if (head instanceof ConcatenatedTransform) {
+            final MathTransform transform1 = ((ConcatenatedTransform) head).transform1;
+            final MathTransform reduced = removeUnusedSourceDimensions(transform1);
+            if (reduced != transform1) {
+                return MathTransforms.concatenate(reduced, ((ConcatenatedTransform) head).transform2);
+            }
+        }
+        return head;
     }
 
     /**

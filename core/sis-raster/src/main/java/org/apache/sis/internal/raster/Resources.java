@@ -59,6 +59,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Some envelope dimensions can not be mapped to grid dimensions.
+         */
+        public static final short CanNotMapToGridDimensions = 12;
+
+        /**
          * The ({0}, {1}) pixel coordinate is outside iterator domain.
          */
         public static final short CoordinateOutsideDomain_2 = 1;
