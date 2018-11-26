@@ -34,7 +34,6 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.ChangeEvent;
@@ -181,9 +180,6 @@ public class NetcdfStore extends DataStore implements Aggregate {
         if (metadata == null) try {
             final MetadataReader reader = new MetadataReader(decoder);
             metadata = reader.read();
-            if (metadata instanceof ModifiableMetadata) {
-                ((ModifiableMetadata) metadata).transition(ModifiableMetadata.State.FINAL);
-            }
         } catch (IOException | ArithmeticException e) {
             throw new DataStoreException(e);
         }

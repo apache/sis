@@ -1013,6 +1013,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Creates an ISO {@code Metadata} object from the information found in the netCDF file.
+     * The returned metadata is unmodifiable, for allowing the caller to share a unique instance.
      *
      * @return the ISO metadata object.
      * @throws IOException if an I/O operation was necessary but failed.
@@ -1063,6 +1064,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultMetadata metadata = build(false);
         metadata.setMetadataStandards(Citations.ISO_19115);
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
+        metadata.transition(DefaultMetadata.State.FINAL);
         return metadata;
     }
 }

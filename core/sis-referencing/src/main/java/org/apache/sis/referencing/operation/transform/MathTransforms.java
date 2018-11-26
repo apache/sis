@@ -156,12 +156,13 @@ public final class MathTransforms extends Static {
 
     /**
      * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
-     * If the given transform is already an instance of {@link LinearTransform}, then it is returned.
+     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
      * Otherwise an approximation for the given position is created using the
      * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that position.
      *
-     * <p><b>Invariant:</b> transforming the given position using the given transform produces the same result
-     * (ignoring rounding error) than transforming the same position using the returned transform.</p>
+     * <p><b>Invariant:</b> transforming the given {@code position} using the given {@code transform} produces the same result
+     * (ignoring rounding error) than transforming the same {@code position} using the returned transform. This invariant holds
+     * only for that particular position; the transformation of any other positions may produce different results.</p>
      *
      * @param  transform  the transform to approximate by an affine transform.
      * @param  position   position in source CRS around which to get the an affine transform approximation.
