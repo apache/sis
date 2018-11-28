@@ -44,7 +44,7 @@ import static org.opengis.test.Assert.*;
 public final strictfp class MathTransformsTest extends TestCase {
     /**
      * Creates a dummy transform for testing purpose.
-     * The transform has the folowing properties:
+     * The transform has the following properties:
      *
      * <ul>
      *   <li>The source and target dimensions are 3.</li>
@@ -129,7 +129,7 @@ public final strictfp class MathTransformsTest extends TestCase {
     /**
      * Returns a three-dimensional transform which is non-linear in the second dimension.
      * A sample source point is (x, 1.5, y), which interpolates to (x, 8, y) where 8 is
-     * the mid-point between 6 and 14.
+     * the mid-point between 6 and 14. The transform can compute derivatives.
      */
     private static MathTransform nonLinear3D() {
         MathTransform tr = MathTransforms.interpolate(null, new double[] {2, 6, 14, 15});

@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.DirectPositionView;
 
 import static java.lang.StrictMath.*;
 
@@ -28,7 +27,7 @@ import static java.lang.StrictMath.*;
  * The transformed points are build as below (when formatted in base 10):
  *
  * {@preformat text
- *     [1 digit for dimension] [3 first fraction digits] . [random digits from source]
+ *     [1 digit for dimension] [3 first fraction digits] . [original digits from source]
  * }
  *
  * For example if the first input coordinate is (0.2, 0.5, 0.3), then the transformed coordinate will be:
@@ -39,8 +38,10 @@ import static java.lang.StrictMath.*;
  *     3003.3
  * }
  *
+ * This transform can not compute {@linkplain #derivative derivative}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -95,14 +96,12 @@ strictfp class PseudoTransform extends AbstractMathTransform {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
-        final Matrix derivative = derivate ? derivative(
-                new DirectPositionView.Double(srcPts, srcOff, getSourceDimensions())) : null;
         System.arraycopy(srcPts, srcOff, buffer, 0, sourceDimension);
         for (int i=0; i<targetDimension; i++) {
             double v = buffer[i % sourceDimension];
             v += (i+1)*1000 + round(v * 1000);
             dstPts[dstOff + i] = v;
         }
-        return derivative;
+        return null;
     }
 }

@@ -345,10 +345,18 @@ public class GridExtent implements Serializable {
                     coordinates[i]   = lower;
                     coordinates[i+m] = upper;
                 }
-            } else {
+            } else if (enclosing == null || !Double.isNaN(min) || !Double.isNaN(max)) {
                 throw new IllegalArgumentException(Resources.format(
                         Resources.Keys.IllegalGridEnvelope_3, i, min, max));
             }
+            /*
+             * We do not throw an exception if 'enclosing' is non-null and envelope bounds are NaN
+             * because this case occurs when the gridToCRS transform has a NaN scale factor.  Such
+             * scale factor may occur with ranges like [0 … 0]. With a non-null 'enclosing' extent,
+             * we can still have grid coordinates: they are inherited from 'enclosing'. We require
+             * the two bounds to be NaN, otherwise the reason for those NaN envelope bounds is not
+             * a NaN scale factor.
+             */
         }
         /*
          * At this point we finished to compute coordinate values.

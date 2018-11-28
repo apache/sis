@@ -295,39 +295,10 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                     return MathTransforms.linear(matrix);
                 }
             }
-            /*
-             * If the second transform is a passthrough transform and all passthrough ordinates
-             * are unchanged by the matrix, we can move the matrix inside the passthrough transform.
-             */
-            if (tr2 instanceof PassThroughTransform) {
-                final PassThroughTransform candidate = (PassThroughTransform) tr2;
-                final Matrix sub = candidate.toSubMatrix(matrix1);
-                if (sub != null) {
-                    if (factory != null) {
-                        return factory.createPassThroughTransform(
-                                candidate.firstAffectedOrdinate,
-                                factory.createConcatenatedTransform(factory.createAffineTransform(sub), candidate.subTransform),
-                                candidate.numTrailingOrdinates);
-                    } else {
-                        return MathTransforms.passThrough(
-                                candidate.firstAffectedOrdinate,
-                                create(MathTransforms.linear(sub), candidate.subTransform, factory),
-                                candidate.numTrailingOrdinates);
-                    }
-                }
-            }
-        }
-        /*
-         * If one transform is the inverse of the other, return the identity transform.
-         */
-        if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
-            assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
-            assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
-            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
         }
         /*
          * Give a chance to AbstractMathTransform to returns an optimized object.
-         * The main use case is Logarithmic vs Exponential transforms.
+         * Examples: Logarithmic versus Exponential transforms, PassThrouthTransform.
          */
         if (tr1 instanceof AbstractMathTransform) {
             final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
@@ -340,6 +311,14 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             if (optimized != null) {
                 return optimized;
             }
+        }
+        /*
+         * If one transform is the inverse of the other, return the identity transform.
+         */
+        if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
+            assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
+            assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
+            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
         }
         // No optimized case found.
         return null;

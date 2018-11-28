@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -94,7 +93,7 @@ public class TransformSeparator {
     /**
      * The factory to use for creating new math transforms.
      */
-    protected final MathTransformFactory factory;
+    private final MathTransformsOrFactory factory;
 
     /**
      * Whether to remove unused source dimensions. If {@code true}, then {@link #separate()} will try to
@@ -110,20 +109,19 @@ public class TransformSeparator {
      * @param transform  the transform to separate.
      */
     public TransformSeparator(final MathTransform transform) {
-        this(transform, DefaultFactories.forBuildin(MathTransformFactory.class));
+        this(transform, null);
     }
 
     /**
      * Constructs a separator for the given transform and using the given factory.
      *
      * @param transform  the transform to separate.
-     * @param factory    the factory to use for creating new math transforms.
+     * @param factory    the factory to use for creating new math transforms, or {@code null} if none.
      */
     public TransformSeparator(final MathTransform transform, final MathTransformFactory factory) {
         ArgumentChecks.ensureNonNull("transform", transform);
-        ArgumentChecks.ensureNonNull("factory", factory);
         this.transform = transform;
-        this.factory   = factory;
+        this.factory   = MathTransformsOrFactory.wrap(factory);
     }
 
     /**
@@ -526,7 +524,7 @@ public class TransformSeparator {
             final ConcatenatedTransform ctr = (ConcatenatedTransform) step;
             final MathTransform step1 = filterSourceDimensions(ctr.transform1, dimensions);
             final MathTransform step2 = filterSourceDimensions(ctr.transform2, targetDimensions);
-            return factory.createConcatenatedTransform(step1, step2);
+            return factory.concatenate(step1, step2);
             // Keep the 'targetDimensions' computed by the last step.
         }
         /*
@@ -584,7 +582,7 @@ public class TransformSeparator {
              * not accept arbitrary index for modified ordinates.
              */
             if (containsAll(dimensions, lower, subLower) && containsAll(dimensions, subUpper, upper)) {
-                return factory.createPassThroughTransform(subLower - lower, subTransform, Math.max(0, upper - subUpper));
+                return factory.passThrough(subLower - lower, subTransform, Math.max(0, upper - subUpper));
             }
         }
         /*
@@ -642,7 +640,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                     return MathTransforms.identity(0);
                 }
                 elements = ArraysExt.resize(elements, startOfRow);
-                return factory.createAffineTransform(Matrices.create(startOfRow / numFilteredColumns, numFilteredColumns, elements));
+                return factory.linear(Matrices.create(startOfRow / numFilteredColumns, numFilteredColumns, elements));
             }
             /*
              * In an affine transform, the last row is not supposed to have dependency to any source dimension.
@@ -718,7 +716,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
             matrix.setElement(j, i, 1);
         }
         matrix.setElement(dimensions.length, numTgt, 1);
-        return factory.createConcatenatedTransform(step, factory.createAffineTransform(matrix));
+        return factory.concatenate(step, factory.linear(matrix));
     }
 
     /**
