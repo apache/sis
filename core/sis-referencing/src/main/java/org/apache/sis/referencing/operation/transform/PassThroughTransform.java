@@ -294,8 +294,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  numPts  number of points to transform.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
-    private void apply(final Object srcPts, final int srcOff,
-                       final Object dstPts, int dstOff, int numPts) throws TransformException
+    private void transformOverlapping(final Object srcPts, final int srcOff,
+                                      final Object dstPts, int dstOff, int numPts) throws TransformException
     {
         if (numPts <= 0) return;
         final int subDimSource   = subTransform.getSourceDimensions();
@@ -410,7 +410,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
-        apply(srcPts, srcOff, dstPts, dstOff, numPts);
+        transformOverlapping(srcPts, srcOff, dstPts, dstOff, numPts);
     }
 
     /**
@@ -420,7 +420,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {
-        apply(srcPts, srcOff, dstPts, dstOff, numPts);
+        transformOverlapping(srcPts, srcOff, dstPts, dstOff, numPts);
     }
 
     /**
