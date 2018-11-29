@@ -16,11 +16,15 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Random;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
@@ -250,5 +254,52 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
             assertCoordinatesEqual("PassThroughTransform.transform(…) variants produce inconsistent results.",
                     sourceDim, expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM);
         }
+    }
+
+    /**
+     * Tests {@link PassThroughTransform#tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
+     * This tests creates a non-linear transform of 6→7 dimensions, then applies a filter keeping only
+     * target dimensions 1, 4 and 6 (corresponding to source dimensions 1 and 5).
+     *
+     * @throws FactoryException if an error occurred while combining the transforms.
+     */
+    @Test
+    public void testTryConcatenate() throws FactoryException {
+        PassThroughTransform ps = PassThroughTransform.newInstance(2, new PseudoTransform(2, 3), 2);
+        MathTransform c = ps.tryConcatenate(false, MathTransforms.linear(Matrices.create(4, 8, new double[] {
+                0, 1, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 1, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 1, 0,
+                0, 0, 0, 0, 0, 0, 0, 1})), null);
+
+        final List<MathTransform> steps = MathTransforms.getSteps(c);
+        assertEquals("Number of steps", 3, steps.size());
+        /*
+         * We need to remove source dimensions 0, 2, 3 and 4. We can not remove dimensions 2 and 3 before
+         * pass-through because they are used by the sub-transform. It leaves us dimensions 0 and 4 which
+         * can be removed here.
+         */
+        assertMatrixEquals("Expected removal of dimensions 0 and 4 before pass-through", Matrices.create(5, 7, new double[] {
+                0, 1, 0, 0, 0, 0, 0,
+                0, 0, 1, 0, 0, 0, 0,
+                0, 0, 0, 1, 0, 0, 0,
+                0, 0, 0, 0, 0, 1, 0,
+                0, 0, 0, 0, 0, 0, 1}), MathTransforms.getMatrix(steps.get(0)), null);
+        /*
+         * The number of pass-through dimensions have decreased from 2 to 1 on both sides of the sub-transform.
+         */
+        final PassThroughTransform reduced = (PassThroughTransform) steps.get(1);
+        assertEquals("firstAffectedOrdinate", 1, reduced.firstAffectedOrdinate);
+        assertEquals("numTrailingOrdinates",  1, reduced.numTrailingOrdinates);
+        assertSame  ("subTransform", ps.subTransform, reduced.subTransform);
+        /*
+         * We still have to remove source dimensions 2 and 3. Since we removed dimension 0 in previous step,
+         * the indices of dimensions to removed have shifted to 1 and 2.
+         */
+        assertMatrixEquals("Expected removal of dimensions 1 and 2 after pass-through", Matrices.create(4, 6, new double[] {
+                1, 0, 0, 0, 0, 0,
+                0, 0, 0, 1, 0, 0,
+                0, 0, 0, 0, 1, 0,
+                0, 0, 0, 0, 0, 1}), MathTransforms.getMatrix(steps.get(2)), null);
     }
 }
