@@ -78,7 +78,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -788,6 +788,60 @@ public abstract class AbstractMathTransform extends FormattableObject
             return this;
         }
         throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform));
+    }
+
+    /**
+     * Returns {@code true} if this transform is the inverse of the given transform.
+     * If this method is unsure, it conservatively returns {@code false}.
+     *
+     * <p>The default implementation invokes {@link #inverse()} and compares the transforms.
+     * Subclasses should override with a more efficient implementation if they can avoid the
+     * call to {@link #inverse()} (unless that call is cheap).</p>
+     *
+     * @param  other  the transform that may be the inverse of this transform.
+     * @return whether this transform is the inverse of the given transform. If unsure, {@code false}.
+     */
+    boolean isInverseOf(final MathTransform other) {
+        return inverseEquals(this, other);
+    }
+
+    /**
+     * Returns {@code true} if {@code tr1} is the inverse of {@code tr2}.
+     * If this method is unsure, it conservatively returns {@code false}.
+     * This implementation delegates to {@link #isInverseOf(MathTransform)}
+     * if possible, or to the default implementation otherwise. The transform
+     * that may be inverted is {@code tr1}.
+     */
+    static boolean areInverse(final MathTransform tr1, final MathTransform tr2) {
+        if (tr1 instanceof AbstractMathTransform) {
+            return ((AbstractMathTransform) tr1).isInverseOf(tr2);
+        } else {
+            return inverseEquals(tr1, tr2);
+        }
+    }
+
+    /**
+     * Implementation of {@link #isInverseOf(MathTransform)} for arbitrary math transform.
+     * This method invokes {@link #inverse()} on {@code tr1}.
+     */
+    private static boolean inverseEquals(MathTransform tr1, final MathTransform tr2) {
+        if (tr1.getSourceDimensions() != tr2.getTargetDimensions() ||
+            tr1.getTargetDimensions() != tr2.getSourceDimensions())
+        {
+            return false;
+        }
+        try {
+            tr1 = tr1.inverse();
+        } catch (NoninvertibleTransformException e) {
+            return false;
+        }
+        if (tr1 instanceof LenientComparable) {
+            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATIVE);
+        }
+        if (tr2 instanceof LenientComparable) {
+            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATIVE);
+        }
+        return tr1.equals(tr2);
     }
 
     /**

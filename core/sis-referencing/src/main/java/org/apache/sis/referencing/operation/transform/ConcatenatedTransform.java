@@ -38,7 +38,6 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.io.wkt.Convention;
@@ -111,28 +110,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             throw new IllegalArgumentException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2,
                     getName(transform1), getName(transform2)));
         }
-    }
-
-    /**
-     * Tests if one math transform is the inverse of the other, or approximately the inverse.
-     * Used for {@link #createOptimized(MathTransform, MathTransform, MathTransformFactory)} implementation.
-     */
-    private static boolean areInverse(final MathTransform tr1, MathTransform tr2) {
-        try {
-            tr2 = tr2.inverse();
-        } catch (NoninvertibleTransformException e) {
-            return false;
-        }
-        if (tr1 == tr2) {
-            return true;
-        }
-        if (tr1 instanceof LenientComparable) {
-            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATIVE);
-        }
-        if (tr2 instanceof LenientComparable) {
-            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATIVE);
-        }
-        return tr1.equals(tr2);
     }
 
     /**
@@ -805,6 +782,20 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
+     * Gets the derivative of this transform at a point.
+     *
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
+     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     */
+    @Override
+    public Matrix derivative(final DirectPosition point) throws TransformException {
+        final Matrix matrix1 = transform1.derivative(point);
+        final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
+        return Matrices.multiply(matrix2, matrix1);
+    }
+
+    /**
      * Creates the inverse transform of this object.
      */
     @Override
@@ -822,17 +813,23 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Gets the derivative of this transform at a point.
-     *
-     * @param  point  the coordinate point where to evaluate the derivative.
-     * @return the derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * Returns {@code true} if this transform is the inverse of the given transform.
+     * If this method is unsure, it conservatively returns {@code false}.
      */
     @Override
-    public Matrix derivative(final DirectPosition point) throws TransformException {
-        final Matrix matrix1 = transform1.derivative(point);
-        final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
-        return Matrices.multiply(matrix2, matrix1);
+    final boolean isInverseOf(final MathTransform other) {
+        final List<MathTransform> s1 = getSteps();
+        final List<MathTransform> s2 = MathTransforms.getSteps(other);
+        final int size = s1.size();
+        if (s2.size() != size) {
+            return false;
+        }
+        for (int i=0; i<size; i++) {
+            if (!areInverse(s1.get(size-1 - i), s2.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

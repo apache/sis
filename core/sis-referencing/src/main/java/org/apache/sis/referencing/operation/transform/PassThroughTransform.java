@@ -641,6 +641,23 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
+     * Returns {@code true} if this transform is the inverse of the given transform.
+     * If this method is unsure, it conservatively returns {@code false}.
+     */
+    @Override
+    final boolean isInverseOf(final MathTransform other) {
+        if (other instanceof PassThroughTransform) {
+            final PassThroughTransform ps = (PassThroughTransform) other;
+            if (firstAffectedOrdinate == ps.firstAffectedOrdinate &&
+                numTrailingOrdinates  == ps.numTrailingOrdinates)
+            {
+                return areInverse(subTransform, ps.subTransform);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
      * This method applies the following special cases:
      *
