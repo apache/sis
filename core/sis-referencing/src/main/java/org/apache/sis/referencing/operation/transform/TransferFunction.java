@@ -59,7 +59,10 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.5
+ *
+ * @see org.apache.sis.coverage.SampleDimension#getTransferFunction()
+ *
+ * @since 0.5
  * @module
  */
 public class TransferFunction implements Cloneable, Serializable {
