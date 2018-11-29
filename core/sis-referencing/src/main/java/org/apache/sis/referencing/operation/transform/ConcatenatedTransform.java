@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  *
@@ -168,59 +168,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             return mt;
         }
         /*
-         * If at least one math transform is an instance of ConcatenatedTransform and assuming
-         * that MathTransforms are associatives, tries the following arrangements and select
-         * the one with the fewest amount of steps:
-         *
-         *   Assuming :  tr1 = (A * B)
-         *               tr2 = (C * D)
-         *
-         *   Current  :  (A * B) * (C * D)     Will be the selected one if nothing better.
-         *   Try k=0  :  A * (B * (C * D))     Implies A * ((B * C) * D) through recursivity.
-         *   Try k=1  :  ((A * B) * C) * D     Implies (A * (B * C)) * D through recursivity.
-         *   Try k=2  :                        Tried only if try k=1 changed something.
-         *
-         * TODO: The same combination may be computed more than once (e.g. (B * C) above).
-         *       Should not be a big deal if there is not two many steps. In the even where
-         *       it would appears a performance issue, we could maintain a Map of combinations
-         *       already computed. The map would be local to a "create" method execution.
-         */
-        int stepCount = getStepCount(tr1) + getStepCount(tr2);
-        boolean tryAgain = true;                                // Really 'true' because we want at least 2 iterations.
-        for (int k=0; ; k++) {
-            MathTransform c1 = tr1;
-            MathTransform c2 = tr2;
-            final boolean first = (k & 1) == 0;
-            MathTransform candidate = first ? c1 : c2;
-            while (candidate instanceof ConcatenatedTransform) {
-                final ConcatenatedTransform ctr = (ConcatenatedTransform) candidate;
-                if (first) {
-                    c1 = candidate = ctr.transform1;
-                    c2 = create(ctr.transform2, c2, factory);
-                } else {
-                    c1 = create(c1, ctr.transform1, factory);
-                    c2 = candidate = ctr.transform2;
-                }
-                final int c = getStepCount(c1) + getStepCount(c2);
-                if (c < stepCount) {
-                    tr1 = c1;
-                    tr2 = c2;
-                    stepCount = c;
-                    tryAgain = true;
-                }
-            }
-            if (!tryAgain) break;
-            tryAgain = false;
-        }
-        /*
-         * Tries again the check for optimized cases (identity, etc.), because a
-         * transform may have been simplified to identity as a result of the above.
-         */
-        mt = createOptimized(tr1, tr2, factory);
-        if (mt != null) {
-            return mt;
-        }
-        /*
          * Can not avoid the creation of a ConcatenatedTransform object.
          * Check for the type to create (1D, 2D, general case...)
          */
@@ -299,18 +246,29 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         /*
          * Give a chance to AbstractMathTransform to returns an optimized object.
          * Examples: Logarithmic versus Exponential transforms, PassThrouthTransform.
+         * We try both ways (concatenation and pre-concatenation) and see which way
+         * produce the shortest concatenation chain.
          */
+        int stepCount = 0;
+        MathTransform shortest = null;
         if (tr1 instanceof AbstractMathTransform) {
             final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
             if (optimized != null) {
-                return optimized;
+                stepCount = getStepCount(optimized);
+                shortest  = optimized;
             }
         }
         if (tr2 instanceof AbstractMathTransform) {
             final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
             if (optimized != null) {
-                return optimized;
+                if (shortest == null || getStepCount(optimized) < stepCount) {
+                    return optimized;
+                }
+                shortest = optimized;
             }
+        }
+        if (shortest != null) {
+            return shortest;
         }
         /*
          * If one transform is the inverse of the other, return the identity transform.
@@ -875,6 +833,40 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         final Matrix matrix1 = transform1.derivative(point);
         final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
         return Matrices.multiply(matrix2, matrix1);
+    }
+
+    /**
+     * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
+     * This method try to delegate the concatenation to {@link #transform1} or {@link #transform2}. Assuming that
+     * transforms are associative, this is equivalent to trying the following arrangements:
+     *
+     * {@preformat text
+     *   Instead of : other → tr1 → tr2
+     *   Try:         (other → tr1) → tr2          where (…) denote an optimized concatenation.
+     *
+     *   Instead of : tr1 → tr2 → other
+     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.
+     * }
+     *
+     * @return the simplified transform, or {@code null} if no such optimization is available.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     */
+    @Override
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other, final MathTransformFactory factory)
+            throws FactoryException
+    {
+        if (applyOtherFirst) {
+            final MathTransform candidate = createOptimized(other, transform1, factory);
+            if (candidate != null) {
+                return create(candidate, transform2, factory);
+            }
+        } else {
+            final MathTransform candidate = createOptimized(transform2, other, factory);
+            if (candidate != null) {
+                return create(transform1, candidate, factory);
+            }
+        }
+        return super.tryConcatenate(applyOtherFirst, other, factory);
     }
 
     /**
