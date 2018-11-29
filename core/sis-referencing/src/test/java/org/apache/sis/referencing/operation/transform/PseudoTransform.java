@@ -38,7 +38,7 @@ import static java.lang.StrictMath.*;
  *     3003.3
  * }
  *
- * This transform can not compute {@linkplain #derivative derivative}.
+ * This transform is not invertible and can not compute {@linkplain #derivative derivative}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

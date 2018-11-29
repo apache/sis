@@ -277,65 +277,130 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms an array of points with overlapping source and target.
+     * Creates a new array of the same kind than the given array.
+     * This is used for creating {@code float[]} or {@code double[]} arrays.
+     */
+    private static Object newArray(final Object array, final int length) {
+        return Array.newInstance(array.getClass().getComponentType(), length);
+    }
+
+    /**
+     * Transforms an array of points with potentially overlapping source and target.
      *
-     * @param  points  the point to transform, as a {@code float[]} or {@code double[]} array.
+     * @param  srcPts  the point to transform, as a {@code float[]} or {@code double[]} array.
      * @param  srcOff  the offset to the point to be transformed in the array.
+     * @param  dstPts  where to store the transformed points, as an array of same type than {@code srcPts}.
      * @param  dstOff  the offset to the location of the transformed point that is stored in the destination array.
      * @param  numPts  number of points to transform.
-     * @return {@code null} on success, or a copy of a range from {@code points} array otherwise. In the later case, callers
-     *          have to perform the transformation itself but can rely on the returned copy to not overlap the original array.
      */
     @SuppressWarnings("SuspiciousSystemArraycopy")
-    private Object transformOverlapping(final Object points, int srcOff, int dstOff, int numPts) throws TransformException {
-        final int subDimSource = subTransform.getSourceDimensions();
-        final int subDimTarget = subTransform.getTargetDimensions();
-        int srcStep = numTrailingOrdinates;
-        int dstStep = numTrailingOrdinates;
-        final int add = firstAffectedOrdinate + numTrailingOrdinates;
-        final int dimSource = subDimSource + add;
-        final int dimTarget = subDimTarget + add;
-        switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, dimTarget, numPts)) {
-            case ASCENDING: {
-                break;
+    private void apply(final Object srcPts, final int srcOff,
+                       final Object dstPts, int dstOff, int numPts) throws TransformException
+    {
+        if (numPts <= 0) return;
+        final int subDimSource   = subTransform.getSourceDimensions();
+        final int subDimTarget   = subTransform.getTargetDimensions();
+        final int numPassThrough = firstAffectedOrdinate + numTrailingOrdinates;
+        final int dimSource      = subDimSource + numPassThrough;
+        final int dimTarget      = subDimTarget + numPassThrough;
+        /*
+         * Copy the pass-through coordinates (both before and after the sub-transform) into the 'pasPts'
+         * temporary array. This will allow us to compact the coordinates to give to the sub-transform,
+         * so we can process them in a single 'transform' method call. We do that also for avoiding tricky
+         * issues with overlapping regions, because coordinate tuples are not processed automically the
+         * way 'IterationStrategy' expects.
+         */
+        final Object pasPts;
+        {
+            pasPts = newArray(srcPts, numPassThrough * numPts);
+            System.arraycopy(srcPts, srcOff, pasPts, 0, firstAffectedOrdinate);
+            int pasOff = firstAffectedOrdinate;
+            int srcCpk = srcOff + pasOff + subDimSource;            // "Cpk" stands for "cherry-pick".
+            int n = numPts - 1;
+            while (--n >= 0) {
+                System.arraycopy(srcPts, srcCpk, pasPts, pasOff, numPassThrough);
+                pasOff += numPassThrough;
+                srcCpk += dimSource;
             }
-            case DESCENDING: {
-                srcOff += (numPts - 1) * dimSource;
-                dstOff += (numPts - 1) * dimTarget;
-                srcStep -= 2*dimSource;
-                dstStep -= 2*dimTarget;
-                break;
-            }
-            default: {
-                final int length = numPts * dimSource;
-                final Object buffer = Array.newInstance(points.getClass().getComponentType(), length);
-                System.arraycopy(points, srcOff, buffer, 0, length);
-                return buffer;
-            }
+            System.arraycopy(srcPts, srcCpk, pasPts, pasOff, numTrailingOrdinates);
         }
-        final boolean copyTrailingFirst = subDimSource < subDimTarget;
-        while (--numPts >= 0) {
-            System.arraycopy(points, srcOff, points, dstOff, firstAffectedOrdinate);
-            srcOff += firstAffectedOrdinate;
-            dstOff += firstAffectedOrdinate;
-            if (copyTrailingFirst) {
-                System.arraycopy(points, srcOff + subDimSource,
-                                 points, dstOff + subDimTarget, numTrailingOrdinates);
-            }
-            if (points instanceof double[]) {
-                subTransform.transform((double[]) points, srcOff, (double[]) points, dstOff, 1);
+        /*
+         * Copy in a compact array the coordinates to be given to the sub-transform.
+         * We do the compaction in the destination array (if it is large enough) for
+         * avoiding the need to create a temporary buffer. We can do that only after
+         * all pass-through coordinates have been copied by above loop, for avoiding
+         * to overwrite values if the source and destination array regions overlap.
+         */
+        Object subPts = dstPts;
+        {
+            int subOff = dstOff;
+            int srcCpk = srcOff + firstAffectedOrdinate;    // "Cpk" stands for "cherry-pick".
+            int srcInc = dimSource;
+            int dstInc = subDimSource;
+            final IterationStrategy strategy;
+            if (subDimSource > subDimTarget + numPassThrough) {
+                // If the destination array does not have enough room, create a temporary buffer.
+                strategy = IterationStrategy.BUFFER_TARGET;
+            } else if (srcPts != dstPts) {
+                strategy = IterationStrategy.ASCENDING;
             } else {
-                subTransform.transform((float[]) points, srcOff, (float[]) points, dstOff, 1);
+                strategy = IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts);
             }
-            srcOff += subDimSource;
-            dstOff += subDimTarget;
-            if (!copyTrailingFirst) {
-                System.arraycopy(points, srcOff, points, dstOff, numTrailingOrdinates);
+            switch (strategy) {
+                case ASCENDING: {
+                    break;
+                }
+                case DESCENDING: {
+                    srcCpk += (numPts-1) * srcInc; srcInc = -srcInc;
+                    subOff += (numPts-1) * dstInc; dstInc = -dstInc;
+                    break;
+                }
+                default: {
+                    subPts = newArray(subPts, Math.max(subDimSource, subDimTarget) * numPts);
+                    subOff = 0;
+                    break;
+                }
             }
-            srcOff += srcStep;
-            dstOff += dstStep;
+            int n = numPts;
+            do {
+                System.arraycopy(srcPts, srcCpk, subPts, subOff, subDimSource);
+                subOff += dstInc;
+                srcCpk += srcInc;
+            } while (--n != 0);
         }
-        return null;
+        /*
+         * All sub-transform coordinates have been compacted as consecutive tuples.
+         * Convert them in-place, overwriting the previous values.
+         */
+        int subOff = (subPts == dstPts) ? dstOff : 0;
+        if (subPts instanceof double[]) {
+            subTransform.transform((double[]) subPts, subOff, (double[]) subPts, subOff, numPts);
+        } else {
+            subTransform.transform( (float[]) subPts, subOff,  (float[]) subPts, subOff, numPts);
+        }
+        /*
+         * Copies the transformed coordinates to their final location, inserting pass-through
+         * coordinates between them in the process. Note that we avoided to modify 'dstOff'
+         * and 'numPts' before this point, but now we are free to do so since this is the last
+         * step.
+         */
+        int pasOff = numPts * numPassThrough;
+        subOff    += numPts * subDimTarget;
+        dstOff    += numPts * dimTarget;
+        if (--numPts >= 0) {
+            System.arraycopy(pasPts, pasOff -= numTrailingOrdinates,
+                             dstPts, dstOff -= numTrailingOrdinates, numTrailingOrdinates);
+            System.arraycopy(subPts, subOff -= subDimTarget,
+                             dstPts, dstOff -= subDimTarget, subDimTarget);
+            while (--numPts >= 0) {
+                System.arraycopy(pasPts, pasOff -= numPassThrough,
+                                 dstPts, dstOff -= numPassThrough, numPassThrough);
+                System.arraycopy(subPts, subOff -= subDimTarget,
+                                 dstPts, dstOff -= subDimTarget, subDimTarget);
+            }
+            System.arraycopy(pasPts, pasOff - firstAffectedOrdinate,
+                             dstPts, dstOff - firstAffectedOrdinate, firstAffectedOrdinate);
+        }
     }
 
     /**
@@ -344,24 +409,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) throws TransformException {
-        if (srcPts == dstPts) {
-            srcPts = (double[]) transformOverlapping(srcPts, srcOff, dstOff, numPts);
-            if (srcPts == null) return;
-            srcOff = 0;
-        }
-        final int subDimSource = subTransform.getSourceDimensions();
-        final int subDimTarget = subTransform.getTargetDimensions();
-        while (--numPts >= 0) {
-            System.arraycopy(      srcPts, srcOff,
-                                   dstPts, dstOff,   firstAffectedOrdinate);
-            subTransform.transform(srcPts, srcOff += firstAffectedOrdinate,
-                                   dstPts, dstOff += firstAffectedOrdinate, 1);
-            System.arraycopy(      srcPts, srcOff += subDimSource,
-                                   dstPts, dstOff += subDimTarget, numTrailingOrdinates);
-            srcOff += numTrailingOrdinates;
-            dstOff += numTrailingOrdinates;
-        }
+    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+        apply(srcPts, srcOff, dstPts, dstOff, numPts);
     }
 
     /**
@@ -370,24 +419,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) throws TransformException {
-        if (srcPts == dstPts) {
-            srcPts = (float[]) transformOverlapping(srcPts, srcOff, dstOff, numPts);
-            if (srcPts == null) return;
-            srcOff = 0;
-        }
-        final int subDimSource = subTransform.getSourceDimensions();
-        final int subDimTarget = subTransform.getTargetDimensions();
-        while (--numPts >= 0) {
-            System.arraycopy(      srcPts, srcOff,
-                                   dstPts, dstOff,   firstAffectedOrdinate);
-            subTransform.transform(srcPts, srcOff += firstAffectedOrdinate,
-                                   dstPts, dstOff += firstAffectedOrdinate, 1);
-            System.arraycopy(      srcPts, srcOff += subDimSource,
-                                   dstPts, dstOff += subDimTarget, numTrailingOrdinates);
-            srcOff += numTrailingOrdinates;
-            dstOff += numTrailingOrdinates;
-        }
+    public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {
+        apply(srcPts, srcOff, dstPts, dstOff, numPts);
     }
 
     /**

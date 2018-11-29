@@ -40,7 +40,7 @@ import org.opengis.test.ToleranceModifier;
  * Tests {@link PassThroughTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -75,7 +75,6 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
             final String message = e.getMessage();
             assertTrue(message, message.contains("numTrailingOrdinates"));
         }
-
     }
 
     /**
@@ -117,6 +116,28 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
     }
 
     /**
+     * Tests the general pass-through transform with a sub-transform going from 3D to 2D points.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testDimensionDecrease() throws TransformException {
+        isInverseTransformSupported = false;
+        runTest(new PseudoTransform(3, 2), PassThroughTransform.class);
+    }
+
+    /**
+     * Tests the general pass-through transform with a sub-transform going from 2D to 3D points.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testDimensionIncrease() throws TransformException {
+        isInverseTransformSupported = false;
+        runTest(new PseudoTransform(2, 3), PassThroughTransform.class);
+    }
+
+    /**
      * Tests a pass-through transform built using the given sub-transform.
      *
      * @param  subTransform   the sub-transform to use for building pass-through transform.
@@ -155,58 +176,64 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      * and compares the result against the expected ones. This method computes itself the expected results.
      *
      * @param  subTransform           the sub transform used by the current pass-through transform.
-     * @param  firstAffectedOrdinate  first input/output dimension used by {@code subTransform}.
+     * @param  firstAffectedCoordinate  first input/output dimension used by {@code subTransform}.
      * @throws TransformException if a transform failed.
      */
-    private void verifyTransform(final MathTransform subTransform, final int firstAffectedOrdinate)
-            throws TransformException
-    {
+    private void verifyTransform(final MathTransform subTransform, final int firstAffectedCoordinate) throws TransformException {
         validate();
         /*
          * Prepare two arrays:
          *   - passthrough data, to be given to the transform to be tested.
          *   - sub-transform data, which we will use internally for verifying the pass-through work.
          */
-        final int      passthroughDim   = transform.getSourceDimensions();
-        final int      subTransformDim  = subTransform.getSourceDimensions();
-        final int      numPts           = ORDINATE_COUNT / passthroughDim;
-        final double[] passthroughData  = CoordinateDomain.RANGE_10.generateRandomInput(random, passthroughDim, numPts);
-        final double[] subTransformData = new double[numPts * subTransformDim];
+        final int      sourceDim        = transform.getSourceDimensions();
+        final int      targetDim        = transform.getTargetDimensions();
+        final int      subSrcDim        = subTransform.getSourceDimensions();
+        final int      subTgtDim        = subTransform.getTargetDimensions();
+        final int      numPts           = ORDINATE_COUNT / sourceDim;
+        final double[] passthroughData  = CoordinateDomain.RANGE_10.generateRandomInput(random, sourceDim, numPts);
+        final double[] subTransformData = new double[numPts * Math.max(subSrcDim, subTgtDim)];
         Arrays.fill(subTransformData, Double.NaN);
         for (int i=0; i<numPts; i++) {
-            System.arraycopy(passthroughData, firstAffectedOrdinate + i*passthroughDim,
-                             subTransformData, i*subTransformDim, subTransformDim);
+            System.arraycopy(passthroughData, firstAffectedCoordinate + i*sourceDim,
+                             subTransformData, i*subSrcDim, subSrcDim);
         }
-        assertFalse("Error building test arrays.", ArraysExt.hasNaN(subTransformData));
-        /*
-         * Build the array of expected data by applying ourself the sub-transform.
-         */
         subTransform.transform(subTransformData, 0, subTransformData, 0, numPts);
-        final double[] expectedData = passthroughData.clone();
+        assertFalse(ArraysExt.hasNaN(subTransformData));
+        /*
+         * Build the array of expected data by copying ourself the sub-transform results.
+         */
+        final int numTrailingCoordinates = targetDim - subTgtDim - firstAffectedCoordinate;
+        final double[] expectedData = new double[targetDim * numPts];
         for (int i=0; i<numPts; i++) {
-            System.arraycopy(subTransformData, i*subTransformDim, expectedData,
-                             firstAffectedOrdinate + i*passthroughDim, subTransformDim);
+            int srcOffset = i * sourceDim;
+            int dstOffset = i * targetDim;
+            final int s = firstAffectedCoordinate + subSrcDim;
+            System.arraycopy(passthroughData,  srcOffset,   expectedData, dstOffset,   firstAffectedCoordinate);
+            System.arraycopy(subTransformData, i*subTgtDim, expectedData, dstOffset += firstAffectedCoordinate, subTgtDim);
+            System.arraycopy(passthroughData,  srcOffset+s, expectedData, dstOffset + subTgtDim, numTrailingCoordinates);
         }
-        assertEquals("Error building test arrays.", subTransform.isIdentity(),
-                Arrays.equals(passthroughData, expectedData));
+        assertEquals(subTransform.isIdentity(), Arrays.equals(passthroughData, expectedData));
         /*
          * Now process to the transform and compares the results with the expected ones.
          */
         tolerance         = 0;          // Results should be strictly identical because we used the same inputs.
         toleranceModifier = null;
-        final double[] transformedData = new double[expectedData.length];
+        final double[] transformedData = new double[Math.max(sourceDim, targetDim) * numPts];
         transform.transform(passthroughData, 0, transformedData, 0, numPts);
-        assertCoordinatesEqual("Direct transform.", passthroughDim,
-                expectedData, 0, transformedData, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+        assertCoordinatesEqual("PassThroughTransform results do not match the results computed by this test.",
+                targetDim, expectedData, 0, transformedData, 0, numPts, CalculationType.DIRECT_TRANSFORM);
         /*
          * Test inverse transform.
          */
-        tolerance         = 1E-8;
-        toleranceModifier = ToleranceModifier.RELATIVE;
-        Arrays.fill(transformedData, Double.NaN);
-        transform.inverse().transform(expectedData, 0, transformedData, 0, numPts);
-        assertCoordinatesEqual("Inverse transform.", passthroughDim,
-                passthroughData, 0, transformedData, 0, numPts, CalculationType.INVERSE_TRANSFORM);
+        if (isInverseTransformSupported) {
+            tolerance         = 1E-8;
+            toleranceModifier = ToleranceModifier.RELATIVE;
+            Arrays.fill(transformedData, Double.NaN);
+            transform.inverse().transform(expectedData, 0, transformedData, 0, numPts);
+            assertCoordinatesEqual("Inverse of PassThroughTransform do not give back the original data.",
+                    sourceDim, passthroughData, 0, transformedData, 0, numPts, CalculationType.INVERSE_TRANSFORM);
+        }
         /*
          * Verify the consistency between different 'transform(…)' methods.
          */
@@ -220,8 +247,8 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
         if (transform instanceof LinearTransform) {
             tolerance         = 1E-4;
             toleranceModifier = ToleranceModifier.RELATIVE;
-            assertCoordinatesEqual("A transformed value is wrong.", passthroughDim,
-                    expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+            assertCoordinatesEqual("PassThroughTransform.transform(…) variants produce inconsistent results.",
+                    sourceDim, expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM);
         }
     }
 }
