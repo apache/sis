@@ -50,7 +50,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  * This {@code TransferFunction} class handles only the continuous part of transfer functions.
  * This class does <strong>not</strong> handle missing values other than {@code NaN}.
  * For a more complete class with support for non-NaN missing values,
- * see {@code GridSampleDimension}.
+ * see {@code org.apache.sis.coverage.SampleDimension}.
  *
  * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.

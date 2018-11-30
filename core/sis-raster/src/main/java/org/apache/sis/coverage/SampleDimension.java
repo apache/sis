@@ -16,11 +16,15 @@
  */
 package org.apache.sis.coverage;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Classes;
 
 
@@ -33,7 +37,7 @@ import org.apache.sis.util.Classes;
  * but organized in a different way. The use of the same name may seem a risk, but those two types are typically
  * not used in same time.
  *
- * @author  Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -77,12 +81,11 @@ public class SampleDimension {
      * @param toUnit   the transfer function for converting sample values to geophysics values in {@code units}.
      * @param units    the units of measurement for this sample dimension, or {@code null} if not applicable.
      */
-    <T extends Number & Comparable<? super T>> SampleDimension(
-            final InternationalString name,
-            final NumberRange<T>      range,
-            final T[]                 nodata,
-            final MathTransform1D     toUnit,
-            final Unit<?>             units)
+    SampleDimension(final InternationalString name,
+                    final NumberRange<?>      range,
+                    final Number[]            nodata,
+                    final MathTransform1D     toUnit,
+                    final Unit<?>             units)
     {
         this.name             = name;
         this.range            = range;
@@ -131,7 +134,7 @@ public class SampleDimension {
      * @return The <cite>transfer function</cite> from sample to geophysics values. May be absent if this sample dimension
      *         do not defines any transform (which is not the same that defining an identity transform).
      *
-     * @see org.apache.sis.referencing.operation.transform.TransferFunction
+     * @see TransferFunction
      */
     public Optional<MathTransform1D> getTransferFunction() {
         return Optional.ofNullable(transferFunction);
@@ -157,5 +160,69 @@ public class SampleDimension {
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + "[“" + name + "”]";
+    }
+
+    /**
+     * A mutable builder for a {@link SampleDimension}.
+     * After properties have been set, the sample dimension is created by {@link #build()}.
+     *
+     * @param <T> the type of values in the sample dimension.
+     */
+    public class Builder<T extends Number & Comparable<? super T>> {
+        /**
+         * Description for this sample dimension.
+         */
+        private CharSequence name;
+
+        /**
+         * The range of sample values.
+         * May be {@code null} if this sample dimension has no non-{@code NaN} value.
+         */
+        private NumberRange<?> range;
+
+        /**
+         * The values to indicate "no data" for this sample dimension.
+         */
+        private final List<T> noDataValues = new ArrayList<>();
+
+        /**
+         * Builder for the math transform from sample to geophysics values.
+         */
+        private final TransferFunction transferFunction = new TransferFunction();
+
+        /**
+         * The units of measurement for this sample dimension, or {@code null} if not applicable.
+         */
+        private Unit<?> units;
+
+        /**
+         * Creates a new, initially empty, builder.
+         */
+        public Builder() {
+        }
+
+        /**
+         * Sets the name or description of the sample dimension.
+         * This is the value to be returned by {@link SampleDimension#getName()}.
+         *
+         * @param  name the name or description of the sample dimension.
+         * @return {@code this}, for method call chaining.
+         */
+        public Builder<T> setName(final CharSequence name) {
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * Creates a new sample with the properties defined to this builder.
+         *
+         * @return the sample dimension.
+         */
+        public SampleDimension build() {
+            return new SampleDimension(
+                    Types.toInternationalString(name), range,
+                    noDataValues.toArray(new Number[noDataValues.size()]),
+                    transferFunction.getTransform(), units);
+        }
     }
 }

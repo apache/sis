@@ -527,6 +527,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Name = 72;
 
         /**
+         * No data
+         */
+        public static final short Nodata = 156;
+
+        /**
          * None
          */
         public static final short None = 73;

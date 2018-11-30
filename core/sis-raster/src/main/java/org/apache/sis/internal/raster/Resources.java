@@ -64,6 +64,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotMapToGridDimensions = 12;
 
         /**
+         * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.
+         */
+        public static final short CategoryRangeOverlap_4 = 13;
+
+        /**
          * The ({0}, {1}) pixel coordinate is outside iterator domain.
          */
         public static final short CoordinateOutsideDomain_2 = 1;
@@ -102,6 +107,11 @@ public final class Resources extends IndexedResourceBundle {
          * The two images have different tile grid.
          */
         public static final short MismatchedTileGrid = 7;
+
+        /**
+         * No category for value {0}.
+         */
+        public static final short NoCategoryForValue_1 = 14;
 
         /**
          * Coordinate reference system is unspecified.
