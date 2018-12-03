@@ -18,16 +18,13 @@ package org.apache.sis.coverage;
 
 import java.util.Arrays;
 import java.util.AbstractList;
-import java.util.Comparator;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import javax.measure.Unit;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -41,8 +38,8 @@ import static java.lang.Double.doubleToRawLongBits;
 
 /**
  * An immutable list of categories. Categories are sorted by their sample values.
- * Overlapping ranges of sample values are not allowed. A {@code CategoryList} can contains a mix of
- * qualitative and quantitative categories. The {@link #getCategory(double)} method is responsible
+ * Overlapping ranges of sample values are not allowed. A {@code CategoryList} can contains a mix
+ * of qualitative and quantitative categories.  The {@link #search(double)} method is responsible
  * for finding the right category for an arbitrary sample value.
  *
  * <p>Instances of {@link CategoryList} are immutable and thread-safe.</p>
@@ -59,19 +56,18 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private static final long serialVersionUID = 2647846361059903365L;
 
     /**
-     * The policy when {@link #getCategory(double)} does not find a match for a sample value.
-     * {@code true} means that it should search for the nearest category, while {@code false}
-     * means that it should returns {@code null}.
+     * The result of converting sample values to geophysics values, never {@code null}.
      */
-    private static final boolean SEARCH_NEAREST = false;
+    final CategoryList converted;
 
     /**
-     * The range of values in this category list. This is the union of the range of values of every categories,
-     * excluding {@code NaN} values. This field will be computed only when first requested.
+     * The union of the ranges of every categories, excluding {@code NaN} values.
+     * May be {@code null} if this list has no non-{@code NaN} category.
      *
-     * @see #getRange()
+     * <p>A {@link NumberRange} object gives more information than a (minimum, maximum) tuple since
+     * it contains also the type (integer, float, etc.) and inclusion/exclusion information.</p>
      */
-    private transient volatile NumberRange<?> range;
+    final NumberRange<?> range;
 
     /**
      * List of {@link Category#minimum} values for each category in {@link #categories}.
@@ -81,9 +77,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private final double[] minimums;
 
     /**
-     * The list of categories to use for decoding samples. This list must be sorted in increasing order
-     * of {@link Category#minimum}. This {@code CategoryList} object may be used as a {@link Comparator}
-     * for that purpose. Qualitative categories (with NaN values) are last.
+     * The list of categories to use for decoding samples. This list must be sorted in increasing
+     * order of {@link Category#minimum}. Qualitative categories with NaN values are last.
      */
     private final Category[] categories;
 
@@ -94,11 +89,15 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private final Category main;
 
     /**
-     * The "no data" category (never {@code null}). The "no data" category is a category mapping the {@link Double#NaN} value.
-     * If none has been found, a default "no data" category is used. This category is used to transform geophysics values to
-     * sample values into rasters when no suitable category has been found for a given geophysics value.
+     * The category to use if {@link #search(double)} is invoked with a sample value greater than all ranges in this list.
+     * This is usually a reference to the last category to have a range of real values. A {@code null} value means that no
+     * extrapolation should be used. By extension, a {@code null} value also means that {@link #search(double)} should not
+     * try to find any fallback at all if the requested sample value does not fall in a category range.
+     *
+     * <p>There is no explicit extrapolation field for values less than all ranges in this list because the extrapolation
+     * to use in such case is {@code categories[0]}.</p>
      */
-    private final Category nodata;
+    private final Category extrapolation;
 
     /**
      * The last used category. We assume that this category is the most likely to be requested in the next
@@ -111,63 +110,84 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private transient Category last;
 
     /**
-     * {@code true} if there is gaps between categories, or {@code false} otherwise. A gap is found if for
-     * example the range of value is [-9999 … -9999] for the first category and [0 … 1000] for the second one.
-     */
-    private final boolean hasGaps;
-
-
-    /**
      * Constructs a category list using the specified array of categories.
      *
      * @param  categories  the list of categories. May be empty, but can not be null. This array is not cloned.
-     * @param  units       the geophysics unit, or {@code null} if none.
+     * @param  inverse     if we are creating the list of categories after conversion from sample to geophysics,
+     *                     the original list before conversion. Otherwise {@code null}.
      * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
      */
-    CategoryList(final Category[] categories, final Unit<?> units) {
+    CategoryList(final Category[] categories, CategoryList inverse) {
         this.categories = categories;
         Arrays.sort(categories, Category.COMPARATOR);
         /*
          * Constructs the array of Category.minimum values. During the loop, we make sure there is no overlapping ranges.
-         * We also take the "no data" category mapped to the sample value 0 if it exists, or the first "no data" category
-         * otherwise.
+         * We also take the "main" category as the category with the widest range of values.
          */
-        double   range   = 0;
-        Category main    = null;
-        Category nodata  = null;
-        boolean  hasGaps = false;
+        double widest = 0;
+        Category main = null;
+        NumberRange<?> range = null;
         minimums = new double[categories.length];
         for (int i=0; i < categories.length; i++) {
             final Category category = categories[i];
+            final NumberRange<?> extent = category.range;
+            if (extent != null) {
+                range = (range != null) ? range.unionAny(extent) : extent;
+            }
             final double minimum = category.minimum;
             minimums[i] = minimum;
-            if (category.transferFunction != null) {
-                final double r = category.maximum - category.minimum;
-                if (r >= range) {
-                    range = r;
-                    main  = category;
+            if (category.isQuantitative()) {
+                final double span = category.maximum - minimum;
+                if (span >= widest) {
+                    widest = span;
+                    main = category;
                 }
-            } else if (nodata == null || minimum == 0) {
-                nodata = category;
             }
             if (i != 0) {
                 assert !(minimum <= minimums[i-1]) : minimum;                   // Use '!' to accept NaN.
                 final Category previous = categories[i-1];
-                if (!hasGaps && !isNaN(minimum) && minimum != previous.getRange().getMaxDouble(false)) {
-                    hasGaps = true;
-                }
                 if (Category.compare(minimum, previous.maximum) <= 0) {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4, new Object[] {
-                                previous.getName(), previous.getRangeLabel(),
-                                category.getName(), category.getRangeLabel()}));
+                                previous.name, previous.getRangeLabel(),
+                                category.name, category.getRangeLabel()}));
                 }
             }
         }
-        this.main    = main;
-        this.last    = (main != null || categories.length == 0) ? main : categories[0];
-        this.nodata  = (nodata != null) ? nodata : Category.NODATA;
-        this.hasGaps = hasGaps;
-        assert isSorted(categories);
+        this.main  = main;
+        this.last  = (main != null || categories.length == 0) ? main : categories[0];
+        this.range = range;
+        /*
+         * At this point we have two branches:
+         *
+         *   - If we are creating the list of "sample to geophysics" conversions, then we do not allow extrapolations
+         *     outside the ranges or categories given to this constructor (extrapolation = null). In addition we need
+         *     to create the list of categories after conversion to geophysics value.
+         *
+         *   - If we are creating the list of "geophysics to sample" conversions, then we need to search for the
+         *     extrapolation to use when 'search(double)' is invoked with a value greater than all ranges in this
+         *     list. This is the last category to have a range of real numbers.
+         */
+        Category extrapolation = null;
+        if (inverse == null) {
+            boolean hasConversion = false;
+            final Category[] convertedCategories = new Category[categories.length];
+            for (int i=0; i < convertedCategories.length; i++) {
+                final Category category = categories[i];
+                hasConversion |= (category != category.converted);
+                convertedCategories[i] = category.converted;
+            }
+            inverse = hasConversion ? new CategoryList(convertedCategories, this) : this;
+        } else {
+            for (int i=categories.length; --i >= 0;) {
+                final Category category = categories[i];
+                if (!isNaN(category.maximum)) {
+                    extrapolation = category;
+                    break;
+                }
+            }
+        }
+        this.extrapolation = extrapolation;
+        converted = inverse;
     }
 
     /**
@@ -183,27 +203,34 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Returns {@code true} if the specified categories are sorted. This method
-     * ignores {@code NaN} values. This method is used for assertions only.
+     * Returns {@code false} if this instance contains private categories.
+     * This method is for assertions only.
      */
-    private static boolean isSorted(final Category[] categories) {
-        for (int i=1; i<categories.length; i++) {
-            Category c;
-            assert !((c=categories[i  ]).minimum > c.maximum) : c;
-            assert !((c=categories[i-1]).minimum > c.maximum) : c;
-            if (Category.compare(categories[i-1].maximum, categories[i].minimum) > 0) {
-                return false;
-            }
+    private boolean isPublic() {
+        for (final Category c : categories) {
+            if (!c.isPublic()) return false;
         }
         return true;
     }
 
     /**
+     * Returns {@code true} if this list contains at least one quantitative category.
+     * We use the converted range has a criterion, since it shall be null if the result
+     * of all conversions is NaN.
+     *
+     * @see Category#isQuantitative()
+     */
+    final boolean hasQuantitative() {
+        assert isPublic();
+        return converted.range != null;
+    }
+
+    /**
      * Performs a bi-linear search of the specified value. This method is similar to
      * {@link Arrays#binarySearch(double[],double)} except that it can differentiate
-     * NaN values.
+     * the various NaN values.
      */
-    private static int binarySearch(final double[] array, final double key) {
+    static int binarySearch(final double[] array, final double key) {
         int low  = 0;
         int high = array.length - 1;
         final boolean keyIsNaN = isNaN(key);
@@ -226,12 +253,16 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             final boolean midIsNaN = isNaN(midVal);
             final boolean adjustLow;
             if (keyIsNaN) {
-                // If (mid,key)==(!NaN, NaN): mid is lower.
-                // If two NaN arguments, compare NaN bits.
+                /*
+                 * If (mid,key)==(!NaN, NaN): mid is lower.
+                 * If two NaN arguments, compare NaN bits.
+                 */
                 adjustLow = (!midIsNaN || midRawBits < keyRawBits);
             } else {
-                // If (mid,key)==(NaN, !NaN): mid is greater.
-                // Otherwise, case for (-0.0, 0.0) and (0.0, -0.0).
+                /*
+                 * If (mid,key)==(NaN, !NaN): mid is greater.
+                 * Otherwise, case for (-0.0, 0.0) and (0.0, -0.0).
+                 */
                 adjustLow = (!midIsNaN && midRawBits < keyRawBits);
             }
             if (adjustLow) low = mid + 1;
@@ -247,7 +278,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * @param  sample  the value.
      * @return the category of the supplied value, or {@code null}.
      */
-    public final Category getCategory(final double sample) {
+    private Category search(final double sample) {
         /*
          * Search which category contains the given value.
          * Note: NaN values are at the end of 'minimums' array, so:
@@ -262,17 +293,17 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             return categories[i];
         }
         /*
-         * If we reach this point and the value is NaN, then it is not one of the
-         * registered NaN values. Consequently we can not map a category to this value.
+         * If we reach this point and the value is NaN, then it is not one of the NaN values known
+         * to CategoryList constructor. Consequently we can not map a category to this value.
          */
         if (isNaN(sample)) {
             return null;
         }
         assert i == Arrays.binarySearch(minimums, sample) : i;
         /*
-         * 'binarySearch' found the index of "insertion point" (~i). This means that
-         * 'sample' is lower than 'Category.minimum' at this index. Consequently, if
-         * this value fits in a category's range, it fits in the previous category (~i-1).
+         * 'binarySearch' found the index of "insertion point" (~i). This means that 'sample' is lower
+         * than 'Category.minimum' at that index. Consequently if the sample value is inside the range
+         * of some category, it can only be the previous category (~i-1).
          */
         i = ~i - 1;
         if (i >= 0) {
@@ -281,27 +312,25 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             if (sample <= category.maximum) {
                 return category;
             }
-            if (SEARCH_NEAREST) {
+            /*
+             * At this point we determined that 'sample' is between two categories. If extrapolations
+             * are allowed, returns the category for the range closest to the sample value.
+             *
+             * Assertion: 'next.minimum' shall not be smaller than 'sample', otherwise it should have
+             * been found by 'binarySearch'.
+             */
+            if (extrapolation != null) {
                 if (++i < categories.length) {
-                    final Category upper = categories[i];
-                    /*
-                     * ASSERT: if 'upper.minimum' was smaller than 'value', it should has been
-                     *         found by 'binarySearch'. We use '!' in order to accept NaN values.
-                     */
-                    assert !(upper.minimum <= sample) : sample;
-                    return (upper.minimum-sample < sample-category.maximum) ? upper : category;
+                    final Category next = categories[i];
+                    assert !(next.minimum <= sample) : sample;         // '!' for accepting NaN.
+                    return (next.minimum - sample < sample - category.maximum) ? next : category;
                 }
-                while (--i >= 0) {
-                    final Category previous = categories[i];
-                    if (!isNaN(previous.minimum)) {
-                        return previous;
-                    }
-                }
+                return extrapolation;
             }
-        } else if (SEARCH_NEAREST) {
+        } else if (extrapolation != null) {
             /*
              * If the value is smaller than the smallest Category.minimum, returns
-             * the first category (except if there is only NaN categories).
+             * the first category (except if there is only qualitative categories).
              */
             if (categories.length != 0) {
                 final Category category = categories[0];
@@ -314,303 +343,88 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Returns the range of values in this category list. This is the union of the ranges of every categories,
-     * excluding {@code NaN} values. A {@link NumberRange} object give more information than a (minimum, maximum)
-     * tuple since it contains also the type (integer, float, etc.) and inclusion/exclusion information.
-     *
-     * @return The range of values. May be {@code null} if this category list has no quantitative category.
-     *
-     * @see Category#getRange()
-     */
-    public final NumberRange<?> getRange() {
-        NumberRange<?> range = this.range;
-        if (range == null) {
-            for (final Category category : categories) {
-                final NumberRange<?> extent = category.getRange();
-                if (!isNaN(extent.getMinDouble()) && !isNaN(extent.getMaxDouble())) {
-                    if (range != null) {
-                        range = range.unionAny(extent);
-                    } else {
-                        range = extent;
-                    }
-                }
-            }
-            this.range = range;
-        }
-        return range;
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                          ////////
-    ////////       I M P L E M E N T A T I O N   O F   List   I N T E R F A C E       ////////
-    ////////                                                                          ////////
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns the number of categories in this list.
-     */
-    @Override
-    public final int size() {
-        return categories.length;
-    }
-
-    /**
-     * Returns the element at the specified position in this list.
-     */
-    @Override
-    public final Category get(final int i) {
-        return categories[i];
-    }
-
-    /**
-     * Returns all categories in this {@code CategoryList}.
-     */
-    @Override
-    public final Category[] toArray() {
-        Category[] array = categories;
-        if (array.length != 0) {
-            array = array.clone();
-        }
-        return array;
-    }
-
-    /**
-     * Compares the specified object with this category list for equality.
-     * If the two objects are instances of {@link CategoryList}, then the
-     * test is a stricter than the default {@link AbstractList#equals(Object)}.
-     */
-    @Override
-    public boolean equals(final Object object) {
-        if (object instanceof CategoryList) {
-            final CategoryList that = (CategoryList) object;
-            if (Arrays.equals(categories, that.categories)) {
-                assert Arrays.equals(minimums, that.minimums);
-            } else {
-                return false;
-            }
-        }
-        return super.equals(object);
-    }
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                               ////////
-    ////////    I M P L E M E N T A T I O N   O F   MathTransform1D   I N T E R F A C E    ////////
-    ////////                                                                               ////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Gets the dimension of input points, which is 1.
-     */
-    @Override
-    public final int getSourceDimensions() {
-        return 1;
-    }
-
-    /**
-     * Gets the dimension of output points, which is 1.
-     */
-    @Override
-    public final int getTargetDimensions() {
-        return 1;
-    }
-
-    /**
-     * Tests whether this transform does not move any points.
-     */
-    @Override
-    public boolean isIdentity() {
-        for (final Category category : categories) {
-            final MathTransform1D tr = category.transferFunction;
-            if (tr == null || !tr.isIdentity()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns the inverse transform of this object.
-     *
-     * @todo Not yet implemented.
-     */
-    @Override
-    public final MathTransform1D inverse() throws NoninvertibleTransformException {
-        throw new NoninvertibleTransformException();
-    }
-
-    /**
-     * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
-     */
-    @Override
-    public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
-        ArgumentChecks.ensureNonNull("ptSrc", ptSrc);
-        ArgumentChecks.ensureDimensionMatches("ptSrc", 1, ptSrc);
-        if (ptDst == null) {
-            ptDst = new GeneralDirectPosition(1);
-        } else {
-            ArgumentChecks.ensureDimensionMatches("ptDst", 1, ptDst);
-        }
-        ptDst.setOrdinate(0, transform(ptSrc.getOrdinate(0)));
-        return ptDst;
-    }
-
-    /**
-     * Gets the derivative of this transform at a point.
-     */
-    @Override
-    public final Matrix derivative(final DirectPosition point) throws TransformException {
-        ArgumentChecks.ensureNonNull("point", point);
-        ArgumentChecks.ensureDimensionMatches("ptSrc", 1, point);
-        return new Matrix1(derivative(point.getOrdinate(0)));
-    }
-
-    /**
-     * Gets the derivative of this function at a value.
-     *
-     * @param  value  the value where to evaluate the derivative.
-     * @return the derivative at the specified point.
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
-     */
-    @Override
-    public final double derivative(final double value) throws TransformException {
-        Category category = last;
-        if (!(value >= category.minimum  &&  value <= category.maximum) &&
-             doubleToRawLongBits(value) != doubleToRawLongBits(category.minimum))
-        {
-            category = getCategory(value);
-            if (category == null) {
-                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
-            }
-            last = category;
-        }
-        return category.transferFunction.derivative(value);
-    }
-
-    /**
-     * Transforms the specified value.
-     *
-     * @param value The value to transform.
-     * @return the transformed value.
-     * @throws TransformException if the value can't be transformed.
-     */
-    @Override
-    public final double transform(double value) throws TransformException {
-        Category category = last;
-        if (!(value >= category.minimum  &&  value <= category.maximum) &&
-             doubleToRawLongBits(value) != doubleToRawLongBits(category.minimum))
-        {
-            category = getCategory(value);
-            if (category == null) {
-                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
-            }
-            last = category;
-        }
-        value = category.transferFunction.transform(value);
-        if (SEARCH_NEAREST) {
-//          if (value < category.inverse.minimum) return category.inverse.minimum;
-//          if (value > category.inverse.maximum) return category.inverse.maximum;
-        }
-//      assert category == inverse.getCategory(value).inverse : category;
-        return value;
-    }
-
-    /**
      * Transforms a list of coordinate point ordinal values. This implementation accepts
      * float or double arrays, since the quasi-totality of the implementation is the same.
      * Locale variables still of the {@code double} type because this is the type used in
      * {@link Category} objects.
-     *
-     * @todo We could add an optimization after the loops checking for category change:
-     *       if we were allowed to search for nearest category (overflowFallback!=null),
-     *       then make sure that the category really changed. There is already a slight
-     *       optimization for the most common cases, but maybe we could go a little bit
-     *       further.
      */
     private void transform(final double[] srcPts, final float[] srcFloat, int srcOff,
                            final double[] dstPts, final float[] dstFloat, int dstOff,
                            int numPts) throws TransformException
     {
         final int srcToDst = dstOff - srcOff;
-        Category  category = last;
-        double     maximum = category.maximum;
-        double     minimum = category.minimum;
-        long       rawBits = doubleToRawLongBits(minimum);
         final int direction;
         if (srcOff >= dstOff || (srcFloat != null ? srcFloat != dstFloat : srcPts != dstPts)) {
             direction = +1;
         } else {
             direction = -1;
-            dstOff += numPts-1;             // Updated for safety, but not used.
+//          dstOff += numPts-1;             // Not updated because not used.
             srcOff += numPts-1;
         }
         /*
-         * Scan every points. Transforms will be performed by blocks, each time
-         * the loop detects that the category has changed. The break point is near
-         * the end of the loop, after we have done the transformation but before
-         * to change category.
+         * Scan every points.  Transforms will be applied by blocks, each time the loop detects that
+         * the category has changed. The break condition (numPts >= 0) is near the end of the loop,
+         * after we have done the conversion but before to change category.
          */
-        for (int peekOff=srcOff; true; peekOff += direction) {
-            double value = 0;
+        Category category = last;
+        double value = Double.NaN;
+        for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
+            final double minimum = category.minimum;
+            final double maximum = category.maximum;
+            final long   rawBits = doubleToRawLongBits(minimum);
             while (--numPts >= 0) {
                 value = (srcFloat != null) ? srcFloat[peekOff] : srcPts[peekOff];
-                if ((value >= minimum && value <= maximum) ||
-                    doubleToRawLongBits(value) == rawBits)
+                if (value >= minimum) {
+                    if (!(value <= maximum || category == extrapolation)) {
+                        /*
+                         * If the value is greater than the [minimum … maximum] range and extrapolation
+                         * is not allowed, then consider that the category has changed; stop the search.
+                         */
+                        break;
+                    }
+                } else if (doubleToRawLongBits(value) != rawBits &&
+                        (isNaN(value) || extrapolation == null || category != categories[0]))
                 {
-                    peekOff += direction;
-                    continue;
+                    /*
+                     * If the value is not the expected NaN value, or the value is a real number less than
+                     * the [minimum … maximum] range with extrapolation not allowed, then consider that the
+                     * category has changed; stop the search.
+                     */
+                    break;
                 }
-                break;                          // The category has changed. Stop the search.
-            }
-            if (SEARCH_NEAREST) {
-                /*
-                 * TODO: Slight optimization. We could go further by checking if 'value' is closer
-                 *       to this category than to the previous category or the next category.  But
-                 *       we may need the category index, and binarySearch is a costly operation...
-                 */
-//              if (value > maximum && category == overflowFallback) {
-//                  continue;
-//              }
-                if (value < minimum && category == categories[0]) {
-                    continue;
-                }
+                peekOff += direction;
             }
             /*
-             * The category has changed. Compute the start point (which depends of 'direction')
-             * and performs the transformation. If 'getCategory' was allowed to search for the
-             * nearest category, clamp all output values in their category range.
+             * The category has changed. Compute the start point (which depends on 'direction') and perform
+             * the conversion. If 'search' was allowed to search for the nearest category, clamp all output
+             * values in their category range.
              */
-            int count = peekOff - srcOff;  // May be negative if we are going backward.
+            int count = peekOff - srcOff;                       // May be negative if we are going backward.
             if (count < 0) {
                 count  = -count;
-                srcOff -= count-1;
+                srcOff -= count - 1;
             }
             final int stepOff = srcOff + srcToDst;
-            final MathTransform1D step = category.transferFunction;
+            final MathTransform1D piece = category.transferFunction;
             if (srcFloat != null) {
                 if (dstFloat != null) {
-                    step.transform(srcFloat, srcOff, dstFloat, stepOff, count);
+                    piece.transform(srcFloat, srcOff, dstFloat, stepOff, count);
                 } else {
-                    step.transform(srcFloat, srcOff, dstPts, stepOff, count);
+                    piece.transform(srcFloat, srcOff, dstPts, stepOff, count);
                 }
             } else {
                 if (dstFloat != null) {
-                    step.transform(srcPts, srcOff, dstFloat, stepOff, count);
+                    piece.transform(srcPts, srcOff, dstFloat, stepOff, count);
                 } else {
-                    step.transform(srcPts, srcOff, dstPts, stepOff, count);
+                    piece.transform(srcPts, srcOff, dstPts, stepOff, count);
                 }
             }
-            if (SEARCH_NEAREST) {
+            if (extrapolation != null) {
                 dstOff = srcOff + srcToDst;
-                final Category inverse = null;  // TODO category.inverse;
-                if (dstFloat != null) { // Loop for the 'float' version.
-                    final float min = (float) inverse.minimum;
-                    final float max = (float) inverse.maximum;
+                final Category cnv = category.converted;
+                if (dstFloat != null) {                                 // Loop for the 'float' version.
+                    final float min = (float) cnv.minimum;
+                    final float max = (float) cnv.maximum;
                     while (--count >= 0) {
                         final float check = dstFloat[dstOff];
                         if (check < min) {
@@ -620,9 +434,9 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                         }
                         dstOff++;
                     }
-                } else { // Loop for the 'double' version.
-                    final double min = inverse.minimum;
-                    final double max = inverse.maximum;
+                } else {                                                // Loop for the 'double' version.
+                    final double min = cnv.minimum;
+                    final double max = cnv.maximum;
                     while (--count >= 0) {
                         final double check = dstPts[dstOff];
                         if (check < min) {
@@ -635,21 +449,16 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                 }
             }
             /*
-             * Transformation is now finished for all points in the range [srcOff..peekOff]
-             * (not including 'peekOff'). If there is more points to examine, gets the new
+             * Transformation is now finished for all points in the range [srcOff … peekOff]
+             * (not including 'peekOff'). If there is more points to examine, get the new
              * category for the next points.
              */
-            if (numPts < 0) {
-                break;
-            }
-            category = getCategory(value);
+            if (numPts < 0) break;
+            category = search(value);
             if (category == null) {
                 throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
             }
-            maximum = category.maximum;
-            minimum = category.minimum;
-            rawBits = doubleToRawLongBits(minimum);
-            srcOff  = peekOff;
+            srcOff = peekOff;
         }
         last = category;
     }
@@ -687,8 +496,150 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
+     * Transforms the specified value.
+     *
+     * @param  value  the value to transform.
+     * @return the transformed value.
+     * @throws TransformException if the value can not be transformed.
+     */
+    @Override
+    public final double transform(double value) throws TransformException {
+        Category category = last;
+        if (!(value >= category.minimum  &&  value <= category.maximum) &&
+             doubleToRawLongBits(value) != doubleToRawLongBits(category.minimum))
+        {
+            category = search(value);
+            if (category == null) {
+                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
+            }
+            last = category;
+        }
+        value = category.transferFunction.transform(value);
+        if (extrapolation != null) {
+            double bound;
+            if (value < (bound = category.converted.minimum)) return bound;
+            if (value > (bound = category.converted.maximum)) return bound;
+        }
+        assert category == converted.search(value).converted : category;
+        return value;
+    }
+
+    /**
+     * Gets the derivative of this function at a value.
+     *
+     * @param  value  the value where to evaluate the derivative.
+     * @return the derivative at the specified point.
+     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     */
+    @Override
+    public final double derivative(final double value) throws TransformException {
+        Category category = last;
+        if (!(value >= category.minimum  &&  value <= category.maximum) &&
+             doubleToRawLongBits(value) != doubleToRawLongBits(category.minimum))
+        {
+            category = search(value);
+            if (category == null) {
+                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
+            }
+            last = category;
+        }
+        return category.transferFunction.derivative(value);
+    }
+
+    /**
+     * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
+     */
+    @Override
+    public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
+        ArgumentChecks.ensureNonNull("ptSrc", ptSrc);
+        ArgumentChecks.ensureDimensionMatches("ptSrc", 1, ptSrc);
+        if (ptDst == null) {
+            ptDst = new GeneralDirectPosition(1);
+        } else {
+            ArgumentChecks.ensureDimensionMatches("ptDst", 1, ptDst);
+        }
+        ptDst.setOrdinate(0, transform(ptSrc.getOrdinate(0)));
+        return ptDst;
+    }
+
+    /**
+     * Gets the derivative of this transform at a point.
+     */
+    @Override
+    public final Matrix derivative(final DirectPosition point) throws TransformException {
+        ArgumentChecks.ensureNonNull("point", point);
+        ArgumentChecks.ensureDimensionMatches("point", 1, point);
+        return new Matrix1(derivative(point.getOrdinate(0)));
+    }
+
+    /**
+     * Tests whether this transform does not move any points.
+     */
+    @Override
+    public boolean isIdentity() {
+        return converted == this;
+    }
+
+    /**
+     * Returns the inverse transform of this object, which may be {@code this} if this transform is identity.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public final MathTransform1D inverse() {
+        return converted;
+    }
+
+    /**
+     * Gets the dimension of input points, which is 1.
+     */
+    @Override
+    public final int getSourceDimensions() {
+        return 1;
+    }
+
+    /**
+     * Gets the dimension of output points, which is 1.
+     */
+    @Override
+    public final int getTargetDimensions() {
+        return 1;
+    }
+
+    /**
+     * Returns the number of categories in this list.
+     */
+    @Override
+    public final int size() {
+        return categories.length;
+    }
+
+    /**
+     * Returns the element at the specified position in this list.
+     */
+    @Override
+    public final Category get(final int i) {
+        return categories[i];
+    }
+
+    /**
+     * Compares the specified object with this category list for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof CategoryList) {
+            final CategoryList that = (CategoryList) object;
+            if (Arrays.equals(categories, that.categories)) {
+                assert Arrays.equals(minimums, that.minimums);
+            } else {
+                return false;
+            }
+        }
+        return super.equals(object);
+    }
+
+    /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this object. This operation
-     * may fails if an object is too complex for the WKT format capability.
+     * may fail if an object is too complex for the WKT format capability.
      *
      * @return the Well Know Text for this object.
      * @throws UnsupportedOperationException if this object can not be formatted as WKT.

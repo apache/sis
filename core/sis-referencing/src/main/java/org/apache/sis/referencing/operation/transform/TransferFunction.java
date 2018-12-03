@@ -147,9 +147,11 @@ public class TransferFunction implements Cloneable, Serializable {
      * For other supported types, the default value is 10.
      *
      * @param  base  the new logarithm or exponent base.
+     * @throws IllegalArgumentException if the given base is NaN, negative, zero or infinite.
      */
     public void setBase(final double base) {
         ArgumentChecks.ensureStrictlyPositive("base", base);
+        ArgumentChecks.ensureFinite("base", base);
         this.base = base;
         transform = null;
     }
@@ -168,8 +170,13 @@ public class TransferFunction implements Cloneable, Serializable {
      * The default value is 1.
      *
      * @param  scale  the new scale factor.
+     * @throws IllegalArgumentException if the given scale is NaN, zero or infinite.
      */
     public void setScale(final double scale) {
+        ArgumentChecks.ensureFinite("scale", scale);
+        if (scale == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "scale", scale));
+        }
         this.scale = scale;
         transform = null;
     }
@@ -188,8 +195,10 @@ public class TransferFunction implements Cloneable, Serializable {
      * The default value is 0.
      *
      * @param  offset  the new offset.
+     * @throws IllegalArgumentException if the given scale is NaN or infinite.
      */
     public void setOffset(final double offset) {
+        ArgumentChecks.ensureFinite("offset",  offset);
         this.offset = offset;
         transform = null;
     }

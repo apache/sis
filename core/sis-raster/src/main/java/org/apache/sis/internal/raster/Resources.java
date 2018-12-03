@@ -74,9 +74,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CoordinateOutsideDomain_2 = 1;
 
         /**
+         * Sample value range {1} for “{0}” category is illegal.
+         */
+        public static final short IllegalCategoryRange_2 = 15;
+
+        /**
          * Illegal grid envelope [{1} … {2}] for dimension {0}.
          */
         public static final short IllegalGridEnvelope_3 = 8;
+
+        /**
+         * Illegal transfer function for “{0}” category.
+         */
+        public static final short IllegalTransferFunction_1 = 16;
 
         /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
@@ -112,6 +122,11 @@ public final class Resources extends IndexedResourceBundle {
          * No category for value {0}.
          */
         public static final short NoCategoryForValue_1 = 14;
+
+        /**
+         * Too many qualitative categories.
+         */
+        public static final short TooManyQualitatives = 17;
 
         /**
          * Coordinate reference system is unspecified.

@@ -89,7 +89,23 @@ public final class MathFunctions extends Static {
     public static final double LOG10_2 = 0.3010299956639812;
 
     /**
-     * The minimal and maximal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
+     * The minimal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
+     * The current value is {@value}.
+     *
+     * @since 1.0
+     */
+    public static final int MIN_NAN_ORDINAL = -0x200000;
+
+    /**
+     * The maximal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
+     * The current value is {@value}.
+     *
+     * @since 1.0
+     */
+    public static final int MAX_NAN_ORDINAL =  0x1FFFFF;
+
+    /**
+     * The beginning of ranges of quiet NaN values.
      * The range is selected in way to restrict ourselves to <cite>quiet</cite> NaN values.
      * The following is an adaptation of evaluator's comments for bug #4471414
      * (http://developer.java.sun.com/developer/bugParade/bugs/4471414.html):
@@ -118,12 +134,6 @@ public final class MathFunctions extends Static {
      *
      * @see #toNanFloat(int)
      * @see #toNanOrdinal(float)
-     */
-    static final int MIN_NAN_ORDINAL = -0x200000,
-                     MAX_NAN_ORDINAL =  0x1FFFFF;
-
-    /**
-     * The beginning of ranges of quiet NaN values.
      */
     static final int POSITIVE_NAN = 0x7FC00000,
                      NEGATIVE_NAN = 0xFFC00000;
@@ -588,7 +598,7 @@ public final class MathFunctions extends Static {
      * and may change in any future version of the SIS library. The current implementation restricts the
      * range of allowed ordinal values to a smaller one than the range of all possible values.</p>
      *
-     * @param  ordinal  the NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
+     * @param  ordinal  the NaN ordinal value, from {@value #MIN_NAN_ORDINAL} to {@value #MAX_NAN_ORDINAL} inclusive.
      * @return one of the legal {@linkplain Float#isNaN(float) NaN} values as a float.
      * @throws IllegalArgumentException if the specified ordinal is out of range.
      *

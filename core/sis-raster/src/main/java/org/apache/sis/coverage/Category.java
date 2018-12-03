@@ -16,25 +16,30 @@
  */
 package org.apache.sis.coverage;
 
+import java.util.Set;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Comparator;
 import java.io.Serializable;
+import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Types;
 
 
 /**
  * A category delimited by a range of sample values. A category may be either <em>qualitative</em> or <em>quantitative</em>.
- * For example, a classified image may have a qualitative category defining sample value {@code 0} as water.
- * An other qualitative category may defines sample value {@code 1} as forest, <i>etc</i>.
- * An other image may define elevation data as sample values in the range [0…100].
+ * For example an image may have a qualitative category defining sample value {@code 0} as water,
+ * another qualitative category defining sample value {@code 1} as forest, <i>etc</i>.
+ * Another image may define elevation data as sample values in the range [0…100].
  * The later is a <em>quantitative</em> category because sample values are related to measurements in the real world.
  * For example, elevation data may be related to an altitude in metres through the following linear relation:
  *
@@ -73,7 +78,7 @@ final class Category implements Serializable {
 
     /**
      * Compares two {@code double} values. This method is similar to {@link Double#compare(double,double)}
-     * except that it also orders NaN values from raw bit patterns. Remind that NaN values are sorted last.
+     * except that it also orders NaN values from raw bit patterns. Reminder: NaN values are sorted last.
      */
     static int compare(final double v1, final double v2) {
         if (Double.isNaN(v1) && Double.isNaN(v2)) {
@@ -86,68 +91,206 @@ final class Category implements Serializable {
     }
 
     /**
-     * A default category for "no data" values. This default qualitative category uses sample value 0,
-     * which is mapped to geophysics value {@link Float#NaN}. The name is "no data".
-     */
-    static final Category NODATA = new Category(Vocabulary.formatInternational(Vocabulary.Keys.Nodata),
-                                                NumberRange.create(0, true, 0, true), null);
-
-    /**
      * The category name.
+     *
+     * @see #getName()
      */
-    private final InternationalString name;
+    final InternationalString name;
 
     /**
-     * The minimal and maximal sample value (inclusive).
-     * This category is made of all values in the range {@code minimum} to {@code maximum} inclusive.
-     * This value may be one of the multiple possible {@code NaN} values if this category stands for
-     * "no data" after all values have been converted to geophysics values.
+     * The minimal and maximal sample value (inclusive). If {@link #range} is non-null, then
+     * those fields are equal to the following values, extracted for performance reasons:
+     *
+     * <ul>
+     *   <li>{@code minimum == range.getMinDouble(true)}</li>
+     *   <li>{@code maximum == range.getMaxDouble(true)}</li>
+     * </ul>
+     *
+     * If {@link #range} is null, then those values shall be one of the multiple possible {@code NaN} values.
+     * This means that this category stands for "no data" after all values have been converted to geophysics values.
      */
     final double minimum, maximum;
 
     /**
-     * The [{@linkplain #minimum} … {@linkplain #maximum}] range of values.
-     * May be computed only when first requested, or may be user-supplied (which is why it must be serialized).
+     * The [{@linkplain #minimum} … {@linkplain #maximum}] range of values, or {@code null} if that range would
+     * contain {@link Float#NaN} bounds. This is partially redundant with the minimum and maximum fields, except
+     * for the following differences:
+     *
+     * <ul>
+     *   <li>This field is {@code null} if the minimum and maximum values are NaN (qualitative "geophysics" category).</li>
+     *   <li>The value type may be different than {@link Double} (typically {@link Integer}).</li>
+     *   <li>The bounds may be exclusive instead than inclusive.</li>
+     *   <li>The range may be an instance of {@link MeasurementRange} if the {@link #transferFunction}
+     *       is identity and the units of measurement are known.</li>
+     * </ul>
+     *
+     * The range is null if this category is a "qualitative geophysics" category.
+     * Those categories are characterized by two apparently contradictory properties,
+     * and are implemented using {@link Float#NaN} values:
+     * <ul>
+     *   <li>This category is member of a {@code SampleDimension} having an identity
+     *       {@linkplain SampleDimension#getTransferFunction() transfer function}.</li>
+     *   <li>The {@linkplain #getTransferFunction() transfer function} of this category
+     *       is absent (because this category is qualitative).</li>
+     * </ul>
+     *
+     * @see #getSampleRange()
      */
-    private final NumberRange<?> range;
+    final NumberRange<?> range;
 
     /**
-     * The conversion from sample values to geophysics values, or {@code null} if this category is qualitative.
+     * The conversion from sample values to geophysics values (or conversely), never {@code null} even for qualitative
+     * categories. In the case of qualitative categories, this transfer function shall map to {@code NaN} values.
+     * In the case of sample values that are already geophysics, this transfer function shall be the identity function.
      */
     final MathTransform1D transferFunction;
 
     /**
-     * Constructs a category with the specified transfer function.
-     *
-     * @param  name              the category name.
-     * @param  range             the minimum and maximum sample values.
-     * @param  transferFunction  the conversion from sample values to geophysics values, or {@code null}.
+     * The category that describes sample values after {@link #transferFunction} has been applied.
+     * Never null, but may be {@code this} if the transfer function is the identity function.
      */
-    Category(final CharSequence name, final NumberRange<?> range, final MathTransform1D transferFunction) {
-        ArgumentChecks.ensureNonNull("name",  name);
-        ArgumentChecks.ensureNonNull("range", range);
+    final Category converted;
+
+    /**
+     * Constructs a qualitative of quantitative category.
+     *
+     * @param  name       the category name (mandatory).
+     * @param  samples    the minimum and maximum sample values (mandatory).
+     * @param  toUnits    the conversion from sample values to geophysics values,
+     *                    or {@code null} for constructing a qualitative category.
+     * @param  units      the units of measurement, or {@code null} if not applicable.
+     *                    This is the target units after conversion by {@code toUnits}.
+     * @param  padValues  an initially empty set to be filled by this constructor for avoiding pad value collisions.
+     *                    The same set shall be given to all {@code Category} created for the same sample dimension.
+     */
+    Category(final CharSequence name, final NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
+             final Set<Integer> padValues)
+    {
+        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonNull("samples", samples);
         this.name    = Types.toInternationalString(name);
-        this.range   = range;
-        this.minimum = range.getMinDouble(true);
-        this.maximum = range.getMaxDouble(true);
-        this.transferFunction = transferFunction;
+        this.range   = samples;
+        this.minimum = samples.getMinDouble(true);
+        this.maximum = samples.getMaxDouble(true);
         /*
-         * If we are constructing a qualitative category for a single NaN value,
-         * accepts it as a valid one.
-         */
-        if (transferFunction == null && Double.isNaN(minimum) &&
-                Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(maximum))
-        {
-            return;
-        }
-        /*
-         * Check the arguments. Use '!' in comparison in order to reject NaN values,
-         * except for the legal case catched by the "if" block just above.
+         * Following arguments check uses '!' in comparison in order to reject NaN values.
          */
         if (!(minimum <= maximum) || (minimum == Double.NEGATIVE_INFINITY) || (maximum == Double.POSITIVE_INFINITY)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2,
-                                               range.getMinValue(), range.getMaxValue()));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalCategoryRange_2, name, samples));
         }
+        /*
+         * Creates the transform doing the inverse conversion (from geophysics values to sample values).
+         * This transform is assigned to a new Category object with its own minimum and maximum values.
+         * Those minimum and maximum may be NaN if this category is a qualitative category.
+         */
+        try {
+            final MathTransform1D toSamples;
+            if (toUnits != null) {
+                transferFunction = toUnits;
+                if (toUnits.isIdentity()) {
+                    converted = this;
+                    return;
+                }
+                toSamples = toUnits.inverse();
+            } else {
+                /*
+                 * For qualitative category, we need an ordinal in the [MIN_NAN_ORDINAL … MAX_NAN_ORDINAL] range.
+                 * This range is quite large (a few million of values) so using the sample directly usually work.
+                 * If it does not work, we will use an arbitrary value in that range.
+                 */
+                int ordinal = Math.round((float) minimum);
+                if (ordinal > MathFunctions.MAX_NAN_ORDINAL) {
+                    ordinal = (MathFunctions.MAX_NAN_ORDINAL + 1) / 2;
+                } else if (ordinal < MathFunctions.MIN_NAN_ORDINAL) {
+                    ordinal = MathFunctions.MIN_NAN_ORDINAL / 2;
+                }
+search:         if (!padValues.add(ordinal)) {
+                    /*
+                     * Following algorithms are inefficient, but those loops should be rarely needed.
+                     * They are executed only if many qualitative sample values are outside the range
+                     * of ordinal NaN values. The range allows a few million of values.
+                     */
+                    if (ordinal >= 0) {
+                        do if (padValues.add(++ordinal)) break search;
+                        while (ordinal < MathFunctions.MAX_NAN_ORDINAL);
+                    } else {
+                        do if (padValues.add(--ordinal)) break search;
+                        while (ordinal > MathFunctions.MIN_NAN_ORDINAL);
+                    }
+                    throw new IllegalStateException(Resources.format(Resources.Keys.TooManyQualitatives));
+                }
+                /*
+                 * For qualitative category, the transfer function maps to NaN while the inverse function maps back
+                 * to some value in the [minimum … maximum] range. We chose the value closest to positive zero.
+                 */
+                transferFunction = (MathTransform1D) MathTransforms.linear(0, MathFunctions.toNanFloat(ordinal));
+                final double value = (minimum > 0) ? minimum : (maximum <= 0) ? maximum : 0d;
+                toSamples = (MathTransform1D) MathTransforms.linear(0, value);
+            }
+            converted = new Category(this, toSamples, toUnits != null, units);
+        } catch (TransformException e) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalTransferFunction_1, name), e);
+        }
+    }
+
+    /**
+     * Creates a category storing the inverse of the "sample to geophysics" transfer function. The {@link #transferFunction}
+     * of this category will convert geophysics value in specified {@code units} to the sample (packed) value.
+     *
+     * @param  original        the category storing the conversion from sample to geophysics value.
+     * @param  toSamples       the "geophysics to sample values" conversion, as the inverse of {@code original.transferFunction}.
+     *                         For qualitative category, this function is a constant mapping NaN to the original sample value.
+     * @param  isQuantitative  {@code true} if we are construction a quantitative category, or {@code false} for qualitative.
+     * @param  units           the units of measurement, or {@code null} if not applicable.
+     *                         This is the source units before conversion by {@code toSamples}.
+     */
+    private Category(final Category original, final MathTransform1D toSamples, final boolean isQuantitative, final Unit<?> units)
+            throws TransformException
+    {
+        converted        = original;
+        name             = original.name;
+        transferFunction = Objects.requireNonNull(toSamples);
+        /*
+         * Compute 'minimum' and 'maximum' (which must be real numbers) using the conversion from sample to
+         * geophysics values. To be strict, we should use some numerical algorithm for finding a function's
+         * minimum and maximum. For linear and logarithmic functions, minimum and maximum are always at the
+         * bounding input values, so we are using a very simple algorithm for now.
+         *
+         * Note: we could move this code in GeophysicsRange constructor if RFE #4093999
+         * ("Relax constraint on placement of this()/super() call in constructors") was fixed.
+         */
+        final NumberRange<?> r = original.range;
+        boolean minIncluded = r.isMinIncluded();
+        boolean maxIncluded = r.isMaxIncluded();
+        final double[] extremums = {
+                r.getMinDouble(),
+                r.getMaxDouble(),
+                r.getMinDouble(!minIncluded),
+                r.getMaxDouble(!maxIncluded)};
+        original.transferFunction.transform(extremums, 0, extremums, 0, extremums.length);
+        if (extremums[minIncluded ? 2 : 0] > extremums[maxIncluded ? 3 : 1]) {              // Compare exclusive min/max.
+            ArraysExt.swap(extremums, 0, 1);                                                // Swap minimum and maximum.
+            ArraysExt.swap(extremums, 2, 3);
+            final boolean tmp = minIncluded;
+            minIncluded = maxIncluded;
+            maxIncluded = tmp;
+        }
+        minimum = extremums[minIncluded ? 0 : 2];                                           // Store inclusive values.
+        maximum = extremums[maxIncluded ? 1 : 3];
+        if (isQuantitative) {
+            range = new GeophysicsRange(extremums, minIncluded, maxIncluded, units);
+        } else {
+            range = null;
+        }
+    }
+
+    /**
+     * Returns {@code false} if this instance has been created by above private constructor for geophysics values.
+     * This method is for assertions only. We use the range type as a signature for category representing result
+     * of conversion by the transfer function.
+     */
+    final boolean isPublic() {
+        return (range != null) && !(range instanceof GeophysicsRange);
     }
 
     /**
@@ -160,29 +303,69 @@ final class Category implements Serializable {
     }
 
     /**
-     * Returns the range of values occurring in this category.
-     * The range are sample values than can be converted into geophysics values using the
-     * {@linkplain #getTransferFunction() transfer function}. If that function is identity,
-     * then the sample values are already geophysics values and are in the units of the
-     * {@link SampleDimension} containing this category.
+     * Returns {@code true} if this category is quantitative. A quantitative category has a
+     * {@linkplain #getTransferFunction() transfer function} mapping sample values to values
+     * in some units of measurement. By contrast, a qualitative category maps sample values
+     * to a label, for example “2 = forest”. That later mapping can not be represented by a
+     * transfer function.
      *
-     * @return the range of sample values.
+     * @return {@code true} if this category is quantitative, or
+     *         {@code false} if this category is qualitative.
+     */
+    public final boolean isQuantitative() {
+        /*
+         * This implementation assumes that this method will always be invoked on the instance
+         * created for sample values, never on the instance created by the private constructor.
+         * If this method was invoked on "geophysics category", then we would need to test for
+         * 'range' directly instead of 'converted.range'.
+         */
+        assert isPublic() : this;
+        return converted.range != null;
+    }
+
+    /**
+     * Returns the range of values occurring in this category. The range are sample values than can be
+     * converted into geophysics values using the {@linkplain #getTransferFunction() transfer function}.
+     * If that function is {@linkplain MathTransform1D#isIdentity() identity}, then the values are already
+     * geophysics values and the range may be an instance of {@link MeasurementRange} (i.e. a number range
+     * with units of measurement).
      *
+     * @return the range of values in this category.
+     *
+     * @see SampleDimension#getSampleRange()
      * @see NumberRange#getMinValue()
      * @see NumberRange#getMaxValue()
-     * @see SampleDimension#getRange()
      */
-    public NumberRange<?> getRange() {
+    public NumberRange<?> getSampleRange() {
+        // Same assumption than in 'isQuantitative()'.
+        assert isPublic() : this;
         return range;
     }
 
     /**
+     * Returns the range of values after conversions by the transfer function.
+     * This range is absent if there is no transfer function, i.e. this category is qualitative.
+     *
+     * @return the range of values after conversion by the transfer function.
+     *
+     * @see SampleDimension#getMeasurementRange()
+     */
+    public Optional<NumberRange<?>> getMeasurementRange() {
+        // Same assumption than in 'isQuantitative()'.
+        assert isPublic() : this;
+        return Optional.ofNullable(converted.range);
+    }
+
+    /**
      * Returns an object to format for representing the range of values for display purpose only.
-     * It may be either the {@link NumberRange} or a {@link String} with a text like "NaN #0".
+     * It may be either the {@link NumberRange}, a single {@link Number} or a {@link String} with
+     * a text like "NaN #0".
      */
     final Object getRangeLabel() {
         if (Double.isNaN(minimum)) {
             return "NaN #" + MathFunctions.toNanOrdinal((float) minimum);
+        } else if (minimum == maximum) {
+            return range.getMinValue();
         } else {
             return range;
         }
@@ -190,14 +373,15 @@ final class Category implements Serializable {
 
     /**
      * Returns the <cite>transfer function</cite> from sample values to geophysics values.
-     * The function is absent if this category is not a quantitative category.
+     * The function is absent if this category is not a {@linkplain #isQuantitative() quantitative} category.
      *
      * @return the <cite>transfer function</cite> from sample values to geophysics values.
      *
      * @see SampleDimension#getTransferFunction()
      */
     public Optional<MathTransform1D> getTransferFunction() {
-        return Optional.ofNullable(transferFunction);
+        assert isPublic() : this;
+        return isQuantitative() ? Optional.of(transferFunction) : Optional.empty();
     }
 
     /**
@@ -223,10 +407,10 @@ final class Category implements Serializable {
         }
         if (object instanceof Category) {
             final Category that = (Category) object;
-            return name.equals(that.name) && range.equals(that.range) &&
+            return name.equals(that.name) && Objects.equals(range, that.range) &&
                    Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(that.minimum) &&
                    Double.doubleToRawLongBits(maximum) == Double.doubleToRawLongBits(that.maximum) &&
-                   Objects.equals(transferFunction, that.transferFunction);
+                   transferFunction.equals(that.transferFunction);
         }
         return false;
     }
@@ -239,7 +423,7 @@ final class Category implements Serializable {
      */
     @Override
     public String toString() {
-        return new StringBuilder(getClass().getSimpleName()).append("(“").append(name)
-                .append("”:").append(getRangeLabel()).append(')').toString();
+        return new StringBuilder(getClass().getSimpleName()).append("[“").append(name)
+                .append("”: ").append(getRangeLabel()).append(']').toString();
     }
 }
