@@ -19,6 +19,7 @@ package org.apache.sis.coverage;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Collections;
@@ -27,6 +28,7 @@ import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Vocabulary;
@@ -62,7 +64,10 @@ import org.apache.sis.util.Numbers;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see org.opengis.metadata.content.SampleDimension
+ *
+ * @since 1.0
  * @module
  */
 public final class SampleDimension implements Serializable {
@@ -133,25 +138,41 @@ public final class SampleDimension implements Serializable {
     /**
      * Returns the values to indicate "no data" for this sample dimension.
      *
-     * @return the values to indicate no data values for this sample dimension, or an empty list if none.
+     * @return the values to indicate no data values for this sample dimension, or an empty set if none.
+     * @throws IllegalStateException if this method can not expand the range of no data values, for example
+     *         because some ranges contain an infinite amount of values.
      */
-    public List<Number> getNoDataValues() {
+    public Set<Number> getNoDataValues() {
         if (!categories.hasQuantitative()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        final List<Number> noDataValues = new ArrayList<>(categories.size());
+        final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
+        Class<? extends Number> widestClass = Byte.class;
+        int count = 0;
         for (final Category c : categories) {
             if (!c.isQuantitative()) {
-                final NumberRange<?> r = c.range;
-                final Number value;
-                if (r.isMinIncluded()) {
-                    value = r.getMinDouble();
-                } else if (r.isMaxIncluded()) {
-                    value = r.getMaxDouble();
-                } else {
-                    value = (c.minimum + c.maximum) / 2;
+                if (!c.range.isBounded()) {
+                    throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, c.range));
                 }
-                noDataValues.add(value);
+                widestClass = Numbers.widestClass(widestClass, c.range.getElementType());
+                ranges[count++] = c.range;
+            }
+        }
+        final Set<Number> noDataValues = new TreeSet<>();
+        for (int i=0; i<count; i++) {
+            final NumberRange<?> range = ranges[i];
+            final Number minimum = range.getMinValue();
+            final Number maximum = range.getMaxValue();
+            if (range.isMinIncluded()) noDataValues.add(Numbers.cast(minimum, widestClass));
+            if (range.isMaxIncluded()) noDataValues.add(Numbers.cast(maximum, widestClass));
+            if (Numbers.isInteger(range.getElementType())) {
+                long value = minimum.longValue() + 1;       // If value was inclusive, then it has already been added to the set.
+                long stop  = maximum.longValue() - 1;
+                while (value <= stop) {
+                    noDataValues.add(Numbers.wrap(value, widestClass));
+                }
+            } else if (!minimum.equals(maximum)) {
+                throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
             }
         }
         return noDataValues;
@@ -172,30 +193,64 @@ public final class SampleDimension implements Serializable {
 
     /**
      * Returns the range of values after conversions by the transfer function.
-     * If a unit of measurement is available, then this range will be an instance of {@link MeasurementRange}.
      * This range is absent if there is no transfer function.
      *
      * @return the range of values after conversion by the transfer function.
+     *
+     * @see #getUnits()
      */
-    public Optional<NumberRange<?>> getMeasurementRange() {
-        return Optional.ofNullable(categories.converted.range);
+    public Optional<MeasurementRange<?>> getMeasurementRange() {
+        // A ClassCastException below would be a bug in our constructors.
+        return Optional.ofNullable((MeasurementRange<?>) categories.converted.range);
     }
 
     /**
      * Returns the <cite>transfer function</cite> from sample values to real values.
      * This method returns a transform expecting sample values as input and computing real values as output.
      * The output units of measurement is given by {@link #getUnits()}.
-     * This transform will take care of converting all "{@linkplain #getNoDataValues() no data values}" into {@code NaN} values.
+     *
+     * <p>This transform takes care of converting all "{@linkplain #getNoDataValues() no data values}" into {@code NaN} values.
      * The <code>transferFunction.{@linkplain MathTransform1D#inverse() inverse()}</code> transform is capable to differentiate
-     * {@code NaN} values to get back the original sample value.
+     * those {@code NaN} values and get back the original sample value.</p>
      *
      * @return the <cite>transfer function</cite> from sample to real values. May be absent if this sample dimension
-     *         do not defines any transform (which is not the same that defining an identity transform).
-     *
-     * @see TransferFunction
+     *         does not define any transform (which is not the same that defining an identity transform).
      */
     public Optional<MathTransform1D> getTransferFunction() {
         return Optional.ofNullable(transferFunction);
+    }
+
+    /**
+     * Returns the offset and scale factors of the transfer function.
+     * The formula returned by this method does <strong>not</strong> take
+     * "{@linkplain #getNoDataValues() no data values}" in account.
+     * For a more generic transfer function, see {@link #getTransferFunction()}.
+     *
+     * @return a description of the part of the transfer function working on real numbers.
+     * @throws IllegalStateException if the transfer function can not be simplified in a form representable
+     *         by {@link TransferFunction}.
+     */
+    public Optional<TransferFunction> getTransferFunctionFormula() {
+        MathTransform1D tr = null;
+        for (final Category category : categories) {
+            if (category.isQuantitative()) {
+                if (tr == null) {
+                    tr = category.transferFunction;
+                } else if (!tr.equals(category.transferFunction)) {
+                    throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSimplifyTransferFunction_1));
+                }
+            }
+        }
+        if (tr == null) {
+            return Optional.empty();
+        }
+        final TransferFunction f = new TransferFunction();
+        try {
+            f.setTransform(tr);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSimplifyTransferFunction_1, e));
+        }
+        return Optional.of(f);
     }
 
     /**
@@ -204,24 +259,27 @@ public final class SampleDimension implements Serializable {
      * May be absent if not applicable.
      *
      * @return the units of measurement.
+     * @throws IllegalStateException if this sample dimension use different units.
+     *
+     * @see #getMeasurementRange()
      */
     public Optional<Unit<?>> getUnits() {
-        Unit<?> units = null;
+        Unit<?> main = null;
         for (final Category c : categories.converted) {
             final NumberRange<?> r = c.range;
             if (r instanceof MeasurementRange<?>) {
-                final Unit<?> u = ((MeasurementRange<?>) r).unit();
-                if (u != null) {
-                    if (units == null) {
-                        units = u;
-                    } else if (!units.equals(u)) {
-                        units = null;                   // Different quantitative categories use different units.
-                        break;
+                final Unit<?> unit = ((MeasurementRange<?>) r).unit();
+                if (unit != null) {
+                    if (main != null && !main.equals(unit)) {
+                        throw new IllegalStateException();
+                    }
+                    if (main == null || c == categories.converted.main) {
+                        main = unit;
                     }
                 }
             }
         }
-        return Optional.ofNullable(units);
+        return Optional.ofNullable(main);
     }
 
     /**

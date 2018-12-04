@@ -86,7 +86,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * The "main" category, or {@code null} if there is none. The main category
      * is the quantitative category with the widest range of sample values.
      */
-    private final Category main;
+    final Category main;
 
     /**
      * The category to use if {@link #search(double)} is invoked with a sample value greater than all ranges in this list.

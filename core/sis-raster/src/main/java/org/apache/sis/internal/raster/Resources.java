@@ -59,9 +59,19 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Can not enumerate values in the {0} range.
+         */
+        public static final short CanNotEnumerateValuesInRange_1 = 18;
+
+        /**
          * Some envelope dimensions can not be mapped to grid dimensions.
          */
         public static final short CanNotMapToGridDimensions = 12;
+
+        /**
+         * Can not simplify transfer function of sample dimension “{0}”.
+         */
+        public static final short CanNotSimplifyTransferFunction_1 = 19;
 
         /**
          * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.

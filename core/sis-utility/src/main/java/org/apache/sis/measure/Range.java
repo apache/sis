@@ -80,7 +80,7 @@ import org.apache.sis.util.Numbers;
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 0.8
+ * @version 1.0
  *
  * @param <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -284,6 +284,23 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         // If min and max are equal, then the range is empty if at least one of them is exclusive.
         return (c != 0) || !isMinIncluded || !isMaxIncluded;
+    }
+
+    /**
+     * Returns {@code true} if this range is both left-bounded and right-bounded.
+     * A {@code true} return value guarantees that:
+     *
+     * <ol>
+     *   <li>both {@link #getMinValue()} and {@link #getMaxValue()} will return non-null values;</li>
+     *   <li>if minimum and maximum values are numbers, then those numbers are finite.</li>
+     * </ol>
+     *
+     * @return whether this range is left- and right-bounded.
+     *
+     * @since 1.0
+     */
+    public boolean isBounded() {
+        return minValue != null && maxValue != null;
     }
 
     /**

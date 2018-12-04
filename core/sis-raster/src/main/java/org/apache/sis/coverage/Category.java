@@ -345,17 +345,17 @@ search:         if (!padValues.add(ordinal)) {
 
     /**
      * Returns the range of values after conversions by the transfer function.
-     * If a unit of measurement is available, then this range will be an instance of {@link MeasurementRange}.
-     * This range is absent if there is no transfer function, i.e. this category is qualitative.
+     * This range is absent if there is no transfer function, i.e. if this category is qualitative.
      *
      * @return the range of values after conversion by the transfer function.
      *
      * @see SampleDimension#getMeasurementRange()
      */
-    public Optional<NumberRange<?>> getMeasurementRange() {
+    public Optional<MeasurementRange<?>> getMeasurementRange() {
         // Same assumption than in 'isQuantitative()'.
         assert isPublic() : this;
-        return Optional.ofNullable(converted.range);
+        // A ClassCastException below would be a bug in our constructor.
+        return Optional.ofNullable((MeasurementRange<?>) converted.range);
     }
 
     /**
