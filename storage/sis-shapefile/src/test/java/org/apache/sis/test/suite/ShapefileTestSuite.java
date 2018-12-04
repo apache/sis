@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-shapefile} module, in approximative dependency order.
+ * All tests from the {@code sis-shapefile} module, in rough dependency order.
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.shapefile.ShapeFileTest.class,

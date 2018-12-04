@@ -881,7 +881,7 @@ loop:   for (int i=0; ; i++) {
              * Find the index of the stack trace element where the log has been produced.
              * If no exact match is found, some heuristic is applied (the first element
              * from the same class, or the first element from the logger package). If no
-             * approximative match is found, then the default value is the last element.
+             * approximated match is found, then the default value is the last element.
              */
             int logProducer = trace.length;
             boolean useLoggerName = (loggerName != null), useClassName = true;

@@ -218,7 +218,7 @@ public final class StandardDateFormat extends DateFormat {
      * <ul>
      *   <li>If the given date has zero values in hours, minutes, seconds and milliseconds fields in UTC timezone,
      *       then the returned implementation will be a {@link LocalDate}, dropping the timezone information (i.e.
-     *       the date is considered approximative). Note that this is consistent with ISO 19162 requirement that
+     *       the date is considered an approximation). Note that this is consistent with ISO 19162 requirement that
      *       dates are always in UTC, even if Apache SIS allows some flexibility.</li>
      *   <li>Otherwise if the timezone is not {@code null} and not UTC, then this method returns an {@link OffsetDateTime}.</li>
      *   <li>Otherwise this method returns a {@link LocalDateTime} in the given timezone.</li>

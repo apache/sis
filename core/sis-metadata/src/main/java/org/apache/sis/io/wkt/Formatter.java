@@ -879,7 +879,7 @@ public class Formatter implements Localized {
      * <div class="section">Numerical precision</div>
      * The ISO 19162 standards recommends to format those values with only 2 decimal digits.
      * This is because {@code GeographicBoundingBox} does not specify the datum, so this box
-     * is an approximative information only.
+     * is an approximated information only.
      *
      * @param  bbox  the geographic bounding box to append to the WKT, or {@code null}.
      * @param  fractionDigits  the number of fraction digits to use. The recommended value is 2.

@@ -313,7 +313,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * The number of dimensions is given by {@code transform.getSourceDimensions()}.
      *
      * @param  domain   the domain of the numbers to be generated.
-     * @param  propNaN  approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.
+     * @param  propNaN  rough percentage of NaN values as a fraction between 0 and 1, or 0 if none.
      * @return random coordinates in the given domain.
      */
     final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {

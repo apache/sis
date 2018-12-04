@@ -840,7 +840,7 @@ public final class CRS extends Static {
             if (bounds != null && !Boolean.FALSE.equals(bounds.getInclusion())) {
                 /*
                  * We do not assign WGS84 unconditionally to the geographic bounding box, because
-                 * it is not defined to be on a particular datum; it is only approximative bounds.
+                 * it is not defined to be on a particular datum; it is only approximated bounds.
                  * We try to get the GeographicCRS from the user-supplied CRS in order to reduce
                  * the amount of transformation needed.
                  */

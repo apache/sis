@@ -278,7 +278,7 @@ public final class Envelopes extends Static {
 
     /**
      * Transforms an envelope using the given math transform.
-     * The transformation is only approximative: the returned envelope may be bigger than necessary,
+     * The transformation is only approximated: the returned envelope may be bigger than necessary,
      * or smaller than required if the bounding box contains a pole.
      * The coordinate reference system of the returned envelope will be null.
      *
@@ -506,7 +506,7 @@ public final class Envelopes extends Static {
 
     /**
      * Transforms an envelope using the given coordinate operation.
-     * The transformation is only approximative: the returned envelope may be bigger than the
+     * The transformation is only approximated: the returned envelope may be bigger than the
      * smallest possible bounding box, but should not be smaller in most cases.
      *
      * <p>This method can handle the case where the envelope contains the North or South pole,

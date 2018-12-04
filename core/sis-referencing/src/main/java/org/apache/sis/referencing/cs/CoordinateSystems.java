@@ -154,7 +154,7 @@ public final class CoordinateSystems extends Static {
      * vertical direction as -90°. The sign of those angles gives no indication about whether the coordinate system
      * is right-handed or left-handed. Those angles are returned as instances of {@link ElevationAngle}.
      *
-     * <p>All angles are approximative since this method does not take the Earth ellipsoidal or geoidal shape in
+     * <p>All angles are approximations since this method does not take the Earth ellipsoidal or geoidal shape in
      * account.</p>
      *
      * <div class="section">Invariants</div>

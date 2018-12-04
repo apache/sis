@@ -27,7 +27,7 @@ import javax.measure.Quantity;
  *
  * <p>{@code Salinity} quantities should not be converted to quantities of other types.
  * If nevertheless a conversion to {@link javax.measure.quantity.Dimensionless} is attempted,
- * then Apache SIS implementation maps 1 psu to 1‰ for approximative correspondence with legacy
+ * then Apache SIS implementation maps 1 psu to 1‰ for rough correspondence with legacy
  * (before 1978) salinity measurements.</p>
  *
  * <p>Most quantity types are defined in the {@link javax.measure.quantity}.

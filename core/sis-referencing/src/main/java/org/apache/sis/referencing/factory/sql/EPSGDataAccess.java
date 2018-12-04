@@ -220,7 +220,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     /**
      * The calendar instance for creating {@link Date} objects from a year (the "epoch" in datum definition).
      * We use the UTC timezone, which may not be quite accurate. But there is no obvious timezone for "epoch",
-     * and the "epoch" is approximative anyway.
+     * and the "epoch" is an approximation anyway.
      *
      * @see #getCalendar()
      */

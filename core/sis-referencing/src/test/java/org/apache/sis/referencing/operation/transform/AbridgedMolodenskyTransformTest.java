@@ -118,8 +118,8 @@ public final strictfp class AbridgedMolodenskyTransformTest extends MathTransfor
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, -1941624852762631518L);
         /*
          * Calculation of "expected" transform derivative by finite difference
-         * seems too approximative for the default accuracy. (Actually, we are
-         * not completely sure that there is no bug in derivative formula...)
+         * does not seem accurate enough for the default accuracy. (Actually,
+         * we are not completely sure that there is no bug in derivative formula).
          */
         tolerance *= 10;
         isDerivativeSupported = true;

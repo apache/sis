@@ -261,7 +261,7 @@ public final class Benchmark {
 
     /**
      * For reporting the errors in more convenient units.
-     * This is an approximative conversion based on the nautical mile length.
+     * This is an approximated conversion based on the nautical mile length.
      */
     private static final double DEGREES_TO_CENTIMETRES = 60*1852*100;
 

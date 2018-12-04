@@ -517,8 +517,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * <p>When coordinate transformation is required, the target geographic CRS is not necessarily
      * {@linkplain org.apache.sis.referencing.CommonCRS#WGS84 WGS84}. This method preserves the same
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} than in the envelope
-     * CRS when possible. This is because geographic bounding box are only approximative and the ISO
-     * specification do not mandates a particular CRS, so we avoid transformations that are not
+     * CRS when possible. This is because geographic bounding box are only approximated and the ISO
+     * specification does not mandates a particular CRS, so we avoid transformations that are not
      * strictly necessary.</p>
      *
      * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
@@ -555,7 +555,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * this class applies a different strategy than GeneralEnvelope. Instead than trying to work directly with
      * the ordinate values without adding or removing offset (which may cause rounding errors), we apply a ±360°
      * shift on longitude values. This simpler strategy is okay here because the range is fixed in the code (not
-     * an arbitrarily high range), and GeographicBoundingBox are approximative by definition anyway.
+     * an arbitrarily high range), and GeographicBoundingBox are approximations by definition anyway.
      */
 
     /**

@@ -121,7 +121,7 @@ class CoordinateOperationRegistry {
      * The identifier for a transformation which is a datum shift without
      * {@link org.apache.sis.referencing.datum.BursaWolfParameters}.
      * Only the changes in ellipsoid axis-length are taken in account.
-     * Such ellipsoid shifts are approximative and may have 1 kilometre error.
+     * Such ellipsoid shifts are approximations and may have 1 kilometre error.
      *
      * @see org.apache.sis.internal.referencing.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
@@ -762,7 +762,7 @@ class CoordinateOperationRegistry {
         /*
          * If the user-provided CRS are approximately equal to the coordinate operation CRS, keep the later.
          * The reason is that coordinate operation CRS are built from the definitions provided by the authority,
-         * while the user-provided CRS can be anything (e.g. parsed from a quite approximative WKT).
+         * while the user-provided CRS can be anything (e.g. parsed from a quite approximated WKT).
          */
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;

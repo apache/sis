@@ -151,7 +151,7 @@ public final class Shapes2D extends Static {
 
     /**
      * Transforms a rectangular envelope using the given math transform.
-     * The transformation is only approximative: the returned envelope may be bigger than
+     * The transformation is only approximated: the returned envelope may be bigger than
      * necessary, or smaller than required if the bounding box contains a pole.
      *
      * <p>Note that this method can not handle the case where the rectangle contains the North or South pole,
@@ -374,7 +374,7 @@ public final class Shapes2D extends Static {
 
     /**
      * Transforms a rectangular envelope using the given coordinate operation.
-     * The transformation is only approximative: the returned envelope may be bigger
+     * The transformation is only approximated: the returned envelope may be bigger
      * than the smallest possible bounding box, but should not be smaller in most cases.
      *
      * <p>This method can handle the case where the rectangle contains the North or South pole,

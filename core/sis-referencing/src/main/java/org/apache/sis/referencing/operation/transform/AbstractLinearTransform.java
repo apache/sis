@@ -297,7 +297,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
          * for a "Geographic 2D to 3D" conversion it will rather set the new dimensions to zero. So
          * A⁻¹ and B⁻¹ may differ in their "NaN versus 0" values even if A and B are equal.
          *
-         * Opportunistically, the comparison of inverse transforms in approximative mode also ensures
+         * Opportunistically, the comparison of inverse transforms in approximated mode also ensures
          * that we are below the tolerance threshold not only for this matrix, but for the inverse one
          * as well.
          */

@@ -22,7 +22,7 @@ import org.junit.runners.Suite;
 
 
 /**
- * All tests from the {@code sis-gdal} module, in approximative dependency order.
+ * All tests from the {@code sis-gdal} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

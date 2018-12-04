@@ -70,7 +70,7 @@ import org.apache.sis.util.CharSequences;
 public class MarshallerPool {
     /**
      * Amount of nanoseconds to wait before to remove unused (un)marshallers.
-     * This is a very approximative value: actual timeout will not be shorter,
+     * This is a very rough value: actual timeout will not be shorter,
      * but may be twice longer.
      */
     private static final long TIMEOUT = 15000000000L;           // 15 seconds.

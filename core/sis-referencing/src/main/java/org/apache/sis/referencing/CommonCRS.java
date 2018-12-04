@@ -145,7 +145,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 84", &nbsp;<i>ellipsoid:</i> "WGS84")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257223563 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
@@ -163,7 +163,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 72", &nbsp;<i>ellipsoid:</i> "NWL 10D")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378135</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.26 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
@@ -184,7 +184,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>"NAD83 (1986)" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 23 in the North hemisphere</td></tr>
@@ -227,7 +227,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 37 in the North hemisphere</td></tr>
@@ -250,7 +250,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "ED50", <i>ellipsoid:</i> "Hayford 1909")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378388</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>297 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
@@ -522,7 +522,7 @@ public enum CommonCRS {
      * This default CRS is assigned to
      * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(org.opengis.metadata.extent.GeographicBoundingBox)
      * envelopes created from a geographic bounding box}.
-     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximative by definition,
+     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximated by definition,
      * their datum can be arbitrary.
      *
      * @return the default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.

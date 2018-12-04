@@ -123,7 +123,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      * Maximal length of attribute values, in number of characters.
      * If a value is longer than this length, it will be truncated.
      *
-     * <p>This is defined as a static final variable for now because its value is approximative:
+     * <p>This is defined as a static final variable for now because its value is approximate:
      * it is a number of characters instead than a number of code points, and that length may be
      * exceeded by a few characters if the overflow happen while appending the list separator.</p>
      */
