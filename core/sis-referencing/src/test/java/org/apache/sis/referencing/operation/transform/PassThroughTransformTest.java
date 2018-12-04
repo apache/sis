@@ -196,7 +196,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
         final int      subTgtDim        = subTransform.getTargetDimensions();
         final int      numPts           = ORDINATE_COUNT / sourceDim;
         final double[] passthroughData  = CoordinateDomain.RANGE_10.generateRandomInput(random, sourceDim, numPts);
-        final double[] subTransformData = new double[numPts * Math.max(subSrcDim, subTgtDim)];
+        final double[] subTransformData = new double[numPts * StrictMath.max(subSrcDim, subTgtDim)];
         Arrays.fill(subTransformData, Double.NaN);
         for (int i=0; i<numPts; i++) {
             System.arraycopy(passthroughData, firstAffectedCoordinate + i*sourceDim,
@@ -223,7 +223,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
          */
         tolerance         = 0;          // Results should be strictly identical because we used the same inputs.
         toleranceModifier = null;
-        final double[] transformedData = new double[Math.max(sourceDim, targetDim) * numPts];
+        final double[] transformedData = new double[StrictMath.max(sourceDim, targetDim) * numPts];
         transform.transform(passthroughData, 0, transformedData, 0, numPts);
         assertCoordinatesEqual("PassThroughTransform results do not match the results computed by this test.",
                 targetDim, expectedData, 0, transformedData, 0, numPts, CalculationType.DIRECT_TRANSFORM);

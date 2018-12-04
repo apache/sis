@@ -86,7 +86,7 @@ public final class SampleDimension implements Serializable {
     private final CategoryList categories;
 
     /**
-     * The transform from sample to geophysics values. May be {@code null} if this sample dimension
+     * The transform from samples to real values. May be {@code null} if this sample dimension
      * does not defines any transform (which is not the same that defining an identity transform).
      *
      * @see #getTransferFunction()
@@ -158,13 +158,13 @@ public final class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns the range of values occurring in this sample dimension. The range are sample values than can
-     * be converted into geophysics values using the {@linkplain #getTransferFunction() transfer function}.
+     * Returns the range of values occurring in this sample dimension. The range delimits sample values that
+     * can be converted into real values using the {@linkplain #getTransferFunction() transfer function}.
      * If that function is {@linkplain MathTransform1D#isIdentity() identity}, then the values are already
-     * geophysics values and the range may be an instance of {@link MeasurementRange} (i.e. a number range
-     * with units of measurement).
+     * real values and the range may be an instance of {@link MeasurementRange}
+     * (i.e. a number range with units of measurement).
      *
-     * @return the range of values.
+     * @return the range of sample values in this sample dimension.
      */
     public Optional<NumberRange<?>> getSampleRange() {
         return Optional.ofNullable(categories.range);
@@ -172,6 +172,7 @@ public final class SampleDimension implements Serializable {
 
     /**
      * Returns the range of values after conversions by the transfer function.
+     * If a unit of measurement is available, then this range will be an instance of {@link MeasurementRange}.
      * This range is absent if there is no transfer function.
      *
      * @return the range of values after conversion by the transfer function.
@@ -181,13 +182,14 @@ public final class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns the <cite>transfer function</cite> from sample values to geophysics values.
-     * This method returns a transform expecting sample values as input and computing geophysics values as output.
+     * Returns the <cite>transfer function</cite> from sample values to real values.
+     * This method returns a transform expecting sample values as input and computing real values as output.
+     * The output units of measurement is given by {@link #getUnits()}.
      * This transform will take care of converting all "{@linkplain #getNoDataValues() no data values}" into {@code NaN} values.
      * The <code>transferFunction.{@linkplain MathTransform1D#inverse() inverse()}</code> transform is capable to differentiate
      * {@code NaN} values to get back the original sample value.
      *
-     * @return the <cite>transfer function</cite> from sample to geophysics values. May be absent if this sample dimension
+     * @return the <cite>transfer function</cite> from sample to real values. May be absent if this sample dimension
      *         do not defines any transform (which is not the same that defining an identity transform).
      *
      * @see TransferFunction
@@ -424,8 +426,8 @@ public final class SampleDimension implements Serializable {
         }
 
         /**
-         * Constructs a quantitative category mapping samples to geophysics values in the specified range.
-         * Sample values in the {@code samples} range will be mapped to geophysics values in the {@code geophysics} range
+         * Constructs a quantitative category mapping samples to real values in the specified range.
+         * Sample values in the {@code samples} range will be mapped to real values in the {@code geophysics} range
          * through a linear equation of the form:
          *
          * <blockquote><var>measure</var> = <var>sample</var> × <var>scale</var> + <var>offset</var></blockquote>
@@ -442,7 +444,7 @@ public final class SampleDimension implements Serializable {
          * @param  name        the category name as a {@link String} or {@link InternationalString} object.
          * @param  samples     the minimum and maximum sample values in the category. Element class is usually
          *                     {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
-         * @param  geophysics  the range of geophysics values for this category, as an instance of {@link MeasurementRange}
+         * @param  geophysics  the range of real values for this category, as an instance of {@link MeasurementRange}
          *                     if those values are associated to an unit of measurement.
          * @return {@code this}, for method call chaining.
          * @throws ClassCastException if the range element class is not a {@link Number} subclass.
@@ -479,7 +481,7 @@ public final class SampleDimension implements Serializable {
 
         /**
          * Adds a quantitative category for sample values ranging from {@code lower} inclusive to {@code upper} exclusive.
-         * Sample values are converted into geophysics values using the following linear equation:
+         * Sample values are converted into real values using the following linear equation:
          *
          * <blockquote><var>measure</var> = <var>sample</var> × <var>scale</var> + <var>offset</var></blockquote>
          *
@@ -507,7 +509,7 @@ public final class SampleDimension implements Serializable {
 
         /**
          * Constructs a quantitative category for all samples in the specified range of values.
-         * Sample values (usually integers) will be converted into geophysics values
+         * Sample values (usually integers) will be converted into real values
          * (usually floating-point numbers) through the {@code toUnits} transform.
          * Results of that conversion are measurements in the units specified by the {@code units} argument.
          *
@@ -517,7 +519,7 @@ public final class SampleDimension implements Serializable {
          * @param  name     the category name as a {@link String} or {@link InternationalString} object.
          * @param  samples  the minimum and maximum sample values in the category. Element class is usually
          *                  {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
-         * @param  toUnits  the transfer function from sample values to geophysics values in the specified units.
+         * @param  toUnits  the transfer function from sample values to real values in the specified units.
          * @param  units    the units of measurement of values after conversion by the transfer function.
          * @return {@code this}, for method call chaining.
          * @throws ClassCastException if the range element class is not a {@link Number} subclass.

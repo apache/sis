@@ -56,7 +56,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private static final long serialVersionUID = 2647846361059903365L;
 
     /**
-     * The result of converting sample values to geophysics values, never {@code null}.
+     * The result of converting sample values to real values, never {@code null}.
      */
     final CategoryList converted;
 
@@ -113,13 +113,13 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * Constructs a category list using the specified array of categories.
      *
      * @param  categories  the list of categories. May be empty, but can not be null. This array is not cloned.
-     * @param  inverse     if we are creating the list of categories after conversion from sample to geophysics,
+     * @param  inverse     if we are creating the list of categories after conversion from samples to real values,
      *                     the original list before conversion. Otherwise {@code null}.
      * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
      */
     CategoryList(final Category[] categories, CategoryList inverse) {
-        this.categories = categories;
         Arrays.sort(categories, Category.COMPARATOR);
+        this.categories = categories;
         /*
          * Constructs the array of Category.minimum values. During the loop, we make sure there is no overlapping ranges.
          * We also take the "main" category as the category with the widest range of values.
@@ -128,23 +128,30 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         Category main = null;
         NumberRange<?> range = null;
         minimums = new double[categories.length];
-        for (int i=0; i < categories.length; i++) {
+        for (int i=categories.length; --i >= 0;) {
             final Category category = categories[i];
             final NumberRange<?> extent = category.range;
             if (extent != null) {
-                range = (range != null) ? range.unionAny(extent) : extent;
+                /*
+                 * Initialize with the union of ranges at index 0 and index i.  In most cases, it will cover the whole range
+                 * so all future calls to 'range.unionAny(extent)' will be no-op. The 'categories[0].range' field should not
+                 * be null because categories with null ranges are sorted last (because their 'minimum' field is NaN).
+                 */
+                if (range == null) {
+                    range = categories[0].range;
+                }
+                range = range.unionAny(extent);
             }
             final double minimum = category.minimum;
             minimums[i] = minimum;
-            if (category.isQuantitative()) {
-                final double span = category.maximum - minimum;
+            if (category.converted.range != null) {                         // Category.isQuantitative() without assert.
+                final double span = category.maximum - minimum;             // NaN if "converted qualitative" category.
                 if (span >= widest) {
                     widest = span;
                     main = category;
                 }
             }
             if (i != 0) {
-                assert !(minimum <= minimums[i-1]) : minimum;                   // Use '!' to accept NaN.
                 final Category previous = categories[i-1];
                 if (Category.compare(minimum, previous.maximum) <= 0) {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4, new Object[] {
@@ -159,13 +166,13 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         /*
          * At this point we have two branches:
          *
-         *   - If we are creating the list of "sample to geophysics" conversions, then we do not allow extrapolations
+         *   - If we are creating the list of "samples to real values" conversions, then we do not allow extrapolations
          *     outside the ranges or categories given to this constructor (extrapolation = null). In addition we need
-         *     to create the list of categories after conversion to geophysics value.
+         *     to create the list of categories after conversion to real value.
          *
-         *   - If we are creating the list of "geophysics to sample" conversions, then we need to search for the
+         *   - If we are creating the list of "real values to samples" conversions, then we need to search for the
          *     extrapolation to use when 'search(double)' is invoked with a value greater than all ranges in this
-         *     list. This is the last category to have a range of real numbers.
+         *     list. This is the last category to have a range of real (non-NaN) numbers.
          */
         Category extrapolation = null;
         if (inverse == null) {
@@ -206,7 +213,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * Returns {@code false} if this instance contains private categories.
      * This method is for assertions only.
      */
-    private boolean isPublic() {
+    final boolean isPublic() {
         for (final Category c : categories) {
             if (!c.isPublic()) return false;
         }
@@ -278,7 +285,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * @param  sample  the value.
      * @return the category of the supplied value, or {@code null}.
      */
-    private Category search(final double sample) {
+    final Category search(final double sample) {
         /*
          * Search which category contains the given value.
          * Note: NaN values are at the end of 'minimums' array, so:
