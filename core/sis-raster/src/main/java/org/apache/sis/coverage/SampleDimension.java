@@ -22,7 +22,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
@@ -34,7 +38,6 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 
 
@@ -70,7 +73,7 @@ import org.apache.sis.util.Numbers;
  * @since 1.0
  * @module
  */
-public final class SampleDimension implements Serializable {
+public class SampleDimension implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -92,36 +95,48 @@ public final class SampleDimension implements Serializable {
 
     /**
      * The transform from samples to real values. May be {@code null} if this sample dimension
-     * does not defines any transform (which is not the same that defining an identity transform).
+     * does not define any transform (which is not the same that defining an identity transform).
      *
      * @see #getTransferFunction()
      */
-    private final MathTransform1D transferFunction;
+    private transient MathTransform1D transferFunction;
 
     /**
      * Creates a sample dimension with the specified properties.
      *
      * @param name        the sample dimension title or description, or {@code null} for default.
-     * @param categories  the list of categories. This list is not cloned and may be modified in-place.
+     * @param categories  the list of categories.
      */
-    SampleDimension(InternationalString name, final Category[] categories) {
-        if (name == null) {
-            name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
+    SampleDimension(InternationalString name, final Collection<? extends Category> categories) {
+        ArgumentChecks.ensureNonNull("categories", categories);
+        final CategoryList list;
+        if (categories.isEmpty()) {
+            list = CategoryList.EMPTY;
+        } else {
+            list = new CategoryList(categories.toArray(new Category[categories.size()]), null);
         }
-        final CategoryList list = new CategoryList(categories, null);
-        this.name       = name;
-        this.categories = list;
-        MathTransform1D tr = null;
-        if (list.hasQuantitative()) {
-            tr = categories[0].transferFunction;
-            for (int i=1; i<categories.length; i++) {
-                if (!tr.equals(categories[i].transferFunction)) {
-                    tr = list;
-                    break;
-                }
+        if (name == null) {
+            if (list.main != null) {
+                name = list.main.name;
+            } else {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
             }
         }
-        transferFunction = tr;
+        this.name        = name;
+        this.categories  = list;
+        transferFunction = list.getTransferFunction();
+    }
+
+    /**
+     * Computes transient fields after deserialization.
+     *
+     * @param  in  the input stream from which to deserialize a sample dimension.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        transferFunction = categories.getTransferFunction();
     }
 
     /**
@@ -283,6 +298,32 @@ public final class SampleDimension implements Serializable {
     }
 
     /**
+     * Returns a hash value for this sample dimension.
+     */
+    @Override
+    public int hashCode() {
+        return categories.hashCode() + 31*name.hashCode();
+    }
+
+    /**
+     * Compares the specified object with this sample dimension for equality.
+     *
+     * @param  object  the object to compare with.
+     * @return {@code true} if the given object is equals to this sample dimension.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof SampleDimension) {
+            final SampleDimension that = (SampleDimension) object;
+            return name.equals(that.name) && categories.equals(that.categories);
+        }
+        return false;
+    }
+
+    /**
      * Returns a string representation of this sample dimension.
      * This string is for debugging purpose only and may change in future version.
      *
@@ -290,7 +331,7 @@ public final class SampleDimension implements Serializable {
      */
     @Override
     public String toString() {
-        return Classes.getShortClassName(this) + "[“" + name + "”]";
+        return new SampleRangeFormat(Locale.getDefault()).format(name, categories);
     }
 
 
@@ -597,9 +638,7 @@ public final class SampleDimension implements Serializable {
          * @return the sample dimension.
          */
         public SampleDimension build() {
-            return new SampleDimension(
-                    Types.toInternationalString(dimensionName),
-                    categories.toArray(new Category[categories.size()]));
+            return new SampleDimension(Types.toInternationalString(dimensionName), categories);
         }
     }
 }

@@ -502,6 +502,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short MeanValue = 68;
 
         /**
+         * Measures
+         */
+        public static final short Measures = 157;
+
+        /**
          * Methods
          */
         public static final short Methods = 69;
@@ -795,6 +800,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Value domain
          */
         public static final short ValueDomain = 112;
+
+        /**
+         * Values
+         */
+        public static final short Values = 158;
 
         /**
          * Variables

@@ -19,8 +19,7 @@ package org.apache.sis.coverage;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.io.Serializable;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -30,6 +29,7 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 
 import static java.lang.Double.isNaN;
@@ -54,6 +54,11 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 2647846361059903365L;
+
+    /**
+     * An empty list of categories.
+     */
+    static final CategoryList EMPTY = new CategoryList();
 
     /**
      * The result of converting sample values to real values, never {@code null}.
@@ -110,9 +115,23 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private transient Category last;
 
     /**
+     * The constructor for the {@link #EMPTY} constant.
+     */
+    private CategoryList() {
+        converted     = this;
+        range         = null;
+        minimums      = ArraysExt.EMPTY_DOUBLE;
+        categories    = new Category[0];
+        main          = null;
+        extrapolation = null;
+    }
+
+    /**
      * Constructs a category list using the specified array of categories.
+     * The {@code categories} array should contain at least one element.
      *
-     * @param  categories  the list of categories. May be empty, but can not be null. This array is not cloned.
+     * @param  categories  the list of categories. May be empty, but can not be null.
+     *                     This array is not cloned and is modified in-place.
      * @param  inverse     if we are creating the list of categories after conversion from samples to real values,
      *                     the original list before conversion. Otherwise {@code null}.
      * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
@@ -198,15 +217,18 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Resets the {@link #last} field to a non-null value after deserialization.
+     * Computes transient fields and potentially returns a shared instance.
      *
-     * @param  in  the input stream from which to deserialize a category list.
-     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object contains invalid data.
      */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        last = (main != null || categories.length == 0) ? main : categories[0];
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private Object readResolve() throws ObjectStreamException {
+        if (categories.length == 0) {
+            return EMPTY;
+        }
+        last = (main != null) ? main : categories[0];
+        return this;
     }
 
     /**
@@ -230,6 +252,26 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     final boolean hasQuantitative() {
         assert isPublic();
         return converted.range != null;
+    }
+
+    /**
+     * Returns the <cite>transfer function</cite> from sample values to real values, including conversion
+     * of "no data" value to NaN. If there is no quantitative categories, returns {@code null}.
+     *
+     * @see SampleDimension#getTransferFunction()
+     */
+    final MathTransform1D getTransferFunction() {
+        MathTransform1D tr = null;
+        if (hasQuantitative()) {
+            tr = categories[0].transferFunction;
+            for (int i=1; i<categories.length; i++) {
+                if (!tr.equals(categories[i].transferFunction)) {
+                    tr = this;
+                    break;
+                }
+            }
+        }
+        return tr;
     }
 
     /**
