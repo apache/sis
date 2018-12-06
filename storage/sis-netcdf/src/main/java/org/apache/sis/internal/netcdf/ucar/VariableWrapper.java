@@ -293,19 +293,6 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the value of the given attribute as a string. This is a convenience method
-     * for {@link #getAttributeValues(String, boolean)} when a singleton value is expected.
-     *
-     * @param  attributeName  the name of the attribute for which to get the values.
-     * @return the singleton attribute value, or {@code null} if none or ambiguous.
-     */
-    @Override
-    public String getAttributeString(final String attributeName) {
-        Object[] values = getAttributeValues(attributeName, false);
-        return (values.length == 1) ? values[0].toString() : null;
-    }
-
-    /**
      * Returns the names of all attributes in the given list.
      */
     static List<String> toNames(final List<Attribute> attributes) {

@@ -236,7 +236,7 @@ public class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns the offset and scale factors of the transfer function.
+     * Returns the scale factor and offset of the transfer function.
      * The formula returned by this method does <strong>not</strong> take
      * "{@linkplain #getNoDataValues() no data values}" in account.
      * For a more generic transfer function, see {@link #getTransferFunction()}.
@@ -594,7 +594,7 @@ public class SampleDimension implements Serializable {
          * @param  upper   the upper sample value, exclusive.
          * @param  scale   the scale value which is multiplied to sample values for the category. Must be different than zero.
          * @param  offset  the offset value to add to sample values for this category.
-         * @param  units   the units of measurement of values after conversion by the offset and scale factor.
+         * @param  units   the units of measurement of values after conversion by the scale factor and offset.
          * @return {@code this}, for method call chaining.
          * @throws IllegalArgumentException if {@code lower} is not smaller than {@code upper},
          *         or if {@code scale} or {@code offset} are not real numbers, or if {@code scale} is zero.

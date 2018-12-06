@@ -80,7 +80,7 @@ final class SampleRangeFormat extends RangeFormat {
                                    / ( category.maximum -  category.minimum);
             if (!Double.isNaN(increment)) {
                 hasQuantitative = true;
-                final int n = -Numerics.toExp10(Math.getExponent(increment));
+                final int n = 1 - Numerics.toExp10(Math.getExponent(increment));
                 if (n > ndigits) {
                     ndigits = n;
                     if (n >= MAX_DIGITS) {
@@ -155,9 +155,9 @@ final class SampleRangeFormat extends RangeFormat {
     void format(final InternationalString title, final CategoryList categories, final Appendable out) throws IOException {
         final String lineSeparator = System.lineSeparator();
         out.append(title.toString(getLocale())).append(lineSeparator);
-        final TableAppender table  = new TableAppender(out);
+        final TableAppender table  = new TableAppender(out, " │ ");
         final boolean hasQuantitative = prepare(categories);
-        table.nextLine('═');
+        table.appendHorizontalSeparator();
         table.setCellAlignment(TableAppender.ALIGN_CENTER);
         table.append(words.getString(Vocabulary.Keys.Values)).nextColumn();
         if (hasQuantitative) {
@@ -177,7 +177,7 @@ final class SampleRangeFormat extends RangeFormat {
             table.append(category.name.toString(getLocale()));
             table.nextLine();
         }
-        table.nextLine('═');
+        table.appendHorizontalSeparator();
         table.flush();
     }
 }

@@ -62,7 +62,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * Valid extent of grid coordinates together with the transform from those grid coordinates
  * to real world coordinates. {@code GridGeometry} contains:
  *
- * <ul>
+ * <ul class="verbose">
  *   <li>A {@linkplain #getExtent() grid extent} (a.k.a. <cite>grid envelope</cite>),
  *       often inferred from the {@link RenderedImage} size.</li>
  *   <li>A {@linkplain #getGridToCRS grid to CRS} transform,

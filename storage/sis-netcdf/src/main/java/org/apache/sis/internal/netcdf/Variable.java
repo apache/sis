@@ -25,6 +25,7 @@ import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.math.Vector;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
@@ -301,22 +302,68 @@ public abstract class Variable extends NamedElement {
     /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
-     * or {@link Number} if {@code numeric} is {@code true}.
+     * or {@link Number} if {@code numeric} is {@code true}. Some elements may be null
+     * if they are not of the expected type.
      *
      * @param  attributeName  the name of the attribute for which to get the values.
      * @param  numeric        {@code true} if the values are expected to be numeric, or {@code false} for strings.
      * @return the sequence of {@link String} or {@link Number} values for the named attribute.
+     *         May contain null elements.
      */
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
+
+    /**
+     * Returns the singleton value for the given attribute, or {@code null} if none or ambiguous.
+     *
+     * @param  attributeName  the name of the attribute for which to get the value.
+     * @param  numeric        {@code true} if the value is expected to be numeric, or {@code false} for string.
+     * @return the {@link String} or {@link Number} value for the named attribute.
+     */
+    public final Object getAttributeValue(final String attributeName, final boolean numeric) {
+        Object singleton = null;
+        for (final Object value : getAttributeValues(attributeName, numeric)) {
+            if (value != null) {
+                if (singleton != null && !singleton.equals(value)) {              // Paranoiac check.
+                    return null;
+                }
+                singleton = value;
+            }
+        }
+        return singleton;
+    }
 
     /**
      * Returns the value of the given attribute as a string. This is a convenience method
      * for {@link #getAttributeValues(String, boolean)} when a singleton value is expected.
      *
-     * @param  attributeName  the name of the attribute for which to get the values.
+     * @param  attributeName  the name of the attribute for which to get the value.
      * @return the singleton attribute value, or {@code null} if none or ambiguous.
      */
-    public abstract String getAttributeString(final String attributeName);
+    public String getAttributeAsString(final String attributeName) {
+        final Object value = getAttributeValue(attributeName, false);
+        return (value != null) ? value.toString() : null;
+    }
+
+    /**
+     * Returns the value of the given attribute as a number, or {@link Double#NaN}.
+     * If the number is stored with single-precision, it is assumed casted from a
+     * representation in base 10.
+     *
+     * @param  attributeName  the name of the attribute for which to get the value.
+     * @return the singleton attribute value, or {@code NaN} if none or ambiguous.
+     */
+    public final double getAttributeAsNumber(final String attributeName) {
+        final Object value = getAttributeValue(attributeName, true);
+        if (value instanceof Number) {
+            double dp = ((Number) value).doubleValue();
+            final float sp = (float) dp;
+            if (sp == dp) {                              // May happen even if the number was stored as a double.
+                dp = DecimalFunctions.floatToDouble(sp);
+            }
+            return dp;
+        }
+        return Double.NaN;
+    }
 
     /**
      * Whether {@link #read()} invoked {@link Vector#compress(double)} on the returned vector.

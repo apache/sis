@@ -272,7 +272,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(CoordinateSystemAxis.NAME_KEY, name);                        // Intentionally no namespace.
         final List<GenericName> aliases = new ArrayList<>(2);
-        final String standardName = coordinates.getAttributeString(CF.STANDARD_NAME);
+        final String standardName = coordinates.getAttributeAsString(CF.STANDARD_NAME);
         if (standardName != null) {
             final NamedIdentifier std = new NamedIdentifier(Citations.NETCDF, standardName);
             if (standardName.equals(name)) {
@@ -285,7 +285,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
          * The long name is stored as an optional description of the primary name.
          * It is also stored as an alias if not redundant with other names.
          */
-        final String alt = coordinates.getAttributeString(CDM.LONG_NAME);
+        final String alt = coordinates.getAttributeAsString(CDM.LONG_NAME);
         if (alt != null && !similar(alt, name)) {
             properties.put(org.opengis.metadata.Identifier.DESCRIPTION_KEY, alt);   // Description associated to primary name.
             if (!similar(alt, standardName)) {

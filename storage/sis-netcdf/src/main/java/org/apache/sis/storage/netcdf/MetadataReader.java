@@ -938,21 +938,17 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final NameFactory f = decoder.nameFactory;
             setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
         }
-        final String id = trim(variable.getAttributeString(CF.STANDARD_NAME));
+        final String id = trim(variable.getAttributeAsString(CF.STANDARD_NAME));
         if (id != null && !id.equals(name)) {
-            addBandName(variable.getAttributeString(ACDD.standard_name_vocabulary), id);
+            addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }
         final String description = trim(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
             addBandDescription(description);
         }
         setSampleUnits(variable.getUnit());
-        double scale  = Double.NaN;
-        double offset = Double.NaN;
-        Object[] v;
-        v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
-        v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
-        setTransferFunction(scale, offset);
+        setTransferFunction(variable.getAttributeAsNumber(CDM.SCALE_FACTOR),
+                            variable.getAttributeAsNumber(CDM.ADD_OFFSET));
         addContentType(forCodeName(CoverageContentType.class, stringValue(ACDD.coverage_content_type)));
     }
 

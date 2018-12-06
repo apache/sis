@@ -384,7 +384,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     protected String getUnitsString() {
-        return getAttributeString(CDM.UNITS);
+        return getAttributeAsString(CDM.UNITS);
     }
 
     /**
@@ -455,7 +455,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the names of variables to use as axes for this variable, or an empty array if none.
      */
     final CharSequence[] getCoordinateVariables() {
-        return CharSequences.split(getAttributeString(CF.COORDINATES), ' ');
+        return CharSequences.split(getAttributeAsString(CF.COORDINATES), ' ');
     }
 
     /**
@@ -557,7 +557,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the value of the given attribute as a string, or {@code null} if none.
      */
     @Override
-    public String getAttributeString(final String attributeName) {
+    public String getAttributeAsString(final String attributeName) {
         final Object value = getAttributeValue(attributeName);
         return (value instanceof String) ? (String) value : null;
     }
@@ -594,7 +594,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             if (value.getClass().isArray()) {
                 final Number[] values = new Number[Array.getLength(value)];
                 for (int i=0; i<values.length; i++) {
-                    values[i] = (Number) Array.get(value, i);
+                    final Object element = Array.get(value, i);
+                    if (element instanceof Number) {
+                        values[i] = (Number) element;
+                    }
                 }
                 return values;
             }

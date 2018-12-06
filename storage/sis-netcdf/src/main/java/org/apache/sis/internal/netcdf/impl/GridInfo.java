@@ -241,7 +241,7 @@ final class GridInfo extends Grid {
                     }
                 }
             }
-            axes[targetDim] = new Axis(this, axis, abbreviation, axis.getAttributeString(CF.POSITIVE),
+            axes[targetDim] = new Axis(this, axis, abbreviation, axis.getAttributeAsString(CF.POSITIVE),
                                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         if (sortAxes) {

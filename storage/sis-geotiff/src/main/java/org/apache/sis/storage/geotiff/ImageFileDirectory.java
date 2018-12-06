@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -36,6 +37,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
@@ -1225,7 +1227,7 @@ final class ImageFileDirectory extends AbstractGridResource {
     }
 
     /**
-     * Returns the grid geometry for this image.
+     * Returns an object containing the image size, the CRS and the conversion from pixel indices to CRS coordinates.
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreContentException {
@@ -1240,6 +1242,14 @@ final class ImageFileDirectory extends AbstractGridResource {
         } else {
             return new GridGeometry(new GridExtent(imageWidth, imageHeight), null);
         }
+    }
+
+    /**
+     * Returns the ranges of sample values together with the conversion from samples to real values.
+     */
+    @Override
+    public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
+        throw new DataStoreContentException("Not supported yet.");
     }
 
     /**
