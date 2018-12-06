@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.Locale;
 import java.text.NumberFormat;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -50,6 +53,18 @@ final class SampleRangeFormat extends RangeFormat {
     private int ndigits;
 
     /**
+     * {@code true} if the range of sample values is different than the range of real values, or
+     * if there is qualitative categories. If {@code false}, then we can omit the "Samples" column.
+     */
+    private boolean hasPackedValues;
+
+    /**
+     * Whether {@link #prepare(List)} found at least one quantitative category.
+     * If {@code false}, then we can omit the "Measures" column.
+     */
+    private boolean hasQuantitative;
+
+    /**
      * The localize resources for table header. Words will be "Values", "Measures" and "Name".
      */
     private final Vocabulary words;
@@ -68,40 +83,70 @@ final class SampleRangeFormat extends RangeFormat {
      * Computes the smallest number of fraction digits necessary to resolve all quantitative values.
      * This method assumes that real values in the range {@code Category.converted.range} are stored
      * as integer sample values in the range {@code Category.range}.
-     *
-     * @return {@code true} if at least one quantitative category has been found.
      */
-    private boolean prepare(final List<Category> categories) {
-        ndigits = 0;
-        boolean hasQuantitative = false;
+    private void prepare(final List<Category> categories) {
+        ndigits         = 0;
+        hasPackedValues = false;
+        hasQuantitative = false;
         for (final Category category : categories) {
             final Category converted = category.converted;
-            final double increment = (converted.maximum - converted.minimum)
-                                   / ( category.maximum -  category.minimum);
+            final boolean  isPacked  = (category.minimum != converted.minimum)
+                                     | (category.maximum != converted.maximum);
+            hasPackedValues |= isPacked;
+            /*
+             * If the sample values are already real values, pretend that they are packed in bytes.
+             * The intent is only to compute an arbitrary number of fraction digits.
+             */
+            final double range = isPacked ? ( category.maximum -  category.minimum) : 255;
+            final double increment =        (converted.maximum - converted.minimum) / range;
             if (!Double.isNaN(increment)) {
                 hasQuantitative = true;
-                final int n = 1 - Numerics.toExp10(Math.getExponent(increment));
+                final int n = -Numerics.toExp10(Math.getExponent(increment));
                 if (n > ndigits) {
                     ndigits = n;
-                    if (n >= MAX_DIGITS) {
-                        ndigits = MAX_DIGITS;
-                        break;
-                    }
                 }
             }
         }
-        return hasQuantitative;
+        if (ndigits >= MAX_DIGITS) {
+            ndigits = MAX_DIGITS;
+        }
     }
 
     /**
      * Formats a sample value or a range of sample value.
      * The value should have been fetched by {@link Category#getRangeLabel()}.
+     * This method applies the following rules:
+     *
+     * <ul>
+     *   <li>If the value is a number, check if we should use scientific notation.</li>
+     *   <li>If the value is a range, discard the unit of measurement if any.
+     *       We do that because the range may be repeated in the "Measure" column with units.</li>
+     * </ul>
      */
-    private String formatSample(final Object value) {
+    private String formatSample(Object value) {
         if (value instanceof Number) {
-            return elementFormat.format(value).concat(" ");
+            final double m = Math.abs(((Number) value).doubleValue());
+            final String text;
+            if ((m >= 1E+9 || m < 1E-4) && elementFormat instanceof DecimalFormat) {
+                final DecimalFormat df = (DecimalFormat) elementFormat;
+                final String pattern = df.toPattern();
+                df.applyPattern("0.######E00");
+                text = df.format(value);
+                df.applyPattern(pattern);
+            } else {
+                text = elementFormat.format(value);
+            }
+            return text.concat(" ");
         } else if (value instanceof Range<?>) {
-            return format(value);
+            if (value instanceof MeasurementRange<?>) {
+                /*
+                 * Probably the same range than the one to be formatted in the "Measure" column.
+                 * Format it in the same way (same number of fraction digits) but without units.
+                 */
+                return formatMeasure(new NumberRange<>((MeasurementRange<?>) value));
+            } else {
+                return format(value);
+            }
         } else {
             return String.valueOf(value);
         }
@@ -111,22 +156,22 @@ final class SampleRangeFormat extends RangeFormat {
      * Formats a range of measurements. There is usually only zero or one range of measurement per {@link SampleDimension},
      * but {@code SampleRangeFormat} is not restricted to that limit. The number of fraction digits to use should have been
      * computed by {@link #prepare(List)} before to call this method.
+     *
+     * @return the range to write, or {@code null} if the given {@code range} argument was null.
      */
     private String formatMeasure(final Range<?> range) {
         if (range == null) {
-            return "";
+            return null;
         }
         final NumberFormat nf = (NumberFormat) elementFormat;
         final int min = nf.getMinimumFractionDigits();
         final int max = nf.getMaximumFractionDigits();
-        try {
-            nf.setMinimumFractionDigits(ndigits);
-            nf.setMaximumFractionDigits(ndigits);
-            return format(range);
-        } finally {
-            nf.setMinimumFractionDigits(min);
-            nf.setMaximumFractionDigits(max);
-        }
+        nf.setMinimumFractionDigits(ndigits);
+        nf.setMaximumFractionDigits(ndigits);
+        final String text = format(range);
+        nf.setMinimumFractionDigits(min);
+        nf.setMaximumFractionDigits(max);
+        return text;
     }
 
     /**
@@ -147,33 +192,58 @@ final class SampleRangeFormat extends RangeFormat {
 
     /**
      * Formats a string representation of the given list of categories.
+     * This method formats a table like below:
+     *
+     * {@preformat text
+     *   ┌────────────┬────────────────┬─────────────┐
+     *   │   Values   │    Measures    │    Name     │
+     *   ├────────────┼────────────────┼─────────────┤
+     *   │         0  │ NaN #0         │ No data     │
+     *   │         1  │ NaN #1         │ Clouds      │
+     *   │         5  │ NaN #5         │ Lands       │
+     *   │ [10 … 200) │ [6.0 … 25.0)°C │ Temperature │
+     *   └────────────┴────────────────┴─────────────┘
+     * }
      *
      * @param title       caption for the table.
      * @param categories  the list of categories to format.
      * @param out         where to write the category table.
      */
     void format(final InternationalString title, final CategoryList categories, final Appendable out) throws IOException {
+        prepare(categories);
         final String lineSeparator = System.lineSeparator();
         out.append(title.toString(getLocale())).append(lineSeparator);
-        final TableAppender table  = new TableAppender(out, " │ ");
-        final boolean hasQuantitative = prepare(categories);
+        /*
+         * Write table header: │ Values │ Measures │ name │
+         */
+        final TableAppender table = new TableAppender(out, " │ ");
         table.appendHorizontalSeparator();
         table.setCellAlignment(TableAppender.ALIGN_CENTER);
-        table.append(words.getString(Vocabulary.Keys.Values)).nextColumn();
-        if (hasQuantitative) {
-            table.append(words.getString(Vocabulary.Keys.Measures)).nextColumn();
-        }
-        table.append(words.getString(Vocabulary.Keys.Name)).nextLine();
+        if (hasPackedValues) table.append(words.getString(Vocabulary.Keys.Values))  .nextColumn();
+        if (hasQuantitative) table.append(words.getString(Vocabulary.Keys.Measures)).nextColumn();
+        /* Unconditional  */ table.append(words.getString(Vocabulary.Keys.Name))    .nextLine();
         table.appendHorizontalSeparator();
         for (final Category category : categories) {
-            table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-            table.append(formatSample(category.getRangeLabel()));
-            table.nextColumn();
-            if (hasQuantitative) {
-                table.append(formatMeasure(category.converted.range));
+            /*
+             * "Sample values" column. Omitted if all values are already real values.
+             */
+            if (hasPackedValues) {
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                table.append(formatSample(category.getRangeLabel()));
                 table.nextColumn();
             }
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
+            /*
+             * "Real values" column. Omitted if no category has a transfer function.
+             */
+            if (hasQuantitative) {
+                String text = formatMeasure(category.converted.range);            // Example: [6.0 … 25.0)°C
+                if (text == null) {
+                    text = String.valueOf(category.converted.getRangeLabel());    // Example: NaN #0
+                }
+                table.append(text);
+                table.nextColumn();
+            }
             table.append(category.name.toString(getLocale()));
             table.nextLine();
         }

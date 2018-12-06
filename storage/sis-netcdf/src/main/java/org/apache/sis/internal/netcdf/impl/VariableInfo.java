@@ -196,14 +196,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                  final WarningListeners<?>   listeners) throws DataStoreContentException
     {
         super(listeners);
-        final Object isUnsigned = attributes.get(CDM.UNSIGNED);
-        if (isUnsigned != null) {
-            dataType = dataType.unsigned(booleanValue(isUnsigned));
-        }
         this.name       = name;
         this.dimensions = dimensions;
         this.attributes = attributes;
-        this.dataType   = dataType;
+        final Object isUnsigned = getAttributeValue(CDM.UNSIGNED, "_unsigned");
+        if (isUnsigned != null) {
+            dataType = dataType.unsigned(booleanValue(isUnsigned));
+        }
+        this.dataType = dataType;
         /*
          * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
@@ -515,6 +515,25 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the numeric type of the attribute of the given name, or {@code null}
+     * if the given attribute is not found or its value is not numeric.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Number> getAttributeType(final String attributeName) {
+        final Object value = getAttributeValue(attributeName);
+        if (value != null) {
+            Class<?> type = value.getClass();
+            final Class<?> c = type.getComponentType();
+            if (c != null) type = c;
+            if (Number.class.isAssignableFrom(type)) {
+                return (Class<? extends Number>) type;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the value of the given attribute, or {@code null} if none.
      * This method should be invoked only for hard-coded names that mix lower-case and upper-case letters.
      *
@@ -523,7 +542,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @return variable attribute value of the given name, or {@code null} if none.
      */
     private Object getAttributeValue(final String attributeName, final String lowerCase) {
-        Object value = attributes.get(attributeName);
+        Object value = getAttributeValue(attributeName);
         if (value == null) {
             value = attributes.get(lowerCase);
         }
@@ -591,18 +610,34 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     static Number[] numberValues(final Object value) {
         if (value != null) {
+            if (value instanceof Number) {
+                return new Number[] {(Number) value};
+            }
             if (value.getClass().isArray()) {
                 final Number[] values = new Number[Array.getLength(value)];
                 for (int i=0; i<values.length; i++) {
                     final Object element = Array.get(value, i);
+                    final Number n;
                     if (element instanceof Number) {
-                        values[i] = (Number) element;
+                        n = (Number) element;
+                    } else if (element instanceof String) {
+                        final String t = (String) element;
+                        try {
+                            if (t.indexOf('.') >= 0) {
+                                n = Double.valueOf(t);
+                            } else {
+                                n = Long.valueOf(t);
+                            }
+                        } catch (NumberFormatException e) {
+                            // TODO: log warning. See also Decoder.parseNumber(String).
+                            continue;
+                        }
+                    } else {
+                        continue;
                     }
+                    values[i] = n;
                 }
                 return values;
-            }
-            if (value instanceof Number) {
-                return new Number[] {(Number) value};
             }
         }
         return EMPTY;

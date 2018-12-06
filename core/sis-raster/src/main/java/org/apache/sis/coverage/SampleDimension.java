@@ -628,8 +628,28 @@ public class SampleDimension implements Serializable {
          */
         public Builder addQuantitative(CharSequence name, NumberRange<?> samples, MathTransform1D toUnits, Unit<?> units) {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
+            if (units != null && toUnits.isIdentity() && samples != null && !(samples instanceof MeasurementRange<?>)) {
+                samples = new MeasurementRange<>(samples, units);
+            }
             categories.add(new Category(name, samples, toUnits, units, padValues));
             return this;
+        }
+
+        /**
+         * Returns {@code true} if the given range intersect the range of at least one category previously added.
+         * This method can be invoked before to add a new category for checking if it would cause a range collision.
+         *
+         * @param  minimum  minimal value of the range to test, inclusive.
+         * @param  maximum  maximal value of the range to test, inclusive.
+         * @return whether the given range intersects at least one previously added range.
+         */
+        public boolean intersect(final double minimum, final double maximum) {
+            for (final Category category : categories) {
+                if (maximum >= category.minimum && minimum <= category.maximum) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**

@@ -30,6 +30,8 @@ import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
 import ucar.nc2.dataset.CoordinateAxis1D;
+import ucar.nc2.dataset.CoordinateSystem;
+import ucar.nc2.dataset.EnhanceScaleMissing;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
 import org.opengis.referencing.operation.Matrix;
@@ -41,8 +43,8 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import ucar.nc2.dataset.CoordinateSystem;
 
 
 /**
@@ -167,6 +169,8 @@ final class VariableWrapper extends Variable {
     /**
      * Returns the variable data type.
      * This method may return {@code UNKNOWN} if the datatype is unknown.
+     *
+     * @see #getAttributeType(String)
      */
     @Override
     public DataType getDataType() {
@@ -259,6 +263,28 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns the numeric type of the attribute of the given name, or {@code null}
+     * if the given attribute is not found or its value is not numeric.
+     *
+     * @see #getDataType()
+     */
+    @Override
+    public Class<? extends Number> getAttributeType(final String attributeName) {
+        final Attribute attribute = raw.findAttributeIgnoreCase(attributeName);
+        if (attribute != null) {
+            switch (attribute.getDataType()) {
+                case BYTE:   return Byte.class;
+                case SHORT:  return Short.class;
+                case INT:    return Integer.class;
+                case LONG:   return Long.class;
+                case FLOAT:  return Float.class;
+                case DOUBLE: return Double.class;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
@@ -301,6 +327,22 @@ final class VariableWrapper extends Variable {
             names[i] = attributes.get(i).getShortName();
         }
         return UnmodifiableArrayList.wrap(names);
+    }
+
+    /**
+     * Returns the minimum and maximum values as determined by the UCAR library.
+     * If that library has not seen valid range, then fallbacks on Apache SIS.
+     */
+    @Override
+    public NumberRange<?> getValidValues() {
+        if (variable instanceof EnhanceScaleMissing) {
+            final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
+            if (ev.hasInvalidData()) {
+                return NumberRange.create(ev.getValidMin(), true, ev.getValidMax(), true);
+            }
+        }
+        return super.getValidValues();
+
     }
 
     /**

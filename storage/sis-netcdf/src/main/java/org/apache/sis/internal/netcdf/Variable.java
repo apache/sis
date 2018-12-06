@@ -24,9 +24,11 @@ import java.awt.image.DataBuffer;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 
@@ -41,6 +43,18 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 public abstract class Variable extends NamedElement {
+    /**
+     * Names of attributes where to fetch minimum and maximum sample values, in preference order.
+     *
+     * @see #getValidValues()
+     */
+    private static final String[] RANGE_ATTRIBUTES = {
+        "valid_range",      // Expected "reasonable" range for variable.
+        "actual_range",     // Actual data range for variable.
+        "valid_min",        // Fallback if "valid_range" is not specified.
+        "valid_max"
+    };
+
     /**
      * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
      *
@@ -182,6 +196,8 @@ public abstract class Variable extends NamedElement {
      * Returns the variable data type.
      *
      * @return the variable data type, or {@link DataType#UNKNOWN} if unknown.
+     *
+     * @see #getAttributeType(String)
      */
     public abstract DataType getDataType();
 
@@ -294,10 +310,19 @@ public abstract class Variable extends NamedElement {
      * Returns the names of all attributes associated to this variable.
      *
      * @return names of all attributes associated to this variable.
-     *
-     * @todo Remove this method if it still not used.
      */
     public abstract Collection<String> getAttributeNames();
+
+    /**
+     * Returns the numeric type of the attribute of the given name, or {@code null}
+     * if the given attribute is not found or its value is not numeric.
+     *
+     * @param  attributeName  the name of the attribute for which to get the type.
+     * @return type of the given attribute, or {@code null} if none or not numeric.
+     *
+     * @see #getDataType()
+     */
+    public abstract Class<? extends Number> getAttributeType(String attributeName);
 
     /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
@@ -363,6 +388,61 @@ public abstract class Variable extends NamedElement {
             return dp;
         }
         return Double.NaN;
+    }
+
+    /**
+     * Returns the range of valid values, or {@code null} if unknown.
+     * The range of values is taken from the following properties, in precedence order:
+     *
+     * <ol>
+     *   <li>{@code "valid_range"}  — expected "reasonable" range for variable.</li>
+     *   <li>{@code "actual_range"} — actual data range for variable.</li>
+     *   <li>{@code "valid_min"}    — ignored if {@code "valid_range"} is present, as specified in UCAR documentation.</li>
+     *   <li>{@code "valid_max"}    — idem.</li>
+     * </ol>
+     *
+     * @return the range of valid values, or {@code null} if unknown.
+     */
+    public NumberRange<?> getValidValues() {
+        Number minimum = null;
+        Number maximum = null;
+        Class<? extends Number> type = null;
+        for (final String attribute : RANGE_ATTRIBUTES) {
+            for (final Object element : getAttributeValues(attribute, true)) {
+                if (element instanceof Number) {
+                    Number value = (Number) element;
+                    if (element instanceof Float) {
+                        final float fp = (Float) element;
+                        if      (fp == +Float.MAX_VALUE) value = Float.POSITIVE_INFINITY;
+                        else if (fp == -Float.MAX_VALUE) value = Float.NEGATIVE_INFINITY;
+                    } else if (element instanceof Double) {
+                        final double fp = (Double) element;
+                        if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
+                        else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
+                    }
+                    type = Numbers.widestClass(type, value.getClass());
+                    minimum = Numbers.cast(minimum, type);
+                    maximum = Numbers.cast(maximum, type);
+                    value   = Numbers.cast(value,   type);
+                    if (!attribute.endsWith("max") && (minimum == null || compare(value, minimum) < 0)) minimum = value;
+                    if (!attribute.endsWith("min") && (maximum == null || compare(value, maximum) > 0)) maximum = value;
+                }
+            }
+            if (minimum != null && maximum != null) {
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
+                return range;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Compares two numbers which shall be of the same class.
+     */
+    @SuppressWarnings("unchecked")
+    private static int compare(final Number n1, final Number n2) {
+        return ((Comparable) n1).compareTo((Comparable) n2);
     }
 
     /**

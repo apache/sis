@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -34,6 +36,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Vocabulary;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 
 
@@ -49,13 +52,13 @@ import ucar.nc2.constants.CDM;                      // We use only String consta
  */
 final class GridResource extends AbstractGridResource implements ResourceOnFileSystem {
     /**
-     * Names of attributes where to fetch minimum and maximum sample values, in preference order.
+     * Names of attributes where to fetch missing values, in preference order.
+     * The union of all "no data" values will be stored, but the category name
+     * will be inferred from the first attribute declaring the "no data" value.
      */
-    private static final String[] RANGE_ATTRIBUTES = {
-        "valid_range",      // Expected "reasonable" range for variable.
-        "actual_range",     // Actual data range for variable.
-        "valid_min",        // Fallback if "valid_range" is not specified.
-        "valid_max"
+    private static final String[] NODATA_ATTRIBUTES = {
+        CDM.MISSING_VALUE,
+        CDM.FILL_VALUE
     };
 
     /**
@@ -144,56 +147,76 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     @Override
     public List<SampleDimension> getSampleDimensions() {
         if (definition == null) {
-            /*
-             * Gets minimum and maximum. If a "valid_range" attribute is present, it has precedence
-             * over "valid_min" and "valid_max" as specified in the UCAR documentation.
-             */
-            Number minimum = null;
-            Number maximum = null;
-            Class<? extends Number> type = null;
-            for (final String attribute : RANGE_ATTRIBUTES) {
-                for (final Object element : data.getAttributeValues(attribute, true)) {
-                    if (element instanceof Number) {
-                        Number value = (Number) element;
-                        if (element instanceof Float) {
-                            final float fp = (Float) element;
-                            if      (fp == +Float.MAX_VALUE) value = Float.POSITIVE_INFINITY;
-                            else if (fp == -Float.MAX_VALUE) value = Float.NEGATIVE_INFINITY;
-                        } else if (element instanceof Double) {
-                            final double fp = (Double) element;
-                            if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
-                            else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
+            final SampleDimension.Builder builder = new SampleDimension.Builder();
+            NumberRange<?> range = data.getValidValues();
+            if (range != null) {
+                /*
+                 * If scale_factor and/or add_offset variable attributes are present, then this is
+                 * a "packed" variable. Otherwise the transfer function is the identity transform.
+                 */
+                final TransferFunction tr = new TransferFunction();
+                final double scale  = data.getAttributeAsNumber(CDM.SCALE_FACTOR);
+                final double offset = data.getAttributeAsNumber(CDM.ADD_OFFSET);
+                if (!Double.isNaN(scale))  tr.setScale (scale);
+                if (!Double.isNaN(offset)) tr.setOffset(offset);
+                final MathTransform1D mt = tr.getTransform();
+                if (!mt.isIdentity()) {
+                    /*
+                     * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                     * if the type of the range is equals to the type of the scale, and the type of the
+                     * data is not wider, then assume that the minimum and maximum are real values.
+                     */
+                    final int dataType  = data.getDataType().number;
+                    final int rangeType = Numbers.getEnumConstant(range.getElementType());
+                    if (rangeType >= dataType &&
+                        rangeType >= Math.max(Numbers.getEnumConstant(data.getAttributeType(CDM.SCALE_FACTOR)),
+                                              Numbers.getEnumConstant(data.getAttributeType(CDM.ADD_OFFSET))))
+                    {
+                        final boolean isMinIncluded = range.isMinIncluded();
+                        final boolean isMaxIncluded = range.isMaxIncluded();
+                        double minimum = (range.getMinDouble() - offset) / scale;
+                        double maximum = (range.getMaxDouble() - offset) / scale;
+                        if (maximum > minimum) {
+                            final double swap = maximum;
+                            maximum = minimum;
+                            minimum = swap;
                         }
-                        type = Numbers.widestClass(type, value.getClass());
-                        minimum = Numbers.cast(minimum, type);
-                        maximum = Numbers.cast(maximum, type);
-                        value   = Numbers.cast(value,   type);
-                        if (minimum == null || compare(value, minimum) < 0) minimum = value;
-                        if (maximum == null || compare(value, maximum) > 0) maximum = value;
+                        if (dataType < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                            range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
+                        } else {
+                            range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
+                        }
                     }
                 }
-                if (minimum != null && maximum != null) break;
+                builder.addQuantitative(data.getName(), range, mt, data.getUnit());
             }
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
             /*
-             * Conversion from sample values to real values. If no scale factor and offset are specified,
-             * then the default will be the identity transform.
+             * Adds the "no data" or "fill value" as qualitative categories.
              */
-            final TransferFunction tr = new TransferFunction();
-            double scale  = data.getAttributeAsNumber(CDM.SCALE_FACTOR);
-            double offset = data.getAttributeAsNumber(CDM.ADD_OFFSET);
-            if (!Double.isNaN(scale))  tr.setScale (scale);
-            if (!Double.isNaN(offset)) tr.setOffset(offset);
-            definition = new SampleDimension.Builder()
-                    .addQuantitative(data.getName(), range, tr.getTransform(), data.getUnit()).build();
+            for (final String attribute : NODATA_ATTRIBUTES) {
+                InternationalString name = null;
+                for (final Object value : data.getAttributeValues(attribute, true)) {
+                    if (value instanceof Number) {
+                        final Number n = (Number) value;
+                        final double fp = n.doubleValue();
+                        if (!builder.intersect(fp, fp)) {
+                            if (name == null) {
+                                short key = Vocabulary.Keys.Nodata;
+                                if (CDM.FILL_VALUE.equalsIgnoreCase(attribute)) {
+                                    key = Vocabulary.Keys.FillValue;
+                                }
+                                name = Vocabulary.formatInternational(key);
+                            }
+                            @SuppressWarnings({"unchecked", "rawtypes"})
+                            NumberRange<?> r = new NumberRange(value.getClass(), n, true, n, true);
+                            builder.addQualitative(name, r);
+                        }
+                    }
+                }
+            }
+            definition = builder.build();
         }
         return Collections.singletonList(definition);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static int compare(final Number n1, final Number n2) {
-        return ((Comparable) n1).compareTo((Comparable) n2);
     }
 
     /**
