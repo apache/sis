@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -112,7 +113,7 @@ public final strictfp class CategoryTest extends TestCase {
             final double  scale = 10*random.nextDouble() + 0.1;         // Must be positive for this test.
             final double offset = 10*random.nextDouble() - 5.0;
             final Category category = new Category("Random", NumberRange.create(lower, true, upper, true),
-                    (MathTransform1D) MathTransforms.linear(scale, offset), null, null);
+                    (MathTransform1D) MathTransforms.linear(scale, offset), null, Collections.emptySet());
 
             assertBoundEquals("range.minValue",     lower,              category.range.getMinValue());
             assertBoundEquals("range.maxValue",     upper,              category.range.getMaxValue());

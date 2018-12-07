@@ -102,12 +102,13 @@ public class SampleDimension implements Serializable {
     private transient MathTransform1D transferFunction;
 
     /**
-     * Creates a sample dimension with the specified properties.
+     * Creates a sample dimension with the specified name and categories.
+     * Note that {@link Builder} provides a more convenient way to create sample dimensions.
      *
      * @param name        the sample dimension title or description, or {@code null} for default.
      * @param categories  the list of categories.
      */
-    SampleDimension(InternationalString name, final Collection<? extends Category> categories) {
+    public SampleDimension(CharSequence name, final Collection<? extends Category> categories) {
         ArgumentChecks.ensureNonNull("categories", categories);
         final CategoryList list;
         if (categories.isEmpty()) {
@@ -122,7 +123,7 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
             }
         }
-        this.name        = name;
+        this.name        = Types.toInternationalString(name);
         this.categories  = list;
         transferFunction = list.getTransferFunction();
     }
@@ -148,6 +149,18 @@ public class SampleDimension implements Serializable {
      */
     public InternationalString getName() {
         return name;
+    }
+
+    /**
+     * Returns all categories in this sample dimension. Note that a {@link Category} object may apply to an arbitrary range
+     * of sample values. Consequently, the first element in this collection may not be directly related to the sample value
+     * {@code 0}.
+     *
+     * @return the list of categories in this sample dimension, or an empty list if none.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<Category> getCategories() {
+        return categories;                      // Safe to return because immutable.
     }
 
     /**
@@ -658,7 +671,7 @@ public class SampleDimension implements Serializable {
          * @return the sample dimension.
          */
         public SampleDimension build() {
-            return new SampleDimension(Types.toInternationalString(dimensionName), categories);
+            return new SampleDimension(dimensionName, categories);
         }
     }
 }

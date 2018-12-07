@@ -36,18 +36,24 @@ import org.apache.sis.util.iso.Types;
 
 
 /**
- * A category delimited by a range of sample values. A category may be either <em>qualitative</em> or <em>quantitative</em>.
- * For example an image may have a qualitative category defining sample value {@code 0} as water,
- * another qualitative category defining sample value {@code 1} as forest, <i>etc</i>.
- * Another image may define elevation data as sample values in the range [0…100].
- * The later is a <em>quantitative</em> category because sample values are related to measurements in the real world.
- * For example, elevation data may be related to an altitude in metres through the following linear relation:
+ * Describes a sub-range of sample values in a sample dimension.
+ * A category maps a range of values to an observation, which may be either <em>qualitative</em> or <em>quantitative</em>:
  *
- * <blockquote><var>altitude</var> = (<var>sample value</var>)×100</blockquote>
+ * <ul class="verbose">
+ *   <li><b>Examples of qualitative observations:</b>
+ *   a sample dimension may have one {@code Category} instance specifying that sample value {@code 0} stands for water,
+ *   another {@code Category} instance specifying that sample value {@code 1} stands for forest, <i>etc</i>.</li>
+ *
+ *   <li><b>Example of quantitative observation:</b>
+ *   another sample dimension may have a {@code Category} instance specifying that sample values in the range [0…100]
+ *   stands for elevation data. Those sample values are related to measurements in the real world (altitudes in metres)
+ *   through a <cite>transfer function</cite>, foe example <var>altitude</var> = (<var>sample value</var>)×100 - 25.</li>
+ * </ul>
  *
  * Some image mixes both qualitative and quantitative categories. For example, images of <cite>Sea Surface Temperature</cite>
  * (SST) may have a quantitative category for temperature with values ranging from -2 to 35°C, and three qualitative categories
- * for cloud, land and ice.
+ * for cloud, land and ice. There is usually at most one quantitative category per sample dimension, but Apache SIS accepts an
+ * arbitrary amount of them.
  *
  * <p>All categories must have a human readable name. In addition, quantitative categories
  * may define a conversion from sample values <var>s</var> to real values <var>x</var>.
@@ -65,7 +71,7 @@ import org.apache.sis.util.iso.Types;
  * @since   1.0
  * @module
  */
-final class Category implements Serializable {
+public class Category implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -153,7 +159,8 @@ final class Category implements Serializable {
     final Category converted;
 
     /**
-     * Constructs a qualitative of quantitative category.
+     * Constructs a qualitative or quantitative category. This constructor is provided for sub-classes.
+     * For other usages, {@link SampleDimension.Builder} should be used instead.
      *
      * @param  name       the category name (mandatory).
      * @param  samples    the minimum and maximum sample values (mandatory).
@@ -163,12 +170,14 @@ final class Category implements Serializable {
      *                    This is the target units after conversion by {@code toUnits}.
      * @param  padValues  an initially empty set to be filled by this constructor for avoiding pad value collisions.
      *                    The same set shall be given to all {@code Category} created for the same sample dimension.
+     *                    Content can be discarded after all categories have been created.
      */
-    Category(final CharSequence name, final NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
+    protected Category(final CharSequence name, final NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
              final Set<Integer> padValues)
     {
         ArgumentChecks.ensureNonEmpty("name", name);
         ArgumentChecks.ensureNonNull("samples", samples);
+        ArgumentChecks.ensureNonNull("padValues", padValues);
         this.name    = Types.toInternationalString(name);
         this.range   = samples;
         this.minimum = samples.getMinDouble(true);
@@ -334,8 +343,6 @@ search:         if (!padValues.add(ordinal)) {
      * @return the range of sample values in this category.
      *
      * @see SampleDimension#getSampleRange()
-     * @see NumberRange#getMinValue()
-     * @see NumberRange#getMaxValue()
      */
     public NumberRange<?> getSampleRange() {
         // Same assumption than in 'isQuantitative()'.
