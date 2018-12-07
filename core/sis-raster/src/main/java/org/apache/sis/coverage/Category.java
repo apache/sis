@@ -126,8 +126,8 @@ public class Category implements Serializable {
      *   <li>This field is {@code null} if the minimum and maximum values are NaN (converted qualitative category).</li>
      *   <li>The value type may be different than {@link Double} (typically {@link Integer}).</li>
      *   <li>The bounds may be exclusive instead than inclusive.</li>
-     *   <li>The range may be an instance of {@link MeasurementRange} if the {@link #transferFunction}
-     *       is identity and the units of measurement are known.</li>
+     *   <li>The range may be an instance of {@link MeasurementRange} if the {@link #toConverse} is identity
+     *       and the units of measurement are known.</li>
      * </ul>
      *
      * The range is null if this category is a qualitative category converted to real values.
@@ -146,20 +146,48 @@ public class Category implements Serializable {
 
     /**
      * The conversion from sample values to real values (or conversely), never {@code null} even for qualitative
-     * categories. In the case of qualitative categories, this transfer function shall map to {@code NaN} values.
-     * In the case of sample values that are already in the units of measurement, this transfer function shall be
-     * the identity function.
+     * categories. In the case of qualitative categories, this transfer function shall map to {@code NaN} values
+     * or conversely. In the case of sample values that are already in the units of measurement, this transfer
+     * function shall be the identity function.
+     *
+     * @see #getTransferFunction()
      */
-    final MathTransform1D transferFunction;
+    final MathTransform1D toConverse;
 
     /**
-     * The category that describes sample values after {@link #transferFunction} has been applied.
+     * The category that describes values after {@linkplain #getTransferFunction() transfer function}
+     * has been applied, or if this category is already converted then the original category.
      * Never null, but may be {@code this} if the transfer function is the identity function.
+     *
+     * <p>This field establishes a bidirectional navigation between sample values and real values.
+     * This is in contrast with methods named {@code converted()}, which establish a unidirectional
+     * navigation from sample values to real values.</p>
+     *
+     * @see #converted()
+     * @see CategoryList#converse
+     * @see SampleDimension#converse
      */
-    final Category converted;
+    final Category converse;
 
     /**
-     * Constructs a qualitative or quantitative category. This constructor is provided for sub-classes.
+     * Creates a copy of the given category except for the {@link #toConverse} function which is set to identity.
+     * This is used only if a user specify a {@code ConvertedCategory} to {@link SampleDimension} constructor.
+     * Such converted category can only come from another {@code SampleDimension} and may have inconsistent
+     * information for the new sample dimension that the user is creating.
+     *
+     * @param copy  the category to copy.
+     */
+    Category(final Category copy) {
+        name       = copy.name;
+        range      = copy.range;
+        minimum    = copy.minimum;
+        maximum    = copy.maximum;
+        toConverse = identity();
+        converse   = this;
+    }
+
+    /**
+     * Constructs a qualitative or quantitative category. This constructor is accessible for sub-classing.
      * For other usages, {@link SampleDimension.Builder} should be used instead.
      *
      * @param  name       the category name (mandatory).
@@ -196,9 +224,9 @@ public class Category implements Serializable {
         try {
             final MathTransform1D toSamples;
             if (toUnits != null) {
-                transferFunction = toUnits;
+                toConverse = toUnits;
                 if (toUnits.isIdentity()) {
-                    converted = this;
+                    converse = this;
                     return;
                 }
                 toSamples = toUnits.inverse();
@@ -233,33 +261,34 @@ search:         if (!padValues.add(ordinal)) {
                  * For qualitative category, the transfer function maps to NaN while the inverse function maps back
                  * to some value in the [minimum … maximum] range. We chose the value closest to positive zero.
                  */
-                transferFunction = (MathTransform1D) MathTransforms.linear(0, MathFunctions.toNanFloat(ordinal));
+                toConverse = (MathTransform1D) MathTransforms.linear(0, MathFunctions.toNanFloat(ordinal));
                 final double value = (minimum > 0) ? minimum : (maximum <= 0) ? maximum : 0d;
                 toSamples = (MathTransform1D) MathTransforms.linear(0, value);
             }
-            converted = new Category(this, toSamples, toUnits != null, units);
+            converse = new ConvertedCategory(this, toSamples, toUnits != null, units);
         } catch (TransformException e) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalTransferFunction_1, name), e);
         }
     }
 
     /**
-     * Creates a category storing the inverse of the "sample to real values" transfer function. The {@link #transferFunction}
+     * Creates a category storing the inverse of the "sample to real values" transfer function. The {@link #toConverse}
      * of this category will convert real value in specified {@code units} to the sample (packed) value.
+     * This constructor is reserved to {@link ConvertedCategory} usage only.
      *
      * @param  original        the category storing the conversion from sample to real value.
-     * @param  toSamples       the "real to sample values" conversion, as the inverse of {@code original.transferFunction}.
+     * @param  toSamples       the "real to sample values" conversion, as the inverse of {@code original.toConverse}.
      *                         For qualitative category, this function is a constant mapping NaN to the original sample value.
      * @param  isQuantitative  {@code true} if we are construction a quantitative category, or {@code false} for qualitative.
      * @param  units           the units of measurement, or {@code null} if not applicable.
      *                         This is the source units before conversion by {@code toSamples}.
      */
-    private Category(final Category original, final MathTransform1D toSamples, final boolean isQuantitative, final Unit<?> units)
+    Category(final Category original, final MathTransform1D toSamples, final boolean isQuantitative, final Unit<?> units)
             throws TransformException
     {
-        converted        = original;
-        name             = original.name;
-        transferFunction = Objects.requireNonNull(toSamples);
+        converse   = original;
+        name       = original.name;
+        toConverse = Objects.requireNonNull(toSamples);
         /*
          * Compute 'minimum' and 'maximum' (which must be real numbers) using the conversion from samples
          * to real values. To be strict, we should use some numerical algorithm for finding a function's
@@ -277,7 +306,7 @@ search:         if (!padValues.add(ordinal)) {
                 r.getMaxDouble(),
                 r.getMinDouble(!minIncluded),
                 r.getMaxDouble(!maxIncluded)};
-        original.transferFunction.transform(extremums, 0, extremums, 0, extremums.length);
+        original.toConverse.transform(extremums, 0, extremums, 0, extremums.length);
         if (extremums[minIncluded ? 2 : 0] > extremums[maxIncluded ? 3 : 1]) {              // Compare exclusive min/max.
             ArraysExt.swap(extremums, 0, 1);                                                // Swap minimum and maximum.
             ArraysExt.swap(extremums, 2, 3);
@@ -295,21 +324,21 @@ search:         if (!padValues.add(ordinal)) {
     }
 
     /**
-     * Returns {@code false} if this instance has been created by above private constructor for real values.
-     * This method is for assertions only. We use the range type as a signature for category representing result
-     * of conversion by the transfer function.
-     */
-    final boolean isPublic() {
-        return (range != null) && !(range instanceof ConvertedRange);
-    }
-
-    /**
      * Returns the category name.
      *
      * @return the category name.
      */
     public InternationalString getName() {
         return name;
+    }
+
+    /**
+     * The category that describes values after {@linkplain #getTransferFunction() transfer function} has been applied.
+     * If the values are already converted (eventually to NaN values), returns {@code this}.  This method differs from
+     * {@link #converse} field in being unidirectional: navigate from sample to converted values but never backward.
+     */
+    Category converted() {
+        return converse;        // Overridden in ConvertedCategory.
     }
 
     /**
@@ -322,15 +351,8 @@ search:         if (!padValues.add(ordinal)) {
      * @return {@code true} if this category is quantitative, or
      *         {@code false} if this category is qualitative.
      */
-    public final boolean isQuantitative() {
-        /*
-         * This implementation assumes that this method will always be invoked on the instance
-         * created for sample values, never on the instance created by the private constructor.
-         * If this method was invoked on "real values category", then we would need to test for
-         * 'range' directly instead of 'converted.range'.
-         */
-        assert isPublic() : this;
-        return converted.range != null;
+    public boolean isQuantitative() {
+        return converted().range != null;
     }
 
     /**
@@ -346,7 +368,7 @@ search:         if (!padValues.add(ordinal)) {
      */
     public NumberRange<?> getSampleRange() {
         // Same assumption than in 'isQuantitative()'.
-        assert isPublic() : this;
+        assert range != null : this;
         return range;
     }
 
@@ -359,10 +381,8 @@ search:         if (!padValues.add(ordinal)) {
      * @see SampleDimension#getMeasurementRange()
      */
     public Optional<MeasurementRange<?>> getMeasurementRange() {
-        // Same assumption than in 'isQuantitative()'.
-        assert isPublic() : this;
         // A ClassCastException below would be a bug in our constructor.
-        return Optional.ofNullable((MeasurementRange<?>) converted.range);
+        return Optional.ofNullable((MeasurementRange<?>) converted().range);
     }
 
     /**
@@ -393,10 +413,17 @@ search:         if (!padValues.add(ordinal)) {
          * This implementation assumes that this method will always be invoked on the instance
          * created for sample values, never on the instance created by the private constructor.
          * If this method was invoked on "real values category", then we would need to return
-         * the identity transform instead than 'transferFunction'.
+         * the identity transform instead than 'toConverse'. This is done by ConvertedCategory.
          */
-//      assert isPublic();     — invoked by isQuantitative().
-        return isQuantitative() ? Optional.of(transferFunction) : Optional.empty();
+        assert range != null : this;
+        return (converse.range != null) ? Optional.of(toConverse) : Optional.empty();
+    }
+
+    /**
+     * Returns the identity transform. This is the value returned by {@link ConvertedCategory#getTransferFunction()}.
+     */
+    static MathTransform1D identity() {
+        return (MathTransform1D) MathTransforms.identity(1);
     }
 
     /**
@@ -420,12 +447,12 @@ search:         if (!padValues.add(ordinal)) {
             // Slight optimization
             return true;
         }
-        if (object instanceof Category) {
+        if (object != null && getClass().equals(object.getClass())) {
             final Category that = (Category) object;
             return name.equals(that.name) && Objects.equals(range, that.range) &&
                    Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(that.minimum) &&
                    Double.doubleToRawLongBits(maximum) == Double.doubleToRawLongBits(that.maximum) &&
-                   transferFunction.equals(that.transferFunction);
+                   toConverse.equals(that.toConverse);
         }
         return false;
     }

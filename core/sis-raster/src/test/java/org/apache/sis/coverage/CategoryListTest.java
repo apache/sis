@@ -59,6 +59,16 @@ public final strictfp class CategoryListTest extends TestCase {
     }
 
     /**
+     * Asserts that the given categories defines range of sample values ({@literal i.e.} are not converse).
+     */
+    private static void assertNotConverted(final CategoryList categories) {
+        for (final Category c : categories) {
+            assertNotNull(c.range);
+            assertFalse(c.range instanceof ConvertedRange);
+        }
+    }
+
+    /**
      * Tests the checks performed by {@link CategoryList} constructor.
      */
     @Test
@@ -71,7 +81,7 @@ public final strictfp class CategoryListTest extends TestCase {
             new Category("Again",   NumberRange.create(10, true, 10, true), null, null, padValues)       // Range overlaps.
         };
         try {
-            assertTrue(new CategoryList(categories.clone(), null).isPublic());
+            assertNotConverted(new CategoryList(categories.clone(), null));
             fail("Should not have accepted range overlap.");
         } catch (IllegalArgumentException exception) {
             // This is the expected exception.
@@ -81,7 +91,7 @@ public final strictfp class CategoryListTest extends TestCase {
         }
         // Removes the wrong category. Now, construction should succeed.
         categories = Arrays.copyOf(categories, categories.length - 1);
-        assertTrue("isPublic", new CategoryList(categories, null).isPublic());
+        assertNotConverted(new CategoryList(categories, null));
         assertSorted(categories);
     }
 
@@ -167,18 +177,18 @@ public final strictfp class CategoryListTest extends TestCase {
     @Test
     public void testRanges() {
         final CategoryList list = new CategoryList(categories(), null);
-        assertTrue  ("isMinIncluded",            list.range.isMinIncluded());
-        assertFalse ("isMaxIncluded",            list.range.isMaxIncluded());
-        assertFalse ("converted.isMinIncluded",  list.converted.range.isMinIncluded());     // Because computed from maxValue before conversion.
-        assertFalse ("converted.isMaxIncluded",  list.converted.range.isMaxIncluded());
-        assertEquals("minValue",              0, ((Number) list.range          .getMinValue()).doubleValue(), STRICT);
-        assertEquals("maxValue",            120, ((Number) list.range          .getMaxValue()).doubleValue(), STRICT);
-        assertEquals("converted.minValue", -117, ((Number) list.converted.range.getMinValue()).doubleValue(), STRICT);
-        assertEquals("converted.maxValue",   15, ((Number) list.converted.range.getMaxValue()).doubleValue(), STRICT);
-        assertEquals("converted.minValue", -117, list.converted.range.getMinDouble(false), STRICT);
-        assertEquals("converted.maxValue",   15, list.converted.range.getMaxDouble(false), STRICT);
-        assertEquals("converted.minValue", -116, list.converted.range.getMinDouble(true),  CategoryTest.EPS);
-        assertEquals("converted.maxValue", 14.9, list.converted.range.getMaxDouble(true),  CategoryTest.EPS);
+        assertTrue  ("isMinIncluded",           list.range.isMinIncluded());
+        assertFalse ("isMaxIncluded",           list.range.isMaxIncluded());
+        assertFalse ("converse.isMinIncluded",  list.converse.range.isMinIncluded());     // Because computed from maxValue before conversion.
+        assertFalse ("converse.isMaxIncluded",  list.converse.range.isMaxIncluded());
+        assertEquals("minValue",             0, ((Number) list.range          .getMinValue()).doubleValue(), STRICT);
+        assertEquals("maxValue",           120, ((Number) list.range          .getMaxValue()).doubleValue(), STRICT);
+        assertEquals("converse.minValue", -117, ((Number) list.converse.range.getMinValue()).doubleValue(), STRICT);
+        assertEquals("converse.maxValue",   15, ((Number) list.converse.range.getMaxValue()).doubleValue(), STRICT);
+        assertEquals("converse.minValue", -117, list.converse.range.getMinDouble(false), STRICT);
+        assertEquals("converse.maxValue",   15, list.converse.range.getMaxDouble(false), STRICT);
+        assertEquals("converse.minValue", -116, list.converse.range.getMinDouble(true),  CategoryTest.EPS);
+        assertEquals("converse.maxValue", 14.9, list.converse.range.getMaxDouble(true),  CategoryTest.EPS);
     }
 
     /**
@@ -193,37 +203,37 @@ public final strictfp class CategoryListTest extends TestCase {
         /*
          * Checks category searches for values that are insides the range of a category.
          */
-        assertSame(  "0", categories[0],           list.search(  0));
-        assertSame(  "7", categories[1],           list.search(  7));
-        assertSame(  "3", categories[2],           list.search(  3));
-        assertSame(" 10", categories[3],           list.search( 10));
-        assertSame(" 50", categories[3],           list.search( 50));
-        assertSame("100", categories[4],           list.search(100));
-        assertSame("110", categories[4],           list.search(110));
-        assertSame(  "0", categories[0].converted, list.converted.search(MathFunctions.toNanFloat(  0)));
-        assertSame(  "7", categories[1].converted, list.converted.search(MathFunctions.toNanFloat(  7)));
-        assertSame(  "3", categories[2].converted, list.converted.search(MathFunctions.toNanFloat(  3)));
-        assertSame(" 10", categories[3].converted, list.converted.search(  /* transform( 10) */     6 ));
-        assertSame(" 50", categories[3].converted, list.converted.search(  /* transform( 50) */    10 ));
-        assertSame("100", categories[4].converted, list.converted.search(  /* transform(100) */   -97 ));
-        assertSame("110", categories[4].converted, list.converted.search(  /* transform(110) */  -107 ));
+        assertSame(  "0", categories[0],          list.search(  0));
+        assertSame(  "7", categories[1],          list.search(  7));
+        assertSame(  "3", categories[2],          list.search(  3));
+        assertSame(" 10", categories[3],          list.search( 10));
+        assertSame(" 50", categories[3],          list.search( 50));
+        assertSame("100", categories[4],          list.search(100));
+        assertSame("110", categories[4],          list.search(110));
+        assertSame(  "0", categories[0].converse, list.converse.search(MathFunctions.toNanFloat(  0)));
+        assertSame(  "7", categories[1].converse, list.converse.search(MathFunctions.toNanFloat(  7)));
+        assertSame(  "3", categories[2].converse, list.converse.search(MathFunctions.toNanFloat(  3)));
+        assertSame(" 10", categories[3].converse, list.converse.search(  /* transform( 10) */     6 ));
+        assertSame(" 50", categories[3].converse, list.converse.search(  /* transform( 50) */    10 ));
+        assertSame("100", categories[4].converse, list.converse.search(  /* transform(100) */   -97 ));
+        assertSame("110", categories[4].converse, list.converse.search(  /* transform(110) */  -107 ));
         /*
          * Checks values outside the range of any category. For direct conversion, no category shall be returned.
          * For inverse conversion, the nearest category shall be returned.
          */
-        assertNull( "-1",                          list.search( -1));
-        assertNull(  "2",                          list.search(  2));
-        assertNull(  "4",                          list.search(  4));
-        assertNull(  "9",                          list.search(  9));
-        assertNull("120",                          list.search(120));
-        assertNull("200",                          list.search(200));
-        assertNull( "-1",                          list.converted.search(MathFunctions.toNanFloat(-1)));    // Nearest sample is 0
-        assertNull(  "2",                          list.converted.search(MathFunctions.toNanFloat( 2)));    // Nearest sample is 3
-        assertNull(  "4",                          list.converted.search(MathFunctions.toNanFloat( 4)));    // Nearest sample is 3
-        assertNull(  "9",                          list.converted.search(MathFunctions.toNanFloat( 9)));    // Nearest sample is 10
-        assertSame(  "9", categories[3].converted, list.converted.search( /* transform(  9) */   5.9 ));    // Nearest sample is 10
-        assertSame("120", categories[4].converted, list.converted.search( /* transform(120) */  -117 ));    // Nearest sample is 119
-        assertSame("200", categories[4].converted, list.converted.search( /* transform(200) */  -197 ));    // Nearest sample is 119
+        assertNull( "-1",                         list.search( -1));
+        assertNull(  "2",                         list.search(  2));
+        assertNull(  "4",                         list.search(  4));
+        assertNull(  "9",                         list.search(  9));
+        assertNull("120",                         list.search(120));
+        assertNull("200",                         list.search(200));
+        assertNull( "-1",                         list.converse.search(MathFunctions.toNanFloat(-1)));    // Nearest sample is 0
+        assertNull(  "2",                         list.converse.search(MathFunctions.toNanFloat( 2)));    // Nearest sample is 3
+        assertNull(  "4",                         list.converse.search(MathFunctions.toNanFloat( 4)));    // Nearest sample is 3
+        assertNull(  "9",                         list.converse.search(MathFunctions.toNanFloat( 9)));    // Nearest sample is 10
+        assertSame(  "9", categories[3].converse, list.converse.search( /* transform(  9) */   5.9 ));    // Nearest sample is 10
+        assertSame("120", categories[4].converse, list.converse.search( /* transform(120) */  -117 ));    // Nearest sample is 119
+        assertSame("200", categories[4].converse, list.converse.search( /* transform(200) */  -197 ));    // Nearest sample is 119
     }
 
     /**

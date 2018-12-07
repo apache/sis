@@ -81,7 +81,7 @@ final class SampleRangeFormat extends RangeFormat {
 
     /**
      * Computes the smallest number of fraction digits necessary to resolve all quantitative values.
-     * This method assumes that real values in the range {@code Category.converted.range} are stored
+     * This method assumes that real values in the range {@code Category.converse.range} are stored
      * as integer sample values in the range {@code Category.range}.
      */
     private void prepare(final List<Category> categories) {
@@ -89,7 +89,7 @@ final class SampleRangeFormat extends RangeFormat {
         hasPackedValues = false;
         hasQuantitative = false;
         for (final Category category : categories) {
-            final Category converted = category.converted;
+            final Category converted = category.converted();
             final boolean  isPacked  = (category.minimum != converted.minimum)
                                      | (category.maximum != converted.maximum);
             hasPackedValues |= isPacked;
@@ -237,9 +237,10 @@ final class SampleRangeFormat extends RangeFormat {
              * "Real values" column. Omitted if no category has a transfer function.
              */
             if (hasQuantitative) {
-                String text = formatMeasure(category.converted.range);            // Example: [6.0 … 25.0)°C
+                final Category converted = category.converted();
+                String text = formatMeasure(converted.range);               // Example: [6.0 … 25.0)°C
                 if (text == null) {
-                    text = String.valueOf(category.converted.getRangeLabel());    // Example: NaN #0
+                    text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
                 }
                 table.append(text);
                 table.nextColumn();

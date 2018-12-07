@@ -83,10 +83,10 @@ public final strictfp class CategoryTest extends TestCase {
             assertTrue("Allocated NaN ordinal", padValues.contains(sample));
             assertBoundEquals("range.minValue", sample, category.range.getMinValue());
             assertBoundEquals("range.maxValue", sample, category.range.getMaxValue());
-            final MathTransform1D inverse = category.converted.transferFunction;
+            final MathTransform1D inverse = category.converse.toConverse;
             for (int i=0; i<4; i++) {
                 final float x = 100 * random.nextFloat();
-                final float y = (float) category.transferFunction.transform(x);
+                final float y = (float) category.toConverse.transform(x);
                 assertTrue("isNaN", Float.isNaN(y));
                 final int ordinal = MathFunctions.toNanOrdinal(y);
                 if (collision) {
@@ -115,19 +115,19 @@ public final strictfp class CategoryTest extends TestCase {
             final Category category = new Category("Random", NumberRange.create(lower, true, upper, true),
                     (MathTransform1D) MathTransforms.linear(scale, offset), null, Collections.emptySet());
 
-            assertBoundEquals("range.minValue",     lower,              category.range.getMinValue());
-            assertBoundEquals("range.maxValue",     upper,              category.range.getMaxValue());
-            assertBoundEquals("converted.minValue", lower*scale+offset, category.converted.range.getMinValue());
-            assertBoundEquals("converted.maxValue", upper*scale+offset, category.converted.range.getMaxValue());
+            assertBoundEquals("range.minValue",    lower,              category.range.getMinValue());
+            assertBoundEquals("range.maxValue",    upper,              category.range.getMaxValue());
+            assertBoundEquals("converse.minValue", lower*scale+offset, category.converse.range.getMinValue());
+            assertBoundEquals("converse.maxValue", upper*scale+offset, category.converse.range.getMaxValue());
 
-            final MathTransform1D inverse = category.converted.transferFunction;
-            assertSame("inverse", inverse, category.transferFunction.inverse());
+            final MathTransform1D inverse = category.converse.toConverse;
+            assertSame("inverse", inverse, category.toConverse.inverse());
 
             for (int i=0; i<20; i++) {
                 final double x = 100 * random.nextDouble();
                 final double y = x*scale + offset;
-                assertEquals("transferFunction", y, category.transferFunction.transform(x), EPS);
-                assertEquals("inverse",          x, inverse.transform(y), EPS);
+                assertEquals("toConverse", y, category.toConverse.transform(x), EPS);
+                assertEquals("inverse",    x, inverse.transform(y), EPS);
             }
         }
     }

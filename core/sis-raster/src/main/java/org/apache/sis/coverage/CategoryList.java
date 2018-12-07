@@ -61,11 +61,6 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     static final CategoryList EMPTY = new CategoryList();
 
     /**
-     * The result of converting sample values to real values, never {@code null}.
-     */
-    final CategoryList converted;
-
-    /**
      * The union of the ranges of every categories, excluding {@code NaN} values.
      * May be {@code null} if this list has no non-{@code NaN} category.
      *
@@ -115,15 +110,29 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private transient Category last;
 
     /**
+     * The {@code CategoryList} that describes values after {@linkplain #getTransferFunction() transfer function}
+     * has been applied, or if this {@code CategoryList} is already converted then the original {@code CategoryList}.
+     * Never null, but may be {@code this} if the transfer function is the identity function.
+     *
+     * <p>This field establishes a bidirectional navigation between sample values and real values.
+     * This is in contrast with methods named {@code converted()}, which establish a unidirectional
+     * navigation from sample values to real values.</p>
+     *
+     * @see Category#converse
+     * @see SampleDimension#converse
+     */
+    final CategoryList converse;
+
+    /**
      * The constructor for the {@link #EMPTY} constant.
      */
     private CategoryList() {
-        converted     = this;
         range         = null;
         minimums      = ArraysExt.EMPTY_DOUBLE;
         categories    = new Category[0];
         main          = null;
         extrapolation = null;
+        converse      = this;
     }
 
     /**
@@ -132,11 +141,25 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      *
      * @param  categories  the list of categories. May be empty, but can not be null.
      *                     This array is not cloned and is modified in-place.
-     * @param  inverse     if we are creating the list of categories after conversion from samples to real values,
+     * @param  converse    if we are creating the list of categories after conversion from samples to real values,
      *                     the original list before conversion. Otherwise {@code null}.
      * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
      */
-    CategoryList(final Category[] categories, CategoryList inverse) {
+    CategoryList(final Category[] categories, CategoryList converse) {
+        /*
+         * If users specify Category instances themselves, maybe they took existing instances from another
+         * sample dimension. A list of "non-converted" categories should not contain any ConvertedCategory
+         * instances, otherwise confusion will occur later.  Note that the converse is not true: a list of
+         * converted categories may contain plain Category instances if the conversion is identity.
+         */
+        if (converse == null) {
+            for (int i=0; i<categories.length; i++) {
+                final Category c = categories[i];
+                if (c instanceof ConvertedCategory) {
+                    categories[i] = new Category(c);
+                }
+            }
+        }
         Arrays.sort(categories, Category.COMPARATOR);
         this.categories = categories;
         /*
@@ -163,7 +186,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
             final double minimum = category.minimum;
             minimums[i] = minimum;
-            if (category.converted.range != null) {                         // Category.isQuantitative() without assert.
+            if (category.converse.range != null) {                          // Category.isQuantitative() inlined.
                 final double span = category.maximum - minimum;             // NaN if "converted qualitative" category.
                 if (span >= widest) {
                     widest = span;
@@ -194,15 +217,15 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          *     list. This is the last category to have a range of real (non-NaN) numbers.
          */
         Category extrapolation = null;
-        if (inverse == null) {
+        if (converse == null) {
             boolean hasConversion = false;
             final Category[] convertedCategories = new Category[categories.length];
             for (int i=0; i < convertedCategories.length; i++) {
                 final Category category = categories[i];
-                hasConversion |= (category != category.converted);
-                convertedCategories[i] = category.converted;
+                hasConversion |= (category != category.converse);
+                convertedCategories[i] = category.converse;
             }
-            inverse = hasConversion ? new CategoryList(convertedCategories, this) : this;
+            converse = hasConversion ? new CategoryList(convertedCategories, this) : this;
         } else {
             for (int i=categories.length; --i >= 0;) {
                 final Category category = categories[i];
@@ -213,7 +236,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
         }
         this.extrapolation = extrapolation;
-        converted = inverse;
+        this.converse      = converse;
     }
 
     /**
@@ -232,40 +255,19 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Returns {@code false} if this instance contains private categories.
-     * This method is for assertions only.
-     */
-    final boolean isPublic() {
-        for (final Category c : categories) {
-            if (!c.isPublic()) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if this list contains at least one quantitative category.
-     * We use the converted range has a criterion, since it shall be null if the result
-     * of all conversions is NaN.
-     *
-     * @see Category#isQuantitative()
-     */
-    final boolean hasQuantitative() {
-        assert isPublic();
-        return converted.range != null;
-    }
-
-    /**
      * Returns the <cite>transfer function</cite> from sample values to real values, including conversion
-     * of "no data" value to NaN. If there is no quantitative categories, returns {@code null}.
+     * of "no data" value to NaN.  Callers should ensure that there is at least one quantitative category
+     * before to invoke this method.
      *
      * @see SampleDimension#getTransferFunction()
      */
     final MathTransform1D getTransferFunction() {
         MathTransform1D tr = null;
-        if (hasQuantitative()) {
-            tr = categories[0].transferFunction;
-            for (int i=1; i<categories.length; i++) {
-                if (!tr.equals(categories[i].transferFunction)) {
+        final int n = categories.length;
+        if (n != 0) {
+            tr = categories[0].toConverse;
+            for (int i=1; i<n; i++) {
+                if (!tr.equals(categories[i].toConverse)) {
                     tr = this;
                     break;
                 }
@@ -454,7 +456,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                 srcOff -= count - 1;
             }
             final int stepOff = srcOff + srcToDst;
-            final MathTransform1D piece = category.transferFunction;
+            final MathTransform1D piece = category.toConverse;
             if (srcFloat != null) {
                 if (dstFloat != null) {
                     piece.transform(srcFloat, srcOff, dstFloat, stepOff, count);
@@ -470,10 +472,10 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
             if (extrapolation != null) {
                 dstOff = srcOff + srcToDst;
-                final Category cnv = category.converted;
+                final Category converse = category.converse;
                 if (dstFloat != null) {                                 // Loop for the 'float' version.
-                    final float min = (float) cnv.minimum;
-                    final float max = (float) cnv.maximum;
+                    final float min = (float) converse.minimum;
+                    final float max = (float) converse.maximum;
                     while (--count >= 0) {
                         final float check = dstFloat[dstOff];
                         if (check < min) {
@@ -484,8 +486,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                         dstOff++;
                     }
                 } else {                                                // Loop for the 'double' version.
-                    final double min = cnv.minimum;
-                    final double max = cnv.maximum;
+                    final double min = converse.minimum;
+                    final double max = converse.maximum;
                     while (--count >= 0) {
                         final double check = dstPts[dstOff];
                         if (check < min) {
@@ -563,13 +565,13 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
             last = category;
         }
-        value = category.transferFunction.transform(value);
+        value = category.toConverse.transform(value);
         if (extrapolation != null) {
             double bound;
-            if (value < (bound = category.converted.minimum)) return bound;
-            if (value > (bound = category.converted.maximum)) return bound;
+            if (value < (bound = category.converse.minimum)) return bound;
+            if (value > (bound = category.converse.maximum)) return bound;
         }
-        assert category == converted.search(value).converted : category;
+        assert category == converse.search(value).converse : category;
         return value;
     }
 
@@ -592,7 +594,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
             last = category;
         }
-        return category.transferFunction.derivative(value);
+        return category.toConverse.derivative(value);
     }
 
     /**
@@ -626,7 +628,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      */
     @Override
     public boolean isIdentity() {
-        return converted == this;
+        return converse == this;
     }
 
     /**
@@ -635,7 +637,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final MathTransform1D inverse() {
-        return converted;
+        return converse;
     }
 
     /**

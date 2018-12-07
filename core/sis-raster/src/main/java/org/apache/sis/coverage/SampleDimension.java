@@ -25,8 +25,6 @@ import java.util.Optional;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
@@ -99,7 +97,38 @@ public class SampleDimension implements Serializable {
      *
      * @see #getTransferFunction()
      */
-    private transient MathTransform1D transferFunction;
+    private final MathTransform1D transferFunction;
+
+    /**
+     * The {@code SampleDimension} that describes values after {@linkplain #getTransferFunction() transfer function}
+     * has been applied, or if this {@code SampleDimension} is already converted then the original sample dimension.
+     * May be {@code null} if this sample dimension has no transfer function, or {@code this} if the transfer function
+     * is the identity function.
+     *
+     * <p>This field establishes a bidirectional navigation between sample values and real values.
+     * This is in contrast with methods named {@link #converted()}, which establish a unidirectional
+     * navigation from sample values to real values.</p>
+     *
+     * @see #converted()
+     * @see Category#converse
+     * @see CategoryList#converse
+     */
+    private final SampleDimension converse;
+
+    /**
+     * Creates a new sample dimension for values that are already converted to real values.
+     * This transfer function is set to identity, which implies that this constructor should
+     * be invoked only for sample dimensions having at least one quantitative category.
+     *
+     * @param  original  the original sample dimension for packed values.
+     */
+    private SampleDimension(final SampleDimension original) {
+        converse         = original;
+        name             = original.name;
+        categories       = original.categories.converse;
+        transferFunction = Category.identity();
+        assert hasQuantitative();
+    }
 
     /**
      * Creates a sample dimension with the specified name and categories.
@@ -123,21 +152,29 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
             }
         }
-        this.name        = Types.toInternationalString(name);
-        this.categories  = list;
-        transferFunction = list.getTransferFunction();
+        this.name       = Types.toInternationalString(name);
+        this.categories = list;
+        if (list.range == null) {               // !hasQuantitative() inlined since we can not yet invoke that method.
+            transferFunction = null;
+            converse = this;
+        } else if (list == list.converse) {
+            transferFunction = Category.identity();
+            converse = this;
+        } else {
+            transferFunction = list.getTransferFunction();
+            converse = new SampleDimension(this);
+        }
     }
 
     /**
-     * Computes transient fields after deserialization.
+     * Returns the sample dimension that describes real values. This method establishes a unidirectional navigation
+     * from sample values to real values. This is in contrast to {@link #converse}, which establish a bidirectional
+     * navigation.
      *
-     * @param  in  the input stream from which to deserialize a sample dimension.
-     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     * @see #forConvertedValues(boolean)
      */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        transferFunction = categories.getTransferFunction();
+    private SampleDimension converted() {
+        return (converse != null && transferFunction != null && !transferFunction.isIdentity()) ? converse : this;
     }
 
     /**
@@ -164,6 +201,17 @@ public class SampleDimension implements Serializable {
     }
 
     /**
+     * Returns {@code true} if this list contains at least one quantitative category.
+     * We use the converted range has a criterion, since it shall be null if the result
+     * of all conversions is NaN.
+     *
+     * @see Category#isQuantitative()
+     */
+    private boolean hasQuantitative() {
+        return converted().categories.range != null;
+    }
+
+    /**
      * Returns the values to indicate "no data" for this sample dimension.
      *
      * @return the values to indicate no data values for this sample dimension, or an empty set if none.
@@ -171,39 +219,42 @@ public class SampleDimension implements Serializable {
      *         because some ranges contain an infinite amount of values.
      */
     public Set<Number> getNoDataValues() {
-        if (!categories.hasQuantitative()) {
-            return Collections.emptySet();
-        }
-        final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
-        Class<? extends Number> widestClass = Byte.class;
-        int count = 0;
-        for (final Category c : categories) {
-            if (!c.isQuantitative()) {
-                if (!c.range.isBounded()) {
-                    throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, c.range));
+        if (hasQuantitative()) {
+            final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
+            Class<? extends Number> widestClass = Byte.class;
+            int count = 0;
+            for (final Category category : categories) {
+                final NumberRange<?> range = category.range;
+                if (range != null && !category.isQuantitative()) {
+                    if (!range.isBounded()) {
+                        throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
+                    }
+                    widestClass = Numbers.widestClass(widestClass, range.getElementType());
+                    ranges[count++] = range;
                 }
-                widestClass = Numbers.widestClass(widestClass, c.range.getElementType());
-                ranges[count++] = c.range;
+            }
+            if (count != 0) {
+                final Set<Number> noDataValues = new TreeSet<>();
+                for (int i=0; i<count; i++) {
+                    final NumberRange<?> range = ranges[i];
+                    final Number minimum = range.getMinValue();
+                    final Number maximum = range.getMaxValue();
+                    if (range.isMinIncluded()) noDataValues.add(Numbers.cast(minimum, widestClass));
+                    if (range.isMaxIncluded()) noDataValues.add(Numbers.cast(maximum, widestClass));
+                    if (Numbers.isInteger(range.getElementType())) {
+                        long value = minimum.longValue() + 1;       // If value was inclusive, then it has already been added to the set.
+                        long stop  = maximum.longValue() - 1;
+                        while (value <= stop) {
+                            noDataValues.add(Numbers.wrap(value, widestClass));
+                        }
+                    } else if (!minimum.equals(maximum)) {
+                        throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
+                    }
+                }
+                return noDataValues;
             }
         }
-        final Set<Number> noDataValues = new TreeSet<>();
-        for (int i=0; i<count; i++) {
-            final NumberRange<?> range = ranges[i];
-            final Number minimum = range.getMinValue();
-            final Number maximum = range.getMaxValue();
-            if (range.isMinIncluded()) noDataValues.add(Numbers.cast(minimum, widestClass));
-            if (range.isMaxIncluded()) noDataValues.add(Numbers.cast(maximum, widestClass));
-            if (Numbers.isInteger(range.getElementType())) {
-                long value = minimum.longValue() + 1;       // If value was inclusive, then it has already been added to the set.
-                long stop  = maximum.longValue() - 1;
-                while (value <= stop) {
-                    noDataValues.add(Numbers.wrap(value, widestClass));
-                }
-            } else if (!minimum.equals(maximum)) {
-                throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
-            }
-        }
-        return noDataValues;
+        return Collections.emptySet();
     }
 
     /**
@@ -229,7 +280,7 @@ public class SampleDimension implements Serializable {
      */
     public Optional<MeasurementRange<?>> getMeasurementRange() {
         // A ClassCastException below would be a bug in our constructors.
-        return Optional.ofNullable((MeasurementRange<?>) categories.converted.range);
+        return Optional.ofNullable((MeasurementRange<?>) converted().categories.range);
     }
 
     /**
@@ -261,10 +312,11 @@ public class SampleDimension implements Serializable {
     public Optional<TransferFunction> getTransferFunctionFormula() {
         MathTransform1D tr = null;
         for (final Category category : categories) {
-            if (category.isQuantitative()) {
+            final Optional<MathTransform1D> c = category.getTransferFunction();
+            if (c.isPresent()) {
                 if (tr == null) {
-                    tr = category.transferFunction;
-                } else if (!tr.equals(category.transferFunction)) {
+                    tr = c.get();
+                } else if (!tr.equals(c.get())) {
                     throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSimplifyTransferFunction_1));
                 }
             }
@@ -293,7 +345,8 @@ public class SampleDimension implements Serializable {
      */
     public Optional<Unit<?>> getUnits() {
         Unit<?> main = null;
-        for (final Category c : categories.converted) {
+        final SampleDimension converted = converted();
+        for (final Category c : converted.categories) {
             final NumberRange<?> r = c.range;
             if (r instanceof MeasurementRange<?>) {
                 final Unit<?> unit = ((MeasurementRange<?>) r).unit();
@@ -301,13 +354,32 @@ public class SampleDimension implements Serializable {
                     if (main != null && !main.equals(unit)) {
                         throw new IllegalStateException();
                     }
-                    if (main == null || c == categories.converted.main) {
+                    if (main == null || c == converted.categories.main) {
                         main = unit;
                     }
                 }
             }
         }
         return Optional.ofNullable(main);
+    }
+
+    /**
+     * Returns a sample dimension that describes real values or sample values, depending if {@code converted} is {@code true}
+     * or {@code false} respectively.  If there is no {@linkplain #getTransferFunction() transfer function}, then this method
+     * returns {@code this}.
+     *
+     * @param  converted  {@code true} for a sample dimension representing converted values,
+     *                    or {@code false} for a sample dimension representing sample values.
+     * @return a sample dimension representing converted or sample values, depending on {@code converted} argument value.
+     *         May be {@code this} but never {@code null}.
+     */
+    public SampleDimension forConvertedValues(final boolean converted) {
+        if (converse != null && transferFunction != null) {
+            if (transferFunction.isIdentity() != converted) {
+                return converse;
+            }
+        }
+        return this;
     }
 
     /**
