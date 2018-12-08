@@ -17,10 +17,13 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.Charset;
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.logging.LogRecord;
+import java.net.URI;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.NameSpace;
@@ -31,7 +34,8 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -41,6 +45,7 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -49,6 +54,7 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -62,7 +68,7 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.8
  * @module
  */
-public class GeoTiffStore extends DataStore {
+public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
      * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
@@ -94,6 +100,13 @@ public class GeoTiffStore extends DataStore {
      * @see #getMetadata()
      */
     private Metadata metadata;
+
+    /**
+     * Description of images in this GeoTIFF files. This collection is created only when first needed.
+     *
+     * @see #components()
+     */
+    private Collection<GridCoverageResource> components;
 
     /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
@@ -139,8 +152,6 @@ public class GeoTiffStore extends DataStore {
      * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
      * @return parameters used for opening this data store, or {@code null} if not available.
-     *
-     * @since 0.8
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
@@ -229,6 +240,64 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
+     * Returns descriptions of all images in this GeoTIFF file.
+     * Images are not immediately loaded.
+     *
+     * <p>If an error occurs during iteration in the returned collection,
+     * an unchecked {@link BackingStoreException} will be thrown with a {@link DataStoreException} as its cause.</p>
+     *
+     * @return descriptions of all images in this GeoTIFF file.
+     * @throws DataStoreException if an error occurred while fetching the image descriptions.
+     *
+     * @since 1.0
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Collection<GridCoverageResource> components() throws DataStoreException {
+        if (components == null) {
+            components = new LazySet<GridCoverageResource>(new Iterator<GridCoverageResource>() {
+                /** Index of the next image to fetch, or -1 if we fetched all of them. */
+                private int index;
+
+                /** Value to be returned by {@link #next()}, or {@cod null} if not yet determined. */
+                private GridCoverageResource next;
+
+                /** Returns {@code true} if there is more resources. */
+                @Override public boolean hasNext() {
+                    if (next != null) {
+                        return true;
+                    }
+                    final int i = index;
+                    if (i >= 0) {
+                        index = -1;                     // Set now in case of failure.
+                        try {
+                            next = reader().getImageFileDirectory(i);
+                        } catch (IOException e) {
+                            throw new BackingStoreException(errorIO(e));
+                        } catch (DataStoreException e) {
+                            throw new BackingStoreException(e);
+                        }
+                        if (next != null) {
+                            index = i+1;
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                /** Returns the next element. */
+                @Override public GridCoverageResource next() {
+                    if (!hasNext()) throw new NoSuchElementException();
+                    final GridCoverageResource r = next;
+                    next = null;
+                    return r;
+                }
+            });
+        }
+        return components;      // Safe to return because unmodifiable.
+    }
+
+    /**
      * Returns the image at the given index. Images numbering starts at 1.
      *
      * @param  sequence  string representation of the image index, starting at 1.
@@ -236,7 +305,7 @@ public class GeoTiffStore extends DataStore {
      * @throws DataStoreException if the requested image can not be obtained.
      */
     @Override
-    public Resource findResource(final String sequence) throws DataStoreException {
+    public GridCoverageResource findResource(final String sequence) throws DataStoreException {
         Exception cause;
         int index;
         try {

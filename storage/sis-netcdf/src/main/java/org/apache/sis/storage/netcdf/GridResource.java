@@ -210,7 +210,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                                 isFillValue = false;                              // Declare only one fill value.
                                 builder.setBackground(name, n);
                             } else {
-                                builder.addQualitative(name, n);
+                                builder.addQualitative(name, n, n);
                             }
                         }
                     }

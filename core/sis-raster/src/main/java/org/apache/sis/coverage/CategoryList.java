@@ -107,10 +107,11 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * The {@code CategoryList} that describes values after {@linkplain #getTransferFunction() transfer function}
      * has been applied, or if this {@code CategoryList} is already converted then the original {@code CategoryList}.
      * Never null, but may be {@code this} if the transfer function is the identity function.
+     * May also be {@link #EMPTY} if this category list has no quantitative category.
      *
-     * <p>This field establishes a bidirectional navigation between sample values and real values.
-     * This is in contrast with methods named {@code converted()}, which establish a unidirectional
-     * navigation from sample values to real values.</p>
+     * <p>Exempt for the {@link #EMPTY} special case, this field establishes a bidirectional navigation between
+     * sample values and real values. This is in contrast with methods named {@code converted()}, which establish
+     * a unidirectional navigation from sample values to real values.</p>
      *
      * @see Category#converse
      * @see SampleDimension#converse
@@ -198,14 +199,20 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          */
         Category extrapolation = null;
         if (converse == null) {
-            boolean hasConversion = false;
+            boolean hasConversion   = false;
+            boolean hasQuantitative = false;
             final Category[] convertedCategories = new Category[categories.length];
             for (int i=0; i < convertedCategories.length; i++) {
                 final Category category = categories[i];
-                hasConversion |= (category != category.converse);
+                hasConversion   |= (category != category.converse);
+                hasQuantitative |= (category.converse.range != null);
                 convertedCategories[i] = category.converse;
             }
-            converse = hasConversion ? new CategoryList(convertedCategories, this) : this;
+            if (hasQuantitative) {
+                converse = hasConversion ? new CategoryList(convertedCategories, this) : this;
+            } else {
+                converse = EMPTY;
+            }
         } else {
             for (int i=categories.length; --i >= 0;) {
                 final Category category = categories[i];

@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.NoSuchFileException;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.ImageIO;
 import java.sql.Connection;
@@ -836,7 +837,11 @@ public class StorageConnector implements Serializable {
         } catch (DataStoreException e) {
             throw e;
         } catch (Exception e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+            short key = Errors.Keys.CanNotOpen_1;
+            if (e instanceof NoSuchFileException) {
+                key = Errors.Keys.FileNotFound_1;
+            }
+            throw new DataStoreException(Errors.format(key, getStorageName()), e);
         }
         return type.cast(view);
     }

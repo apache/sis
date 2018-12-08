@@ -107,6 +107,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short AxisChanges = 8;
 
         /**
+         * Band {0}
+         */
+        public static final short Band_1 = 161;
+
+        /**
          * Barometric altitude
          */
         public static final short BarometricAltitude = 9;

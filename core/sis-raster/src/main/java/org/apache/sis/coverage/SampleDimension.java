@@ -176,7 +176,7 @@ public class SampleDimension implements Serializable {
         this.name       = name;
         this.background = background;
         this.categories = list;
-        if (list.range == null) {               // !hasQuantitative() inlined since we can not yet invoke that method.
+        if (list.converse.range == null) {      // !hasQuantitative() inlined since we can not yet invoke that method.
             transferFunction = null;
             converse = null;
         } else if (list == list.converse) {
@@ -535,18 +535,30 @@ public class SampleDimension implements Serializable {
         }
 
         /**
-         * Creates a range for the given number. We use the static factory methods instead than the
-         * {@link NumberRange} constructor for sharing existing range instances. This is also a way
+         * Sets the name of the sample dimension as a band number.
+         * This method should be used only when no more descriptive name is available.
+         *
+         * @param  band  sequence identifier of the sample dimension to create.
+         * @return {@code this}, for method call chaining.
+         */
+        public Builder setName(final int band) {
+            dimensionName = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, band);
+            return this;
+        }
+
+        /**
+         * Creates a range for the given minimum and maximum values. We use the static factory methods instead
+         * than the {@link NumberRange} constructor for sharing existing range instances. This is also a way
          * to ensure that the number type is one of the primitive wrappers.
          */
-        private static NumberRange<?> range(final Number sample) {
-            switch (Numbers.getEnumConstant(sample.getClass())) {
-                case Numbers.BYTE:    {byte   v = sample.byteValue();   return NumberRange.create(v, true, v, true);}
-                case Numbers.SHORT:   {short  v = sample.shortValue();  return NumberRange.create(v, true, v, true);}
-                case Numbers.INTEGER: {int    v = sample.intValue();    return NumberRange.create(v, true, v, true);}
-                case Numbers.LONG:    {long   v = sample.longValue();   return NumberRange.create(v, true, v, true);}
-                case Numbers.FLOAT:   {float  v = sample.floatValue();  return NumberRange.create(v, true, v, true);}
-                default:              {double v = sample.doubleValue(); return NumberRange.create(v, true, v, true);}
+        private static NumberRange<?> range(final Class<?> type, final Number minimum, final Number maximum) {
+            switch (Numbers.getEnumConstant(type)) {
+                case Numbers.BYTE:    return NumberRange.create(minimum.byteValue(),   true, maximum.byteValue(),   true);
+                case Numbers.SHORT:   return NumberRange.create(minimum.shortValue(),  true, maximum.shortValue(),  true);
+                case Numbers.INTEGER: return NumberRange.create(minimum.intValue(),    true, maximum.intValue(),    true);
+                case Numbers.LONG:    return NumberRange.create(minimum.longValue(),   true, maximum.longValue(),   true);
+                case Numbers.FLOAT:   return NumberRange.create(minimum.floatValue(),  true, maximum.floatValue(),  true);
+                default:              return NumberRange.create(minimum.doubleValue(), true, maximum.doubleValue(), true);
             }
         }
 
@@ -566,7 +578,7 @@ public class SampleDimension implements Serializable {
             if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
-            final NumberRange<?> samples = range(sample);
+            final NumberRange<?> samples = range(sample.getClass(), sample, sample);
             background = samples.getMinValue();
             toNaN.background = background.doubleValue();
             categories.add(new Category(name, samples, null, null, toNaN));
@@ -673,19 +685,20 @@ public class SampleDimension implements Serializable {
         }
 
         /**
-         * Adds a qualitative category for samples of the given value.
+         * Adds a qualitative category for samples in the given range of values.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
          *
-         * @param  name    the category name as a {@link String} or {@link InternationalString} object,
-         *                 or {@code null} for a default "no data" name.
-         * @param  sample  the sample value. Can not be NaN.
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object,
+         *                  or {@code null} for a default "no data" name.
+         * @param  minimum  the minimum sample value, inclusive. Can not be NaN.
+         * @param  maximum  the maximum sample value, inclusive. Can not be NaN.
          * @return {@code this}, for method call chaining.
-         * @throws IllegalArgumentException if the given value is NaN.
+         * @throws IllegalArgumentException if a given value is NaN or if the range is empty.
          */
-        public Builder addQualitative(final CharSequence name, final Number sample) {
-            return addQualitative(name, range(sample));
+        public Builder addQualitative(final CharSequence name, final Number minimum, final Number maximum) {
+            return addQualitative(name, range(Numbers.widestClass(minimum, maximum), minimum, maximum));
         }
 
         /**
@@ -849,6 +862,18 @@ defName:    if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
             }
             return new SampleDimension(name, background, categories);
+        }
+
+        /**
+         * Reset this builder to the same state than after construction.
+         * The sample dimension name, background values and all categories are discarded.
+         * This method can be invoked when the same builder is reused for creating more than one sample dimension.
+         */
+        public void clear() {
+            dimensionName = null;
+            background    = null;
+            categories.clear();
+            toNaN.clear();
         }
     }
 }

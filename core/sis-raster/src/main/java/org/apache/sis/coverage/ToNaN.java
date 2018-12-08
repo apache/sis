@@ -49,6 +49,16 @@ final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     }
 
     /**
+     * Sets this function to the same state than after construction.
+     * This method is invoked when the same builder is reused for creating many sample dimensions.
+     */
+    @Override
+    public void clear() {
+        super.clear();
+        background = Double.NaN;
+    }
+
+    /**
      * Returns a NaN ordinal value for the given sample value.
      * The returned value can be given to {@link MathFunctions#toNanFloat(int)}.
      */

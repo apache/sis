@@ -29,15 +29,18 @@ import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
@@ -329,8 +332,17 @@ final class ImageFileDirectory extends AbstractGridResource {
      *   <li>{@link GridGeometryBuilder#asciiParameters}</li>
      *   <li>{@link GridGeometryBuilder#modelTiePoints}</li>
      * </ul>
+     *
+     * @see #getGridGeometry()
      */
     private GridGeometryBuilder referencing;
+
+    /**
+     * The sample dimensions, or {@code null} if not yet created.
+     *
+     * @see #getSampleDimensions()
+     */
+    private List<SampleDimension> sampleDimensions;
 
     /**
      * Returns {@link #referencing}, created when first needed. We delay its creation since
@@ -1248,8 +1260,21 @@ final class ImageFileDirectory extends AbstractGridResource {
      * Returns the ranges of sample values together with the conversion from samples to real values.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
-        throw new DataStoreContentException("Not supported yet.");
+        if (sampleDimensions == null) {
+            final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
+            final SampleDimension.Builder builder = new SampleDimension.Builder();
+            final InternationalString name = Vocabulary.formatInternational(Vocabulary.Keys.Value);
+            for (int band = 0; band < samplesPerPixel;) {
+                builder.addQualitative(name, minValues.get(Math.min(band, minValues.size()-1)),
+                                             maxValues.get(Math.min(band, maxValues.size()-1)));
+                dimensions[band] = builder.setName(++band).build();
+                builder.clear();
+            }
+            sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
+        }
+        return sampleDimensions;        // Safe because unmodifiable.
     }
 
     /**
