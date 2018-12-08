@@ -200,14 +200,13 @@ public class Category implements Serializable {
      *                    The same set shall be given to all {@code Category} created for the same sample dimension.
      *                    Content can be discarded after all categories have been created.
      */
-    protected Category(final CharSequence name, final NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
+    protected Category(final CharSequence name, NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
              final Set<Integer> padValues)
     {
         ArgumentChecks.ensureNonEmpty("name", name);
         ArgumentChecks.ensureNonNull("samples", samples);
         ArgumentChecks.ensureNonNull("padValues", padValues);
         this.name    = Types.toInternationalString(name);
-        this.range   = samples;
         this.minimum = samples.getMinDouble(true);
         this.maximum = samples.getMaxDouble(true);
         /*
@@ -227,6 +226,10 @@ public class Category implements Serializable {
                 toConverse = toUnits;
                 if (toUnits.isIdentity()) {
                     converse = this;
+                    if (!(samples instanceof MeasurementRange<?>)) {
+                        samples = new MeasurementRange<>(samples, units);   // Avoid ClassCastException in getMeasurementRange().
+                    }
+                    range = samples;
                     return;
                 }
                 toSamples = toUnits.inverse();
@@ -265,6 +268,7 @@ search:         if (!padValues.add(ordinal)) {
                 final double value = (minimum > 0) ? minimum : (maximum <= 0) ? maximum : 0d;
                 toSamples = (MathTransform1D) MathTransforms.linear(0, value);
             }
+            range = samples;
             converse = new ConvertedCategory(this, toSamples, toUnits != null, units);
         } catch (TransformException e) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalTransferFunction_1, name), e);

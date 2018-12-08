@@ -256,21 +256,17 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
 
     /**
      * Returns the <cite>transfer function</cite> from sample values to real values, including conversion
-     * of "no data" value to NaN.  Callers should ensure that there is at least one quantitative category
+     * of "no data" values to NaNs. Callers shall ensure that there is at least one quantitative category
      * before to invoke this method.
      *
      * @see SampleDimension#getTransferFunction()
      */
     final MathTransform1D getTransferFunction() {
-        MathTransform1D tr = null;
-        final int n = categories.length;
-        if (n != 0) {
-            tr = categories[0].toConverse;
-            for (int i=1; i<n; i++) {
-                if (!tr.equals(categories[i].toConverse)) {
-                    tr = this;
-                    break;
-                }
+        MathTransform1D tr = categories[0].toConverse;          // See condition in javadoc.
+        for (int i=categories.length; --i >= 1;) {
+            if (!tr.equals(categories[i].toConverse)) {
+                tr = this;
+                break;
             }
         }
         return tr;

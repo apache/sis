@@ -19,6 +19,7 @@ package org.apache.sis.coverage;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -48,10 +49,11 @@ public final strictfp class CategoryListTest extends TestCase {
      * Asserts that the specified categories are sorted.
      * This method ignores {@code NaN} values.
      */
-    private static void assertSorted(final Category[] categories) {
-        for (int i=1; i<categories.length; i++) {
-            final Category current  = categories[i  ];
-            final Category previous = categories[i-1];
+    private static void assertSorted(final List<Category> categories) {
+        final int size = categories.size();
+        for (int i=1; i<size; i++) {
+            final Category current  = categories.get(i  );
+            final Category previous = categories.get(i-1);
             assertFalse( current.minimum >  current.maximum);
             assertFalse(previous.minimum > previous.maximum);
             assertFalse(Category.compare(previous.maximum, current.minimum) > 0);
@@ -92,7 +94,7 @@ public final strictfp class CategoryListTest extends TestCase {
         // Removes the wrong category. Now, construction should succeed.
         categories = Arrays.copyOf(categories, categories.length - 1);
         assertNotConverted(new CategoryList(categories, null));
-        assertSorted(categories);
+        assertSorted(Arrays.asList(categories));
     }
 
     /**
@@ -177,6 +179,7 @@ public final strictfp class CategoryListTest extends TestCase {
     @Test
     public void testRanges() {
         final CategoryList list = new CategoryList(categories(), null);
+        assertSorted(list);
         assertTrue  ("isMinIncluded",           list.range.isMinIncluded());
         assertFalse ("isMaxIncluded",           list.range.isMaxIncluded());
         assertFalse ("converse.isMinIncluded",  list.converse.range.isMinIncluded());     // Because computed from maxValue before conversion.
@@ -318,6 +321,26 @@ public final strictfp class CategoryListTest extends TestCase {
                 assertEquals(bits1, bits2);
             }
             assertEquals(expected, actual, CategoryTest.EPS);
+        }
+    }
+
+    /**
+     * Tests construction from categories that already describe real values.
+     * The constructor should have replaced {@link ConvertedCategory} instances
+     * by plain {@link Category} instances without relationship with the sample values.
+     */
+    @Test
+    public void testFromConvertedCategories() {
+        final Category[] categories = categories();
+        for (int i=0; i<categories.length; i++) {
+            categories[i] = categories[i].converse;
+        }
+        final CategoryList list = new CategoryList(categories, null);
+        assertSorted(list);
+        for (int i=list.size(); --i >= 0;) {
+            final Category category = list.get(i);
+            assertSame(category, category.converse);
+            assertTrue(category.toConverse.isIdentity());
         }
     }
 }

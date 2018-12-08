@@ -36,38 +36,46 @@ import static org.junit.Assert.*;
  */
 public final strictfp class SampleDimensionTest extends TestCase {
     /**
-     * Tests the creation of a sample dimensions using builder, then verifies the dimension properties.
+     * Tests a sample dimension having one quantitative category and a few "no data" values.
      */
     @Test
-    public void testBuilder() {
+    public void testQuantitativeWithMissingValues() {
         final int    lower  = 10;
         final int    upper  = 200;
         final double scale  = 0.1;
         final double offset = 5.0;
-        final SampleDimension test = new SampleDimension.Builder()
+        final SampleDimension dimension = new SampleDimension.Builder()
                 .addQualitative(null,      0)           // Default to "No data" name, potentially locale.
                 .addQualitative("Clouds",  1)
                 .addQualitative("Lands", 255)
                 .addQuantitative("Temperature", lower, upper, scale, offset, Units.CELSIUS)
                 .build();
 
-        final Set<Number> nodataValues = test.getNoDataValues();
+        assertEquals("name", "Temperature", String.valueOf(dimension.getName()));
+
+        final Set<Number> nodataValues = dimension.getNoDataValues();
         assertArrayEquals(new Integer[] {0, 1, 255}, nodataValues.toArray());
 
-        final TransferFunction tr = test.getTransferFunctionFormula().get();
-        assertFalse ("identity",  test.getTransferFunction().get().isIdentity());
+        NumberRange<?> range = dimension.getSampleRange().get();
+        assertEquals("minimum",   0, range.getMinDouble(), STRICT);
+        assertEquals("maximum", 255, range.getMaxDouble(), STRICT);
+
+        range = dimension.getMeasurementRange().get();
+        assertEquals("minimum", lower*scale+offset, range.getMinDouble(true),  CategoryTest.EPS);
+        assertEquals("maximum", upper*scale+offset, range.getMaxDouble(false), CategoryTest.EPS);
+        assertEquals("units",   Units.CELSIUS,      dimension.getUnits().get());
+
+        final TransferFunction tr = dimension.getTransferFunctionFormula().get();
+        assertFalse ("identity",  dimension.getTransferFunction().get().isIdentity());
         assertFalse ("identity",  tr.getTransform().isIdentity());
         assertEquals("scale",     scale,  tr.getScale(),  STRICT);
         assertEquals("offset",    offset, tr.getOffset(), STRICT);
 
-        NumberRange<?> range = test.getSampleRange().get();
-        assertEquals("minimum",   0,   range.getMinDouble(), STRICT);
-        assertEquals("maximum",   255, range.getMaxDouble(), STRICT);
-
-        range = test.getMeasurementRange().get();
-        assertEquals("minimum", lower*scale+offset, range.getMinDouble(true),  CategoryTest.EPS);
-        assertEquals("maximum", upper*scale+offset, range.getMaxDouble(false), CategoryTest.EPS);
-
-        assertEquals("units", Units.CELSIUS, test.getUnits().get());
+        final SampleDimension converted = dimension.forConvertedValues(true);
+        assertNotSame(dimension,  converted);
+        assertSame   (dimension,  dimension.forConvertedValues(false));
+        assertSame   (dimension,  converted.forConvertedValues(false));
+        assertSame   (converted,  converted.forConvertedValues(true));
+        assertTrue   ("identity", converted.getTransferFunction().get().isIdentity());
     }
 }

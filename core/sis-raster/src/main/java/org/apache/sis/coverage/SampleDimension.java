@@ -152,15 +152,16 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
             }
         }
-        this.name       = Types.toInternationalString(name);
+        this.name = Types.toInternationalString(name);
         this.categories = list;
         if (list.range == null) {               // !hasQuantitative() inlined since we can not yet invoke that method.
             transferFunction = null;
-            converse = this;
+            converse = null;
         } else if (list == list.converse) {
             transferFunction = Category.identity();
             converse = this;
         } else {
+            assert !list.isEmpty();             // Verified by inlined !hasQuantitative() above.
             transferFunction = list.getTransferFunction();
             converse = new SampleDimension(this);
         }
@@ -174,7 +175,8 @@ public class SampleDimension implements Serializable {
      * @see #forConvertedValues(boolean)
      */
     private SampleDimension converted() {
-        return (converse != null && transferFunction != null && !transferFunction.isIdentity()) ? converse : this;
+        // Transfer function shall never be null if 'converse' is non-null.
+        return (converse != null && !transferFunction.isIdentity()) ? converse : this;
     }
 
     /**
@@ -374,10 +376,9 @@ public class SampleDimension implements Serializable {
      *         May be {@code this} but never {@code null}.
      */
     public SampleDimension forConvertedValues(final boolean converted) {
-        if (converse != null && transferFunction != null) {
-            if (transferFunction.isIdentity() != converted) {
-                return converse;
-            }
+        // Transfer function shall never be null if 'converse' is non-null.
+        if (converse != null && transferFunction.isIdentity() != converted) {
+            return converse;
         }
         return this;
     }
