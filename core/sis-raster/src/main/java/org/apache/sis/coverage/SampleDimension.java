@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Collection;
 import java.util.Collections;
@@ -510,7 +509,7 @@ public class SampleDimension implements Serializable {
          * The ordinal NaN values used for this sample dimension.
          * The {@link Category} constructor uses this set for avoiding collisions.
          */
-        private final Set<Integer> padValues;
+        private final ToNaN toNaN;
 
         /**
          * Creates an initially empty builder for a sample dimension.
@@ -518,7 +517,7 @@ public class SampleDimension implements Serializable {
          */
         public Builder() {
             categories = new ArrayList<>();
-            padValues  = new HashSet<>();
+            toNaN      = new ToNaN();
         }
 
         /**
@@ -568,8 +567,9 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
             final NumberRange<?> samples = range(sample);
-            categories.add(new Category(name, samples, null, null, padValues));
             background = samples.getMinValue();
+            toNaN.background = background.doubleValue();
+            categories.add(new Category(name, samples, null, null, toNaN));
             return this;
         }
 
@@ -703,7 +703,7 @@ public class SampleDimension implements Serializable {
             if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
             }
-            categories.add(new Category(name, samples, null, null, padValues));
+            categories.add(new Category(name, samples, null, null, toNaN));
             return this;
         }
 
@@ -811,10 +811,7 @@ public class SampleDimension implements Serializable {
          */
         public Builder addQuantitative(CharSequence name, NumberRange<?> samples, MathTransform1D toUnits, Unit<?> units) {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
-            if (units != null && toUnits.isIdentity() && samples != null && !(samples instanceof MeasurementRange<?>)) {
-                samples = new MeasurementRange<>(samples, units);
-            }
-            categories.add(new Category(name, samples, toUnits, units, padValues));
+            categories.add(new Category(name, samples, toUnits, units, toNaN));
             return this;
         }
 
@@ -842,11 +839,11 @@ public class SampleDimension implements Serializable {
          */
         public SampleDimension build() {
             InternationalString name = Types.toInternationalString(dimensionName);
-dfname:     if (name == null) {
+defName:    if (name == null) {
                 for (final Category category : categories) {
                     if (category.isQuantitative()) {
                         name = category.name;
-                        break dfname;
+                        break defName;
                     }
                 }
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);

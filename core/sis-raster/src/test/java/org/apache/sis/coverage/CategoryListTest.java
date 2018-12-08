@@ -16,8 +16,6 @@
  */
 package org.apache.sis.coverage;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -75,12 +73,12 @@ public final strictfp class CategoryListTest extends TestCase {
      */
     @Test
     public void testArgumentChecks() {
-        final Set<Integer> padValues = new HashSet<>();
+        final ToNaN toNaN = new ToNaN();
         Category[] categories = {
-            new Category("No data", NumberRange.create( 0, true,  0, true), null, null, padValues),
-            new Category("Land",    NumberRange.create(10, true, 10, true), null, null, padValues),
-            new Category("Clouds",  NumberRange.create( 2, true,  2, true), null, null, padValues),
-            new Category("Again",   NumberRange.create(10, true, 10, true), null, null, padValues)       // Range overlaps.
+            new Category("No data", NumberRange.create( 0, true,  0, true), null, null, toNaN),
+            new Category("Land",    NumberRange.create(10, true, 10, true), null, null, toNaN),
+            new Category("Clouds",  NumberRange.create( 2, true,  2, true), null, null, toNaN),
+            new Category("Again",   NumberRange.create(10, true, 10, true), null, null, toNaN)       // Range overlaps.
         };
         try {
             assertNotConverted(new CategoryList(categories.clone(), null));
@@ -163,13 +161,13 @@ public final strictfp class CategoryListTest extends TestCase {
      * Creates an array of category for {@link #testSearch()} and {@link #testTransform()}.
      */
     private static Category[] categories() {
-        final Set<Integer> padValues = new HashSet<>();
+        final ToNaN toNaN = new ToNaN();
         return new Category[] {
-            /*[0]*/ new Category("No data",     NumberRange.create(  0, true,   0, true), null, null, padValues),
-            /*[1]*/ new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, padValues),
-            /*[2]*/ new Category("Clouds",      NumberRange.create(  3, true,   3, true), null, null, padValues),
-            /*[3]*/ new Category("Temperature", NumberRange.create( 10, true, 100, false), (MathTransform1D) MathTransforms.linear(0.1, 5), null, padValues),
-            /*[4]*/ new Category("Foo",         NumberRange.create(100, true, 120, false), (MathTransform1D) MathTransforms.linear( -1, 3), null, padValues)
+            /*[0]*/ new Category("No data",     NumberRange.create(  0, true,   0, true), null, null, toNaN),
+            /*[1]*/ new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, toNaN),
+            /*[2]*/ new Category("Clouds",      NumberRange.create(  3, true,   3, true), null, null, toNaN),
+            /*[3]*/ new Category("Temperature", NumberRange.create( 10, true, 100, false), (MathTransform1D) MathTransforms.linear(0.1, 5), null, toNaN),
+            /*[4]*/ new Category("Foo",         NumberRange.create(100, true, 120, false), (MathTransform1D) MathTransforms.linear( -1, 3), null, toNaN)
         };
     }
 

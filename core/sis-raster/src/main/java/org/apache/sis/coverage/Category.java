@@ -16,10 +16,10 @@
  */
 package org.apache.sis.coverage;
 
-import java.util.Set;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Comparator;
+import java.util.function.DoubleToIntFunction;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
@@ -190,22 +190,23 @@ public class Category implements Serializable {
      * Constructs a qualitative or quantitative category. This constructor is accessible for sub-classing.
      * For other usages, {@link SampleDimension.Builder} should be used instead.
      *
-     * @param  name       the category name (mandatory).
-     * @param  samples    the minimum and maximum sample values (mandatory).
-     * @param  toUnits    the conversion from sample values to real values,
-     *                    or {@code null} for constructing a qualitative category.
-     * @param  units      the units of measurement, or {@code null} if not applicable.
-     *                    This is the target units after conversion by {@code toUnits}.
-     * @param  padValues  an initially empty set to be filled by this constructor for avoiding pad value collisions.
-     *                    The same set shall be given to all {@code Category} created for the same sample dimension.
-     *                    Content can be discarded after all categories have been created.
+     * @param  name     the category name (mandatory).
+     * @param  samples  the minimum and maximum sample values (mandatory).
+     * @param  toUnits  the conversion from sample values to real values,
+     *                  or {@code null} for constructing a qualitative category.
+     * @param  units    the units of measurement, or {@code null} if not applicable.
+     *                  This is the target units after conversion by {@code toUnits}.
+     * @param  toNaN    mapping from sample values to ordinal values to be supplied to {@link MathFunctions#toNanFloat(int)}.
+     *                  That mapping is used only if {@code toUnits} is {@code null}. That mapping is responsible to ensure that
+     *                  there is no ordinal value collision between different categories in the same {@link SampleDimension}.
+     *                  The input is a real number in the {@code samples} range and the output shall be a unique value between
+     *                  {@value MathFunctions#MIN_NAN_ORDINAL} and {@value MathFunctions#MAX_NAN_ORDINAL} inclusive.
      */
     protected Category(final CharSequence name, NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
-             final Set<Integer> padValues)
+             final DoubleToIntFunction toNaN)
     {
         ArgumentChecks.ensureNonEmpty("name", name);
         ArgumentChecks.ensureNonNull("samples", samples);
-        ArgumentChecks.ensureNonNull("padValues", padValues);
         this.name    = Types.toInternationalString(name);
         this.minimum = samples.getMinDouble(true);
         this.maximum = samples.getMaxDouble(true);
@@ -234,32 +235,8 @@ public class Category implements Serializable {
                 }
                 toSamples = toUnits.inverse();
             } else {
-                /*
-                 * For qualitative category, we need an ordinal in the [MIN_NAN_ORDINAL … MAX_NAN_ORDINAL] range.
-                 * This range is quite large (a few million of values) so using the sample directly usually work.
-                 * If it does not work, we will use an arbitrary value in that range.
-                 */
-                int ordinal = Math.round((float) minimum);
-                if (ordinal > MathFunctions.MAX_NAN_ORDINAL) {
-                    ordinal = (MathFunctions.MAX_NAN_ORDINAL + 1) / 2;
-                } else if (ordinal < MathFunctions.MIN_NAN_ORDINAL) {
-                    ordinal = MathFunctions.MIN_NAN_ORDINAL / 2;
-                }
-search:         if (!padValues.add(ordinal)) {
-                    /*
-                     * Following algorithms are inefficient, but those loops should be rarely needed.
-                     * They are executed only if many qualitative sample values are outside the range
-                     * of ordinal NaN values. The range allows a few million of values.
-                     */
-                    if (ordinal >= 0) {
-                        do if (padValues.add(++ordinal)) break search;
-                        while (ordinal < MathFunctions.MAX_NAN_ORDINAL);
-                    } else {
-                        do if (padValues.add(--ordinal)) break search;
-                        while (ordinal > MathFunctions.MIN_NAN_ORDINAL);
-                    }
-                    throw new IllegalStateException(Resources.format(Resources.Keys.TooManyQualitatives));
-                }
+                ArgumentChecks.ensureNonNull("toNaN", toNaN);
+                final int ordinal = toNaN.applyAsInt(minimum);
                 /*
                  * For qualitative category, the transfer function maps to NaN while the inverse function maps back
                  * to some value in the [minimum … maximum] range. We chose the value closest to positive zero.

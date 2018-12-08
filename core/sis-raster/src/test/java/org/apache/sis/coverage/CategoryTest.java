@@ -16,10 +16,7 @@
  */
 package org.apache.sis.coverage;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -76,12 +73,12 @@ public final strictfp class CategoryTest extends TestCase {
     @Test
     public void testQualitativeCategory() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final Set<Integer> padValues = new HashSet<>();
+        final ToNaN toNaN = new ToNaN();
         for (int pass=0; pass<20; pass++) {
             final int      sample    = random.nextInt(20);
-            final boolean  collision = padValues.contains(sample);
-            final Category category  = new Category("Random", NumberRange.create(sample, true, sample, true), null, null, padValues);
-            assertTrue("Allocated NaN ordinal", padValues.contains(sample));
+            final boolean  collision = toNaN.contains(sample);
+            final Category category  = new Category("Random", NumberRange.create(sample, true, sample, true), null, null, toNaN);
+            assertTrue("Allocated NaN ordinal", toNaN.contains(sample));
             /*
              * Verify properties on the category that we created.
              * The sample values are integers in our test.
@@ -151,7 +148,7 @@ public final strictfp class CategoryTest extends TestCase {
             final double  scale = 10*random.nextDouble() + 0.1;         // Must be positive for this test.
             final double offset = 10*random.nextDouble() - 5.0;
             final Category category = new Category("Random", NumberRange.create(lower, true, upper, true),
-                    (MathTransform1D) MathTransforms.linear(scale, offset), null, Collections.emptySet());
+                    (MathTransform1D) MathTransforms.linear(scale, offset), null, null);
 
             final Category converse = category.converse;
             assertNotSame    ("converse",           category, converse);
@@ -205,7 +202,7 @@ public final strictfp class CategoryTest extends TestCase {
             final double lower = random.nextDouble() * 5;
             final double upper = random.nextDouble() * 10 + lower;
             final Category category = new Category("Random", NumberRange.create(lower, true, upper, true),
-                    (MathTransform1D) MathTransforms.identity(1), null, Collections.emptySet());
+                    (MathTransform1D) MathTransforms.identity(1), null, null);
 
             assertSame       ("converse",           category,            category.converse);
             assertEquals     ("name",               "Random",            String.valueOf(category.name));
