@@ -83,12 +83,6 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private final Category[] categories;
 
     /**
-     * The "main" category, or {@code null} if there is none. The main category
-     * is the quantitative category with the widest range of sample values.
-     */
-    final Category main;
-
-    /**
      * The category to use if {@link #search(double)} is invoked with a sample value greater than all ranges in this list.
      * This is usually a reference to the last category to have a range of real values. A {@code null} value means that no
      * extrapolation should be used. By extension, a {@code null} value also means that {@link #search(double)} should not
@@ -130,7 +124,6 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         range         = null;
         minimums      = ArraysExt.EMPTY_DOUBLE;
         categories    = new Category[0];
-        main          = null;
         extrapolation = null;
         converse      = this;
     }
@@ -164,14 +157,20 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         this.categories = categories;
         /*
          * Constructs the array of Category.minimum values. During the loop, we make sure there is no overlapping ranges.
-         * We also take the "main" category as the category with the widest range of values.
          */
-        double widest = 0;
-        Category main = null;
         NumberRange<?> range = null;
         minimums = new double[categories.length];
         for (int i=categories.length; --i >= 0;) {
             final Category category = categories[i];
+            minimums[i] = category.minimum;
+            if (i != 0) {
+                final Category previous = categories[i-1];
+                if (Category.compare(category.minimum, previous.maximum) <= 0) {
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4, new Object[] {
+                                previous.name, previous.getRangeLabel(),
+                                category.name, category.getRangeLabel()}));
+                }
+            }
             final NumberRange<?> extent = category.range;
             if (extent != null) {
                 /*
@@ -184,26 +183,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                 }
                 range = range.unionAny(extent);
             }
-            final double minimum = category.minimum;
-            minimums[i] = minimum;
-            if (category.converse.range != null) {                          // Category.isQuantitative() inlined.
-                final double span = category.maximum - minimum;             // NaN if "converted qualitative" category.
-                if (span >= widest) {
-                    widest = span;
-                    main = category;
-                }
-            }
-            if (i != 0) {
-                final Category previous = categories[i-1];
-                if (Category.compare(minimum, previous.maximum) <= 0) {
-                    throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4, new Object[] {
-                                previous.name, previous.getRangeLabel(),
-                                category.name, category.getRangeLabel()}));
-                }
-            }
         }
-        this.main  = main;
-        this.last  = (main != null || categories.length == 0) ? main : categories[0];
         this.range = range;
         /*
          * At this point we have two branches:
@@ -237,6 +217,9 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         }
         this.extrapolation = extrapolation;
         this.converse      = converse;
+        if (categories.length != 0) {
+            last = categories[0];
+        }
     }
 
     /**
@@ -249,9 +232,10 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     private Object readResolve() throws ObjectStreamException {
         if (categories.length == 0) {
             return EMPTY;
+        } else {
+            last = categories[0];
+            return this;
         }
-        last = (main != null) ? main : categories[0];
-        return this;
     }
 
     /**

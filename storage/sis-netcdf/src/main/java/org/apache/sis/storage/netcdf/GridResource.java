@@ -191,25 +191,27 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                 builder.addQuantitative(data.getName(), range, mt, data.getUnit());
             }
             /*
-             * Adds the "no data" or "fill value" as qualitative categories.
+             * Adds the "missing value" or "fill value" as qualitative categories.
              */
             for (final String attribute : NODATA_ATTRIBUTES) {
                 InternationalString name = null;
+                boolean isFillValue = false;
                 for (final Object value : data.getAttributeValues(attribute, true)) {
                     if (value instanceof Number) {
                         final Number n = (Number) value;
                         final double fp = n.doubleValue();
-                        if (!builder.intersect(fp, fp)) {
+                        if (!builder.rangeCollides(fp, fp)) {
                             if (name == null) {
-                                short key = Vocabulary.Keys.Nodata;
-                                if (CDM.FILL_VALUE.equalsIgnoreCase(attribute)) {
-                                    key = Vocabulary.Keys.FillValue;
-                                }
-                                name = Vocabulary.formatInternational(key);
+                                isFillValue = CDM.FILL_VALUE.equalsIgnoreCase(attribute);
+                                name = Vocabulary.formatInternational(isFillValue ? Vocabulary.Keys.FillValue
+                                                                                  : Vocabulary.Keys.MissingValue);
                             }
-                            @SuppressWarnings({"unchecked", "rawtypes"})
-                            NumberRange<?> r = new NumberRange(value.getClass(), n, true, n, true);
-                            builder.addQualitative(name, r);
+                            if (isFillValue) {
+                                isFillValue = false;                              // Declare only one fill value.
+                                builder.setBackground(name, n);
+                            } else {
+                                builder.addQualitative(name, n);
+                            }
                         }
                     }
                 }

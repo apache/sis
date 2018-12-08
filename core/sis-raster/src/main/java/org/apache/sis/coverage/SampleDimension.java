@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
@@ -87,6 +88,14 @@ public class SampleDimension implements Serializable {
     private final InternationalString name;
 
     /**
+     * The background value, or {@code null} if unspecified. Should be a sample value of
+     * a qualitative category in the {@link #categories} list, but this is not mandatory.
+     *
+     * @see #getBackground()
+     */
+    private final Number background;
+
+    /**
      * The list of categories making this sample dimension. May be empty but shall never be null.
      */
     private final CategoryList categories;
@@ -121,23 +130,43 @@ public class SampleDimension implements Serializable {
      * be invoked only for sample dimensions having at least one quantitative category.
      *
      * @param  original  the original sample dimension for packed values.
+     * @param  bc        category of the background value in original sample dimension, or {@code null}.
      */
-    private SampleDimension(final SampleDimension original) {
+    private SampleDimension(final SampleDimension original, Category bc) {
         converse         = original;
         name             = original.name;
         categories       = original.categories.converse;
         transferFunction = Category.identity();
         assert hasQuantitative();
+        if (bc == null) {
+            background = null;
+        } else {
+            bc = bc.converse;
+            final NumberRange<?> range = bc.range;
+            if (range != null) {
+                background = range.getMinValue();
+            } else {
+                background = (float) bc.minimum;
+            }
+        }
     }
 
     /**
      * Creates a sample dimension with the specified name and categories.
-     * Note that {@link Builder} provides a more convenient way to create sample dimensions.
+     * The sample dimension name is used as a way to perform a band select
+     * by using human comprehensible descriptions instead of numbers.
+     * The background value is used for filling empty space in map reprojections.
+     * The background value (if specified) should be the value of a qualitative category
+     * present in the {@code categories} collection, but this is not mandatory.
      *
-     * @param name        the sample dimension title or description, or {@code null} for default.
-     * @param categories  the list of categories.
+     * <p>Note that {@link Builder} provides a more convenient way to create sample dimensions.</p>
+     *
+     * @param name        the sample dimension title or description.
+     * @param background  the background value, or {@code null} if none.
+     * @param categories  the list of categories. May be empty if none.
      */
-    public SampleDimension(CharSequence name, final Collection<? extends Category> categories) {
+    public SampleDimension(final InternationalString name, final Number background, final Collection<? extends Category> categories) {
+        ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("categories", categories);
         final CategoryList list;
         if (categories.isEmpty()) {
@@ -145,14 +174,8 @@ public class SampleDimension implements Serializable {
         } else {
             list = new CategoryList(categories.toArray(new Category[categories.size()]), null);
         }
-        if (name == null) {
-            if (list.main != null) {
-                name = list.main.name;
-            } else {
-                name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
-            }
-        }
-        this.name = Types.toInternationalString(name);
+        this.name       = name;
+        this.background = background;
         this.categories = list;
         if (list.range == null) {               // !hasQuantitative() inlined since we can not yet invoke that method.
             transferFunction = null;
@@ -163,7 +186,7 @@ public class SampleDimension implements Serializable {
         } else {
             assert !list.isEmpty();             // Verified by inlined !hasQuantitative() above.
             transferFunction = list.getTransferFunction();
-            converse = new SampleDimension(this);
+            converse = new SampleDimension(this, (background != null) ? list.search(background.doubleValue()) : null);
         }
     }
 
@@ -185,6 +208,8 @@ public class SampleDimension implements Serializable {
      * in order to perform band sub-setting as directed from a user request.
      *
      * @return the title or description of this sample dimension.
+     *
+     * @see org.opengis.metadata.content.RangeDimension#getSequenceIdentifier()
      */
     public InternationalString getName() {
         return name;
@@ -200,6 +225,16 @@ public class SampleDimension implements Serializable {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<Category> getCategories() {
         return categories;                      // Safe to return because immutable.
+    }
+
+    /**
+     * Returns the background value. If this sample dimensions has quantitative categories, then the background
+     * value should be one of the value returned by {@link #getNoDataValues()}. However this is not mandatory.
+     *
+     * @return the background value.
+     */
+    public Optional<Number> getBackground() {
+        return Optional.ofNullable(background);
     }
 
     /**
@@ -346,23 +381,22 @@ public class SampleDimension implements Serializable {
      * @see #getMeasurementRange()
      */
     public Optional<Unit<?>> getUnits() {
-        Unit<?> main = null;
+        Unit<?> unit = null;
         final SampleDimension converted = converted();
-        for (final Category c : converted.categories) {
-            final NumberRange<?> r = c.range;
+        for (final Category category : converted.categories) {
+            final NumberRange<?> r = category.range;
             if (r instanceof MeasurementRange<?>) {
-                final Unit<?> unit = ((MeasurementRange<?>) r).unit();
-                if (unit != null) {
-                    if (main != null && !main.equals(unit)) {
+                final Unit<?> c = ((MeasurementRange<?>) r).unit();
+                if (c != null) {
+                    if (unit == null) {
+                        unit = c;
+                    } else if (!unit.equals(c)) {
                         throw new IllegalStateException();
-                    }
-                    if (main == null || c == converted.categories.main) {
-                        main = unit;
                     }
                 }
             }
         }
-        return Optional.ofNullable(main);
+        return Optional.ofNullable(unit);
     }
 
     /**
@@ -404,7 +438,7 @@ public class SampleDimension implements Serializable {
         }
         if (object instanceof SampleDimension) {
             final SampleDimension that = (SampleDimension) object;
-            return name.equals(that.name) && categories.equals(that.categories);
+            return name.equals(that.name) && Objects.equals(background, that.background) && categories.equals(that.categories);
         }
         return false;
     }
@@ -429,6 +463,7 @@ public class SampleDimension implements Serializable {
      *
      * <ul>
      *   <li>An optional name for the {@code SampleDimension}.</li>
+     *   <li>A single optional category for the background value.</li>
      *   <li>An arbitrary amount of <cite>qualitative</cite> categories.</li>
      *   <li>An arbitrary amount of <cite>quantitative</cite> categories.</li>
      * </ul>
@@ -437,9 +472,10 @@ public class SampleDimension implements Serializable {
      * For example 0 = cloud, 1 = sea, 2 = land, <i>etc</i>.
      * A <cite>quantitative category</cite> is a range of sample values associated to numbers with units of measurement.
      * For example 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>.
-     * Those two kind of categories are created by the following methods:
+     * Those three kinds of category are created by the following methods:
      *
      * <ul>
+     *   <li>{@link #setBackground(CharSequence, Number)}</li>
      *   <li>{@link #addQualitative(CharSequence, NumberRange)}</li>
      *   <li>{@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}</li>
      * </ul>
@@ -459,6 +495,11 @@ public class SampleDimension implements Serializable {
          * Description for this sample dimension.
          */
         private CharSequence dimensionName;
+
+        /**
+         * The background value, or {@code null} if unspecified.
+         */
+        private Number background;
 
         /**
          * The categories for this sample dimension.
@@ -483,12 +524,52 @@ public class SampleDimension implements Serializable {
         /**
          * Sets the name or description of the sample dimension.
          * This is the value to be returned by {@link SampleDimension#getName()}.
+         * If this method is invoked more than once, then the last specified name prevails
+         * (previous sample dimension names are discarded).
          *
          * @param  name the name or description of the sample dimension.
          * @return {@code this}, for method call chaining.
          */
         public Builder setName(final CharSequence name) {
             dimensionName = name;
+            return this;
+        }
+
+        /**
+         * Creates a range for the given number. We use the static factory methods instead than the
+         * {@link NumberRange} constructor for sharing existing range instances. This is also a way
+         * to ensure that the number type is one of the primitive wrappers.
+         */
+        private static NumberRange<?> range(final Number sample) {
+            switch (Numbers.getEnumConstant(sample.getClass())) {
+                case Numbers.BYTE:    {byte   v = sample.byteValue();   return NumberRange.create(v, true, v, true);}
+                case Numbers.SHORT:   {short  v = sample.shortValue();  return NumberRange.create(v, true, v, true);}
+                case Numbers.INTEGER: {int    v = sample.intValue();    return NumberRange.create(v, true, v, true);}
+                case Numbers.LONG:    {long   v = sample.longValue();   return NumberRange.create(v, true, v, true);}
+                case Numbers.FLOAT:   {float  v = sample.floatValue();  return NumberRange.create(v, true, v, true);}
+                default:              {double v = sample.doubleValue(); return NumberRange.create(v, true, v, true);}
+            }
+        }
+
+        /**
+         * Adds a qualitative category and marks that category as the background value.
+         * This is the value to be returned by {@link SampleDimension#getBackground()}.
+         * If this method is invoked more than once, then the last specified value prevails
+         * (previous values become ordinary qualitative categories).
+         *
+         * @param  name    the category name as a {@link String} or {@link InternationalString} object,
+         *                 or {@code null} for a default "fill value" name.
+         * @param  sample  the background value. Can not be NaN.
+         * @return {@code this}, for method call chaining.
+         */
+        public Builder setBackground(CharSequence name, final Number sample) {
+            ArgumentChecks.ensureNonNull("sample", sample);
+            if (name == null) {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
+            }
+            final NumberRange<?> samples = range(sample);
+            categories.add(new Category(name, samples, null, null, padValues));
+            background = samples.getMinValue();
             return this;
         }
 
@@ -592,6 +673,22 @@ public class SampleDimension implements Serializable {
         }
 
         /**
+         * Adds a qualitative category for samples of the given value.
+         *
+         * <div class="note"><b>Implementation note:</b>
+         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         *
+         * @param  name    the category name as a {@link String} or {@link InternationalString} object,
+         *                 or {@code null} for a default "no data" name.
+         * @param  sample  the sample value. Can not be NaN.
+         * @return {@code this}, for method call chaining.
+         * @throws IllegalArgumentException if the given value is NaN.
+         */
+        public Builder addQualitative(final CharSequence name, final Number sample) {
+            return addQualitative(name, range(sample));
+        }
+
+        /**
          * Adds a qualitative category for all samples in the specified range of values.
          * This is the most generic method for adding a qualitative category.
          * All other {@code addQualitative(name, …)} methods are convenience methods delegating their work to this method.
@@ -612,13 +709,13 @@ public class SampleDimension implements Serializable {
 
         /**
          * Constructs a quantitative category mapping samples to real values in the specified range.
-         * Sample values in the {@code samples} range will be mapped to real values in the {@code geophysics} range
+         * Sample values in the {@code samples} range will be mapped to real values in the {@code converted} range
          * through a linear equation of the form:
          *
          * <blockquote><var>measure</var> = <var>sample</var> × <var>scale</var> + <var>offset</var></blockquote>
          *
          * where <var>scale</var> and <var>offset</var> coefficients are computed from the ranges supplied in arguments.
-         * The units of measurement will be taken from the {@code geophysics} range if it is an instance of {@link MeasurementRange}.
+         * The units of measurement will be taken from the {@code converted} range if it is an instance of {@link MeasurementRange}.
          *
          * <p><b>Warning:</b> this method is provided for convenience when the scale and offset factors are not explicitly specified.
          * If those factor are available, then the other {@code addQuantitative(name, samples, …)} methods are more reliable.</p>
@@ -628,40 +725,40 @@ public class SampleDimension implements Serializable {
          *
          * @param  name        the category name as a {@link String} or {@link InternationalString} object.
          * @param  samples     the minimum and maximum sample values in the category. Element class is usually
-         *                     {@link Integer}, but {@link Float} and {@link Double} types are accepted as well.
-         * @param  geophysics  the range of real values for this category, as an instance of {@link MeasurementRange}
+         *                     {@link Integer}, but {@link Float} and {@link Double} values are accepted as well.
+         * @param  converted   the range of real values for this category, as an instance of {@link MeasurementRange}
          *                     if those values are associated to an unit of measurement.
          * @return {@code this}, for method call chaining.
          * @throws ClassCastException if the range element class is not a {@link Number} subclass.
          * @throws IllegalArgumentException if the range is invalid.
          */
-        public Builder addQuantitative(final CharSequence name, final NumberRange<?> samples, final NumberRange<?> geophysics) {
+        public Builder addQuantitative(final CharSequence name, final NumberRange<?> samples, final NumberRange<?> converted) {
             ArgumentChecks.ensureNonNull("samples", samples);
-            ArgumentChecks.ensureNonNull("geophysics", geophysics);
+            ArgumentChecks.ensureNonNull("converted", converted);
             /*
-             * We need to perform calculation using the same "included versus excluded" characteristic for sample and geophysics
+             * We need to perform calculation using the same "included versus excluded" characteristics for sample and converted
              * values. We pickup the characteristics of the range using floating point values because it is easier to adjust the
              * bounds of the range using integer values (we just add or subtract 1 for integers, while the amount to add to real
-             * numbers is not so clear). If both ranges use floating point values, arbitrarily adjust the geophysics values.
+             * numbers is not so clear). If both ranges use floating point values, arbitrarily adjust the converted values.
              */
             final boolean isMinIncluded, isMaxIncluded;
             if (Numbers.isInteger(samples.getElementType())) {
-                isMinIncluded = geophysics.isMinIncluded();                         // This is the usual case.
-                isMaxIncluded = geophysics.isMaxIncluded();
+                isMinIncluded = converted.isMinIncluded();                         // This is the usual case.
+                isMaxIncluded = converted.isMaxIncluded();
             } else {
                 isMinIncluded = samples.isMinIncluded();                            // Less common case.
                 isMaxIncluded = samples.isMaxIncluded();
             }
-            final double minValue  = geophysics.getMinDouble(isMinIncluded);
-            final double Δvalue    = geophysics.getMaxDouble(isMaxIncluded) - minValue;
-            final double minSample =    samples.getMinDouble(isMinIncluded);
-            final double Δsample   =    samples.getMaxDouble(isMaxIncluded) - minSample;
+            final double minValue  = converted.getMinDouble(isMinIncluded);
+            final double Δvalue    = converted.getMaxDouble(isMaxIncluded) - minValue;
+            final double minSample =   samples.getMinDouble(isMinIncluded);
+            final double Δsample   =   samples.getMaxDouble(isMaxIncluded) - minSample;
             final double scale     = Δvalue / Δsample;
             final TransferFunction transferFunction = new TransferFunction();
             transferFunction.setScale(scale);
             transferFunction.setOffset(minValue - scale * minSample);               // TODO: use Math.fma with JDK9.
             return addQuantitative(name, samples, transferFunction.getTransform(),
-                    (geophysics instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) geophysics).unit() : null);
+                    (converted instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) converted).unit() : null);
         }
 
         /**
@@ -722,14 +819,14 @@ public class SampleDimension implements Serializable {
         }
 
         /**
-         * Returns {@code true} if the given range intersect the range of at least one category previously added.
+         * Returns {@code true} if the given range intersects the range of a previously added category.
          * This method can be invoked before to add a new category for checking if it would cause a range collision.
          *
          * @param  minimum  minimal value of the range to test, inclusive.
          * @param  maximum  maximal value of the range to test, inclusive.
          * @return whether the given range intersects at least one previously added range.
          */
-        public boolean intersect(final double minimum, final double maximum) {
+        public boolean rangeCollides(final double minimum, final double maximum) {
             for (final Category category : categories) {
                 if (maximum >= category.minimum && minimum <= category.maximum) {
                     return true;
@@ -744,7 +841,17 @@ public class SampleDimension implements Serializable {
          * @return the sample dimension.
          */
         public SampleDimension build() {
-            return new SampleDimension(dimensionName, categories);
+            InternationalString name = Types.toInternationalString(dimensionName);
+dfname:     if (name == null) {
+                for (final Category category : categories) {
+                    if (category.isQuantitative()) {
+                        name = category.name;
+                        break dfname;
+                    }
+                }
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
+            }
+            return new SampleDimension(name, background, categories);
         }
     }
 }

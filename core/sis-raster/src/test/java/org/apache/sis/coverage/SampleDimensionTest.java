@@ -45,13 +45,14 @@ public final strictfp class SampleDimensionTest extends TestCase {
         final double scale  = 0.1;
         final double offset = 5.0;
         final SampleDimension dimension = new SampleDimension.Builder()
-                .addQualitative(null,      0)           // Default to "No data" name, potentially locale.
+                .setBackground (null,      0)           // Default to "Fill value" name, potentially localized.
                 .addQualitative("Clouds",  1)
                 .addQualitative("Lands", 255)
                 .addQuantitative("Temperature", lower, upper, scale, offset, Units.CELSIUS)
                 .build();
 
         assertEquals("name", "Temperature", String.valueOf(dimension.getName()));
+        assertEquals("background", 0, dimension.getBackground().get());
 
         final Set<Number> nodataValues = dimension.getNoDataValues();
         assertArrayEquals(new Integer[] {0, 1, 255}, nodataValues.toArray());
@@ -77,5 +78,6 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertSame   (dimension,  converted.forConvertedValues(false));
         assertSame   (converted,  converted.forConvertedValues(true));
         assertTrue   ("identity", converted.getTransferFunction().get().isIdentity());
+        assertTrue   ("background", Double.isNaN(converted.getBackground().get().doubleValue()));
     }
 }

@@ -522,6 +522,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short MinimumValue = 70;
 
         /**
+         * Missing value
+         */
+        public static final short MissingValue = 160;
+
+        /**
          * Modified Julian
          */
         public static final short ModifiedJulian = 71;

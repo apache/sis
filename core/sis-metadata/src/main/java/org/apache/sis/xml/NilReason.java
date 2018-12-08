@@ -444,7 +444,7 @@ public final class NilReason implements Serializable {
      *
      * @throws IllegalArgumentException if the given type is not a supported type.
      */
-    @SuppressWarnings({"RedundantStringConstructorCall", "BooleanConstructorCall", "UnnecessaryBoxing"})
+    @SuppressWarnings({"deprecation", "RedundantStringConstructorCall", "BooleanConstructorCall", "UnnecessaryBoxing"})
     private static Object createNilPrimitive(final Class<?> type) {
         if (type == String .class) return new String("");         // REALLY need a new instance.
         if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
