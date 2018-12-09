@@ -69,6 +69,7 @@ import org.junit.BeforeClass;
 
     // Collections.
     org.apache.sis.internal.util.CheckedArrayListTest.class,
+    org.apache.sis.internal.util.ListOfUnknownSizeTest.class,
     org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,
     org.apache.sis.util.collection.FrequencySortedSetTest.class,
     org.apache.sis.util.collection.IntegerListTest.class,

@@ -17,9 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.logging.LogRecord;
 import java.net.URI;
 import java.io.IOException;
@@ -45,7 +43,6 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -53,6 +50,7 @@ import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.ListOfUnknownSize;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
@@ -106,7 +104,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @see #components()
      */
-    private Collection<GridCoverageResource> components;
+    private List<GridCoverageResource> components;
 
     /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
@@ -253,48 +251,59 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Collection<GridCoverageResource> components() throws DataStoreException {
+    public List<GridCoverageResource> components() throws DataStoreException {
         if (components == null) {
-            components = new LazySet<GridCoverageResource>(new Iterator<GridCoverageResource>() {
-                /** Index of the next image to fetch, or -1 if we fetched all of them. */
-                private int index;
-
-                /** Value to be returned by {@link #next()}, or {@cod null} if not yet determined. */
-                private GridCoverageResource next;
-
-                /** Returns {@code true} if there is more resources. */
-                @Override public boolean hasNext() {
-                    if (next != null) {
-                        return true;
-                    }
-                    final int i = index;
-                    if (i >= 0) {
-                        index = -1;                     // Set now in case of failure.
-                        try {
-                            next = reader().getImageFileDirectory(i);
-                        } catch (IOException e) {
-                            throw new BackingStoreException(errorIO(e));
-                        } catch (DataStoreException e) {
-                            throw new BackingStoreException(e);
-                        }
-                        if (next != null) {
-                            index = i+1;
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-
-                /** Returns the next element. */
-                @Override public GridCoverageResource next() {
-                    if (!hasNext()) throw new NoSuchElementException();
-                    final GridCoverageResource r = next;
-                    next = null;
-                    return r;
-                }
-            });
+            components = new Components();
         }
-        return components;      // Safe to return because unmodifiable.
+        return components;
+    }
+
+    /**
+     * The components returned by {@link #components}. Defined as a named class instead than an anonymous
+     * class for more readable stack trace. This is especially useful since {@link BackingStoreException}
+     * may happen in any method.
+     */
+    private final class Components extends ListOfUnknownSize<GridCoverageResource> {
+        /** The collection size, cached when first computed. */
+        private int size = -1;
+
+        /** Returns the size or -1 if not yet known. */
+        @Override protected int sizeIfKnown() {
+            return size;
+        }
+
+        /** Returns the size, computing and caching it if needed. */
+        @Override public int size() {
+            if (size < 0) {
+                size = super.size();
+            }
+            return size;
+        }
+
+        /** Returns whether the given index is valid. */
+        @Override protected boolean exists(final int index) {
+            return (index >= 0) && getImageFileDirectory(index) != null;
+        }
+
+        /** Returns element at the given index or throw {@link IndexOutOfBoundsException}. */
+        @Override public GridCoverageResource get(final int index) {
+            if (index >= 0) {
+                GridCoverageResource image = getImageFileDirectory(index);
+                if (image != null) return image;
+            }
+            throw new IndexOutOfBoundsException(errors().getString(Errors.Keys.IndexOutOfBounds_1, index));
+        }
+
+        /** Returns element at the given index or returns {@code null} if the index is invalid. */
+        private GridCoverageResource getImageFileDirectory(final int index) {
+            try {
+                return reader().getImageFileDirectory(index);
+            } catch (IOException e) {
+                throw new BackingStoreException(errorIO(e));
+            } catch (DataStoreException e) {
+                throw new BackingStoreException(e);
+            }
+        }
     }
 
     /**

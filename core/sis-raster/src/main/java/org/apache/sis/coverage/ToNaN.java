@@ -59,8 +59,12 @@ final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     }
 
     /**
-     * Returns a NaN ordinal value for the given sample value.
-     * The returned value can be given to {@link MathFunctions#toNanFloat(int)}.
+     * Mapping from sample values to ordinal values to be supplied to {@link MathFunctions#toNanFloat(int)}.
+     * That mapping shall ensure that there is no ordinal value collision between different categories in
+     * the same {@link SampleDimension}.
+     *
+     * @param  value  a real number in the {@link Category#range} sample value range.
+     * @return a value between {@value MathFunctions#MIN_NAN_ORDINAL} and {@value MathFunctions#MAX_NAN_ORDINAL} inclusive.
      */
     @Override
     public int applyAsInt(final double value) {
