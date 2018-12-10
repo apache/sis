@@ -32,11 +32,15 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.math.Vector;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 
 
@@ -219,6 +223,56 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             definition = builder.build();
         }
         return Collections.singletonList(definition);
+    }
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource.
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @return the grid coverage for the specified domain and range.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    @Override
+    public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+        if (range != null && range.length != 0) {
+            throw new DataStoreException("Unsupported range subsetting.");      // TODO
+        }
+        if (domain != null) {
+            throw new DataStoreException("Unsupported domain subsetting.");      // TODO
+        }
+        domain = getGridGeometry();
+        final GridExtent extent = domain.getExtent();
+        final int   dimension   = domain.getDimension();
+        final int[] areaLower   = new int[dimension];
+        final int[] areaUpper   = new int[dimension];
+        final int[] subsampling = new int[dimension];
+        for (int i=0; i<dimension; i++) {
+            final int j = (dimension - 1) - i;
+            areaLower[j] = unsigned(extent.getLow (i));             // Inclusive.
+            areaUpper[j] = unsigned(extent.getHigh(i) + 1);         // Exclusive.
+            if (i >= 2) {
+                areaUpper[j] = areaLower[j] + 1;                    // TODO
+            }
+            subsampling[j] = 1;
+        }
+        final Vector samples;
+        try {
+            samples = data.read(areaLower, areaUpper, subsampling);
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+        return new Image(domain, getSampleDimensions(), data.getDataType().toJava2D(samples.buffer()));
+    }
+
+    /**
+     * Returns the given value as an unsigned integer.
+     */
+    private static int unsigned(final long value) throws DataStoreException {
+        if (value < 0L || value > 0xFFFFFFFFL) {
+            throw new DataStoreException(Errors.format(Errors.Keys.IndexOutOfBounds_1, value));
+        }
+        return (int) value;
     }
 
     /**

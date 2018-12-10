@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.util.List;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridCoverage;
 
 
 /**
@@ -71,4 +72,21 @@ public interface GridCoverageResource extends DataSet {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     List<SampleDimension> getSampleDimensions() throws DataStoreException;
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource. If a non-null grid geometry is specified,
+     * then this method will try to return a grid coverage matching the given grid geometry on a best-effort basis;
+     * the coverage actually returned may have a different resolution, cover a different area in a different CRS,
+     * <i>etc</i>. The general contract is that the returned coverage should not contain less data than a coverage
+     * matching exactly the given geometry.
+     *
+     * <p>While this method name suggests an immediate reading, some implementations may defer the actual reading
+     * at a later stage.</p>
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @return the grid coverage for the specified domain and range.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    GridCoverage read(GridGeometry domain, int... range) throws DataStoreException;
 }

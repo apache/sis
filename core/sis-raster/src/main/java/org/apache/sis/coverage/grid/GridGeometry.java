@@ -903,7 +903,15 @@ public class GridGeometry implements Serializable {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
-        return new Formatter(bitmask).toString();
+        return new Formatter(new StringBuilder(512), bitmask, System.lineSeparator()).toString();
+    }
+
+    /**
+     * Formats a string representation of this grid geometry in the specified buffer.
+     * This is used for reducing the amount of copies in {@link GridCoverage#toString()}.
+     */
+    final void formatTo(final StringBuilder out, final String lineSeparator) {
+        new Formatter(out, EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION, lineSeparator).format();
     }
 
     /**
@@ -950,14 +958,14 @@ public class GridGeometry implements Serializable {
          * Creates a new formatter for the given combination of {@link #EXTENT}, {@link #ENVELOPE},
          * {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
          */
-        Formatter(final int bitmask) {
-            this.bitmask  = bitmask;
-            lineSeparator = System.lineSeparator();
-            locale        = Locale.getDefault(Locale.Category.DISPLAY);
-            vocabulary    = Vocabulary.getResources(locale);
-            buffer        = new StringBuilder(512);
-            crs           = (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
-            cs            = (crs != null) ? crs.getCoordinateSystem() : null;
+        Formatter(final StringBuilder out, final int bitmask, final String lineSeparator) {
+            this.buffer        = out;
+            this.bitmask       = bitmask;
+            this.lineSeparator = lineSeparator;
+            this.locale        = Locale.getDefault(Locale.Category.DISPLAY);
+            this.vocabulary    = Vocabulary.getResources(locale);
+            this.crs           = (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
+            this.cs            = (crs != null) ? crs.getCoordinateSystem() : null;
         }
 
         /**
@@ -965,6 +973,15 @@ public class GridGeometry implements Serializable {
          */
         @Override
         public final String toString() {
+            format();
+            return buffer.toString();
+        }
+
+        /**
+         * Formats a string representation of the enclosing {@link GridGeometry} instance
+         * in the buffer specified at construction time.
+         */
+        final void format() {
             /*
              * Example: Grid extent
              * ├─ Dimension 0: [370 … 389]  (20 cells)
@@ -1056,7 +1073,6 @@ public class GridGeometry implements Serializable {
                     buffer.append(lineSeparator);
                 }
             }
-            return buffer.toString();
         }
 
         /**

@@ -17,6 +17,13 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import java.util.Arrays;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
@@ -85,6 +92,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * or {@code null} if this method can not do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of integer values (this is not verified).
      */
+    @SuppressWarnings("null")
     static Vector compress(final Vector source, final long min, final long max) {
         boolean isSigned = (min >= Byte.MIN_VALUE && max <= Byte.MAX_VALUE);
         if (isSigned || (min >= 0 && max <= 0xFF)) {
@@ -279,6 +287,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return NumberRange.create(min, true, max, true);
         }
 
+        /** Wraps this vector in a buffer. */
+        @Override public Buffer buffer() {
+            return DoubleBuffer.wrap(array);
+        }
+
         /** Returns a copy of current data as a floating point array. */
         @Override public double[] doubleValues() {
             return array.clone();
@@ -387,6 +400,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          */
         NumberRange<?> createRange(final float min, final float max) {
             return NumberRange.create(min, true, max, true);
+        }
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Buffer buffer() {
+            return FloatBuffer.wrap(array);
         }
 
         /** Returns a copy of current data as a floating point array. */
@@ -548,6 +566,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return null;
         }
 
+        /** Wraps this vector in a buffer. */
+        @Override public final Buffer buffer() {
+            return LongBuffer.wrap(array);
+        }
+
         /** Applies hash code contract specified {@link Vector#hashCode()}. */
         @Override public final int hashCode() {
             return Arrays.hashCode(array);
@@ -665,6 +688,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return null;
         }
 
+        /** Wraps this vector in a buffer. */
+        @Override public final Buffer buffer() {
+            return IntBuffer.wrap(array);
+        }
+
         /** Applies hash code contract specified {@link Vector#hashCode()}. */
         @Override public final int hashCode() {
             return Arrays.hashCode(array);
@@ -756,6 +784,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * (except if the increment is zero) and the implicit conversion of 'short' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Buffer buffer() {
+            return ShortBuffer.wrap(array);
+        }
 
         /** Applies hash code contract specified {@link Vector#hashCode()}. */
         @Override public final int hashCode() {
@@ -849,6 +882,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Buffer buffer() {
+            return ByteBuffer.wrap(array);
+        }
 
         /** Applies hash code contract specified {@link Vector#hashCode()}. */
         @Override public final int hashCode() {

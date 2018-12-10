@@ -86,6 +86,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  */
 public final class Names extends Static {
     /**
+     * Sequence numbers, created when first needed.
+     *
+     * @see #createMemberName(CharSequence, String, int)
+     */
+    private static final MemberName[] SEQUENCE_NUMBERS = new MemberName[16];
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Names() {
@@ -266,6 +273,43 @@ public final class Names extends Static {
         final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart,
                 factory.toTypeName(valueClass));    // SIS-specific method.
+    }
+
+    /**
+     * Creates a member name for the given sequence number. The member type will be {@code "OGC:Integer"}.
+     * This method can be used for {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension#setSequenceIdentifier
+     * setting band identifier in metadata} in the common case where band identifier are just numbers.
+     *
+     * @param  namespace  the namespace, or {@code null} for the global namespace.
+     * @param  separator  the separator between the namespace and the local part, or {@code null}
+     *                    for the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}.
+     * @param  localPart  the sequence number to use as local part.
+     * @return a member name in the given namespace with the given sequence number.
+     *
+     * @see org.opengis.metadata.content.RangeDimension#getSequenceIdentifier()
+     *
+     * @since 1.0
+     */
+    public static MemberName createMemberName(final CharSequence namespace, String separator, final int localPart) {
+        if (DefaultNameSpace.DEFAULT_SEPARATOR_STRING.equals(separator)) {
+            separator = null;       // For making test for caching easier.
+        }
+        final boolean cached = (namespace == null) && (separator == null) && localPart >= 0 && localPart < SEQUENCE_NUMBERS.length;
+        MemberName name = null;
+        if (cached) synchronized (SEQUENCE_NUMBERS) {
+            name = SEQUENCE_NUMBERS[localPart];
+        }
+        if (name == null) {
+            name = createMemberName(namespace, separator, Integer.toString(localPart), Integer.class);
+            if (cached) synchronized (SEQUENCE_NUMBERS) {
+                /*
+                 * No need to check if a value has been set concurrently because Names.createMemberName(…)
+                 * already checked if an equal instance exists in the current JVM.
+                 */
+                SEQUENCE_NUMBERS[localPart] = name;
+            }
+        }
+        return name;
     }
 
     /**

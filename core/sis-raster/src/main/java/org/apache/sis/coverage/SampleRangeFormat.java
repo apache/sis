@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.text.NumberFormat;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import org.opengis.util.InternationalString;
+import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
@@ -180,7 +180,7 @@ final class SampleRangeFormat extends RangeFormat {
      * @param title       caption for the table.
      * @param categories  the list of categories to format.
      */
-    final String format(final InternationalString title, final CategoryList categories) {
+    final String format(final GenericName title, final CategoryList categories) {
         final StringBuilder buffer = new StringBuilder(800);
         try {
             format(title, categories, buffer);
@@ -209,10 +209,10 @@ final class SampleRangeFormat extends RangeFormat {
      * @param categories  the list of categories to format.
      * @param out         where to write the category table.
      */
-    void format(final InternationalString title, final CategoryList categories, final Appendable out) throws IOException {
+    void format(final GenericName title, final CategoryList categories, final Appendable out) throws IOException {
         prepare(categories);
         final String lineSeparator = System.lineSeparator();
-        out.append(title.toString(getLocale())).append(lineSeparator);
+        out.append(title.toInternationalString().toString(getLocale())).append(lineSeparator);
         /*
          * Write table header: │ Values │ Measures │ name │
          */

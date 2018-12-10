@@ -37,6 +37,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
@@ -1275,6 +1276,19 @@ final class ImageFileDirectory extends AbstractGridResource {
             sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
         }
         return sampleDimensions;        // Safe because unmodifiable.
+    }
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource.
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @return the grid coverage for the specified domain and range.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    @Override
+    public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
+        throw new DataStoreException("Not yet implemented.");   // TODO
     }
 
     /**

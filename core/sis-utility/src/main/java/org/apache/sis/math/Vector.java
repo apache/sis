@@ -17,11 +17,13 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.nio.Buffer;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.function.IntSupplier;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -941,6 +943,17 @@ search:     for (;;) {
             final Vector c = super.compress(tolerance);
             return (c != this) ? c : copy();
         }
+
+        /**
+         * Returns a buffer over the sub-section represented by this {@code SubSampling} instance.
+         */
+        @Override
+        public Buffer buffer() {
+            if (step == 1) {
+                return JDK9.slice(Vector.this.buffer().position(first).limit(first + length));
+            }
+            return super.buffer();
+        }
     }
 
     /**
@@ -1254,6 +1267,21 @@ search:     for (;;) {
      */
     final void warning(final String method, final RuntimeException e) {
         Logging.recoverableException(Logging.getLogger(Loggers.MATH), Vector.class, method, e);
+    }
+
+    /**
+     * Returns the vector data as a {@code java.nio} buffer.
+     * Data are not copied: changes in the buffer are reflected on this vector and vice-versa.
+     * Date are provided in their "raw" form. For example unsigned integers are given as plain {@code int} elements
+     * and it is caller responsibility to use {@link Integer#toUnsignedLong(int)} if needed.
+     *
+     * @return the vector data as a buffer.
+     * @throws UnsupportedOperationException if this vector can not be represented by a buffer.
+     *
+     * @since 1.0
+     */
+    public Buffer buffer() {
+        throw new UnsupportedOperationException();
     }
 
     /**

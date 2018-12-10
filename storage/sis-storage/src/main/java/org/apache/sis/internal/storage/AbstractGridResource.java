@@ -16,13 +16,14 @@
  */
 package org.apache.sis.internal.storage;
 
+import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.geometry.Envelope;
 
 
 /**
@@ -81,5 +82,8 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
         super.createMetadata(metadata);
         metadata.addSpatialRepresentation(null, getGridGeometry(), false);
+        for (final SampleDimension band : getSampleDimensions()) {
+            metadata.addNewBand(band);
+        }
     }
 }

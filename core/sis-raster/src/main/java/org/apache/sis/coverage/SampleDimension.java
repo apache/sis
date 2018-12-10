@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
@@ -35,7 +36,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Numbers;
 
 
@@ -78,13 +79,13 @@ public class SampleDimension implements Serializable {
     private static final long serialVersionUID = 6026936545776852758L;
 
     /**
-     * Description for this sample dimension. Typically used as a way to perform a band select by
+     * Identification for this sample dimension. Typically used as a way to perform a band select by
      * using human comprehensible descriptions instead of just numbers. Web Coverage Service (WCS)
      * can use this name in order to perform band sub-setting as directed from a user request.
      *
      * @see #getName()
      */
-    private final InternationalString name;
+    private final GenericName name;
 
     /**
      * The background value, or {@code null} if unspecified. Should be a sample value of
@@ -160,11 +161,11 @@ public class SampleDimension implements Serializable {
      *
      * <p>Note that {@link Builder} provides a more convenient way to create sample dimensions.</p>
      *
-     * @param name        the sample dimension title or description.
+     * @param name        an identification for the sample dimension.
      * @param background  the background value, or {@code null} if none.
      * @param categories  the list of categories. May be empty if none.
      */
-    public SampleDimension(final InternationalString name, final Number background, final Collection<? extends Category> categories) {
+    public SampleDimension(final GenericName name, final Number background, final Collection<? extends Category> categories) {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("categories", categories);
         final CategoryList list;
@@ -202,15 +203,15 @@ public class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns a name or description for this sample dimension. This is typically used as a way to perform a band select
+     * Returns an identification for this sample dimension. This is typically used as a way to perform a band select
      * by using human comprehensible descriptions instead of just numbers. Web Coverage Service (WCS) can use this name
      * in order to perform band sub-setting as directed from a user request.
      *
-     * @return the title or description of this sample dimension.
+     * @return an identification of this sample dimension.
      *
      * @see org.opengis.metadata.content.RangeDimension#getSequenceIdentifier()
      */
-    public InternationalString getName() {
+    public GenericName getName() {
         return name;
     }
 
@@ -491,9 +492,9 @@ public class SampleDimension implements Serializable {
      */
     public static class Builder {
         /**
-         * Description for this sample dimension.
+         * Identification for this sample dimension.
          */
-        private CharSequence dimensionName;
+        private GenericName dimensionName;
 
         /**
          * The background value, or {@code null} if unspecified.
@@ -521,29 +522,49 @@ public class SampleDimension implements Serializable {
         }
 
         /**
-         * Sets the name or description of the sample dimension.
+         * Sets an identification of the sample dimension.
          * This is the value to be returned by {@link SampleDimension#getName()}.
          * If this method is invoked more than once, then the last specified name prevails
          * (previous sample dimension names are discarded).
          *
-         * @param  name the name or description of the sample dimension.
+         * @param  name  identification of the sample dimension.
          * @return {@code this}, for method call chaining.
          */
-        public Builder setName(final CharSequence name) {
+        public Builder setName(final GenericName name) {
             dimensionName = name;
             return this;
         }
 
         /**
-         * Sets the name of the sample dimension as a band number.
+         * Sets an identification of the sample dimension as a character sequence.
+         * This is a convenience method for creating a {@link GenericName} from the given characters.
+         *
+         * @param  name  identification of the sample dimension.
+         * @return {@code this}, for method call chaining.
+         */
+        public Builder setName(final CharSequence name) {
+            dimensionName = createLocalName(name);
+            return this;
+        }
+
+        /**
+         * Sets an identification of the sample dimension as a band number.
          * This method should be used only when no more descriptive name is available.
          *
          * @param  band  sequence identifier of the sample dimension to create.
          * @return {@code this}, for method call chaining.
          */
         public Builder setName(final int band) {
-            dimensionName = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, band);
+            dimensionName = Names.createMemberName(null, null, band);
             return this;
+        }
+
+        /**
+         * A common place where are created local names from character string.
+         * For making easier to revisit if we want to add a namespace.
+         */
+        private static GenericName createLocalName(final CharSequence name) {
+            return Names.createLocalName(null, null, name);
         }
 
         /**
@@ -851,15 +872,15 @@ public class SampleDimension implements Serializable {
          * @return the sample dimension.
          */
         public SampleDimension build() {
-            InternationalString name = Types.toInternationalString(dimensionName);
+            GenericName name = dimensionName;
 defName:    if (name == null) {
                 for (final Category category : categories) {
                     if (category.isQuantitative()) {
-                        name = category.name;
+                        name = createLocalName(category.name);
                         break defName;
                     }
                 }
-                name = Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
+                name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
             }
             return new SampleDimension(name, background, categories);
         }
