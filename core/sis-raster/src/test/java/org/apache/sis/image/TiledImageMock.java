@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  * @module
  */
-final class TiledImage implements WritableRenderedImage {
+final class TiledImageMock implements WritableRenderedImage {
     /**
      * The minimum X or Y coordinate (inclusive) of the rendered image.
      */
@@ -96,7 +96,7 @@ final class TiledImage implements WritableRenderedImage {
      * @param dataType  sample data type as one of the {@link java.awt.image.DataBuffer} constants.
      * @param numBands  number of bands in the sample model to create.
      */
-    TiledImage(final int dataType,  final int numBands,
+    TiledImageMock(final int dataType,  final int numBands,
                final int minX,      final int minY,
                final int width,     final int height,
                final int tileWidth, final int tileHeight,
