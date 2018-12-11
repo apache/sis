@@ -19,6 +19,9 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Collection;
 import java.awt.image.RenderedImage;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
@@ -103,14 +106,33 @@ public abstract class GridCoverage {
     }
 
     /**
-     * Returns a two-dimensional slice of grid data as a rendered image.
-     * This method tries to return a view as much as possible (i.e. sample values are not copied).
+     * Returns a two-dimensional slice of grid data as a rendered image. The given {@code slicePoint} argument specifies
+     * the coordinates of the slice in all dimensions that are not in the two-dimensional image. For example if this grid
+     * coverage has (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) dimensions and we want a rendered image of
+     * data in the (<var>x</var>, <var>y</var>) dimensions, then the given {@code slicePoint} shall contain the
+     * (<var>z</var>, <var>t</var>) coordinates of the desired slice. The two coordinates of the data to be shown
+     * (<var>x</var> and <var>y</var> in our example) shall be excluded from the slice point in one of the following ways:
      *
-     * @param  xAxis  dimension to use for <var>x</var> axis.
-     * @param  yAxis  dimension to use for <var>y</var> axis.
-     * @return the grid data as a rendered image in the given CRS dimensions.
+     * <ul>
+     *   <li>The {@code slicePoint} has a CRS with two dimensions less than this grid coverage CRS.</li>
+     *   <li>The {@code slicePoint} has the same CRS than this grid coverage, but the two coordinates to
+     *       exclude are set to {@link Double#NaN}.</li>
+     * </ul>
+     *
+     * If the {@code slicePoint} CRS is different than this grid coverage CRS (except for the number of dimensions),
+     * a coordinate transformation will be applied. If the {@code slicePoint} CRS is {@code null}, it is assumed the
+     * same than this grid coverage CRS. If this grid coverage is two-dimensional or can render only one image for
+     * other reason, then the {@code slicePoint} can be null.
+     *
+     * <p>Implementations should return a view as much as possible, without copying sample values.</p>
+     *
+     * @param  slicePoint  coordinates of the slice in all dimensions other than the two dimensions to be shown on the image.
+     *         May be {@code null} if this coverage can render only one image, for example because its CRS is two-dimensional.
+     * @return the grid slice as a rendered image.
+     * @throws PointOutsideCoverageException if the given slice point is illegal.
+     * @throws CannotEvaluateException if this method can not produce the render image for another reason.
      */
-    public abstract RenderedImage asRenderedImage(int xAxis, int yAxis);
+    public abstract RenderedImage render(DirectPosition slicePoint) throws CannotEvaluateException;
 
     /**
      * Returns a string representation of this grid coverage for debugging purpose.

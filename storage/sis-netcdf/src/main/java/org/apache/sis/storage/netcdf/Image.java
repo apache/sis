@@ -23,6 +23,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -60,20 +61,14 @@ final class Image extends GridCoverage {
 
     /**
      * Returns a two-dimensional slice of grid data as a rendered image.
-     * This method tries to return a view as much as possible (i.e. sample values are not copied).
-     *
-     * @param  xAxis  dimension to use for <var>x</var> axis.
-     * @param  yAxis  dimension to use for <var>y</var> axis.
-     * @return the grid data as a rendered image in the given CRS dimensions.
+     * This returns a view as much as possible; sample values are not copied.
      */
     @Override
-    public RenderedImage asRenderedImage(final int xAxis, final int yAxis) {
-        if (xAxis != 0 || yAxis != 1) {
-            throw new IllegalArgumentException();       // TODO
-        }
+    public RenderedImage render(final DirectPosition slicePoint) {
+        // TODO: use slicePoint.
         final GridExtent extent = getGridGeometry().getExtent();
-        final int width  = Math.toIntExact(extent.getSize(xAxis));
-        final int height = Math.toIntExact(extent.getSize(yAxis));
+        final int width  = Math.toIntExact(extent.getSize(0));
+        final int height = Math.toIntExact(extent.getSize(1));
         final WritableRaster raster = RasterFactory.createBandedRaster(data, width, height, width, null, null, null);
         final ColorModel colors = ColorModelFactory.createColorModel(getSampleDimensions(), VISIBLE_BAND, data.getDataType(),
                 (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null);
