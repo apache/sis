@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.StringJoiner;
+import java.util.Optional;
 import java.util.function.IntSupplier;
 import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
@@ -85,7 +86,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * by the code that <em>create</em> a {@code Vector} object, but the data type may not be known
  * by the code that will <em>use</em> the {@code Vector} object.
  * For example a method performing a numerical calculation may want to see the data as {@code double} values
- * without concern about whether the data were really stored as {@code double} or as {@code float} values.</div>
+ * without concern about whether the data were really stored as {@code double} or as {@code float} values.
+ * For the situations where a {@link Buffer} is needed, inter-operability is provided by the {@link #buffer()}
+ * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.0
@@ -104,6 +107,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *   <li>A {@code Number[]} array.</li>
      *   <li>A {@code String[]} array (not recommended, but happen with some file formats).</li>
      *   <li>A {@code Vector}, in which case it is returned unchanged.</li>
+     *   <li>A {@link Buffer} backed by an array.</li>
      *   <li>The {@code null} value, in which case {@code null} is returned.</li>
      * </ul>
      *
@@ -132,6 +136,14 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         }
         if (array instanceof Vector) {
             return (Vector) array;
+        }
+        if (array instanceof Buffer) {
+            final Buffer buffer = (Buffer) array;
+            if (buffer.hasArray()) {
+                final int offset = buffer.arrayOffset();
+                return ArrayVector.newInstance(buffer.array(), isUnsigned)
+                        .subList(offset + buffer.position(), offset + buffer.limit());
+            }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
     }
@@ -948,9 +960,9 @@ search:     for (;;) {
          * Returns a buffer over the sub-section represented by this {@code SubSampling} instance.
          */
         @Override
-        public Buffer buffer() {
+        public Optional<Buffer> buffer() {
             if (step == 1) {
-                return JDK9.slice(Vector.this.buffer().position(first).limit(first + length));
+                Vector.this.buffer().map((b) -> JDK9.slice(b.position(first).limit(first + length)));
             }
             return super.buffer();
         }
@@ -1275,13 +1287,12 @@ search:     for (;;) {
      * Date are provided in their "raw" form. For example unsigned integers are given as plain {@code int} elements
      * and it is caller responsibility to use {@link Integer#toUnsignedLong(int)} if needed.
      *
-     * @return the vector data as a buffer.
-     * @throws UnsupportedOperationException if this vector can not be represented by a buffer.
+     * @return the vector data as a buffer. Absent if this vector is not backed by an array or a buffer.
      *
      * @since 1.0
      */
-    public Buffer buffer() {
-        throw new UnsupportedOperationException();
+    public Optional<Buffer> buffer() {
+        return Optional.empty();
     }
 
     /**

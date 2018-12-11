@@ -262,7 +262,8 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-        return new Image(domain, getSampleDimensions(), data.getDataType().toJava2D(samples.buffer()));
+        // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
+        return new Image(domain, getSampleDimensions(), data.getDataType().toJava2D(samples.buffer().get()));
     }
 
     /**
