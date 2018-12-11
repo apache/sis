@@ -28,7 +28,7 @@ import org.apache.sis.xml.IdentifiedObject;
 /**
  * Base class for GML objects that are wrappers around a GeoAPI implementation.
  * Every GML object to be marshalled have an ID attribute, which is mandatory.
- * If no ID is explicitely set, a default one will be created from the wrapped object.
+ * If no ID is explicitly set, a default one will be created from the wrapped object.
  *
  * <div class="note"><b>Note:</b>
  * This class is somewhat temporary. It assigns the ID to the <em>wrapped</em> object.

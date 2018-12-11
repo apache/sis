@@ -42,7 +42,7 @@ public interface Parameterized {
      * Returns the parameter values for this parameterized object, or {@code null} if unknown.
      *
      * <div class="section">Modifying parameter values</div>
-     * Unless explicitely allowed by the implementation class, callers should not modify the values
+     * Unless explicitly allowed by the implementation class, callers should not modify the values
      * returned by this method. Implementors are encouraged to protect their internal data by returning
      * an unmodifiable view or a copy of their parameters. If the caller wishes to edit parameter values,
      * then (s)he should {@linkplain DefaultParameterValueGroup#clone() clone} the parameters before to

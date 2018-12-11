@@ -61,7 +61,7 @@ public final strictfp class CharacteristicMapTest extends TestCase {
     }
 
     /**
-     * Tests adding explicitely a characteristic with {@link CharacteristicMap#put(String, Attribute)}.
+     * Tests adding explicitly a characteristic with {@link CharacteristicMap#put(String, Attribute)}.
      */
     @Test
     public void testPut() {

@@ -1036,7 +1036,7 @@ public class MetadataSource implements AutoCloseable {
         } else {
             /*
              * If 'returnType' is Collection.class, do not copy into a Set since a List
-             * is probably good enough. Copy only if a Set is explicitely requested.
+             * is probably good enough. Copy only if a Set is explicitly requested.
              */
             if (Set.class.isAssignableFrom(returnType)) {
                 if (SortedSet.class.isAssignableFrom(returnType)) {

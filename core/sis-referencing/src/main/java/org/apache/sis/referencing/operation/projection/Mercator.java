@@ -182,7 +182,7 @@ public class Mercator extends ConformalProjection {
                  *   - Using the standard parallel instead than the latitude of origin would be consistent
                  *     with what EPSG does for the Equirectangular projection.
                  *
-                 * Anyway, this choice matters only when the user request explicitely spherical formulas applied
+                 * Anyway, this choice matters only when the user request explicitly spherical formulas applied
                  * on an ellipsoidal figure of the Earth, which should be very rare.
                  */
                 roles.put(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS, Mercator1SP.LATITUDE_OF_ORIGIN);

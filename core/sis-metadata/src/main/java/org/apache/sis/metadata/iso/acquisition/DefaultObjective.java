@@ -194,7 +194,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * Sets the code used to identify the objective.
      *
      * <p>XML identifiers ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
-     * are not affected by this method, unless they are explicitely provided in the given collection.</p>
+     * are not affected by this method, unless they are explicitly provided in the given collection.</p>
      *
      * @param  newValues  the new identifiers values.
      */

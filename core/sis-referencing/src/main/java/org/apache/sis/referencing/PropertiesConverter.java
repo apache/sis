@@ -34,7 +34,7 @@ import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
  *       and we don't want to duplicate them in {@code NamedIdentifier}.</li>
  *   <li>Optionally rename de {@code NAME_KEY} as {@code CODE_KEY} in order to allow
  *       {@code NamedIdentifier} to inherit the name given to {@code AbstractIdentifiedObject}
- *       if no code were explicitely given.</li>
+ *       if no code were explicitly given.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

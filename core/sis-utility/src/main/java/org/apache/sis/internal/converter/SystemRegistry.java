@@ -115,7 +115,7 @@ public final class SystemRegistry extends ConverterRegistry {
 
     /**
      * Returns {@code true} if we should look for the inverse converter of the given target class.
-     * For example if no converter is explicitely registered from {@code Float} to {@code String},
+     * For example if no converter is explicitly registered from {@code Float} to {@code String},
      * we can look for the converter from {@code String} to {@code Float}, then fetch its inverse.
      *
      * <p>We allow this operation only for a few types which are needed for the way SIS converters

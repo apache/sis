@@ -261,7 +261,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
 
     /**
      * Returns an identifier unique for the XML document, or {@code null} if none.
-     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     * This method is invoked automatically by JAXB and should never be invoked explicitly.
      */
     @XmlID
     @XmlAttribute                           // Defined in "gco" as unqualified attribute.
@@ -273,7 +273,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
 
     /**
      * Sets an identifier unique for the XML document.
-     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     * This method is invoked automatically by JAXB and should never be invoked explicitly.
      */
     private void setID(final String id) {
         MetadataUtilities.setObjectID(this, id);
@@ -281,7 +281,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
 
     /**
      * Returns an unique identifier, or {@code null} if none.
-     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     * This method is invoked automatically by JAXB and should never be invoked explicitly.
      */
     @XmlAttribute                           // Defined in "gco" as unqualified attribute.
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
@@ -295,7 +295,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
 
     /**
      * Sets an unique identifier.
-     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     * This method is invoked automatically by JAXB and should never be invoked explicitly.
      */
     private void setUUID(final String id) {
         /*

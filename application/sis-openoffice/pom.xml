@@ -77,7 +77,7 @@
 
   <!-- ===========================================================
            Dependency Management
-           We must declare transitive dependencies explicitely,
+           We must declare transitive dependencies explicitly,
            otherwise they will not be included by sis-unopkg.
        =========================================================== -->
   <properties>
@@ -132,7 +132,7 @@
     </dependency>
   </dependencies>
 
-  <!-- Because the EPSG database is not free, require the user to ask it explicitely. -->
+  <!-- Because the EPSG database is not free, require the user to ask it explicitly. -->
   <profiles>
     <profile>
       <id>non-free</id>

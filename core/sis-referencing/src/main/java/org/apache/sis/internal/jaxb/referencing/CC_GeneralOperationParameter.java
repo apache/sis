@@ -177,7 +177,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * nevertheless provided, the SIS implementation will use it. From this point of view, SIS is tolerant
      * to non-zero value.
      *
-     * <p>If the GML document declares explicitely a restricted parameter, maybe it intends to use it with
+     * <p>If the GML document declares explicitly a restricted parameter, maybe it intends to use it with
      * a non-zero value. Consequently the {@code merge(…)} method will not propagate this restriction.</p>
      * </div>
      */

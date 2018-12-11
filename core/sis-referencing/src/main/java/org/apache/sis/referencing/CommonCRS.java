@@ -1071,7 +1071,7 @@ public enum CommonCRS {
         if (crs == null) {
             /*
              * Requested CRS has not been previously created, or the cache has been cleared.
-             * Before to create the CRS explicitely, try to get it from the EPSG database.
+             * Before to create the CRS explicitly, try to get it from the EPSG database.
              * Using the EPSG geodetic dataset when possible gives us more information,
              * like the aliases and area of validity.
              */

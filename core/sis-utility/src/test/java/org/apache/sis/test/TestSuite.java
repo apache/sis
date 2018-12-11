@@ -212,7 +212,7 @@ public abstract strictfp class TestSuite {
 
     /**
      * Same verification than {@link #verifyTestList(Class)}, except that the set of base classes
-     * is explicitely specified. This method is preferred to {@code verifyTestList(Class)} only in
+     * is explicitly specified. This method is preferred to {@code verifyTestList(Class)} only in
      * the rare cases where some test cases need to extend something else than geoapi-conformance
      * or Apache SIS test class.
      *

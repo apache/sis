@@ -62,7 +62,7 @@ public abstract class MarshalContext {
     public abstract Locale getLocale();
 
     /**
-     * Returns the timezone to use for (un)marshalling, or {@code null} if none was explicitely specified.
+     * Returns the timezone to use for (un)marshalling, or {@code null} if none was explicitly specified.
      *
      * <div class="section">Handling of <code>null</code> timezone</div>
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged

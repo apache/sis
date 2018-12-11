@@ -446,7 +446,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
          *     source   →   [common datum]   →   target
          *
          * This has been removed, because it was dangerous (many paths may be possible - we are better to rely on
-         * the EPSG database, which do define some transformation paths explicitely). Especially since our javadoc
+         * the EPSG database, which do define some transformation paths explicitly). Especially since our javadoc
          * now said that associating BursaWolfParameters to GeodeticDatum is not recommended except in a few special
          * cases, this method does not have a picture complete enough for attempting anything else than a direct path.
          */

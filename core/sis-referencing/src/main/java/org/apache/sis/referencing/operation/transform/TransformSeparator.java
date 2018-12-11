@@ -404,7 +404,7 @@ public class TransformSeparator {
      *   <li>If source dimensions were unspecified, then the returned transform will keep at least all source
      *       dimensions needed for computing the specified target dimensions. In many cases the returned transform
      *       unconditionally keep all source dimensions, but not necessarily. If all source dimensions need to be
-     *       kept, it is better to {@linkplain #addSourceDimensionRange(int, int) specify that explicitely}.</li>
+     *       kept, it is better to {@linkplain #addSourceDimensionRange(int, int) specify that explicitly}.</li>
      *
      *   <li>If target dimensions were unspecified, then the returned transform will expect only the specified
      *       source dimensions as inputs, and the target dimensions will be inferred automatically.</li>

@@ -296,7 +296,7 @@ class CoordinateOperationRegistry {
      * <p>Operations in the returned list are ordered in preference order (preferred operation first).
      * If no operation is found for those codes, then this method returns an empty list.
      * Note that it does not mean that no path exist;
-     * it only means that it was not defined explicitely in the registry.</p>
+     * it only means that it was not defined explicitly in the registry.</p>
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -1124,7 +1124,7 @@ class CoordinateOperationRegistry {
             }
         }
         /*
-         * If the operation type was not explicitely specified, infers it from whether an accuracy is specified
+         * If the operation type was not explicitly specified, infers it from whether an accuracy is specified
          * or not. In principle, only transformations has an accuracy property; conversions do not. This policy
          * is applied by the properties(Identifier) method in this class.
          */

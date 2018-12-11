@@ -385,7 +385,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * <p>XML identifiers ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
      * {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes are not affected by this method, unless
-     * they are explicitely provided in the given collection.</p>
+     * they are explicitly provided in the given collection.</p>
      *
      * @param  newValues  the new identifiers, or {@code null} if none.
      *

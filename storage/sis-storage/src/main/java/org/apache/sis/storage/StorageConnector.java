@@ -261,7 +261,7 @@ public class StorageConnector implements Serializable {
      * <ul>
      *   <li>{@link Reader} that are wrappers around {@code InputStream}.</li>
      *   <li>{@link ChannelDataInput} when the channel come from an {@code InputStream}.</li>
-     *   <li>{@link ChannelDataInput} when the channel has been explicitely given to the constructor.</li>
+     *   <li>{@link ChannelDataInput} when the channel has been explicitly given to the constructor.</li>
      * </ul>
      */
     private static final class Coupled {
@@ -283,10 +283,10 @@ public class StorageConnector implements Serializable {
          *       Same as {@code DataInput} if it can be casted, or {@code null} otherwise.</li>
          *
          *   <li>{@link InputStream}:
-         *       If not explicitely provided, this is a wrapper around the above {@link ImageInputStream}.</li>
+         *       If not explicitly provided, this is a wrapper around the above {@link ImageInputStream}.</li>
          *
          *   <li>{@link Reader}:
-         *       If not explicitely provided, this is a wrapper around the above {@link InputStream}.</li>
+         *       If not explicitly provided, this is a wrapper around the above {@link InputStream}.</li>
          *
          *   <li>{@link Connection}:
          *       The storage object as a JDBC connection.</li>

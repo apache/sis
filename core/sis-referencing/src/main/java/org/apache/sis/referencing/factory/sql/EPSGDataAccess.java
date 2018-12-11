@@ -2976,8 +2976,8 @@ next:               while (r.next()) {
 
     /**
      * Creates operations from source and target coordinate reference system codes.
-     * This method only extract the information explicitely declared in the EPSG database;
-     * it does not attempt to infer by itself operations that are not explicitely recorded in the database.
+     * This method only extract the information explicitly declared in the EPSG database;
+     * it does not attempt to infer by itself operations that are not explicitly recorded in the database.
      *
      * <p>The returned set is ordered with the most accurate operations first.
      * Deprecated operations are not included in the set; if a deprecated operation is really wanted,

@@ -116,7 +116,7 @@ final class ESRI extends Geometries<Geometry> {
      */
     @Override
     public Object createPoint(final double x, final double y) {
-        // Need to explicitely set z to NaN because default value is 0.
+        // Need to explicitly set z to NaN because default value is 0.
         return new Point(x, y, Double.NaN);
     }
 

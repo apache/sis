@@ -103,7 +103,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     }
 
     /**
-     * Tests a two-dimensional case where sources coordinates are explicitely given.
+     * Tests a two-dimensional case where sources coordinates are explicitly given.
      *
      * @throws FactoryException if the transform can not be created.
      *

@@ -149,7 +149,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
 
     /**
      * The earth radius parameter. This parameter is computed automatically from the {@code "semi_major"}
-     * and {@code "semi_minor"} parameters. When explicitely set, this parameter value is also assigned
+     * and {@code "semi_minor"} parameters. When explicitly set, this parameter value is also assigned
      * to the {@code "semi_major"} and {@code "semi_minor"} axis lengths.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
@@ -198,7 +198,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
 
         /**
          * Invoked when the parameter value is requested. Unconditionally computes the authalic radius.
-         * If an Earth radius has been explicitely specified, the result will be the same unless the user
+         * If an Earth radius has been explicitly specified, the result will be the same unless the user
          * overwrote it with explicit semi-major or semi-minor axis length.
          */
         @Override
@@ -293,7 +293,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         }
 
         /**
-         * Returns {@code true} if the inverse flattening factor has been explicitely specified
+         * Returns {@code true} if the inverse flattening factor has been explicitly specified
          * and seems to still valid.
          */
         boolean isIvfDefinitive() {
@@ -421,7 +421,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
     /**
      * The standard parallels parameter as an array of {@code double}. This parameter is computed automatically
      * from the {@code "standard_parallel_1"} and {@code "standard_parallel_1"} standard parameters. When this
-     * non-standard parameter is explicitely set, the array elements are given to the above-cited standard parameters.
+     * non-standard parameter is explicitly set, the array elements are given to the above-cited standard parameters.
      */
     @SuppressWarnings("CloneableClassWithoutClone")
     static final class StandardParallel extends DefaultParameterValue<double[]> {

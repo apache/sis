@@ -135,7 +135,7 @@ public abstract class FirstKeywordPeek {
                 buffer.mark();
                 reader = null;
             } else {
-                // User gave us explicitely a Reader (e.g. a StringReader wrapping a String instance).
+                // User gave us explicitly a Reader (e.g. a StringReader wrapping a String instance).
                 reader = connector.getStorageAs(Reader.class);
                 if (reader == null) {
                     return ProbeResult.UNSUPPORTED_STORAGE;

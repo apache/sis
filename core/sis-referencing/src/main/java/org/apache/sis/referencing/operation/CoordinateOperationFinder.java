@@ -281,7 +281,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             }
         }
         /*
-         * Verify in the EPSG dataset if the operation is explicitely defined by an authority.
+         * Verify in the EPSG dataset if the operation is explicitly defined by an authority.
          */
         if (registry != null) {
             final List<CoordinateOperation> authoritatives = super.createOperations(sourceCRS, targetCRS);

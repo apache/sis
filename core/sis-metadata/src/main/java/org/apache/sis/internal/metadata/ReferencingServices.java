@@ -90,10 +90,10 @@ public class ReferencingServices extends OptionalDependency {
     public static final String BURSA_WOLF_KEY = "bursaWolf";
 
     /**
-     * The key for specifying explicitely the value to be returned by
+     * The key for specifying explicitly the value to be returned by
      * {@link org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()}.
      * It is usually not necessary to specify those parameters because they are inferred either from
-     * the {@link MathTransform}, or specified explicitely in a {@code DefiningConversion}. However
+     * the {@link MathTransform}, or specified explicitly in a {@code DefiningConversion}. However
      * there is a few cases, for example the Molodenski transform, where none of the above can apply,
      * because SIS implements those operations as a concatenation of math transforms, and such
      * concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.

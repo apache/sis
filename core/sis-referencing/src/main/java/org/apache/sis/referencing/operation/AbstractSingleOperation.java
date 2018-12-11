@@ -287,7 +287,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * Returns a description of the parameters. The default implementation performs the following choice:
      *
      * <ul>
-     *   <li>If parameter values were specified explicitely at construction time,
+     *   <li>If parameter values were specified explicitly at construction time,
      *       then the descriptor of those parameters is returned.</li>
      *   <li>Otherwise if this method can infer the parameter descriptor from the
      *       {@linkplain #getMathTransform() math transform}, then that descriptor is returned.</li>
@@ -313,7 +313,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * Returns the parameter values. The default implementation performs the following choice:
      *
      * <ul>
-     *   <li>If parameter values were specified explicitely at construction time, then they are returned as an
+     *   <li>If parameter values were specified explicitly at construction time, then they are returned as an
      *       {@linkplain Parameters#unmodifiable(ParameterValueGroup) unmodifiable parameter group}.</li>
      *   <li>Otherwise if this method can infer the parameter values from the
      *       {@linkplain #getMathTransform() math transform}, then those parameters are returned.</li>

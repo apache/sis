@@ -554,7 +554,7 @@ public class Formatter implements Localized {
      */
     public String shortOrLong(final String shortKeyword, final String longKeyword) {
         return (longKeywords != 0
-                ? longKeywords < 0              // If keyword style was explicitely specified, use the setting.
+                ? longKeywords < 0              // If keyword style was explicitly specified, use the setting.
                 : convention.toUpperCase)       // Otherwise use the default value determined by the convention.
                ? shortKeyword : longKeyword;
     }

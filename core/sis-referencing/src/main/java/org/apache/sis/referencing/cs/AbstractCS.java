@@ -185,7 +185,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
             }
             /*
              * Ensures there is no axis along the same direction (e.g. two North axes, or an East and a West axis).
-             * An exception to this rule is the time axis, since ISO 19107 explicitely allows compound CRS to have
+             * An exception to this rule is the time axis, since ISO 19107 explicitly allows compound CRS to have
              * more than one time axis. Such case happen in meteorological models.
              */
             final AxisDirection dir = AxisDirections.absolute(direction);

@@ -52,7 +52,7 @@ import org.apache.sis.util.Utilities;
  * with associated {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup parameter values}.
  * In the SIS implementation, the parameter values can be either inferred from the
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}
- * or explicitely provided at construction time in a <cite>defining conversion</cite> (see below).</p>
+ * or explicitly provided at construction time in a <cite>defining conversion</cite> (see below).</p>
  *
  * <div class="section">Defining conversions</div>
  * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
@@ -241,7 +241,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS());
         if (transform == null) {
             /*
-             * If the user did not specified explicitely a MathTransform, we will need to create it from the parameters.
+             * If the user did not specified explicitly a MathTransform, we will need to create it from the parameters.
              * This case happen when creating a ProjectedCRS because the length of semi-major and semi-minor axes are
              * often missing at defining conversion creation time. Since this constructor know those semi-axis lengths
              * thanks to the 'sourceCRS' argument, we can complete the parameters.
@@ -276,7 +276,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             actual[0] = factory.getLastMethodUsed();
         } else {
             /*
-             * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.
+             * If the user specified explicitly a MathTransform, we may still need to swap or scale axes.
              * If this conversion is a defining conversion (which is usually the case when creating a new
              * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
              * method for this job.

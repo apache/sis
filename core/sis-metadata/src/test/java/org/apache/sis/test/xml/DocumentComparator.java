@@ -561,7 +561,7 @@ public strictfp class DocumentComparator {
                     return true;
                 }
                 /*
-                 * The given attribute does not appear explicitely in the set of attributes to ignore.
+                 * The given attribute does not appear explicitly in the set of attributes to ignore.
                  * But maybe the user asked to ignore all attributes in the namespace.
                  * Typical example: "http://www.w3.org/2000/xmlns:*"
                  */

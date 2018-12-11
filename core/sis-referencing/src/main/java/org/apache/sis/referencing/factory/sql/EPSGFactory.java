@@ -333,7 +333,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     /**
      * Creates the EPSG schema in the database and populates the tables with geodetic definitions.
      * This method is invoked automatically when {@link #newDataAccess()} detects that the EPSG dataset is not installed.
-     * Users can also invoke this method explicitely if they wish to force the dataset installation.
+     * Users can also invoke this method explicitly if they wish to force the dataset installation.
      *
      * <p>This method uses the following properties from the map specified at
      * {@linkplain #EPSGFactory(Map) construction time}:</p>

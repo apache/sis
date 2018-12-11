@@ -734,7 +734,7 @@ public final class CRS extends Static {
      * associated with the given operation. If more than one geographic bounding box is found, then this method
      * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      *
-     * <p><b>Fallback:</b> if the given operation does not declare explicitely a domain of validity, then this
+     * <p><b>Fallback:</b> if the given operation does not declare explicitly a domain of validity, then this
      * method computes the intersection of the domain of validity declared by source and target CRS. If no CRS
      * declare a domain of validity, then this method returns {@code null}.</p>
      *

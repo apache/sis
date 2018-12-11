@@ -56,7 +56,7 @@ import org.apache.sis.util.ArgumentChecks;
  * </div>
  *
  * <div class="section">Class loaders</div>
- * Developers can specify explicitely the {@link ClassLoader} to use be overriding the
+ * Developers can specify explicitly the {@link ClassLoader} to use be overriding the
  * {@link #getBundle(Locale)} method. This is recommended if the running environment
  * loads modules in isolated class loaders, as OSGi does for instance.
  *

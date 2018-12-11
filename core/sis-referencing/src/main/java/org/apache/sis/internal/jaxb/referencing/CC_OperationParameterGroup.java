@@ -102,7 +102,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * Invoked by {@link DefaultParameterDescriptorGroup#setDescriptors(GeneralParameterDescriptor[])}
      * for merging into a single set the descriptors which are repeated twice in a GML document.
      *
-     * <p>The {@code descriptors} argument gives the descriptors listed explicitely inside a
+     * <p>The {@code descriptors} argument gives the descriptors listed explicitly inside a
      * {@code <gml:OperationParameterGroup>} or {@code <gml:OperationMethod>} element. Those
      * descriptors are said "incomplete" (from SIS point of view) because they are missing the
      * {@link ParameterDescriptor#getValueClass()} property, which does not exist in GML but
@@ -147,7 +147,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
         final Map<String,GeneralParameterDescriptor> union =
                 new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
         /*
-         * Collect the descriptors declared explicitely in the ParameterDescriptorGroup. We should never have
+         * Collect the descriptors declared explicitly in the ParameterDescriptorGroup. We should never have
          * two descriptors of the same name since the DefaultParameterDescriptorGroup constructor checked for
          * name ambiguity. If a name collision is nevertheless detected, this would mean that a descriptor's
          * name mutated.

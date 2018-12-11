@@ -523,7 +523,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
                      * We will also omit the citation if this identifier is for a parameter value, because parameter
                      * values are handled in a special way by the international standard:
                      *
-                     *   - ISO 19162 explicitely said that we shall format the identifier for the root element only,
+                     *   - ISO 19162 explicitly said that we shall format the identifier for the root element only,
                      *     and omit the identifier for all inner elements EXCEPT parameter values and operation method.
                      *   - Exclusion of identifier for inner elements is performed by the Formatter class, so it does
                      *     not need to be checked here.

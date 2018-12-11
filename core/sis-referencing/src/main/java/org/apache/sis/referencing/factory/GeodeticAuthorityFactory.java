@@ -1188,8 +1188,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates operations from source and target coordinate reference system codes.
-     * This method should only extract the information explicitely declared in a database like EPSG.
-     * This method should not attempt to infer by itself operations that are not explicitely recorded in the database.
+     * This method should only extract the information explicitly declared in a database like EPSG.
+     * This method should not attempt to infer by itself operations that are not explicitly recorded in the database.
      *
      * <div class="section">Default implementation</div>
      * The default implementation returns an empty set.

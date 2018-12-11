@@ -168,7 +168,7 @@ public class FeatureNaming<E> {
             key = Resources.Keys.AmbiguousName_4;
             params = new CharSequence[] {name(store), nc.get(0), nc.get(1), name};
         } else {
-            return null;    // Name was explicitely associated to null value (actually not allowed by current API).
+            return null;    // Name was explicitly associated to null value (actually not allowed by current API).
         }
         throw new IllegalNameException(locale(store), key, params);
     }

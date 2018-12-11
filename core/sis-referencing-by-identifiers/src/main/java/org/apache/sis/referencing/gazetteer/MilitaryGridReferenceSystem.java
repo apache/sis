@@ -448,7 +448,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * </table>
          *
          * Values smaller than 1 (e.g. 0.01 for a centimetre precision) may also be returned
-         * if that value has been {@linkplain #setPrecision(double) explicitely set},
+         * if that value has been {@linkplain #setPrecision(double) explicitly set},
          * but sub-metric precision are usually not used with MGRS.
          *
          * @return precision of formatted references in metres.
