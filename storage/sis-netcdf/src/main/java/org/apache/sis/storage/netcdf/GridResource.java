@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.netcdf;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Collections;
 import java.io.IOException;
@@ -53,16 +54,6 @@ import ucar.nc2.constants.CDM;                      // We use only String consta
  * @module
  */
 final class GridResource extends AbstractGridResource implements ResourceOnFileSystem {
-    /**
-     * Names of attributes where to fetch missing values, in preference order.
-     * The union of all "no data" values will be stored, but the category name
-     * will be inferred from the first attribute declaring the "no data" value.
-     */
-    private static final String[] NODATA_ATTRIBUTES = {
-        CDM.MISSING_VALUE,
-        CDM.FILL_VALUE
-    };
-
     /**
      * The identifier of this grid resource. This is the variable name.
      *
@@ -178,27 +169,26 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             }
             /*
              * Adds the "missing value" or "fill value" as qualitative categories.
+             * If a value has both roles, use "missing value" for category name.
              */
-            for (final String attribute : NODATA_ATTRIBUTES) {
-                InternationalString name = null;
-                boolean isFillValue = false;
-                for (final Object value : data.getAttributeValues(attribute, true)) {
-                    if (value instanceof Number) {
-                        final Number n = (Number) value;
-                        final double fp = n.doubleValue();
-                        if (!builder.rangeCollides(fp, fp)) {
-                            if (name == null) {
-                                isFillValue = CDM.FILL_VALUE.equalsIgnoreCase(attribute);
-                                name = Vocabulary.formatInternational(isFillValue ? Vocabulary.Keys.FillValue
-                                                                                  : Vocabulary.Keys.MissingValue);
-                            }
-                            if (isFillValue) {
-                                isFillValue = false;                              // Declare only one fill value.
-                                builder.setBackground(name, n);
-                            } else {
-                                builder.addQualitative(name, n, n);
-                            }
-                        }
+            boolean setBackground = true;
+            final InternationalString[] names = new InternationalString[2];
+            for (final Map.Entry<Number,Integer> entry : data.getNodataValues().entrySet()) {
+                final Number n = entry.getKey();
+                final double fp = n.doubleValue();
+                if (!builder.rangeCollides(fp, fp)) {
+                    final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
+                    final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.
+                    InternationalString name = names[i];
+                    if (name == null) {
+                        name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
+                        names[i] = name;
+                    }
+                    if (setBackground & (role & 1) != 0) {
+                        setBackground = false;                  // Declare only one fill value.
+                        builder.setBackground(name, n);
+                    } else {
+                        builder.addQualitative(name, n, n);
                     }
                 }
             }

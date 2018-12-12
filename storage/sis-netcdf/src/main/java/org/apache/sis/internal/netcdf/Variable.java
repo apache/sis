@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Locale;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.awt.image.DataBuffer;
@@ -31,6 +33,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
+import ucar.nc2.constants.CDM;                      // We use only String constants.
 
 
 /**
@@ -53,6 +56,15 @@ public abstract class Variable extends NamedElement {
         "actual_range",     // Actual data range for variable.
         "valid_min",        // Fallback if "valid_range" is not specified.
         "valid_max"
+    };
+
+    /**
+     * Names of attributes where to fetch missing or pad values. Order matter since it determines the bits to be set
+     * in the map returned by {@link #getNodataValues()}. The main bit is bit 0, which identify the background value.
+     */
+    private static final String[] NODATA_ATTRIBUTES = {
+        CDM.FILL_VALUE,
+        CDM.MISSING_VALUE
     };
 
     /**
@@ -425,7 +437,64 @@ public abstract class Variable extends NamedElement {
                 return range;
             }
         }
+        /*
+         * If we found no explicit range attribute and if the variable type is an integer type,
+         * then infer the range from the variable type and exclude the ranges of nodata values.
+         */
+        final DataType dataType = getDataType();
+        if (dataType.isInteger) {
+            final int size = dataType.size() * Byte.SIZE;
+            if (size > 0 && size <= Long.SIZE) {
+                long min = 0;
+                long max = (1L << size) - 1;
+                if (!dataType.isUnsigned) {
+                    max >>>= 1;
+                    min = ~max;
+                }
+                for (final Number value : getNodataValues().keySet()) {
+                    final long n = value.longValue();
+                    final long Δmin = (n - min);            // Should be okay even with long unsigned values.
+                    final long Δmax = (max - n);
+                    if (Δmin >= 0 && Δmax >= 0) {           // Test if the pad/missing value is inside range.
+                        if (Δmin < Δmax) min = n + 1;       // Reduce the extremum closest to the pad value.
+                        else             max = n - 1;
+                    }
+                }
+                if (max > min) {        // Note: this will also exclude unsigned long if max > Long.MAX_VALUE.
+                    if (min >= Integer.MIN_VALUE && max <= Integer.MAX_VALUE) {
+                        return NumberRange.create((int) min, true, (int) max, true);
+                    }
+                    return NumberRange.create(min, true, max, true);
+                }
+            }
+        }
         return null;
+    }
+
+    /**
+     * Returns all no-data values declared for this variable, or an empty map if none.
+     * The map keys are pad sample values or missing sample values. The map values are
+     * bitmask identifying the role of the pad/missing sample value:
+     *
+     * <ul>
+     *   <li>If bit 0 is set, then the value is a pad value. Those values can be used for background.</li>
+     *   <li>If bit 1 is set, then the value is a missing value.</li>
+     * </ul>
+     *
+     * The same value may have more than one role.
+     *
+     * @return pad/missing values with bitmask of their role.
+     */
+    public final Map<Number,Integer> getNodataValues() {
+        final Map<Number,Integer> pads = new LinkedHashMap<>();
+        for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
+            for (final Object value : getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
+                if (value instanceof Number) {
+                    pads.merge((Number) value, 1 << i, (v1, v2) -> v1 | v2);
+                }
+            }
+        }
+        return pads;
     }
 
     /**
