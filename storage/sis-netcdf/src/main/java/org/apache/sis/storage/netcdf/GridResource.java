@@ -17,7 +17,6 @@
 package org.apache.sis.storage.netcdf;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,7 +34,6 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Vocabulary;
@@ -105,28 +103,12 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      * @param  grid     the grid geometry (size, CRS…) of the {@linkplain #data} cube.
      * @param  data     the variable providing actual data.
      */
-    private GridResource(final Decoder decoder, final Grid grid, final Variable data) throws IOException, DataStoreException {
+    GridResource(final Decoder decoder, final Grid grid, final Variable data) throws IOException, DataStoreException {
         super(decoder.listeners);
         this.data    = data;
         gridGeometry = grid.getGridGeometry(decoder);
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, data.getName());
         location     = decoder.location;
-    }
-
-    /**
-     * Returns a list of all grid resources found in the netCDF file opened by the given decoder.
-     * This method should be invoked only once and the result cached. The returned list is modifiable;
-     * caller is free to add other elements.
-     */
-    static List<Resource> list(final Decoder decoder) throws IOException, DataStoreException {
-        final List<Resource> resources = new ArrayList<>();
-        for (final Variable variable : decoder.getVariables()) {
-            final Grid grid = variable.getGridGeometry(decoder);
-            if (grid != null) {
-                resources.add(new GridResource(decoder, grid, variable));
-            }
-        }
-        return resources;
     }
 
     /**

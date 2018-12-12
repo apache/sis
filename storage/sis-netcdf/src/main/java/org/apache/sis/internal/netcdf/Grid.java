@@ -55,6 +55,16 @@ import org.apache.sis.math.Vector;
  */
 public abstract class Grid extends NamedElement {
     /**
+     * Minimal number of dimension for accepting a variable as a coverage variable.
+     */
+    public static final int MIN_DIMENSION = 2;
+
+    /**
+     * Minimal number of cells along {@value #MIN_DIMENSION} dimensions for accepting a variable as a coverage variable.
+     */
+    static final int MIN_SPAN = 2;
+
+    /**
      * The axes, created when first needed.
      * The ordering of axes is based on the order in which dimensions are declared for variables using this grid.
      * This is not necessarily the same order than the order in which variables are listed in the netCDF file.

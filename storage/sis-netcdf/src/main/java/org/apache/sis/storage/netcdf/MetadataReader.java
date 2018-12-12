@@ -893,7 +893,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (variable.isCoverage(2)) {
+            if (variable.isCoverage()) {
                 final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
                 CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
             }
@@ -1039,8 +1039,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * is built from the netCDF CoordinateSystem objects.
          */
         for (final Grid cs : decoder.getGridGeometries()) {
-            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION &&
-                cs.getTargetDimensions() >= Variable.MIN_DIMENSION)
+            if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
+                cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {
                 addSpatialRepresentationInfo(cs);
             }

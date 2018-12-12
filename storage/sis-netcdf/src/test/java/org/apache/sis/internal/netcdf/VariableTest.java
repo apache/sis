@@ -91,7 +91,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getDataType()}</li>
      *   <li>{@link Variable#getShape()} length</li>
      *   <li>{@link Variable#isCoordinateSystemAxis()}</li>
-     *   <li>{@link Variable#isCoverage(int)}</li>
+     *   <li>{@link Variable#isCoverage()}</li>
      * </ul>
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -128,7 +128,7 @@ public strictfp class VariableTest extends TestCase {
             assertEquals(name, expected[propertyIndex++], dataType);
             assertEquals(name, expected[propertyIndex++], variable.getShape().length);
             assertEquals(name, expected[propertyIndex++], variable.isCoordinateSystemAxis());
-            assertEquals(name, expected[propertyIndex++], variable.isCoverage(2));
+            assertEquals(name, expected[propertyIndex++], variable.isCoverage());
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
         }
         assertEquals("Expected more variables.",

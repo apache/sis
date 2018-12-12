@@ -64,11 +64,6 @@ public abstract class Variable extends NamedElement {
     public static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(.+)\\Wsince\\W(.+)", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Minimal number of dimension for accepting a variable as a coverage variable.
-     */
-    public static final int MIN_DIMENSION = 2;
-
-    /**
      * The unit of measurement, parsed from {@link #getUnitsString()} when first needed.
      * We do not try to parse the unit at construction time because this variable may be
      * never requested by the user.
@@ -231,29 +226,25 @@ public abstract class Variable extends NamedElement {
      * This method checks for the following conditions:
      *
      * <ul>
-     *   <li>Images require at least {@value #MIN_DIMENSION} dimensions of size equals or greater
-     *       than {@code minLength}. They may have more dimensions, in which case a slice will be
-     *       taken later.</li>
-     *   <li>Exclude axes. Axes are often already excluded by the above condition
-     *       because axis are usually 1-dimensional, but some axes are 2-dimensional
-     *       (e.g. a localization grid).</li>
-     *   <li>Excludes characters, strings and structures, which can not be easily
-     *       mapped to an image type. In addition, 2-dimensional character arrays
-     *       are often used for annotations and we don't want to confuse them
-     *       with images.</li>
+     *   <li>Images require at least {@value Grid#MIN_DIMENSION} dimensions of size equals or greater than {@value Grid#MIN_SPAN}.
+     *       They may have more dimensions, in which case a slice will be taken later.</li>
+     *   <li>Exclude axes. Axes are often already excluded by the above condition because axis are usually 1-dimensional,
+     *       but some axes are 2-dimensional (e.g. a localization grid).</li>
+     *   <li>Excludes characters, strings and structures, which can not be easily mapped to an image type.
+     *       In addition, 2-dimensional character arrays are often used for annotations and we do not want
+     *       to confuse them with images.</li>
      * </ul>
      *
-     * @param  minSpan  minimal span (in unit of grid cells) along the dimensions.
      * @return {@code true} if the variable can be considered a coverage.
      */
-    public final boolean isCoverage(final int minSpan) {
+    public final boolean isCoverage() {
         int numVectors = 0;                                     // Number of dimension having more than 1 value.
         for (final int length : getShape()) {
-            if (Integer.toUnsignedLong(length) >= minSpan) {
+            if (Integer.toUnsignedLong(length) >= Grid.MIN_SPAN) {
                 numVectors++;
             }
         }
-        if (numVectors >= MIN_DIMENSION) {
+        if (numVectors >= Grid.MIN_DIMENSION) {
             final DataType dataType = getDataType();
             if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
                 return !isCoordinateSystemAxis();
@@ -297,7 +288,7 @@ public abstract class Variable extends NamedElement {
      * Values shall be handled as unsigned 32 bits integers.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0, 0, …, 0). This method is used by {@link #isCoverage(int)} method,
+     * The lower corner is always (0, 0, …, 0). This method is used by {@link #isCoverage()} method,
      * or for building string representations of this variable.</p>
      *
      * @return the number of grid cells for each dimension, as unsigned integer in netCDF order (reverse of "natural" order).
