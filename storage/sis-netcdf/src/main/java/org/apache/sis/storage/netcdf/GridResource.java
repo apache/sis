@@ -207,13 +207,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      */
     @Override
     public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
-        if (range != null && range.length != 0) {
-            throw new DataStoreException("Unsupported range subsetting.");      // TODO
-        }
-        if (domain != null) {
-            throw new DataStoreException("Unsupported domain subsetting.");      // TODO
-        }
-        domain = getGridGeometry();
+        domain = validateReadArgument(domain);
         final GridExtent extent = domain.getExtent();
         final int   dimension   = domain.getDimension();
         final int[] areaLower   = new int[dimension];
@@ -223,9 +217,6 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             final int j = (dimension - 1) - i;
             areaLower[j] = unsigned(extent.getLow (i));             // Inclusive.
             areaUpper[j] = unsigned(extent.getHigh(i) + 1);         // Exclusive.
-            if (i >= 2) {
-                areaUpper[j] = areaLower[j] + 1;                    // TODO
-            }
             subsampling[j] = 1;
         }
         final Vector samples;
