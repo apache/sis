@@ -80,7 +80,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * The first three properties should be mandatory, but are allowed to be temporarily absent during
  * grid coverage construction. Temporarily absent properties are allowed because they may be inferred
  * from a wider context. For example a grid geometry know nothing about {@link RenderedImage},
- * but {@code GridCoverage2D} does and may use that information for providing a missing grid envelope.
+ * but {@code GridCoverage2D} does and may use that information for providing a missing grid extent.
  * By default, any request for an undefined property will throw an {@link IncompleteGridGeometryException}.
  * In order to check if a property is defined, use {@link #isDefined(int)}.
  *
@@ -112,7 +112,7 @@ public class GridGeometry implements Serializable {
     public static final int ENVELOPE = 2;
 
     /**
-     * A bitmask to specify the validity of the grid envelope property.
+     * A bitmask to specify the validity of the grid extent property.
      *
      * @see #isDefined(int)
      * @see #getExtent()
@@ -210,6 +210,34 @@ public class GridGeometry implements Serializable {
         nonLinears  = other.nonLinears;
     }
 
+    /**
+     * Creates a new grid geometry with the same values than the given grid geometry except the grid extent.
+     * This constructor can be used for creating a grid geometry over a subregion, for example with the grid
+     * extent computed by {@link #getExtent(Envelope)}.
+     *
+     * @param other   the other grid geometry to copy.
+     * @param extent  the new extent for the grid geometry to construct, or {@code null} if none.
+     * @throws NullPointerException if {@code extent} is {@code null} and the other grid geometry contains no other information.
+     * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
+     *
+     * @see #getExtent(Envelope)
+     */
+    public GridGeometry(final GridGeometry other, final GridExtent extent) throws TransformException {
+        ArgumentChecks.ensureNonNull("other", other);
+        if (extent != null) {
+            ensureDimensionMatches("extent", other.getDimension(), extent.getDimension());
+        }
+        this.extent = extent;
+        gridToCRS   = other.gridToCRS;
+        cornerToCRS = other.cornerToCRS;
+        resolution  = other.resolution;
+        nonLinears  = other.nonLinears;
+        envelope    = computeEnvelope(other.gridToCRS, other.envelope != null ? other.envelope.getCoordinateReferenceSystem() : null);
+        if (envelope == null && gridToCRS == null) {
+            ArgumentChecks.ensureNonNull("extent", extent);
+        }
+    }
+
     /*
      * Do not provide convenience constructor without PixelInCell or PixelOrientation argument.
      * Experience shows that 0.5 pixel offsets in image georeferencing is a recurrent problem.
@@ -218,7 +246,7 @@ public class GridGeometry implements Serializable {
      */
 
     /**
-     * Creates a new grid geometry from a grid envelope and a mapping from pixel coordinates to "real world" coordinates.
+     * Creates a new grid geometry from a grid extent and a mapping from pixel coordinates to "real world" coordinates.
      * At least one of {@code extent}, {@code gridToCRS} or {@code crs} arguments shall be non-null.
      * If {@code gridToCRS} is non-null, then {@code anchor} shall be non-null too with one of the following values:
      *
@@ -249,8 +277,7 @@ public class GridGeometry implements Serializable {
      * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
      * @throws NullPointerException if {@code extent}, {@code gridToCRS} and {@code crs} arguments are all null.
      * @throws MismatchedDimensionException if the math transform and the CRS do not have consistent dimensions.
-     * @throws TransformException if the math transform can not compute the geospatial envelope or the resolution
-     *         from the grid envelope.
+     * @throws TransformException if the math transform can not compute the geospatial envelope or resolution from the grid extent.
      */
     public GridGeometry(final GridExtent extent, final PixelInCell anchor, final MathTransform gridToCRS,
             final CoordinateReferenceSystem crs) throws TransformException
@@ -268,20 +295,15 @@ public class GridGeometry implements Serializable {
         this.extent      = extent;
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
-        GeneralEnvelope env = null;
-        if (extent != null && cornerToCRS != null) {
-            env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
-            env.setCoordinateReferenceSystem(crs);
-        } else if (crs != null) {
-            env = new GeneralEnvelope(crs);
-            env.setToNaN();
-        }
-        envelope = (env != null) ? new ImmutableEnvelope(env) : null;
+        this.envelope    = computeEnvelope(gridToCRS, crs);     // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
         /*
          * If the gridToCRS transform is linear, we do not even need to check the grid extent;
          * it can be null. Otherwise (if the transform is non-linear) the extent is mandatory.
          * The easiest way to estimate a resolution is then to ask for the derivative at some
          * arbitrary point. For this constructor, we take the grid center.
+         *
+         * Note that for this computation, it does not matter if 'gridToCRS' is the user-specified
+         * transform or the 'this.gridToCRS' field value; both should produce equivalent results.
          */
         double[] resolution = null;
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
@@ -294,6 +316,25 @@ public class GridGeometry implements Serializable {
         }
         this.resolution = resolution;
         nonLinears = findNonLinearTargets(gridToCRS);
+    }
+
+    /**
+     * Computes the envelope with the given coordinate reference system. This method is invoked from constructors.
+     * The {@link #extent}, {@link #gridToCRS} and {@link #cornerToCRS} fields must be set before this method is invoked.
+     *
+     * @param  specified  the transform specified by the user. This is not necessarily {@link #gridToCRS}.
+     * @param  crs        the coordinate reference system to declare in the envelope.
+     */
+    private ImmutableEnvelope computeEnvelope(final MathTransform specified, final CoordinateReferenceSystem crs) throws TransformException {
+        GeneralEnvelope env = null;
+        if (extent != null && cornerToCRS != null) {
+            env = extent.toCRS(cornerToCRS, specified);
+            env.setCoordinateReferenceSystem(crs);
+        } else if (crs != null) {
+            env = new GeneralEnvelope(crs);
+            env.setToNaN();
+        }
+        return (env != null) ? new ImmutableEnvelope(env) : null;
     }
 
     /**
@@ -314,7 +355,7 @@ public class GridGeometry implements Serializable {
      * are implementation details and may be adjusted in any Apache SIS versions.</p>
      *
      * <p>Because of the uncertainties explained in above paragraph, this constructor should be used only in last resort,
-     * when the grid envelope is unknown. For determinist results, developers should prefer the
+     * when the grid extent is unknown. For determinist results, developers should prefer the
      * {@linkplain #GridGeometry(GridExtent, PixelInCell, MathTransform, CoordinateReferenceSystem) constructor using grid extent}
      * as much as possible. In particular, this constructor is not suitable for computing grid geometry of tiles in a tiled image,
      * because the above-cited uncertainties may result in apparently random black lines between tiles.</p>
@@ -330,7 +371,7 @@ public class GridGeometry implements Serializable {
      * @param  envelope   the geospatial envelope, including its coordinate reference system if available.
      *                    There is no guarantees that the envelope actually stored in the {@code GridGeometry}
      *                    will be equal to this specified envelope.
-     * @throws TransformException if the math transform can not compute the grid envelope or the resolution.
+     * @throws TransformException if the math transform can not compute the grid extent or the resolution.
      */
     @SuppressWarnings("null")
     public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope) throws TransformException {
@@ -519,6 +560,8 @@ public class GridGeometry implements Serializable {
      * @return a grid extent of the same dimension than the grid geometry which intersects the given area of interest.
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
+     *
+     * @see #GridGeometry(GridGeometry, GridExtent)
      */
     public GridExtent getExtent(final Envelope areaOfInterest) throws IncompleteGridGeometryException, TransformException {
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);

@@ -19,6 +19,8 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.Date;
 import java.time.Instant;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -91,7 +93,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
 
     /**
      * A converter from values in this CRS to values in milliseconds.
-     * Will be constructed only when first needed.
+     *
+     * @see #initializeConverter()
      */
     private transient UnitConverter toMillis;
 
@@ -160,6 +163,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         super(properties, cs);
         ensureNonNull("datum", datum);
         this.datum = datum;
+        initializeConverter();
     }
 
     /**
@@ -176,6 +180,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     protected DefaultTemporalCRS(final TemporalCRS crs) {
         super(crs);
         datum = crs.getDatum();
+        initializeConverter();
     }
 
     /**
@@ -194,6 +199,26 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * Invoked on deserialization for restoring the transient fields.
+     *
+     * @param  in  the input stream from which to deserialize an attribute.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initializeConverter();
+    }
+
+    /**
+     * Initialize the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
+     */
+    private void initializeConverter() {
+        origin   = datum.getOrigin().getTime();
+        toMillis = super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.MILLISECOND);
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code TemporalCRS.class}.
      *
@@ -207,14 +232,6 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     @Override
     public Class<? extends TemporalCRS> getInterface() {
         return TemporalCRS.class;
-    }
-
-    /**
-     * Initialize the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
-     */
-    private void initializeConverter() {
-        origin   = datum.getOrigin().getTime();
-        toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.MILLISECOND);
     }
 
     /**
@@ -260,8 +277,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Convert the given value into an instant object.
      * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
-     *
-     * <p>This method is the converse of {@link #toValue(Instant)}.</p>
+     * This method is the converse of {@link #toValue(Instant)}.
      *
      * @param  value  a value in this axis unit.
      * @return the value as an instant, or {@code null} if the given value is NaN or infinite.
@@ -272,30 +288,23 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             return null;
         }
-        if (toMillis == null) {
-            initializeConverter();
-        }
         return Instant.ofEpochMilli(Math.round(toMillis.convert(value)) + origin);
     }
 
     /**
      * Convert the given value into a {@link Date} object.
      * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
+     * This method is the converse of {@link #toValue(Date)}.
      *
-     * <p>This method is the converse of {@link #toValue(Date)}.</p>
+     * <p>This method is provided for interoperability with legacy {@code java.util.Date} object.
+     * New code should use {@link #toInstant(double)} instead.</p>
      *
      * @param  value  a value in this axis unit.
      * @return the value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
-     *
-     * @deprecated Replaced by {@link #toInstant(double)}.
      */
-    @Deprecated
     public Date toDate(final double value) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             return null;
-        }
-        if (toMillis == null) {
-            initializeConverter();
         }
         return new Date(Math.round(toMillis.convert(value)) + origin);
     }
@@ -303,8 +312,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Convert the given instant into a value in this axis unit.
      * If the given instant is {@code null}, then this method returns {@link Double#NaN NaN}.
-     *
-     * <p>This method is the converse of {@link #toInstant(double)}.</p>
+     * This method is the converse of {@link #toInstant(double)}.
      *
      * @param  time  the value as an instant, or {@code null}.
      * @return the value in this axis unit, or {@link Double#NaN NaN} if the given instant is {@code null}.
@@ -315,30 +323,23 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         if (time == null) {
             return Double.NaN;
         }
-        if (toMillis == null) {
-            initializeConverter();
-        }
         return toMillis.inverse().convert(time.toEpochMilli() - origin);
     }
 
     /**
      * Convert the given {@linkplain Date date} into a value in this axis unit.
      * If the given time is {@code null}, then this method returns {@link Double#NaN NaN}.
+     * This method is the converse of {@link #toDate(double)}.
      *
-     * <p>This method is the converse of {@link #toDate(double)}.</p>
+     * <p>This method is provided for interoperability with legacy {@code java.util.Date} object.
+     * New code should use {@link #toValue(Date)} instead.</p>
      *
      * @param  time  the value as a {@linkplain Date date}, or {@code null}.
      * @return the value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
-     *
-     * @deprecated Replaced by {@link #toValue(Instant)}.
      */
-    @Deprecated
     public double toValue(final Date time) {
         if (time == null) {
             return Double.NaN;
-        }
-        if (toMillis == null) {
-            initializeConverter();
         }
         return toMillis.inverse().convert(time.getTime() - origin);
     }
@@ -398,6 +399,9 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     private void setDatum(final TemporalDatum value) {
         if (datum == null) {
             datum = value;
+            if (super.getCoordinateSystem() != null) {
+                initializeConverter();
+            }
         } else {
             MetadataUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "temporalDatum");
         }
@@ -410,5 +414,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void setCoordinateSystem(final TimeCS cs) {
         setCoordinateSystem("timeCS", cs);
+        if (toMillis == null && datum != null) {
+            initializeConverter();
+        }
     }
 }

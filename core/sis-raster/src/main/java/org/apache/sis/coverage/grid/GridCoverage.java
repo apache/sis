@@ -108,8 +108,8 @@ public abstract class GridCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image. The given {@code slicePoint} argument specifies
      * the coordinates of the slice in all dimensions that are not in the two-dimensional image. For example if this grid
-     * coverage has (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) dimensions and we want a rendered image of
-     * data in the (<var>x</var>, <var>y</var>) dimensions, then the given {@code slicePoint} shall contain the
+     * coverage has (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) dimensions and we want to render an image
+     * of data in the (<var>x</var>, <var>y</var>) dimensions, then the given {@code slicePoint} shall contain the
      * (<var>z</var>, <var>t</var>) coordinates of the desired slice. The two coordinates of the data to be shown
      * (<var>x</var> and <var>y</var> in our example) shall be excluded from the slice point in one of the following ways:
      *
