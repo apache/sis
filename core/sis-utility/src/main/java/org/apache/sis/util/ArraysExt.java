@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Arrays
  *
@@ -1255,6 +1255,25 @@ public final class ArraysExt extends Static {
                 values[j++] = tmp;
             }
         }
+    }
+
+    /**
+     * Returns a sequence of increasing values of the given length. Each value is increased by 1.
+     * For example {@code sequence(-1, 4)} returns {@code {-1, 0, 1, 2}}. This method is a convenience for
+     * enumerating a subset of dimensions in a coordinate reference system or a subset of bands in an image.
+     *
+     * @param  start   first value in the array to return.
+     * @param  length  number of values to return.
+     * @return a sequence of increasing integers starting at {@code start} and having {@code length} values.
+     *
+     * @since 1.0
+     */
+    public static int[] sequence(final int start, final int length) {
+        final int[] array = new int[length];
+        for (int i=0; i<length; i++) {
+            array[i] = start + i;
+        }
+        return array;
     }
 
     /**

@@ -124,7 +124,7 @@ public class GridExtent implements Serializable {
     /**
      * Minimum and maximum grid coordinates. The first half contains minimum coordinates (inclusive),
      * while the last half contains maximum coordinates (<strong>inclusive</strong>). Note that the
-     * later is the opposite of Java2D usage but conform to ISO specification.
+     * later is the opposite of Java2D usage but conforms to ISO specification.
      */
     private final long[] coordinates;
 

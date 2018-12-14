@@ -223,7 +223,7 @@ public class TransformSeparator {
                     isOutOfRange ? "upper" : "lower", min, max-1, isOutOfRange ? upper : lower));
         }
         if (offset == 0) {
-            sequence = series(lower, upper);
+            sequence = ArraysExt.sequence(lower, upper - lower);
         } else {
             sequence = Arrays.copyOf(sequence, (offset -= lower) + upper);
             for (int i=lower; i<upper; i++) {
@@ -231,17 +231,6 @@ public class TransformSeparator {
             }
         }
         assert containsAll(sequence, lower, upper);
-        return sequence;
-    }
-
-    /**
-     * Returns a series of increasing values starting at {@code lower}.
-     */
-    private static int[] series(final int lower, final int upper) throws IllegalArgumentException {
-        final int[] sequence = new int[upper - lower];
-        for (int i = 0; i < sequence.length; i++) {
-            sequence[i] = i + lower;
-        }
         return sequence;
     }
 
@@ -423,10 +412,10 @@ public class TransformSeparator {
                 tr = filterTargetDimensions(tr, targetDimensions);
             }
             if (sourceDimensions == null) {
-                sourceDimensions = series(0, transform.getSourceDimensions());
+                sourceDimensions = ArraysExt.sequence(0, transform.getSourceDimensions());
             }
             if (targetDimensions == null) {
-                targetDimensions = series(0, transform.getTargetDimensions());
+                targetDimensions = ArraysExt.sequence(0, transform.getTargetDimensions());
             }
         } else {
             /*
@@ -513,7 +502,7 @@ public class TransformSeparator {
         final int lower  = dimensions[0];
         final int upper  = dimensions[dimensions.length - 1] + 1;
         if (lower == 0 && upper == numSrc && dimensions.length == numSrc) {
-            targetDimensions = series(0, numTgt);
+            targetDimensions = ArraysExt.sequence(0, numTgt);
             return step;
         }
         if (step.isIdentity()) {

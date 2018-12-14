@@ -21,6 +21,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.WritableRaster;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Static;
 
 
@@ -58,10 +59,7 @@ public final class RasterFactory extends Static {
             int[] bankIndices, int[] bandOffsets, final Point location)
     {
         if (bankIndices == null) {
-            bankIndices = new int[buffer.getNumBanks()];
-            for (int i=1; i<bankIndices.length; i++) {
-                bankIndices[i] = i;
-            }
+            bankIndices = ArraysExt.sequence(0, buffer.getNumBanks());
         }
         if (bandOffsets == null) {
             bandOffsets = new int[bankIndices.length];

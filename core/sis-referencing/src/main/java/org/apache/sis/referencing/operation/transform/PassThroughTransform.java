@@ -34,6 +34,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ArraysExt;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -224,11 +225,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */
     public final int[] getModifiedCoordinates() {
-        final int[] index = new int[subTransform.getSourceDimensions()];
-        for (int i=0; i<index.length; i++) {
-            index[i] = i + firstAffectedOrdinate;
-        }
-        return index;
+        return ArraysExt.sequence(firstAffectedOrdinate, subTransform.getSourceDimensions());
     }
 
     /**

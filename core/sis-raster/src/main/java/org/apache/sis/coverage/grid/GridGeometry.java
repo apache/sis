@@ -551,7 +551,8 @@ public class GridGeometry implements Serializable {
      * The given envelope can be expressed in any coordinate reference system (CRS).
      * That envelope CRS may have fewer dimensions than this grid geometry CRS,
      * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
-     * In other words, the dimensions not found in the given {@code areaOfInterest} will be unfiltered (not discarded).
+     * In other words, the {@code GridGeometry} dimensions not found in the given {@code areaOfInterest}
+     * will be unfiltered (not discarded).
      *
      * <p>If the envelope CRS is not specified, then it is assumed the same than the CRS of this grid geometry.
      * In such case the envelope needs to contain all dimensions.</p>
