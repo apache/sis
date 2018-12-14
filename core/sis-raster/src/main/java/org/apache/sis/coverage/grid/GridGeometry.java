@@ -30,6 +30,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -43,7 +44,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.resources.Vocabulary;
@@ -51,11 +51,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
-
-import static org.apache.sis.referencing.CRS.findOperation;
 
 
 /**
@@ -423,9 +420,11 @@ public class GridGeometry implements Serializable {
     /**
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
+     *
+     * @param  exception  the exception that occurred.
      */
     static void recoverableException(final Exception exception) {
-        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, "transform", exception);
+        Logging.recoverableException(Logging.getLogger(Modules.RASTER), GridGeometry.class, "<init>", exception);
     }
 
     /**
@@ -580,16 +579,9 @@ public class GridGeometry implements Serializable {
              * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
              * transforms - because transforming envelopes twice add errors.
              */
-            if (envelope != null) {
-                final CoordinateReferenceSystem sourceCRS = envelope.getCoordinateReferenceSystem();
-                if (sourceCRS != null) {
-                    final CoordinateReferenceSystem targetCRS = areaOfInterest.getCoordinateReferenceSystem();
-                    if (targetCRS != null && !Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-                        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
-                        bbox.setBounds(areaOfInterest);
-                        gridToAOI = MathTransforms.concatenate(gridToAOI, findOperation(sourceCRS, targetCRS, bbox).getMathTransform());
-                    }
-                }
+            final CoordinateOperation operation = Envelopes.findOperation(envelope, areaOfInterest);
+            if (operation != null) {
+                gridToAOI = MathTransforms.concatenate(gridToAOI, operation.getMathTransform());
             }
             /*
              * If the envelope dimensions does not encompass all grid dimensions, the envelope is probably non-invertible.
@@ -871,6 +863,12 @@ public class GridGeometry implements Serializable {
      * @return {@code true} if all specified attributes are defined (i.e. invoking the
      *         corresponding method will not thrown an {@link IncompleteGridGeometryException}).
      * @throws IllegalArgumentException if the specified bitmask is not a combination of known masks.
+     *
+     * @see #getCoordinateReferenceSystem()
+     * @see #getEnvelope()
+     * @see #getExtent()
+     * @see #getResolution(boolean)
+     * @see #getGridToCRS(PixelInCell)
      */
     public boolean isDefined(final int bitmask) throws IllegalArgumentException {
         if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | RESOLUTION)) != 0) {

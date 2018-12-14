@@ -616,6 +616,7 @@ public final class CRS extends Static {
      * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
      * @throws FactoryException if the operation can not be created for another reason.
      *
+     * @see Envelopes#findOperation(Envelope, Envelope)
      * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
      * @since 0.7
@@ -629,9 +630,9 @@ public final class CRS extends Static {
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
         /*
-         * In principle we should just delegate to factory.createOperation(…). However this operation may fail
-         * if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in that
-         * database and
+         * In principle following code should just delegate to factory.createOperation(…). However that operation
+         * may fail if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in
+         * that database and we do not have the SQL scripts for creating them.
          */
         final DefaultCoordinateOperationFactory factory = CoordinateOperations.factory();
         try {

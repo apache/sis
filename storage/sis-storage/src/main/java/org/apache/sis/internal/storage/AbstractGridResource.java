@@ -99,20 +99,19 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * @throws DataStoreException if an error occurred while validating the grid geometry.
      */
     protected final GridGeometry validateReadArgument(GridGeometry domain) throws DataStoreException {
-        final GridGeometry gridGeometry = getGridGeometry();
-        final int dimension = gridGeometry.getDimension();
+        final GridGeometry stored = getGridGeometry();
         if (domain == null) {
-            domain = gridGeometry;
-        } else {
-            final int ad = domain.getDimension();
-            if (ad != gridGeometry.getDimension()) {
-                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "domain", dimension, ad));
-            }
-            if (domain.isDefined(GridGeometry.GRID_TO_CRS) &&
-                    !gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER).equals(domain.getGridToCRS(PixelInCell.CELL_CENTER)))
-            {
-                throw new IllegalArgumentException("Mismatched grid to CRS transform.");
-            }
+            return stored;
+        }
+        final int dimension = stored.getDimension();
+        final int ad = domain.getDimension();
+        if (ad != stored.getDimension()) {
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "domain", dimension, ad));
+        }
+        if (domain.isDefined(GridGeometry.GRID_TO_CRS) &&
+                !stored.getGridToCRS(PixelInCell.CELL_CENTER).equals(domain.getGridToCRS(PixelInCell.CELL_CENTER)))
+        {
+            throw new IllegalArgumentException("Mismatched grid to CRS transform.");
         }
         return domain;
     }

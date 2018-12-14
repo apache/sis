@@ -258,7 +258,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    @DependsOnMethod("testNonLinear")
+    @DependsOnMethod({"testNonLinear", "testGetExtent"})
     public void testGetExtentNonLinear() throws TransformException {
         final GridExtent extent = new GridExtent(
                 new DimensionNameType[] {
