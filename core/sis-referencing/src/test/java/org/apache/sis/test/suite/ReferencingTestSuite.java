@@ -110,6 +110,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
     org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
     org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
+    org.apache.sis.referencing.operation.transform.TranslationTransformTest.class,
     org.apache.sis.referencing.operation.transform.ScaleTransformTest.class,
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.LinearTransformTest.class,

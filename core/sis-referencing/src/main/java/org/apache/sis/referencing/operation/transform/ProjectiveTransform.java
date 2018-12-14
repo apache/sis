@@ -97,7 +97,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
             return this;
         }
         final int n = (numRow - 1) * numCol;
-        for (int i = 0; i != numCol;) {
+        for (int i = 0; i < numCol;) {
             if (elt[n + i] != (++i == numCol ? 1 : 0)) {
                 return this;            // Transform is not affine (ignoring if square or not).
             }
@@ -105,14 +105,29 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         /*
          * Note: we could check for CopyTransform case here, but this check is rather done in
          * MathTransforms.linear(Matrix) in order to avoid ProjectiveTransform instantiation.
+         *
+         * Check which elements are non-zero. For ScaleTransform, they must be on the diagonal.
+         * For TranslationTransform, they must be in the last column. Note that the transform
+         * should not be identity (except for testing purpose) since the identity case should
+         * have been handled by MathTransforms.linear(Matrix) before to reach this point.
          */
+        boolean isScale       = true;                       // ScaleTransform accepts non-square matrix.
+        boolean isTranslation = (numRow == numCol);         // TranslationTransform is restricted to square matrix.
         for (int i=0; i<n; i++) {
-            // Non-zero elements are allowed to appear only on the diagonal.
-            if (elt[i] != 0 && (i / numCol) != (i % numCol)) {
-                return this;
+            if (elt[i] != 0) {
+                final int col  = (i % numCol);
+                isScale       &= (i / numCol) == col;
+                isTranslation &= (col == numCol - 1);
+                if (!(isScale | isTranslation)) {
+                    return this;
+                }
             }
         }
-        return new ScaleTransform(numRow, numCol, elt);
+        if (isTranslation) {
+            return new TranslationTransform(numRow, elt);
+        } else {
+            return new ScaleTransform(numRow, numCol, elt);
+        }
     }
 
     /**

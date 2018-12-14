@@ -20,71 +20,70 @@ import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
 
 /**
- * An affine transform that multiply the ordinate values by constant values, and optionally drop the last ordinates.
- * This is an optimization of {@link ProjectiveTransform} for a common case.
+ * An affine transform that translate the ordinate values by constant values.
  *
  * <div class="note"><b>Note:</b> we do not provide two-dimensional specialization because
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
- * @since 0.7
+ * @since 1.0
  * @module
  */
-final class ScaleTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
+final class TranslationTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8527439133082104085L;
+    private static final long serialVersionUID = 7382503993222285134L;
 
     /**
-     * Multiplication factors, to be applied in the same order than ordinate values.
+     * Translation terms, to be applied in the same order than ordinate values.
      * The length of this array is the number of target dimensions.
      */
-    private final double[] factors;
+    private final double[] offsets;
 
     /**
      * The error terms in double-double arithmetic, or {@code null} if none.
-     * May be shorter than {@code factors} if all remaining errors are zero.
+     * May be shorter than {@code offsets} if all remaining errors are zero.
      */
     private final double[] errors;
 
     /**
-     * Number of ordinate values to drop after the values that we multiplied.
-     * Values to drop happen for example in Geographic 3D to 2D conversions.
+     * Constructs a translation transform for the given offset vector.
      */
-    private final int numDroppedDimensions;
+    TranslationTransform(final double[] offsets) {
+        this.offsets = offsets.clone();
+        this.errors  = null;
+    }
 
     /**
-     * Constructs a scale transform from a matrix having the given elements.
-     * This constructors assumes that the matrix is affine and contains only
-     * scale coefficients (this is not verified).
+     * Constructs a translation transform from a matrix having the given elements.
+     * This constructors assumes that the matrix is square, affine and contains only
+     * translation terms (this is not verified).
      */
-    ScaleTransform(final int numRow, final int numCol, final double[] elements) {
-        numDroppedDimensions = numCol - numRow;
-        final int n = numRow * numCol;
-        final int tgtDim = numRow - 1;
-        factors = new double[tgtDim];
+    TranslationTransform(final int size, final double[] elements) {
+        final int n = size * size;
+        final int dim = size - 1;
+        offsets = new double[dim];
         double[] errors = null;
         int lastError = -1;
-        for (int i=0; i<tgtDim; i++) {
-            int j = numCol*i + i;
-            factors[i] = elements[j];
+        for (int i=0; i<dim; i++) {
+            int j = dim + i*size;
+            offsets[i] = elements[j];
             if ((j += n) < elements.length) {
                 final double e = elements[j];
                 if (e != 0) {
                     if (errors == null) {
-                        errors = new double[tgtDim];
+                        errors = new double[dim];
                     }
                     errors[i] = e;
                     lastError = i;
@@ -99,12 +98,14 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     public double[] getExtendedElements() {
+        final int dim = offsets.length;
         final int numCol = getNumCol();
         final int n = getNumRow() * numCol;
         final double[] elements = new double[(errors == null) ? n : (n << 1)];
-        for (int i=0; i<factors.length; i++) {
-            final int j = numCol*i + i;
-            elements[j] = factors[i];
+        for (int i=0; i<dim; i++) {
+            int j = i*numCol;
+            elements[j +    i] = 1;
+            elements[j += dim] = offsets[i];
             if (errors != null && i < errors.length) {
                 elements[j + n] = errors[i];
             }
@@ -118,7 +119,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     public int getSourceDimensions() {
-        return factors.length + numDroppedDimensions;
+        return offsets.length;
     }
 
     /**
@@ -126,7 +127,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     public int getTargetDimensions() {
-        return factors.length;
+        return offsets.length;
     }
 
     /**
@@ -134,32 +135,25 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     public double getElement(final int row, final int column) {
-        final int dstDim = factors.length;
-        final int srcDim = dstDim + numDroppedDimensions;
-        ArgumentChecks.ensureBetween("row",    0, dstDim, row);
-        ArgumentChecks.ensureBetween("column", 0, srcDim, column);
-        if (row == dstDim) {
-            return (column == srcDim) ? 1 : 0;
+        final int dim = offsets.length;
+        ArgumentChecks.ensureBetween("row",    0, dim, row);
+        ArgumentChecks.ensureBetween("column", 0, dim, column);
+        if (column == row) {
+            return 1;
+        } else if (column == dim) {
+            return offsets[row];
         } else {
-            return (row == column) ? factors[row] : 0;
+            return 0;
         }
     }
 
     /**
      * Tests whether this transform does not move any points.
-     *
-     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
-     * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
-     * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead than using a factory method.</div>
      */
     @Override
     public boolean isIdentity() {
-        if (numDroppedDimensions != 0) {
-            return false;
-        }
-        for (int i=0; i<factors.length; i++) {
-            if (factors[i] != 1) {
+        for (int i=0; i<offsets.length; i++) {
+            if (offsets[i] != 0) {
                 return false;
             }
         }
@@ -200,18 +194,16 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     @Override
     public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         if (srcPts == dstPts) {
-            final int dstDim = factors.length;
-            final int srcDim = dstDim + numDroppedDimensions;
-            if (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts) != IterationStrategy.ASCENDING) {
-                srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcDim);
+            final int dim = offsets.length;
+            if (IterationStrategy.suggest(srcOff, dim, dstOff, dim, numPts) != IterationStrategy.ASCENDING) {
+                srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*dim);
                 srcOff = 0;
             }
         }
         while (--numPts >= 0) {
-            for (int i=0; i<factors.length; i++) {
-                dstPts[dstOff++] = srcPts[srcOff++] * factors[i];
+            for (int i=0; i<offsets.length; i++) {
+                dstPts[dstOff++] = srcPts[srcOff++] + offsets[i];
             }
-            srcOff += numDroppedDimensions;
         }
     }
 
@@ -234,18 +226,16 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     @Override
     public void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         if (srcPts == dstPts) {
-            final int dstDim = factors.length;
-            final int srcDim = dstDim + numDroppedDimensions;
-            if (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts) != IterationStrategy.ASCENDING) {
-                srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcDim);
+            final int dim = offsets.length;
+            if (IterationStrategy.suggest(srcOff, dim, dstOff, dim, numPts) != IterationStrategy.ASCENDING) {
+                srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*dim);
                 srcOff = 0;
             }
         }
         while (--numPts >= 0) {
-            for (int i=0; i<factors.length; i++) {
-                dstPts[dstOff++] = (float) (srcPts[srcOff++] * factors[i]);
+            for (int i=0; i<offsets.length; i++) {
+                dstPts[dstOff++] = (float) (srcPts[srcOff++] + offsets[i]);
             }
-            srcOff += numDroppedDimensions;
         }
     }
 
@@ -261,10 +251,9 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         while (--numPts >= 0) {
-            for (int i=0; i<factors.length; i++) {
-                dstPts[dstOff++] = (float) (srcPts[srcOff++] * factors[i]);
+            for (int i=0; i<offsets.length; i++) {
+                dstPts[dstOff++] = (float) (srcPts[srcOff++] + offsets[i]);
             }
-            srcOff += numDroppedDimensions;
         }
     }
 
@@ -280,10 +269,9 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         while (--numPts >= 0) {
-            for (int i=0; i<factors.length; i++) {
-                dstPts[dstOff++] = srcPts[srcOff++] * factors[i];
+            for (int i=0; i<offsets.length; i++) {
+                dstPts[dstOff++] = srcPts[srcOff++] + offsets[i];
             }
-            srcOff += numDroppedDimensions;
         }
     }
 
@@ -295,12 +283,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     public Matrix derivative(final DirectPosition point) {
-        final int n = factors.length;
-        final MatrixSIS matrix = Matrices.createZero(n, n + numDroppedDimensions);
-        for (int i=0; i<n; i++) {
-            matrix.setElement(i, i, factors[i]);
-        }
-        return matrix;
+        return Matrices.createIdentity(offsets.length);
     }
 
     /**
@@ -310,7 +293,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     protected int computeHashCode() {
-        return Arrays.hashCode(factors) + 31 * super.computeHashCode();
+        return Arrays.hashCode(offsets) + 31 * super.computeHashCode();
     }
 
     /**
@@ -318,9 +301,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     @Override
     protected boolean equalsSameClass(final Object object) {
-        final ScaleTransform that = (ScaleTransform) object;
-        return numDroppedDimensions == that.numDroppedDimensions
-               && Arrays.equals(factors, that.factors)
-               && Arrays.equals(errors,  that.errors);
+        final TranslationTransform that = (TranslationTransform) object;
+        return Arrays.equals(offsets, that.offsets) && Arrays.equals(errors, that.errors);
     }
 }

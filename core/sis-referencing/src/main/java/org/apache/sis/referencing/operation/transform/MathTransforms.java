@@ -88,6 +88,21 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Creates a transform which applies the given translation.
+     * The source and target dimensions of the transform are the length of the given vector.
+     *
+     * @param  vector  the translation vector.
+     * @return a transform applying the given translation.
+     *
+     * @since 1.0
+     */
+    public static LinearTransform translation(final double... vector) {
+        ArgumentChecks.ensureNonNull("vector", vector);
+        TranslationTransform tr = new TranslationTransform(vector);
+        return tr.isIdentity() ? identity(vector.length) : tr;
+    }
+
+    /**
      * Creates a one-dimensional affine transform for the given coefficients.
      * Input values <var>x</var> will be converted into output values <var>y</var> using the following equation:
      *
