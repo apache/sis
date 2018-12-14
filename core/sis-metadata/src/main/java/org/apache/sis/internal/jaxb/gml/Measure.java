@@ -59,7 +59,7 @@ import org.apache.sis.measure.Units;
  * }
  *
  * Both have a value of type {@code xs:double} and a {@code uom} attribute (without namespace)
- * of type {@code gml:UomIdentifier}. Those two informations are represented by this class.
+ * of type {@code gml:UomIdentifier}. Those two information are represented by this class.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

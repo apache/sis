@@ -712,7 +712,7 @@ public strictfp class DocumentComparator {
 
     /**
      * Appends to the given buffer the string representation of the node hierarchy.
-     * The first line will contains the root of the tree. Other lines will contain
+     * The first line will contain the root of the tree. Other lines will contain
      * the child down in the hierarchy until the given node, inclusive.
      *
      * <p>This method formats only a summary if the hierarchy is equals to the expected one.</p>

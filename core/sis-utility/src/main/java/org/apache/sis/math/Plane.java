@@ -598,7 +598,7 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * Returns a string representation of this plane.
-     * The string will contains the plane's equation, as below:
+     * The string will contain the plane's equation, as below:
      *
      * <blockquote>
      *     <var>z</var>(<var>x</var>,<var>y</var>) = {@linkplain #slopeX() sx}⋅<var>x</var>

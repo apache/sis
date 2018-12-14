@@ -462,7 +462,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                 {
                     /*
                      * Do not format semi-major and semi-minor axis length in most cases,  since those
-                     * informations are provided in the ellipsoid. An exception to this rule occurs if
+                     * information are provided in the ellipsoid.  An exception to this rule occurs if
                      * the lengths are different from the ones declared in the datum.
                      */
                     if (param instanceof ParameterValue<?>) {

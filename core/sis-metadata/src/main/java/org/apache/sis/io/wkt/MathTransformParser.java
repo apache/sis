@@ -427,7 +427,7 @@ class MathTransformParser extends AbstractParser {
         parseParameters(element, parameters, null, null);
         element.close(ignoredElements);
         /*
-         * We now have all informations for constructing the math transform.
+         * We now have all information for constructing the math transform.
          */
         final MathTransform transform;
         try {

@@ -459,7 +459,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         final ParameterTableRow   header         = new ParameterTableRow(group, displayLocale, preferredCodespaces, remarks, isBrief);
         final String              groupCodespace = header.getCodeSpace();
         /*
-         * Prepares the informations to be printed later as table rows. We scan all rows before to print them
+         * Prepares the information to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
          * later in two collections: simple parameters are stored as (descriptor,value) pairs, while groups are
          * stored in an other collection for deferred formatting after the simple parameters.

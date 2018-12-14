@@ -716,7 +716,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @param  localCode  the unknown authority code, without namespace.
      * @param  code       the unknown authority code as specified by the user (may include namespace).
      * @param  cause      the failure cause, or {@code null} if none.
-     * @return an exception initialized with an error message built from the specified informations.
+     * @return an exception initialized with an error message built from the specified information.
      */
     private static NoSuchAuthorityCodeException noSuchAuthorityCode(String localCode, String code, Exception cause) {
         return (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCode_3,

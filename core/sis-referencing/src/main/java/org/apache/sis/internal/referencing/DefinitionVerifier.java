@@ -46,7 +46,7 @@ import org.apache.sis.util.Utilities;
  * Verifies the conformance of a given CRS with an authoritative description.
  * For example if a Well Known Text (WKT) contains an EPSG code, this class verifies that
  * the CRS created from the WKT is equivalent to the CRS identified by the authority code.
- * {@code DefinitionVerifier} contains two informations:
+ * {@code DefinitionVerifier} contains two information:
  *
  * <ul>
  *   <li>The recommended CRS to use. May be the given CRS or a CRS created from the authority factory.</li>

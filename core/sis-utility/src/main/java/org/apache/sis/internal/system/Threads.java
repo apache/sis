@@ -22,7 +22,7 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup} used in SIS.
- * Their intent is to bring some order in debugger informations, by grouping the threads created by SIS together
+ * Their intent is to bring some order in debugger information, by grouping the threads created by SIS together
  * under the same parent tree node.
  *
  * <div class="section">Note on dependencies</div>

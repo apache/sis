@@ -454,7 +454,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             final Element uri = element.pullElement(OPTIONAL, WKTKeywords.URI);
             if (uri != null) {
-                uri.pullString("URI");      // TODO: not yet stored, since often redundant with other informations.
+                uri.pullString("URI");      // TODO: not yet stored, since often redundant with other information.
                 uri.close(ignoredElements);
             }
             element.close(ignoredElements);
@@ -2219,7 +2219,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         /*
          * WKT 1 provides no information about the underlying CS of a derived CRS.
          * We have to guess some reasonable one with arbitrary units. We try to construct the one which
-         * contains as few information as possible, in order to avoid providing wrong informations.
+         * contains as few information as possible, in order to avoid providing wrong information.
          */
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
         final StringBuilder buffer = new StringBuilder(name).append(" axis ");

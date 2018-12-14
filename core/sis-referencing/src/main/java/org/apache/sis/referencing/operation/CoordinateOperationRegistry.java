@@ -1041,7 +1041,7 @@ class CoordinateOperationRegistry {
     /**
      * Returns the specified identifier in a map to be given to coordinate operation constructors.
      * In the special case where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
-     * the map will contains extra informations like positional accuracy.
+     * the map will contain extra information like positional accuracy.
      *
      * <div class="note"><b>Note:</b>
      * in the datum shift case, an operation version is mandatory but unknown at this time.

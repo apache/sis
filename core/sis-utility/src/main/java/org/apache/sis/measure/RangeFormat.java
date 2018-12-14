@@ -982,7 +982,7 @@ public class RangeFormat extends Format implements Localized {
             }
         }
         /*
-         * At this point, all required informations are available. Now build the range.
+         * At this point, all required information are available. Now build the range.
          * In the special case were the target type is the generic Number type instead
          * than a more specialized type, the finest suitable type will be determined.
          */
