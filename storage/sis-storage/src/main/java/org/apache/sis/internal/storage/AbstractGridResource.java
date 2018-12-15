@@ -17,15 +17,12 @@
 package org.apache.sis.internal.storage;
 
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListeners;
 
 
@@ -88,31 +85,5 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         for (final SampleDimension band : getSampleDimensions()) {
             metadata.addNewBand(band);
         }
-    }
-
-    /**
-     * Verifies the validity of the grid geometry specified by the user
-     * for a {@link #read(GridGeometry, int...)} operation.
-     *
-     * @param  domain  the user-specified grid geometry, or {@code null}.
-     * @return the grid geometry to use for reading.
-     * @throws DataStoreException if an error occurred while validating the grid geometry.
-     */
-    protected final GridGeometry validateReadArgument(GridGeometry domain) throws DataStoreException {
-        final GridGeometry stored = getGridGeometry();
-        if (domain == null) {
-            return stored;
-        }
-        final int dimension = stored.getDimension();
-        final int ad = domain.getDimension();
-        if (ad != stored.getDimension()) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "domain", dimension, ad));
-        }
-        if (domain.isDefined(GridGeometry.GRID_TO_CRS) &&
-                !stored.getGridToCRS(PixelInCell.CELL_CENTER).equals(domain.getGridToCRS(PixelInCell.CELL_CENTER)))
-        {
-            throw new IllegalArgumentException("Mismatched grid to CRS transform.");
-        }
-        return domain;
     }
 }

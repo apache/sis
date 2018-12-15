@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -32,14 +33,14 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridChange;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
+import org.apache.sis.storage.DataStoreReferencingException;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 
 
@@ -207,36 +208,20 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      */
     @Override
     public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
-        domain = validateReadArgument(domain);
-        final GridExtent extent = domain.getExtent();
-        final int   dimension   = domain.getDimension();
-        final int[] areaLower   = new int[dimension];
-        final int[] areaUpper   = new int[dimension];
-        final int[] subsampling = new int[dimension];
-        for (int i=0; i<dimension; i++) {
-            final int j = (dimension - 1) - i;
-            areaLower[j] = unsigned(extent.getLow (i));             // Inclusive.
-            areaUpper[j] = unsigned(extent.getHigh(i) + 1);         // Exclusive.
-            subsampling[j] = 1;
+        if (domain == null) {
+            domain = gridGeometry;
         }
         final Vector samples;
         try {
-            samples = data.read(areaLower, areaUpper, subsampling);
+            final GridChange change = new GridChange(domain, gridGeometry);
+            samples = data.read(change.getTargetRange(), change.getTargetStrides());
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
         // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
         return new Image(domain, getSampleDimensions(), data.getDataType().toJava2D(samples.buffer().get()));
-    }
-
-    /**
-     * Returns the given value as an unsigned integer.
-     */
-    private static int unsigned(final long value) throws DataStoreException {
-        if (value < 0L || value > 0xFFFFFFFFL) {
-            throw new DataStoreException(Errors.format(Errors.Keys.IndexOutOfBounds_1, value));
-        }
-        return (int) value;
     }
 
     /**

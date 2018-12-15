@@ -637,7 +637,7 @@ public class GridGeometry implements Serializable {
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
      * to always think about wether the desired <cite>grid to CRS</cite> transform shall map pixel corner or center.</div>
      *
-     * @param  anchor  the pixel part to map.
+     * @param  anchor  the cell part to map (center or corner).
      * @return the conversion from grid coordinates to "real world" coordinates (never {@code null}).
      * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      * @throws IncompleteGridGeometryException if this grid geometry has no transform —
@@ -703,7 +703,7 @@ public class GridGeometry implements Serializable {
      *         This is 0 if the matrix is a derivative (i.e. we ignore nothing), or 1 if the matrix
      *         is an affine transform (i.e. we ignore the translation column and the [0 0 … 1] row).
      */
-    private static double[] resolution(final Matrix gridToCRS, final int numToIgnore) {
+    static double[] resolution(final Matrix gridToCRS, final int numToIgnore) {
         final double[] resolution = new double[gridToCRS.getNumRow() - numToIgnore];
         final double[] buffer     = new double[gridToCRS.getNumCol() - numToIgnore];
         for (int j=0; j<resolution.length; j++) {

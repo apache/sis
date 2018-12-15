@@ -29,6 +29,7 @@ import javax.measure.Unit;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Grid;
@@ -721,15 +722,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Reads a sub-sampled sub-area of the variable.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * Array elements are in "natural" order (inverse of netCDF order).
      *
-     * @param  areaLower    index of the first value to read along each dimension, as unsigned integers.
-     * @param  areaUpper    index after the last value to read along each dimension, as unsigned integers.
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
      * @return the data as an array of a Java primitive type.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
+    public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -759,15 +760,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final long[] size  = new long[dimension];
         final long[] lower = new long[dimension];
         final long[] upper = new long[dimension];
-        final int [] sub   = new int [dimension];
         for (int i=0; i<dimension; i++) {
-            final int j = (dimension - 1) - i;
-            lower[i] = Integer.toUnsignedLong(areaLower[j]);
-            upper[i] = Integer.toUnsignedLong(areaUpper[j]);
-            sub  [i] = subsampling[j];
-            size [i] = dimensions[j].length();
+            lower[i] = area.getLow(i);
+            upper[i] = Math.incrementExact(area.getHigh(i));
+            size [i] = dimensions[(dimension - 1) - i].length();
         }
-        final Region region = new Region(size, lower, upper, sub);
+        final Region region = new Region(size, lower, upper, subsampling);
         applyUnlimitedDimensionStride(region);
         return Vector.create(reader.read(region), dataType.isUnsigned);
     }

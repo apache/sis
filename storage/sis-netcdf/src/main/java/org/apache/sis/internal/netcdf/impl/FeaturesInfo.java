@@ -29,6 +29,7 @@ import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
 import java.io.IOException;
 import org.apache.sis.math.Vector;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
@@ -343,22 +344,22 @@ search: for (final VariableInfo counts : decoder.variables) {
          */
         @Override
         public boolean tryAdvance(final Consumer<? super Feature> action) {
-            final int   length = counts.intValue(index);
-            final int[] lower  = {position};
-            final int[] upper  = {position + length};
-            final int[] step   = {1};
+            final int length = counts.intValue(index);
+            final GridExtent extent = new GridExtent(null, new long[] {position},
+                            new long[] {Math.addExact(position, length)}, false);
+            final int[] step = {1};
             final Vector   id, t;
             final Vector[] coords = new Vector[coordinates.length];
             final Object[] props  = new Object[properties.length];
             try {
                 id = identifiers.read();                    // Efficiency should be okay because of cached value.
-                t = time.read(lower, upper, step);
+                t = time.read(extent, step);
                 for (int i=0; i<coordinates.length; i++) {
-                    coords[i] = coordinates[i].read(lower, upper, step);
+                    coords[i] = coordinates[i].read(extent, step);
                 }
                 for (int i=0; i<properties.length; i++) {
                     final VariableInfo p = properties[i];
-                    final Vector data = p.read(lower, upper, step);
+                    final Vector data = p.read(extent, step);
                     if (p.isEnumeration()) {
                         final String[] meanings = new String[data.size()];
                         for (int j=0; j<meanings.length; j++) {

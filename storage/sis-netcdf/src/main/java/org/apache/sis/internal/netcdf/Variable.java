@@ -27,6 +27,7 @@ import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
@@ -550,23 +551,23 @@ public abstract class Variable extends NamedElement {
      * Constraints on the argument values are:
      *
      * <ul>
-     *   <li>All arrays length shall be equal to the length of the {@link #getShape()} array.</li>
+     *   <li>Argument dimensions shall be equal to the length of the {@link #getShape()} array.</li>
      *   <li>For each index <var>i</var>, value of {@code area[i]} shall be in the range from 0 inclusive
-     *       to {@code Integer.toUnsignedLong(getGridEnvelope()[i])} exclusive.</li>
+     *       to {@code Integer.toUnsignedLong(getShape()[length - 1 - i])} exclusive.</li>
+     *   <li>Values are in "natural" order (inverse of netCDF order).</li>
      * </ul>
      *
      * If the variable has more than one dimension, then the data are packed in a one-dimensional vector
      * in the same way than {@link #read()}.
      *
-     * @param  areaLower    index of the first value to read along each dimension.
-     * @param  areaUpper    index after the last value to read along each dimension.
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
+    public abstract Vector read(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Wraps the given data in a {@link Vector} with the assumption that accuracy in base 10 matters.

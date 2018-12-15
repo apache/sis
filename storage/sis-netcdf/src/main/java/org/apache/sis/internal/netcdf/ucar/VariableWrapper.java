@@ -35,6 +35,7 @@ import ucar.nc2.dataset.EnhanceScaleMissing;
 import ucar.nc2.units.SimpleUnit;
 import ucar.nc2.units.DateUnit;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -368,23 +369,27 @@ final class VariableWrapper extends Variable {
 
     /**
      * Reads a sub-sampled sub-area of the variable.
+     * Array elements are in inverse of netCDF order.
      *
-     * @param  areaLower    index of the first value to read along each dimension.
-     * @param  areaUpper    index after the last value to read along each dimension.
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
      * @return the data as an array of a Java primitive type.
      */
     @Override
-    public Vector read(final int[] areaLower, final int[] areaUpper, final int[] subsampling)
-            throws IOException, DataStoreException
-    {
-        final int[] size = new int[areaUpper.length];
-        for (int i=0; i<size.length; i++) {
-            size[i] = areaUpper[i] - areaLower[i];
+    public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+        int n = area.getDimension();
+        final int[] lower = new int[n];
+        final int[] size  = new int[n];
+        final int[] sub   = new int[n--];
+        for (int i=0; i<=n; i++) {
+            final int j = (n - i);
+            lower[j] = Math.toIntExact(area.getLow(i));
+            size [j] = Math.toIntExact(area.getSize(i));
+            sub  [j] = subsampling[i];
         }
         final Array array;
         try {
-            array = variable.read(new Section(areaLower, size, subsampling));
+            array = variable.read(new Section(lower, size, sub));
         } catch (InvalidRangeException e) {
             throw new DataStoreException(e);
         }

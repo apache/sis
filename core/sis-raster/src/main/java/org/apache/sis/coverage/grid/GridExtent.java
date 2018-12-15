@@ -735,7 +735,7 @@ public class GridExtent implements Serializable {
      * Writes a string representation of this grid envelope in the given buffer.
      *
      * @param out         where to write the string representation.
-     * @param vocabulary  resources for some words, or {@code null} if not yet fetched.
+     * @param vocabulary  resources for some words.
      * @param tree        whether to format lines of a tree in the margin on the left.
      */
     final void appendTo(final StringBuilder out, final Vocabulary vocabulary, final boolean tree) {
