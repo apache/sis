@@ -202,12 +202,22 @@ public class ReferencingServices extends OptionalDependency {
      * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
      * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
+     * <p>If {@code optional} is {@code true}, then this method will be executed in optional mode:
+     * some failures will cause this method to return {@code null} instead than throwing an exception.
+     * Note that {@link TransformException} may still be thrown but not directly by this method.
+     * Warning may be logged, but in such case this method presumes that public caller is
+     * {@link org.apache.sis.geometry.Envelopes#findOperation(Envelope, Envelope)}.</p>
+     *
      * @param  envelope  the source envelope.
-     * @param  target    the target bounding box.
-     * @throws TransformException if the given envelope can't be transformed.
+     * @param  target    the target bounding box, or {@code null} for creating it automatically.
+     * @param  optional  {@code true} for replacing some (not all) exceptions by {@code null} return value.
+     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code optional} argument is {@code false}.
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     * @throws TransformException if the given envelope can not be transformed.
      */
-    public void setBounds(Envelope envelope, DefaultGeographicBoundingBox target) throws TransformException {
+    public DefaultGeographicBoundingBox setBounds(Envelope envelope, DefaultGeographicBoundingBox target, boolean optional)
+            throws TransformException
+    {
         throw moduleNotFound();
     }
 

@@ -91,12 +91,14 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -148,14 +150,22 @@ public final class ServicesForMetadata extends ReferencingServices {
      * the horizontal extent. If the {@code crs} argument is null, then it is caller's responsibility
      * to ensure that the given envelope is two-dimensional.
      *
+     * <p>If {@code optional} is {@code true}, then this method will be executed in optional mode:
+     * some failures will cause this method to return {@code null} instead than throwing an exception.
+     * Note that {@link TransformException} may still be thrown but not directly by this method.
+     * Warning may be logged, but in such case this method presumes that public caller is
+     * {@link Envelopes#findOperation(Envelope, Envelope)}.</p>
+     *
      * @param  envelope       the source envelope.
-     * @param  target         the target bounding box.
+     * @param  target         the target bounding box, or {@code null} for creating it automatically.
      * @param  crs            the envelope CRS, or {@code null} if unknown.
      * @param  normalizedCRS  the horizontal component of the given CRS, or null if the {@code crs} argument is null.
+     * @param  optional       {@code true} for replacing some (not all) exceptions by {@code null} return value.
+     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code optional} argument is {@code false}.
      * @throws TransformException if the given envelope can not be transformed.
      */
-    private void setGeographicExtent(Envelope envelope, final DefaultGeographicBoundingBox target,
-            final CoordinateReferenceSystem crs, final GeographicCRS normalizedCRS) throws TransformException
+    private DefaultGeographicBoundingBox setGeographicExtent(Envelope envelope, DefaultGeographicBoundingBox target,
+            final CoordinateReferenceSystem crs, final GeographicCRS normalizedCRS, final boolean optional) throws TransformException
     {
         if (normalizedCRS != null) {
             // No need to check for dimension, since GeodeticCRS can not have less than 2.
@@ -169,6 +179,11 @@ public final class ServicesForMetadata extends ReferencingServices {
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
+                    if (optional) {
+                        // See javadoc for the assumption that optional mode is used only by Envelopes.findOperation(…).
+                        Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), Envelopes.class, "findOperation", e);
+                        return null;
+                    }
                     throw new TransformException(Resources.format(Resources.Keys.CanNotTransformEnvelopeToGeodetic), e);
                 }
                 envelope = Envelopes.transform(operation, envelope);
@@ -187,8 +202,12 @@ public final class ServicesForMetadata extends ReferencingServices {
             westBoundLongitude += rotation;
             eastBoundLongitude += rotation;
         }
+        if (target == null) {
+            target = new DefaultGeographicBoundingBox();
+        }
         target.setBounds(westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude);
         target.setInclusion(Boolean.TRUE);
+        return target;
     }
 
     /**
@@ -238,26 +257,33 @@ public final class ServicesForMetadata extends ReferencingServices {
 
     /**
      * Sets a geographic bounding box from the specified envelope.
-     * If the envelope contains a CRS which is not geographic, then the bounding box will be transformed
-     * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
-     * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
+     * If the envelope has no CRS, then (<var>longitude</var>, <var>latitude</var>) axis order is assumed.
+     * If the envelope CRS is not geographic, then the envelope will be transformed to a geographic CRS.
+     * If {@code optional} is {@code true}, then some failures will cause this method to return {@code null}
+     * instead than throwing an exception, and warning may be logged with assumption that caller is
+     * {@link Envelopes#findOperation(Envelope, Envelope)}.
      *
      * @param  envelope  the source envelope.
-     * @param  target    the target bounding box where to store envelope information.
+     * @param  target    the target bounding box, or {@code null} for creating it automatically.
+     * @param  optional  {@code true} for replacing some (not all) exceptions by {@code null} return value.
+     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code optional} argument is {@code false}.
      * @throws TransformException if the given envelope can not be transformed.
      */
     @Override
-    public void setBounds(Envelope envelope, final DefaultGeographicBoundingBox target) throws TransformException {
+    public DefaultGeographicBoundingBox setBounds(final Envelope envelope, final DefaultGeographicBoundingBox target,
+            final boolean optional) throws TransformException
+    {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         GeographicCRS normalizedCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs);
         if (normalizedCRS == null) {
             if (crs != null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             } else if (envelope.getDimension() != 2) {
+                if (optional) return null;
                 throw new TransformException(dimensionNotFound(Resources.Keys.MissingHorizontalDimension_1, crs));
             }
         }
-        setGeographicExtent(envelope, target, crs, normalizedCRS);
+        return setGeographicExtent(envelope, target, crs, normalizedCRS, optional);
     }
 
     /**
@@ -343,7 +369,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (normalizedCRS == null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             }
-            setGeographicExtent(envelope, box, crs, normalizedCRS);
+            setGeographicExtent(envelope, box, crs, normalizedCRS, false);
         }
         /*
          * Other dimensions (vertical and temporal).
@@ -384,10 +410,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
         }
         if (horizontalCRS != null) {
-            final DefaultGeographicBoundingBox extent = new DefaultGeographicBoundingBox();
-            extent.setInclusion(Boolean.TRUE);
-            setBounds(envelope, extent);
-            target.getGeographicElements().add(extent);
+            target.getGeographicElements().add(setBounds(envelope, null, false));
         }
         if (verticalCRS != null) {
             final DefaultVerticalExtent extent = new DefaultVerticalExtent();

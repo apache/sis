@@ -41,6 +41,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
@@ -206,14 +207,27 @@ public final class Envelopes extends Static {
             if ((sourceCRS = source.getCoordinateReferenceSystem()) != null &&
                 (targetCRS = target.getCoordinateReferenceSystem()) != null)
             {
+                /*
+                 * Computing the area of interest (AOI) unconditionally would be harmless, but it is useless if the CRS
+                 * are the same since the result will be identity anyway. Conversely we could skip AOI computation more
+                 * often for example with the following condition instead of !=:
+                 *
+                 *     !Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT)
+                 *
+                 * but it would not be very advantageous if testing the condition is almost as long as computing
+                 * the AOI. For now we keep != as a very cheap test which will work quite often.
+                 */
                 DefaultGeographicBoundingBox areaOfInterest = null;
-                if (!sourceCRS.equals(targetCRS)) try {
-                    DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
-                    bbox.setBounds(source);
-                    areaOfInterest = bbox;                          // Set only on success.
-                    bbox = new DefaultGeographicBoundingBox();
-                    bbox.setBounds(target);
-                    areaOfInterest.add(bbox);
+                if (sourceCRS != targetCRS) try {
+                    final DefaultGeographicBoundingBox targetAOI;
+                    final ReferencingServices converter = ReferencingServices.getInstance();
+                    areaOfInterest = converter.setBounds(source, null, true);      // Should be first.
+                    targetAOI      = converter.setBounds(target, null, true);
+                    if (areaOfInterest == null) {
+                        areaOfInterest = targetAOI;
+                    } else {
+                        areaOfInterest.add(targetAOI);
+                    }
                 } catch (TransformException e) {
                     /*
                      * Note: we may succeed to transform 'source' and fail to transform 'target' to geographic bounding box,
@@ -314,6 +328,7 @@ public final class Envelopes extends Static {
                 } else {
                     // TODO: create an CoordinateOperationContext with the envelope as geographic area.
                     //       May require that we optimize the search for CoordinateOperation with non-null context first.
+                    //       See https://issues.apache.org/jira/browse/SIS-442
                     final CoordinateOperation operation;
                     try {
                         operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);

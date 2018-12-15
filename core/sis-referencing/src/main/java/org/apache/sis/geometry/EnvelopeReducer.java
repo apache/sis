@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometry;
 
-import org.apache.sis.internal.referencing.Resources;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Utilities;
 
@@ -122,21 +123,25 @@ merge:  for (final Envelope envelope : envelopes) {
             case 1: return reduced[0];
         }
         /*
-         * Compute the geographic bounding box of all remaining elements to reduce.
-         * This will be used for choosing a common CRS.
+         * Compute the geographic bounding box of all remaining elements to reduce. This will be used for
+         * choosing a common CRS. Note that if a warning is logged, ReferencingServices.setBounds(…) will
+         * pretend that warning come from Envelopes.findOperation(…). This is not true but not completely
+         * false neither since the purpose of this bounding box is to find a coordinate operation.
          */
+        final ReferencingServices converter = ReferencingServices.getInstance();
         CoordinateReferenceSystem[]  crs  = new CoordinateReferenceSystem[count];
         DefaultGeographicBoundingBox more = new DefaultGeographicBoundingBox();
         DefaultGeographicBoundingBox bbox = null;
         for (int i=0; i<count; i++) {
             final GeneralEnvelope e = reduced[i];
             crs[i] = e.getCoordinateReferenceSystem();
-            more.setBounds(e);
-            if (i == 0) {
-                bbox = more;
-                more = new DefaultGeographicBoundingBox();
-            } else {
-                reduce(bbox, more);
+            if (converter.setBounds(e, more, true) != null) {           // See above comment about logging.
+                if (bbox == null) {
+                    bbox = more;
+                    more = new DefaultGeographicBoundingBox();
+                } else {
+                    reduce(bbox, more);
+                }
             }
         }
         /*

@@ -534,8 +534,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     public void setBounds(final Envelope envelope) throws TransformException {
         ArgumentChecks.ensureNonNull("envelope", envelope);
         checkWritePermission(isNonEmpty());
-        ReferencingServices.getInstance().setBounds(envelope, this);
-        setInclusion(Boolean.TRUE);                                     // Set only on success.
+        ReferencingServices.getInstance().setBounds(envelope, this, false);
     }
 
     /**
