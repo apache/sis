@@ -45,10 +45,14 @@ import org.apache.sis.util.resources.Vocabulary;
  * Example:
  *
  * {@preformat java
- *     public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
- *         GridChange change = new GridChange(domain, getGridGeometry());
- *         GridExtent toRead = change.getTargetRange();
- *         int[] subsampling = change.getTargetStrides());
+ *     class MyDataStorage extends GridCoverageResource {
+ *         &#64;Override
+ *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+ *             GridChange change = new GridChange(domain, getGridGeometry());
+ *             GridExtent toRead = change.getTargetRange();
+ *             int[] subsampling = change.getTargetStrides());
+ *             // Do reading here.
+ *         }
  *     }
  * }
  * </div>

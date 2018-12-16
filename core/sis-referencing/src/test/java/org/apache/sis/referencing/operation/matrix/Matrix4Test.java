@@ -83,6 +83,10 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
     /**
      * Tests multiplication of a matrix that contains NaN numbers.
      * We want to avoid having NaNs of a full row or full column.
+     *
+     * Note that a NaN may appear in the translation column, depending on the matrix order in multiplication.
+     * So handling of NaN during multiplication does not eliminate completely the need to write some NaN-safe
+     * code in the Apache SIS modules.
      */
     @Test
     public void testMultiplyWithNaN() {
