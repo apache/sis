@@ -195,36 +195,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (tr1.isIdentity()) return tr2;
         if (tr2.isIdentity()) return tr1;
         /*
-         * If both transforms use matrix, then we can create
-         * a single transform using the concatenated matrix.
-         */
-        final Matrix matrix1 = MathTransforms.getMatrix(tr1);
-        if (matrix1 != null) {
-            final Matrix matrix2 = MathTransforms.getMatrix(tr2);
-            if (matrix2 != null) {
-                final Matrix matrix = Matrices.multiply(matrix2, matrix1);
-                if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
-                    return MathTransforms.identity(matrix.getNumRow() - 1);         // Returns a cached instance.
-                }
-                /*
-                 * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
-                 * But this is often wrong for datum shift transformations (Molodensky and the like) since the datum
-                 * shifts are very small. The shift may be the order of magnitude of the tolerance threshold. Intead,
-                 * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
-                 * results at the 'double' accuracy, which avoid the need for a tolerance threshold.
-                 */
-                if (factory != null) {
-                    return factory.createAffineTransform(matrix);
-                } else {
-                    return MathTransforms.linear(matrix);
-                }
-            }
-        }
-        /*
-         * Give a chance to AbstractMathTransform to returns an optimized object.
-         * Examples: Logarithmic versus Exponential transforms, PassThrouthTransform.
-         * We try both ways (concatenation and pre-concatenation) and see which way
-         * produce the shortest concatenation chain.
+         * Give a chance to AbstractMathTransform to return an optimized object. For example LogarithmicTransform
+         * concatenated with ExponentialTransform can produce a new formula, PassThrouthTransform may concatenate
+         * its sub-transform, etc. We try both ways (concatenation and pre-concatenation) and see which way gives
+         * the shortest concatenation chain. It is not that much expensive given that must implementations return
+         * null directly.
          */
         int stepCount = 0;
         MathTransform shortest = null;
@@ -249,11 +224,39 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         }
         /*
          * If one transform is the inverse of the other, return the identity transform.
+         * We need to test this case before the linear transform case below, because the
+         * matrices may contain NaN values.
          */
         if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
             assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
             assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
             return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
+        }
+        /*
+         * If both transforms use matrix, then we can create
+         * a single transform using the concatenated matrix.
+         */
+        final Matrix matrix1 = MathTransforms.getMatrix(tr1);
+        if (matrix1 != null) {
+            final Matrix matrix2 = MathTransforms.getMatrix(tr2);
+            if (matrix2 != null) {
+                final Matrix matrix = Matrices.multiply(matrix2, matrix1);
+                if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
+                    return MathTransforms.identity(matrix.getNumRow() - 1);         // Returns a cached instance.
+                }
+                /*
+                 * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
+                 * But this is often wrong for datum shift transformations (Molodensky and the like) since the datum
+                 * shifts are very small. The shift may be the order of magnitude of the tolerance threshold. Intead,
+                 * Apache SIS performs matrix operations using double-double arithmetic in the hope to get exact
+                 * results at the 'double' accuracy, which avoid the need for a tolerance threshold.
+                 */
+                if (factory != null) {
+                    return factory.createAffineTransform(matrix);
+                } else {
+                    return MathTransforms.linear(matrix);
+                }
+            }
         }
         // No optimized case found.
         return null;

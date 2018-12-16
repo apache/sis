@@ -164,11 +164,16 @@ public class GridChange implements Serializable {
     private static MathTransform path(final GridGeometry source, final CoordinateOperation crsChange,
             final GridGeometry target, final PixelInCell anchor) throws NoninvertibleTransformException
     {
-        MathTransform tr = source.getGridToCRS(anchor);
+        MathTransform step1 = source.getGridToCRS(anchor);
+        MathTransform step2 = target.getGridToCRS(anchor);
         if (crsChange != null) {
-            tr = MathTransforms.concatenate(tr, crsChange.getMathTransform());
+            step1 = MathTransforms.concatenate(step1, crsChange.getMathTransform());
         }
-        return MathTransforms.concatenate(tr, target.getGridToCRS(anchor).inverse());
+        if (step1.equals(step2)) {                                          // Optimization for a common case.
+            return MathTransforms.identity(step1.getSourceDimensions());
+        } else {
+            return MathTransforms.concatenate(step1, step2.inverse());
+        }
     }
 
     /**
