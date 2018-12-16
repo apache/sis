@@ -858,9 +858,15 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         formatter.append(firstAffectedOrdinate);
         if (numTrailingOrdinates != 0) {
             formatter.append(numTrailingOrdinates);
-            formatter.setInvalidWKT(PassThroughTransform.class, null);
         }
         formatter.append(subTransform);
+        if (numTrailingOrdinates != 0) {
+            /*
+             * setInvalidWKT(…) shall be invoked only after we finished to format
+             * sub-transform, otherwise the wrong WKT element will be highlighted.
+             */
+            formatter.setInvalidWKT(PassThroughTransform.class, null);
+        }
         return WKTKeywords.PassThrough_MT;
     }
 }
