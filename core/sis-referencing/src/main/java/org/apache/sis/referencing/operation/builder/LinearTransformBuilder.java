@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -1040,7 +1041,7 @@ search:         for (int j=domain(); --j >= 0;) {
             try {
                 table.flush();
             } catch (IOException e) {
-                throw new AssertionError(e);        // Should never happen since we wrote into a StringBuilder.
+                throw new UncheckedIOException(e);      // Should never happen since we wrote into a StringBuilder.
             }
         }
         return buffer.toString();

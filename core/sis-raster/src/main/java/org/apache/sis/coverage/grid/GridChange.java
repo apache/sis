@@ -28,9 +28,10 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -307,17 +308,18 @@ public class GridChange implements Serializable {
 
     /**
      * Returns a string representation of this grid change for debugging purpose.
+     * The returned string is implementation dependent and may change in any future version.
      *
-     * @return a string representation for debugging purpose.
+     * @return a string representation of this grid change for debugging purpose.
      */
     @Override
     public String toString() {
         final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(256)
-                .append("Grid change").append(lineSeparator)
+                .append(Classes.getShortClassName(this)).append(lineSeparator)
                 .append("└ Scale factor ≈ ").append((float) getGlobalScale()).append(lineSeparator)
                 .append("Target range").append(lineSeparator);
-        targetRange.appendTo(buffer, Vocabulary.getResources((Locale) null), true);
+        targetRange.appendTo(buffer, Vocabulary.getResources((Locale) null));
         return buffer.toString();
     }
 }

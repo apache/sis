@@ -839,7 +839,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         try {
             return (MatrixSIS) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Should never happen, since we are cloneable.
+            throw new AssertionError(e);            // Should never happen since we are cloneable.
         }
     }
 

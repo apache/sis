@@ -19,6 +19,7 @@ package org.apache.sis.util.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -773,7 +774,7 @@ loop:   for (int i=0; ; i++) {
                 }
                 writer.flush();
             } catch (IOException e) {
-                throw new AssertionError(e);
+                throw new UncheckedIOException(e);
             }
             /*
              * We wrote the main content, but maybe with some extra lines. Trim the last lines by skipping white spaces

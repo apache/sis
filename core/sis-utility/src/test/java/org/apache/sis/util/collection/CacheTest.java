@@ -22,6 +22,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
@@ -314,7 +315,7 @@ public final strictfp class CacheTest extends TestCase {
         try {
             format.format(new Statistics[] {beforeGC, afterGC}, out);
         } catch (IOException e) {
-            throw new AssertionError(e);
+            throw new UncheckedIOException(e);
         }
         assertTrue("Minimum key value should be greater after garbage collection.",
                 afterGC.minimum() >= beforeGC.minimum());

@@ -16,14 +16,16 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Locale;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -96,18 +98,39 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
+     * Creates a three-dimensional grid extent to be shared by different tests.
+     */
+    private static GridExtent create3D() {
+        return new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+    }
+
+    /**
      * Tests {@link GridExtent#subExtent(int, int)}.
      */
     @Test
     public void testSubExtent() {
-        GridExtent extent = new GridExtent(
-                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
-                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+        GridExtent extent = create3D();
         extent = extent.subExtent(0, 2);
         assertEquals("dimension", 2, extent.getDimension());
         assertExtentEquals(extent, 0, 100, 499);
         assertExtentEquals(extent, 1, 200, 799);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#toString()}.
+     * Note that the string representation may change in any future SIS version.
+     */
+    @Test
+    public void testToString() {
+        final StringBuilder buffer = new StringBuilder(100);
+        create3D().appendTo(buffer, Vocabulary.getResources(Locale.ENGLISH));
+        assertMultilinesEquals(
+                "Column: [100 … 499] (400 cells)\n" +
+                "Row:    [200 … 799] (600 cells)\n" +
+                "Time:   [ 40 …  49]  (10 cells)\n", buffer);
     }
 }

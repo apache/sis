@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.util.Factory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -435,7 +436,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         try {
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e);
+            throw new UncheckedIOException(e);
         }
     }
 }

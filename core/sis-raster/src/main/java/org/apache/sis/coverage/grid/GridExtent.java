@@ -727,18 +727,18 @@ public class GridExtent implements Serializable {
     @Override
     public String toString() {
         final StringBuilder out = new StringBuilder(256);
-        appendTo(out, Vocabulary.getResources((Locale) null), false);
+        appendTo(out, Vocabulary.getResources((Locale) null));
         return out.toString();
     }
 
     /**
      * Writes a string representation of this grid envelope in the given buffer.
+     * This method is provided for allowing caller to recycle the same buffer.
      *
      * @param out         where to write the string representation.
      * @param vocabulary  resources for some words.
-     * @param tree        whether to format lines of a tree in the margin on the left.
      */
-    final void appendTo(final StringBuilder out, final Vocabulary vocabulary, final boolean tree) {
+    final void appendTo(final StringBuilder out, final Vocabulary vocabulary) {
         final TableAppender table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
@@ -749,9 +749,6 @@ public class GridExtent implements Serializable {
             final long lower = coordinates[i];
             final long upper = coordinates[i + dimension];
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
-            if (tree) {
-                branch(table, i < dimension - 1);
-            }
             table.append(name).append(": ").nextColumn();
             table.append('[').nextColumn();
             table.setCellAlignment(TableAppender.ALIGN_RIGHT);
@@ -761,13 +758,6 @@ public class GridExtent implements Serializable {
                     Long.toUnsignedString(upper - lower + 1))).append(')').nextLine();
         }
         flush(table);
-    }
-
-    /**
-     * Formats the symbols on the left side of a node in a tree.
-     */
-    static void branch(final TableAppender table, final boolean hasMore) {
-        table.append(hasMore ? '├' : '└').append("─ ");
     }
 
     /**

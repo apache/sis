@@ -25,13 +25,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.io.Console;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.io.Console;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.measure.Unit;
 
@@ -1001,7 +1002,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         try {
             f.format(object, out);
         } catch (IOException e) {
-            throw new AssertionError(e);    // Should never happen, since we are writing to stdout.
+            throw new UncheckedIOException(e);      // Should never happen since we are writing to stdout.
         }
         INSTANCE.set(f);
     }

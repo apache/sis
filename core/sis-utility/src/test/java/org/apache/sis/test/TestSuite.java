@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URISyntaxException;
 import org.apache.sis.internal.system.Shutdown;
@@ -273,11 +274,11 @@ public abstract strictfp class TestSuite {
         if (!skipShutdown) {
             skipShutdown = true;
             TestCase.LOGGER.removeHandler(LogRecordCollector.INSTANCE);
-            System.err.flush();   // Flushs log messages sent by ConsoleHandler.
+            System.err.flush();                                         // Flushs log messages sent by ConsoleHandler.
             try {
                 LogRecordCollector.INSTANCE.report(System.out);
-            } catch (IOException e) {   // Should never happen.
-                throw new AssertionError(e);
+            } catch (IOException e) {                                   // Should never happen.
+                throw new UncheckedIOException(e);
             }
             SystemListener.fireClasspathChanged();
             Shutdown.stop(TestSuite.class);

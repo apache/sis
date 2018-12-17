@@ -46,11 +46,15 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
 
@@ -917,43 +921,47 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns a string representation of this grid geometry. The returned string
-     * is implementation dependent. It is provided for debugging purposes only.
+     * Returns a string representation of this grid geometry.
+     * The returned string is implementation dependent and may change in any future version.
      * Current implementation is equivalent to the following:
      *
      * {@preformat java
-     *   return toString(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION);
+     *   return toTree(Locale.getDefault(), EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION).toString();
      * }
      */
     @Override
     public String toString() {
-        return toString(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION);
+        return toTree(Locale.getDefault(), EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION).toString();
     }
 
     /**
-     * Returns a string representation of some elements of this grid geometry.
-     * The string representation is for debugging purpose only and may change
+     * Returns a tree representation of some elements of this grid geometry.
+     * The tree representation is for debugging purpose only and may change
      * in any future SIS version.
      *
+     * @param  locale   the locale to use for textual labels.
      * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE},
      *         {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
-     * @return a string representation of the given elements.
+     * @return a tree representation of the specified elements.
      */
     @Debug
-    public String toString(final int bitmask) {
+    public TreeTable toTree(final Locale locale, final int bitmask) {
+        final TreeTable tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
+        final TreeTable.Node root = tree.getRoot();
+        root.setValue(TableColumn.VALUE_AS_TEXT, Classes.getShortClassName(this));
+        formatTo(locale, Vocabulary.getResources(locale), bitmask, root);
+        return tree;
+    }
+
+    /**
+     * Formats a string representation of this grid geometry in the specified tree.
+     */
+    final void formatTo(final Locale locale, final Vocabulary vocabulary, final int bitmask, final TreeTable.Node root) {
         if ((bitmask & ~(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION)) != 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
-        return new Formatter(new StringBuilder(512), bitmask, System.lineSeparator()).toString();
-    }
-
-    /**
-     * Formats a string representation of this grid geometry in the specified buffer.
-     * This is used for reducing the amount of copies in {@link GridCoverage#toString()}.
-     */
-    final void formatTo(final StringBuilder out, final String lineSeparator) {
-        new Formatter(out, EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION, lineSeparator).format();
+        new Formatter(locale, vocabulary, bitmask, root).format();
     }
 
     /**
@@ -967,14 +975,20 @@ public class GridGeometry implements Serializable {
         private final int bitmask;
 
         /**
-         * Where to write the {@link GridGeometry} string representation.
+         * Temporary buffer for formatting node values.
          */
         private final StringBuilder buffer;
 
         /**
-         * Platform-specific end-of-line characters.
+         * Where to write the {@link GridGeometry} string representation.
          */
-        private final String lineSeparator;
+        private final TreeTable.Node root;
+
+        /**
+         * The section under the {@linkplain #root} where to write elements.
+         * This is updated when {@link #section(int, short, Object, boolean)} is invoked.
+         */
+        private TreeTable.Node section;
 
         /**
          * Localized words.
@@ -982,7 +996,7 @@ public class GridGeometry implements Serializable {
         private final Vocabulary vocabulary;
 
         /**
-         * The locale for the texts. Not used for numbers and dates.
+         * The locale for the texts. Not used for numbers.
          */
         private final Locale locale;
 
@@ -1000,23 +1014,14 @@ public class GridGeometry implements Serializable {
          * Creates a new formatter for the given combination of {@link #EXTENT}, {@link #ENVELOPE},
          * {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
          */
-        Formatter(final StringBuilder out, final int bitmask, final String lineSeparator) {
-            this.buffer        = out;
+        Formatter(final Locale locale, final Vocabulary vocabulary, final int bitmask, final TreeTable.Node out) {
+            this.root          = out;
             this.bitmask       = bitmask;
-            this.lineSeparator = lineSeparator;
-            this.locale        = Locale.getDefault(Locale.Category.DISPLAY);
-            this.vocabulary    = Vocabulary.getResources(locale);
+            this.buffer        = new StringBuilder(256);
+            this.locale        = locale;
+            this.vocabulary    = vocabulary;
             this.crs           = (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
             this.cs            = (crs != null) ? crs.getCoordinateSystem() : null;
-        }
-
-        /**
-         * Returns a string representation of the enclosing {@link GridGeometry} instance.
-         */
-        @Override
-        public final String toString() {
-            format();
-            return buffer.toString();
         }
 
         /**
@@ -1029,15 +1034,16 @@ public class GridGeometry implements Serializable {
              * ├─ Dimension 0: [370 … 389]  (20 cells)
              * └─ Dimension 1: [ 41 … 340] (300 cells)
              */
-            if (section(EXTENT, Vocabulary.Keys.GridExtent, extent)) {
-                extent.appendTo(buffer, vocabulary, true);
+            if (section(EXTENT, Vocabulary.Keys.GridExtent, extent, false)) {
+                extent.appendTo(buffer, vocabulary);
+                writeNodes();
             }
             /*
              * Example: Envelope
              * ├─ Geodetic latitude:  -69.75 … 80.25  Δφ = 0.5°
              * └─ Geodetic longitude:   4.75 … 14.75  Δλ = 0.5°
              */
-            if (section(ENVELOPE, Vocabulary.Keys.Envelope, envelope)) {
+            if (section(ENVELOPE, Vocabulary.Keys.Envelope, envelope, false)) {
                 final boolean appendResolution = (bitmask & RESOLUTION) != 0 && resolution != null;
                 final TableAppender table = new TableAppender(buffer, "");
                 final int dimension = envelope.getDimension();
@@ -1045,7 +1051,6 @@ public class GridGeometry implements Serializable {
                     final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
                     final String name = (axis != null) ? axis.getName().getCode() :
                             vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
-                    GridExtent.branch(table, i < dimension - 1);
                     table.append(name).append(": ").nextColumn();
                     table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                     table.append(Double.toString(envelope.getLower(i))).nextColumn();
@@ -1065,54 +1070,53 @@ public class GridGeometry implements Serializable {
                     table.nextLine();
                 }
                 GridExtent.flush(table);
-            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, resolution)) {
+                writeNodes();
+            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, resolution, false)) {
                 /*
                  * Example: Resolution
                  * └─ 0.5° × 0.5°
                  */
-                String separator = "└─ ";
+                String separator = "";
                 for (int i=0; i<resolution.length; i++) {
                     appendResolution(buffer.append(separator), i);
                     separator = " × ";
                 }
-                buffer.append(lineSeparator);
+                writeNode();
             }
             /*
              * Example: Coordinate reference system
              * └─ EPSG:4326 — WGS 84 (φ,λ)
              */
-            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, crs)) {
-                buffer.append("└─ ");
+            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, crs, false)) {
                 final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
                 if (id != null) {
                     buffer.append(IdentifiedObjects.toString(id)).append(" — ");
                 }
-                buffer.append(crs.getName()).append(lineSeparator);
+                buffer.append(crs.getName());
+                writeNode();
             }
             /*
              * Example: Conversion
              * └─ 2D → 2D non linear in 2
              */
-            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, gridToCRS)) {
-                final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+            final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, gridToCRS, matrix != null)) {
                 if (matrix != null) {
-                    String separator = "└─ ";
-                    for (final CharSequence line : CharSequences.splitOnEOL(Matrices.toString(matrix))) {
-                        buffer.append(separator).append(line).append(lineSeparator);
-                        separator = "   ";
-                    }
+                    writeNode(Matrices.toString(matrix));
                 } else {
-                    buffer.append("└─ ").append(gridToCRS.getSourceDimensions()).append("D → ")
-                                        .append(gridToCRS.getTargetDimensions()).append('D');
+                    buffer.append(gridToCRS.getSourceDimensions()).append("D → ")
+                          .append(gridToCRS.getTargetDimensions()).append("D ");
                     long nonLinearDimensions = nonLinears;
-                    String separator = " non linear in ";
+                    String separator = Resources.forLocale(locale)
+                            .getString(Resources.Keys.NonLinearInDimensions_1, Long.bitCount(nonLinearDimensions));
                     while (nonLinearDimensions != 0) {
                         final int i = Long.numberOfTrailingZeros(nonLinearDimensions);
                         nonLinearDimensions &= ~(1L << i);
-                        buffer.append(separator).append(cs != null ? cs.getAxis(i).getName().getCode() : String.valueOf(i));
-                        separator = ", ";
+                        buffer.append(separator).append(' ')
+                              .append(cs != null ? cs.getAxis(i).getName().getCode() : String.valueOf(i));
+                        separator = ",";
                     }
-                    buffer.append(lineSeparator);
+                    writeNode();
                 }
             }
         }
@@ -1120,26 +1124,62 @@ public class GridGeometry implements Serializable {
         /**
          * Starts a new section for the given property.
          *
-         * @param  property  one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
-         * @param  title     the {@link Vocabulary} key for the title to show for this section, if formatted.
-         * @param  value     the value to be formatted in that section.
+         * @param  property    one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         * @param  title       the {@link Vocabulary} key for the title to show for this section, if formatted.
+         * @param  cellCenter  whether to add a "origin in cell center" text in the title. This is relevant only for conversion.
+         * @param  value       the value to be formatted in that section.
          * @return {@code true} if the caller shall format the value.
          */
-        private boolean section(final int property, final short title, final Object value) {
+        private boolean section(final int property, final short title, final Object value, final boolean cellCenter) {
             if ((bitmask & property) != 0) {
-                buffer.append(vocabulary.getString(title));
-                if (title == Vocabulary.Keys.Conversion) {
-                    buffer.append(" (").append(vocabulary.getString(Vocabulary.Keys.OriginInCellCenter).toLowerCase(locale)).append(')');
+                CharSequence text = vocabulary.getString(title);
+                if (cellCenter) {
+                    text = buffer.append(text).append(" (")
+                                 .append(vocabulary.getString(Vocabulary.Keys.OriginInCellCenter).toLowerCase(locale))
+                                 .append(')').toString();
+                    buffer.setLength(0);
                 }
-                buffer.append(lineSeparator);
+                section = root.newChild();
+                section.setValue(TableColumn.VALUE_AS_TEXT, text);
                 if (value != null) {
                     return true;
                 }
-                buffer.append("└─ ").append(vocabulary.getString(Vocabulary.Keys.Unspecified)).append(lineSeparator);
+                writeNode(vocabulary.getString(Vocabulary.Keys.Unspecified));
             }
             return false;
         }
 
+        /**
+         * Appends a single line as a node in the current section.
+         */
+        private void writeNode(final CharSequence line) {
+            String text = line.toString().trim();
+            if (!text.isEmpty()) {
+                section.newChild().setValue(TableColumn.VALUE_AS_TEXT, text);
+            }
+        }
+
+        /**
+         * Appends a node with current {@link #buffer} content as a single line, then clears the buffer.
+         */
+        private void writeNode() {
+            writeNode(buffer);
+            buffer.setLength(0);
+        }
+
+        /**
+         * Appends nodes with current {@link #buffer} content as multi-lines text, then clears the buffer.
+         */
+        private void writeNodes() {
+            for (final CharSequence line : CharSequences.splitOnEOL(buffer)) {
+                writeNode(line);
+            }
+            buffer.setLength(0);
+        }
+
+        /**
+         * Appends a single value on the resolution line, together with its unit of measurement.
+         */
         private void appendResolution(final Appendable out, final int dimension) {
             try {
                 out.append(Float.toString((float) resolution[dimension]));

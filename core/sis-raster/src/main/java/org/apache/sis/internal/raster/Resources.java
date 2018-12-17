@@ -134,6 +134,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoCategoryForValue_1 = 14;
 
         /**
+         * non-linear in {0} dimension{0,choice,1#|2#s}:
+         */
+        public static final short NonLinearInDimensions_1 = 20;
+
+        /**
          * Too many qualitative categories.
          */
         public static final short TooManyQualitatives = 17;

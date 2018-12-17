@@ -27,6 +27,7 @@ import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
 import java.lang.reflect.Array;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
@@ -1665,7 +1666,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         try {
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuffer.
+            throw new UncheckedIOException(e);          // Should never happen since we wrote to a StringBuffer.
         }
         return buffer.toString();
     }

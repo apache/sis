@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.Locale;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
@@ -25,7 +26,13 @@ import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -136,15 +143,47 @@ public abstract class GridCoverage {
 
     /**
      * Returns a string representation of this grid coverage for debugging purpose.
+     * The returned string is implementation dependent and may change in any future version.
+     * Current implementation is equivalent to the following, where {@code EXTENT}, <i>etc.</i> are
+     * constants defined in {@link GridGeometry} class:
+     *
+     * {@preformat java
+     *   return toTree(Locale.getDefault(), EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION).toString();
+     * }
      *
      * @return a string representation of this grid coverage for debugging purpose.
      */
     @Override
     public String toString() {
-        final String lineSeparator = System.lineSeparator();
-        final StringBuilder buffer = new StringBuilder(1000);
-        buffer.append("Grid coverage domain:").append(lineSeparator);
-        gridGeometry.formatTo(buffer, lineSeparator + "  ");
-        return buffer.toString();
+        return toTree(Locale.getDefault(), GridGeometry.EXTENT | GridGeometry.ENVELOPE
+                | GridGeometry.CRS | GridGeometry.GRID_TO_CRS | GridGeometry.RESOLUTION).toString();
+    }
+
+    /**
+     * Returns a tree representation of some elements of this grid coverage.
+     * The tree representation is for debugging purpose only and may change
+     * in any future SIS version.
+     *
+     * @param  locale   the locale to use for textual labels.
+     * @param  bitmask  combination of {@link GridGeometry} flags.
+     * @return a tree representation of the specified elements.
+     *
+     * @see GridGeometry#toTree(Locale, int)
+     */
+    @Debug
+    public TreeTable toTree(final Locale locale, final int bitmask) {
+        ArgumentChecks.ensureNonNull("locale", locale);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
+        final TreeTable tree = new DefaultTreeTable(column);
+        final TreeTable.Node root = tree.getRoot();
+        root.setValue(column, Classes.getShortClassName(this));
+        TreeTable.Node branch = root.newChild();
+        branch.setValue(column, vocabulary.getString(Vocabulary.Keys.CoverageDomain));
+        gridGeometry.formatTo(locale, vocabulary, bitmask, branch);
+        branch = root.newChild();
+        branch.setValue(column, vocabulary.getString(Vocabulary.Keys.SampleDimensions));
+        branch.newChild().setValue(column, SampleDimension.toString(locale, sampleDimensions));
+        return tree;
     }
 }

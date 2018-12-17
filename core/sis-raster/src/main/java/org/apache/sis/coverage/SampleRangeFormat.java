@@ -16,10 +16,10 @@
  */
 package org.apache.sis.coverage;
 
-import java.util.List;
 import java.util.Locale;
 import java.text.NumberFormat;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.DecimalFormat;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
@@ -42,15 +42,15 @@ import org.apache.sis.util.resources.Vocabulary;
 @SuppressWarnings({"CloneableClassWithoutClone", "serial"})         // Not intended to be cloned or serialized.
 final class SampleRangeFormat extends RangeFormat {
     /**
-     * Maximum value for {@link #ndigits}. This is the number of
-     * significant digits to allow when formatting real values.
+     * Maximum value for {@link #numFractionDigits}. This is the number
+     * of significant digits to allow when formatting real values.
      */
     private static final int MAX_DIGITS = 6;
 
     /**
      * Number of significant digits used for formatting real values.
      */
-    private int ndigits;
+    private int[] numFractionDigits;
 
     /**
      * {@code true} if the range of sample values is different than the range of real values, or
@@ -59,7 +59,7 @@ final class SampleRangeFormat extends RangeFormat {
     private boolean hasPackedValues;
 
     /**
-     * Whether {@link #prepare(List)} found at least one quantitative category.
+     * Whether {@link #prepare(SampleDimension[])} found at least one quantitative category.
      * If {@code false}, then we can omit the "Measures" column.
      */
     private boolean hasQuantitative;
@@ -68,6 +68,11 @@ final class SampleRangeFormat extends RangeFormat {
      * The localize resources for table header. Words will be "Values", "Measures" and "Name".
      */
     private final Vocabulary words;
+
+    /**
+     * Index of the current sample dimension being formatted.
+     */
+    private int currentIndex;
 
     /**
      * Creates a new format for the given locale.
@@ -84,31 +89,36 @@ final class SampleRangeFormat extends RangeFormat {
      * This method assumes that real values in the range {@code Category.converse.range} are stored
      * as integer sample values in the range {@code Category.range}.
      */
-    private void prepare(final List<Category> categories) {
-        ndigits         = 0;
-        hasPackedValues = false;
-        hasQuantitative = false;
-        for (final Category category : categories) {
-            final Category converted = category.converted();
-            final boolean  isPacked  = (category.minimum != converted.minimum)
-                                     | (category.maximum != converted.maximum);
-            hasPackedValues |= isPacked;
-            /*
-             * If the sample values are already real values, pretend that they are packed in bytes.
-             * The intent is only to compute an arbitrary number of fraction digits.
-             */
-            final double range = isPacked ? ( category.maximum -  category.minimum) : 255;
-            final double increment =        (converted.maximum - converted.minimum) / range;
-            if (!Double.isNaN(increment)) {
-                hasQuantitative = true;
-                final int n = -Numerics.toExp10(Math.getExponent(increment));
-                if (n > ndigits) {
-                    ndigits = n;
+    private void prepare(final SampleDimension[] dimensions) {
+        final int count   = dimensions.length;
+        numFractionDigits = new int[count];
+        hasPackedValues   = false;
+        hasQuantitative   = false;
+        for (int i=0; i<count; i++) {
+            int ndigits = 0;
+            for (final Category category : dimensions[i].getCategories()) {
+                final Category converted = category.converted();
+                final boolean  isPacked  = (category.minimum != converted.minimum)
+                                         | (category.maximum != converted.maximum);
+                hasPackedValues |= isPacked;
+                /*
+                 * If the sample values are already real values, pretend that they are packed in bytes.
+                 * The intent is only to compute an arbitrary number of fraction digits.
+                 */
+                final double range = isPacked ? ( category.maximum -  category.minimum) : 255;
+                final double increment =        (converted.maximum - converted.minimum) / range;
+                if (!Double.isNaN(increment)) {
+                    hasQuantitative = true;
+                    final int n = -Numerics.toExp10(Math.getExponent(increment));
+                    if (n > ndigits) {
+                        ndigits = n;
+                    }
                 }
             }
-        }
-        if (ndigits >= MAX_DIGITS) {
-            ndigits = MAX_DIGITS;
+            if (ndigits >= MAX_DIGITS) {
+                ndigits = MAX_DIGITS;
+            }
+            numFractionDigits[i] = ndigits;
         }
     }
 
@@ -127,7 +137,7 @@ final class SampleRangeFormat extends RangeFormat {
         if (value instanceof Number) {
             final double m = Math.abs(((Number) value).doubleValue());
             final String text;
-            if ((m >= 1E+9 || m < 1E-4) && elementFormat instanceof DecimalFormat) {
+            if (m > 0 && (m >= 1E+9 || m < 1E-4) && elementFormat instanceof DecimalFormat) {
                 final DecimalFormat df = (DecimalFormat) elementFormat;
                 final String pattern = df.toPattern();
                 df.applyPattern("0.######E00");
@@ -155,7 +165,7 @@ final class SampleRangeFormat extends RangeFormat {
     /**
      * Formats a range of measurements. There is usually only zero or one range of measurement per {@link SampleDimension},
      * but {@code SampleRangeFormat} is not restricted to that limit. The number of fraction digits to use should have been
-     * computed by {@link #prepare(List)} before to call this method.
+     * computed by {@link #prepare(SampleDimension[])} before to call this method.
      *
      * @return the range to write, or {@code null} if the given {@code range} argument was null.
      */
@@ -166,6 +176,7 @@ final class SampleRangeFormat extends RangeFormat {
         final NumberFormat nf = (NumberFormat) elementFormat;
         final int min = nf.getMinimumFractionDigits();
         final int max = nf.getMaximumFractionDigits();
+        final int ndigits = numFractionDigits[currentIndex];
         nf.setMinimumFractionDigits(ndigits);
         nf.setMaximumFractionDigits(ndigits);
         final String text = format(range);
@@ -175,29 +186,15 @@ final class SampleRangeFormat extends RangeFormat {
     }
 
     /**
-     * Returns a string representation of the given list of categories.
-     *
-     * @param title       caption for the table.
-     * @param categories  the list of categories to format.
-     */
-    final String format(final GenericName title, final CategoryList categories) {
-        final StringBuilder buffer = new StringBuilder(800);
-        try {
-            format(title, categories, buffer);
-        } catch (IOException e) {
-            throw new AssertionError(e);    // Should never happen since we write to a StringBuilder.
-        }
-        return buffer.toString();
-    }
-
-    /**
      * Formats a string representation of the given list of categories.
      * This method formats a table like below:
      *
      * {@preformat text
      *   ┌────────────┬────────────────┬─────────────┐
      *   │   Values   │    Measures    │    Name     │
-     *   ├────────────┼────────────────┼─────────────┤
+     *   ╞════════════╧════════════════╧═════════════╡
+     *   │Band 1                                     │
+     *   ├────────────┬────────────────┬─────────────┤
      *   │         0  │ NaN #0         │ No data     │
      *   │         1  │ NaN #1         │ Clouds      │
      *   │         5  │ NaN #5         │ Lands       │
@@ -205,50 +202,119 @@ final class SampleRangeFormat extends RangeFormat {
      *   └────────────┴────────────────┴─────────────┘
      * }
      *
-     * @param title       caption for the table.
-     * @param categories  the list of categories to format.
-     * @param out         where to write the category table.
+     * @param dimensions  the list of sample dimensions to format.
      */
-    void format(final GenericName title, final CategoryList categories, final Appendable out) throws IOException {
-        prepare(categories);
-        final String lineSeparator = System.lineSeparator();
-        out.append(title.toInternationalString().toString(getLocale())).append(lineSeparator);
+    String write(final SampleDimension[] dimensions) {
+        prepare(dimensions);
         /*
          * Write table header: │ Values │ Measures │ name │
          */
-        final TableAppender table = new TableAppender(out, " │ ");
+        final StringBuilder buffer = new StringBuilder(800);
+        final TableAppender table = new TableAppender(buffer, " │ ");
+        table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
         table.setCellAlignment(TableAppender.ALIGN_CENTER);
         if (hasPackedValues) table.append(words.getString(Vocabulary.Keys.Values))  .nextColumn();
         if (hasQuantitative) table.append(words.getString(Vocabulary.Keys.Measures)).nextColumn();
         /* Unconditional  */ table.append(words.getString(Vocabulary.Keys.Name))    .nextLine();
+        table.nextLine('═');
+        table.append('#');                      // Dummy character to be replaced by band name later.
         table.appendHorizontalSeparator();
-        for (final Category category : categories) {
-            /*
-             * "Sample values" column. Omitted if all values are already real values.
-             */
-            if (hasPackedValues) {
-                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                table.append(formatSample(category.getRangeLabel()));
-                table.nextColumn();
-            }
-            table.setCellAlignment(TableAppender.ALIGN_LEFT);
-            /*
-             * "Real values" column. Omitted if no category has a transfer function.
-             */
-            if (hasQuantitative) {
-                final Category converted = category.converted();
-                String text = formatMeasure(converted.range);               // Example: [6.0 … 25.0)°C
-                if (text == null) {
-                    text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
+        for (final SampleDimension dim : dimensions) {
+            for (final Category category : dim.getCategories()) {
+                /*
+                 * "Sample values" column. Omitted if all values are already real values.
+                 */
+                if (hasPackedValues) {
+                    table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                    table.append(formatSample(category.getRangeLabel()));
+                    table.nextColumn();
                 }
-                table.append(text);
-                table.nextColumn();
+                table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                /*
+                 * "Real values" column. Omitted if no category has a transfer function.
+                 */
+                if (hasQuantitative) {
+                    final Category converted = category.converted();
+                    String text = formatMeasure(converted.range);               // Example: [6.0 … 25.0)°C
+                    if (text == null) {
+                        text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
+                    }
+                    table.append(text);
+                    table.nextColumn();
+                }
+                table.append(category.name.toString(getLocale()));
+                table.nextLine();
             }
-            table.append(category.name.toString(getLocale()));
-            table.nextLine();
         }
         table.appendHorizontalSeparator();
-        table.flush();
+        try {
+            table.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we write to a StringBuilder.
+        }
+        /*
+         * After we formatted the table, insert the sample dimension names before each category lists.
+         * We do that after formatting table because TableAppender currently has no API for spanning
+         * a value on many cells. The following code changes some characters but do not change buffer
+         * length.
+         */
+        int lastDimensionEnd = 0;
+        final String lineSeparator = table.getLineSeparator();
+        final String toSearch = lineSeparator + '╞';
+        for (final SampleDimension dim : dimensions) {
+            int lineStart = buffer.indexOf(toSearch, lastDimensionEnd);
+            if (lineStart < 0) break;                                           // Should not happen.
+            lineStart += toSearch.length();
+            int i = replace(buffer, lineStart, '╪', '╧', '╡');
+            int limit = (i-2) - lineStart;                                      // Space available in a row.
+            i += lineSeparator.length() + 2;                                    // Beginning of next line.
+            /*
+             * At this point, 'i' is at the beginning of the row where to format the band name.
+             * The line above that row has been modified for removing vertical lines. Now fill
+             * the space in current row with band name and pad with white spaces.
+             */
+            final GenericName name = dim.getName();
+            String label;
+            if (name != null) {
+                label = name.toInternationalString().toString(getLocale());
+            } else {
+                label = words.getString(Vocabulary.Keys.Unnamed);
+            }
+            if (label.length() > limit) {
+                label = label.substring(0, limit);
+            }
+            limit += i;                                         // Now an absolute index instead than a length.
+            buffer.replace(i, i += label.length(), label);
+            while (i < limit) buffer.setCharAt(i++, ' ');
+            /*
+             * At this point the sample dimension name has been written.
+             * Update the next line and move to the next sample dimension.
+             */
+            lastDimensionEnd = replace(buffer, i + lineSeparator.length() + 2, '┼', '┬', '┤');
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Replaces characters in the given buffer until a sentinel value, which must exist.
+     *
+     * @param  buffer   the buffer where to perform the replacements.
+     * @param  i        index of the first character to check.
+     * @param  search   character to search for replacement.
+     * @param  replace  character to use as a replacement.
+     * @param  stop     sentinel value for stopping the search.
+     * @return index after the sentinel value.
+     */
+    private static int replace(final StringBuilder buffer, int i, final char search, final char replace, final char stop) {
+        char c;
+        do {
+            c = buffer.charAt(i);
+            if (c == search) {
+                buffer.setCharAt(i, replace);
+            }
+            i++;
+        } while (c != stop);
+        return i;
     }
 }

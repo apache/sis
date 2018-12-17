@@ -192,6 +192,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Correlation = 19;
 
         /**
+         * Coverage domain
+         */
+        public static final short CoverageDomain = 162;
+
+        /**
          * Current date and time
          */
         public static final short CurrentDateTime = 20;
@@ -685,6 +690,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Root Mean Square
          */
         public static final short RootMeanSquare = 91;
+
+        /**
+         * Sample dimensions
+         */
+        public static final short SampleDimensions = 163;
 
         /**
          * Scale

@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.AccessController;
 import javax.measure.Dimension;
 import javax.measure.Unit;
@@ -895,7 +896,7 @@ appPow: if (unit == null) {
         try {
             return (StringBuffer) format((Unit<?>) unit, toAppendTo);
         } catch (IOException e) {
-            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuffer.
+            throw new UncheckedIOException(e);          // Should never happen since we are writting to a StringBuffer.
         }
     }
 
@@ -911,7 +912,7 @@ appPow: if (unit == null) {
         try {
             return format(unit, new StringBuilder()).toString();
         } catch (IOException e) {
-            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuilder.
+            throw new UncheckedIOException(e);      // Should never happen since we are writting to a StringBuilder.
         }
     }
 

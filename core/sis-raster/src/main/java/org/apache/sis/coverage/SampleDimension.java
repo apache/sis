@@ -38,6 +38,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -451,7 +452,21 @@ public class SampleDimension implements Serializable {
      */
     @Override
     public String toString() {
-        return new SampleRangeFormat(Locale.getDefault()).format(name, categories);
+        return new SampleRangeFormat(Locale.getDefault()).write(new SampleDimension[] {this});
+    }
+
+    /**
+     * Returns a string representation of the given sample dimensions.
+     * This string is for debugging purpose only and may change in future version.
+     *
+     * @param  locale      the locale to use for formatting texts.
+     * @param  dimensions  the sample dimensions to format.
+     * @return a string representation of the given sample dimensions for debugging purpose.
+     */
+    @Debug
+    public static String toString(final Locale locale, SampleDimension... dimensions) {
+        ArgumentChecks.ensureNonNull("dimensions", dimensions);
+        return new SampleRangeFormat(locale).write(dimensions);
     }
 
 

@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.gml;
 
 import java.util.Locale;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -183,7 +184,7 @@ public final class Measure {
         try {
             UCUM.format(unit, link);
         } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuilder.
+            throw new UncheckedIOException(e);          // Should never happen since we wrote to a StringBuilder.
         }
         return link.append("'])").toString();
     }

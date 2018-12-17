@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.Flushable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -68,7 +69,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
  *
@@ -404,6 +405,22 @@ public class TableAppender extends Appender implements Flushable {
     }
 
     /**
+     * Returns the line separator between table rows. This is the first line separator found in the
+     * text formatted as a table, or the {@linkplain System#lineSeparator() system default} if no
+     * line separator was found in the text to format.
+     *
+     * @return the line separator between table rows.
+     *
+     * @since 1.0
+     */
+    public String getLineSeparator() {
+        if (lineSeparator == null) {
+            lineSeparator = System.lineSeparator();
+        }
+        return lineSeparator;
+    }
+
+    /**
      * Returns the number of rows in this table. This count is reset to 0 by {@link #flush()}.
      *
      * @return the number of rows in this table.
@@ -502,7 +519,7 @@ public class TableAppender extends Appender implements Flushable {
              * Should never happen, because appendSurrogate(…) delegates to append(char)
              * which is overriden without 'throws IOException' clause in this class.
              */
-            throw new AssertionError(e);
+            throw new UncheckedIOException(e);
         }
         if (start != end) {
             if (skipLF && sequence.charAt(start) == '\n') {
@@ -678,7 +695,7 @@ public class TableAppender extends Appender implements Flushable {
                 writeTable();
             } catch (IOException e) {
                 // Should never happen because we are writing in a StringBuilder.
-                throw new AssertionError(e);
+                throw new UncheckedIOException(e);
             }
         }
         return super.toString();
