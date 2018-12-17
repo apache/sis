@@ -129,10 +129,9 @@ public enum AxesConvention implements AxisFilter {
      *   </li>
      * </ul>
      *
-     * Current implementation does not normalize longitude values to the [-180 … +180]° range and does not set
-     * the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian}
-     * to Greenwich. However those rules may be adjusted in future SIS versions based on experience gained.
-     * For more predictable results, consider using {@link #CONVENTIONALLY_ORIENTED} or {@link #RIGHT_HANDED} instead.
+     * This mode does not normalize longitude values to the [-180 … +180]° range and does not set the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian} to Greenwich.
+     * Those changes are not applied for avoiding discontinuity in conversions from the non-normalized CRS to the normalized CRS.
      *
      * <div class="note"><b>Rational:</b>
      * The reason why we do not yet normalize the range and the prime meridian is because doing so

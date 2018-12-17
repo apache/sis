@@ -87,6 +87,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
@@ -201,6 +202,13 @@ public final class ServicesForMetadata extends ReferencingServices {
             final double rotation = CRS.getGreenwichLongitude(normalizedCRS);
             westBoundLongitude += rotation;
             eastBoundLongitude += rotation;
+        }
+        if (eastBoundLongitude - westBoundLongitude >= 360) {
+            westBoundLongitude = Longitude.MIN_VALUE;
+            eastBoundLongitude = Longitude.MAX_VALUE;
+        } else {
+            westBoundLongitude = Longitude.normalize(westBoundLongitude);
+            eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
         }
         if (target == null) {
             target = new DefaultGeographicBoundingBox();
