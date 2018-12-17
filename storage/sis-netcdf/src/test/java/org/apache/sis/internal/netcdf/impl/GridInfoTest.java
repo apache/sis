@@ -19,7 +19,7 @@ package org.apache.sis.internal.netcdf.impl;
 import java.io.IOException;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
-import org.apache.sis.internal.netcdf.GridGeometryTest;
+import org.apache.sis.internal.netcdf.GridTest;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOn;
@@ -27,8 +27,8 @@ import org.opengis.test.dataset.TestData;
 
 
 /**
- * Tests the {@link Grid} implementation. This test shall be executed only if the
- * {@link GridGeometryTest} tests, which use the UCAR library has a reference implementation,
+ * Tests the {@link GridInfo} implementation. This test shall be executed only if the
+ * {@link GridTest} tests, which use the UCAR library has a reference implementation,
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -36,8 +36,8 @@ import org.opengis.test.dataset.TestData;
  * @since   0.3
  * @module
  */
-@DependsOn({VariableInfoTest.class, GridGeometryTest.class})
-public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
+@DependsOn({VariableInfoTest.class, GridTest.class})
+public final strictfp class GridInfoTest extends GridTest {
     /**
      * Creates a new decoder for the specified dataset.
      *

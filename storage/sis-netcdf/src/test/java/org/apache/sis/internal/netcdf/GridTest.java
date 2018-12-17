@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn(VariableTest.class)
-public strictfp class GridGeometryTest extends TestCase {
+public strictfp class GridTest extends TestCase {
     /**
      * Optionally filters out some grid geometries that shall be ignored by the tests.
      * The default implementation returns the given array unmodified. This method is overridden by
