@@ -655,7 +655,7 @@
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>

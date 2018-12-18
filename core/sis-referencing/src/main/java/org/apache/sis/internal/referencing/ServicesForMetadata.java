@@ -203,7 +203,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             westBoundLongitude += rotation;
             eastBoundLongitude += rotation;
         }
-        if (eastBoundLongitude - westBoundLongitude >= 360) {
+        if (eastBoundLongitude - westBoundLongitude >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE)) {
             westBoundLongitude = Longitude.MIN_VALUE;
             eastBoundLongitude = Longitude.MAX_VALUE;
         } else {
