@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -43,7 +42,6 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.io.TableAppender;
@@ -516,11 +514,11 @@ public class GridExtent implements Serializable {
      *
      * @return the grid coordinates of a representative point.
      */
-    public DirectPosition getCentroid() {
+    public double[] getPointOfInterest() {
         final int dimension = getDimension();
-        final GeneralDirectPosition center = new GeneralDirectPosition(dimension);
+        final double[] center = new double[dimension];
         for (int i=0; i<dimension; i++) {
-            center.setOrdinate(i, ((double) coordinates[i] + (double) coordinates[i + dimension] + 1.0) * 0.5);
+            center[i] = ((double) coordinates[i] + (double) coordinates[i + dimension] + 1.0) * 0.5;
         }
         return center;
     }

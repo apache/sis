@@ -142,7 +142,7 @@ public class GridChange implements Serializable {
             if (matrix != null) {
                 resolution = GridGeometry.resolution(matrix, 1);
             } else {
-                resolution = GridGeometry.resolution(mapCenters.derivative(domain.getCentroid()), 0);
+                resolution = GridGeometry.resolution(mapCenters, domain);
             }
             for (int i=resolution.length; --i >= 0;) {
                 if (resolution[i] != 1) {

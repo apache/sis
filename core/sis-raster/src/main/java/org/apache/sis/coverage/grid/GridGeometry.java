@@ -44,6 +44,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.collection.TreeTable;
@@ -311,7 +312,7 @@ public class GridGeometry implements Serializable {
         if (matrix != null) {
             resolution = resolution(matrix, 1);
         } else if (extent != null && gridToCRS != null) try {
-            resolution = resolution(gridToCRS.derivative(extent.getCentroid()), 0);
+            resolution = resolution(gridToCRS, extent);
         } catch (TransformException e) {
             recoverableException(e);
         }
@@ -392,7 +393,8 @@ public class GridGeometry implements Serializable {
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
-                scales = gridToCRS.derivative(extent.getCentroid());    // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
+                // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
+                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
                 numToIgnore = 0;
             } catch (TransformException e) {
                 recoverableException(e);
@@ -675,7 +677,7 @@ public class GridGeometry implements Serializable {
      * <ul>
      *   <li>{@link Double#NaN} if {@code allowEstimates} is {@code false}.</li>
      *   <li>An arbitrary representative resolution otherwise.
-     *       Current implementation computes the resolution at {@linkplain GridExtent#getCentroid() grid center},
+     *       Current implementation computes the resolution at {@link GridExtent#getPointOfInterest() grid center},
      *       but different implementations may use alternative algorithms.</li>
      * </ul>
      *
@@ -717,6 +719,13 @@ public class GridGeometry implements Serializable {
             resolution[j] = MathFunctions.magnitude(buffer);
         }
         return resolution;
+    }
+
+    /**
+     * Returns an estimation of the resolution at the point of interest of the given extent.
+     */
+    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) throws TransformException {
+        return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest())), 0);
     }
 
     /**
