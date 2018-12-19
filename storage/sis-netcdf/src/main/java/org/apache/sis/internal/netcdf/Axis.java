@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
 import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CSFactory;
@@ -34,8 +36,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 import ucar.nc2.constants.CDM;
@@ -241,6 +246,45 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
         return axis.getDirection().equals(direction) && axis.getUnit().equals(getUnit());
+    }
+
+    /**
+     * Returns {@code true} if coordinates in this axis seem to map cell corner instead than cell center.
+     * A {@code false} value does not necessarily means that the axis maps cell center; it can be unknown.
+     * This method assumes a geographic CRS.
+     *
+     * <p>From CF-Convention: <cite>"If bounds are not provided, an application might reasonably assume the
+     * grid points to be at the centers of the cells, but we do not require that in this standard."</cite>
+     * We nevertheless tries to guess by checking if the "cell center" convention would result in coordinates
+     * outside the range of longitude or latitude values.</p>
+     */
+    final boolean isCellCorner() throws IOException, DataStoreException {
+        double min;
+        boolean wraparound;
+        switch (abbreviation) {
+            case 'λ': min = Longitude.MIN_VALUE; wraparound = true;  break;
+            case 'φ': min =  Latitude.MIN_VALUE; wraparound = false; break;
+            default: return false;
+        }
+        final Vector data = coordinates.read();
+        final int size = data.size();
+        if (size != 0) {
+            Unit<?> unit = getUnit();
+            if (unit == null) {
+                unit = Units.DEGREE;
+            }
+            try {
+                final UnitConverter uc = unit.getConverterToAny(Units.DEGREE);
+                if (wraparound && uc.convert(data.doubleValue(size - 1)) > Longitude.MAX_VALUE) {
+                    min = 0;            // Replace [-180 … +180]° longitude range by [0 … 360]°.
+                }
+                return uc.convert(data.doubleValue(0)) == min;
+            } catch (IncommensurableException e) {
+                coordinates.error(Grid.class, "getGridGeometry", e, Errors.Keys.InconsistentUnitsForCS_1, unit);
+
+            }
+        }
+        return false;
     }
 
     /**

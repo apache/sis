@@ -29,11 +29,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
@@ -379,7 +381,22 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                     gridToCRS = (gridToCRS == null) ? tr : factory.createConcatenatedTransform(gridToCRS, tr);
                 }
             }
-            geometry = new GridGeometry(getExtent(axes), PixelInCell.CELL_CENTER, gridToCRS, getCoordinateReferenceSystem(decoder));
+            /*
+             * From CF-Convention: "If bounds are not provided, an application might reasonably assume the gridpoints
+             * to be at the centers of the cells, but we do not require that in this standard". We nevertheless check
+             * if an axis thinks otherwise.
+             */
+            PixelInCell anchor = PixelInCell.CELL_CENTER;
+            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder);
+            if (CRS.getHorizontalComponent(crs) instanceof GeographicCRS) {
+                for (final Axis axis : axes) {
+                    if (axis.isCellCorner()) {
+                        anchor = PixelInCell.CELL_CORNER;
+                        break;
+                    }
+                }
+            }
+            geometry = new GridGeometry(getExtent(axes), anchor, gridToCRS, crs);
         } catch (FactoryException | TransformException ex) {
             canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }

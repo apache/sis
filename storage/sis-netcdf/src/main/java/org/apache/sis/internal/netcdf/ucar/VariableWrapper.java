@@ -364,7 +364,7 @@ final class VariableWrapper extends Variable {
     @Override
     public Vector read() throws IOException {
         final Array array = variable.read();                // May be cached by the UCAR library.
-        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+        return createDecimalVector(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 
     /**
@@ -393,7 +393,7 @@ final class VariableWrapper extends Variable {
         } catch (InvalidRangeException e) {
             throw new DataStoreException(e);
         }
-        return createDecimalVector(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 
     /**

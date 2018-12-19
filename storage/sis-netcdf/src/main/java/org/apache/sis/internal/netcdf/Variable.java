@@ -193,8 +193,7 @@ public abstract class Variable extends NamedElement {
             if (symbols != null && !symbols.isEmpty()) try {
                 unit = parseUnit(symbols);
             } catch (Exception ex) {
-                warning(listeners, Variable.class, "getUnit", ex, Errors.getResources(listeners.getLocale()),
-                        Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
+                error(Variable.class, "getUnit", ex, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
             }
         }
         return unit;
@@ -658,6 +657,19 @@ public abstract class Variable extends NamedElement {
      */
     protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
         warning(listeners, caller, method, null, null, key, arguments);
+    }
+
+    /**
+     * Reports a warning to the listeners specified at construction time.
+     *
+     * @param  caller     the caller class to report, preferably a public class.
+     * @param  method     the caller method to report, preferable a public method.
+     * @param  exception  the exception that occurred, or {@code null} if none.
+     * @param  key        one or {@link Errors.Keys} constants.
+     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     */
+    protected final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
+        warning(listeners, caller, method, exception, Errors.getResources(listeners.getLocale()), key, arguments);
     }
 
     /**
