@@ -132,7 +132,7 @@ abstract class SequenceVector extends Vector implements Serializable {
     /**
      * A vector which is a sequence of increasing or decreasing {@code double} values.
      */
-    static final class Doubles extends SequenceVector {
+    static class Doubles extends SequenceVector {
         /**
          * For cross-version compatibility.
          */
@@ -147,7 +147,7 @@ abstract class SequenceVector extends Vector implements Serializable {
          * The difference between the values at two adjacent indexes.
          * May be positive, negative or zero.
          */
-        private final double increment;
+        final double increment;
 
         /**
          * Creates a sequence of numbers in a given range of values using the given increment.
@@ -169,26 +169,26 @@ abstract class SequenceVector extends Vector implements Serializable {
         }
 
         /** Returns {@code true} if this vector contains only integer values. */
-        @Override public boolean isInteger() {
+        @Override public final boolean isInteger() {
             return Math.floor(first) == first && Math.floor(increment) == increment;
         }
 
         /**
          * Returns {@code true} if this vector returns {@code NaN} values.
          */
-        @Override public boolean isNaN(final int index) {
+        @Override public final boolean isNaN(final int index) {
             return Double.isNaN(first) || Double.isNaN(increment);
         }
 
         /** Computes the value at the given index. */
-        @Override public double doubleValue(final int index) {
+        @Override public final double doubleValue(final int index) {
             ArgumentChecks.ensureValidIndex(length, index);
             return first + increment*index;
             // TODO: use Math.fma with JDK9.
         }
 
         /** Computes the value at the given index. */
-        @Override public float floatValue(final int index) {
+        @Override public final float floatValue(final int index) {
             return (float) doubleValue(index);
         }
 
@@ -209,15 +209,53 @@ abstract class SequenceVector extends Vector implements Serializable {
 
         /** Computes the minimal and maximal values in this vector. */
         @SuppressWarnings({"unchecked","rawtypes"})
-        @Override public NumberRange<?> range() {
-            // TODO: use Math.fma with JDK9.
-            double min = first;
-            double max = first + increment * (length - 1);
-            if (max < min) {
+        @Override public final NumberRange<?> range() {
+            Number min = get(0);
+            Number max = get(length - 1);
+            if (((Comparable) max).compareTo((Comparable) min) < 0) {
+                Number tmp = min;
                 min = max;
-                max = first;
+                max = tmp;
             }
-            return new NumberRange(type, Numbers.wrap(min, type), true, Numbers.wrap(max, type), true);
+            return new NumberRange(type, min, true, max, true);
+        }
+    }
+
+
+    /**
+     * A vector which is a sequence of increasing or decreasing {@code float} values.
+     */
+    static final class Floats extends Doubles {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 7972249253456554448L;
+
+        /**
+         * Creates a sequence of numbers in a given range of values using the given increment.
+         */
+        Floats(final Class<? extends Number> type, final Number first, final Number increment, final int length) {
+            super(type, first, increment, length);
+        }
+
+        /** Creates a new sequence for a subrange of this vector. */
+        @Override Vector createSubSampling(final int offset, final int step, final int n) {
+            return new Floats(type, doubleValue(offset), increment*step, n);
+        }
+
+        /** Computes the value at the given index. */
+        @Override public Number get(final int index) {
+            return floatValue(index);
+        }
+
+        /** Returns the string representation of the value at the given index. */
+        @Override public String stringValue(final int index) {
+            return String.valueOf(floatValue(index));
+        }
+
+        /** Returns the increment between all consecutive values */
+        @Override public Number increment(final double tolerance) {
+            return (float) increment;
         }
     }
 

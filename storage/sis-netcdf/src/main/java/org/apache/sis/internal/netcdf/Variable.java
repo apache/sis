@@ -35,6 +35,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -129,6 +130,22 @@ public abstract class Variable extends NamedElement {
      */
     @Override
     public abstract String getName();
+
+    /**
+     * Returns the standard name if available, or the long name other, or the ordinary name otherwise.
+     *
+     * @return the standard name, or a fallback if there is no standard name.
+     */
+    public final String getStandardName() {
+        String name = getAttributeAsString(CF.STANDARD_NAME);
+        if (name == null) {
+            name = getAttributeAsString(CDM.LONG_NAME);
+            if (name == null) {
+                name = getName();
+            }
+        }
+        return name;
+    }
 
     /**
      * Returns the description of this variable, or {@code null} if none.

@@ -201,6 +201,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         if (t >= Numbers.BYTE && t <= Numbers.LONG) {
             // Use the long type if possible because not all long values can be represented as double.
             return new SequenceVector.Longs(type, first, increment, length);
+        } else if (t == Numbers.FLOAT) {
+            return new SequenceVector.Floats(type, first, increment, length);
         } else {
             return new SequenceVector.Doubles(type, first, increment, length);
         }
@@ -454,7 +456,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * <div class="note"><b>Example:</b>
      * if {@link #getElementType()} returns {@code Byte.class} but {@link #isUnsigned()} returns {@code true},
      * then this method may return instances of {@link Short} since that type is the smallest Java primitive
-     * type capable to hold byte values in the [128 … 255] range.</div>
+     * type capable to hold byte values in the [0 … 255] range.</div>
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index (may be {@code null}).
@@ -1231,7 +1233,7 @@ search:     for (;;) {
         int i = 0;
         do if (i >= length) {
             final Double NaN = Numerics.valueOf(Double.NaN);
-            return new SequenceVector.Doubles(getElementType(), NaN, NaN, length);
+            return createSequence(getElementType(), NaN, NaN, length);
         } while (isNaN(i++));
         /*
          * Verify if the vector contains repetitions. If yes, then we can keep only a subregion of this vector.

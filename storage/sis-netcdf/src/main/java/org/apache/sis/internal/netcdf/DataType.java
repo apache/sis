@@ -16,17 +16,8 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.nio.Buffer;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferFloat;
-import java.awt.image.DataBufferDouble;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
@@ -196,30 +187,6 @@ public enum DataType {
      */
     public final DataType unsigned(final boolean u) {
         return (u == isUnsigned) ? this : valueOf(opposite);
-    }
-
-    /**
-     * Creates a Java2D buffer for the given {@code java.nio} buffer.
-     *
-     * @param  data  an array of primitive type such as {@code byte[]} or {@code float[]}.
-     * @return Java2D data buffer wrapping the given primitive array.
-     * @throws UnsupportedOperationException if the buffer is not backed by an array.
-     * @throws DataStoreContentException if this enumeration is not a supported type for this operation.
-     * @throws ClassCastException if the given array is not of the type expected by this enumeration value.
-     */
-    public DataBuffer toJava2D(final Buffer data) throws DataStoreContentException {
-        final Object array = data.array();
-        final int offset = data.arrayOffset() + data.position();
-        final int length = data.remaining();
-        switch (rasterDataType) {
-            case DataBuffer.TYPE_BYTE:   return new DataBufferByte  (  (byte[]) array, length, offset);
-            case DataBuffer.TYPE_SHORT:  return new DataBufferShort ( (short[]) array, length, offset);
-            case DataBuffer.TYPE_USHORT: return new DataBufferUShort( (short[]) array, length, offset);
-            case DataBuffer.TYPE_INT:    return new DataBufferInt   (   (int[]) array, length, offset);
-            case DataBuffer.TYPE_FLOAT:  return new DataBufferFloat ( (float[]) array, length, offset);
-            case DataBuffer.TYPE_DOUBLE: return new DataBufferDouble((double[]) array, length, offset);
-            default: throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, name()));
-        }
     }
 
     /**
