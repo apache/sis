@@ -89,7 +89,7 @@ public abstract class Grid extends NamedElement {
     private boolean isCRSDetermined;
 
     /**
-     * The geometry of this grid (is extent, its CRS and its conversion to the CRS).
+     * The geometry of this grid (its extent, its CRS and its conversion to the CRS).
      * May be {@code null} even after we attempted to create it.
      */
     private GridGeometry geometry;

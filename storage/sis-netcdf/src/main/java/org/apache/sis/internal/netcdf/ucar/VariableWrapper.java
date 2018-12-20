@@ -73,6 +73,13 @@ final class VariableWrapper extends Variable {
     private final VariableIF raw;
 
     /**
+     * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
+     * for relatively small variables, or for variables that are critical to the use of other variables
+     * (for example the values in coordinate system axes).
+     */
+    private transient Vector values;
+
+    /**
      * Creates a new variable wrapping the given netCDF interface.
      */
     VariableWrapper(final WarningListeners<?> listeners, VariableIF v) {
@@ -359,12 +366,17 @@ final class VariableWrapper extends Variable {
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
-     * This method may cache the returned vector, at UCAR library choice.
+     * This method caches the returned vector.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector read() throws IOException {
-        final Array array = variable.read();                // May be cached by the UCAR library.
-        return createDecimalVector(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+        if (values == null) {
+            final Array array = variable.read();                // May be already cached by the UCAR library.
+            values = createDecimalVector(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+            values = SHARED_VECTORS.unique(values);
+        }
+        return values;
     }
 
     /**

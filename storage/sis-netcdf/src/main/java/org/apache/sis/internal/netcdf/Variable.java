@@ -32,6 +32,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
@@ -48,6 +49,15 @@ import ucar.nc2.constants.CF;
  * @module
  */
 public abstract class Variable extends NamedElement {
+    /**
+     * Pool of vectors created by the {@link #read()} method. This pool is used for sharing netCDF coordinate axes,
+     * since the same vectors tend to be repeated in many netCDF files produced by the same data producer. Because
+     * those vectors can be large, sharing common instances may save a lot of memory.
+     *
+     * <p>All shared vectors shall be considered read-only.</p>
+     */
+    protected static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
+
     /**
      * Names of attributes where to fetch minimum and maximum sample values, in preference order.
      *

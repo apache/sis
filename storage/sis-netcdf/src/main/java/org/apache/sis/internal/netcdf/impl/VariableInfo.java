@@ -692,6 +692,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
         }
         values = data.compress(tolerance);
+        values = SHARED_VECTORS.unique(values);
     }
 
     /**
