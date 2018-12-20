@@ -709,7 +709,11 @@ search:     for (;;) {
              */
             if (type >= Numbers.FLOAT && type <= Numbers.DOUBLE) {
                 final double first = doubleValue(0);
-                final double inc = (doubleValue(--i) - first) / i;
+                double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
+                final int pz = Math.max(0, Math.min(i, (int) Math.rint(-first / inc)));   // Presumed index of value zero.
+                if (doubleValue(pz) == 0) {
+                    inc = (pz == i) ? -doubleValue(pz-1) : doubleValue(pz+1);   // Presumed less subject to rounding errors.
+                }
                 if (type == Numbers.FLOAT) {
                     while (i >= 1) {
                         final float  value = floatValue(i);
@@ -723,7 +727,8 @@ search:     for (;;) {
                     if (f == inc) return f;                            // Use the java.lang.Float wrapper class if possible.
                 } else {
                     while (i >= 1) {
-                        if (!(Math.abs(first + inc*i - doubleValue(i--)) <= tolerance)) {       // Use '!' for catching NaN.
+                        final double delta = Math.abs(first + inc*i - doubleValue(i--));
+                        if (!(delta <= tolerance)) {                   // Use '!' for catching NaN.
                             return null;
                         }
                     }

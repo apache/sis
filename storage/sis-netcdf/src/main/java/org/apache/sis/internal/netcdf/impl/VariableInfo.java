@@ -39,11 +39,13 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
@@ -669,7 +671,27 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  array  the values as an array of primitive type (for example {@code float[]}.
      */
     final void setValues(final Object array) {
-        values = createDecimalVector(array, dataType.isUnsigned).compress(0);
+        Vector data = createDecimalVector(array, dataType.isUnsigned);
+        /*
+         * This method is usually invoked with vector of increasing or decreasing values.  Set a tolerance threshold to the
+         * precision of gratest (in magnitude) number, provided that this precision is not larger than increment. If values
+         * are not sorted in increasing or decreasing order, the tolerance computed below will be smaller than it could be.
+         * This is okay it will cause more conservative compression (i.e. it does not increase the risk of data loss).
+         */
+        double tolerance = 0;
+        if (Numbers.isFloat(data.getElementType())) {
+            final int n = data.size() - 1;
+            if (n >= 0) {
+                double first = data.doubleValue(0);
+                double last  = data.doubleValue(n);
+                double inc   = Math.abs((last - first) / n);
+                if (!Double.isNaN(inc)) {
+                    double ulp = Math.ulp(Math.max(Math.abs(first), Math.abs(last)));
+                    tolerance = Math.min(inc, ulp);
+                }
+            }
+        }
+        values = data.compress(tolerance);
     }
 
     /**
@@ -696,7 +718,20 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
             final Region region = new Region(upper, lower, upper, subsampling);
             applyUnlimitedDimensionStride(region);
-            setValues(reader.read(region));
+            Object array = reader.read(region);
+            /*
+             * If we can convert a double[] array to a float[] array, we should do that before
+             * to invoke 'setValues(array)' - we can not rely on data.compress(tolerance). The
+             * reason is because we assume that float[] arrays are accurate in base 10 even if
+             * the data were originally stored as doubles. The Vector class does not make such
+             * assumption since it is specific to what we observe with netCDF files. To enable
+             * this assumption, we need to convert to float[] before createDecimalVector(…).
+             */
+            if (array instanceof double[]) {
+                final float[] copy = Numerics.copyAsFloatsIfLossless((double[]) array);
+                if (copy != null) array = copy;
+            }
+            setValues(array);
         }
         return values;
     }
