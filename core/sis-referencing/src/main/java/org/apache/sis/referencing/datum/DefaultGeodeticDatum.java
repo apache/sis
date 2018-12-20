@@ -441,7 +441,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         /*
-         * In a previous version (Geotk), we were used to search for a transformation path through a common datum:
+         * In a previous version, we were used to search for a transformation path through a common datum:
          *
          *     source   →   [common datum]   →   target
          *

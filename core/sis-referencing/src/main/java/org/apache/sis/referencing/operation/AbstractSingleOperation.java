@@ -375,7 +375,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * difficult. For example Mercator1SP and Mercator2SP providers are two different ways to describe the same
          * projection. The SQL-backed EPSG factory uses yet an other implementation.
          *
-         * NOTE: A previous Geotk implementation made this final check:
+         * NOTE: A previous implementation made this final check:
          *
          *     return nameMatches(this.method, that.method);
          *
