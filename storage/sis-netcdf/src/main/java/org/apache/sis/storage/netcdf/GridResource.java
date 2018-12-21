@@ -57,6 +57,7 @@ import ucar.nc2.constants.CDM;                      // We use only String consta
  * the <var>u</var> and <var>v</var> components of wind vectors).
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module

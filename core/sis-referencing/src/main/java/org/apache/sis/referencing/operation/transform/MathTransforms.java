@@ -98,8 +98,14 @@ public final class MathTransforms extends Static {
      */
     public static LinearTransform translation(final double... vector) {
         ArgumentChecks.ensureNonNull("vector", vector);
-        TranslationTransform tr = new TranslationTransform(vector);
-        return tr.isIdentity() ? identity(vector.length) : tr;
+        final LinearTransform tr;
+        switch (vector.length) {
+            case 0:  return IdentityTransform.create(0);
+            case 1:  tr = new LinearTransform1D(1, vector[0]); break;
+            case 2:  tr = new AffineTransform2D(1, 0, 0, 1, vector[0], vector[1]); break;
+            default: tr = new TranslationTransform(vector); break;
+        }
+        return tr.isIdentity() ? IdentityTransform.create(vector.length) : tr;
     }
 
     /**

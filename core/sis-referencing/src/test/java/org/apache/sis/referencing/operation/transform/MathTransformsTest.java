@@ -20,6 +20,8 @@ import java.util.List;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -195,5 +197,19 @@ public final strictfp class MathTransformsTest extends TestCase {
         DirectPosition expected = tr.transform(pos, null);
         DirectPosition actual = linear.transform(pos, null);
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Tests the interfaces implemented by the transforms returned by {@link MathTransforms#translation(double...)}.
+     */
+    @Test
+    public void testTranslation() {
+        MathTransform tr = MathTransforms.translation(4);
+        assertInstanceOf("1D", MathTransform1D.class, tr);
+        assertFalse("isIdentity", tr.isIdentity());
+
+        tr = MathTransforms.translation(4, 7);
+        assertInstanceOf("2D", MathTransform2D.class, tr);
+        assertFalse("isIdentity", tr.isIdentity());
     }
 }
