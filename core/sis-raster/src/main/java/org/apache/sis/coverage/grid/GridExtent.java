@@ -290,44 +290,76 @@ public class GridExtent implements Serializable {
      * <p><b>NOTE:</b> this constructor is not public because its contract is a bit approximate.</p>
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
+     * @param  rounding            controls behavior of rounding from floating point values to integers.
+     * @param  margin              if non-null, expand the extent by that amount of cells on each envelope dimension.
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
      *
      * @see #toCRS(MathTransform, MathTransform)
      */
-    GridExtent(final AbstractEnvelope envelope, final GridExtent enclosing, final int[] modifiedDimensions) {
+    GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final int[] margin,
+            final GridExtent enclosing, final int[] modifiedDimensions)
+    {
         final int dimension = envelope.getDimension();
         coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
         for (int i=0; i<dimension; i++) {
             final double min = envelope.getLower(i);
             final double max = envelope.getUpper(i);
             if (min >= Long.MIN_VALUE && max <= Long.MAX_VALUE && min <= max) {
-                long lower = Math.round(min);
-                long upper = Math.round(max);
-                if (lower != upper) upper--;                                // For making the coordinate inclusive.
-                /*
-                 * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
-                 * For example if 'min' was 1.49999 and 'max' was 2.50001, the roundings will create a [1…3] range
-                 * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
-                 * before and after rounding. We attempt an adjustment only if the span mistmatch is ±1, otherwise
-                 * the difference is assumed to be caused by overflow. On the three values that can be affected by
-                 * the adjustment (min, max and span), we change only the number which is farthest from an integer
-                 * value.
-                 */
-                long error = (upper - lower) + 1;                           // Negative number if overflow.
-                if (error >= 0) {
-                    final double span = envelope.getSpan(i);
-                    final long extent = Math.round(span);
-                    if (extent != 0 && Math.abs(error -= extent) == 1) {
-                        final double dmin = Math.abs(min - Math.rint(min));
-                        final double dmax = Math.abs(max - Math.rint(max));
-                        final boolean adjustMax = (dmax >= dmin);
-                        if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
-                            if (adjustMax) upper = Math.subtractExact(upper, error);
-                            else lower = Math.addExact(lower, error);
+                long lower, upper;
+                switch (rounding) {
+                    default: {
+                        throw new AssertionError(rounding);
+                    }
+                    case ENCLOSING: {
+                        lower = (long) Math.floor(min);
+                        upper = (long) Math.ceil (max);
+                        if (lower != upper) upper--;                                // For making the coordinate inclusive.
+                        break;
+                    }
+                    case NEAREST: {
+                        lower = Math.round(min);
+                        upper = Math.round(max);
+                        if (lower != upper) upper--;                                // For making the coordinate inclusive.
+                        /*
+                         * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
+                         * For example if 'min' was 1.49999 and 'max' was 2.50001,  the rounding will create a [1…3] range
+                         * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
+                         * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
+                         * the difference is assumed to be caused by overflow. On the three values that can be affected by
+                         * the adjustment (min, max and span), we change only the number which is farthest from an integer
+                         * value.
+                         */
+                        long error = (upper - lower) + 1;                           // Negative number if overflow.
+                        if (error >= 0) {
+                            final double span = envelope.getSpan(i);
+                            final long extent = Math.round(span);
+                            if (extent != 0 && Math.abs(error -= extent) == 1) {
+                                final double dmin = Math.abs(min - Math.rint(min));
+                                final double dmax = Math.abs(max - Math.rint(max));
+                                final boolean adjustMax = (dmax >= dmin);
+                                if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
+                                    if (adjustMax) upper = Math.subtractExact(upper, error);
+                                    else lower = Math.addExact(lower, error);
+                                }
+                            }
                         }
                     }
+                }
+                /*
+                 * If the user specified a margin, add it now. The margin dimension indices follow the envelope
+                 * dimension indices.  Note that the resulting extent will be intersected with enclosing extent
+                 * at the next step, which may cancel the margin effect.
+                 */
+                if (margin != null && i < margin.length) {
+                    final int m = margin[i];
+                    lower = Math.subtractExact(lower, m);
+                    upper = Math.addExact(upper, m);
+                }
+                if (lower > upper) {
+                    upper += (lower - upper) >>> 1;         // (upper - lower) as unsigned integer: overflow-safe.
+                    lower = upper;
                 }
                 /*
                  * At this point the grid range has been computed (lower to upper).
@@ -559,7 +591,7 @@ public class GridExtent implements Serializable {
      *                      If different, then this is assumed to map pixel centers instead than pixel corners.
      * @return this grid extent in real world coordinates.
      *
-     * @see #GridExtent(AbstractEnvelope, GridExtent, int[])
+     * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      */
     final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS) throws TransformException {
         final int dimension = getDimension();

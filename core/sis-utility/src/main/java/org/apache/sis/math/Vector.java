@@ -714,7 +714,11 @@ search:     for (;;) {
                 double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
                 final int pz = Math.max(0, Math.min(i, (int) Math.rint(-first / inc)));   // Presumed index of value zero.
                 if (doubleValue(pz) == 0) {
-                    inc = (pz == i) ? -doubleValue(pz-1) : doubleValue(pz+1);   // Presumed less subject to rounding errors.
+                    final Number value = (pz == i) ? get(pz-1) : get(pz+1);               // Value adjacent to zero.
+                    if (!(value instanceof Float)) {
+                        inc = value.doubleValue();                              // Presumed less subject to rounding errors.
+                        if (pz == i) inc = -inc;
+                    }
                 }
                 if (type == Numbers.FLOAT) {
                     while (i >= 1) {

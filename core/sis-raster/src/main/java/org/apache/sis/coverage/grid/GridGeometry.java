@@ -354,7 +354,7 @@ public class GridGeometry implements Serializable {
      * coordinates used in {@link GridExtent}.
      * The rules for deciding whether coordinates should be rounded toward nearest integers,
      * to {@linkplain Math#floor(double) floor} or to {@linkplain Math#ceil(double) ceil} values
-     * are implementation details and may be adjusted in any Apache SIS versions.</p>
+     * are specified by the {@link GridRoundingMode} argument.</p>
      *
      * <p>Because of the uncertainties explained in above paragraph, this constructor should be used only in last resort,
      * when the grid extent is unknown. For determinist results, developers should prefer the
@@ -373,22 +373,26 @@ public class GridGeometry implements Serializable {
      * @param  envelope   the geospatial envelope, including its coordinate reference system if available.
      *                    There is no guarantees that the envelope actually stored in the {@code GridGeometry}
      *                    will be equal to this specified envelope.
+     * @param  rounding   controls behavior of rounding from floating point values to integers.
      * @throws TransformException if the math transform can not compute the grid extent or the resolution.
      */
     @SuppressWarnings("null")
-    public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope) throws TransformException {
+    public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope,
+            final GridRoundingMode rounding) throws TransformException
+    {
         if (gridToCRS == null) {
             ArgumentChecks.ensureNonNull("envelope", envelope);
         } else if (envelope != null) {
             ensureDimensionMatches("envelope", gridToCRS.getTargetDimensions(), envelope.getDimension());
         }
+        ArgumentChecks.ensureNonNull("rounding", rounding);
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
         Matrix scales = MathTransforms.getMatrix(gridToCRS);
         int numToIgnore = 1;
         if (envelope != null && cornerToCRS != null) {
             GeneralEnvelope env = Envelopes.transform(cornerToCRS.inverse(), envelope);
-            extent = new GridExtent(env, null, null);
+            extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
             env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
@@ -607,7 +611,8 @@ public class GridGeometry implements Serializable {
         } catch (FactoryException e) {
             throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
         }
-        final GridExtent sub = new GridExtent(Envelopes.transform(gridToAOI.inverse(), areaOfInterest), extent, modifiedDimensions);
+        final GridExtent sub = new GridExtent(Envelopes.transform(gridToAOI.inverse(), areaOfInterest),
+                GridRoundingMode.NEAREST, null, extent, modifiedDimensions);
         return sub.equals(extent) ? extent : sub;
     }
 

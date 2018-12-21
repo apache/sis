@@ -206,7 +206,7 @@ public final strictfp class GridGeometryTest extends TestCase {
             0,   0.5, -90,
             0.5, 0,  -180,
             0,   0,     1));
-        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope);
+        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(
                 new long[] {370, 40},
                 new long[] {389, 339}, grid.getExtent());
@@ -237,7 +237,7 @@ public final strictfp class GridGeometryTest extends TestCase {
             0.5, 0,   0, -180,
             0,   0,   2,    3,
             0,   0,   0,    1));
-        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope);
+        final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(
                 new long[] {336,  20,  4},
                 new long[] {401, 419, 10}, grid.getExtent());

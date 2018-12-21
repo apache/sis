@@ -108,6 +108,8 @@ public class GridChange implements Serializable {
      *   <li>Target {@linkplain GridGeometry#getExtent() extent}.</li>
      * </ul>
      *
+     * This constructor assumes {@link GridRoundingMode#ENCLOSING} and no margin.
+     *
      * @param  source  the source grid geometry.
      * @param  target  the target grid geometry.
      * @throws IncompleteGridGeometryException if a "grid to CRS" conversion is not defined,
@@ -115,8 +117,44 @@ public class GridChange implements Serializable {
      * @throws TransformException if an error occurred during conversion from source to target.
      */
     public GridChange(final GridGeometry source, final GridGeometry target) throws TransformException {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("target", target);
+        this(source, target, GridRoundingMode.ENCLOSING, null);
+    }
+
+    /**
+     * Creates a description of the conversion from given source grid geometry to given target grid geometry.
+     * The following information are mandatory:
+     * <ul>
+     *   <li>Source {@linkplain GridGeometry#getExtent() extent}.</li>
+     *   <li>Source "{@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS}" conversion.</li>
+     *   <li>Target "grid to CRS" conversion.</li>
+     * </ul>
+     *
+     * The following information are optional but recommended:
+     * <ul>
+     *   <li>Source coordinate reference system.</li>
+     *   <li>Target {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system}.</li>
+     *   <li>Target {@linkplain GridGeometry#getExtent() extent}.</li>
+     * </ul>
+     *
+     * An optional {@code margin} can be specified for increasing the size of the grid extent computed by this constructor.
+     * For example if the caller wants to apply bilinear interpolations in an image, it will needs 1 more pixel on each
+     * image border. If the caller wants to apply bi-cubic interpolations, it will needs 2 more pixels on each image border.
+     * If the {@code margin} array length is shorter than the target dimension, then zero is assumed for all missing dimensions.
+     *
+     * @param  source     the source grid geometry.
+     * @param  target     the target grid geometry.
+     * @param  rounding   controls behavior of rounding from floating point values to integers.
+     * @param  margin     if non-null, expand the extent by that amount of cells on each target dimension.
+     * @throws IncompleteGridGeometryException if a "grid to CRS" conversion is not defined,
+     *         or if the {@code source} does not specify an {@linkplain GridGeometry#getExtent() extent}.
+     * @throws TransformException if an error occurred during conversion from source to target.
+     */
+    public GridChange(final GridGeometry source, final GridGeometry target, final GridRoundingMode rounding, final int... margin)
+            throws TransformException
+    {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("target",   target);
+        ArgumentChecks.ensureNonNull("rounding", rounding);
         if (source.equals(target)) {
             // Optimization for a common case.
             mapCorners = mapCenters = MathTransforms.identity(source.getDimension());
@@ -131,7 +169,7 @@ public class GridChange implements Serializable {
             final GridExtent domain = source.getExtent();
             mapCorners  = path(source, crsChange, target, PixelInCell.CELL_CORNER);
             mapCenters  = path(source, crsChange, target, PixelInCell.CELL_CENTER);
-            targetRange = new GridExtent(domain.toCRS(mapCorners, mapCenters), target.extent, null);
+            targetRange = new GridExtent(domain.toCRS(mapCorners, mapCenters), rounding, margin, target.extent, null);
             /*
              * Get an estimation of the scale factors when converting from source to target.
              * If all scale factors are 1, we will not store the array for consistency with

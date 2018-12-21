@@ -22,6 +22,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -29,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
  * Values may be {@code long} or {@code double} types.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -203,8 +204,8 @@ abstract class SequenceVector extends Vector implements Serializable {
         }
 
         /** Returns the increment between all consecutive values */
-        @Override public Number increment(final double tolerance) {
-            return Numbers.wrap(increment, type);
+        @Override public final Number increment(final double tolerance) {
+            return Numerics.valueOf(increment);         // Always Double even if data type is Float.
         }
 
         /** Computes the minimal and maximal values in this vector. */
@@ -251,11 +252,6 @@ abstract class SequenceVector extends Vector implements Serializable {
         /** Returns the string representation of the value at the given index. */
         @Override public String stringValue(final int index) {
             return String.valueOf(floatValue(index));
-        }
-
-        /** Returns the increment between all consecutive values */
-        @Override public Number increment(final double tolerance) {
-            return (float) increment;
         }
     }
 
