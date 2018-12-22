@@ -71,7 +71,7 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
         testGetExtendedElements(new GeneralMatrix(2, 2, new double[] {
                 StrictMath.PI / 180,            // Degrees to radians
                 180 / StrictMath.PI,            // Radians to degrees
-                0.9,                            // Gradians to degrees
+                0.9,                            // Grads to degrees
                 0.1234567}));                   // Random value with no special meaning.
     }
 

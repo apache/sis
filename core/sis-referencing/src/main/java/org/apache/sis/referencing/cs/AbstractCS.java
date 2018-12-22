@@ -24,24 +24,33 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.CSAuthorityFactory;
+import org.opengis.referencing.AuthorityFactory;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 
 /**
@@ -64,7 +73,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
@@ -339,8 +348,17 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         if (cs == null) {
             cs = Normalizer.forConvention(this, convention);
             if (cs == null) {
-                cs = this;  // This coordinate system is already normalized.
+                cs = this;                                                          // This coordinate system is already normalized.
+            } else if (convention != AxesConvention.POSITIVE_RANGE &&
+                    IdentifiedObjects.getIdentifier(this, Citations.EPSG) != null)  // See resolveEPSG(…) for purpose of this check.
+            {
+                cs = cs.resolveEPSG(false);
             }
+            /*
+             * It happen often that the CRS created by RIGHT_HANDED, CONVENTIONALLY_ORIENTED
+             * and NORMALIZED are the same. If this is the case, sharing the same instance
+             * not only save memory but can also make future comparisons faster.
+             */
             for (final AbstractCS existing : derived.values()) {
                 if (cs.equals(existing)) {
                     cs = existing;
@@ -365,6 +383,50 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         return new AbstractCS(properties, axes);
+    }
+
+    /**
+     * Verify if we can get a coordinate system from the EPSG database with the same axes.
+     * Such CS gives more information (better name and remarks). This is a "would be nice"
+     * feature; if we fail, we keep the CS built by {@link Normalizer}.
+     *
+     * <p>Subclasses need to override this method in order to change the {@code enabled}
+     * argument value from {@code false} to {@code true}. This is required because we do
+     * not want to enable this resolving process to every CS types.</p>
+     *
+     * @param  enabled  if {@code false}, do nothing.
+     * @return the resolved CS, or {@code this} if none.
+     */
+    AbstractCS resolveEPSG(final boolean enabled) {
+        if (enabled) {
+            final Integer epsg = CoordinateSystems.getEpsgCode(axes);
+            if (epsg != null) try {
+                final AuthorityFactory factory = CRS.getAuthorityFactory(Constants.EPSG);
+                if (factory instanceof CSAuthorityFactory) {
+                    final CoordinateSystem fromDB = ((CSAuthorityFactory) factory).createCoordinateSystem(epsg.toString());
+                    if (fromDB instanceof AbstractCS) {
+                        /*
+                         * We should compare axes strictly using Arrays.equals(…). However axes in different order
+                         * get different codes in EPSG database, which may them not strictly equal. We would need
+                         * another comparison mode ignoring only the authority code. We don't add this complexity
+                         * for now, and rather rely on the check for EPSG code done by the caller. If the original
+                         * CS was an EPSG object, then we assume that we still want an EPSG object here.
+                         */
+                        if (Utilities.equalsIgnoreMetadata(axes, ((AbstractCS) fromDB).axes)) {
+                            return (AbstractCS) fromDB;
+                        }
+                    }
+                }
+            } catch (FactoryException e) {
+                /*
+                 * NoSuchAuthorityCodeException may happen if factory is EPSGFactoryFallback.
+                 * Other exceptions would probably be more serious errors, but it still non-fatal
+                 * for this method since we can continue with what Normalizer created.
+                 */
+                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), getClass(), "forConvention", e);
+            }
+        }
+        return this;
     }
 
     /**
@@ -419,7 +481,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 }
                 if (mode != ComparisonMode.ALLOW_VARIANT) {
                     for (int i=0; i<dimension; i++) {
-                        if (!deepEquals(getAxis(i), that.getAxis(i), mode)) {
+                        if (!Utilities.deepEquals(getAxis(i), that.getAxis(i), mode)) {
                             return false;
                         }
                     }

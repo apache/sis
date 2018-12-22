@@ -68,13 +68,11 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -201,19 +199,6 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private final Map<Short,Object> geoKeys;
 
     /**
-     * Factory for creating geodetic objects from EPSG codes, or {@code null} if not yet fetched.
-     * The EPSG code for a complete CRS definition can be stored in a single {@link GeoKeys}.
-     *
-     * <div class="note"><b>Note:</b> we do not yet split this field into 3 separated fields for datums,
-     * coordinate systems and coordinate reference systems objects because it is not needed with Apache SIS
-     * implementation of those factories. However we may revisit this choice if we want to let the user specify
-     * his own factories.</div>
-     *
-     * @see #epsgFactory()
-     */
-    private GeodeticAuthorityFactory epsgFactory;
-
-    /**
      * Name of the last object created. This is used by {@link #properties(Object)} for reusing existing instance
      * if possible. This is useful in GeoTIFF files since the same name is used for different geodetic components,
      * for example the datum and the ellipsoid.
@@ -261,20 +246,6 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private void warning(final short key, final Object... args) {
         final LogRecord r = reader.resources().getLogRecord(Level.WARNING, key, args);
         reader.owner.warning(r);
-    }
-
-    /**
-     * Returns the factory for creating geodetic objects from EPSG codes.
-     * The factory is fetched when first needed.
-     *
-     * @return the EPSG factory (never {@code null}).
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
-     */
-    private GeodeticAuthorityFactory epsgFactory() throws FactoryException {
-        if (epsgFactory == null) {
-            epsgFactory = (GeodeticAuthorityFactory) CRS.getAuthorityFactory(Constants.EPSG);
-        }
-        return epsgFactory;
     }
 
     /**
@@ -748,7 +719,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private CartesianCS replaceLinearUnit(final CartesianCS cs, final Unit<Length> unit) throws FactoryException {
         final Integer epsg = CoordinateSystems.getEpsgCode(unit, CoordinateSystems.getAxisDirections(cs));
         if (epsg != null) try {
-            return epsgFactory().createCartesianCS(epsg.toString());
+            return getCSAuthorityFactory().createCartesianCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
             reader.owner.warning(null, e);
         }
@@ -766,7 +737,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private EllipsoidalCS replaceAngularUnit(final EllipsoidalCS cs, final Unit<Angle> unit) throws FactoryException {
         final Integer epsg = CoordinateSystems.getEpsgCode(unit, CoordinateSystems.getAxisDirections(cs));
         if (epsg != null) try {
-            return epsgFactory().createEllipsoidalCS(epsg.toString());
+            return getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
             reader.owner.warning(null, e);
         }
@@ -816,7 +787,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also provide the scale value, we will verify that the value
                  * is consistent with what we would expect for a unit of the given EPSG code.
                  */
-                final Unit<Q> unit = epsgFactory().createUnit(String.valueOf(epsg)).asType(quantity);
+                final Unit<Q> unit = getCSAuthorityFactory().createUnit(String.valueOf(epsg)).asType(quantity);
                 if (scaleKey != 0) {
                     final double scale = getAsDouble(scaleKey);
                     if (!Double.isNaN(scale)) {
@@ -878,7 +849,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also provide the longitude value, verify that the value is consistent
                  * with what we would expect for a prime meridian of the given EPSG code.
                  */
-                final PrimeMeridian pm = epsgFactory().createPrimeMeridian(String.valueOf(epsg));
+                final PrimeMeridian pm = getDatumAuthorityFactory().createPrimeMeridian(String.valueOf(epsg));
                 verify(pm, unit);
                 return pm;
             }
@@ -956,7 +927,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also provide defining parameter values, verify that those values
                  * are consistent with what we would expect for an ellipsoid of the given EPSG code.
                  */
-                final Ellipsoid ellipsoid = epsgFactory().createEllipsoid(String.valueOf(epsg));
+                final Ellipsoid ellipsoid = getDatumAuthorityFactory().createEllipsoid(String.valueOf(epsg));
                 verify(ellipsoid, unit);
                 return ellipsoid;
             }
@@ -1045,7 +1016,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are
                  * consistent with what we would expect for a datum of the given EPSG code.
                  */
-                final GeodeticDatum datum = epsgFactory().createGeodeticDatum(String.valueOf(epsg));
+                final GeodeticDatum datum = getDatumAuthorityFactory().createGeodeticDatum(String.valueOf(epsg));
                 verify(datum, angularUnit, linearUnit);
                 return datum;
             }
@@ -1207,7 +1178,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                GeographicCRS crs = epsgFactory().createGeographicCRS(String.valueOf(epsg));
+                GeographicCRS crs = getCRSAuthorityFactory().createGeographicCRS(String.valueOf(epsg));
                 if (rightHanded) {
                     crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                 }
@@ -1277,7 +1248,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                final GeocentricCRS crs = epsgFactory().createGeocentricCRS(String.valueOf(epsg));
+                final GeocentricCRS crs = getCRSAuthorityFactory().createGeocentricCRS(String.valueOf(epsg));
                 verify(crs);
                 return crs;
             }
@@ -1402,7 +1373,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
                 final GeographicCRS baseCRS     = createGeographicCRS(false, angularUnit);
                 final Conversion    projection  = createConversion(name, angularUnit, linearUnit);
-                CartesianCS cs = epsgFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
+                CartesianCS cs = getCSAuthorityFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
@@ -1416,7 +1387,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                final ProjectedCRS crs = epsgFactory().createProjectedCRS(String.valueOf(epsg));
+                final ProjectedCRS crs = getCRSAuthorityFactory().createProjectedCRS(String.valueOf(epsg));
                 verify(crs);
                 return crs;
             }
@@ -1527,7 +1498,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are
                  * consistent with what we would expect for a conversion of the given EPSG code.
                  */
-                final Conversion projection = (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(epsg));
+                final Conversion projection = (Conversion)
+                        getCoordinateOperationAuthorityFactory().createCoordinateOperation(String.valueOf(epsg));
                 verify(projection, angularUnit, linearUnit);
                 return projection;
             }
@@ -1603,7 +1575,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 throw new NoSuchElementException(missingValue(GeoKeys.VerticalDatum));
             }
             default: {
-                return epsgFactory().createVerticalDatum(String.valueOf(epsg));
+                return getDatumAuthorityFactory().createVerticalDatum(String.valueOf(epsg));
             }
         }
     }
@@ -1644,7 +1616,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 return getCRSFactory().createVerticalCRS(properties(name), datum, cs);
             }
             default: {
-                return epsgFactory().createVerticalCRS(String.valueOf(epsg));
+                return getCRSAuthorityFactory().createVerticalCRS(String.valueOf(epsg));
             }
         }
     }

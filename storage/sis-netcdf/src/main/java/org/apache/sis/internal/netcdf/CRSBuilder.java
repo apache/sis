@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
@@ -29,12 +30,16 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultSphericalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.util.TemporalUtilities;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -43,9 +48,17 @@ import org.apache.sis.measure.Units;
  * Temporary object for building a coordinate reference system from the variables in a netCDF file.
  * Different instances are required for the geographic, vertical and temporal components of a CRS,
  * or if a netCDF file uses different CRS for different variables.
+ * This builder is used as below:
  *
- * <p>The builder type is inferred from axes. The axes are identified by their abbreviations,
- * which is a {@linkplain Axis#abbreviation controlled vocabulary} for this implementation.</p>
+ * <ol>
+ *   <li>Invoke {@link #dispatch(List, Axis)} for all axes in a grid.
+ *       Builders for CRS components will added in the given list.</li>
+ *   <li>Invoke {@link #build(Decoder)} on each builder prepared in above step.</li>
+ *   <li>Assemble the CRS components created in above step in a {@code CompoundCRS}.</li>
+ * </ol>
+ *
+ * The builder type is inferred from axes. The axes are identified by their abbreviations,
+ * which is a {@linkplain Axis#abbreviation controlled vocabulary} for this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -94,6 +107,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * The axes to use for creating the coordinate reference system.
      * They are information about netCDF axes, not yet ISO 19111 axes.
      * The axis are listed in "natural" order (reverse of netCDF order).
+     * Only the {@link #dimension} first elements are valid.
      */
     private Axis[] axes;
 
@@ -108,7 +122,22 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     CS coordinateSystem;
 
     /**
+     * The coordinate reference system that may have been create by {@link #candidate(Decoder)}.
+     */
+    SingleCRS candidateCRS;
+
+    /**
+     * Non-fatal exceptions that may occur while building the coordinate reference system.
+     * The same exception may be repeated many time, in which case we will report only the
+     * first one.
+     *
+     * @see #recoverableException(NoSuchAuthorityCodeException)
+     */
+    private NoSuchAuthorityCodeException warnings;
+
+    /**
      * Creates a new CRS builder based on datum of the given type.
+     * This constructor is invoked indirectly by {@link #dispatch(List, Axis)}.
      *
      * @param  datumType   the type of datum as a GeoAPI sub-interface of {@link Datum}.
      * @param  datumBase   name of the datum on which the CRS is presumed to be based, or {@code ""}.
@@ -116,7 +145,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * @param  minDim      minimum number of dimensions (usually 1, 2 or 3).
      * @param  maxDim      maximum number of dimensions (usually 1, 2 or 3).
      */
-    CRSBuilder(final Class<D> datumType, final String datumBase, final byte datumIndex, final byte minDim, final byte maxDim) {
+    private CRSBuilder(final Class<D> datumType, final String datumBase, final byte datumIndex, final byte minDim, final byte maxDim) {
         this.datumType  = datumType;
         this.datumBase  = datumBase;
         this.datumIndex = datumIndex;
@@ -237,20 +266,28 @@ previous:   for (int i=components.size(); --i >= 0;) {
             throw new DataStoreContentException(axis.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
                     axis.getFilename(), getClass().getSimpleName(), dimension, NamedElement.listNames(axes, dimension, ", ")));
         }
-        datum = datumType.cast(decoder.datumCache[datumIndex]);
+        /*
+         * If the subclass can offer coordinate system and datum candidates based on a brief inspection of axes,
+         * set the datum, CS and CRS field values to those candidate. Those values do not need to be exact; they
+         * will be overwritten later if they do not match the netCDF file content.
+         */
+        datum = datumType.cast(decoder.datumCache[datumIndex]);         // Should be initialized before 'candidate' call.
+        candidate(decoder);
+        /*
+         * If 'candidate(decoder)' offers a datum, we will used it as-is. Otherwise create the datum now.
+         * Datum are often not defined in netCDF files, so it will usually be EPSG::6030 — "Not specified
+         * (based on WGS 84 ellipsoid)".
+         */
         if (datum == null) {
             // Not localized because stored as a String, possibly exported in WKT or GML, and 'datumBase' is in English.
             createDatum(decoder.getDatumFactory(), properties("Unknown datum presumably based upon ".concat(datumBase)));
-            decoder.datumCache[datumIndex] = datum;
         }
+        decoder.datumCache[datumIndex] = datum;
         /*
          * Verify if a pre-defined coordinate system can be used. This is often the case, for example
          * the EPSG::6424 coordinate system can be used for (longitude, latitude) axes in degrees.
          * Using a pre-defined CS allows us to get more complete definitions (minimum and maximum values, etc.).
-         *
-         * TODO: verify minimum and maximum longitude values for making sure we have a -180 … 180° range.
          */
-        candidateCS();
         if (coordinateSystem != null) {
             for (int i=dimension; --i >= 0;) {
                 final Axis expected = axes[i];
@@ -260,6 +297,10 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 }
             }
         }
+        /*
+         * If 'candidate(decoder)' did not proposed a coordinate system, or if it proposed a CS but its
+         * axes do not match the axes in the netCDF file, then create a new coordinate system here.
+         */
         final Map<String,?> properties;
         if (coordinateSystem == null) {
             // Fallback if the coordinate system is not common.
@@ -276,7 +317,25 @@ previous:   for (int i=components.size(); --i >= 0;) {
         } else {
             properties = properties(NamedElement.listNames(axes, dimension, " "));
         }
-        return createCRS(decoder.getCRSFactory(), properties);
+        /*
+         * Creates the coordinate reference system using current value of 'datum' and 'coordinateSystem' fields.
+         * TODO: verify minimum and maximum longitude values for making sure we have a -180 … 180° range.
+         */
+        final SingleCRS crs = createCRS(decoder.getCRSFactory(), properties);
+        if (warnings != null) {
+            decoder.listeners.warning(Level.FINE, null, warnings);
+        }
+        return crs;
+    }
+
+    /**
+     * Reports a non-fatal exception that may occur when processing the value returned by {@link #epsgCandidate(Unit)}.
+     * In order to avoid repeating the same warning many times, this method collects the warnings together and reports
+     * them in a single log record after we finished creating the CRS.
+     */
+    final void recoverableException(final NoSuchAuthorityCodeException e) {
+        if (warnings == null) warnings = e;
+        else warnings.addSuppressed(e);
     }
 
     /**
@@ -289,12 +348,34 @@ previous:   for (int i=components.size(); --i >= 0;) {
     }
 
     /**
+     * Returns the EPSG code of a possible coordinate system from EPSG database. This method proceed by brief
+     * inspection of axis directions and units; there is no guarantees that the coordinate system returned by
+     * this method match the axes defined in the netCDF file. It is caller's responsibility to verify.
+     * This is a helper method for {@link #candidate(Decoder)} implementations.
+     *
+     * @param  defaultUnit  the unit to use if unit definition is missing in the netCDF file.
+     * @return EPSG code of a CS candidate, or {@code null} if none.
+     */
+    final Integer epsgCandidate(final Unit<?> defaultUnit) {
+        Unit<?> unit = getFirstAxis().getUnit();
+        if (unit == null) unit = defaultUnit;
+        final AxisDirection[] directions = new AxisDirection[dimension];
+        for (int i=0; i<directions.length; i++) {
+            directions[i] = axes[i].direction;
+        }
+        return CoordinateSystems.getEpsgCode(unit, directions);
+    }
+
+    /**
      * If a brief inspection of unit and direction of the {@linkplain #getFirstAxis() first axis} suggests
      * that a predefined coordinate system could be used, sets the {@link #coordinateSystem} field to that CS.
      * The coordinate system does not need to be a full match since all axes will be verified by the caller.
      * This method is invoked before to fallback on {@link #createCS(CSFactory, Map, CoordinateSystemAxis[])}.
+     *
+     * <p>This method may opportunistically set the {@link #datum} and {@link #candidateCRS} fields if it can
+     * propose a CRS candidate instead than only a CS candidate.</p>
      */
-    abstract void candidateCS();
+    abstract void candidate(Decoder decoder) throws FactoryException;
 
     /**
      * Creates the datum for the coordinate reference system to build. The datum are generally not specified in netCDF files.
@@ -354,13 +435,27 @@ previous:   for (int i=components.size(); --i >= 0;) {
          */
         final boolean isPredefined(final Unit<?> expected) {
             final Axis axis = getFirstAxis();
-            if (expected.equals(axis.getUnit())) {
+            final Unit<?> unit = axis.getUnit();
+            if (unit == null || expected.equals(unit)) {
                 isLongitudeFirst = AxisDirection.EAST.equals(axis.direction);
                 if (isLongitudeFirst || AxisDirection.NORTH.equals(axis.direction)) {
                     return true;
                 }
             }
             return false;
+        }
+
+        /**
+         * If the {@link #datum} field is not already set, initialize it to "Not specified (based upon the WGS 84 ellipsoid)".
+         * Subclasses should override this method for setting also the {@link #coordinateSystem} and {@link #candidateCRS}
+         * fields if possible.
+         */
+        @Override void candidate(final Decoder decoder) throws FactoryException {
+            if (datum == null) try {
+                datum = decoder.getDatumAuthorityFactory().createGeodeticDatum(String.valueOf(Constants.EPSG_UNKNOWN_DATUM));
+            } catch (NoSuchAuthorityCodeException e) {
+                recoverableException(e);
+            }
         }
     }
 
@@ -374,7 +469,15 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidateCS() {
+        @Override void candidate(final Decoder decoder) throws FactoryException {
+            super.candidate(decoder);
+            final Integer epsg = epsgCandidate(Units.DEGREE);
+            if (epsg != null) try {
+                coordinateSystem = decoder.getCSAuthorityFactory().createSphericalCS(epsg.toString());
+                return;
+            } catch (NoSuchAuthorityCodeException e) {
+                recoverableException(e);
+            }
             if (isPredefined(Units.DEGREE)) {
                 coordinateSystem = (SphericalCS) DEFAULT.spherical().getCoordinateSystem();
                 if (isLongitudeFirst) {
@@ -404,13 +507,36 @@ previous:   for (int i=components.size(); --i >= 0;) {
             super((byte) 2);
         }
 
+        /** Tries to creates the coordinate system from EPSG code. */
+        private boolean tryEPSG(final Decoder decoder) throws FactoryException {
+            super.candidate(decoder);               // Initialize the datum.
+            final Integer epsg = epsgCandidate(Units.DEGREE);
+            if (epsg != null) try {
+                coordinateSystem = decoder.getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
+                return true;
+            } catch (NoSuchAuthorityCodeException e) {
+                recoverableException(e);
+            }
+            return false;
+        }
+
         /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidateCS() {
+        @Override void candidate(final Decoder decoder) throws FactoryException {
             if (isPredefined(Units.DEGREE)) {
-                coordinateSystem = (is3D() ? DEFAULT.geographic3D() : DEFAULT.geographic()).getCoordinateSystem();
+                if (!is3D()) {
+                    GeographicCRS crs = decoder.getCRSAuthorityFactory().createGeographicCRS(String.valueOf(Constants.EPSG_UNKNOWN_CRS));
+                    coordinateSystem = crs.getCoordinateSystem();
+                    datum = crs.getDatum();
+                    candidateCRS = crs;
+                } else if (!tryEPSG(decoder)) {
+                    coordinateSystem = DEFAULT.geographic3D().getCoordinateSystem();
+                }
                 if (isLongitudeFirst) {
                     coordinateSystem = DefaultEllipsoidalCS.castOrCopy(coordinateSystem).forConvention(AxesConvention.RIGHT_HANDED);
+                    candidateCRS = null;
                 }
+            } else {
+                tryEPSG(decoder);
             }
         }
 
@@ -439,7 +565,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidateCS() {
+        @Override void candidate(final Decoder decoder) {
             if (isPredefined(Units.METRE)) {
                 coordinateSystem = DEFAULT.universal(0,0).getCoordinateSystem();
             }
@@ -471,7 +597,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidateCS() {
+        @Override void candidate(final Decoder decoder) {
             final Axis axis = getFirstAxis();
             final Unit<?> unit = axis.getUnit();
             final CommonCRS.Vertical predefined;
@@ -516,7 +642,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidateCS() {
+        @Override void candidate(final Decoder decoder) {
             final Axis axis = getFirstAxis();
             final Unit<?> unit = axis.getUnit();
             final CommonCRS.Temporal predefined;
@@ -568,7 +694,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** No-op since we have no predefined engineering CRS. */
-        @Override void candidateCS() {
+        @Override void candidate(final Decoder decoder) {
         }
 
         /** Creates a {@link VerticalDatum} for <cite>"Unknown datum based on affine coordinate system"</cite>. */

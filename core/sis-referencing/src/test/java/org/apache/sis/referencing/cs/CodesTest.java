@@ -23,6 +23,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.apache.sis.referencing.factory.TestFactorySource;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -33,11 +34,16 @@ import static org.junit.Assert.*;
  * Compares the {@link Codes} elements with the EPSG geodetic database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
 public final strictfp class CodesTest extends TestCase {
+    /**
+     * The unit of measurement of the vertical axis.
+     */
+    private static final Unit<?> VERTICAL_UNIT = Units.METRE;
+
     /**
      * Compares the axis directions and units with EPSG definitions.
      *
@@ -54,7 +60,7 @@ public final strictfp class CodesTest extends TestCase {
             final Unit<?> unit = cs.getAxis(0).getUnit();
             final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
             for (int i=0; i<directions.length; i++) {
-                assertEquals(unit, cs.getAxis(i).getUnit());
+                assertEquals(i < 2 ? unit : VERTICAL_UNIT, cs.getAxis(i).getUnit());
                 directions[i] = cs.getAxis(i).getDirection();
             }
             assertEquals("Codes.lookpup(…)", c.epsg, Codes.lookup(unit, directions));

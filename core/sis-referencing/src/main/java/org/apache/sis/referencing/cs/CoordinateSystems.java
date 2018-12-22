@@ -19,27 +19,31 @@ package org.apache.sis.referencing.cs;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.measure.Unit;
+import javax.measure.UnitConverter;
 import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
 
 /**
@@ -49,7 +53,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -78,7 +82,7 @@ public final class CoordinateSystems extends Static {
      * @throws IllegalArgumentException if the given name is not a known axis direction.
      */
     public static AxisDirection parseAxisDirection(String name) throws IllegalArgumentException {
-        ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("name", name);
         name = CharSequences.trimWhitespaces(name);
         AxisDirection candidate = AxisDirections.valueOf(name);
         if (candidate != null) {
@@ -172,8 +176,8 @@ public final class CoordinateSystems extends Static {
      *         {@code null} if this value can not be computed.
      */
     public static Angle angle(final AxisDirection source, final AxisDirection target) {
-        ensureNonNull("source", source);
-        ensureNonNull("target", target);
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
         /*
          * Check for NORTH, SOUTH, EAST, EAST-NORTH-EAST, etc.
          * Checked first because this is the most common case.
@@ -270,8 +274,8 @@ public final class CoordinateSystems extends Static {
                                           final CoordinateSystem targetCS)
             throws IllegalArgumentException, IncommensurableException
     {
-        ensureNonNull("sourceCS", sourceCS);
-        ensureNonNull("targetCS", targetCS);
+        ArgumentChecks.ensureNonNull("sourceCS", sourceCS);
+        ArgumentChecks.ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
         }
@@ -382,7 +386,7 @@ public final class CoordinateSystems extends Static {
      * @since 0.6
      */
     public static CoordinateSystem replaceAxes(final CoordinateSystem cs, final AxisFilter filter) {
-        ensureNonNull("filter", filter);
+        ArgumentChecks.ensureNonNull("filter", filter);
         if (cs != null) {
             final CoordinateSystem newCS;
             if (filter instanceof AxesConvention) {
@@ -425,7 +429,7 @@ public final class CoordinateSystems extends Static {
      * @since 0.7
      */
     public static CoordinateSystem replaceLinearUnit(final CoordinateSystem cs, final Unit<Length> newUnit) {
-        ensureNonNull("newUnit", newUnit);
+        ArgumentChecks.ensureNonNull("newUnit", newUnit);
         return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
             @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 return Units.isLinear(unit) ? newUnit : unit;
@@ -456,7 +460,7 @@ public final class CoordinateSystems extends Static {
      * @since 0.7
      */
     public static CoordinateSystem replaceAngularUnit(final CoordinateSystem cs, final Unit<javax.measure.quantity.Angle> newUnit) {
-        ensureNonNull("newUnit", newUnit);
+        ArgumentChecks.ensureNonNull("newUnit", newUnit);
         return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
             @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 return Units.isAngular(unit) ? newUnit : unit;
@@ -476,18 +480,21 @@ public final class CoordinateSystems extends Static {
      * @since 0.8
      */
     public static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
-        ensureNonNull("cs", cs);
+        ArgumentChecks.ensureNonNull("cs", cs);
         final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
         for (int i=0; i<directions.length; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
-            ensureNonNullElement("cs", i, cs);
-            ensureNonNullElement("cs[#].direction", i, directions[i] = axis.getDirection());
+            ArgumentChecks.ensureNonNullElement("cs", i, cs);
+            ArgumentChecks.ensureNonNullElement("cs[#].direction", i, directions[i] = axis.getDirection());
         }
         return directions;
     }
 
     /**
-     * Returns the EPSG code of a coordinate system using the given unit and axis directions.
+     * Returns the EPSG code of a coordinate system using the units and directions of given axes.
+     * This method ignores axis metadata (names, abbreviation, identifiers, remarks, <i>etc.</i>).
+     * The axis minimum and maximum values are checked only if the
+     * {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning} is "wraparound".
      * If no suitable coordinate system is known to Apache SIS, then this method returns {@code null}.
      *
      * <p>Current implementation uses a hard-coded list of known coordinate systems;
@@ -496,27 +503,88 @@ public final class CoordinateSystems extends Static {
      *
      * <table>
      *   <caption>Known coordinate systems (CS)</caption>
-     *   <tr><th>EPSG</th> <th>CS type</th> <th colspan="2">Axis directions</th> <th>Unit</th></tr>
-     *   <tr><td>6424</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>degree</td></tr>
-     *   <tr><td>6422</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>degree</td></tr>
-     *   <tr><td>6425</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>grads</td></tr>
-     *   <tr><td>6403</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>grads</td></tr>
-     *   <tr><td>6429</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>radian</td></tr>
-     *   <tr><td>6428</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>radian</td></tr>
-     *   <tr><td>4400</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>metre</td></tr>
-     *   <tr><td>4500</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td>metre</td></tr>
-     *   <tr><td>4491</td> <td>Cartesian</td>   <td>west</td>  <td>north</td> <td>metre</td></tr>
-     *   <tr><td>4501</td> <td>Cartesian</td>   <td>north</td> <td>west</td>  <td>metre</td></tr>
-     *   <tr><td>6503</td> <td>Cartesian</td>   <td>west</td>  <td>south</td> <td>metre</td></tr>
-     *   <tr><td>6501</td> <td>Cartesian</td>   <td>south</td> <td>west</td>  <td>metre</td></tr>
-     *   <tr><td>1039</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>foot</td></tr>
-     *   <tr><td>1029</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td>foot</td></tr>
-     *   <tr><td>4403</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>Clarke’s foot</td></tr>
-     *   <tr><td>4502</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td>Clarke’s foot</td></tr>
-     *   <tr><td>4497</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td>US survey foot</td></tr>
+     *   <tr><th>EPSG</th> <th>CS type</th> <th colspan="3">Axis directions</th> <th>Horizontal unit</th></tr>
+     *   <tr><td>6424</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td></td>   <td>degree</td></tr>
+     *   <tr><td>6422</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td></td>   <td>degree</td></tr>
+     *   <tr><td>6425</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td></td>   <td>grads</td></tr>
+     *   <tr><td>6403</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td></td>   <td>grads</td></tr>
+     *   <tr><td>6429</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td></td>   <td>radian</td></tr>
+     *   <tr><td>6428</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td></td>   <td>radian</td></tr>
+     *   <tr><td>6426</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>up</td> <td>degree</td></tr>
+     *   <tr><td>6423</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>up</td> <td>degree</td></tr>
+     *   <tr><td>6427</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>up</td> <td>grads</td></tr>
+     *   <tr><td>6421</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>up</td> <td>grads</td></tr>
+     *   <tr><td>6431</td> <td>Ellipsoidal</td> <td>east</td>  <td>north</td> <td>up</td> <td>radian</td></tr>
+     *   <tr><td>6430</td> <td>Ellipsoidal</td> <td>north</td> <td>east</td>  <td>up</td> <td>radian</td></tr>
+     *   <tr><td>4400</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td></td>   <td>metre</td></tr>
+     *   <tr><td>4500</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td></td>   <td>metre</td></tr>
+     *   <tr><td>4491</td> <td>Cartesian</td>   <td>west</td>  <td>north</td> <td></td>   <td>metre</td></tr>
+     *   <tr><td>4501</td> <td>Cartesian</td>   <td>north</td> <td>west</td>  <td></td>   <td>metre</td></tr>
+     *   <tr><td>6503</td> <td>Cartesian</td>   <td>west</td>  <td>south</td> <td></td>   <td>metre</td></tr>
+     *   <tr><td>6501</td> <td>Cartesian</td>   <td>south</td> <td>west</td>  <td></td>   <td>metre</td></tr>
+     *   <tr><td>1039</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td></td>   <td>foot</td></tr>
+     *   <tr><td>1029</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td></td>   <td>foot</td></tr>
+     *   <tr><td>4403</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td></td>   <td>Clarke’s foot</td></tr>
+     *   <tr><td>4502</td> <td>Cartesian</td>   <td>north</td> <td>east</td>  <td></td>   <td>Clarke’s foot</td></tr>
+     *   <tr><td>4497</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td></td>   <td>US survey foot</td></tr>
      * </table>
      *
-     * @param  unit        desired unit of measurement.
+     * @param  axes  axes for which a coordinate system EPSG code is desired.
+     * @return EPSG codes for a coordinate system using the given axes (ignoring metadata), or {@code null} if unknown
+     *         to this method. Note that a null value does not mean that a more  extensive search in the EPSG database
+     *         would not find a matching coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCoordinateSystem(String)
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("fallthrough")
+    public static Integer getEpsgCode(final CoordinateSystemAxis... axes) {
+        ArgumentChecks.ensureNonNull("axes", axes);
+forDim: switch (axes.length) {
+            case 3: {
+                if (!Units.METRE.equals(axes[2].getUnit())) break;      // Restriction in our hard-coded list of codes.
+                // Fall through
+            }
+            case 2: {
+                final Unit<?> unit = axes[0].getUnit();
+                if (unit != null && unit.equals(axes[1].getUnit())) {
+                    final AxisDirection[] directions = new AxisDirection[axes.length];
+                    for (int i=0; i<directions.length; i++) {
+                        final CoordinateSystemAxis axis = axes[i];
+                        ArgumentChecks.ensureNonNullElement("axes", i, axis);
+                        directions[i] = axis.getDirection();
+                        if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning()) && Units.isAngular(unit)) try {
+                            final UnitConverter uc = unit.getConverterToAny(Units.DEGREE);
+                            final double min = uc.convert(axis.getMinimumValue());
+                            final double max = uc.convert(axis.getMaximumValue());
+                            if ((min > Double.NEGATIVE_INFINITY && Math.abs(min - Longitude.MIN_VALUE) > Formulas.ANGULAR_TOLERANCE) ||
+                                (max < Double.POSITIVE_INFINITY && Math.abs(max - Longitude.MAX_VALUE) > Formulas.ANGULAR_TOLERANCE))
+                            {
+                                break forDim;
+                            }
+                        } catch (IncommensurableException e) {      // Should never happen since we checked that units are angular.
+                            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
+                            break forDim;
+                        }
+                    }
+                    return getEpsgCode(unit, directions);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the EPSG code of a coordinate system using the given unit and axis directions.
+     * If no suitable coordinate system is known to Apache SIS, then this method returns {@code null}.
+     *
+     * <p>Current implementation uses a hard-coded list of known coordinate systems;
+     * it does not yet scan the EPSG database (this may change in future Apache SIS version).
+     * The current list of known coordinate systems is documented in {@link #getEpsgCode(CoordinateSystemAxis...)}.</p>
+     *
+     * @param  unit        desired unit of measurement. For three-dimensional ellipsoidal coordinate system,
+     *                     this is the unit for the horizontal axes only; the vertical axis is in metres.
      * @param  directions  desired axis directions.
      * @return EPSG codes for a coordinate system using the given axis directions and unit of measurement,
      *         or {@code null} if unknown to this method. Note that a null value does not mean that a more
@@ -528,8 +596,8 @@ public final class CoordinateSystems extends Static {
      * @since 0.8
      */
     public static Integer getEpsgCode(final Unit<?> unit, final AxisDirection... directions) {
-        ensureNonNull("unit", unit);
-        ensureNonNull("directions", directions);
+        ArgumentChecks.ensureNonNull("unit", unit);
+        ArgumentChecks.ensureNonNull("directions", directions);
         final int code = Codes.lookup(unit, directions);
         return (code != 0) ? code : null;
     }

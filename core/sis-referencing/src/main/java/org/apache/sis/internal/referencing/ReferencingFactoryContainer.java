@@ -16,12 +16,20 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
+import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -33,10 +41,19 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
+ *
+ * @since 1.0
  * @module
  */
 public class ReferencingFactoryContainer {
+    /**
+     * The factory for creating coordinate reference systems from authority codes.
+     * If null, then a default factory will be created only when first needed.
+     */
+    private CRSAuthorityFactory crsAuthorityFactory;
+
     /**
      * The {@linkplain org.opengis.referencing.datum.Datum datum} factory.
      * If null, then a default factory will be created only when first needed.
@@ -74,15 +91,74 @@ public class ReferencingFactoryContainer {
     }
 
     /**
-     * Returns the factory for creating datum, prime meridians and ellipsoids.
+     * Returns the factory for creating coordinate reference systems from authority codes.
+     * Currently only EPSG codes are supported.
      *
-     * @return the Datum factory (never {@code null}).
+     * @return the Coordinate Reference System authority factory (never {@code null}).
+     * @throws FactoryException if the authority factory can not be obtained.
      */
-    public final DatumFactory getDatumFactory() {
-        if (datumFactory == null) {
-            datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
+    public final CRSAuthorityFactory getCRSAuthorityFactory() throws FactoryException {
+        if (crsAuthorityFactory == null) {
+            crsAuthorityFactory = CRS.getAuthorityFactory(Constants.EPSG);
         }
-        return datumFactory;
+        return crsAuthorityFactory;
+    }
+
+    /**
+     * Returns the factory for creating coordinate systems from authority codes.
+     * Currently only EPSG codes are supported.
+     *
+     * @return the Coordinate System authority factory (never {@code null}).
+     * @throws FactoryException if the authority factory can not be obtained.
+     */
+    public final CSAuthorityFactory getCSAuthorityFactory() throws FactoryException {
+        final CRSAuthorityFactory factory = getCRSAuthorityFactory();
+        if (factory instanceof CSAuthorityFactory) {                    // This is the case for SIS implementation.
+            return (CSAuthorityFactory) factory;
+        }
+        throw new NoSuchAuthorityFactoryException(null, Constants.EPSG);
+    }
+
+    /**
+     * Returns the factory for creating datum from authority codes.
+     * Currently only EPSG codes are supported.
+     *
+     * @return the Datum authority factory (never {@code null}).
+     * @throws FactoryException if the authority factory can not be obtained.
+     */
+    public final DatumAuthorityFactory getDatumAuthorityFactory() throws FactoryException {
+        final CRSAuthorityFactory factory = getCRSAuthorityFactory();
+        if (factory instanceof DatumAuthorityFactory) {                 // This is the case for SIS implementation.
+            return (DatumAuthorityFactory) factory;
+        }
+        throw new NoSuchAuthorityFactoryException(null, Constants.EPSG);
+    }
+
+    /**
+     * Returns the factory for creating coordinate operations from authority codes.
+     * Currently only EPSG codes are supported.
+     *
+     * @return the Coordinate Operation authority factory (never {@code null}).
+     * @throws FactoryException if the authority factory can not be obtained.
+     */
+    public final CoordinateOperationAuthorityFactory getCoordinateOperationAuthorityFactory() throws FactoryException {
+        final CRSAuthorityFactory factory = getCRSAuthorityFactory();
+        if (factory instanceof CoordinateOperationAuthorityFactory) {       // This is the case for SIS implementation.
+            return (CoordinateOperationAuthorityFactory) factory;
+        }
+        throw new NoSuchAuthorityFactoryException(null, Constants.EPSG);
+    }
+
+    /**
+     * Returns the factory for creating coordinate reference systems.
+     *
+     * @return the Coordinate Reference System factory (never {@code null}).
+     */
+    public final CRSFactory getCRSFactory() {
+        if (crsFactory == null) {
+            crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
+        }
+        return crsFactory;
     }
 
     /**
@@ -98,15 +174,15 @@ public class ReferencingFactoryContainer {
     }
 
     /**
-     * Returns the factory for creating coordinate reference systems.
+     * Returns the factory for creating datum, prime meridians and ellipsoids.
      *
-     * @return the Coordinate Reference System factory (never {@code null}).
+     * @return the Datum factory (never {@code null}).
      */
-    public final CRSFactory getCRSFactory() {
-        if (crsFactory == null) {
-            crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
+    public final DatumFactory getDatumFactory() {
+        if (datumFactory == null) {
+            datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
         }
-        return crsFactory;
+        return datumFactory;
     }
 
     /**

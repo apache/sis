@@ -35,7 +35,7 @@ import static org.apache.sis.internal.util.Constants.EPSG_PROJECTED_CS;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -50,6 +50,7 @@ final class Codes {
 
     /**
      * EPSG code of the target unit of measurement.
+     * Applies only to the two first axes. The third axis, if any, is assumed in metres.
      */
     final short unit;
 
@@ -89,6 +90,9 @@ final class Codes {
 
     /**
      * Returns the EPSG code for the given axis directions and unit of measurement, or 0 if none.
+     *
+     * @param  unit  the unit of the two first axis. The third axis, if any, is assumed in metres.
+     * @param  directions  axis directions to look for.
      */
     static short lookup(final Unit<?> unit, final AxisDirection[] directions) {
         final Integer uc = Units.getEpsgCode(unit, true);
@@ -130,46 +134,58 @@ final class Codes {
     /**
      * All hard-coded EPSG codes known to this class.
      */
-    private static final Map<Codes,Codes> EPSG = new HashMap<>(20);
+    private static final Map<Codes,Codes> EPSG = new HashMap<>(31);
     static {
         final AxisDirection[] directions = new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH};
+        final int addVertical = AxisDirection.UP.ordinal() << (2 * Byte.SIZE);
         int packed = pack(directions);
         short unit = EPSG_METRE;
 loop:   for (int i=0; ; i++) {
             final short epsg;
+            short to3D = 0;
             switch (i) {
-                case  0: epsg = EPSG_PROJECTED_CS;              break;      //  Cartesian   [E,N] in metres
-                case  1: epsg = 1039; unit = 9002;              break;      //  Cartesian   [E,N] in feet
-                case  2: epsg = 4497; unit = 9003;              break;      //  Cartesian   [E,N] in US survey feet
-                case  3: epsg = 4403; unit = 9005;              break;      //  Cartesian   [E,N] in Clarke feet
-                case  4: epsg = 6424; unit = EPSG_AXIS_DEGREES; break;      //  Ellipsoidal [E,N] in degrees
-                case  5: epsg = 6425; unit = 9105;              break;      //  Ellipsoidal [E,N] in gradians
-                case  6: epsg = 6429; unit = 9101;              break;      //  Ellipsoidal [E,N] in radians
+                case  0: epsg = EPSG_PROJECTED_CS;                           break;      //  Cartesian   [E,N] in metres
+                case  1: epsg = 1039;              unit = 9002;              break;      //  Cartesian   [E,N] in feet
+                case  2: epsg = 4497;              unit = 9003;              break;      //  Cartesian   [E,N] in US survey feet
+                case  3: epsg = 4403;              unit = 9005;              break;      //  Cartesian   [E,N] in Clarke feet
+                case  4: epsg = 6424; to3D = 6426; unit = EPSG_AXIS_DEGREES; break;      //  Ellipsoidal [E,N] in degrees
+                case  5: epsg = 6425; to3D = 6427; unit = 9105;              break;      //  Ellipsoidal [E,N] in grads
+                case  6: epsg = 6429; to3D = 6431; unit = 9101;              break;      //  Ellipsoidal [E,N] in radians
                 case  7: ArraysExt.swap(directions, 0, 1);
                          packed = pack(directions);
-                         epsg = 4500; unit = EPSG_METRE;        break;      //  Cartesian   [N,E] in metres
-                case  8: epsg = 1029; unit = 9002;              break;      //  Cartesian   [N,E] in feet
-                case  9: epsg = 4502; unit = 9005;              break;      //  Cartesian   [N,E] in Clarke feet
-                case 10: epsg = 6422; unit = EPSG_AXIS_DEGREES; break;      //  Ellipsoidal [N,E] in degrees
-                case 11: epsg = 6403; unit = 9105;              break;      //  Ellipsoidal [N,E] in gradians
-                case 12: epsg = 6428; unit = 9101;              break;      //  Ellipsoidal [N,E] in radians
+                         epsg = 4500;              unit = EPSG_METRE;        break;      //  Cartesian   [N,E] in metres
+                case  8: epsg = 1029;              unit = 9002;              break;      //  Cartesian   [N,E] in feet
+                case  9: epsg = 4502;              unit = 9005;              break;      //  Cartesian   [N,E] in Clarke feet
+                case 10: epsg = 6422; to3D = 6423; unit = EPSG_AXIS_DEGREES; break;      //  Ellipsoidal [N,E] in degrees
+                case 11: epsg = 6403; to3D = 6421; unit = 9105;              break;      //  Ellipsoidal [N,E] in grads
+                case 12: epsg = 6428; to3D = 6430; unit = 9101;              break;      //  Ellipsoidal [N,E] in radians
                 case 13: directions[1] = AxisDirection.WEST;
                          packed = pack(directions);
-                         epsg = 4501; unit = EPSG_METRE;        break;      //  Cartesian [N,W] in metres
+                         epsg = 4501; unit = EPSG_METRE;                     break;      //  Cartesian [N,W] in metres
                 case 14: ArraysExt.swap(directions, 0, 1);
                          packed = pack(directions);
-                         epsg = 4491; break;                                //  Cartesian [W,N] in metres
+                         epsg = 4491; break;                                             //  Cartesian [W,N] in metres
                 case 15: directions[1] = AxisDirection.SOUTH;
                          packed = pack(directions);
-                         epsg = 6503; break;                                //  Cartesian [W,S] in metres
+                         epsg = 6503; break;                                             //  Cartesian [W,S] in metres
                 case 16: ArraysExt.swap(directions, 0, 1);
                          packed = pack(directions);
-                         epsg = 6501; break;                                //  Cartesian [S,W] in metres
+                         epsg = 6501; break;                                             //  Cartesian [S,W] in metres
                 default: break loop;
             }
-            final Codes m = new Codes(packed, unit, epsg);
-            if (packed == 0 || EPSG.put(m, m) != null) {
+            Codes m = new Codes(packed, unit, epsg);
+            if (EPSG.put(m, m) != null) {
                 throw new AssertionError(m.epsg);
+            }
+            /*
+             * Add three-dimensional cases. The vertical axis is in metres
+             * (this is encoded in CodesTest.VERTICAL_UNIT constant).
+             */
+            if (to3D != 0) {
+                m = new Codes(packed | addVertical, unit, to3D);
+                if (EPSG.put(m, m) != null) {
+                    throw new AssertionError(m.epsg);
+                }
             }
         }
     }

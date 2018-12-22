@@ -125,7 +125,7 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
         final double parisMeridian = 2 + (20 + 13.82/60)/60;            // Paris meridian: 2°20'13.82"
         final double toRadians = StrictMath.PI / 180;
         /*
-         * Gradians to degrees with a Prime Meridian shift
+         * Grads to degrees with a Prime Meridian shift
          * and a random conversion factor for z values.
          */
         final Matrix4 step1 = new Matrix4(

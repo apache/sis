@@ -70,11 +70,11 @@ public final strictfp class DefaultEllipsoidalCSTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DefaultEllipsoidalCS#forConvention(AxesConvention)} method with gradians units.
+     * Tests the {@link DefaultEllipsoidalCS#forConvention(AxesConvention)} method with grads units.
      */
     @Test
     @DependsOnMethod("testShiftLongitudeRange")
-    public void testShiftLongitudeRangeGradians() {
+    public void testShiftLongitudeRangeGrads() {
         final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
         CoordinateSystemAxis axis = cs.getAxis(0);
         assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);

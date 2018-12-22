@@ -43,7 +43,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.*;
 
 
@@ -141,11 +141,13 @@ public final strictfp class CommonCRSTest extends TestCase {
         final GeographicCRS normalized = CommonCRS.WGS84.normalizedGeographic();
         Validators.validate(normalized);
         assertSame(geographic.getDatum(), normalized.getDatum());
-
+        /*
+         * Compare axes. Note that axes in different order have different EPSG codes.
+         */
         final CoordinateSystem φλ = geographic.getCoordinateSystem();
         final CoordinateSystem λφ = normalized.getCoordinateSystem();
-        assertSame("Longitude", φλ.getAxis(1), λφ.getAxis(0));
-        assertSame("Latitude",  φλ.getAxis(0), λφ.getAxis(1));
+        assertEqualsIgnoreMetadata(φλ.getAxis(1), λφ.getAxis(0));       // Longitude
+        assertEqualsIgnoreMetadata(φλ.getAxis(0), λφ.getAxis(1));       // Latitude
         assertSame("Cached value", normalized, CommonCRS.WGS84.normalizedGeographic());
     }
 
