@@ -24,6 +24,8 @@ import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
@@ -529,6 +531,7 @@ public final class CoordinateSystems extends Static {
      *   <tr><td>4497</td> <td>Cartesian</td>   <td>east</td>  <td>north</td> <td></td>   <td>US survey foot</td></tr>
      * </table>
      *
+     * @param  type  the type of coordinate system for which an EPSG code is desired, as a GeoAPI interface.
      * @param  axes  axes for which a coordinate system EPSG code is desired.
      * @return EPSG codes for a coordinate system using the given axes (ignoring metadata), or {@code null} if unknown
      *         to this method. Note that a null value does not mean that a more  extensive search in the EPSG database
@@ -539,7 +542,8 @@ public final class CoordinateSystems extends Static {
      * @since 1.0
      */
     @SuppressWarnings("fallthrough")
-    public static Integer getEpsgCode(final CoordinateSystemAxis... axes) {
+    public static Integer getEpsgCode(final Class<? extends CoordinateSystem> type, final CoordinateSystemAxis... axes) {
+        ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonNull("axes", axes);
 forDim: switch (axes.length) {
             case 3: {
@@ -549,26 +553,36 @@ forDim: switch (axes.length) {
             case 2: {
                 final Unit<?> unit = axes[0].getUnit();
                 if (unit != null && unit.equals(axes[1].getUnit())) {
-                    final AxisDirection[] directions = new AxisDirection[axes.length];
-                    for (int i=0; i<directions.length; i++) {
-                        final CoordinateSystemAxis axis = axes[i];
-                        ArgumentChecks.ensureNonNullElement("axes", i, axis);
-                        directions[i] = axis.getDirection();
-                        if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning()) && Units.isAngular(unit)) try {
-                            final UnitConverter uc = unit.getConverterToAny(Units.DEGREE);
-                            final double min = uc.convert(axis.getMinimumValue());
-                            final double max = uc.convert(axis.getMaximumValue());
-                            if ((min > Double.NEGATIVE_INFINITY && Math.abs(min - Longitude.MIN_VALUE) > Formulas.ANGULAR_TOLERANCE) ||
-                                (max < Double.POSITIVE_INFINITY && Math.abs(max - Longitude.MAX_VALUE) > Formulas.ANGULAR_TOLERANCE))
-                            {
+                    final boolean isAngular = Units.isAngular(unit);
+                    if ((isAngular && type.isAssignableFrom(EllipsoidalCS.class)) ||
+                         Units.isLinear(unit) && type.isAssignableFrom(CartesianCS.class))
+                    {
+                        /*
+                         * Current implementation defines EPSG codes for EllipsoidalCS and CartesianCS only.
+                         * Those two coordinate system types can be differentiated by the unit of the two first axes.
+                         * If a future implementation supports more CS types, above condition will need to be updated.
+                         */
+                        final AxisDirection[] directions = new AxisDirection[axes.length];
+                        for (int i=0; i<directions.length; i++) {
+                            final CoordinateSystemAxis axis = axes[i];
+                            ArgumentChecks.ensureNonNullElement("axes", i, axis);
+                            directions[i] = axis.getDirection();
+                            if (isAngular && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) try {
+                                final UnitConverter uc = unit.getConverterToAny(Units.DEGREE);
+                                final double min = uc.convert(axis.getMinimumValue());
+                                final double max = uc.convert(axis.getMaximumValue());
+                                if ((min > Double.NEGATIVE_INFINITY && Math.abs(min - Longitude.MIN_VALUE) > Formulas.ANGULAR_TOLERANCE) ||
+                                    (max < Double.POSITIVE_INFINITY && Math.abs(max - Longitude.MAX_VALUE) > Formulas.ANGULAR_TOLERANCE))
+                                {
+                                    break forDim;
+                                }
+                            } catch (IncommensurableException e) {      // Should never happen since we checked that units are angular.
+                                Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
                                 break forDim;
                             }
-                        } catch (IncommensurableException e) {      // Should never happen since we checked that units are angular.
-                            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
-                            break forDim;
                         }
+                        return getEpsgCode(unit, directions);
                     }
-                    return getEpsgCode(unit, directions);
                 }
             }
         }
@@ -577,11 +591,14 @@ forDim: switch (axes.length) {
 
     /**
      * Returns the EPSG code of a coordinate system using the given unit and axis directions.
+     * This convenience method performs the work documented in {@link #getEpsgCode(Class, CoordinateSystemAxis...)},
+     * but requiring only a frequently used subset of information.
      * If no suitable coordinate system is known to Apache SIS, then this method returns {@code null}.
      *
      * <p>Current implementation uses a hard-coded list of known coordinate systems;
      * it does not yet scan the EPSG database (this may change in future Apache SIS version).
-     * The current list of known coordinate systems is documented in {@link #getEpsgCode(CoordinateSystemAxis...)}.</p>
+     * The current list of known coordinate systems is documented {@linkplain #getEpsgCode(Class,
+     * CoordinateSystemAxis...) above}.</p>
      *
      * @param  unit        desired unit of measurement. For three-dimensional ellipsoidal coordinate system,
      *                     this is the unit for the horizontal axes only; the vertical axis is in metres.

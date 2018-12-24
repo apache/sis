@@ -28,6 +28,8 @@ import org.apache.sis.measure.Units;
 
 /**
  * Collection of axes for testing purpose.
+ * Note that EPSG codes of coordinate system axes depend on axis order.
+ * Consequently EPSG codes are not provided.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -42,7 +44,8 @@ public final strictfp class HardCodedAxes {
      * The ISO 19111 name is <cite>"geodetic longitude"</cite> and the abbreviation is "λ" (lambda).
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
-     * {@link #ELLIPSOIDAL_HEIGHT} set.</p>
+     * {@link #ELLIPSOIDAL_HEIGHT} set. The EPSG code depends on axis order; consequently it is
+     * not provided.</p>
      *
      * @see #SPHERICAL_LONGITUDE
      * @see #GEODETIC_LATITUDE
@@ -57,7 +60,8 @@ public final strictfp class HardCodedAxes {
      * The ISO 19111 name is <cite>"geodetic latitude"</cite> and the abbreviation is "φ" (phi).
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
-     * {@link #ELLIPSOIDAL_HEIGHT} set.</p>
+     * {@link #ELLIPSOIDAL_HEIGHT} set. The EPSG code depends on axis order; consequently it is
+     * not provided.</p>
      *
      * @see #SPHERICAL_LATITUDE
      * @see #GEODETIC_LONGITUDE
@@ -102,7 +106,8 @@ public final strictfp class HardCodedAxes {
      * The ISO 19111 name is <cite>"ellipsoidal height"</cite> and the abbreviation is lower case <cite>"h"</cite>.
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
-     * {@link #ELLIPSOIDAL_HEIGHT} set.</p>
+     * {@link #ELLIPSOIDAL_HEIGHT} set. The EPSG code depends on axis order; consequently it is
+     * not provided.</p>
      *
      * @see #ALTITUDE
      * @see #GEOCENTRIC_RADIUS

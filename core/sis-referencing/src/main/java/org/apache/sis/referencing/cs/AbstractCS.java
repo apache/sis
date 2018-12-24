@@ -348,11 +348,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         if (cs == null) {
             cs = Normalizer.forConvention(this, convention);
             if (cs == null) {
-                cs = this;                                                          // This coordinate system is already normalized.
-            } else if (convention != AxesConvention.POSITIVE_RANGE &&
-                    IdentifiedObjects.getIdentifier(this, Citations.EPSG) != null)  // See resolveEPSG(…) for purpose of this check.
-            {
-                cs = cs.resolveEPSG(false);
+                cs = this;                                              // This coordinate system is already normalized.
+            } else if (convention != AxesConvention.POSITIVE_RANGE) {
+                cs = cs.resolveEPSG(this);
             }
             /*
              * It happen often that the CRS created by RIGHT_HANDED, CONVENTIONALLY_ORIENTED
@@ -390,16 +388,12 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Such CS gives more information (better name and remarks). This is a "would be nice"
      * feature; if we fail, we keep the CS built by {@link Normalizer}.
      *
-     * <p>Subclasses need to override this method in order to change the {@code enabled}
-     * argument value from {@code false} to {@code true}. This is required because we do
-     * not want to enable this resolving process to every CS types.</p>
-     *
-     * @param  enabled  if {@code false}, do nothing.
+     * @param  original  the coordinate system from which this CS is derived.
      * @return the resolved CS, or {@code this} if none.
      */
-    AbstractCS resolveEPSG(final boolean enabled) {
-        if (enabled) {
-            final Integer epsg = CoordinateSystems.getEpsgCode(axes);
+    private AbstractCS resolveEPSG(final AbstractCS original) {
+        if (IdentifiedObjects.getIdentifier(original, Citations.EPSG) != null) {
+            final Integer epsg = CoordinateSystems.getEpsgCode(getInterface(), axes);
             if (epsg != null) try {
                 final AuthorityFactory factory = CRS.getAuthorityFactory(Constants.EPSG);
                 if (factory instanceof CSAuthorityFactory) {

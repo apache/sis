@@ -242,14 +242,6 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
         }
     }
 
-    /**
-     * Overridden for enabling the search of equivalent CS in the EPSG database.
-     */
-    @Override
-    final AbstractCS resolveEPSG(final boolean enabled) {
-        return super.resolveEPSG(true);
-    }
-
 
 
 
