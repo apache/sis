@@ -203,8 +203,10 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          */
         int stepCount = 0;
         MathTransform shortest = null;
+        boolean inverseCaseTested = false;
         if (tr1 instanceof AbstractMathTransform) {
             final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
+            inverseCaseTested = true;
             if (optimized != null) {
                 stepCount = getStepCount(optimized);
                 shortest  = optimized;
@@ -212,6 +214,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         }
         if (tr2 instanceof AbstractMathTransform) {
             final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
+            inverseCaseTested = true;
             if (optimized != null) {
                 if (shortest == null || getStepCount(optimized) < stepCount) {
                     return optimized;
@@ -227,7 +230,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * We need to test this case before the linear transform case below, because the
          * matrices may contain NaN values.
          */
-        if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
+        if (!inverseCaseTested && (isInverseEquals(tr1, tr2) || isInverseEquals(tr2, tr1))) {
             assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
             assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
             return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
@@ -816,26 +819,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Returns {@code true} if this transform is the inverse of the given transform.
-     * If this method is unsure, it conservatively returns {@code false}.
-     */
-    @Override
-    final boolean isInverseOf(final MathTransform other) {
-        final List<MathTransform> s1 = getSteps();
-        final List<MathTransform> s2 = MathTransforms.getSteps(other);
-        final int size = s1.size();
-        if (s2.size() != size) {
-            return false;
-        }
-        for (int i=0; i<size; i++) {
-            if (!areInverse(s1.get(size-1 - i), s2.get(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
      * This method try to delegate the concatenation to {@link #transform1} or {@link #transform2}. Assuming that
      * transforms are associative, this is equivalent to trying the following arrangements:
@@ -866,7 +849,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 return create(transform1, candidate, factory);
             }
         }
-        return super.tryConcatenate(applyOtherFirst, other, factory);
+        /*
+         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); the test of whether 'this'
+         * is the inverse of 'other' has been done indirectly by the calls to 'createOptimized'.
+         */
+        return null;
     }
 
     /**

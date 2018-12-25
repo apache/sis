@@ -791,40 +791,15 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Returns {@code true} if this transform is the inverse of the given transform.
-     * If this method is unsure, it conservatively returns {@code false}.
-     *
-     * <p>The default implementation invokes {@link #inverse()} and compares the transforms.
-     * Subclasses should override with a more efficient implementation if they can avoid the
-     * call to {@link #inverse()} (unless that call is cheap).</p>
-     *
-     * @param  other  the transform that may be the inverse of this transform.
-     * @return whether this transform is the inverse of the given transform. If unsure, {@code false}.
-     */
-    boolean isInverseOf(final MathTransform other) {
-        return inverseEquals(this, other);
-    }
-
-    /**
      * Returns {@code true} if {@code tr1} is the inverse of {@code tr2}.
      * If this method is unsure, it conservatively returns {@code false}.
-     * This implementation delegates to {@link #isInverseOf(MathTransform)}
-     * if possible, or to the default implementation otherwise. The transform
-     * that may be inverted is {@code tr1}.
+     * The transform that may be inverted is {@code tr1}.
+     *
+     * @param  tr1  the transform to inverse.
+     * @param  tr2  the transform that may be the inverse of {@code tr1}.
+     * @return whether this transform is the inverse of the given transform. If unsure, {@code false}.
      */
-    static boolean areInverse(final MathTransform tr1, final MathTransform tr2) {
-        if (tr1 instanceof AbstractMathTransform) {
-            return ((AbstractMathTransform) tr1).isInverseOf(tr2);
-        } else {
-            return inverseEquals(tr1, tr2);
-        }
-    }
-
-    /**
-     * Implementation of {@link #isInverseOf(MathTransform)} for arbitrary math transform.
-     * This method invokes {@link #inverse()} on {@code tr1}.
-     */
-    private static boolean inverseEquals(MathTransform tr1, final MathTransform tr2) {
+    static boolean isInverseEquals(MathTransform tr1, final MathTransform tr2) {
         if (tr1.getSourceDimensions() != tr2.getTargetDimensions() ||
             tr1.getTargetDimensions() != tr2.getSourceDimensions())
         {
@@ -846,7 +821,7 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
-     * A new math transform is created to perform the combined transformation.
+     * If an optimization is possible, a new math transform is created to perform the combined transformation.
      * The {@code applyOtherFirst} value determines the transformation order as bellow:
      *
      * <ul>
@@ -858,15 +833,15 @@ public abstract class AbstractMathTransform extends FormattableObject
      *       <var>p</var> by {@code this} and then transforming the result by {@code other}.</li>
      * </ul>
      *
-     * If no special optimization is available for the combined transform, then this method returns {@code null}.
-     * In the later case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using a generic
-     * implementation.
+     * If no optimization is available for the combined transform, then this method returns {@code null}.
+     * In the later case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using
+     * a generic implementation.
      *
-     * <p>The default implementation always returns {@code null}. This method is ought to be overridden
+     * <p>The default implementation returns the identity transform if the other transform is the inverse
+     * of this transform, or returns {@code null} otherwise. This method is ought to be overridden
      * by subclasses capable of concatenating some combination of transforms in a special way.
      * {@link LinearTransform} implementations do not need to override this method since matrix multiplications
-     * will be handled automatically, and this method does not need to handle the {@link #isIdentity()} and
-     * {@link #inverse()} cases.</p>
+     * will be handled automatically, and this method does not need to handle the {@link #isIdentity()} case.</p>
      *
      * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
      *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
@@ -882,6 +857,9 @@ public abstract class AbstractMathTransform extends FormattableObject
     protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
             throws FactoryException
     {
+        if (isInverseEquals(this, other)) {
+            return MathTransforms.identity(applyOtherFirst ? getTargetDimensions() : getSourceDimensions());
+        }
         return null;
     }
 
