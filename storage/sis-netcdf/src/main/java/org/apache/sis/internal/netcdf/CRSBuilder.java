@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
 import java.util.logging.Level;
+import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
@@ -37,11 +38,14 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultSphericalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -124,7 +128,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**
      * The coordinate reference system that may have been create by {@link #candidate(Decoder)}.
      */
-    SingleCRS candidateCRS;
+    SingleCRS referenceSystem;
 
     /**
      * Non-fatal exceptions that may occur while building the coordinate reference system.
@@ -260,7 +264,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      *
      * @param  decoder  the decoder of the netCDF from which the CRS are constructed.
      */
-    public final SingleCRS build(final Decoder decoder) throws FactoryException, DataStoreContentException {
+    public final SingleCRS build(final Decoder decoder) throws FactoryException, DataStoreException, IOException {
         if (dimension < minDim || dimension > maxDim) {
             final Variable axis = getFirstAxis().coordinates;
             throw new DataStoreContentException(axis.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
@@ -293,6 +297,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 final Axis expected = axes[i];
                 if (expected == null || !expected.isSameUnitAndDirection(coordinateSystem.getAxis(i))) {
                     coordinateSystem = null;
+                    referenceSystem  = null;
                     break;
                 }
             }
@@ -301,31 +306,50 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * If 'candidate(decoder)' did not proposed a coordinate system, or if it proposed a CS but its
          * axes do not match the axes in the netCDF file, then create a new coordinate system here.
          */
-        final Map<String,?> properties;
-        if (coordinateSystem == null) {
-            // Fallback if the coordinate system is not common.
-            final StringJoiner joiner = new StringJoiner(" ");
-            final CSFactory csFactory = decoder.getCSFactory();
-            final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[dimension];
-            for (int i=0; i<iso.length; i++) {
-                final Axis axis = axes[i];
-                joiner.add(axis.getName());
-                iso[i] = axis.toISO(csFactory);
+        if (referenceSystem == null) {
+            final Map<String,?> properties;
+            if (coordinateSystem == null) {
+                // Fallback if the coordinate system is not predefined.
+                final StringJoiner joiner = new StringJoiner(" ");
+                final CSFactory csFactory = decoder.getCSFactory();
+                final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[dimension];
+                for (int i=0; i<iso.length; i++) {
+                    final Axis axis = axes[i];
+                    joiner.add(axis.getName());
+                    iso[i] = axis.toISO(csFactory);
+                }
+                createCS(csFactory, properties(joiner.toString()), iso);
+                properties = properties(coordinateSystem.getName());
+            } else {
+                properties = properties(NamedElement.listNames(axes, dimension, " "));
             }
-            properties = properties(joiner.toString());
-            createCS(csFactory, properties, iso);
-        } else {
-            properties = properties(NamedElement.listNames(axes, dimension, " "));
+            createCRS(decoder.getCRSFactory(), properties);
         }
         /*
          * Creates the coordinate reference system using current value of 'datum' and 'coordinateSystem' fields.
-         * TODO: verify minimum and maximum longitude values for making sure we have a -180 … 180° range.
+         * The coordinate system initially have a [-180 … +180]° longitude range. If the actual coordinate values
+         * are outside that range, switch the longitude range to [0 … 360]°.
          */
-        final SingleCRS crs = createCRS(decoder.getCRSFactory(), properties);
+        final CoordinateSystem cs = referenceSystem.getCoordinateSystem();
+        for (int i=cs.getDimension(); --i >= 0;) {
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+                final Vector coordinates = axes[i].coordinates.read();
+                final int length = coordinates.size();
+                if (length != 0) {
+                    final double first = coordinates.doubleValue(0);
+                    final double last  = coordinates.doubleValue(length - 1);
+                    if (Math.min(first, last) >= 0 && Math.max(first, last) > axis.getMaximumValue()) {
+                        referenceSystem = (SingleCRS) AbstractCRS.castOrCopy(referenceSystem).forConvention(AxesConvention.POSITIVE_RANGE);
+                        break;
+                    }
+                }
+            }
+        }
         if (warnings != null) {
             decoder.listeners.warning(Level.FINE, null, warnings);
         }
-        return crs;
+        return referenceSystem;
     }
 
     /**
@@ -343,7 +367,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      *
      * @param  name  name of the geodetic object (datum, coordinate system, …) to create.
      */
-    private static Map<String,?> properties(final String name) {
+    private static Map<String,?> properties(final Object name) {
         return Collections.singletonMap(GeodeticDatum.NAME_KEY, name);
     }
 
@@ -372,8 +396,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * The coordinate system does not need to be a full match since all axes will be verified by the caller.
      * This method is invoked before to fallback on {@link #createCS(CSFactory, Map, CoordinateSystemAxis[])}.
      *
-     * <p>This method may opportunistically set the {@link #datum} and {@link #candidateCRS} fields if it can
-     * propose a CRS candidate instead than only a CS candidate.</p>
+     * <p>This method may opportunistically set the {@link #datum} and {@link #referenceSystem} fields if it
+     * can propose a CRS candidate instead than only a CS candidate.</p>
      */
     abstract void candidate(Decoder decoder) throws FactoryException;
 
@@ -400,11 +424,13 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
     /**
      * Creates the coordinate reference system from the values in {@link #datum} and {@link #coordinateSystem} fields.
+     * This method is invoked only if {@link #referenceSystem} is still {@code null} or its axes do not correspond to
+     * the expected axis. The newly created reference system is assigned to the {@link #referenceSystem} field.
      *
      * @param  factory     the factory to use for creating the coordinate reference system.
      * @param  properties  contains the name of the coordinate reference system to create.
      */
-    abstract SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException;
+    abstract void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException;
 
     /**
      * Base classes of {@link Spherical}, {@link Geographic} and {@link Projected} builders.
@@ -447,7 +473,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * If the {@link #datum} field is not already set, initialize it to "Not specified (based upon the WGS 84 ellipsoid)".
-         * Subclasses should override this method for setting also the {@link #coordinateSystem} and {@link #candidateCRS}
+         * Subclasses should override this method for setting also the {@link #coordinateSystem} and {@link #referenceSystem}
          * fields if possible.
          */
         @Override void candidate(final Decoder decoder) throws FactoryException {
@@ -492,8 +518,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
-        @Override SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            return factory.createGeocentricCRS(properties, datum, coordinateSystem);
+        @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
+            referenceSystem = factory.createGeocentricCRS(properties, datum, coordinateSystem);
         }
     };
 
@@ -527,13 +553,13 @@ previous:   for (int i=components.size(); --i >= 0;) {
                     GeographicCRS crs = decoder.getCRSAuthorityFactory().createGeographicCRS(String.valueOf(Constants.EPSG_UNKNOWN_CRS));
                     coordinateSystem = crs.getCoordinateSystem();
                     datum = crs.getDatum();
-                    candidateCRS = crs;
+                    referenceSystem = crs;
                 } else if (!tryEPSG(decoder)) {
                     coordinateSystem = DEFAULT.geographic3D().getCoordinateSystem();
                 }
                 if (isLongitudeFirst) {
                     coordinateSystem = DefaultEllipsoidalCS.castOrCopy(coordinateSystem).forConvention(AxesConvention.RIGHT_HANDED);
-                    candidateCRS = null;
+                    referenceSystem  = null;
                 }
             } else {
                 tryEPSG(decoder);
@@ -550,8 +576,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
-        @Override SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            return factory.createGeographicCRS(properties, datum, coordinateSystem);
+        @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
+            referenceSystem =  factory.createGeographicCRS(properties, datum, coordinateSystem);
         }
     };
 
@@ -581,7 +607,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
-        @Override SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
+        @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             throw new UnsupportedOperationException();  // TODO
         }
     };
@@ -626,8 +652,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
-        @Override SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            return factory.createVerticalCRS(properties, datum, coordinateSystem);
+        @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
+            referenceSystem =  factory.createVerticalCRS(properties, datum, coordinateSystem);
         }
     };
 
@@ -678,9 +704,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
-        @Override SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
+        @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             properties = properties(getFirstAxis().coordinates.getUnitsString());
-            return factory.createTemporalCRS(properties, datum, coordinateSystem);
+            referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
         }
     };
 
@@ -712,8 +738,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
-        @Override SingleCRS createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            return factory.createEngineeringCRS(properties, datum, coordinateSystem);
+        @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
+            referenceSystem =  factory.createEngineeringCRS(properties, datum, coordinateSystem);
         }
     };
 

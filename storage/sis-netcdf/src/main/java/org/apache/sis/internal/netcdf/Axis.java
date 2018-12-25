@@ -281,7 +281,6 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
                 return uc.convert(data.doubleValue(0)) == min;
             } catch (IncommensurableException e) {
                 coordinates.error(Grid.class, "getGridGeometry", e, Errors.Keys.InconsistentUnitsForCS_1, unit);
-
             }
         }
         return false;
