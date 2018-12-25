@@ -39,10 +39,10 @@ import org.apache.sis.measure.Units;
  *   <tr>
  *     <th>Property</th>
  *     <th>Example</th>
- *     <th>{@linkplain #NORMALIZED              Normalized}</th>
- *     <th>{@linkplain #CONVENTIONALLY_ORIENTED Conventionally<br>oriented}</th>
- *     <th>{@linkplain #RIGHT_HANDED            Right<br>handed}</th>
- *     <th>{@linkplain #POSITIVE_RANGE          Positive<br>range}</th>
+ *     <th>{@linkplain #NORMALIZED      Normalized}</th>
+ *     <th>{@link #DISPLAY_ORIENTED     Display<br>oriented}</th>
+ *     <th>{@linkplain #RIGHT_HANDED    Right<br>handed}</th>
+ *     <th>{@linkplain #POSITIVE_RANGE  Positive<br>range}</th>
  *   </tr>
  *   <tr>
  *     <td>Axis order</td>
@@ -78,7 +78,7 @@ import org.apache.sis.measure.Units;
  *   </tr>
  * </table>
  *
- * <div class="section">Discussion on axis order</div>
+ * <div class="section">Note on axis order</div>
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
  * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilotes for centuries.
@@ -94,9 +94,9 @@ import org.apache.sis.measure.Units;
  * {@link org.apache.sis.referencing.CRS#forCode(String)} method. The actual axis order can be verified after the CRS
  * creation with {@code System.out.println(crs)}. If (<var>x</var>,<var>y</var>) axis order is wanted for compatibility
  * with older OGC specifications or other software products, CRS forced to "longitude first" axis order can be created
- * using the {@link #CONVENTIONALLY_ORIENTED} or {@link #NORMALIZED} enumeration value.</p>
+ * using the {@link #DISPLAY_ORIENTED} or {@link #NORMALIZED} enumeration value.</p>
  *
- * <div class="section">Range of longitude values</div>
+ * <div class="section">Note on range of longitude values</div>
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
  * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2(y,x)}.
  * However some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
@@ -105,7 +105,7 @@ import org.apache.sis.measure.Units;
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
@@ -115,11 +115,11 @@ import org.apache.sis.measure.Units;
  */
 public enum AxesConvention implements AxisFilter {
     /**
-     * Axes order, direction and units of measure are forced to commonly used pre-defined values.
-     * This enum represents the following changes to apply on a coordinate system:
+     * Axes order, direction and units of measurement are forced to commonly used predefined values.
+     * This convention implies the following changes on a coordinate system:
      *
      * <ul>
-     *   <li>Axes are oriented and ordered as defined for {@link #CONVENTIONALLY_ORIENTED} coordinate systems.</li>
+     *   <li>Axes are oriented and ordered as defined for {@link #DISPLAY_ORIENTED} coordinate systems.</li>
      *   <li>Known units are normalized (this list may be expanded in future SIS versions):
      *     <ul>
      *       <li>Angular units are set to {@link Units#DEGREE}.</li>
@@ -129,12 +129,12 @@ public enum AxesConvention implements AxisFilter {
      *   </li>
      * </ul>
      *
-     * This mode does not normalize longitude values to the [-180 … +180]° range and does not set the
+     * This convention does not normalize longitude values to the [-180 … +180]° range and does not set the
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian} to Greenwich.
      * Those changes are not applied for avoiding discontinuity in conversions from the non-normalized CRS to the normalized CRS.
      *
      * <div class="note"><b>Rational:</b>
-     * The reason why we do not yet normalize the range and the prime meridian is because doing so
+     * The reason why we do not normalize the range and the prime meridian is because doing so
      * would cause the conversion between old and new coordinate systems to be non-affine for axes
      * having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}. Furthermore changing the
      * prime meridian would be a datum change rather than a coordinate system change, and datum
@@ -178,42 +178,10 @@ public enum AxesConvention implements AxisFilter {
     },
 
     /**
-     * Axes are oriented toward conventional directions and ordered for a {@linkplain #RIGHT_HANDED right-handed}
-     * coordinate system. Units of measurement are unchanged.
-     *
-     * <p>More specifically, directions opposites to the following ones are replaced by their "forward" counterpart
-     * (e.g. {@code SOUTH} → {@code NORTH}):</p>
-     *
-     * <table class="sis">
-     *   <caption>Axis directions used by convention</caption>
-     *   <tr>
-     *     <th>Preferred {@link AxisDirection}</th>
-     *     <th>Purpose</th>
-     *   </tr><tr>
-     *     <td>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
-     *         {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE}</td>
-     *     <td>Commonly used (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) directions for coordinates.</td>
-     *   </tr><tr>
-     *     <td>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN}</td>
-     *     <td>Commonly used (<var>x</var>, <var>y</var>) directions for screen devices.</td>
-     *   </tr><tr>
-     *     <td>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},
-     *         {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}</td>
-     *     <td>Indices in grids or matrices.</td>
-     *   </tr>
-     * </table>
-     *
-     * Then, axes are ordered for {@link #RIGHT_HANDED} coordinate system.
-     *
-     * <div class="section">Usage</div>
-     * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
-     * (<var>x</var>,<var>y</var>) axis order. We do not provide a <cite>"longitude or <var>x</var> axis first"</cite>
-     * enumeration value because such criterion is hard to apply to inter-cardinal directions and has no meaning for
-     * map projections over a pole, while the right-handed rule can apply everywhere.
-     *
-     * <p><cite>Right-handed</cite> coordinate systems have a precise meaning in Apache SIS.
-     * However <cite>conventionally oriented</cite> coordinate systems have a looser definition.
-     * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:</p>
+     * Axes are reordered and oriented toward directions commonly used for displaying purpose.
+     * Units of measurement are unchanged. This convention can be used for deriving a coordinate system with the
+     * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order.
+     * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
      *
      * <div class="note"><b>6.7.2 Map CS</b> —
      * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
@@ -222,9 +190,43 @@ public enum AxesConvention implements AxisFilter {
      * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
      * be to the right edge and North shall be toward the upper edge of the Map CS.</div>
      *
-     * @since 0.5
+     * The above-cited <i>(<var>i</var>,<var>j</var>)</i> axes are mapped to <cite>display right</cite> and
+     * <cite>display down</cite> directions respectively.
+     * Other kinds of axis are mapped to <cite>east</cite> and <cite>north</cite> directions when possible.
+     * More specifically, Apache SIS tries to setup the following directions
+     * (replacing a direction by its "forward" counterpart when necessary, e.g. {@code SOUTH} → {@code NORTH})
+     * in the order shown below:
+     *
+     * <table class="sis">
+     *   <caption>Axis directions and order</caption>
+     *   <tr>
+     *     <th>Preferred axis sequences</th>
+     *     <th>Purpose</th>
+     *   </tr><tr>
+     *     <td>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
+     *         {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE}</td>
+     *     <td>Commonly used <i>(<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)</i> directions for coordinates.</td>
+     *   </tr><tr>
+     *     <td>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN}</td>
+     *     <td>Commonly used <i>(<var>x</var>, <var>y</var>)</i> directions for screen devices.</td>
+     *   </tr><tr>
+     *     <td>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},
+     *         {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}</td>
+     *     <td>Indices in grids or matrices.</td>
+     *   </tr>
+     * </table>
+     *
+     * <div class="note"><b>Notes:</b>
+     * we do not provide a <cite>"longitude or <var>x</var> axis first"</cite> enumeration value because such criterion
+     * is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole.
+     * The <cite>display oriented</cite> enumeration name applies to a wider range of cases,
+     * but still have a loosely definition which may be adjusted in future Apache SIS versions.
+     * If a more stable definition is needed, consider using {@link #RIGHT_HANDED} instead since
+     * <cite>right-handed</cite> coordinate systems have a more precise meaning in Apache SIS.</div>
+     *
+     * @since 1.0
      */
-    CONVENTIONALLY_ORIENTED {
+    DISPLAY_ORIENTED {
         @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
             return NORMALIZED.getDirectionReplacement(axis, direction);
         }
@@ -239,12 +241,12 @@ public enum AxesConvention implements AxisFilter {
      * will be first in every cases. The most notable exception is the case of (West, North) orientations.
      * The following table lists that case, together with other common axis orientations.
      * The axes orientations implied by this {@code RIGHT_HANDED} enum is shown,
-     * together with {@link #CONVENTIONALLY_ORIENTED} axes for reference:</p>
+     * together with {@link #DISPLAY_ORIENTED} axes for reference:</p>
      *
      * <div class="note">
      * <table class="sis">
      *   <caption>Examples of left-handed and right-handed coordinate systems</caption>
-     *   <tr><th>Left-handed</th> <th>Right-handed</th> <th>Conventionally oriented</th> <th>Remarks</th></tr>
+     *   <tr><th>Left-handed</th> <th>Right-handed</th> <th>Display oriented</th> <th>Remarks</th></tr>
      *   <tr><td>North, East</td> <td>East, North</td> <td>East, North</td> <td>This is the most common case.</td></tr>
      *   <tr><td>West, North</td> <td>North, West</td> <td>East, North</td> <td>This right-handed system has latitude first.</td></tr>
      *   <tr><td>South, West</td> <td>West, South</td> <td>East, North</td> <td>Used for the mapping of southern Africa.</td></tr>
@@ -279,5 +281,14 @@ public enum AxesConvention implements AxisFilter {
      *
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
-    POSITIVE_RANGE
+    POSITIVE_RANGE;
+
+    /**
+     * @deprecated Renamed {@link #DISPLAY_ORIENTED} since "conventional" is too vague.
+     *             For example the (latitude, longitude) axis order is also conventional.
+     *
+     * @since 0.5
+     */
+    @Deprecated
+    public static final AxesConvention CONVENTIONALLY_ORIENTED = DISPLAY_ORIENTED;
 }

@@ -73,7 +73,7 @@ public final class DefinitionVerifier {
      */
     private static final AxesConvention[] VARIANTS = {
         AxesConvention.NORMALIZED,
-        AxesConvention.CONVENTIONALLY_ORIENTED,
+        AxesConvention.DISPLAY_ORIENTED,
         AxesConvention.RIGHT_HANDED
     };
 

@@ -353,8 +353,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 cs = cs.resolveEPSG(this);
             }
             /*
-             * It happen often that the CRS created by RIGHT_HANDED, CONVENTIONALLY_ORIENTED
-             * and NORMALIZED are the same. If this is the case, sharing the same instance
+             * It happen often that the CRS created by RIGHT_HANDED, DISPLAY_ORIENTED and
+             * NORMALIZED are the same. If this is the case, sharing the same instance
              * not only save memory but can also make future comparisons faster.
              */
             for (final AbstractCS existing : derived.values()) {

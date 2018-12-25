@@ -197,7 +197,7 @@ public final strictfp class NormalizerTest extends TestCase {
      */
     @Test
     public void testNormalizeAxisDirection() {
-        assertSameAfterNormalization(AxesConvention.CONVENTIONALLY_ORIENTED);
+        assertSameAfterNormalization(AxesConvention.DISPLAY_ORIENTED);
         /*
          * Test a change of direction from West to East.
          */
@@ -216,7 +216,7 @@ public final strictfp class NormalizerTest extends TestCase {
          * Test a change of unit from centimetre to metre.
          */
         assertSame(HardCodedAxes.HEIGHT_cm, Normalizer.normalize(HardCodedAxes.HEIGHT_cm,
-                AxesConvention.CONVENTIONALLY_ORIENTED));                                   // Do not change unit.
+                AxesConvention.DISPLAY_ORIENTED));                                          // Do not change unit.
         assertAxisEquals("Height", "h", AxisDirection.UP,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null,
                 Normalizer.normalize(HardCodedAxes.HEIGHT_cm, AxesConvention.NORMALIZED));

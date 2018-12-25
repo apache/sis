@@ -153,7 +153,7 @@ public class LocationFormat extends TabularFormat<Location> {
     private static CoordinateReferenceSystem normalize(final CoordinateReferenceSystem crs) {
         if (crs != null) {
             AbstractCRS normalized = AbstractCRS.castOrCopy(crs);
-            if (normalized != (normalized = normalized.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED))) {
+            if (normalized != (normalized = normalized.forConvention(AxesConvention.DISPLAY_ORIENTED))) {
                 return normalized;
             }
         }

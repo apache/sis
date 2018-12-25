@@ -162,7 +162,7 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
             final String toTestX,   final String toTestY)
     {
         DefaultCartesianCS cs = createCS(toTestX, toTestY);
-        cs = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
+        cs = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertEqualsIgnoreMetadata(createCS(expectedX, expectedY), cs);
     }
 
@@ -177,7 +177,7 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
 
     /**
      * Tests {@link DefaultCartesianCS#forConvention(AxesConvention)} with
-     * {@link AxesConvention#CONVENTIONALLY_ORIENTED}.
+     * {@link AxesConvention#DISPLAY_ORIENTED}.
      */
     @Test
     @DependsOnMethod("testConstructor")

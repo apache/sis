@@ -45,7 +45,7 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
     @Test
     public void testChangeClockwiseOrientation() {
         final DefaultCylindricalCS cs = HardCodedCS.CYLINDRICAL;
-        final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
+        final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirections.AWAY_FROM,

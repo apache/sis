@@ -51,7 +51,7 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
         final DefaultSphericalCS cs = HardCodedCS.SPHERICAL;
         assertEquals("EPSG abbreviation for geocentric radius should be lower-case", "r", cs.getAxis(2).getAbbreviation());
 
-        final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
+        final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirection.EAST,

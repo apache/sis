@@ -446,7 +446,7 @@ final class Normalizer implements Comparable<Normalizer> {
     static AbstractCS forConvention(final CoordinateSystem cs, final AxesConvention convention) {
         switch (convention) {
             case NORMALIZED:              // Fall through
-            case CONVENTIONALLY_ORIENTED: return normalize(cs, convention, true);
+            case DISPLAY_ORIENTED: return normalize(cs, convention, true);
             case RIGHT_HANDED:            return normalize(cs, null, true);
             case POSITIVE_RANGE:          return shiftAxisRange(cs);
             default: throw new AssertionError(convention);
