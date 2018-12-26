@@ -54,7 +54,8 @@ final class SampleRangeFormat extends RangeFormat {
 
     /**
      * {@code true} if the range of sample values is different than the range of real values, or
-     * if there is qualitative categories. If {@code false}, then we can omit the "Samples" column.
+     * if there is qualitative categories with non NaN values. If {@code false}, then we can omit
+     * the "Samples" column.
      */
     private boolean hasPackedValues;
 
@@ -98,8 +99,8 @@ final class SampleRangeFormat extends RangeFormat {
             int ndigits = 0;
             for (final Category category : dimensions[i].getCategories()) {
                 final Category converted = category.converted();
-                final boolean  isPacked  = (category.minimum != converted.minimum)
-                                         | (category.maximum != converted.maximum);
+                final boolean  isPacked  = (Double.doubleToRawLongBits(category.minimum) != Double.doubleToRawLongBits(converted.minimum))
+                                         | (Double.doubleToRawLongBits(category.maximum) != Double.doubleToRawLongBits(converted.maximum));
                 hasPackedValues |= isPacked;
                 /*
                  * If the sample values are already real values, pretend that they are packed in bytes.

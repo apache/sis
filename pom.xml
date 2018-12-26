@@ -620,7 +620,7 @@
         <configuration>
           <release>${maven.compiler.target}</release>
           <encoding>${project.build.sourceEncoding}</encoding>
-          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
+          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://issues.apache.org/jira/browse/MCOMPILER-209 -->
           <compilerArgs>
             <arg>-Xlint:all</arg>
             <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>

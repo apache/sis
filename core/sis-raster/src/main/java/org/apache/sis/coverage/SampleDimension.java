@@ -711,7 +711,6 @@ public class SampleDimension implements Serializable {
 
         /**
          * Adds a qualitative category for samples of the given floating-point value.
-         * The given value can not be {@link Float#NaN NaN}.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -720,7 +719,6 @@ public class SampleDimension implements Serializable {
          *                 or {@code null} for a default "no data" name.
          * @param  sample  the sample value as a real number.
          * @return {@code this}, for method call chaining.
-         * @throws IllegalArgumentException if the given value is NaN.
          */
         public Builder addQualitative(final CharSequence name, final float sample) {
             return addQualitative(name, NumberRange.create(sample, true, sample, true));
@@ -728,7 +726,6 @@ public class SampleDimension implements Serializable {
 
         /**
          * Adds a qualitative category for samples of the given double precision floating-point value.
-         * The given value can not be {@link Double#NaN NaN}.
          *
          * <div class="note"><b>Implementation note:</b>
          * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
@@ -737,7 +734,6 @@ public class SampleDimension implements Serializable {
          *                 or {@code null} for a default "no data" name.
          * @param  sample  the sample value as a real number.
          * @return {@code this}, for method call chaining.
-         * @throws IllegalArgumentException if the given value is NaN.
          */
         public Builder addQualitative(final CharSequence name, final double sample) {
             return addQualitative(name, NumberRange.create(sample, true, sample, true));
@@ -751,10 +747,10 @@ public class SampleDimension implements Serializable {
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
-         * @param  minimum  the minimum sample value, inclusive. Can not be NaN.
-         * @param  maximum  the maximum sample value, inclusive. Can not be NaN.
+         * @param  minimum  the minimum sample value, inclusive.
+         * @param  maximum  the maximum sample value, inclusive.
          * @return {@code this}, for method call chaining.
-         * @throws IllegalArgumentException if a given value is NaN or if the range is empty.
+         * @throws IllegalArgumentException if the range is empty.
          */
         public Builder addQualitative(final CharSequence name, final Number minimum, final Number maximum) {
             return addQualitative(name, range(Numbers.widestClass(minimum, maximum), minimum, maximum));
@@ -831,6 +827,42 @@ public class SampleDimension implements Serializable {
             transferFunction.setOffset(minValue - scale * minSample);               // TODO: use Math.fma with JDK9.
             return addQuantitative(name, samples, transferFunction.getTransform(),
                     (converted instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) converted).unit() : null);
+        }
+
+        /**
+         * Adds a quantitative category for values ranging from {@code minimum} to {@code maximum} inclusive
+         * in the given units of measurement. The transfer function is set to identity.
+         *
+         * <div class="note"><b>Implementation note:</b>
+         * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
+         *
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  minimum  the minimum value (inclusive) in the given units.
+         * @param  maximum  the maximum value (inclusive) in the given units.
+         * @param  units    the units of measurement.
+         * @return {@code this}, for method call chaining.
+         * @throws IllegalArgumentException if a value is NaN or if {@code minimum} is greater than {@code maximum}.
+         */
+        public Builder addQuantitative(CharSequence name, float minimum, float maximum, Unit<?> units) {
+            return addQuantitative(name, MeasurementRange.create(minimum, true, maximum, true, units), Category.identity(), units);
+        }
+
+        /**
+         * Adds a quantitative category for values ranging from {@code minimum} to {@code maximum} inclusive
+         * in the given units of measurement. The transfer function is set to identity.
+         *
+         * <div class="note"><b>Implementation note:</b>
+         * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
+         *
+         * @param  name     the category name as a {@link String} or {@link InternationalString} object.
+         * @param  minimum  the minimum value (inclusive) in the given units.
+         * @param  maximum  the maximum value (inclusive) in the given units.
+         * @param  units    the units of measurement.
+         * @return {@code this}, for method call chaining.
+         * @throws IllegalArgumentException if a value is NaN or if {@code minimum} is greater than {@code maximum}.
+         */
+        public Builder addQuantitative(CharSequence name, double minimum, double maximum, Unit<?> units) {
+            return addQuantitative(name, MeasurementRange.create(minimum, true, maximum, true, units), Category.identity(), units);
         }
 
         /**

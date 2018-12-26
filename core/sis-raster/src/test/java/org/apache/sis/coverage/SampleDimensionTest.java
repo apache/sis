@@ -17,13 +17,15 @@
 package org.apache.sis.coverage;
 
 import java.util.Set;
-import org.apache.sis.measure.NumberRange;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -79,5 +81,36 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertSame   (converted,  converted.forConvertedValues(true));
         assertTrue   ("identity", converted.getTransferFunction().get().isIdentity());
         assertTrue   ("background", Double.isNaN(converted.getBackground().get().doubleValue()));
+    }
+
+    /**
+     * Tests the creation of a sample dimension with an identity transfer function.
+     */
+    @Test
+    public void testIdentity() {
+        final SampleDimension dimension = new SampleDimension.Builder()
+                .setBackground (null, Float.NaN)           // Default to "Fill value" name, potentially localized.
+                .addQuantitative("Temperature", -2f, 30f, Units.CELSIUS)
+                .build();
+
+        assertEquals("name", "Temperature", String.valueOf(dimension.getName()));
+        assertEquals("background", Float.NaN, dimension.getBackground().get());
+        assertEquals(0, dimension.getNoDataValues().toArray().length);
+
+        NumberRange<?> range = dimension.getSampleRange().get();
+        assertEquals("minimum", -2f, range.getMinValue());
+        assertEquals("maximum", 30f, range.getMaxValue());
+
+        range = dimension.getMeasurementRange().get();
+        assertEquals("minimum", -2d, range.getMinDouble(true), STRICT);
+        assertEquals("maximum", 30d, range.getMaxDouble(true), STRICT);
+        assertEquals("units",   Units.CELSIUS, dimension.getUnits().get());
+
+        final MathTransform1D tr = dimension.getTransferFunction().get();
+        assertInstanceOf("transferFunction", LinearTransform.class, tr);
+        assertTrue("identity", tr.isIdentity());
+
+        assertSame("forConvertedValues", dimension, dimension.forConvertedValues(true));
+        assertSame("forConvertedValues", dimension, dimension.forConvertedValues(false));
     }
 }
