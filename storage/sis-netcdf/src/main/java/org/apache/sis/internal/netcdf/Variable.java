@@ -29,10 +29,13 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
@@ -110,6 +113,12 @@ public abstract class Variable extends NamedElement {
      * @see #getUnit()
      */
     private boolean unitParsed;
+
+    /**
+     * All no-data values declared for this variable, or an empty map if none.
+     * This is computed by {@link #getNodataValues()} and cached for efficiency and stability.
+     */
+    private Map<Number,Integer> nodataValues;
 
     /**
      * Where to report warnings, if any.
@@ -224,6 +233,29 @@ public abstract class Variable extends NamedElement {
             }
         }
         return unit;
+    }
+
+    /**
+     * Returns {@code true} if this variable contains data that are already in the unit of measurement represented by
+     * {@link #getUnit()}, except for the fill/missing values. If {@code true}, then replacing fill/missing values by
+     * {@code NaN} is the only action needed for having converted values.
+     *
+     * <p>This method is for detecting when {@link org.apache.sis.storage.netcdf.GridResource#getSampleDimensions()}
+     * should return sample dimensions for already converted values. But to be consistent with {@code SampleDimension}
+     * contract, it requires fill/missing values to be replaced by NaN. This is done by {@link #replaceNaN(Object)}.</p>
+     *
+     * @return whether this variable contains values in unit of measurement, ignoring fill and missing values.
+     */
+    public final boolean hasRealValues() {
+        final int n = getDataType().number;
+        if (n == Numbers.FLOAT | n == Numbers.DOUBLE) {
+            double c = getAttributeAsNumber(CDM.SCALE_FACTOR);
+            if (Double.isNaN(c) || c == 1) {
+                c = getAttributeAsNumber(CDM.ADD_OFFSET);
+                return Double.isNaN(c) || c == 0;
+            }
+        }
+        return false;
     }
 
     /**
@@ -508,20 +540,28 @@ public abstract class Variable extends NamedElement {
      *   <li>If bit 1 is set, then the value is a missing value.</li>
      * </ul>
      *
+     * Pad values are first in the map, followed by missing values.
      * The same value may have more than one role.
+     * The map returned by this method shall be stable, i.e. two invocations of this method shall return the
+     * same entries in the same order. This is necessary for mapping "no data" values to the same NaN values,
+     * since their {@linkplain MathFunctions#toNanFloat(int) ordinal values} are based on order.
      *
      * @return pad/missing values with bitmask of their role.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Map<Number,Integer> getNodataValues() {
-        final Map<Number,Integer> pads = new LinkedHashMap<>();
-        for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
-            for (final Object value : getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
-                if (value instanceof Number) {
-                    pads.merge((Number) value, 1 << i, (v1, v2) -> v1 | v2);
+        if (nodataValues == null) {
+            final Map<Number,Integer> pads = new LinkedHashMap<>();
+            for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
+                for (final Object value : getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
+                    if (value instanceof Number) {
+                        pads.merge((Number) value, 1 << i, (v1, v2) -> v1 | v2);
+                    }
                 }
             }
+            nodataValues = CollectionsExt.unmodifiableOrCopy(pads);
         }
-        return pads;
+        return nodataValues;
     }
 
     /**
@@ -563,7 +603,11 @@ public abstract class Variable extends NamedElement {
      *     (2,1,0) (2,1,1) (2,1,2) (2,1,3)
      * }
      *
-     * This method may cache the returned vector, at implementation choice.
+     * If {@link #hasRealValues()} returns {@code true}, then this method shall
+     * {@linkplain #replaceNaN(Object) replace fill values and missing values by NaN values}.
+     * This method should cache the returned vector since this method may be invoked often.
+     * Because of caching, this method should not be invoked for large data array.
+     * Callers shall not modify the returned vector.
      *
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
@@ -584,7 +628,8 @@ public abstract class Variable extends NamedElement {
      * </ul>
      *
      * If the variable has more than one dimension, then the data are packed in a one-dimensional vector
-     * in the same way than {@link #read()}.
+     * in the same way than {@link #read()}. If {@link #hasRealValues()} returns {@code true}, then this
+     * method shall {@linkplain #replaceNaN(Object) replace fill/missing values by NaN values}.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
@@ -608,6 +653,28 @@ public abstract class Variable extends NamedElement {
             return Vector.createForDecimal((float[]) data);
         } else {
             return Vector.create(data, isUnsigned);
+        }
+    }
+
+    /**
+     * Maybe replace fill values and missing values by {@code NaN} values in the given array.
+     * This method does nothing if {@link #hasRealValues()} returns {@code false}.
+     * The NaN values used by this method must be consistent with the NaN values declared in
+     * the sample dimensions created by {@link org.apache.sis.storage.netcdf.GridResource}.
+     *
+     * @param  array  the array in which to replace fill and missing values.
+     */
+    protected final void replaceNaN(final Object array) {
+        if (hasRealValues()) {
+            int ordinal = 0;
+            for (final Number value : getNodataValues().keySet()) {
+                final float pad = MathFunctions.toNanFloat(ordinal++);      // Must be consistent with GridResource.createSampleDimension(…).
+                if (array instanceof float[]) {
+                    ArraysExt.replace((float[]) array, value.floatValue(), pad);
+                } else if (array instanceof double[]) {
+                    ArraysExt.replace((double[]) array, value.doubleValue(), pad);
+                }
+            }
         }
     }
 

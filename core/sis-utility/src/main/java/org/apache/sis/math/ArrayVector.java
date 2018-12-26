@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
@@ -300,7 +301,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns a copy of current data as a floating point array. */
         @Override public float[] floatValues() {
-            return Numerics.copyAsFloats(array);
+            return ArraysExt.copyAsFloats(array);
         }
 
         /** Applies hash code contract specified {@link Vector#hashCode()}. */

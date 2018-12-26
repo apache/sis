@@ -218,4 +218,25 @@ public final strictfp class CategoryTest extends TestCase {
             assertTrue       ("isQuantitative",                          category.isQuantitative());
         }
     }
+
+    /**
+     * Tests a category with a NaN value.
+     */
+    @Test
+    public void testCategoryNaN() {
+        final Category category = new Category("NaN", new NumberRange<>(Float.class, Float.NaN, true, Float.NaN, true), null, null, null);
+        final NumberRange<?> range = category.getSampleRange();
+        assertSame  ("converse",       category,   category.converse);
+        assertEquals("name",           "NaN",      String.valueOf(category.name));
+        assertEquals("name",           "NaN",      String.valueOf(category.getName()));
+        assertEquals("minimum",        Double.NaN, category.minimum, STRICT);
+        assertEquals("maximum",        Double.NaN, category.maximum, STRICT);
+        assertNull  ("sampleRange",                category.range);
+        assertEquals("range.minValue", Float.NaN,  range.getMinValue());
+        assertEquals("range.maxValue", Float.NaN,  range.getMaxValue());
+        assertFalse ("measurementRange",           category.getMeasurementRange().isPresent());
+        assertFalse ("transferFunction",           category.getTransferFunction().isPresent());
+        assertTrue  ("toConverse.isIdentity",      category.toConverse.isIdentity());
+        assertFalse ("isQuantitative",             category.isQuantitative());
+    }
 }

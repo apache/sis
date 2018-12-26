@@ -43,6 +43,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -301,26 +302,37 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.
          * If a value has both roles, use "missing value" for category name.
+         * If the values are already real values, then the "no data" values
+         * have been replaced by NaN values by Variable.replaceNaN(Object).
+         * The qualitative categories constructed below must be consistent
+         * with the NaN values used by 'replaceNaN'.
          */
         boolean setBackground = true;
+        int ordinal = data.hasRealValues() ? 0 : -1;
         final InternationalString[] names = new InternationalString[2];
         for (final Map.Entry<Number,Integer> entry : data.getNodataValues().entrySet()) {
-            final Number n = entry.getKey();
-            final double fp = n.doubleValue();
-            if (!builder.rangeCollides(fp, fp)) {
-                final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
-                final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.
-                InternationalString name = names[i];
-                if (name == null) {
-                    name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
-                    names[i] = name;
+            final Number n;
+            if (ordinal >= 0) {
+                n = MathFunctions.toNanFloat(ordinal++);        // Must be consistent with Variable.replaceNaN(Object).
+            } else {
+                n = entry.getKey();
+                final double fp = n.doubleValue();
+                if (builder.rangeCollides(fp, fp)) {
+                    continue;
                 }
-                if (setBackground & (role & 1) != 0) {
-                    setBackground = false;                  // Declare only one fill value.
-                    builder.setBackground(name, n);
-                } else {
-                    builder.addQualitative(name, n, n);
-                }
+            }
+            final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
+            final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.
+            InternationalString name = names[i];
+            if (name == null) {
+                name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
+                names[i] = name;
+            }
+            if (setBackground & (role & 1) != 0) {
+                setBackground = false;                  // Declare only one fill value.
+                builder.setBackground(name, n);
+            } else {
+                builder.addQualitative(name, n, n);
             }
         }
         return builder.build();

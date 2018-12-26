@@ -22,8 +22,8 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArraysExt;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -292,7 +292,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public String toString() {
-        return AbstractDirectPosition.toString(this, Numerics.isSimplePrecision(x, y));
+        return AbstractDirectPosition.toString(this, ArraysExt.isSinglePrecision(x, y));
     }
 
     /**

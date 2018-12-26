@@ -252,12 +252,12 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * (WKT) format.
      *
      * @param  position           the position to format.
-     * @param  isSimplePrecision  {@code true} if every ordinate values can be casted to {@code float}.
+     * @param  isSinglePrecision  {@code true} if every ordinate values can be casted to {@code float}.
      * @return the point as a {@code POINT} in WKT format.
      *
-     * @see Numerics#isSimplePrecision(double[])
+     * @see Numerics#isSinglePrecision(double[])
      */
-    static String toString(final DirectPosition position, final boolean isSimplePrecision) {
+    static String toString(final DirectPosition position, final boolean isSinglePrecision) {
         final StringBuilder buffer = new StringBuilder(32).append("POINT");
         final int dimension = position.getDimension();
         if (dimension == 0) {
@@ -267,7 +267,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             for (int i=0; i<dimension; i++) {
                 buffer.append(separator);
                 final double ordinate = position.getOrdinate(i);
-                if (isSimplePrecision) {
+                if (isSinglePrecision) {
                     buffer.append((float) ordinate);
                 } else {
                     buffer.append(ordinate);

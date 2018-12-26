@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -258,5 +258,27 @@ public final strictfp class ArraysExtTest extends TestCase {
         final char[] array = new char[] {4, 8, 12, 15, 18};
         ArraysExt.swap(array, 1, 3);
         assertArrayEquals(new char[] {4, 15, 12, 8, 18}, array);
+    }
+
+    /**
+     * Tests {@link ArraysExt#copyAsFloatsIfLossless(double[])}.
+     */
+    @Test
+    public void testCopyAsFloatsIfLossless() {
+        double[] array = {2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY};
+        float[] result = ArraysExt.copyAsFloatsIfLossless(array);
+        assertNotNull(result);
+        assertArrayEquals(new float[] {2f, 0.5f, 0.25f, Float.NaN, Float.POSITIVE_INFINITY}, result, 0f);
+        array[3] = 0.3333333333333;
+        assertNull(ArraysExt.copyAsFloatsIfLossless(array));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSinglePrecision(double[])}.
+     */
+    @Test
+    public void testIsSinglePrecision() {
+        assertTrue (ArraysExt.isSinglePrecision(2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY));
+        assertFalse(ArraysExt.isSinglePrecision(2, 0.5, 1.0 / 3));
     }
 }

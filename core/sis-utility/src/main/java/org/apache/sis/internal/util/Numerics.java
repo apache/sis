@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.opengis.referencing.operation.Matrix;    // For javadoc
@@ -205,96 +204,6 @@ public final class Numerics extends Static {
         final Double boxed = value;
         final Object candidate = CACHE.get(boxed);
         return (candidate != null) ? (Double) candidate : boxed;
-    }
-
-    /**
-     * Returns {@code true} if every values in the given {@code double} array could be casted to the
-     * {@code float} type without precision lost. This method treats all {@code NaN} values as equal.
-     *
-     * @param  values  the value to test for their precision.
-     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
-     */
-    public static boolean isSimplePrecision(final double... values) {
-        for (final double value : values) {
-            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type,
-     * but only if this cast is lossless. If any cast causes data loss, then this method returns {@code null}.
-     *
-     * @param  data  the array to copy.
-     * @return a copy of the given array with values casted to the {@code float} type,
-     *         or {@code null} if the cast would cause data lost.
-     */
-    public static float[] copyAsFloatsIfLossless(final double[] data) {
-        /*
-         * Before to allocate a new array, performs a quick sampling of a few values.
-         * Basically the first value, the last value, a value in the middle and a few others.
-         */
-        int i = data.length - 1;
-        if (i < 0) {
-            return ArraysExt.EMPTY_FLOAT;
-        }
-        for (;;) {
-            final double d = data[i];
-            if (Double.doubleToRawLongBits(d) != Double.doubleToRawLongBits((float) d)) {
-                return null;
-            }
-            if (i == 0) break;
-            i >>>= 1;
-        }
-        /*
-         * At this point the quick sampling found no data loss. We can now allocate the array,
-         * but we will still need to check for each value, which may interrupt the copy at any time.
-         */
-        final float[] result = new float[data.length];
-        for (i = data.length; --i >= 0;) {
-            final double d = data[i];
-            final float  f = (float) d;
-            if (Double.doubleToRawLongBits(d) != Double.doubleToRawLongBits(f)) {
-                return null;
-            }
-            result[i] = f;
-        }
-        return result;
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type.
-     *
-     * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values casted to the {@code float} type,
-     *         or {@code null} if the given array was null.
-     */
-    public static float[] copyAsFloats(final double[] data) {
-        if (data == null) return null;
-        final float[] result = new float[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = (float) data[i];
-        }
-        return result;
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been
-     * {@linkplain Math#round(double) rounded} to the {@code int} type.
-     *
-     * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values rounded to the {@code int} type,
-     *         or {@code null} if the given array was null.
-     */
-    public static int[] copyAsInts(final double[] data) {
-        if (data == null) return null;
-        final int[] result = new int[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = Math.toIntExact(Math.round(data[i]));
-        }
-        return result;
     }
 
     /**

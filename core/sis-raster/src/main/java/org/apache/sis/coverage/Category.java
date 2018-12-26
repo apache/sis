@@ -133,6 +133,7 @@ public class Category implements Serializable {
      * The range is null if this category is a qualitative category converted to real values.
      * Those categories are characterized by two apparently contradictory properties,
      * and are implemented using {@link Float#NaN} values:
+     *
      * <ul>
      *   <li>This category is member of a {@code SampleDimension} having an identity
      *       {@linkplain SampleDimension#getTransferFunction() transfer function}.</li>
@@ -192,13 +193,14 @@ public class Category implements Serializable {
      *
      * @param  name     the category name (mandatory).
      * @param  samples  the minimum and maximum sample values (mandatory).
-     * @param  toUnits  the conversion from sample values to real values,
-     *                  or {@code null} for constructing a qualitative category.
+     * @param  toUnits  the conversion from sample values to real values (possibly identity), or {@code null}
+     *                  for constructing a qualitative category. Mandatory if {@code units} is non-null.
      * @param  units    the units of measurement, or {@code null} if not applicable.
      *                  This is the target units after conversion by {@code toUnits}.
      * @param  toNaN    mapping from sample values to ordinal values to be supplied to {@link MathFunctions#toNanFloat(int)}.
-     *                  That mapping is used only if {@code toUnits} is {@code null}. That mapping is responsible to ensure that
-     *                  there is no ordinal value collision between different categories in the same {@link SampleDimension}.
+     *                  That mapping is used only if {@code toUnits} is {@code null} and {@code samples} are not NaN values.
+     *                  That mapping is responsible to ensure that there is no ordinal value collision between different categories
+     *                  in the same {@link SampleDimension}.
      *                  The input is a real number in the {@code samples} range and the output shall be a unique value between
      *                  {@value MathFunctions#MIN_NAN_ORDINAL} and {@value MathFunctions#MAX_NAN_ORDINAL} inclusive.
      */
@@ -207,21 +209,33 @@ public class Category implements Serializable {
     {
         ArgumentChecks.ensureNonEmpty("name", name);
         ArgumentChecks.ensureNonNull("samples", samples);
+        if (units != null) {
+            ArgumentChecks.ensureNonNull("toUnits", toUnits);
+            // The converse is not true: we allow 'units' to be null even if 'toUnits' is non-null.
+        }
         this.name    = Types.toInternationalString(name);
         this.minimum = samples.getMinDouble(true);
         this.maximum = samples.getMaxDouble(true);
+        final boolean isNaN = Double.isNaN(minimum);
         /*
-         * Following arguments check uses '!' in comparison in order to reject NaN values.
+         * Following arguments check uses '!' in comparison in order to reject NaN values in quantitative category.
+         * For qualitative category, NaN is accepted provided that it is the same NaN for both ends of the range.
          */
-        if (!(minimum <= maximum) || (minimum == Double.NEGATIVE_INFINITY) || (maximum == Double.POSITIVE_INFINITY)) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalCategoryRange_2, name, samples));
+        if (!(minimum <= maximum)) {
+            if (toUnits != null || !isNaN || Double.doubleToRawLongBits(minimum) != Double.doubleToRawLongBits(maximum)) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalCategoryRange_2, name, samples));
+            }
         }
-        /*
-         * Creates the transform doing the inverse conversion (from real values to sample values).
-         * This transform is assigned to a new Category object with its own minimum and maximum values.
-         * Those minimum and maximum may be NaN if this category is a qualitative category.
-         */
-        try {
+        if (isNaN) {
+            range      = null;
+            converse   = this;
+            toConverse = identity();
+        } else try {
+            /*
+             * Creates the transform doing the inverse conversion (from real values to sample values).
+             * This transform is assigned to a new Category object with its own minimum and maximum values.
+             * Those minimum and maximum may be NaN if this category is a qualitative category.
+             */
             final MathTransform1D toSamples;
             if (toUnits != null) {
                 toConverse = toUnits;
@@ -235,15 +249,15 @@ public class Category implements Serializable {
                 }
                 toSamples = toUnits.inverse();
             } else {
-                ArgumentChecks.ensureNonNull("toNaN", toNaN);
-                final int ordinal = toNaN.applyAsInt(minimum);
                 /*
                  * For qualitative category, the transfer function maps to NaN while the inverse function maps back
                  * to some value in the [minimum … maximum] range. We chose the value closest to positive zero.
                  */
-                toConverse = (MathTransform1D) MathTransforms.linear(0, MathFunctions.toNanFloat(ordinal));
+                ArgumentChecks.ensureNonNull("toNaN", toNaN);
                 final double value = (minimum > 0) ? minimum : (maximum <= 0) ? maximum : 0d;
-                toSamples = (MathTransform1D) MathTransforms.linear(0, value);
+                final float nan = MathFunctions.toNanFloat(toNaN.applyAsInt(value));
+                toConverse = (MathTransform1D) MathTransforms.linear(0, nan);
+                toSamples  = (MathTransform1D) MathTransforms.linear(0, value);
             }
             range = samples;
             converse = new ConvertedCategory(this, toSamples, toUnits != null, units);
@@ -347,10 +361,35 @@ public class Category implements Serializable {
      *
      * @see SampleDimension#getSampleRange()
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public NumberRange<?> getSampleRange() {
-        // Same assumption than in 'isQuantitative()'.
-        assert range != null : this;
-        return range;
+        if (range != null) {
+            return range;
+        }
+        /*
+         * The range can be null only if the minimum and maximum are NaN. This may be the case if NaN were
+         * given explicitly to the constructor or if this category is an instance of ConvertedCategory for
+         * qualitative category. In the later case, the NaN are the result of converting the sample values.
+         * We favor the Float type because values should be NaN produced by MathFunctions.toNanFloat(int).
+         * The minimum and maximum are usually the same value, but not necessarily.
+         */
+        final float min = (float) minimum;
+        final float max = (float) maximum;
+        final Number v1, v2;
+        final Class<?> type;
+        if (Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(min) &&
+            Double.doubleToRawLongBits(maximum) == Double.doubleToRawLongBits(max))
+        {
+            v1 = min;
+            v2 = (Float.floatToRawIntBits(min) == Float.floatToRawIntBits(max)) ? v1 : max;
+            type = Float.class;
+        } else {
+            v1 = minimum;
+            v2 = (Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(maximum)) ? v1 : maximum;
+            type = Double.class;
+        }
+        return new NumberRange(type, v1, true, v2, true);
+        // Do not use NumberRange.create(float, …) because it rejects NaN values.
     }
 
     /**
@@ -391,12 +430,9 @@ public class Category implements Serializable {
      */
     public Optional<MathTransform1D> getTransferFunction() {
         /*
-         * This implementation assumes that this method will always be invoked on the instance
-         * created for sample values, never on the instance created by the private constructor.
-         * If this method was invoked on "real values category", then we would need to return
+         * Note: if this method is invoked on "real values category", then we need to return
          * the identity transform instead than 'toConverse'. This is done by ConvertedCategory.
          */
-        assert range != null : this;
         return (converse.range != null) ? Optional.of(toConverse) : Optional.empty();
     }
 

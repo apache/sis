@@ -84,28 +84,6 @@ public final strictfp class NumericsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Numerics#copyAsFloatsIfLossless(double[])}.
-     */
-    @Test
-    public void testCopyAsFloatsIfLossless() {
-        double[] array = {2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY};
-        float[] result = Numerics.copyAsFloatsIfLossless(array);
-        assertNotNull(result);
-        assertArrayEquals(new float[] {2f, 0.5f, 0.25f, Float.NaN, Float.POSITIVE_INFINITY}, result, 0f);
-        array[3] = 0.3333333333333;
-        assertNull(Numerics.copyAsFloatsIfLossless(array));
-    }
-
-    /**
-     * Tests {@link Numerics#isSimplePrecision(double[])}.
-     */
-    @Test
-    public void testIsSimplePrecision() {
-        assertTrue (Numerics.isSimplePrecision(2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY));
-        assertFalse(Numerics.isSimplePrecision(2, 0.5, 1.0 / 3));
-    }
-
-    /**
      * Tests {@link Numerics#isUnsignedInteger(String)}.
      */
     @Test

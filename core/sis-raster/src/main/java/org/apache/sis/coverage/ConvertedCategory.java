@@ -20,7 +20,6 @@ import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -62,21 +61,6 @@ final class ConvertedCategory extends Category {
     @Override
     Category converted() {
         return this;
-    }
-
-    /**
-     * Returns the range of value, which is the same as {@link #getMeasurementRange()} unless the values are NaN.
-     */
-    @Override
-    public NumberRange<?> getSampleRange() {
-        if (range != null) {
-            return range;
-        }
-        Float min = (float) minimum;        // Should be NaN produced by MathFunctions.toNanFloat(int).
-        Float max = (float) maximum;
-        if (max.equals(min)) max = min;
-        // Do not use NumberRange.create(float, …) because it rejects NaN values.
-        return new NumberRange<>(Float.class, min, true, max, true);
     }
 
     /**

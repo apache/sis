@@ -366,14 +366,14 @@ final class VariableWrapper extends Variable {
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
-     * This method caches the returned vector.
+     * This method may replace fill/missing values by NaN values and caches the returned vector.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector read() throws IOException {
         if (values == null) {
             final Array array = variable.read();                // May be already cached by the UCAR library.
-            values = createDecimalVector(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+            values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());
             values = SHARED_VECTORS.unique(values);
         }
         return values;
@@ -405,7 +405,18 @@ final class VariableWrapper extends Variable {
         } catch (InvalidRangeException e) {
             throw new DataStoreException(e);
         }
-        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
+        return Vector.create(get1DJavaArray(array), variable.isUnsigned());
+    }
+
+    /**
+     * Returns the one-dimensional Java array for the given UCAR array, avoiding copying if possible.
+     * If {@link #hasRealValues()} returns {@code true}, then this method replaces fill and missing
+     * values by {@code NaN} values.
+     */
+    private Object get1DJavaArray(final Array array) {
+        final Object data = array.get1DJavaArray(array.getElementType());
+        replaceNaN(data);
+        return data;
     }
 
     /**

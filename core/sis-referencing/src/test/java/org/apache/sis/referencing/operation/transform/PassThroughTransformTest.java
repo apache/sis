@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
 // Test imports
@@ -241,7 +240,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
         /*
          * Verify the consistency between different 'transform(…)' methods.
          */
-        final float[] sourceAsFloat = Numerics.copyAsFloats(passthroughData);
+        final float[] sourceAsFloat = ArraysExt.copyAsFloats(passthroughData);
         final float[] targetAsFloat = verifyConsistency(sourceAsFloat);
         assertEquals("Unexpected length of transformed array.", expectedData.length, targetAsFloat.length);
         /*

@@ -39,12 +39,12 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
@@ -698,6 +698,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * Fill values/missing values are replaced by NaN if {@link #hasRealValues()} is {@code true}.
      * The vector is cached and returned as-is in all future invocation of this method.
      *
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -720,6 +721,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             final Region region = new Region(upper, lower, upper, subsampling);
             applyUnlimitedDimensionStride(region);
             Object array = reader.read(region);
+            replaceNaN(array);
             /*
              * If we can convert a double[] array to a float[] array, we should do that before
              * to invoke 'setValues(array)' - we can not rely on data.compress(tolerance). The
@@ -729,7 +731,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
              * this assumption, we need to convert to float[] before createDecimalVector(…).
              */
             if (array instanceof double[]) {
-                final float[] copy = Numerics.copyAsFloatsIfLossless((double[]) array);
+                final float[] copy = ArraysExt.copyAsFloatsIfLossless((double[]) array);
                 if (copy != null) array = copy;
             }
             setValues(array);
@@ -803,7 +805,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         }
         final Region region = new Region(size, lower, upper, subsampling);
         applyUnlimitedDimensionStride(region);
-        return Vector.create(reader.read(region), dataType.isUnsigned);
+        final Object array = reader.read(region);
+        replaceNaN(array);
+        return Vector.create(array, dataType.isUnsigned);
     }
 
     /**

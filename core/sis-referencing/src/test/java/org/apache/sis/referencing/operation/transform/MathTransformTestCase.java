@@ -32,10 +32,10 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.internal.util.Numerics;
 import static java.lang.StrictMath.*;
 
 // Test imports
@@ -243,7 +243,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
          * But in Apache SIS, we want to verify consistency for all math transforms. A previous version had
          * a bug with the Google projection which was unnoticed because of lack of this consistency check.
          */
-        final float[] asFloats = Numerics.copyAsFloats(coordinates);
+        final float[] asFloats = ArraysExt.copyAsFloats(coordinates);
         final float[] result   = verifyConsistency(asFloats);
         for (int i=0; i<coordinates.length; i++) {
             assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f);    // Paranoiac check.

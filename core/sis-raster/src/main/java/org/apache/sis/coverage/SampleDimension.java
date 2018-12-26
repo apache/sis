@@ -586,16 +586,39 @@ public class SampleDimension implements Serializable {
          * Creates a range for the given minimum and maximum values. We use the static factory methods instead
          * than the {@link NumberRange} constructor for sharing existing range instances. This is also a way
          * to ensure that the number type is one of the primitive wrappers.
+         *
+         * <p>This method is invoked for qualitative categories only. For that reason, it accepts NaN values.</p>
          */
-        private static NumberRange<?> range(final Class<?> type, final Number minimum, final Number maximum) {
+        private static NumberRange<?> range(final Class<?> type, Number minimum, Number maximum) {
             switch (Numbers.getEnumConstant(type)) {
-                case Numbers.BYTE:    return NumberRange.create(minimum.byteValue(),   true, maximum.byteValue(),   true);
-                case Numbers.SHORT:   return NumberRange.create(minimum.shortValue(),  true, maximum.shortValue(),  true);
-                case Numbers.INTEGER: return NumberRange.create(minimum.intValue(),    true, maximum.intValue(),    true);
-                case Numbers.LONG:    return NumberRange.create(minimum.longValue(),   true, maximum.longValue(),   true);
-                case Numbers.FLOAT:   return NumberRange.create(minimum.floatValue(),  true, maximum.floatValue(),  true);
-                default:              return NumberRange.create(minimum.doubleValue(), true, maximum.doubleValue(), true);
+                case Numbers.BYTE:    return NumberRange.create(minimum.byteValue(),  true, maximum.byteValue(),   true);
+                case Numbers.SHORT:   return NumberRange.create(minimum.shortValue(), true, maximum.shortValue(),  true);
+                case Numbers.INTEGER: return NumberRange.create(minimum.intValue(),   true, maximum.intValue(),    true);
+                case Numbers.LONG:    return NumberRange.create(minimum.longValue(),  true, maximum.longValue(),   true);
+                case Numbers.FLOAT: {
+                    final float min = minimum.floatValue();
+                    final float max = maximum.floatValue();
+                    if (!Float.isNaN(min) || !Float.isNaN(max)) {       // Let 'create' throws an exception if only one value is NaN.
+                        return NumberRange.create(min, true, max, true);
+                    }
+                    if (minimum.getClass() != Float.class) minimum = min;
+                    if (maximum.getClass() != Float.class) maximum = max;
+                    break;
+                }
+                default: {
+                    final double min = minimum.doubleValue();
+                    final double max = maximum.doubleValue();
+                    if (!Double.isNaN(min) || !Double.isNaN(max)) {     // Let 'create' throws an exception if only one value is NaN.
+                        return NumberRange.create(min, true, max, true);
+                    }
+                    if (minimum.getClass() != Double.class) minimum = min;
+                    if (maximum.getClass() != Double.class) maximum = max;
+                    break;
+                }
             }
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            final NumberRange<?> samples = new NumberRange(type, minimum, true, maximum, true);
+            return samples;
         }
 
         /**
@@ -606,10 +629,10 @@ public class SampleDimension implements Serializable {
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "fill value" name.
-         * @param  sample  the background value. Can not be NaN.
+         * @param  sample  the background value.
          * @return {@code this}, for method call chaining.
          */
-        public Builder setBackground(CharSequence name, final Number sample) {
+        public Builder setBackground(CharSequence name, Number sample) {
             ArgumentChecks.ensureNonNull("sample", sample);
             if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
