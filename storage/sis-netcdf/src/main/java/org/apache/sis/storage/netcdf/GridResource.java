@@ -93,22 +93,25 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
 
     /**
      * The grid geometry (size, CRS…) of the {@linkplain #data} cube.
+     * This defines the "domain" in "coverage function" terminology.
      *
      * @see #getGridGeometry()
      */
     private final GridGeometry gridGeometry;
 
     /**
-     * The netCDF variable wrapped by this resource.
-     */
-    private final Variable[] data;
-
-    /**
-     * The sample dimension for the {@link #data} variables, created when first needed.
+     * The sample dimension for the {@link #data} variables.
+     * This defines the "range" in "coverage function" terminology.
+     * All elements are initially {@code null} and created when first needed.
      *
      * @see #getSampleDimensions()
      */
-    private List<SampleDimension> definitions;
+    private final SampleDimension[] ranges;
+
+    /**
+     * The netCDF variable wrapped by this resource.
+     */
+    private final Variable[] data;
 
     /**
      * Path to the netCDF file for information purpose, or {@code null} if unknown.
@@ -130,6 +133,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     {
         super(decoder.listeners);
         this.data    = data.toArray(new Variable[data.size()]);
+        ranges       = new SampleDimension[this.data.length];
         gridGeometry = grid.getGridGeometry(decoder);
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
@@ -238,16 +242,15 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SampleDimension> getSampleDimensions() {
-        if (definitions == null) {
-            final SampleDimension.Builder builder = new SampleDimension.Builder();
-            final SampleDimension[] dimensions = new SampleDimension[data.length];
-            for (int i=0; i<dimensions.length; i++) {
-                dimensions[i] = createSampleDimension(builder, data[i]);
+        SampleDimension.Builder builder = null;
+        for (int i=0; i<ranges.length; i++) {
+            if (ranges[i] == null) {
+                if (builder == null) builder = new SampleDimension.Builder();
+                ranges[i] = createSampleDimension(builder, data[i]);
                 builder.clear();
             }
-            definitions = UnmodifiableArrayList.wrap(dimensions);
         }
-        return definitions;
+        return UnmodifiableArrayList.wrap(ranges);
     }
 
     /**
@@ -300,12 +303,10 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             builder.addQuantitative(data.getName(), range, mt, data.getUnit());
         }
         /*
-         * Adds the "missing value" or "fill value" as qualitative categories.
-         * If a value has both roles, use "missing value" for category name.
-         * If the values are already real values, then the "no data" values
-         * have been replaced by NaN values by Variable.replaceNaN(Object).
-         * The qualitative categories constructed below must be consistent
-         * with the NaN values used by 'replaceNaN'.
+         * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
+         * as category name. If the sample values are already real values, then the "no data" values have been replaced by NaN
+         * values by Variable.replaceNaN(Object). The qualitative categories constructed below must be consistent with the NaN
+         * values created by 'replaceNaN'.
          */
         boolean setBackground = true;
         int ordinal = data.hasRealValues() ? 0 : -1;
@@ -342,39 +343,67 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      * Loads a subset of the grid coverage represented by this resource.
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
      * @return the grid coverage for the specified domain and range.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+    public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+        range = validateRangeArgument(data.length, range);
         if (domain == null) {
             domain = gridGeometry;
         }
-        final Buffer[] samples = new Buffer[data.length];
+        final DataType          dataType;
+        final DataBuffer        imageBuffer;
+        final SampleDimension[] selected = new SampleDimension[range.length];
         try {
-            final GridChange change = new GridChange(domain, gridGeometry);
-            final int[] strides = change.getTargetStrides();
-            for (int i=0; i<samples.length; i++) {
-                // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                samples[i] = data[i].read(change.getTargetRange(), strides).buffer().get();
+            final Buffer[]   samples = new Buffer[range.length];
+            final GridChange change  = new GridChange(domain, gridGeometry);
+            final int[]      strides = change.getTargetStrides();
+            SampleDimension.Builder builder = null;
+            /*
+             * Iterate over netCDF variables in the order they appear in the file, not in the order requested
+             * by the 'range' argument.  The intent is to perform sequential I/O as much as possible, without
+             * seeking backward.
+             */
+            for (int i=0; i<data.length; i++) {
+                final Variable variable = data[i];
+                SampleDimension def = ranges[i];
+                Buffer values = null;
+                for (int j=0; j<range.length; j++) {
+                    /*
+                     * Check if the current variable is a sample dimension specified in the 'range' argument.
+                     * Note that the same sample dimension may be requested an arbitrary amount of time, but
+                     * the data will be loaded at most once.
+                     */
+                    if (range[j] == i) {
+                        if (def == null) {
+                            if (builder == null) builder = new SampleDimension.Builder();
+                            ranges[i] = def = createSampleDimension(builder, variable);
+                        }
+                        if (values == null) {
+                            // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
+                            values = variable.read(change.getTargetExtent(), strides).buffer().get();
+                        }
+                        selected[j] = def;
+                        samples[j] = values;
+                    }
+                }
             }
+            dataType = data[range[0]].getDataType();
+            imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
+            domain = change.getTargetGeometry(strides);
         } catch (TransformException e) {
             throw new DataStoreReferencingException(e);
         } catch (IOException e) {
             throw new DataStoreException(e);
-        }
-        final DataType type = data[0].getDataType();
-        final DataBuffer buffer;
-        try {
-            buffer = RasterFactory.wrap(type.rasterDataType, samples);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException e) {                  // Many exceptions thrown by RasterFactory.wrap(…).
             throw new DataStoreContentException(e);
         }
-        if (buffer == null) {
-            throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, type.name()));
+        if (imageBuffer == null) {
+            throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Image(domain, getSampleDimensions(), buffer);
+        return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer);
     }
 
     /**

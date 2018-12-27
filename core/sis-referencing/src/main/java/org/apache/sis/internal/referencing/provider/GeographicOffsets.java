@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.measure.Units;
 
@@ -36,7 +35,7 @@ import org.apache.sis.measure.Units;
  * but subclasses will provide different operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -115,10 +114,9 @@ public class GeographicOffsets extends GeodeticOperation {
             throws ParameterNotFoundException
     {
         final Parameters pv = Parameters.castOrWrap(values);
-        final Matrix4 t = new Matrix4();
-        t.m03 = pv.doubleValue(TX);
-        t.m13 = pv.doubleValue(TY);
-        t.m23 = pv.doubleValue(vertical());
-        return MathTransforms.linear(t);
+        return MathTransforms.translation(pv.doubleValue(TX),
+                                          pv.doubleValue(TY),
+                                          pv.doubleValue(vertical()));
+
     }
 }

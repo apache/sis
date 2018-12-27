@@ -101,11 +101,32 @@ public final class MathTransforms extends Static {
         final LinearTransform tr;
         switch (vector.length) {
             case 0:  return IdentityTransform.create(0);
-            case 1:  tr = new LinearTransform1D(1, vector[0]); break;
+            case 1:  return LinearTransform1D.create(1, vector[0]);
             case 2:  tr = new AffineTransform2D(1, 0, 0, 1, vector[0], vector[1]); break;
             default: tr = new TranslationTransform(vector); break;
         }
         return tr.isIdentity() ? IdentityTransform.create(vector.length) : tr;
+    }
+
+    /**
+     * Creates a transform which applies the given scale.
+     * The source and target dimensions of the transform are the length of the given vector.
+     *
+     * @param  factors  the scale factors.
+     * @return a transform applying the given scale.
+     *
+     * @since 1.0
+     */
+    public static LinearTransform scale(final double... factors) {
+        ArgumentChecks.ensureNonNull("factors", factors);
+        final LinearTransform tr;
+        switch (factors.length) {
+            case 0:  return IdentityTransform.create(0);
+            case 1:  return LinearTransform1D.create(factors[0], 0);
+            case 2:  tr = new AffineTransform2D(factors[0], 0, 0, factors[1], 0, 0); break;
+            default: tr = new ScaleTransform(factors); break;
+        }
+        return tr.isIdentity() ? IdentityTransform.create(factors.length) : tr;
     }
 
     /**

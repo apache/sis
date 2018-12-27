@@ -34,7 +34,7 @@ import org.apache.sis.util.ArraysExt;
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
@@ -64,6 +64,15 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      * Values to drop happen for example in Geographic 3D to 2D conversions.
      */
     private final int numDroppedDimensions;
+
+    /**
+     * Constructs a scale transform for the given scale factors.
+     */
+    ScaleTransform(final double[] factors) {
+        this.factors = factors.clone();
+        errors = null;
+        numDroppedDimensions = 0;
+    }
 
     /**
      * Constructs a scale transform from a matrix having the given elements.
@@ -147,11 +156,6 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
 
     /**
      * Tests whether this transform does not move any points.
-     *
-     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
-     * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
-     * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead than using a factory method.</div>
      */
     @Override
     public boolean isIdentity() {

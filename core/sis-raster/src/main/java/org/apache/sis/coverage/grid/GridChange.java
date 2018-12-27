@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -50,7 +51,7 @@ import org.apache.sis.util.Classes;
  *         &#64;Override
  *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
  *             GridChange change = new GridChange(domain, getGridGeometry());
- *             GridExtent toRead = change.getTargetRange();
+ *             GridExtent toRead = change.getTargetExtent();
  *             int[] subsampling = change.getTargetStrides());
  *             // Do reading here.
  *         }
@@ -79,9 +80,17 @@ public class GridChange implements Serializable {
      * This is the expected ranges after conversions from source grid coordinates to target
      * grid coordinates, clipped to target extent and ignoring {@linkplain #scales}.
      *
-     * @see #getTargetRange()
+     * @see #getTargetExtent()
      */
-    private final GridExtent targetRange;
+    private final GridExtent targetExtent;
+
+    /**
+     * The target grid geometry specified to the constructor. The extent of that geometry
+     * is not necessarily the {@link #targetExtent}.
+     *
+     * @see #getTargetGeometry(int...)
+     */
+    private final GridGeometry givenGeometry;
 
     /**
      * An estimation of the multiplication factors when converting cell coordinates from source
@@ -155,10 +164,11 @@ public class GridChange implements Serializable {
         ArgumentChecks.ensureNonNull("source",   source);
         ArgumentChecks.ensureNonNull("target",   target);
         ArgumentChecks.ensureNonNull("rounding", rounding);
-        if (source.equals(target)) {
+        givenGeometry = target;
+        if (target.equals(source)) {
             // Optimization for a common case.
-            mapCorners = mapCenters = MathTransforms.identity(source.getDimension());
-            targetRange = source.getExtent();
+            mapCorners = mapCenters = MathTransforms.identity(target.getDimension());
+            targetExtent = target.getExtent();                                        // May throw IncompleteGridGeometryException.
         } else {
             final CoordinateOperation crsChange;
             try {
@@ -166,22 +176,17 @@ public class GridChange implements Serializable {
             } catch (FactoryException e) {
                 throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
             }
-            final GridExtent domain = source.getExtent();
+            final GridExtent domain = source.getExtent();                             // May throw IncompleteGridGeometryException.
             mapCorners  = path(source, crsChange, target, PixelInCell.CELL_CORNER);
             mapCenters  = path(source, crsChange, target, PixelInCell.CELL_CENTER);
-            targetRange = new GridExtent(domain.toCRS(mapCorners, mapCenters), rounding, margin, target.extent, null);
+            final GridExtent extent = new GridExtent(domain.toCRS(mapCorners, mapCenters), rounding, margin, target.extent, null);
+            targetExtent = extent.equals(target.extent) ? target.extent : extent.equals(domain) ? domain : extent;
             /*
              * Get an estimation of the scale factors when converting from source to target.
              * If all scale factors are 1, we will not store the array for consistency with
              * above block for identity case.
              */
-            final Matrix matrix = MathTransforms.getMatrix(mapCenters);
-            final double[] resolution;
-            if (matrix != null) {
-                resolution = GridGeometry.resolution(matrix, 1);
-            } else {
-                resolution = GridGeometry.resolution(mapCenters, domain);
-            }
+            final double[] resolution = GridGeometry.resolution(mapCenters, domain);
             for (int i=resolution.length; --i >= 0;) {
                 if (resolution[i] != 1) {
                     scales = resolution;
@@ -266,12 +271,12 @@ public class GridChange implements Serializable {
      *
      * @return intersection of grid geometry extents in units of target cells.
      */
-    public GridExtent getTargetRange() {
-        return targetRange;
+    public GridExtent getTargetExtent() {
+        return targetExtent;
     }
 
     /**
-     * Returns an <em>estimation</em> of the steps for accessing cells along each axis of target range.
+     * Returns an <em>estimation</em> of the steps for accessing cells along each axis of target grid.
      * Given a {@linkplain #getConversion(PixelInCell) conversion} from source grid coordinates
      * (<var>x</var>, <var>y</var>, <var>z</var>) to target grid coordinates
      * (<var>x′</var>, <var>y′</var>, <var>z′</var>) defined as below (generalize to as many dimensions as needed):
@@ -288,7 +293,7 @@ public class GridChange implements Serializable {
      * corresponds approximately to an iteration in target grid coordinates with a step of Δ<var>x′</var>=s₀,
      * a step Δ<var>y</var>=1 corresponds approximately to a step Δ<var>y′</var>=s₁, <i>etc.</i>
      * If the conversion changes grid axis order, then the order of elements in the returned array
-     * is the order of axes in the {@linkplain #getTargetRange() target range}.
+     * is the order of axes in the {@linkplain #getTargetExtent() target range}.
      *
      * <p>In a <em>inverse</em> conversion from target to source grid, the value returned by this
      * method would be the sub-sampling to apply while reading the target grid.</p>
@@ -298,7 +303,7 @@ public class GridChange implements Serializable {
     public int[] getTargetStrides() {
         final int[] subsamplings;
         if (scales == null) {
-            subsamplings = new int[targetRange.getDimension()];
+            subsamplings = new int[targetExtent.getDimension()];
             Arrays.fill(subsamplings, 1);
         } else {
             subsamplings = new int[scales.length];
@@ -307,6 +312,62 @@ public class GridChange implements Serializable {
             }
         }
         return subsamplings;
+    }
+
+    /**
+     * Returns the grid geometry resulting from sub-sampling the target grid with the given strides.
+     * The {@code strides} argument is usually the array returned by {@link #getTargetStrides()}, but not necessarily.
+     * The {@linkplain GridGeometry#getExtent() extent} of the returned grid geometry will be derived from
+     * {@link #getTargetExtent()} as below for each dimension <var>i</var>:
+     *
+     * <ul>
+     *   <li>The {@linkplain GridExtent#getLow(int) low} coordinate is unchanged.</li>
+     *   <li>The {@linkplain GridExtent#getSize(int) size} is divided by {@code strides[i]}.</li>
+     * </ul>
+     *
+     * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
+     * in order to map approximately to the same {@linkplain GridGeometry#getEnvelope() envelope}.
+     *
+     * @param  strides  the sub-sampling to apply on each grid dimension. All values shall be greater than zero.
+     *         If the array length is shorter than the number of dimensions, missing values are assumed to be 1.
+     * @return a grid geometry derived from the target geometry with the given sub-sampling.
+     * @throws TransformException if an error occurred during computation of target grid geometry.
+     */
+    public GridGeometry getTargetGeometry(final int... strides) throws TransformException {
+        GridExtent extent = getTargetExtent();
+        double[] factors = null;
+        Matrix toGiven = null;
+        if (strides != null) {
+            final int dimension = extent.getDimension();
+            for (int i = Math.min(dimension, strides.length); --i >= 0;) {
+                final int s = strides[i];
+                if (s != 1) {
+                    if (factors == null) {
+                        extent = new GridExtent(extent, strides);
+                        factors = new double[dimension];
+                        Arrays.fill(factors, 1);
+                        if (!extent.startsWithZero()) {
+                            toGiven = Matrices.createIdentity(dimension + 1);
+                        }
+                    }
+                    factors[i] = s;
+                    if (toGiven != null) {
+                        toGiven.setElement(i, i, s);
+                        toGiven.setElement(i, dimension, (1-s) * extent.getLow(i));
+                    }
+                }
+            }
+        }
+        final MathTransform mt;
+        if (factors == null) {
+            if (extent.equals(givenGeometry.extent)) {
+                return givenGeometry;
+            }
+            mt = null;
+        } else {
+            mt = (toGiven != null) ? MathTransforms.linear(toGiven) : MathTransforms.scale(factors);
+        }
+        return new GridGeometry(givenGeometry, extent, mt);
     }
 
     /**
@@ -320,7 +381,7 @@ public class GridChange implements Serializable {
          * The mapCorners is closely related to mapCenters, so we omit it.
          * The scales array is derived from mapCenters, so we omit it too.
          */
-        return mapCorners.hashCode() + 59 * targetRange.hashCode();
+        return mapCorners.hashCode() + 59 * targetExtent.hashCode();
     }
 
     /**
@@ -338,7 +399,7 @@ public class GridChange implements Serializable {
             final GridChange that = (GridChange) other;
             return mapCorners.equals(that.mapCorners) &&
                    mapCenters.equals(that.mapCenters) &&
-                   targetRange.equals(that.targetRange) &&
+                   targetExtent.equals(that.targetExtent) &&
                    Arrays.equals(scales, that.scales);
         }
         return false;
@@ -357,7 +418,7 @@ public class GridChange implements Serializable {
                 .append(Classes.getShortClassName(this)).append(lineSeparator)
                 .append("└ Scale factor ≈ ").append((float) getGlobalScale()).append(lineSeparator)
                 .append("Target range").append(lineSeparator);
-        targetRange.appendTo(buffer, Vocabulary.getResources((Locale) null));
+        targetExtent.appendTo(buffer, Vocabulary.getResources((Locale) null));
         return buffer.toString();
     }
 }

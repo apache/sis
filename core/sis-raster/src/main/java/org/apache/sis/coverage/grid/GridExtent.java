@@ -122,7 +122,7 @@ public class GridExtent implements Serializable {
     /**
      * Minimum and maximum grid coordinates. The first half contains minimum coordinates (inclusive),
      * while the last half contains maximum coordinates (<strong>inclusive</strong>). Note that the
-     * later is the opposite of Java2D usage but conforms to ISO specification.
+     * later inclusiveness is the opposite of Java2D usage but conforms to ISO specification.
      */
     private final long[] coordinates;
 
@@ -208,6 +208,34 @@ public class GridExtent implements Serializable {
     private GridExtent(final int dimension, final DimensionNameType[] axisTypes) {
         coordinates = allocate(dimension);
         types = validateAxisTypes(axisTypes);
+    }
+
+    /**
+     * Creates a new grid extent with the same lower values than the given extent, and high values adjusted by dividing
+     * the {@linkplain #getSize(int) size} by the given strides.  The policy of keeping the lower coordinates unchanged
+     * is consistent with {@link GridChange#getTargetGeometry(int...)} policy of keeping lower coordinates invariant
+     * under the scales.
+     *
+     * @param  extent   the extent from which to compute a new extent.
+     * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @throws IllegalArgumentException if a stride is not greater than zero.
+     */
+    GridExtent(final GridExtent extent, final int[] strides) {
+        types = extent.types;
+        coordinates = extent.coordinates.clone();
+        final int m = getDimension();
+        for (int i=0; i<m; i++) {
+            final int s = strides[i];
+            if (s <= 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "strides[" + i + ']', s));
+            }
+            final int j = i + m;
+            final long size = coordinates[j] - coordinates[i] + 1;                             // Result is an unsigned number.
+            if (size == 0) throw new ArithmeticException("long overflow");
+            long r = Long.divideUnsigned(size, s);
+            if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
+            coordinates[j] = coordinates[i] + r;
+        }
     }
 
     /**
@@ -458,6 +486,21 @@ public class GridExtent implements Serializable {
      */
     public final int getDimension() {
         return coordinates.length >>> 1;
+    }
+
+    /**
+     * Returns {@code true} if all low coordinates are zero.
+     * This is a very common case since many grids start their cell numbering at zero.
+     *
+     * @return whether all low coordinates are zero.
+     */
+    public boolean startsWithZero() {
+        for (int i = getDimension(); --i >= 0;) {
+            if (coordinates[i] != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

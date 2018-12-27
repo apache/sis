@@ -213,28 +213,43 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Creates a new grid geometry with the same values than the given grid geometry except the grid extent.
-     * This constructor can be used for creating a grid geometry over a subregion, for example with the grid
-     * extent computed by {@link #getExtent(Envelope)}.
+     * Creates a new grid geometry derived from the given grid geometry with a new extent and a modified transform.
+     * This constructor can be used for creating a grid geometry over a subregion, for example with the grid extent
+     * computed by {@link #getExtent(Envelope)}.
      *
-     * @param other   the other grid geometry to copy.
-     * @param extent  the new extent for the grid geometry to construct, or {@code null} if none.
+     * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
+     * {@code other} grid coordinates. The {@link #gridToCRS} transform of the new grid geometry will be set to the
+     * following concatenation:</p>
+     *
+     * <blockquote>{@code this.gridToCRS} = {@code toOther} → {@code other.gridToCRS}</blockquote>
+     *
+     * @param  other    the other grid geometry to copy.
+     * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
+     * @param  toOther  transform from this grid coordinates to {@code other} grid coordinates, or {@code null} if none.
      * @throws NullPointerException if {@code extent} is {@code null} and the other grid geometry contains no other information.
      * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
      *
      * @see #getExtent(Envelope)
      */
-    public GridGeometry(final GridGeometry other, final GridExtent extent) throws TransformException {
+    public GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
         ArgumentChecks.ensureNonNull("other", other);
-        if (extent != null) {
-            ensureDimensionMatches("extent", other.getDimension(), extent.getDimension());
-        }
+        final int dimension = other.getDimension();
         this.extent = extent;
-        gridToCRS   = other.gridToCRS;
-        cornerToCRS = other.cornerToCRS;
-        resolution  = other.resolution;
-        nonLinears  = other.nonLinears;
-        envelope    = computeEnvelope(other.gridToCRS, other.envelope != null ? other.envelope.getCoordinateReferenceSystem() : null);
+        if (extent != null) {
+            ensureDimensionMatches("extent", dimension, extent.getDimension());
+        }
+        if (toOther == null || toOther.isIdentity()) {
+            gridToCRS   = other.gridToCRS;
+            cornerToCRS = other.cornerToCRS;
+            resolution  = other.resolution;
+            nonLinears  = other.nonLinears;
+        } else {
+            gridToCRS   = MathTransforms.concatenate(toOther, other.gridToCRS);
+            cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
+            resolution  = resolution(gridToCRS, extent);
+            nonLinears  = findNonLinearTargets(gridToCRS);
+        }
+        envelope = computeEnvelope(gridToCRS, other.envelope != null ? other.envelope.getCoordinateReferenceSystem() : null);
         if (envelope == null && gridToCRS == null) {
             ArgumentChecks.ensureNonNull("extent", extent);
         }
@@ -298,26 +313,8 @@ public class GridGeometry implements Serializable {
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
         this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
         this.envelope    = computeEnvelope(gridToCRS, crs);     // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
-        /*
-         * If the gridToCRS transform is linear, we do not even need to check the grid extent;
-         * it can be null. Otherwise (if the transform is non-linear) the extent is mandatory.
-         * The easiest way to estimate a resolution is then to ask for the derivative at some
-         * arbitrary point. For this constructor, we take the grid center.
-         *
-         * Note that for this computation, it does not matter if 'gridToCRS' is the user-specified
-         * transform or the 'this.gridToCRS' field value; both should produce equivalent results.
-         */
-        double[] resolution = null;
-        final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
-        if (matrix != null) {
-            resolution = resolution(matrix, 1);
-        } else if (extent != null && gridToCRS != null) try {
-            resolution = resolution(gridToCRS, extent);
-        } catch (TransformException e) {
-            recoverableException(e);
-        }
-        this.resolution = resolution;
-        nonLinears = findNonLinearTargets(gridToCRS);
+        this.resolution  = resolution(gridToCRS, extent);       // 'gridToCRS' or 'cornerToCRS' does not matter here.
+        this.nonLinears  = findNonLinearTargets(gridToCRS);
     }
 
     /**
@@ -571,7 +568,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
-     * @see #GridGeometry(GridGeometry, GridExtent)
+     * @see #GridGeometry(GridGeometry, GridExtent, MathTransform)
      */
     public GridExtent getExtent(final Envelope areaOfInterest) throws IncompleteGridGeometryException, TransformException {
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
@@ -708,13 +705,34 @@ public class GridGeometry implements Serializable {
     }
 
     /**
+     * Computes the resolution for the given grid extent and transform, or returns {@code null} if unknown.
+     * If the {@code gridToCRS} transform is linear, we do not even need to check the grid extent; it can be null.
+     * Otherwise (if the transform is non-linear) the extent is necessary. The easiest way to estimate a resolution
+     * is then to ask for the derivative at some arbitrary point (the point of interest).
+     *
+     * <p>Note that for this computation, it does not matter if {@code gridToCRS} is the user-specified
+     * transform or the {@code this.gridToCRS} field value; both should produce equivalent results.</p>
+     */
+    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) throws TransformException {
+        final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
+        if (matrix != null) {
+            return resolution(matrix, 1);
+        } else if (domain != null && gridToCRS != null) try {
+            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest())), 0);
+        } catch (TransformException e) {
+            recoverableException(e);
+        }
+        return null;
+    }
+
+    /**
      * Computes the resolutions from the given matrix. This is the magnitude of each row vector.
      *
      * @param  numToIgnore  number of rows and columns to ignore at the end of the matrix.
      *         This is 0 if the matrix is a derivative (i.e. we ignore nothing), or 1 if the matrix
      *         is an affine transform (i.e. we ignore the translation column and the [0 0 … 1] row).
      */
-    static double[] resolution(final Matrix gridToCRS, final int numToIgnore) {
+    private static double[] resolution(final Matrix gridToCRS, final int numToIgnore) {
         final double[] resolution = new double[gridToCRS.getNumRow() - numToIgnore];
         final double[] buffer     = new double[gridToCRS.getNumCol() - numToIgnore];
         for (int j=0; j<resolution.length; j++) {
@@ -724,13 +742,6 @@ public class GridGeometry implements Serializable {
             resolution[j] = MathFunctions.magnitude(buffer);
         }
         return resolution;
-    }
-
-    /**
-     * Returns an estimation of the resolution at the point of interest of the given extent.
-     */
-    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) throws TransformException {
-        return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest())), 0);
     }
 
     /**

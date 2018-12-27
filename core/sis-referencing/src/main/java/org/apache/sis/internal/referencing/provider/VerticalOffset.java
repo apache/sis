@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
@@ -47,7 +46,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * <cite>"Vertical Offset"</cite> parameter value needs to be reversed if the target coordinate system axis is down.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -87,9 +86,7 @@ public final class VerticalOffset extends GeographicOffsets {
             throws ParameterNotFoundException
     {
         final Parameters pv = Parameters.castOrWrap(values);
-        final Matrix2 t = new Matrix2();
-        t.m01 = pv.doubleValue(TZ);
-        return MathTransforms.linear(t);
+        return MathTransforms.translation(pv.doubleValue(TZ));
     }
 
     /**

@@ -84,7 +84,7 @@ public interface GridCoverageResource extends DataSet {
      * at a later stage.</p>
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
      * @return the grid coverage for the specified domain and range.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */

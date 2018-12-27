@@ -24,6 +24,8 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -85,5 +87,30 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         for (final SampleDimension band : getSampleDimensions()) {
             metadata.addNewBand(band);
         }
+    }
+
+    /**
+     * Validate the {@code range} argument given to {@link #read(GridGeometry, int...)}.
+     * This method verifies that all indices are between 0 and {@code numSampleDimensions},
+     * but does not verify if there is duplicated indices since such duplication is allowed.
+     *
+     * @param  numSampleDimensions  number of sample dimensions.
+     * @param  range                the {@code range} argument given by the user.
+     * @return the 0-based indices of ranges to use. May be the given {@code range} argument, or a sequence
+     *         from 0 to {@code numSampleDimensions} exclusive if {@code range} was {@code null} or empty.
+     */
+    protected final int[] validateRangeArgument(final int numSampleDimensions, final int[] range) {
+        ArgumentChecks.ensureStrictlyPositive("numSampleDimensions", numSampleDimensions);
+        if (range == null || range.length == 0) {
+            return ArraysExt.sequence(0, numSampleDimensions);
+        }
+        for (int i=0; i<range.length; i++) {
+            final int r = range[i];
+            if (r < 0 || r >= numSampleDimensions) {
+                throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
+                        Resources.Keys.InvalidSampleDimensionIndex_2, i, numSampleDimensions - 1));
+            }
+        }
+        return range;
     }
 }

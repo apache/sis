@@ -116,7 +116,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * If this method is unsure, it conservatively returns {@code null}.
      */
     @Override
-    protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
+    protected final MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
             throws FactoryException
     {
         if (other instanceof LinearTransform) {
