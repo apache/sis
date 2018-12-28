@@ -219,6 +219,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentNameComponents_2 = 10;
 
         /**
+         * Sample dimension index {1} is invalid. Expected an index from 0 to {0} inclusive.
+         */
+        public static final short InvalidSampleDimensionIndex_2 = 52;
+
+        /**
          * Resource “{0}” does not have an identifier.
          */
         public static final short MissingResourceIdentifier_1 = 42;

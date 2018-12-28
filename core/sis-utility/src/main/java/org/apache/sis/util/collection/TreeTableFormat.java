@@ -667,6 +667,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private boolean[] isLast;
 
         /**
+         * Whether to allows multi-lines cells instead than using Pilcrow character.
+         * This is currently supported only if the number of columns is less than 2.
+         */
+        private final boolean multiLineCells;
+
+        /**
          * The node that have already been formatted. We use this map as a safety against infinite recursivity.
          */
         private final Set<TreeTable.Node> recursivityGuard;
@@ -686,9 +692,10 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * @param  recursivityGuard  an initially empty set.
          */
         Writer(final Appendable out, final TreeTable tree, final TableColumn<?>[] columns,
-                final Set<TreeTable.Node> recursivityGuard)
+               final Set<TreeTable.Node> recursivityGuard)
         {
             super(columns.length >= 2 ? new TableAppender(out, "") : out);
+            multiLineCells = (super.out == out);
             this.columns = columns;
             this.formats = getFormats(columns, false);
             this.values  = new Object[columns.length];
@@ -703,7 +710,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             }
             this.filter = filter;
             setTabulationExpanded(true);
-            setLineSeparator(" ¶ ");
+            setLineSeparator(multiLineCells ? TreeTableFormat.this.getLineSeparator() : " ¶ ");
         }
 
         /**
@@ -855,9 +862,18 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * @param  level  indentation level. The first level is 0.
          */
         final void format(final TreeTable.Node node, final int level) throws IOException {
+            /*
+             * Draw the lines of the tree in the left margin for current row.
+             */
             for (int i=0; i<level; i++) {
                 out.append(getTreeSymbols(i != level-1, isLast[i]));
             }
+            /*
+             * Fetch the values to write in current row, but do not write them now. We fetch values in advance in order
+             * to detect trailing null values, so we can avoid formatting trailing blank spaces. Note that a null value
+             * may be followed by a non-null value, which is why we need to check all of them before to know how many
+             * columns to omit.
+             */
             int n = 0;
             for (int i=0; i<columns.length; i++) {
                 if ((values[i] = node.getValue(columns[i])) != null) {
@@ -867,6 +883,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             if (!omitTrailingNulls) {
                 n = values.length - 1;
             }
+            /*
+             * Format the values that we fetched in above loop.
+             */
             for (int i=0; i<=n; i++) {
                 if (i != 0) {
                     // We have a TableAppender instance if and only if there is 2 or more columns.
@@ -891,13 +910,21 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              */
             final boolean omitCheck = node.getClass().isAnnotationPresent(Acyclic.class);
             if (omitCheck || recursivityGuard.add(node)) {
+                boolean needLineSeparator = multiLineCells;
+                final String lineSeparator = needLineSeparator ? getLineSeparator() : null;
                 final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
                 TreeTable.Node next = next(it);
                 while (next != null) {
                     final TreeTable.Node child = next;
                     next = next(it);
-                    isLast[level] = (next == null);                 // Must be set before the call to 'format' below.
-                    format(child, level+1);
+                    needLineSeparator |= (isLast[level] = (next == null));
+                    if (needLineSeparator && lineSeparator != null) {
+                        setLineSeparator(lineSeparator + getTreeSymbols(true, isLast[level]));
+                    }
+                    format(child, level+1);                     // 'isLast' must be set before to call this method.
+                }
+                if (lineSeparator != null) {
+                    setLineSeparator(lineSeparator);            // Restore previous state.
                 }
                 if (!omitCheck && !recursivityGuard.remove(node)) {
                     /*

@@ -194,7 +194,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *
      * @param  feature            the feature to verify.
      * @param  includeSuperTypes  {@code true} for including the properties inherited from the super-types, or
-     *                            {@code false} for returning only the properties defined explicitely in the feature type.
+     *                            {@code false} for returning only the properties defined explicitly in the feature type.
      * @param  expected           names of the expected properties.
      */
     private static void assertPropertiesEquals(final DefaultFeatureType feature, final boolean includeSuperTypes,

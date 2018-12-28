@@ -437,8 +437,9 @@ public final class CRS extends Static {
      * for choosing a common CRS which is less likely to fail.</div>
      *
      * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
-     *                           or {@code null} if unknown.
+     *                           or {@code null} if unknown. Will be intersected with CRS domains of validity.
      * @param  sourceCRS         the coordinate reference systems for which a common target CRS is desired.
+     *                           May contain {@code null} elements, in which case this method returns {@code null}.
      * @return a CRS that may be used as a common target for all the given source CRS in the given region of interest,
      *         or {@code null} if this method did not find a common target CRS. The returned CRS may be different than
      *         all given CRS.
@@ -610,6 +611,7 @@ public final class CRS extends Static {
      * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
      * @throws FactoryException if the operation can not be created for another reason.
      *
+     * @see Envelopes#findOperation(Envelope, Envelope)
      * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
      * @since 0.7
@@ -623,9 +625,9 @@ public final class CRS extends Static {
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
         /*
-         * In principle we should just delegate to factory.createOperation(…). However this operation may fail
-         * if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in that
-         * database and
+         * In principle following code should just delegate to factory.createOperation(…). However that operation
+         * may fail if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in
+         * that database and we do not have the SQL scripts for creating them.
          */
         final DefaultCoordinateOperationFactory factory = CoordinateOperations.factory();
         try {
@@ -728,7 +730,7 @@ public final class CRS extends Static {
      * associated with the given operation. If more than one geographic bounding box is found, then this method
      * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      *
-     * <p><b>Fallback:</b> if the given operation does not declare explicitely a domain of validity, then this
+     * <p><b>Fallback:</b> if the given operation does not declare explicitly a domain of validity, then this
      * method computes the intersection of the domain of validity declared by source and target CRS. If no CRS
      * declare a domain of validity, then this method returns {@code null}.</p>
      *
@@ -794,7 +796,7 @@ public final class CRS extends Static {
             if (bounds != null && !Boolean.FALSE.equals(bounds.getInclusion())) {
                 /*
                  * We do not assign WGS84 unconditionally to the geographic bounding box, because
-                 * it is not defined to be on a particular datum; it is only approximative bounds.
+                 * it is not defined to be on a particular datum; it is only approximated bounds.
                  * We try to get the GeographicCRS from the user-supplied CRS in order to reduce
                  * the amount of transformation needed.
                  */

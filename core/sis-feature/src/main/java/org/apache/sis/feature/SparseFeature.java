@@ -241,7 +241,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
                 throw new CorruptedObjectException(getName());
             }
         } else if (properties.containsKey(index)) {
-            return null;                                                // Null has been explicitely set.
+            return null;                                                // Null has been explicitly set.
         } else {
             return getDefaultValue(name);
         }

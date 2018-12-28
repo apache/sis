@@ -48,8 +48,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * If there is more than one locale, the whole {@code <lan:textGroup>} block is repeated for each
  * locale, instead than repeating {@code <lan:LocalisedCharacterString>} inside the same group as
- * we could expect. However at unmarshalling time, both forms are accepted. See GEOTK-152 for more
- * information.
+ * we could expect. However at unmarshalling time, both forms are accepted.
  *
  * <p>The {@code <gco:CharacterString>} element is inherited from the {@link GO_CharacterString}
  * parent class.</p>

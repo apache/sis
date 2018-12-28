@@ -101,6 +101,7 @@ public final strictfp class MetadataReaderTest extends TestCase {
     static void compareToExpected(final Metadata actual) {
         final ContentVerifier verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
+        verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");
         verifier.addMetadataToVerify(actual);
         verifier.assertMetadataEquals(
             // Hard-coded

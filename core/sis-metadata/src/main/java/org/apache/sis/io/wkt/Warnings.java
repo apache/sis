@@ -58,7 +58,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *     AngularUnit[“degree”, 0.017453292519943295]]
  * }
  *
- * a call to {@link WKTFormat#getWarnings()} would return a {@code Warnings} instance with the following informations:
+ * a call to {@link WKTFormat#getWarnings()} would return a {@code Warnings} instance with the following information:
  *
  * <ul>
  *   <li>{@link #getRootElement()} returns <code>"WGS 84"</code>,</li>

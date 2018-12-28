@@ -16,13 +16,14 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.Locale;
-import java.util.Map;
-import org.apache.sis.internal.util.CollectionsExt;
+import java.util.StringJoiner;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.apache.sis.util.Characters;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
@@ -49,41 +50,70 @@ public abstract class NamedElement {
     public abstract String getName();
 
     /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
-     * If the name of an element is not all lower cases, then this method also adds an entry for the
-     * lower cases version of that name in order to allow case-insensitive searches.
+     * Creates a name for a {@code NamedElement} made of other components.
+     * Current implementation returns a separated list of component names.
      *
-     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
-     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
-     *
-     * @param  <E>          the type of elements.
-     * @param  elements     the elements to store in the map, or {@code null} if none.
-     * @param  namesLocale  the locale to use for creating the "all lower cases" names.
-     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
-     * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
+     * @param  components  the component of the named object.
+     * @param  count       number of valid elements in the {@code components} array.
+     * @param  delimiter   the separator between component names.
+     * @return a name for an object composed of the given components.
      */
-    public static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements, final Locale namesLocale) {
-        return CollectionsExt.toCaseInsensitiveNameMap(new AbstractList<Map.Entry<String,E>>() {
-            @Override
-            public int size() {
-                return elements.length;
-            }
-
-            @Override
-            public Map.Entry<String,E> get(final int index) {
-                final E e = elements[index];
-                return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
-            }
-        }, namesLocale);
+    protected static String listNames(final NamedElement[] components, final int count, final String delimiter) {
+        final StringJoiner joiner = new StringJoiner(delimiter);
+        for (int i=0; i<count; i++) {
+            joiner.add(components[i].getName());
+        }
+        return joiner.toString();
     }
 
     /**
-     * Returns the resources to use for warnings or error messages.
+     * Returns {@code true} if the given names are considered equals for the purpose of netCDF decoder.
+     * Two names are considered similar if they are equal ignoring case and characters that are not valid
+     * for an Unicode identifier.
      *
-     * @param  listeners  where the warnings are sent. Used for inferring the locale.
-     * @return the resources for the locales specified by the given argument.
+     * @param  s1  the first characters sequence to compare, or {@code null}.
+     * @param  s2  the second characters sequence to compare, or {@code null}.
+     * @return whether the two characters sequences are considered similar names.
      */
-    protected static Resources resources(final WarningListeners<?> listeners) {
-        return Resources.forLocale(listeners != null ? listeners.getLocale() : null);
+    protected static boolean similar(final CharSequence s1, final CharSequence s2) {
+        return CharSequences.equalsFiltered(s1, s2, Characters.Filter.UNICODE_IDENTIFIER, true);
+    }
+
+    /**
+     * Reports a warning to the specified listeners.
+     *
+     * @param  listeners  the listeners where to report the warning.
+     * @param  caller     the caller class to report, preferably a public class.
+     * @param  method     the caller method to report, preferable a public method.
+     * @param  exception  the exception that occurred, or {@code null} if none.
+     * @param  resources  the resources bundle for {@code key} and {@code arguments}, or {@code null} for {@link Resources}.
+     * @param  key        one or {@link Resources.Keys} constants.
+     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     */
+    static void warning(final WarningListeners<?> listeners, final Class<?> caller, final String method,
+            final Exception exception, IndexedResourceBundle resources, final short key, final Object... arguments)
+    {
+        if (resources == null) {
+            resources = Resources.forLocale(listeners.getLocale());
+        }
+        final LogRecord record = resources.getLogRecord(Level.WARNING, key, arguments);
+        record.setLoggerName(Modules.NETCDF);
+        record.setSourceClassName(caller.getCanonicalName());
+        record.setSourceMethodName(method);
+        if (exception != null) {
+            // TODO: avoid reporting the full exception stack trace (maybe leverage QuietLogRecord).
+            record.setThrown(exception);
+        }
+        listeners.warning(record);
+    }
+
+    /**
+     * Returns a string representation of this element. Current implementation returns only the element class and name.
+     *
+     * @return string representation of this element for debugging purposes.
+     */
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[\"" + getName() + "\"]";
     }
 }

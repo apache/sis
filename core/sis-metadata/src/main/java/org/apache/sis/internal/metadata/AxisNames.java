@@ -27,7 +27,7 @@ import org.apache.sis.internal.system.Modules;
  * Constants for axis names specified by ISO 19111 and ISO 19162.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -53,9 +53,9 @@ public final class AxisNames {
     public static final String GEODETIC_LATITUDE = "Geodetic latitude";
 
     /**
-     * The ISO 19111 <cite>"spherical longitude"</cite> name. Abbreviation used by SIS is "θ" (theta)
-     * for consistency with ISO 19162 <cite>Axis name and abbreviation</cite> section,
-     * but some other conventions use φ or Ω instead.
+     * The ISO 19111 <cite>"spherical longitude"</cite> name, also called <cite>"azimuthal angle"</cite>.
+     * Abbreviation used by SIS is "θ" (theta) for consistency with ISO 19111 and ISO 19162
+     * <cite>Axis name and abbreviation</cite> section, but some other conventions use φ or Ω instead.
      * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
      *
      * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
@@ -64,9 +64,9 @@ public final class AxisNames {
     public static final String SPHERICAL_LONGITUDE = "Spherical longitude";
 
     /**
-     * The ISO 19111 <cite>"spherical latitude"</cite> name. Abbreviation used by SIS is "φ′" (phi prime)
-     * for consistency with ISO 19162 <cite>Axis name and abbreviation</cite> section,
-     * but some other conventions use θ, Ω or Ψ instead.
+     * The ISO 19111 <cite>"spherical latitude"</cite> name, also called <cite>"polar (zenith) angle"</cite>.
+     * Abbreviation used by SIS is "Ω" (omega) for consistency with ISO 19111
+     * <cite>Axis name and abbreviation</cite> section, but some other conventions use θ, Ω or Ψ instead.
      * Direction in the EPSG database is "North", but the "Up" direction may also be used with a similar
      * axis named "elevation".
      */
@@ -103,10 +103,10 @@ public final class AxisNames {
     public static final String GEOCENTRIC_Z = "Geocentric Z";
 
     /**
-     * The ISO 19111 <cite>"geocentric radius"</cite> name. Abbreviation is upper case <cite>"R"</cite>
-     * for consistency with EPSG database.
+     * The ISO 19111 <cite>"geocentric radius"</cite> name. Abbreviation is lower case <cite>"r"</cite>
+     * for consistency with ISO 19111.
      *
-     * <div class="note"><b>Note:</b>Lower case <cite>"r"</cite> is used for non-geocentric radius
+     * <div class="note"><b>Note:</b>Lower case <cite>"r"</cite> is also used for non-geocentric radius
      * or axes named "distance" with "awayFrom" direction.</div>
      */
     public static final String GEOCENTRIC_RADIUS = "Geocentric radius";

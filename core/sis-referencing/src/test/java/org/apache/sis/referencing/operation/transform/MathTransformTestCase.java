@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -28,10 +29,10 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.internal.util.Numerics;
 import static java.lang.StrictMath.*;
 
 // Test imports
@@ -174,10 +175,10 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
          * In addition to the GeoAPI "verifyTransform" check, check also for consistency of various variant
          * of MathTransform.transform(…) methods.  In GeoAPI, 'verifyTransform' and 'verifyConsistency' are
          * two independent steps because not all developers may want to perform both verifications together.
-         * But in Apache SIS, we want to verify consistency for all math transforms. A previous Geotk version
-         * had a bug with the Google projection which was unnoticed because of lack of this consistency check.
+         * But in Apache SIS, we want to verify consistency for all math transforms. A previous version had
+         * a bug with the Google projection which was unnoticed because of lack of this consistency check.
          */
-        final float[] asFloats = Numerics.copyAsFloats(coordinates);
+        final float[] asFloats = ArraysExt.copyAsFloats(coordinates);
         final float[] result   = verifyConsistency(asFloats);
         for (int i=0; i<coordinates.length; i++) {
             assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f);    // Paranoiac check.
@@ -248,7 +249,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * The number of dimensions is given by {@code transform.getSourceDimensions()}.
      *
      * @param  domain   the domain of the numbers to be generated.
-     * @param  propNaN  approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.
+     * @param  propNaN  rough percentage of NaN values as a fraction between 0 and 1, or 0 if none.
      * @return random coordinates in the given domain.
      */
     final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
@@ -370,7 +371,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         try {
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e);
+            throw new UncheckedIOException(e);
         }
     }
 }

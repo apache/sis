@@ -174,7 +174,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * according ISO 19111, the accuracy attribute is allowed only for transformations. However this restriction
      * is not enforced everywhere. For example the EPSG database declares an accuracy of 0 meter for conversions,
      * which is conceptually exact. In this class we are departing from strict interpretation of the specification
-     * since we are adding accuracy informations to a concatenated operation. This departure should be considered
+     * since we are adding accuracy information to a concatenated operation. This departure should be considered
      * as a convenience feature only; accuracies are really relevant in transformations only.</div>
      *
      * @param  properties   the properties specified at construction time, or {@code null} if unknown.

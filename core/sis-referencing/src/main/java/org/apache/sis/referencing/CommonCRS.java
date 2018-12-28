@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.metadata.Identifier;
@@ -144,7 +145,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 84", &nbsp;<i>ellipsoid:</i> "WGS84")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257223563 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
@@ -162,7 +163,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 72", &nbsp;<i>ellipsoid:</i> "NWL 10D")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378135</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.26 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
@@ -183,7 +184,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>"NAD83 (1986)" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 23 in the North hemisphere</td></tr>
@@ -226,7 +227,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 37 in the North hemisphere</td></tr>
@@ -249,7 +250,7 @@ public enum CommonCRS {
      *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "ED50", <i>ellipsoid:</i> "Hayford 1909")</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378388</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximative)</i></td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>297 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
@@ -521,7 +522,7 @@ public enum CommonCRS {
      * This default CRS is assigned to
      * {@linkplain org.apache.sis.geometry.GeneralEnvelope#GeneralEnvelope(org.opengis.metadata.extent.GeographicBoundingBox)
      * envelopes created from a geographic bounding box}.
-     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximative by definition,
+     * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximated by definition,
      * their datum can be arbitrary.
      *
      * @return the default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
@@ -559,7 +560,7 @@ public enum CommonCRS {
         GeographicCRS object = cachedNormalized;
         if (object == null) {
             DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(geographic());
-            crs = crs.forConvention(AxesConvention.RIGHT_HANDED); // Equivalent to NORMALIZED in our cases, but faster.
+            crs = crs.forConvention(AxesConvention.RIGHT_HANDED);       // Equivalent to NORMALIZED in our cases, but faster.
             synchronized (this) {
                 object = cachedNormalized;
                 if (object == null) {
@@ -1070,7 +1071,7 @@ public enum CommonCRS {
         if (crs == null) {
             /*
              * Requested CRS has not been previously created, or the cache has been cleared.
-             * Before to create the CRS explicitely, try to get it from the EPSG database.
+             * Before to create the CRS explicitly, try to get it from the EPSG database.
              * Using the EPSG geodetic dataset when possible gives us more information,
              * like the aliases and area of validity.
              */
@@ -1366,6 +1367,7 @@ public enum CommonCRS {
 
         /**
          * Creates the coordinate system associated to this vertical object.
+         * This is used only for CRS not identified by an EPSG code.
          * This method does not cache the coordinate system.
          */
         private VerticalCS cs() {
@@ -1479,7 +1481,7 @@ public enum CommonCRS {
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.4
+     * @version 1.0
      * @since   0.4
      * @module
      */
@@ -1575,6 +1577,27 @@ public enum CommonCRS {
          */
         synchronized void clear() {
             cached = null;
+        }
+
+        /**
+         * Returns the enumeration value for the given epoch, or {@code null} if none.
+         * If the epoch is January 1st, 1970, then this method returns {@link #UNIX}.
+         *
+         * @param  epoch  the epoch for which to get an enumeration value, or {@code null}.
+         * @return the enumeration value for the given epoch, or {@code null} if none.
+         *
+         * @since 1.0
+         */
+        public static Temporal forEpoch(final Instant epoch) {
+            if (epoch != null) {
+                final long e = epoch.toEpochMilli();
+                for (final Temporal candidate : values()) {
+                    if (candidate.epoch == e) {
+                        return candidate;
+                    }
+                }
+            }
+            return null;
         }
 
         /**

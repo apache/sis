@@ -35,13 +35,7 @@
  *       and {@code __writeRegistryServiceInfo(…)} public static methods.</li>
  *   <li>{@code myAddinFilename} —
  *       The final filename, without the {@code .oxt} extension.</li>
- *   <li>{@code usePack200} (optional) —
- *       Whether to use Pack200 compression rather than plain JAR files for all dependencies.
- *       The default value is {@code false} (store plain old JAR files).</li>
  * </ul>
- *
- * Note that if Pack200 files are generated, then it is implementor responsibility to unpack them
- * inside OpenOffice.org add-in directory during the {@code __writeRegistryServiceInfo} execution phase.
  *
  * <div class="section">Maven project file</div>
  * {@preformat xml
@@ -72,7 +66,6 @@
  *         <artifactId>sis-build-helper</artifactId>
  *         <configuration>
  *           <oxtName>myAddinFilename</oxtName>
- *           <pack200>usePack200</pack200>
  *         </configuration>
  *         <executions>
  *           <execution>
@@ -88,7 +81,7 @@
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */

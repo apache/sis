@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-utility} module, in approximative dependency order.
+ * All tests from the {@code sis-utility} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -57,6 +57,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.FractionTest.class,
     org.apache.sis.math.VectorTest.class,
+    org.apache.sis.math.RepeatedVectorTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.DecimalFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
@@ -68,6 +69,7 @@ import org.junit.BeforeClass;
 
     // Collections.
     org.apache.sis.internal.util.CheckedArrayListTest.class,
+    org.apache.sis.internal.util.ListOfUnknownSizeTest.class,
     org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,
     org.apache.sis.util.collection.FrequencySortedSetTest.class,
     org.apache.sis.util.collection.IntegerListTest.class,

@@ -80,7 +80,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * Tests loading an official {@code "NTF_R93.gsb"} datum shift grid file and interpolating the sample point
      * given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}. This test is normally not executed
      * because Apache SIS does not redistribute the {@code "NTF_R93.gsb"}. But developers can invoke this method
-     * explicitely if they can provide a path to the {@code "NTF_R93.gsb"} file.
+     * explicitly if they can provide a path to the {@code "NTF_R93.gsb"} file.
      *
      * @param  file  path to the official {@code "NTF_R93.gsb"} file.
      * @throws IOException if an error occurred while loading the grid.

@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.AccessController;
 import javax.measure.Dimension;
 import javax.measure.Unit;
@@ -554,7 +555,26 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 "meters",  "meter"),
                 "metres",  "metre"),
                  DEGREES,  "degree").toString();
-        return map.get(uom);
+        /*
+         * Returns the unit with application of the power if it is part of the name.
+         * For example this method interprets "meter2" as "meter" raised to power 2.
+         */
+        Unit<?> unit = map.get(uom);
+appPow: if (unit == null) {
+            int s = uom.length();
+            if (--s > 0 && isDigit(uom.charAt(s))) {
+                do if (--s < 0) break appPow;
+                while (isDigit(uom.charAt(s)));
+                if (uom.charAt(s) == '-') {
+                    if (--s < 0) break appPow;
+                }
+                unit = map.get(uom.substring(0, ++s));
+                if (unit != null) {
+                    unit = unit.pow(Integer.parseInt(uom.substring(s)));
+                }
+            }
+        }
+        return unit;
     }
 
     /**
@@ -876,7 +896,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         try {
             return (StringBuffer) format((Unit<?>) unit, toAppendTo);
         } catch (IOException e) {
-            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuffer.
+            throw new UncheckedIOException(e);          // Should never happen since we are writting to a StringBuffer.
         }
     }
 
@@ -892,7 +912,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         try {
             return format(unit, new StringBuilder()).toString();
         } catch (IOException e) {
-            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuilder.
+            throw new UncheckedIOException(e);      // Should never happen since we are writting to a StringBuilder.
         }
     }
 

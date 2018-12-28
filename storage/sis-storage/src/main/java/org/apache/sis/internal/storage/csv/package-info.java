@@ -43,7 +43,7 @@
  * Departures are:
  *
  * <ul>
- *   <li>If the character encoding is not explicitely specified, then Apache SIS uses the platform default instead of UTF-8.
+ *   <li>If the character encoding is not explicitly specified, then Apache SIS uses the platform default instead of UTF-8.
  *       If a file to read is known to be a Moving Features compliant file, the UTF-8 encoding should be associated to
  *       {@link org.apache.sis.setup.OptionKey#ENCODING} in the {@link org.apache.sis.storage.StorageConnector}.</li>
  *   <li>The Apache SIS implementation does not replace the XML entities by the referenced characters.

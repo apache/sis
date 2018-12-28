@@ -16,15 +16,20 @@
  */
 package org.apache.sis.internal.unopkg;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.FileVisitResult;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.FileUtils;
 
 
 /**
@@ -39,7 +44,7 @@ import org.codehaus.plexus.util.FileUtils;
  * by {@code javac}), which is why the usual Maven resources mechanism doesn't fit.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -70,38 +75,76 @@ public final class JavaMaker extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        final int n;
+        final Copier c = new Copier(baseDirectory, outputDirectory);
         try {
-            n = copyClasses(new File(baseDirectory, UnoPkg.SOURCE_DIRECTORY), new File(outputDirectory));
+            c.run();
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy *.class files.", e);
         }
-        getLog().info("[geotk-unopkg] Copied " + n + " pre-compiled class files.");
+        getLog().info("[geotk-unopkg] Copied " + c.count + " pre-compiled class files.");
     }
 
     /**
      * Copies {@code *.class} files from source directory to output directory.
-     * The output directory shall already exists. It should be the case if all
+     * The output directory should already exist. It should be the case if all
      * sources files have been compiled before this method is invoked.
-     *
-     * @return the number of files copied.
      */
-    private static int copyClasses(final File sourceDirectory,
-                                   final File outputDirectory) throws IOException
-    {
-        int n = 0;
-        final String[] filenames = sourceDirectory.list();
-        for (final String filename : filenames) {
-            final File file = new File(sourceDirectory, filename);
-            if (file.isFile()) {
-                if (filename.endsWith(".class") || filename.endsWith(".CLASS")) {
-                    FileUtils.copyFileToDirectory(file, outputDirectory);
-                    n++;
-                }
-            } else if (file.isDirectory()) {
-                n += copyClasses(file, new File(outputDirectory, filename));
-            }
+    private static final class Copier extends SimpleFileVisitor<Path> {
+        /**
+         * The root of source and target directories. Files below {@code source} will be copied
+         * with identical path (relative to {@code source}) under {@code target} directory.
+         */
+        private final Path source, target;
+
+        /**
+         * Number of files copied.
+         */
+        int count;
+
+        /**
+         * Creates a new copier.
+         *
+         * @param baseDirectory    base directory of the module to compile.
+         * @param outputDirectory  directory where the output Java files will be located.
+         */
+        Copier(final String baseDirectory, final String outputDirectory) {
+            source = Paths.get(baseDirectory).resolve(UnoPkg.SOURCE_DIRECTORY);
+            target = Paths.get(outputDirectory);
         }
-        return n;
+
+        /**
+         * Executes the copy operation.
+         */
+        void run() throws IOException {
+            Files.walkFileTree(source, this);
+        }
+
+        /**
+         * Determines whether the given directory should be visited.
+         * This method skips hidden directories.
+         */
+        @Override
+        public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) {
+            return dir.getFileName().toString().startsWith(".") ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+        }
+
+        /**
+         * Invoked for a file in a directory. This method creates the directory if it does not exist
+         * and performs the actual copy operation.
+         */
+        @Override
+        public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+            final String filename = file.getFileName().toString();
+            if (filename.endsWith(".class") || filename.endsWith(".CLASS")) {
+                final Path dst = target.resolve(source.relativize(file)).normalize();
+                if (!dst.startsWith(target)) {
+                    throw new IOException("Unexpected target path: " + dst);
+                }
+                Files.createDirectories(dst.getParent());
+                Files.copy(file, dst, StandardCopyOption.REPLACE_EXISTING);
+                count++;
+            }
+            return FileVisitResult.CONTINUE;
+        }
     }
 }

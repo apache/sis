@@ -33,21 +33,25 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.Static;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
@@ -156,6 +160,108 @@ public final class Envelopes extends Static {
     }
 
     /**
+     * Computes the union of all given envelopes, transforming them to a common CRS if necessary.
+     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#add(Envelope)
+     * union is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
+     * {@linkplain CRS#suggestCommonTarget common CRS} before union is computed.
+     * The CRS of the returned envelope may different than the CRS of all given envelopes.
+     *
+     * @param  envelopes  the envelopes for which to compute union. Null elements are ignored.
+     * @return union of given envelopes, or {@code null} if the given array does not contain non-null elements.
+     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     *
+     * @see GeneralEnvelope#add(Envelope)
+     *
+     * @since 1.0
+     */
+    public static GeneralEnvelope union(final Envelope... envelopes) throws TransformException {
+        return EnvelopeReducer.UNION.reduce(envelopes);
+    }
+
+    /**
+     * Finds a mathematical operation from the CRS of the given source envelope to the CRS of the given target envelope.
+     * For non-null georeferenced envelopes, this method is equivalent to the following code with {@code areaOfInterest}
+     * computed as the union of the two envelopes:
+     *
+     * <blockquote><code>return {@linkplain CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem,
+     * GeographicBoundingBox)} CRS.findOperation(source.getCoordinateReferenceSystem(), target.getCoordinateReferenceSystem(),
+     * <var>areaOfInterest</var>)</code></blockquote>
+     *
+     * If at least one envelope is null or has no CRS, then this method returns {@code null}.
+     *
+     * @param  source  the source envelope, or {@code null}.
+     * @param  target  the target envelope, or {@code null}.
+     * @return the mathematical operation from {@code source} CRS to {@code target} CRS,
+     *         or {@code null} if at least one argument is null or has no CRS.
+     * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
+     * @throws FactoryException if the operation can not be created for another reason.
+     *
+     * @see CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
+     *
+     * @since 1.0
+     */
+    public static CoordinateOperation findOperation(final Envelope source, final Envelope target) throws FactoryException {
+        if (source != null && target != null) {
+            final CoordinateReferenceSystem sourceCRS, targetCRS;
+            if ((sourceCRS = source.getCoordinateReferenceSystem()) != null &&
+                (targetCRS = target.getCoordinateReferenceSystem()) != null)
+            {
+                /*
+                 * Computing the area of interest (AOI) unconditionally would be harmless, but it is useless if the CRS
+                 * are the same since the result will be identity anyway. Conversely we could skip AOI computation more
+                 * often for example with the following condition instead of !=:
+                 *
+                 *     !Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT)
+                 *
+                 * but it would not be very advantageous if testing the condition is almost as long as computing
+                 * the AOI. For now we keep != as a very cheap test which will work quite often.
+                 */
+                DefaultGeographicBoundingBox areaOfInterest = null;
+                if (sourceCRS != targetCRS) try {
+                    final DefaultGeographicBoundingBox targetAOI;
+                    final ReferencingServices converter = ReferencingServices.getInstance();
+                    areaOfInterest = converter.setBounds(source, null, true);      // Should be first.
+                    targetAOI      = converter.setBounds(target, null, true);
+                    if (areaOfInterest == null) {
+                        areaOfInterest = targetAOI;
+                    } else {
+                        areaOfInterest.add(targetAOI);
+                    }
+                } catch (TransformException e) {
+                    /*
+                     * Note: we may succeed to transform 'source' and fail to transform 'target' to geographic bounding box,
+                     * but the opposite is unlikely because 'source' should not have less dimensions than 'target'.
+                     */
+                    Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), Envelopes.class, "findOperation", e);
+                }
+                return CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Computes the intersection of all given envelopes, transforming them to a common CRS if necessary.
+     * If all envelopes use the same CRS ({@link ComparisonMode#IGNORE_METADATA ignoring metadata})
+     * or if the CRS of all envelopes is {@code null}, then the {@linkplain GeneralEnvelope#intersect(Envelope)
+     * intersection is computed} without transforming any envelope. Otherwise all envelopes are transformed to a
+     * {@linkplain CRS#suggestCommonTarget common CRS} before intersection is computed.
+     * The CRS of the returned envelope may different than the CRS of all given envelopes.
+     *
+     * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
+     * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
+     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     *
+     * @see GeneralEnvelope#intersect(Envelope)
+     *
+     * @since 1.0
+     */
+    public static GeneralEnvelope intersect(final Envelope... envelopes) throws TransformException {
+        return EnvelopeReducer.INTERSECT.reduce(envelopes);
+    }
+
+    /**
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
      */
@@ -222,6 +328,7 @@ public final class Envelopes extends Static {
                 } else {
                     // TODO: create an CoordinateOperationContext with the envelope as geographic area.
                     //       May require that we optimize the search for CoordinateOperation with non-null context first.
+                    //       See https://issues.apache.org/jira/browse/SIS-442
                     final CoordinateOperation operation;
                     try {
                         operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);
@@ -238,7 +345,7 @@ public final class Envelopes extends Static {
 
     /**
      * Transforms an envelope using the given math transform.
-     * The transformation is only approximative: the returned envelope may be bigger than necessary,
+     * The transformation is only approximated: the returned envelope may be bigger than necessary,
      * or smaller than required if the bounding box contains a pole.
      * The coordinate reference system of the returned envelope will be null.
      *
@@ -466,7 +573,7 @@ public final class Envelopes extends Static {
 
     /**
      * Transforms an envelope using the given coordinate operation.
-     * The transformation is only approximative: the returned envelope may be bigger than the
+     * The transformation is only approximated: the returned envelope may be bigger than the
      * smallest possible bounding box, but should not be smaller in most cases.
      *
      * <p>This method can handle the case where the envelope contains the North or South pole,

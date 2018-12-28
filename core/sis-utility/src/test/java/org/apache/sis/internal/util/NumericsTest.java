@@ -84,15 +84,6 @@ public final strictfp class NumericsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Numerics#isSimplePrecision(double[])}.
-     */
-    @Test
-    public void testIsSimplePrecision() {
-        assertTrue (Numerics.isSimplePrecision(2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY));
-        assertFalse(Numerics.isSimplePrecision(2, 0.5, 1.0 / 3));
-    }
-
-    /**
      * Tests {@link Numerics#isUnsignedInteger(String)}.
      */
     @Test

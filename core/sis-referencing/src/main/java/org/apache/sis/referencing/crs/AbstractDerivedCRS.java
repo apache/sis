@@ -227,7 +227,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
              * Avoid never-ending recursivity: Conversion has a 'targetCRS' field (inherited from
              * the AbstractCoordinateOperation super-class) that is set to this AbstractDerivedCRS.
              *
-             * Do NOT compare the baseCRS explicitely. This is done implicitely in the comparison of the Conversion
+             * Do NOT compare the baseCRS explicitly. This is done implicitely in the comparison of the Conversion
              * objects, since (this.baseCRS == Conversion.sourceCRS) in Apache SIS.  The reason why we delegate the
              * comparison of that CRS to the Conversion object is because we want to ignore the baseCRS axes if the
              * mode said to ignore metadata, but ignoring axis order and units has implication on the MathTransform

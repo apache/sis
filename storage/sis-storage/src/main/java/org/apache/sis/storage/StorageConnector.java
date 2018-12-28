@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.NoSuchFileException;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.ImageIO;
 import java.sql.Connection;
@@ -127,7 +128,7 @@ public class StorageConnector implements Serializable {
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
      * telling that before reseting the {@code view}, we need to reset the {@code source} first. This flag should
      * can be unset if any change in the position of {@code view} is immediately reflected in the position of
-     * {@code source}, and vis-versa.
+     * {@code source}, and vice-versa.
      *
      * @see Coupled#cascadeOnReset()
      */
@@ -260,7 +261,7 @@ public class StorageConnector implements Serializable {
      * <ul>
      *   <li>{@link Reader} that are wrappers around {@code InputStream}.</li>
      *   <li>{@link ChannelDataInput} when the channel come from an {@code InputStream}.</li>
-     *   <li>{@link ChannelDataInput} when the channel has been explicitely given to the constructor.</li>
+     *   <li>{@link ChannelDataInput} when the channel has been explicitly given to the constructor.</li>
      * </ul>
      */
     private static final class Coupled {
@@ -282,10 +283,10 @@ public class StorageConnector implements Serializable {
          *       Same as {@code DataInput} if it can be casted, or {@code null} otherwise.</li>
          *
          *   <li>{@link InputStream}:
-         *       If not explicitely provided, this is a wrapper around the above {@link ImageInputStream}.</li>
+         *       If not explicitly provided, this is a wrapper around the above {@link ImageInputStream}.</li>
          *
          *   <li>{@link Reader}:
-         *       If not explicitely provided, this is a wrapper around the above {@link InputStream}.</li>
+         *       If not explicitly provided, this is a wrapper around the above {@link InputStream}.</li>
          *
          *   <li>{@link Connection}:
          *       The storage object as a JDBC connection.</li>
@@ -362,7 +363,7 @@ public class StorageConnector implements Serializable {
         /**
          * {@code true} if calls to {@link #reset()} should cascade to {@link #wrapperFor}.
          * This is {@code false} if any change in the position of {@link #view} is immediately
-         * reflected in the position of {@link #wrapperFor}, and vis-versa.
+         * reflected in the position of {@link #wrapperFor}, and vice-versa.
          */
         final boolean cascadeOnReset() {
             return (cascade & CASCADE_ON_RESET) != 0;
@@ -836,7 +837,11 @@ public class StorageConnector implements Serializable {
         } catch (DataStoreException e) {
             throw e;
         } catch (Exception e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+            short key = Errors.Keys.CanNotOpen_1;
+            if (e instanceof NoSuchFileException) {
+                key = Errors.Keys.FileNotFound_1;
+            }
+            throw new DataStoreException(Errors.format(key, getStorageName()), e);
         }
         return type.cast(view);
     }

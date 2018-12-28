@@ -17,10 +17,11 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.Charset;
+import java.util.List;
 import java.util.logging.LogRecord;
+import java.net.URI;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.NameSpace;
@@ -31,7 +32,8 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -48,7 +50,9 @@ import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.ListOfUnknownSize;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -62,7 +66,7 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.8
  * @module
  */
-public class GeoTiffStore extends DataStore {
+public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
      * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
@@ -94,6 +98,13 @@ public class GeoTiffStore extends DataStore {
      * @see #getMetadata()
      */
     private Metadata metadata;
+
+    /**
+     * Description of images in this GeoTIFF files. This collection is created only when first needed.
+     *
+     * @see #components()
+     */
+    private List<GridCoverageResource> components;
 
     /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
@@ -139,8 +150,6 @@ public class GeoTiffStore extends DataStore {
      * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
      * @return parameters used for opening this data store, or {@code null} if not available.
-     *
-     * @since 0.8
      */
     @Override
     public ParameterValueGroup getOpenParameters() {
@@ -229,6 +238,75 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
+     * Returns descriptions of all images in this GeoTIFF file.
+     * Images are not immediately loaded.
+     *
+     * <p>If an error occurs during iteration in the returned collection,
+     * an unchecked {@link BackingStoreException} will be thrown with a {@link DataStoreException} as its cause.</p>
+     *
+     * @return descriptions of all images in this GeoTIFF file.
+     * @throws DataStoreException if an error occurred while fetching the image descriptions.
+     *
+     * @since 1.0
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<GridCoverageResource> components() throws DataStoreException {
+        if (components == null) {
+            components = new Components();
+        }
+        return components;
+    }
+
+    /**
+     * The components returned by {@link #components}. Defined as a named class instead than an anonymous
+     * class for more readable stack trace. This is especially useful since {@link BackingStoreException}
+     * may happen in any method.
+     */
+    private final class Components extends ListOfUnknownSize<GridCoverageResource> {
+        /** The collection size, cached when first computed. */
+        private int size = -1;
+
+        /** Returns the size or -1 if not yet known. */
+        @Override protected int sizeIfKnown() {
+            return size;
+        }
+
+        /** Returns the size, computing and caching it if needed. */
+        @Override public int size() {
+            if (size < 0) {
+                size = super.size();
+            }
+            return size;
+        }
+
+        /** Returns whether the given index is valid. */
+        @Override protected boolean exists(final int index) {
+            return (index >= 0) && getImageFileDirectory(index) != null;
+        }
+
+        /** Returns element at the given index or throw {@link IndexOutOfBoundsException}. */
+        @Override public GridCoverageResource get(final int index) {
+            if (index >= 0) {
+                GridCoverageResource image = getImageFileDirectory(index);
+                if (image != null) return image;
+            }
+            throw new IndexOutOfBoundsException(errors().getString(Errors.Keys.IndexOutOfBounds_1, index));
+        }
+
+        /** Returns element at the given index or returns {@code null} if the index is invalid. */
+        private GridCoverageResource getImageFileDirectory(final int index) {
+            try {
+                return reader().getImageFileDirectory(index);
+            } catch (IOException e) {
+                throw new BackingStoreException(errorIO(e));
+            } catch (DataStoreException e) {
+                throw new BackingStoreException(e);
+            }
+        }
+    }
+
+    /**
      * Returns the image at the given index. Images numbering starts at 1.
      *
      * @param  sequence  string representation of the image index, starting at 1.
@@ -236,7 +314,7 @@ public class GeoTiffStore extends DataStore {
      * @throws DataStoreException if the requested image can not be obtained.
      */
     @Override
-    public Resource findResource(final String sequence) throws DataStoreException {
+    public GridCoverageResource findResource(final String sequence) throws DataStoreException {
         Exception cause;
         int index;
         try {

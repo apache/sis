@@ -157,7 +157,7 @@ public class ReferenceResolver {
      *   <li>The given object has already been marshalled in the same XML document.</li>
      *   <li>The marshalled object had a {@code gml:id} attribute
      *     <ul>
-     *       <li>either specified explicitely by
+     *       <li>either specified explicitly by
      *         <code>{@linkplain IdentifierMap#put IdentifierMap.put}({@linkplain IdentifierSpace#ID}, id)</code></li>
      *       <li>or inferred automatically by the marshalled object
      *         (e.g. {@link org.apache.sis.referencing.AbstractIdentifiedObject}).</li>

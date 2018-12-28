@@ -183,6 +183,16 @@ public class WKTFormat extends CompoundFormat<Object> {
     private byte indentation;
 
     /**
+     * Maximum number of elements to show in lists, or {@link Integer#MAX_VALUE} if unlimited.
+     * If a list is longer than this length, only the first and the last elements will be shown.
+     * This limit applies in particular to {@link org.opengis.referencing.operation.MathTransform}
+     * parameter values of {@code double[]} type, since those parameters may be large interpolation tables.
+     *
+     * @see #getMaximumListElements()
+     */
+    private int listSizeLimit;
+
+    /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
      * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
      *
@@ -237,11 +247,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public WKTFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        convention   = Convention.DEFAULT;
-        symbols      = Symbols.getDefault();
-        keywordCase  = KeywordCase.DEFAULT;
-        keywordStyle = KeywordStyle.DEFAULT;
-        indentation  = Constants.DEFAULT_INDENTATION;
+        convention    = Convention.DEFAULT;
+        symbols       = Symbols.getDefault();
+        keywordCase   = KeywordCase.DEFAULT;
+        keywordStyle  = KeywordStyle.DEFAULT;
+        indentation   = Constants.DEFAULT_INDENTATION;
+        listSizeLimit = Integer.MAX_VALUE;
     }
 
     /**
@@ -516,7 +527,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                 case LONG:  longKeywords = +1; break;
                 default:    longKeywords = (convention.majorVersion() == 1) ? (byte) -1 : 0; break;
             }
-            formatter.configure(convention, authority, colors, toUpperCase, longKeywords, indentation);
+            formatter.configure(convention, authority, colors, toUpperCase, longKeywords, indentation, listSizeLimit);
             if (transliterator != null) {
                 formatter.transliterator = transliterator;
             }
@@ -544,6 +555,34 @@ public class WKTFormat extends CompoundFormat<Object> {
     public void setIndentation(final int indentation) {
         ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
         this.indentation = (byte) indentation;
+        updateFormatter(formatter);
+    }
+
+    /**
+     * Returns the maximum number of elements to show in lists of values. If a list length is greater than this limit,
+     * then only the first and last elements will be shown together with a message saying that some elements were omitted.
+     * This limit is useful in particular with {@link org.opengis.referencing.operation.MathTransform} parameter values of
+     * {@code double[]} type, since those parameters may be large interpolation tables.
+     *
+     * @return the current lists size limit, or {@link Integer#MAX_VALUE} if unlimited.
+     *
+     * @since 1.0
+     */
+    public int getMaximumListElements() {
+        return listSizeLimit;
+    }
+
+    /**
+     * Sets a new limit for the number of elements to show in lists.
+     * If this method is never invoked, then the default is unlimited.
+     *
+     * @param  limit  the new lists size limit, or {@link Integer#MAX_VALUE} if unlimited.
+     *
+     * @since 1.0
+     */
+    public void setMaximumListElements(final int limit) {
+        ArgumentChecks.ensureStrictlyPositive("limit", limit);
+        listSizeLimit = limit;
         updateFormatter(formatter);
     }
 

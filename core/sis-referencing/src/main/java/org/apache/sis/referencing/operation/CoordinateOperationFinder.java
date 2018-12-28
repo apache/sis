@@ -81,7 +81,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *       <div class="note"><b>Note:</b> the above is known as the <cite>late-binding</cite> approach.
  *       The late-binding approach allows the authority to define better suited operations than what
  *       we would get if we were transforming everything from and to a pivot system (e.g. WGS84).
- *       In addition, this approach provides useful informations like the coordinate operation
+ *       In addition, this approach provides useful information like the coordinate operation
  *       {@linkplain AbstractCoordinateOperation#getScope() scope} and
  *       {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity},
  *       {@linkplain AbstractCoordinateOperation#getCoordinateOperationAccuracy() accuracy}.</div>
@@ -281,7 +281,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             }
         }
         /*
-         * Verify in the EPSG dataset if the operation is explicitely defined by an authority.
+         * Verify in the EPSG dataset if the operation is explicitly defined by an authority.
          */
         if (registry != null) {
             final List<CoordinateOperation> authoritatives = super.createOperations(sourceCRS, targetCRS);

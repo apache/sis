@@ -18,9 +18,12 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.io.Serializable;
+import java.lang.reflect.Array;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -31,6 +34,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ArraysExt;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -184,55 +188,6 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * If the given matrix to be concatenated to this transform, can be concatenated to the
-     * sub-transform instead, returns the matrix to be concatenated to the sub-transform.
-     * Otherwise returns {@code null}.
-     *
-     * <p>This method assumes that the matrix size is compatible with this transform source dimension.
-     * It is caller responsibility to verify this condition.</p>
-     */
-    final Matrix toSubMatrix(final Matrix matrix) {
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        if (numRow != numCol) {
-            // Current implementation requires a square matrix.
-            return null;
-        }
-        final int subDim = subTransform.getSourceDimensions();
-        final MatrixSIS sub = Matrices.createIdentity(subDim + 1);
-        /*
-         * Ensure that every dimensions which are scaled by the affine transform are one
-         * of the dimensions modified by the sub-transform, and not any other dimension.
-         */
-        for (int j=numRow; --j>=0;) {
-            final int sj = j - firstAffectedOrdinate;
-            for (int i=numCol; --i>=0;) {
-                final double element = matrix.getElement(j, i);
-                if (sj >= 0 && sj < subDim) {
-                    final int si;
-                    final boolean pass;
-                    if (i == numCol-1) {                    // Translation term (last column)
-                        si = subDim;
-                        pass = true;
-                    } else {                                // Any term other than translation.
-                        si = i - firstAffectedOrdinate;
-                        pass = (si >= 0 && si < subDim);
-                    }
-                    if (pass) {
-                        sub.setElement(sj, si, element);
-                        continue;
-                    }
-                }
-                if (element != (i == j ? 1 : 0)) {
-                    // Found a dimension which perform some scaling or translation.
-                    return null;
-                }
-            }
-        }
-        return sub;
-    }
-
-    /**
      * Gets the dimension of input points. This the source dimension of the
      * {@linkplain #subTransform sub-transform} plus the number of pass-through dimensions.
      *
@@ -270,11 +225,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */
     public final int[] getModifiedCoordinates() {
-        final int[] index = new int[subTransform.getSourceDimensions()];
-        for (int i=0; i<index.length; i++) {
-            index[i] = i + firstAffectedOrdinate;
-        }
-        return index;
+        return ArraysExt.sequence(firstAffectedOrdinate, subTransform.getSourceDimensions());
     }
 
     /**
@@ -323,48 +274,129 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Transforms many coordinates in a list of ordinal values.
-     *
-     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
+     * Creates a new array of the same kind than the given array.
+     * This is used for creating {@code float[]} or {@code double[]} arrays.
      */
-    @Override
-    public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
-            throws TransformException
+    private static Object newArray(final Object array, final int length) {
+        return Array.newInstance(array.getClass().getComponentType(), length);
+    }
+
+    /**
+     * Transforms an array of points with potentially overlapping source and target.
+     *
+     * @param  srcPts  the point to transform, as a {@code float[]} or {@code double[]} array.
+     * @param  srcOff  the offset to the point to be transformed in the array.
+     * @param  dstPts  where to store the transformed points, as an array of same type than {@code srcPts}.
+     * @param  dstOff  the offset to the location of the transformed point that is stored in the destination array.
+     * @param  numPts  number of points to transform.
+     */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
+    private void transformOverlapping(final Object srcPts, final int srcOff,
+                                      final Object dstPts, int dstOff, int numPts) throws TransformException
     {
-        final int subDimSource = subTransform.getSourceDimensions();
-        final int subDimTarget = subTransform.getTargetDimensions();
-        int srcStep = numTrailingOrdinates;
-        int dstStep = numTrailingOrdinates;
-        if (srcPts == dstPts) {
-            final int add = firstAffectedOrdinate + numTrailingOrdinates;
-            final int dimSource = subDimSource + add;
-            final int dimTarget = subDimTarget + add;
-            switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, dimTarget, numPts)) {
+        if (numPts <= 0) return;
+        final int subDimSource   = subTransform.getSourceDimensions();
+        final int subDimTarget   = subTransform.getTargetDimensions();
+        final int numPassThrough = firstAffectedOrdinate + numTrailingOrdinates;
+        final int dimSource      = subDimSource + numPassThrough;
+        final int dimTarget      = subDimTarget + numPassThrough;
+        /*
+         * Copy the pass-through coordinates (both before and after the sub-transform) into the 'pasPts'
+         * temporary array. This will allow us to compact the coordinates to give to the sub-transform,
+         * so we can process them in a single 'transform' method call. We do that also for avoiding tricky
+         * issues with overlapping regions, because coordinate tuples are not processed automically the
+         * way 'IterationStrategy' expects.
+         */
+        final Object pasPts;
+        {
+            pasPts = newArray(srcPts, numPassThrough * numPts);
+            System.arraycopy(srcPts, srcOff, pasPts, 0, firstAffectedOrdinate);
+            int pasOff = firstAffectedOrdinate;
+            int srcCpk = srcOff + pasOff + subDimSource;            // "Cpk" stands for "cherry-pick".
+            int n = numPts - 1;
+            while (--n >= 0) {
+                System.arraycopy(srcPts, srcCpk, pasPts, pasOff, numPassThrough);
+                pasOff += numPassThrough;
+                srcCpk += dimSource;
+            }
+            System.arraycopy(srcPts, srcCpk, pasPts, pasOff, numTrailingOrdinates);
+        }
+        /*
+         * Copy in a compact array the coordinates to be given to the sub-transform.
+         * We do the compaction in the destination array (if it is large enough) for
+         * avoiding the need to create a temporary buffer. We can do that only after
+         * all pass-through coordinates have been copied by above loop, for avoiding
+         * to overwrite values if the source and destination array regions overlap.
+         */
+        Object subPts = dstPts;
+        {
+            int subOff = dstOff;
+            int srcCpk = srcOff + firstAffectedOrdinate;    // "Cpk" stands for "cherry-pick".
+            int srcInc = dimSource;
+            int dstInc = subDimSource;
+            final IterationStrategy strategy;
+            if (subDimSource > subDimTarget + numPassThrough) {
+                // If the destination array does not have enough room, create a temporary buffer.
+                strategy = IterationStrategy.BUFFER_TARGET;
+            } else if (srcPts != dstPts) {
+                strategy = IterationStrategy.ASCENDING;
+            } else {
+                strategy = IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts);
+            }
+            switch (strategy) {
                 case ASCENDING: {
                     break;
                 }
                 case DESCENDING: {
-                    srcOff += (numPts - 1) * dimSource;
-                    dstOff += (numPts - 1) * dimTarget;
-                    srcStep -= 2*dimSource;
-                    dstStep -= 2*dimTarget;
+                    srcCpk += (numPts-1) * srcInc; srcInc = -srcInc;
+                    subOff += (numPts-1) * dstInc; dstInc = -dstInc;
                     break;
                 }
                 default: {
-                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*dimSource);
-                    srcOff = 0;
+                    subPts = newArray(subPts, Math.max(subDimSource, subDimTarget) * numPts);
+                    subOff = 0;
+                    break;
                 }
             }
+            int n = numPts;
+            do {
+                System.arraycopy(srcPts, srcCpk, subPts, subOff, subDimSource);
+                subOff += dstInc;
+                srcCpk += srcInc;
+            } while (--n != 0);
         }
-        while (--numPts >= 0) {
-            System.arraycopy(      srcPts, srcOff,
-                                   dstPts, dstOff,   firstAffectedOrdinate);
-            subTransform.transform(srcPts, srcOff += firstAffectedOrdinate,
-                                   dstPts, dstOff += firstAffectedOrdinate, 1);
-            System.arraycopy(      srcPts, srcOff += subDimSource,
-                                   dstPts, dstOff += subDimTarget, numTrailingOrdinates);
-            srcOff += srcStep;
-            dstOff += dstStep;
+        /*
+         * All sub-transform coordinates have been compacted as consecutive tuples.
+         * Convert them in-place, overwriting the previous values.
+         */
+        int subOff = (subPts == dstPts) ? dstOff : 0;
+        if (subPts instanceof double[]) {
+            subTransform.transform((double[]) subPts, subOff, (double[]) subPts, subOff, numPts);
+        } else {
+            subTransform.transform( (float[]) subPts, subOff,  (float[]) subPts, subOff, numPts);
+        }
+        /*
+         * Copies the transformed coordinates to their final location, inserting pass-through
+         * coordinates between them in the process. Note that we avoided to modify 'dstOff'
+         * and 'numPts' before this point, but now we are free to do so since this is the last
+         * step.
+         */
+        int pasOff = numPts * numPassThrough;
+        subOff    += numPts * subDimTarget;
+        dstOff    += numPts * dimTarget;
+        if (--numPts >= 0) {
+            System.arraycopy(pasPts, pasOff -= numTrailingOrdinates,
+                             dstPts, dstOff -= numTrailingOrdinates, numTrailingOrdinates);
+            System.arraycopy(subPts, subOff -= subDimTarget,
+                             dstPts, dstOff -= subDimTarget, subDimTarget);
+            while (--numPts >= 0) {
+                System.arraycopy(pasPts, pasOff -= numPassThrough,
+                                 dstPts, dstOff -= numPassThrough, numPassThrough);
+                System.arraycopy(subPts, subOff -= subDimTarget,
+                                 dstPts, dstOff -= subDimTarget, subDimTarget);
+            }
+            System.arraycopy(pasPts, pasOff - firstAffectedOrdinate,
+                             dstPts, dstOff - firstAffectedOrdinate, firstAffectedOrdinate);
         }
     }
 
@@ -374,44 +406,18 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts)
-            throws TransformException
-    {
-        final int subDimSource = subTransform.getSourceDimensions();
-        final int subDimTarget = subTransform.getTargetDimensions();
-        int srcStep = numTrailingOrdinates;
-        int dstStep = numTrailingOrdinates;
-        if (srcPts == dstPts) {
-            final int add = firstAffectedOrdinate + numTrailingOrdinates;
-            final int dimSource = subDimSource + add;
-            final int dimTarget = subDimTarget + add;
-            switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, dimTarget, numPts)) {
-                case ASCENDING: {
-                    break;
-                }
-                case DESCENDING: {
-                    srcOff += (numPts - 1) * dimSource;
-                    dstOff += (numPts - 1) * dimTarget;
-                    srcStep -= 2*dimSource;
-                    dstStep -= 2*dimTarget;
-                    break;
-                }
-                default: {
-                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*dimSource);
-                    srcOff = 0;
-                }
-            }
-        }
-        while (--numPts >= 0) {
-            System.arraycopy(      srcPts, srcOff,
-                                   dstPts, dstOff,   firstAffectedOrdinate);
-            subTransform.transform(srcPts, srcOff += firstAffectedOrdinate,
-                                   dstPts, dstOff += firstAffectedOrdinate, 1);
-            System.arraycopy(      srcPts, srcOff += subDimSource,
-                                   dstPts, dstOff += subDimTarget, numTrailingOrdinates);
-            srcOff += srcStep;
-            dstOff += dstStep;
-        }
+    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+        transformOverlapping(srcPts, srcOff, dstPts, dstOff, numPts);
+    }
+
+    /**
+     * Transforms many coordinates in a list of ordinal values.
+     *
+     * @throws TransformException if the {@linkplain #subTransform sub-transform} failed.
+     */
+    @Override
+    public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) throws TransformException {
+        transformOverlapping(srcPts, srcOff, dstPts, dstOff, numPts);
     }
 
     /**
@@ -573,11 +579,224 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     @Override
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            inverse = new PassThroughTransform(
-                    firstAffectedOrdinate, subTransform.inverse(), numTrailingOrdinates);
+            inverse = new PassThroughTransform(firstAffectedOrdinate, subTransform.inverse(), numTrailingOrdinates);
             inverse.inverse = this;
         }
         return inverse;
+    }
+
+    /**
+     * If the given matrix to be concatenated to this transform, can be concatenated to the
+     * sub-transform instead, returns the matrix to be concatenated to the sub-transform.
+     * Otherwise returns {@code null}.
+     *
+     * <p>This method does not verify if the matrix size is compatible with this transform dimension.</p>
+     *
+     * @param  applyOtherFirst  {@code true} if the transformation order is {@code matrix} followed by {@code this}, or
+     *                          {@code false} if the transformation order is {@code this} followed by {@code matrix}.
+     */
+    private Matrix toSubMatrix(final boolean applyOtherFirst, final Matrix matrix) {
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        if (numRow != numCol) {
+            // Current implementation requires a square matrix.
+            return null;
+        }
+        final int subDim = applyOtherFirst ? subTransform.getSourceDimensions()
+                                           : subTransform.getTargetDimensions();
+        final MatrixSIS sub = Matrices.createIdentity(subDim + 1);
+        /*
+         * Ensure that every dimensions which are scaled by the affine transform are one
+         * of the dimensions modified by the sub-transform, and not any other dimension.
+         */
+        for (int j=numRow; --j>=0;) {
+            final int sj = j - firstAffectedOrdinate;
+            for (int i=numCol; --i>=0;) {
+                final double element = matrix.getElement(j, i);
+                if (sj >= 0 && sj < subDim) {
+                    final int si;
+                    final boolean copy;
+                    if (i == numCol-1) {                    // Translation term (last column)
+                        si = subDim;
+                        copy = true;
+                    } else {                                // Any term other than translation.
+                        si = i - firstAffectedOrdinate;
+                        copy = (si >= 0 && si < subDim);
+                    }
+                    if (copy) {
+                        sub.setElement(sj, si, element);
+                        continue;
+                    }
+                }
+                if (element != (i == j ? 1 : 0)) {
+                    // Found a dimension which perform some scaling or translation.
+                    return null;
+                }
+            }
+        }
+        return sub;
+    }
+
+    /**
+     * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
+     * This method applies the following special cases:
+     *
+     * <ul>
+     *  <li>If the other transform is also a {@code PassThroughTransform}, then the two transforms may be merged
+     *      in a single {@code PassThroughTransform} instance.</li>
+     *  <li>If the other transform discards some dimensions, verify if we still need a {@code PassThroughTransform}.</li>
+     * </ul>
+     *
+     * @return the simplified transform, or {@code null} if no such optimization is available.
+     * @throws FactoryException if an error occurred while combining the transforms.
+     *
+     * @since 1.0
+     */
+    @Override
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other, final MathTransformFactory factory)
+            throws FactoryException
+    {
+        final MathTransformsOrFactory proxy = MathTransformsOrFactory.wrap(factory);
+        if (other instanceof PassThroughTransform) {
+            final PassThroughTransform opt = (PassThroughTransform) other;
+            if (opt.firstAffectedOrdinate == firstAffectedOrdinate && opt.numTrailingOrdinates == numTrailingOrdinates) {
+                final MathTransform sub = proxy.concatenate(applyOtherFirst, subTransform, opt.subTransform);
+                return proxy.passThrough(firstAffectedOrdinate, sub, numTrailingOrdinates);
+            }
+        }
+        final Matrix m = MathTransforms.getMatrix(other);
+        if (m != null) {
+            /*
+             * If the other transform is a linear transform and all passthrough coordinates are unchanged by the matrix,
+             * we can move the matrix inside the passthrough transform. It reduces the number of dimension on which the
+             * linear transform operate, and gives a chance for another optimization in the concatenation between that
+             * linear transform and the sub-transform.
+             */
+            final Matrix sub = toSubMatrix(applyOtherFirst, m);
+            if (sub != null) {
+                MathTransform tr = proxy.linear(sub);
+                tr = proxy.concatenate(applyOtherFirst, subTransform, tr);
+                return proxy.passThrough(firstAffectedOrdinate, tr, numTrailingOrdinates);
+            }
+            /*
+             * If this PassThroughTransform is followed by a matrix discarding some dimensions, identify which dimensions
+             * are discarded. If all dimensions computed by the sub-transform are discarded, then we no longer need it.
+             * If some pass-through dimensions are discarded, then we can reduce the number of pass-through dimensions.
+             */
+            if (!applyOtherFirst) {
+                final int dimension = m.getNumCol() - 1;            // Number of source dimensions (ignore translations column).
+                if (dimension <= Long.SIZE) {                       // Because retained dimensions stored as a mask on 64 bits.
+                    long retainedDimensions = 0;
+                    final int numRows = m.getNumRow();              // Number of target dimensions + 1.
+                    for (int i=0; i<dimension; i++) {
+                        for (int j=0; j<numRows; j++) {
+                            if (m.getElement(j,i) != 0) {
+                                retainedDimensions |= (1L << i);    // Found a source dimension which is required by target dimension.
+                                break;
+                            }
+                        }
+                    }
+                    /*
+                     * Verify if matrix discards the sub-transform. If it does not, then we need to keep all the sub-transform
+                     * dimensions (discarding them is a "all or nothing" operation). Other dimensions (leading and trailing)
+                     * can be keep or discarded on a case-by-case basis.
+                     */
+                    final long    fullTransformMask = maskLowBits(dimension);
+                    final long    subTransformMask  = maskLowBits(subTransform.getTargetDimensions()) << firstAffectedOrdinate;
+                    final boolean keepSubTransform  = (retainedDimensions & subTransformMask) != 0;
+                    if (keepSubTransform) {
+                        retainedDimensions |= subTransformMask;           // Ensure that we keep all sub-transform dimensions.
+                    }
+                    if (retainedDimensions != fullTransformMask) {
+                        final int change = subTransform.getSourceDimensions() - subTransform.getTargetDimensions();
+                        if (change == 0 && !keepSubTransform) {
+                            return other;                                 // Shortcut avoiding creation of new MathTransforms.
+                        }
+                        /*
+                         * We enter in this block if some dimensions can be discarded. We want to discard them before the
+                         * PassThroughTransform instead than after. The matrix for that purpose will be computed later.
+                         * Before that, the loop below modifies a copy of the 'other' matrix as if those dimensions were
+                         * already removed.
+                         */
+                        MatrixSIS reduced = MatrixSIS.castOrCopy(m);
+                        long columnsToRemove = ~retainedDimensions & fullTransformMask;       // Can not be 0 at this point.
+                        do {
+                            final int lower = Long.numberOfTrailingZeros(columnsToRemove);
+                            final int upper = Long.numberOfTrailingZeros(~(columnsToRemove | maskLowBits(lower)));
+                            reduced = reduced.removeColumns(lower, upper);
+                            columnsToRemove &= ~maskLowBits(upper);
+                            columnsToRemove >>>= (upper - lower);
+                        } while (columnsToRemove != 0);
+                        /*
+                         * Expands the 'retainedDimensions' bitmask into a list of indices of dimensions to keep.   However
+                         * those indices are for dimensions to keep after the PassThroughTransform.  Because we rather want
+                         * indices for dimensions to keep before the PassThroughTransform, we need to adjust for difference
+                         * in number of dimensions. This change is represented by the 'change' integer computed above.
+                         * We apply two strategies:
+                         *
+                         *    1) If we keep the sub-transform, then the loop while surely sees the 'firstAffectedOrdinate'
+                         *       dimension since we ensured that we keep all sub-transform dimensions. When it happens, we
+                         *       add or remove bits at that point for the dimensionality changes.
+                         *
+                         *    2) If we do not keep the sub-transform, then code inside 'if (dim == firstAffectedOrdinate)'
+                         *       should not have been executed. Instead we will adjust the indices after the loop.
+                         */
+                        final long leadPassThroughMask = maskLowBits(firstAffectedOrdinate);
+                        final int numKeepAfter  = Long.bitCount(retainedDimensions & ~(leadPassThroughMask | subTransformMask));
+                        final int numKeepBefore = Long.bitCount(retainedDimensions & leadPassThroughMask);
+                        final int[] indices = new int[Long.bitCount(retainedDimensions) + change];
+                        for (int i=0; i<indices.length; i++) {
+                            int dim = Long.numberOfTrailingZeros(retainedDimensions);
+                            if (dim == firstAffectedOrdinate) {
+                                if (change < 0) {
+                                    retainedDimensions >>>= -change;                        // Discard dimensions to skip.
+                                    retainedDimensions &= ~leadPassThroughMask;             // Clear previous dimension flags.
+                                } else {
+                                    retainedDimensions <<= change;                          // Add dimensions.
+                                    retainedDimensions |= maskLowBits(change) << dim;       // Set flags for new dimensions.
+                                }
+                            }
+                            retainedDimensions &= ~(1L << dim);
+                            indices[i] = dim;
+                        }
+                        if (!keepSubTransform) {
+                            for (int i=indices.length; --i >= 0;) {
+                                final int dim = indices[i];
+                                if (dim <= firstAffectedOrdinate) break;
+                                indices[i] = dim - change;
+                            }
+                        }
+                        /*
+                         * Concatenate:
+                         *   1) An affine transform discarding some dimensions (no other operation).
+                         *   2) The passthrough transform with less input and output dimensions.
+                         *   3) The 'other' transform with less input dimensions.
+                         */
+                        MathTransform tr = proxy.linear(Matrices.createDimensionSelect(dimension + change, indices));
+                        if (keepSubTransform) {
+                            tr = proxy.concatenate(tr, proxy.passThrough(numKeepBefore, subTransform, numKeepAfter));
+                        }
+                        tr = proxy.concatenate(tr, proxy.linear(reduced));
+                        return tr;
+                    }
+                }
+            }
+        }
+        /*
+         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); we do not want to test if this transform
+         * is the inverse of the other transform as it is costly and unnecessary.  If it was the case, the concatenation
+         * of 'this.subTransform' with 'other.subTransform' done at the beginning of this method would have produced the
+         * identity transform already.
+         */
+        return null;
+    }
+
+    /**
+     * Returns a mask for the {@code n} lowest bits. This is a convenience method for a frequently
+     * used operation in {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
+     */
+    private static long maskLowBits(final int n) {
+        return (1L << n) - 1;
     }
 
     /**
@@ -628,9 +847,15 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         formatter.append(firstAffectedOrdinate);
         if (numTrailingOrdinates != 0) {
             formatter.append(numTrailingOrdinates);
-            formatter.setInvalidWKT(PassThroughTransform.class, null);
         }
         formatter.append(subTransform);
+        if (numTrailingOrdinates != 0) {
+            /*
+             * setInvalidWKT(…) shall be invoked only after we finished to format
+             * sub-transform, otherwise the wrong WKT element will be highlighted.
+             */
+            formatter.setInvalidWKT(PassThroughTransform.class, null);
+        }
         return WKTKeywords.PassThrough_MT;
     }
 }

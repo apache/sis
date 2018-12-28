@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Arrays
  *
@@ -1258,6 +1258,25 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Returns a sequence of increasing values of the given length. Each value is increased by 1.
+     * For example {@code sequence(-1, 4)} returns {@code {-1, 0, 1, 2}}. This method is a convenience for
+     * enumerating a subset of dimensions in a coordinate reference system or a subset of bands in an image.
+     *
+     * @param  start   first value in the array to return.
+     * @param  length  number of values to return.
+     * @return a sequence of increasing integers starting at {@code start} and having {@code length} values.
+     *
+     * @since 1.0
+     */
+    public static int[] sequence(final int start, final int length) {
+        final int[] array = new int[length];
+        for (int i=0; i<length; i++) {
+            array[i] = start + i;
+        }
+        return array;
+    }
+
+    /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
      * Special cases:
      *
@@ -1684,6 +1703,203 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Replaces all occurrences of the given value by the given replacement.
+     * This method compares the values using {@link Double#doubleToRawLongBits(double)}:
+     *
+     * <ul>
+     *   <li>Positive zero is considered different then negative zero.</li>
+     *   <li>The {@linkplain org.apache.sis.math.MathFunctions#toNanFloat(int) various
+     *       possible NaN values} are considered different.</li>
+     * </ul>
+     *
+     * A common usage for this method is to replace pad values by {@link Double#NaN} in the
+     * sample values of a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.
+     * This method does nothing if the given array is {@code null} or if {@code search} is the
+     * same bits pattern than {@code replacement}.
+     *
+     * @param  array        the array where to perform the search and replace, or {@code null}.
+     * @param  search       the value to search.
+     * @param  replacement  the replacement.
+     *
+     * @since 1.0
+     */
+    public static void replace(final double[] array, final double search, final double replacement) {
+        if (array != null) {
+            final long bits = Double.doubleToRawLongBits(search);
+            if (bits != Double.doubleToRawLongBits(replacement)) {
+                for (int i=0; i<array.length; i++) {
+                    if (Double.doubleToRawLongBits(array[i]) == bits) {
+                        array[i] = replacement;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Replaces all occurrences of the given value by the given replacement.
+     * This method compares the values using {@link Float#floatToRawIntBits(float)}:
+     *
+     * <ul>
+     *   <li>Positive zero is considered different then negative zero.</li>
+     *   <li>The {@linkplain org.apache.sis.math.MathFunctions#toNanFloat(int) various
+     *       possible NaN values} are considered different.</li>
+     * </ul>
+     *
+     * A common usage for this method is to replace pad values by {@link Float#NaN} in the
+     * sample values of a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}.
+     * This method does nothing if the given array is {@code null} or if {@code search} is the
+     * same bits pattern than {@code replacement}.
+     *
+     * @param  array        the array where to perform the search and replace, or {@code null}.
+     * @param  search       the value to search.
+     * @param  replacement  the replacement.
+     *
+     * @since 1.0
+     */
+    public static void replace(final float[] array, final float search, final float replacement) {
+        if (array != null) {
+            final int bits = Float.floatToRawIntBits(search);
+            if (bits != Float.floatToRawIntBits(replacement)) {
+                for (int i=0; i<array.length; i++) {
+                    if (Float.floatToRawIntBits(array[i]) == bits) {
+                        array[i] = replacement;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a copy of the given array where each value has been casted to the {@code float} type.
+     * This method does not verify if the casts would cause data loss.
+     *
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code float} type,
+     *         or {@code null} if the given array was null.
+     *
+     * @since 1.0
+     */
+    public static float[] copyAsFloats(final double[] data) {
+        if (data == null) return null;
+        final float[] result = new float[data.length];
+        for (int i=0; i<data.length; i++) {
+            result[i] = (float) data[i];
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of the given array where each value has been casted to the {@code float} type,
+     * but only if all casts are lossless. If any cast causes data loss, then this method returns {@code null}.
+     * This method is equivalent to the following code, but potentially more efficient:
+     *
+     * {@preformat java
+     *    if (isSinglePrecision(data)) {
+     *        return copyAsFloat(data);
+     *    } else {
+     *        return null;
+     *    }
+     * }
+     *
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code float} type, or
+     *         {@code null} if the given array was null or if a cast would cause data lost.
+     *
+     * @since 1.0
+     */
+    public static float[] copyAsFloatsIfLossless(final double[] data) {
+        if (data == null) return null;
+        /*
+         * Before to allocate a new array, performs a quick sampling of a few values.
+         * Basically the first value, the last value, a value in the middle and a few others.
+         */
+        int i = data.length - 1;
+        if (i < 0) {
+            return ArraysExt.EMPTY_FLOAT;
+        }
+        for (;;) {
+            final double d = data[i];
+            if (Double.doubleToRawLongBits(d) != Double.doubleToRawLongBits((float) d)) {
+                return null;
+            }
+            if (i == 0) break;
+            i >>>= 1;
+        }
+        /*
+         * At this point the quick sampling found no data loss. We can now allocate the array,
+         * but we will still need to check for each value, which may interrupt the copy at any time.
+         */
+        final float[] result = new float[data.length];
+        for (i = data.length; --i >= 0;) {
+            final double d = data[i];
+            final float  f = (float) d;
+            if (Double.doubleToRawLongBits(d) != Double.doubleToRawLongBits(f)) {
+                return null;
+            }
+            result[i] = f;
+        }
+        return result;
+    }
+
+    /**
+     * Returns {@code true} if every values in the given {@code double} array could be casted to the
+     * {@code float} type without data lost. If this method returns {@code true}, then the array can
+     * be converted to the {@code float[]} type with {@link #copyAsFloats(double[])} and the exact
+     * same {@code double} values can still be obtained by casting back each {@code float} value
+     * to {@code double}.
+     *
+     * @param  values  the values to test for their precision, or {@code null}.
+     * @return {@code true} if every values can be casted to the {@code float} type without data lost.
+     *
+     * @since 1.0
+     */
+    public static boolean isSinglePrecision(final double... values) {
+        if (values != null) {
+            for (final double value : values) {
+                if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits((float) value)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if the specified array contains at least one {@link Double#NaN NaN} value.
+     *
+     * @param  array  the array to check, or {@code null}.
+     * @return {@code true} if the given array is non-null and contains at least one NaN value.
+     */
+    public static boolean hasNaN(final double[] array) {
+        if (array != null) {
+            for (int i=0; i<array.length; i++) {
+                if (Double.isNaN(array[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the specified array contains at least one {@link Float#NaN NaN} value.
+     *
+     * @param  array  the array to check, or {@code null}.
+     * @return {@code true} if the given array is non-null and contains at least one NaN value.
+     */
+    public static boolean hasNaN(final float[] array) {
+        if (array != null) {
+            for (int i=0; i<array.length; i++) {
+                if (Float.isNaN(array[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns {@code true} if all values in the specified array are equal to the specified value,
      * which may be {@code null}.
      *
@@ -1758,40 +1974,6 @@ public final class ArraysExt extends Static {
             }
         }
         return true;
-    }
-
-    /**
-     * Returns {@code true} if the specified array contains at least one {@link Double#NaN NaN} value.
-     *
-     * @param  array  the array to check, or {@code null}.
-     * @return {@code true} if the given array is non-null and contains at least one NaN value.
-     */
-    public static boolean hasNaN(final double[] array) {
-        if (array != null) {
-            for (int i=0; i<array.length; i++) {
-                if (Double.isNaN(array[i])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns {@code true} if the specified array contains at least one {@link Float#NaN NaN} value.
-     *
-     * @param  array  the array to check, or {@code null}.
-     * @return {@code true} if the given array is non-null and contains at least one NaN value.
-     */
-    public static boolean hasNaN(final float[] array) {
-        if (array != null) {
-            for (int i=0; i<array.length; i++) {
-                if (Float.isNaN(array[i])) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**

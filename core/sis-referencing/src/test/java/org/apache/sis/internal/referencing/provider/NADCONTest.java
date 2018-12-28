@@ -107,7 +107,7 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
     /**
      * Tests loading an official {@code "conus.las"} and {@code "conus.los"} datum shift grid files and interpolating
      * the sample point given by {@link #samplePoint(int)}. This test is normally not executed because Apache SIS does
-     * not redistribute the datum shift grid files. But developers can invoke this method explicitely if they can
+     * not redistribute the datum shift grid files. But developers can invoke this method explicitly if they can
      * provide a path to those files.
      *
      * @param  latitudeShifts   path to the official {@code "conus.las"} file.

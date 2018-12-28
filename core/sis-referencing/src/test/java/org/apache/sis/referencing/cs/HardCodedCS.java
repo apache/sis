@@ -73,7 +73,7 @@ public final strictfp class HardCodedCS {
      * A two-dimensional ellipsoidal CS with
      * <var>{@linkplain HardCodedAxes#LONGITUDE_gon longitude}</var>,
      * <var>{@linkplain HardCodedAxes#LATITUDE_gon latitude}</var>
-     * axes (without "Geodetic" prefix) in gradians.
+     * axes (without "Geodetic" prefix) in grads.
      *
      * <p>This coordinate system is used for testing unit conversions without axes swapping.</p>
      */

@@ -168,7 +168,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         openTag("ul", "verbose");
         openTag("li");
         println("The <code>semi-major</code> and <code>semi-minor</code> parameters are needed for all map projections,");
-        println("but usually do not need to be specified explicitely since they are inferred from the ellipsoid");
+        println("but usually do not need to be specified explicitly since they are inferred from the ellipsoid");
         println("(unless <a href=\"http://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>).");
         println("For this reason, those parameters are usually not shown in <a href=\"http://www.epsg-registry.org\">EPSG registry</a>");
         println("or <a href=\"http://docs.opengeospatial.org/is/12-063r5/12-063r5.html\">Well Known Text</a> (WKT) definitions.");

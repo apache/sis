@@ -600,6 +600,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @throws MismatchedDimensionException if the given envelope does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
+     * @see Envelopes#union(Envelope...)
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox)
      */
     public void add(final Envelope envelope) throws MismatchedDimensionException {
@@ -725,6 +726,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @throws MismatchedDimensionException if the given envelope does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
+     * @see Envelopes#intersect(Envelope...)
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
      */
     public void intersect(final Envelope envelope) throws MismatchedDimensionException {

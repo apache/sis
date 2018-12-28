@@ -54,10 +54,10 @@ public final strictfp class AbstractCRSTest extends TestCase {
 
         assertEquals("forConvention(RIGHT_HANDED)", expected, actual);
         assertSame(actual,   toTest  .forConvention(AxesConvention.RIGHT_HANDED));
-        assertSame(actual,   toTest  .forConvention(AxesConvention.CONVENTIONALLY_ORIENTED));
+        assertSame(actual,   toTest  .forConvention(AxesConvention.DISPLAY_ORIENTED));
         assertSame(actual,   toTest  .forConvention(AxesConvention.NORMALIZED));
         assertSame(expected, expected.forConvention(AxesConvention.RIGHT_HANDED));
-        assertSame(expected, expected.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED));
+        assertSame(expected, expected.forConvention(AxesConvention.DISPLAY_ORIENTED));
         assertSame(expected, expected.forConvention(AxesConvention.NORMALIZED));
     }
 }

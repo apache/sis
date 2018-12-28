@@ -116,7 +116,7 @@ public final class Affine extends AbstractProvider {
 
     /**
      * Creates a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
-     * This constructor is public for the needs of {@link java.util.ServiceLoader} — do not invoke explicitely.
+     * This constructor is public for the needs of {@link java.util.ServiceLoader} — do not invoke explicitly.
      * If an instance of {@code Affine()} is desired, invoke {@code getProvider(EPSG_DIMENSION, EPSG_DIMENSION)}
      * instead.
      *

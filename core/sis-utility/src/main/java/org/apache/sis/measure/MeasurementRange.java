@@ -36,9 +36,17 @@ import org.apache.sis.util.resources.Errors;
  *       Usage of {@code MeasurementRange} with integer types is possible, but no convenience
  *       method is provided for integers because they are usually not representative of the
  *       nature of physical measurements.</li>
+ *   <li>{@link #unit()} for getting the unit of measurement associated to this range.</li>
  *   <li>{@link #convertTo(Unit)} for converting the unit of measurement.</li>
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
+ *
+ * <div class="section">Null unit of measurement</div>
+ * The unit of measurement should not be null, otherwise a {@link NumberRange} should be used
+ * instead than {@code MeasurementRange}. Nevertheless this class is tolerant to {@code null}
+ * units in order to support situations where a unit of measurement <em>should</em> be specified,
+ * but for some reason is unavailable. If the unit of measurement become known at a later stage,
+ * it can be specified by a call to {@link #convertTo(Unit)}.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.
@@ -227,6 +235,9 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Returns the unit of measurement, or {@code null} if unknown.
+     * In principle the unit should never be null, otherwise a {@link NumberRange} should have been used
+     * instead than {@code MeasurementRange}. Nevertheless this method may return {@code null} if a unit
+     * <em>should</em> exist but for some reason is unavailable.
      *
      * @return the unit of measurement, or {@code null}.
      */

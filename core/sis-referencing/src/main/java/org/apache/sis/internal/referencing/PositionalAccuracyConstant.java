@@ -91,7 +91,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * Indicates that a {@linkplain org.opengis.referencing.operation.Transformation transformation}
      * requires a datum shift, but no method has been found applicable. This usually means that no
      * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa Wolf parameters} have
-     * been found. Such datum shifts are approximative and may have 1 kilometer error.
+     * been found. Such datum shifts are approximations and may have 1 kilometer error.
      */
     public static final PositionalAccuracy DATUM_SHIFT_OMITTED;
     static {

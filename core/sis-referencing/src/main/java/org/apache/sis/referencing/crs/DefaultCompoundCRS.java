@@ -475,7 +475,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * {@inheritDoc}
      *
-     * <p>If the given convention is {@link AxesConvention#CONVENTIONALLY_ORIENTED} or
+     * <p>If the given convention is {@link AxesConvention#DISPLAY_ORIENTED} or
      * {@link AxesConvention#NORMALIZED}, then this method will also reorder the components
      * with horizontal CRS (geodetic or projected) first, then vertical CRS, then temporal CRS.</p>
      *
@@ -488,7 +488,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         if (crs == null) {
             crs = this;
             boolean changed = false;
-            final boolean reorderCRS = convention.ordinal() <= AxesConvention.CONVENTIONALLY_ORIENTED.ordinal();
+            final boolean reorderCRS = convention.ordinal() <= AxesConvention.DISPLAY_ORIENTED.ordinal();
             final List<? extends CoordinateReferenceSystem> components = reorderCRS ? singles : this.components;
             final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[components.size()];
             for (int i=0; i<newComponents.length; i++) {

@@ -222,7 +222,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     /**
      * The calendar instance for creating {@link Date} objects from a year (the "epoch" in datum definition).
      * We use the UTC timezone, which may not be quite accurate. But there is no obvious timezone for "epoch",
-     * and the "epoch" is approximative anyway.
+     * and the "epoch" is an approximation anyway.
      *
      * @see #getCalendar()
      */
@@ -1336,7 +1336,7 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final String  type       = getString   (code, result, 7);
                 /*
-                 * Note: Do not invoke 'createProperties' now, even if we have all required informations,
+                 * Note: Do not invoke 'createProperties' now, even if we have all required information,
                  *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
                  *
                  * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
@@ -1727,7 +1727,7 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Returns Bursa-Wolf parameters for a geodetic datum. If the specified datum has no conversion informations,
+     * Returns Bursa-Wolf parameters for a geodetic datum. If the specified datum has no conversion information,
      * then this method returns {@code null}.
      *
      * <p>This method is for compatibility with <cite>Well Known Text</cite> (WKT) version 1 formatting.
@@ -2978,8 +2978,8 @@ next:               while (r.next()) {
 
     /**
      * Creates operations from source and target coordinate reference system codes.
-     * This method only extract the information explicitely declared in the EPSG database;
-     * it does not attempt to infer by itself operations that are not explicitely recorded in the database.
+     * This method only extract the information explicitly declared in the EPSG database;
+     * it does not attempt to infer by itself operations that are not explicitly recorded in the database.
      *
      * <p>The returned set is ordered with the most accurate operations first.
      * Deprecated operations are not included in the set; if a deprecated operation is really wanted,
@@ -3388,7 +3388,7 @@ next:               while (r.next()) {
      *
      * @param  type  the GeoAPI interface that was to be created (e.g. {@code CoordinateReferenceSystem.class}).
      * @param  code  the unknown authority code.
-     * @return an exception initialized with an error message built from the specified informations.
+     * @return an exception initialized with an error message built from the specified information.
      */
     private NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
         return new NoSuchAuthorityCodeException(resources().getString(Resources.Keys.NoSuchAuthorityCode_3,

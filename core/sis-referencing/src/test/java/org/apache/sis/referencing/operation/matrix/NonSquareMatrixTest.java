@@ -82,7 +82,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     @Test
     @Override
     public void testInverse() throws NoninvertibleMatrixException {
-        testDimensionReduction(null, 1, 0);
+        testDimensionReduction(null, 1);
         testDimensionIncrease (null, 1);
     }
 
@@ -137,7 +137,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
         testDimensionReduction(new Matrix3(
                 2, 0, 0,
                 0, 2, 0,
-                0, 0, 1), 2, NaN);
+                0, 0, 1), 2);
         testDimensionIncrease(new GeneralMatrix(5, 5, new double[] {
                 2, 0, 0, 0, 0,
                 0, 2, 0, 0, 0,
@@ -150,14 +150,11 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
      * matrix having more source dimensions (columns) than target dimensions (rows).
      *
-     * @param  Y    the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
-     * @param  sf   the scale factor by which to multiply all expected scale elements.
-     * @param  uks  value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
+     * @param  Y   the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf  the scale factor by which to multiply all expected scale elements.
      * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
-    private static void testDimensionReduction(final MatrixSIS Y, final double sf, final double uks)
-            throws NoninvertibleMatrixException
-    {
+    private static void testDimensionReduction(final MatrixSIS Y, final double sf) throws NoninvertibleMatrixException {
         final MatrixSIS matrix = Matrices.create(3, 5, new double[] {
             2, 0, 0, 0, 8,
             0, 0, 4, 0, 5,
@@ -165,9 +162,9 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
         });
         final double[] expected = {
             0.5*sf,  0,           -4,
-            uks,     uks,        NaN,
+            0,       0,          NaN,
             0,       0.25*sf,  -1.25,
-            uks,     uks,        NaN,
+            0,       0,          NaN,
             0,       0,            1
         };
         final MatrixSIS inverse = (Y != null) ? matrix.solve(Y) : matrix.inverse();

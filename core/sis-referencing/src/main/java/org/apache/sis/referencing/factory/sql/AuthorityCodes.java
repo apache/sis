@@ -105,7 +105,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * The result of {@code statements[ALL]}, created only if requested.
      * The codes will be queried at most once and cached in the {@link #codes} list.
      *
-     * <p>Note that if this result set is not closed explicitely, it will be closed implicitly when
+     * <p>Note that if this result set is not closed explicitly, it will be closed implicitly when
      * {@code statements[ALL]} will be closed. This is because JDBC specification said that closing
      * a statement also close its result set.</p>
      */

@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultGeographicCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -71,18 +71,18 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
 
     /**
      * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
-     * for {@link AxesConvention#CONVENTIONALLY_ORIENTED}.
+     * for {@link AxesConvention#DISPLAY_ORIENTED}.
      */
     @Test
     public void testConventionalOrientation() {
         final DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(CommonCRS.WGS84.geographic3D());
-        final DefaultGeographicCRS normalized = crs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
+        final DefaultGeographicCRS normalized = crs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame(crs, normalized);
         final EllipsoidalCS cs = normalized.getCoordinateSystem();
         final EllipsoidalCS ref = crs.getCoordinateSystem();
-        assertSame("longitude", ref.getAxis(1), cs.getAxis(0));
-        assertSame("latitude",  ref.getAxis(0), cs.getAxis(1));
-        assertSame("height",    ref.getAxis(2), cs.getAxis(2));
+        assertEqualsIgnoreMetadata(ref.getAxis(1), cs.getAxis(0));      // EPSG codes differ because of different axis order.
+        assertEqualsIgnoreMetadata(ref.getAxis(0), cs.getAxis(1));
+        assertEqualsIgnoreMetadata(ref.getAxis(2), cs.getAxis(2));
     }
 
     /**

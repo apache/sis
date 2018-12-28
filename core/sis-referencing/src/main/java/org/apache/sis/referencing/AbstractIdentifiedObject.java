@@ -105,7 +105,7 @@ import org.apache.sis.metadata.iso.ImmutableIdentifier;
  * {@code IdentifiedObject} instances are created in two main ways:
  *
  * <ul>
- *   <li>Using an {@link ObjectFactory}, in which case all properties can be explicitely specified.</li>
+ *   <li>Using an {@link ObjectFactory}, in which case all properties can be explicitly specified.</li>
  *   <li>Using an {@link AuthorityFactory}, in which case only a code (typically a primary key) is specified.
  *       The {@linkplain NamedIdentifier#getAuthority() authority}
  *       and {@linkplain NamedIdentifier#getCode() authority code} values are set to the authority name

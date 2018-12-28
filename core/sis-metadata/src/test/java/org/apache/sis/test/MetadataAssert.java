@@ -237,10 +237,12 @@ public strictfp class MetadataAssert extends Assert {
         try {
             comparator = new DocumentComparator(expected, actual);
         } catch (IOException | ParserConfigurationException | SAXException e) {
-            // We don't throw directly those exceptions since failing to parse the XML file can
-            // be considered as part of test failures and the JUnit exception for such failures
-            // is AssertionError. Having no checked exception in "assert" methods allow us to
-            // declare the checked exceptions only for the library code being tested.
+            /*
+             * We don't throw directly those exceptions since failing to parse the XML file can
+             * be considered as part of test failures and the JUnit exception for such failures
+             * is AssertionError. Having no checked exception in "assert" methods allow us to
+             * declare the checked exceptions only for the library code being tested.
+             */
             throw new AssertionError(e);
         }
         comparator.tolerance = tolerance;

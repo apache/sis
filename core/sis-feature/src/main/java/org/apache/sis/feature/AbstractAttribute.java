@@ -269,7 +269,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * then a characteristic of this attribute could be the measurement accuracy.
      * See <cite>"Attribute characterization"</cite> in {@link DefaultAttributeType} Javadoc for more information.
      *
-     * <p>The map returned by this method contains only the characteristics explicitely defined for this attribute.
+     * <p>The map returned by this method contains only the characteristics explicitly defined for this attribute.
      * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()
      * default value} may still exist.
      * In such cases, callers may also need to inspect the {@link DefaultAttributeType#characteristics()}
@@ -305,7 +305,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * <div class="section">Adding a characteristic</div>
      * A new characteristic can be added in the map in three different ways:
      * <ol>
-     *   <li>Putting the (<var>name</var>, <var>characteristic</var>) pair explicitely.
+     *   <li>Putting the (<var>name</var>, <var>characteristic</var>) pair explicitly.
      *     If an older characteristic existed for that name, it will be replaced.
      *     Example:
      *

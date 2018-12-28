@@ -48,8 +48,6 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * normal to the ellipsoid used in the definition of horizontal datum.
      *
      * <p>Identifier: {@code CS_DatumType.CS_VD_Ellipsoidal}</p>
-     *
-     * @see <a href="http://jira.codehaus.org/browse/GEO-133">GEO-133</a>
      */
     public static final VerticalDatumType ELLIPSOIDAL = VerticalDatumType.valueOf("ELLIPSOIDAL");
 

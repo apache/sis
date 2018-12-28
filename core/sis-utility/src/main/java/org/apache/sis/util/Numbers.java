@@ -147,9 +147,8 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns {@code true} if the given {@code type} is a floating point type.
-     * The list of floating point types include primitive and wrapper classes of
-     * {@link Float} and {@link Double}, together with the {@link BigDecimal} class.
+     * Returns {@code true} if the given {@code type} is a floating point type. The floating point types
+     * are {@link Float}, {@code float}, {@link Double}, {@code double} and {@link BigDecimal}.
      *
      * @param  type  the type to test (may be {@code null}).
      * @return {@code true} if {@code type} is one of the known types capable to represent floating point numbers.
@@ -163,8 +162,8 @@ public final class Numbers extends Static {
 
     /**
      * Returns {@code true} if the given {@code type} is an integer type. The integer types are
-     * {@link Long}, {@code long}, {@link Integer}, {@code int}, {@link Short}, {@code short},
-     * {@link Byte}, {@code byte} and {@link BigInteger}.
+     * {@link Byte}, {@code byte}, {@link Short}, {@code short}, {@link Integer}, {@code int},
+     * {@link Long}, {@code long} and {@link BigInteger}.
      *
      * @param  type  the type to test (may be {@code null}).
      * @return {@code true} if {@code type} is an integer type.

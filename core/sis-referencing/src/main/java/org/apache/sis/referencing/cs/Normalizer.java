@@ -30,6 +30,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.PolarCS;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -86,7 +87,7 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * This should be considered as an implementation details.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -188,7 +189,7 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
-     * Sorts the specified axis in an attempt to create a right-handed system.
+     * Sorts the specified axes in an attempt to create a right-handed system.
      * The sorting is performed in place. This method returns {@code true} if
      * at least one axis moved as result of this method call.
      *
@@ -236,7 +237,7 @@ final class Normalizer implements Comparable<Normalizer> {
         final String abbreviation = axis.getAbbreviation();
         final String newAbbr = sameDirection ? abbreviation :
                 AxisDirections.suggestAbbreviation(axis.getName().getCode(), newDir, newUnit);
-        final Map<String,Object> properties = new HashMap<>();
+        final Map<String,Object> properties = new HashMap<>(8);
         if (newAbbr.equals(abbreviation)) {
             properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
         } else {
@@ -280,21 +281,33 @@ final class Normalizer implements Comparable<Normalizer> {
      * @return the normalized coordinate system, or {@code null} if no normalization is needed.
      */
     static AbstractCS normalize(final CoordinateSystem cs, final AxisFilter changes, final boolean reorder) {
-        boolean changed = false;
         final int dimension = cs.getDimension();
-        CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
+        /*
+         * Get the axes to retain, without normalizing them yet. We keep a list of
+         * axes before normalization in order to detect which axes have been reused
+         * and whether reused axes are in the same order than before.
+         */
+        final CoordinateSystemAxis[] oldAxes = new CoordinateSystemAxis[dimension];
         int n = 0;
         for (int i=0; i<dimension; i++) {
-            CoordinateSystemAxis axis = cs.getAxis(i);
-            if (changes != null) {
-                if (!changes.accept(axis)) {
-                    continue;
-                }
-                changed |= (axis != (axis = normalize(axis, changes)));
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            if (changes == null || changes.accept(axis)) {
+                oldAxes[n++] = axis;
             }
-            axes[n++] = axis;
         }
-        axes = ArraysExt.resize(axes, n);
+        /*
+         * Normalize axis units and directions, without changing axis order yet.
+         * We need to normalize direction before to check for axis order because
+         * change in axis direction can change whether axes are right-handed.
+         */
+        final CoordinateSystemAxis[] newAxes = Arrays.copyOf(oldAxes, n);
+        boolean changed = false;
+        if (changes != null) {
+            for (int i=0; i<n; i++) {
+                newAxes[i] = normalize(newAxes[i], changes);
+                changed |= (newAxes[i] != oldAxes[i]);
+            }
+        }
         /*
          * Sort the axes in an attempt to create a right-handed system.
          * If nothing changed, return the given Coordinate System as-is.
@@ -303,21 +316,21 @@ final class Normalizer implements Comparable<Normalizer> {
             int angularUnitOrder = 0;
             if  (cs instanceof EllipsoidalCS || cs instanceof SphericalCS) angularUnitOrder = -1;      // (λ,φ,h) order
             else if (cs instanceof CylindricalCS || cs instanceof PolarCS) angularUnitOrder = +1;      // (r,θ) order
-            changed |= sort(axes, angularUnitOrder);
+            changed |= sort(newAxes, angularUnitOrder);
             if (angularUnitOrder == 1) {                            // Cylindrical or polar
                 /*
                  * Change (r,z,θ) to (r,θ,z) order in CylindricalCS. The check on unit of
                  * measurements should be always true, but we verify as a paranoiac check.
                  */
-                if (axes.length == 3 && isLengthAndAngle(axes, 1)) {
-                    ArraysExt.swap(axes, 1, 2);
+                if (newAxes.length == 3 && isLengthAndAngle(newAxes, 1)) {
+                    ArraysExt.swap(newAxes, 1, 2);
                 }
                 /*
                  * If we were not allowed to normalize the axis direction, we may have a
                  * left-handed coordinate system here. If so, make it right-handed.
                  */
-                if (AxisDirections.CLOCKWISE.equals(axes[1].getDirection()) && isLengthAndAngle(axes, 0)) {
-                    ArraysExt.swap(axes, 0, 1);
+                if (AxisDirections.CLOCKWISE.equals(newAxes[1].getDirection()) && isLengthAndAngle(newAxes, 0)) {
+                    ArraysExt.swap(newAxes, 0, 1);
                 }
             }
         }
@@ -325,12 +338,29 @@ final class Normalizer implements Comparable<Normalizer> {
             return null;
         }
         /*
+         * Verify is some axes have been reused as-is but in different order. The EPSG database uses different codes
+         * for the same axis at different index. If we changed the position of an axis, then we remove its EPSG code
+         * since it is no longer correct. Actually we conservatively remove all identifiers, not only EPSG ones, for
+         * simplicity, consistency with handling of identifiers elsewhere in this class and because we don't know if
+         * other identifier namespaces depend on axis order like EPSG ones.
+         */
+        for (int i=0; i<n; i++) {
+            final CoordinateSystemAxis axis = newAxes[i];
+            if (!axis.getIdentifiers().isEmpty()) {             // If the axis has no identifier, nothing to remove.
+                for (int j=0; j<n; j++) {
+                    if (j != i && axis == oldAxes[j]) {
+                        newAxes[i] = forRange(axis, axis.getMinimumValue(), axis.getMaximumValue());
+                    }
+                }
+            }
+        }
+        /*
          * Create a new coordinate system of the same type than the given one, but with the given axes.
          * We need to change the Coordinate System name, since it is likely to not be valid anymore.
          */
         final AbstractCS impl = castOrCopy(cs);
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
-        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, axes)), axes);
+        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, newAxes)), newAxes);
     }
 
     /**
@@ -342,7 +372,7 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
-     * Returns a coordinate system with the same axes than the given CS, except that the wrapround axes
+     * Returns a coordinate system with the same axes than the given CS, except that the wraparound axes
      * are shifted to a range of positive values. This method can be used in order to shift between the
      * [-180 … +180]° and [0 … 360]° ranges of longitude values.
      *
@@ -359,23 +389,16 @@ final class Normalizer implements Comparable<Normalizer> {
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
             CoordinateSystemAxis axis = cs.getAxis(i);
-            final RangeMeaning rangeMeaning = axis.getRangeMeaning();
-            if (RangeMeaning.WRAPAROUND.equals(rangeMeaning)) {
+            if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
                 double min = axis.getMinimumValue();
                 if (min < 0) {
                     double max = axis.getMaximumValue();
                     double offset = (max - min) / 2;
-                    offset *= Math.floor(min/offset + 1E-10);
+                    offset *= Math.floor(min/offset + Numerics.COMPARISON_THRESHOLD);
                     min -= offset;
                     max -= offset;
                     if (min < max) { // Paranoiac check, but also a way to filter NaN values when offset is infinite.
-                        final Map<String,Object> properties = new HashMap<>();
-                        properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
-                        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
-                        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);
-                        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, rangeMeaning);
-                        axis = new DefaultCoordinateSystemAxis(properties,
-                                axis.getAbbreviation(), axis.getDirection(), axis.getUnit());
+                        axis = forRange(axis, min, max);
                         changed = true;
                     }
                 }
@@ -386,6 +409,19 @@ final class Normalizer implements Comparable<Normalizer> {
             return null;
         }
         return castOrCopy(cs).createForAxes(IdentifiedObjects.getProperties(cs, EXCLUDES), axes);
+    }
+
+    /**
+     * Returns a new axis with the same properties than the given axis except the identifiers which are omitted,
+     * and the minimum and maximum values which are set to the given values.
+     */
+    private static CoordinateSystemAxis forRange(final CoordinateSystemAxis axis, final double min, final double max) {
+        final Map<String,Object> properties = new HashMap<>(8);
+        properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
+        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
+        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);
+        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, axis.getRangeMeaning());
+        return new DefaultCoordinateSystemAxis(properties, axis.getAbbreviation(), axis.getDirection(), axis.getUnit());
     }
 
     /**
@@ -410,7 +446,7 @@ final class Normalizer implements Comparable<Normalizer> {
     static AbstractCS forConvention(final CoordinateSystem cs, final AxesConvention convention) {
         switch (convention) {
             case NORMALIZED:              // Fall through
-            case CONVENTIONALLY_ORIENTED: return normalize(cs, convention, true);
+            case DISPLAY_ORIENTED: return normalize(cs, convention, true);
             case RIGHT_HANDED:            return normalize(cs, null, true);
             case POSITIVE_RANGE:          return shiftAxisRange(cs);
             default: throw new AssertionError(convention);

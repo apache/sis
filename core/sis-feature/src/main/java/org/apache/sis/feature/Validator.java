@@ -106,7 +106,7 @@ final class Validator {
     /**
      * Implementation of {@link AbstractFeature#quality()}, also shared by {@link Features} static method.
      *
-     * @param type     the type of the {@code feature} argument, provided explicitely for protecting from user overriding.
+     * @param type     the type of the {@code feature} argument, provided explicitly for protecting from user overriding.
      * @param feature  the feature to validate.
      */
     void validate(final FeatureType type, final AbstractFeature feature) {

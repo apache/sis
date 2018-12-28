@@ -278,8 +278,7 @@ search: do {
 
     /**
      * Returns {@code true} if we think that the operating system supports ANSI sequences.
-     * This method performs a very naive and approximative check. Result is just a hint and
-     * may be wrong.
+     * This method performs a very naive and rough check. Result is just a hint and may be wrong.
      *
      * <p>This method does not check if a {@linkplain java.io.Console console} is attached to the
      * running JVM because the caller may want to write to the {@linkplain System#err standard

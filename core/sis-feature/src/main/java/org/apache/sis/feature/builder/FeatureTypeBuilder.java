@@ -203,7 +203,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * This constructor initializes the list of {@linkplain #properties() properties}, the
      * {@linkplain #getSuperTypes() super types} and {@link #isAbstract() isAbstract} flag
      * to values inferred from the given template. The properties list will contain properties
-     * declared explicitely in the given template, not including properties inherited from super types.
+     * declared explicitly in the given template, not including properties inherited from super types.
      *
      * <div class="warning"><b>Warning:</b>
      * The {@code template} argument type will be changed to {@code FeatureType} if and when such interface
@@ -624,7 +624,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Returns a view of all attributes and associations added to the {@code FeatureType} to build.
-     * This list contains only properties declared explicitely to this builder;
+     * This list contains only properties declared explicitly to this builder;
      * it does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
      * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
      * However the returned list allows only {@linkplain List#remove(Object) remove} operations;
@@ -736,7 +736,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *   <li>{@link GeometryType#AREAL}  for {@code Polygon} type.</li>
      * </ul>
      *
-     * Geometric objects outside the above list can still be used by declaring their type explicitely.
+     * Geometric objects outside the above list can still be used by declaring their type explicitly.
      * However in this case there is no isolation level between the geometry types and the library that implement them.
      *
      * <div class="note"><b>Example:</b>
@@ -928,7 +928,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
              * and sis:envelope operations. At first we presume that there is always an identifier. The identifier slot
              * will be removed later if there is none.
              */
-            final int numSpecified = properties.size();     // Number of explicitely specified properties.
+            final int numSpecified = properties.size();     // Number of explicitly specified properties.
             int numSynthetic;                               // Number of synthetic properties that may be generated.
             int envelopeIndex = -1;
             int geometryIndex = -1;

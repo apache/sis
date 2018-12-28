@@ -137,7 +137,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
             return result;
         }
         /*
-         * We should enter in this block only if the user gave us explicitely a Reader.
+         * We should enter in this block only if the user gave us explicitly a Reader.
          * A common case is a StringReader wrapping a String object.
          */
         final Reader reader = connector.getStorageAs(Reader.class);

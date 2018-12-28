@@ -441,11 +441,9 @@ class PropertyAccessor {
                     }
                 }
                 /*
-                 * At this point, we are ready to accept the method. Before doing so,
-                 * check if the method override an other method defined in a parent
-                 * class with a covariant return type. The JVM considers such cases
-                 * as two different methods, while from a Java developer point of
-                 * view this is the same method (GEOTK-205).
+                 * At this point, we are ready to accept the method. Before doing so, check if the method override
+                 * an other method defined in a parent class with a covariant return type. The JVM considers such
+                 * cases as two different methods, while from a Java developer point of view this is the same method.
                  */
                 final Integer pi = indices.put(name, count);
                 if (pi != null) {

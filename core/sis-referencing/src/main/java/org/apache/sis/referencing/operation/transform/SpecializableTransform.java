@@ -662,7 +662,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
             ptDst = global.transform(ptSrc, ptDst);
             final SubArea domain = SubArea.find(forward.domains, ptDst);
             if (domain != null) {
-                ptDst = domain.inverse.transform(new DirectPositionView.Double(source, 0, source.length), ptDst);
+                ptDst = domain.inverse.transform(new DirectPositionView.Double(source), ptDst);
             }
             return ptDst;
         }

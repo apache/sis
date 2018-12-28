@@ -150,7 +150,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * If no wrapper is expected for the given class, then this method shall return {@code null}.
      *
      * <p>If a wrapper is expected for the given class but was not found, then this method shall throw
-     * {@link ClassNotFoundException}. Note that no wrapper may be defined explicitely for the given type,
+     * {@link ClassNotFoundException}. Note that no wrapper may be defined explicitly for the given type,
      * while a wrapper is defined for a parent of the given type. This method does not need to care about
      * such situation, since the caller will automatically searches for a parent class if
      * {@code ClassNotFoundException} has been thrown.</p>

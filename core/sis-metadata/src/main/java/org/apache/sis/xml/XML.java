@@ -241,8 +241,8 @@ public final class XML extends Static {
      * the ISO 19115-3:2016 version of metadata schema.  For unmarshalling a document encoded according
      * an older metadata schema (e.g. ISO 19139:2007), a transformation is applied on-the-fly.  However
      * this transformation may sometime produce undesirable results or make debugging more difficult.
-     * For this reason {@link MarshallerPool} applies the transformation only if explicitely requested,
-     * either by setting a {@link #METADATA_VERSION} or {@link #GML_VERSION} explicitely, or by setting
+     * For this reason {@link MarshallerPool} applies the transformation only if explicitly requested,
+     * either by setting a {@link #METADATA_VERSION} or {@link #GML_VERSION} explicitly, or by setting
      * this {@code LENIENT_UNMARSHAL} property to {@code true} if the version to unmarshal is not known
      * in advance.</p>
      *

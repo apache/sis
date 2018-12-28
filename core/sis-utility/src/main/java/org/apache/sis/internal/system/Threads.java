@@ -22,7 +22,7 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup} used in SIS.
- * Their intent is to bring some order in debugger informations, by grouping the threads created by SIS together
+ * Their intent is to bring some order in debugger information, by grouping the threads created by SIS together
  * under the same parent tree node.
  *
  * <div class="section">Note on dependencies</div>
@@ -91,7 +91,7 @@ final class Threads extends Static {
      * and waits for the threads to die before to return.
      *
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
-     * Users should never invoke this method explicitely.</p>
+     * Users should never invoke this method explicitly.</p>
      *
      * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.

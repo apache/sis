@@ -240,9 +240,20 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @return this unit offset by the specified value, or {@code this} if the given offset is zero.
      */
     @Override
-    public final Unit<Q> shift(final double offset) {
+    public final Unit<Q> shift(double offset) {
         if (offset == 0) return this;
-        return transform(LinearConverter.offset(offset, 1));
+        double divisor = 1;
+        double m = 1;
+        do {
+            final double c = offset * m;
+            final double r = Math.rint(c);
+            if (Math.abs(c - r) <= Math.ulp(c)) {
+                offset  = r;
+                divisor = m;
+                break;
+            }
+        } while ((m *= 10) <= 1E6);
+        return transform(LinearConverter.offset(offset, divisor));
     }
 
     /**
@@ -255,8 +266,21 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     @Override
     public final Unit<Q> multiply(double multiplier) {
         if (multiplier == 1) return this;
-        final double divisor = inverse(multiplier);
-        if (divisor != 1) multiplier = 1;
+        double divisor = inverse(multiplier);
+        if (divisor != 1) {
+            multiplier = 1;
+        } else {
+            double m = 1;
+            do {
+                final double c = multiplier * m;
+                final double r = Math.rint(c);
+                if (Math.abs(c - r) <= Math.ulp(c)) {
+                    multiplier = r;
+                    divisor = m;
+                    break;
+                }
+            } while ((m *= 10) <= 1E6);
+        }
         return transform(LinearConverter.scale(multiplier, divisor));
     }
 

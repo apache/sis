@@ -34,7 +34,7 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * Tests the {@link TreeTableFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -265,5 +265,36 @@ public final strictfp class TreeTableFormatTest extends TestCase {
                 "  ├─CodeList…… Point of contact\n" +               // Not yet localized.
                 "  ├─Enum……………… Half down\n" +                      // No localization provided.
                 "  └─i18n……………… 日本語の言葉\n", tf.format(table));
+    }
+
+    /**
+     * Tests formatting of a tree with multi-lines values.
+     * This is supported only for tree made of a single column.
+     */
+    @Test
+    public void testMultiLinesTree() {
+        final TableColumn<String> value = new TableColumn<>(String.class, "value");
+        final DefaultTreeTable table = new DefaultTreeTable(value);
+        final TreeTable.Node   root  = new DefaultTreeTable.Node(table);
+        root.setValue(value, "Value #1");
+        final TreeTable.Node branch1 = new DefaultTreeTable.Node(table);
+        branch1.setValue(value, "Value #2");
+        root.getChildren().add(branch1);
+        final TreeTable.Node branch2 = new DefaultTreeTable.Node(table);
+        branch2.setValue(value, "Value #3");
+        root.getChildren().add(branch2);
+        final TreeTable.Node leaf = new DefaultTreeTable.Node(table);
+        leaf.setValue(value, "val #4\twith tab\nand a new line");
+        branch1.getChildren().add(leaf);
+        table.setRoot(root);
+
+        final TreeTableFormat tf = new TreeTableFormat(null, null);
+        tf.setVerticalLinePosition(1);
+        assertMultilinesEquals(
+                "Value #1\n" +
+                " ├──Value #2\n" +
+                " │   └──val #4  with tab\n" +
+                " │      and a new line\n" +
+                " └──Value #3\n", tf.format(table));
     }
 }

@@ -144,7 +144,7 @@ public abstract class LoggerAdapter extends Logger {
      * value used in the JDK logging framework. Subclasses should override this method if
      * a different debug level is wanted.
      *
-     * @return the level to use for debugging informations.
+     * @return the level to use for debugging information.
      */
     @Debug
     protected Level getDebugLevel() {

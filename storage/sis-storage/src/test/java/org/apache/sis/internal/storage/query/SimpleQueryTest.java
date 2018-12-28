@@ -73,7 +73,7 @@ public final strictfp class SimpleQueryTest extends TestCase {
             feature(type, 1, 1),
             feature(type, 4, 1)
         };
-        featureSet = new MemoryFeatureSet(null, null, type, Arrays.asList(features));
+        featureSet = new MemoryFeatureSet(null, type, Arrays.asList(features));
         query      = new SimpleQuery();
     }
 

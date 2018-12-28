@@ -189,7 +189,8 @@ public abstract class FormattableObject {
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
                 convention.toUpperCase           ? (byte) +1 : 0,
                 (convention.majorVersion() == 1) ? (byte) -1 : 0,
-                Constants.DEFAULT_INDENTATION);
+                Constants.DEFAULT_INDENTATION,
+                strict ? Integer.MAX_VALUE : 10);       // Arbitrary limit of 10 elements in double[] parameter values.
         if (!strict) {
             formatter.transliterator = Transliterator.IDENTITY;
         }

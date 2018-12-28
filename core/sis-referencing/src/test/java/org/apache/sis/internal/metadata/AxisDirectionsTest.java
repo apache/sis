@@ -182,6 +182,16 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link AxisDirections#isTemporal(AxisDirection)}.
+     */
+    @Test
+    public void testIsTemporal() {
+        for (final AxisDirection dir : AxisDirection.values()) {
+            assertEquals(dir.name(), dir == FUTURE || dir == PAST, AxisDirections.isTemporal(dir));
+        }
+    }
+
+    /**
      * Tests {@link AxisDirections#isGeocentric(AxisDirection)}.
      */
     @Test
@@ -421,11 +431,11 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals("λ",   AxisDirections.suggestAbbreviation("Geodetic longitude",     EAST,             Units.DEGREE));
         assertEquals("φ",   AxisDirections.suggestAbbreviation("Geodetic latitude",      NORTH,            Units.DEGREE));
         assertEquals("θ",   AxisDirections.suggestAbbreviation("Spherical longitude",    EAST,             Units.DEGREE));
-        assertEquals("φ′",  AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,            Units.DEGREE));
+        assertEquals("Ω",   AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,            Units.DEGREE));
         assertEquals("h",   AxisDirections.suggestAbbreviation("Ellipsoidal height",     UP,               Units.METRE));
         assertEquals("H",   AxisDirections.suggestAbbreviation("Gravity-related height", UP,               Units.METRE));
-        assertEquals("φ",   AxisDirections.suggestAbbreviation("Elevation",              UP,               Units.METRE));
-        assertEquals("R",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               Units.METRE));
+        assertEquals("α",   AxisDirections.suggestAbbreviation("Elevation",              UP,               Units.DEGREE));
+        assertEquals("r",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               Units.METRE));
         assertEquals("r",   AxisDirections.suggestAbbreviation("Distance",               AWAY_FROM,        Units.METRE));
         assertEquals("θ",   AxisDirections.suggestAbbreviation("Bearing",                CLOCKWISE,        Units.DEGREE));
         assertEquals("X",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_X,     Units.METRE));
@@ -451,11 +461,35 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link AxisDirections#fromAbbreviation(char)}.
+     * This tests reuse some of the case tested by {@link #testSuggestAbbreviation()}.
+     * The intent is to ensure that those two methods are consistent with each other.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testFromAbbreviation() {
+        assertEquals(EAST,   AxisDirections.fromAbbreviation('λ'));
+        assertEquals(NORTH,  AxisDirections.fromAbbreviation('φ'));
+        assertEquals(EAST,   AxisDirections.fromAbbreviation('θ'));
+        assertEquals(NORTH,  AxisDirections.fromAbbreviation('Ω'));
+        assertEquals(UP,     AxisDirections.fromAbbreviation('h'));
+        assertEquals(UP,     AxisDirections.fromAbbreviation('H'));
+        assertEquals(UP,     AxisDirections.fromAbbreviation('r'));
+        assertEquals(DOWN,   AxisDirections.fromAbbreviation('D'));
+        assertEquals(FUTURE, AxisDirections.fromAbbreviation('t'));
+        assertEquals(NORTH,  AxisDirections.fromAbbreviation('N'));
+        assertEquals(SOUTH,  AxisDirections.fromAbbreviation('S'));
+        assertEquals(EAST,   AxisDirections.fromAbbreviation('E'));
+        assertEquals(WEST,   AxisDirections.fromAbbreviation('W'));
+    }
+
+    /**
      * Verifies that the abbreviations used in {@link HardCodedAxes} constants are consistent with the abbreviations
      * suggested by {@link AxisDirections#suggestAbbreviation(String, AxisDirection, Unit)}.  Note that a failure in
-     * this verification does not necessarily means that the {@code suggestAbbreviation(…)}. It could also be the
-     * hard-coded constant which need a revision, or we may decide that the different abbreviations are intended and
-     * should not be compared.
+     * this verification does not necessarily means that {@code suggestAbbreviation(…)} has a bug.  It could also be
+     * the hard-coded constant which need a revision, or we may decide that the different abbreviations are intended
+     * and should not be compared.
      *
      * @throws IllegalAccessException should never happen since we inspect only for public fields.
      *

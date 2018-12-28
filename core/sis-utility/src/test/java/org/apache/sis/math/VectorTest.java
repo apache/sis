@@ -28,7 +28,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link Vector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -249,6 +249,36 @@ public final strictfp class VectorTest extends TestCase {
 
         vector = Vector.create(array, false);
         assertEquals("[10, 100, -56]", vector.toString());
+    }
+
+    /**
+     * Tests {@link Vector#repetitions(int...)}.
+     */
+    @Test
+    public void testRepetitions() {
+        Vector vec = Vector.create(new int[] {
+                10, 10, 10, 10,
+                12, 12, 13, 12,             // Different value (13) break the regularity.
+                15, 15, 15, 15}, false);
+        assertArrayEquals(new int[] {}, vec.repetitions());
+
+        vec = Vector.create(new int[] {
+                10, 10, 10, 10,
+                12, 12, 12, 12,
+                15, 15, 15, 15}, false);
+        assertArrayEquals(new int[] {4}, vec.repetitions());
+
+        vec = Vector.create(new int[] {
+                10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18,
+                10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18,
+                10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18}, false);
+        assertArrayEquals(new int[] {3,4}, vec.repetitions());
+
+        vec = Vector.create(new int[] {
+                10, 12, 15, 18,
+                10, 12, 15, 18,
+                10, 12, 15, 18}, false);
+        assertArrayEquals(new int[] {1,4}, vec.repetitions());
     }
 
     /**

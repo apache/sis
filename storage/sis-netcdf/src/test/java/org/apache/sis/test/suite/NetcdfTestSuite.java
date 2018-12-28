@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-netcdf} module, in approximative dependency order.
+ * All tests from the {@code sis-netcdf} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -33,10 +33,10 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.netcdf.DataTypeTest.class,
     org.apache.sis.internal.netcdf.DecoderTest.class,
     org.apache.sis.internal.netcdf.VariableTest.class,
-    org.apache.sis.internal.netcdf.GridGeometryTest.class,
+    org.apache.sis.internal.netcdf.GridTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
-    org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class,
+    org.apache.sis.internal.netcdf.impl.GridInfoTest.class,
     org.apache.sis.storage.netcdf.MetadataReaderTest.class,
     org.apache.sis.storage.netcdf.NetcdfStoreProviderTest.class,
     org.apache.sis.storage.netcdf.NetcdfStoreTest.class

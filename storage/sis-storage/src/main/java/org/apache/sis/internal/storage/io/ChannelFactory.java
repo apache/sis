@@ -68,7 +68,7 @@ import org.apache.sis.storage.ForwardOnlyStorageException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -78,6 +78,17 @@ public abstract class ChannelFactory {
      */
     private static final Set<StandardOpenOption> ILLEGAL_OPTIONS = EnumSet.of(
             StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
+
+    /**
+     * A customized option for instructing {@link #prepare(Object, String, boolean, OpenOption...)}
+     * to not try to open directories or non-existent files. By default, {@link Path} to non-regular
+     * files will cause an {@link IOException} to be thrown. But if this option is provided, then we
+     * will rather behave as if {@link Path} was an unknown type. This will cause store providers to
+     * not try to open that file, which gives the caller a chance to fallback on its own process.
+     */
+    public static final OpenOption REQUIRE_REGULAR_FILE = new OpenOption() {
+        @Override public String toString() {return "REQUIRE_REGULAR_FILE";}
+    };
 
     /**
      * For subclass constructors.
@@ -240,7 +251,7 @@ public abstract class ChannelFactory {
         }
         if (storage instanceof Path) {
             final Path path = (Path) storage;
-            if (Files.isRegularFile(path)) {
+            if (!optionSet.remove(REQUIRE_REGULAR_FILE) || Files.isRegularFile(path)) {
                 return new ChannelFactory() {
                     @Override public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);

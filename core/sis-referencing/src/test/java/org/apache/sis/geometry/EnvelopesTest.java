@@ -24,6 +24,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
@@ -228,6 +229,27 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         envelope.setRange(0, -0.5, 359.5);
         expected.setRange(0, -180, 180);
         assertEnvelopeEquals(expected, Envelopes.transform(envelope, targetCRS), STRICT, STRICT);
+    }
+
+    /**
+     * Tests {@link Envelopes#findOperation(Envelope, Envelope)}.
+     *
+     * @throws FactoryException if an error occurred while searching the operation.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testFindOperation() throws FactoryException {
+        final GeneralEnvelope source = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final GeneralEnvelope target = new GeneralEnvelope(HardCodedCRS.GEOCENTRIC);
+        source.setRange(0, 20, 30);
+        source.setRange(1, 40, 45);
+        target.setRange(0, 6000, 8000);
+        target.setRange(1, 7000, 9000);
+        target.setRange(2, 4000, 5000);
+        CoordinateOperation op = Envelopes.findOperation(source, target);
+        assertInstanceOf("findOperation", Conversion.class, op);
+        assertEquals("Geographic/geocentric conversions", ((Conversion) op).getMethod().getName().getCode());
     }
 
     /**

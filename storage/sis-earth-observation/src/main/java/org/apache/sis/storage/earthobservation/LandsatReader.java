@@ -76,7 +76,7 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
 
 
 /**
- * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
+ * Parses Landsat metadata as {@linkplain DefaultMetadata ISO 19115 Metadata} object.
  * This class reads the content of a given {@link BufferedReader} from buffer position
  * until the first occurrence of the {@code END} keyword. Lines beginning with the
  * {@code #} character (ignoring spaces) are treated as comment lines and ignored.

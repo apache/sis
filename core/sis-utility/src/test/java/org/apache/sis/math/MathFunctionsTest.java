@@ -33,7 +33,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -246,14 +246,21 @@ public final strictfp class MathFunctionsTest extends TestCase {
     @Test
     public void testToNanFloat() {
         final int standardNaN = Float.floatToRawIntBits(Float.NaN);
-        for (int ordinal = 0; ordinal < MathFunctions.MAX_NAN_ORDINAL; ordinal += 256) {
-            final float vp = toNanFloat(+ordinal);
-            final float vn = toNanFloat(-ordinal);
-            final int   bp = Float.floatToRawIntBits(vp);
-            final int   bn = Float.floatToRawIntBits(vn);
-            assertEquals(ordinal == 0, standardNaN == bp);
-            assertEquals(ordinal == 0, standardNaN == bn);
-            assertEquals(ordinal == 0, bp == bn);
+        for (int ordinal = MathFunctions.MIN_NAN_ORDINAL;
+                 ordinal < MathFunctions.MAX_NAN_ORDINAL;
+                 ordinal += 256)
+        {
+            final float value = toNanFloat(ordinal);
+            final int   bits  = Float.floatToRawIntBits(value);
+            if (ordinal >= 0) {
+                assertTrue(Integer.compareUnsigned(bits, MathFunctions.POSITIVE_NAN) >= 0);
+                assertTrue(Integer.compareUnsigned(bits, 0x7FFFFFFF) <= 0);
+            } else {
+                assertTrue(Integer.compareUnsigned(bits, MathFunctions.NEGATIVE_NAN) >= 0);
+                assertTrue(Integer.compareUnsigned(bits, 0xFFFFFFFF) <= 0);
+            }
+            assertEquals(ordinal == 0, bits == standardNaN);
+            assertEquals(ordinal, toNanOrdinal(value));
         }
     }
 

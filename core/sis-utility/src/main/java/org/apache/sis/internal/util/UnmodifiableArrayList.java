@@ -82,7 +82,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * static method instead.</p>
      *
      * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
-     * the caller to instantiate the array explicitely, in order to make sure that the array type is
+     * the caller to instantiate the array explicitly, in order to make sure that the array type is
      * the intended one.</p>
      *
      * <div class="section">WARNING! Type safety hole</div>
@@ -107,7 +107,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * See class javadoc for more information.
      *
      * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
-     * the caller to instantiate the array explicitely, in order to make sure that the array type is
+     * the caller to instantiate the array explicitly, in order to make sure that the array type is
      * the intended one.</p>
      *
      * @param  <E>    the type of elements in the list.

@@ -443,7 +443,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         /*
          * Proj.4 requires some parameters that are not defined in the EPSG geodetic dataset for some projections.
          * Those parameters are unnecessary since their values are implied by the other parameters. However Proj.4
-         * does not seem to have any "intelligence" for such inference; we have to specify explicitely those values
+         * does not seem to have any "intelligence" for such inference; we have to specify explicitly those values
          * in the 'switch' statements below. The Objects listed below are parameters needed for those special cases.
          */
         Object latitudeOfOrigin  = null;
@@ -476,7 +476,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             /*
              * In "Lambert Conic Conformal (1SP)" case, there is no standard parallel (lat_1) since a scale factor (k_0)
              * is used instead. That scale is defined as the "Scale factor at natural origin", i.e. at lat_0. But Proj4
-             * does not seem to know that definition, so we have to explicitely tell it that lat_0 is the latitude of
+             * does not seem to know that definition, so we have to explicitly tell it that lat_0 is the latitude of
              * true scale.
              */
             case "lcc": {
@@ -544,7 +544,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * <ul>
      *   <li>{@code "+init=epsg:4326"} (<strong>not</strong> equivalent to the standard EPSG::4326 definition)</li>
      *   <li>{@code "+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"} (default to two-dimensional CRS)</li>
-     *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=ne"} (explicitely two-dimensional)</li>
+     *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=ne"} (explicitly two-dimensional)</li>
      *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=neu"} (three-dimensional)</li>
      * </ul>
      * </div>

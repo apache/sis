@@ -26,7 +26,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -35,22 +34,17 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.TimeCS;
-import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
-
-// Branch-dependent import
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 
 
 /**
@@ -60,7 +54,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -86,69 +80,15 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     private ParameterValueGroup parameters;
 
     /**
-     * The factory for Coordinate Reference System objects, fetched when first needed.
+     * Group of factories used by this builder.
      */
-    private CRSFactory crsFactory;
-
-    /**
-     * The factory for Coordinate System objects, fetched when first needed.
-     */
-    private CSFactory csFactory;
-
-    /**
-     * The factory for Datum objects, fetched when first needed.
-     */
-    private DatumFactory datumFactory;
-
-    /**
-     * The factory for Coordinate Operation objects, fetched when first needed.
-     */
-    private DefaultCoordinateOperationFactory copFactory;
+    private final ReferencingFactoryContainer factories;
 
     /**
      * Creates a new builder.
      */
     public GeodeticObjectBuilder() {
-    }
-
-    /**
-     * Returns the factory for Coordinate Reference System objects. This method fetches the factory when first needed.
-     */
-    private CRSFactory getCRSFactory() {
-        if (crsFactory == null) {
-            crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
-        }
-        return crsFactory;
-    }
-
-    /**
-     * Returns the factory for Coordinate System objects. This method fetches the factory when first needed.
-     */
-    private CSFactory getCSFactory() {
-        if (csFactory == null) {
-            csFactory = DefaultFactories.forBuildin(CSFactory.class);
-        }
-        return csFactory;
-    }
-
-    /**
-     * Returns the factory for Datum objects. This method fetches the factory when first needed.
-     */
-    private DatumFactory getDatumFactory() {
-        if (datumFactory == null) {
-            datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
-        }
-        return datumFactory;
-    }
-
-    /**
-     * Returns the factory for Coordinate Operation objects. This method fetches the factory when first needed.
-     */
-    private DefaultCoordinateOperationFactory getCoordinateOperationFactory() {
-        if (copFactory == null) {
-            copFactory = CoordinateOperations.factory();
-        }
-        return copFactory;
+        factories = new ReferencingFactoryContainer();
     }
 
     /**
@@ -174,7 +114,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         if (method != null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
         }
-        method = getCoordinateOperationFactory().getOperationMethod(name);
+        method = factories.getCoordinateOperationFactory().getOperationMethod(name);
         parameters = method.getParameters().createValue();
         return this;
     }
@@ -338,7 +278,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             final Object name = (conversionName != null) ? properties.put(Conversion.NAME_KEY, conversionName) : null;
             final Object alias = properties.put(Conversion.ALIAS_KEY, null);
             final Object identifier = properties.put(Conversion.IDENTIFIERS_KEY, null);
-            final Conversion conversion = getCoordinateOperationFactory().createDefiningConversion(properties, method, parameters);
+            final Conversion conversion = factories.getCoordinateOperationFactory().createDefiningConversion(properties, method, parameters);
             /*
              * Restore the original properties and create the final ProjectedCRS.
              */
@@ -347,7 +287,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             if (name != null) {
                 properties.put(Conversion.NAME_KEY, name);
             }
-            return getCRSFactory().createProjectedCRS(properties, baseCRS, conversion, derivedCS);
+            return factories.getCRSFactory().createProjectedCRS(properties, baseCRS, conversion, derivedCS);
         } finally {
             onCreate(true);
         }
@@ -395,7 +335,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         onCreate(false);
         try {
             if (cs == null) {
-                final CSFactory csFactory = getCSFactory();
+                final CSFactory csFactory = factories.getCSFactory();
                 cs = CommonCRS.Temporal.JAVA.crs().getCoordinateSystem();   // To be used as a template, except for units.
                 cs = csFactory.createTimeCS(name(cs),
                      csFactory.createCoordinateSystemAxis(name(cs.getAxis(0)), "t", AxisDirection.FUTURE, unit));
@@ -406,12 +346,12 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             if (datum == null) {
                 final Object remarks    = properties.remove(TemporalCRS.REMARKS_KEY);
                 final Object identifier = properties.remove(TemporalCRS.IDENTIFIERS_KEY);
-                datum = getDatumFactory().createTemporalDatum(properties, origin);
+                datum = factories.getDatumFactory().createTemporalDatum(properties, origin);
                 properties.put(TemporalCRS.IDENTIFIERS_KEY, identifier);
                 properties.put(TemporalCRS.REMARKS_KEY,     remarks);
                 properties.put(TemporalCRS.NAME_KEY, datum.getName());      // Share the Identifier instance.
             }
-            return getCRSFactory().createTemporalCRS(properties, datum, cs);
+            return factories.getCRSFactory().createTemporalCRS(properties, datum, cs);
         } finally {
             onCreate(true);
         }
@@ -428,9 +368,9 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     public CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem... components) throws FactoryException {
         return new EllipsoidalHeightCombiner() {
             @Override public void initialize(final int factoryTypes) {
-                if ((factoryTypes & CRS)       != 0) crsFactory = getCRSFactory();
-                if ((factoryTypes & CS)        != 0)  csFactory = getCSFactory();
-                if ((factoryTypes & OPERATION) != 0)  opFactory = getCoordinateOperationFactory();
+                if ((factoryTypes & CRS)       != 0) crsFactory = factories.getCRSFactory();
+                if ((factoryTypes & CS)        != 0)  csFactory = factories.getCSFactory();
+                if ((factoryTypes & OPERATION) != 0)  opFactory = factories.getCoordinateOperationFactory();
             }
         }.createCompoundCRS(properties, components);
     }

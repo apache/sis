@@ -96,7 +96,7 @@ public final class ServicesForUtility extends MetadataServices {
                     Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),
                             MetadataServices.class, "getInformation", e);
                 } catch (Exception e) {
-                    // Leave the message alone if it contains at least 2 words.
+                    // Leave the message unchanged if it contains at least 2 words.
                     String message = Exceptions.getLocalizedMessage(e, locale);
                     if (message == null || message.indexOf(' ') < 0) {
                         message = Classes.getShortClassName(e) + ": " + message;

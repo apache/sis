@@ -41,7 +41,7 @@ public final strictfp class ReferencingByIdentifiersTest extends TestCase {
     /**
      * Creates the example given in annex B of ISO 19112:2003.
      *
-     * @param  inherit  {@code false} for defining all properties of all location types explicitely even
+     * @param  inherit  {@code false} for defining all properties of all location types explicitly even
      *                  in case of redundancy, or {@code true} for relying on inheritance when possible.
      */
     private static ReferencingByIdentifiers create(final boolean inherit) {

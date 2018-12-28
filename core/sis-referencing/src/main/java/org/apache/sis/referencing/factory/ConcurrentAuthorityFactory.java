@@ -1947,7 +1947,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             return result;
         }
 
-        /** Forgets the set that were not explicitely requested. */
+        /** Forgets the set that were not explicitly requested. */
         boolean cleanup() {
             if (!explicitStrict)  strict  = null;
             if (!explicitLenient) lenient = null;

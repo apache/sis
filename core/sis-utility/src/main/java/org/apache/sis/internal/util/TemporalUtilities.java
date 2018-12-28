@@ -124,4 +124,14 @@ public final class TemporalUtilities extends Static {
         }
         return instant.getDate();
     }
+
+    /**
+     * Temporary method, to be removed after we upgraded metadata to {@link java.time}.
+     *
+     * @param  instant  the Java instant, or {@code null}.
+     * @return the legacy Java date, or {@code null}.
+     */
+    public static Date toDate(final java.time.Instant instant) {
+        return (instant != null) ? Date.from(instant) : null;
+    }
 }

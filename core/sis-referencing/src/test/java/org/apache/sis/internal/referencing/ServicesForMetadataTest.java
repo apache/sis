@@ -44,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link ServicesForMetadata}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -68,7 +68,7 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
      * and [51000 … 52000] modified Julian days.
      */
     @SuppressWarnings("fallthrough")
-    private static Envelope createEnvelope(final CoordinateReferenceSystem crs) {
+    private static GeneralEnvelope createEnvelope(final CoordinateReferenceSystem crs) {
         final GeneralEnvelope envelope = new GeneralEnvelope(crs);
         switch (crs.getCoordinateSystem().getDimension()) {
             default: throw new AssertionError();
@@ -102,7 +102,7 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox)}
+     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, boolean)}
      * from a three-dimensional envelope.
      *
      * @throws TransformException should never happen.
@@ -115,7 +115,7 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox)}
+     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, boolean)}
      * from a for-dimensional envelope.
      *
      * @throws TransformException should never happen.
@@ -165,6 +165,29 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         extent.setBounds(createEnvelope(HardCodedCRS.GEOID_3D));
         verifySpatialExtent((GeographicBoundingBox) getSingleton(extent.getSpatialExtent()));
         verifyVerticalExtent(CommonCRS.Vertical.MEAN_SEA_LEVEL, extent.getVerticalExtent());
+    }
+
+    /**
+     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, boolean)}
+     * from an envelope spanning the antimeridian.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testSetGeographicBoundsSpanningAntimeridian() throws TransformException {
+        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox();
+        final GeneralEnvelope envelope = createEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, 170, 195);
+        box.setBounds(envelope);
+        assertEquals( 170, box.getWestBoundLongitude(), STRICT);
+        assertEquals(-165, box.getEastBoundLongitude(), STRICT);
+        envelope.setRange(0, 0, 360);
+        box.setBounds(envelope);
+        assertEquals(-180, box.getWestBoundLongitude(), STRICT);
+        assertEquals(+180, box.getEastBoundLongitude(), STRICT);
+        assertEquals( -20, box.getSouthBoundLatitude(), STRICT);
+        assertEquals(  30, box.getNorthBoundLatitude(), STRICT);
+        assertEquals(Boolean.TRUE, box.getInclusion());
     }
 
     /**

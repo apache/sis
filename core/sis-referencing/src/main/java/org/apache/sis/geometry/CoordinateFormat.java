@@ -231,7 +231,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Returns the coordinate reference system to use if no CRS is explicitely associated to a given {@code DirectPosition}.
+     * Returns the coordinate reference system to use if no CRS is explicitly associated to a given {@code DirectPosition}.
      *
      * @return the default coordinate reference system, or {@code null} if none.
      */
@@ -240,7 +240,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Sets the coordinate reference system to use if no CRS is explicitely associated to a given {@code DirectPosition}.
+     * Sets the coordinate reference system to use if no CRS is explicitly associated to a given {@code DirectPosition}.
      * This CRS is only a default; positions given in another CRS are <strong>not</strong> automatically transformed to
      * that CRS before formatting.
      *

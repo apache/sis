@@ -22,7 +22,7 @@ import java.io.ObjectStreamException;
 /**
  * The global namespace. Only one instance of this class is allowed to exist. We do not expose
  * any global namespace in public API since ISO 19103 does not define them and users should not
- * need to handle them explicitely.
+ * need to handle them explicitly.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.

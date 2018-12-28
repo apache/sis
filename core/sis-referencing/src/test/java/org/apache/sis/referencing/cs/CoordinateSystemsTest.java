@@ -23,6 +23,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
@@ -44,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests the {@link CoordinateSystems} class.
  *
- * @author  Martin Desruisseaux (IRD)
- * @version 0.6
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -310,5 +311,38 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
             }
         });
         assertEqualsIgnoreMetadata(targetCS, actualCS);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#getEpsgCode(Class, CoordinateSystemAxis...)}
+     * with an ellipsoidal coordinate system.
+     */
+    @Test
+    public void testGetEpsgCodeForEllipsoidalCS() {
+        final Class<EllipsoidalCS> type = EllipsoidalCS.class;
+        final CoordinateSystemAxis φ = HardCodedAxes.GEODETIC_LATITUDE;
+        final CoordinateSystemAxis λ = HardCodedAxes.GEODETIC_LONGITUDE;
+        final CoordinateSystemAxis h = HardCodedAxes.ELLIPSOIDAL_HEIGHT;
+        assertEquals(Integer.valueOf(6422), CoordinateSystems.getEpsgCode(type, φ, λ));
+        assertEquals(Integer.valueOf(6423), CoordinateSystems.getEpsgCode(type, φ, λ, h));
+        assertEquals(Integer.valueOf(6424), CoordinateSystems.getEpsgCode(type, λ, φ));
+        assertEquals(Integer.valueOf(6426), CoordinateSystems.getEpsgCode(type, λ, φ, h));
+        assertNull(CoordinateSystems.getEpsgCode(type, HardCodedAxes.EASTING, HardCodedAxes.NORTHING));
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#getEpsgCode(Class, CoordinateSystemAxis...)}
+     * with an ellipsoidal coordinate system.
+     */
+    @Test
+    public void testGetEpsgCodeForCartesianCS() {
+        final Class<CartesianCS> type = CartesianCS.class;
+        final CoordinateSystemAxis E = HardCodedAxes.EASTING;
+        final CoordinateSystemAxis W = HardCodedAxes.WESTING;
+        final CoordinateSystemAxis N = HardCodedAxes.NORTHING;
+        assertEquals(Integer.valueOf(4400), CoordinateSystems.getEpsgCode(type, E, N));
+        assertEquals(Integer.valueOf(4500), CoordinateSystems.getEpsgCode(type, N, E));
+        assertEquals(Integer.valueOf(4501), CoordinateSystems.getEpsgCode(type, N, W));
+        assertNull(CoordinateSystems.getEpsgCode(type, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.GEODETIC_LONGITUDE));
     }
 }

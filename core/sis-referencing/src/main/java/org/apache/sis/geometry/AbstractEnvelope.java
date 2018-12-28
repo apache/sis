@@ -1150,14 +1150,14 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * methods for formatting a {@code BOX} element from an envelope.
      *
      * @param  envelope           the envelope to format.
-     * @param  isSimplePrecision  {@code true} if every lower and upper corner values can be casted to {@code float}.
+     * @param  isSinglePrecision  {@code true} if every lower and upper corner values can be casted to {@code float}.
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
      * @see CoordinateFormat
      * @see org.apache.sis.io.wkt
      */
-    static String toString(final Envelope envelope, final boolean isSimplePrecision) {
+    static String toString(final Envelope envelope, final boolean isSinglePrecision) {
         final int dimension = envelope.getDimension();
         final StringBuilder buffer = new StringBuilder(64).append("BOX");
         if (dimension != 2) {
@@ -1173,7 +1173,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                 for (int i=0; i<dimension; i++) {
                     buffer.append(i == 0 && !isUpper ? '(' : ' ');
                     final double ordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);
-                    if (isSimplePrecision) {
+                    if (isSinglePrecision) {
                         buffer.append((float) ordinate);
                     } else {
                         buffer.append(ordinate);

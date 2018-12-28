@@ -36,10 +36,10 @@ import java.lang.annotation.RetentionPolicy;
  * }
  *
  * By default, both endpoints are inclusive. To make an endpoint exclusive,
- * a {@code isFooInclusive} argument needs to be explicitely provided. This
+ * a {@code isFooInclusive} argument needs to be explicitly provided. This
  * is useful mostly for floating point numbers. In the following example,
  * values can be very close to zero but not equals, since a value of exactly
- * zero makes no sense. Note also that the {@code maximum} value is not explicitely
+ * zero makes no sense. Note also that the {@code maximum} value is not explicitly
  * provided, in which case it defaults to infinity.
  *
  * {@preformat java

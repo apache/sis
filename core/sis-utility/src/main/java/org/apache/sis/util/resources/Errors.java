@@ -851,7 +851,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedProperty_2 = 141;
 
         /**
-         * Unexpected scale factor {1} for unit of measurement “{0}”.
+         * Unexpected scale factor {1,number} for unit of measurement “{0}”.
          */
         public static final short UnexpectedScaleFactorForUnit_2 = 142;
 
@@ -987,7 +987,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ValueAlreadyDefined_1 = 164;
 
         /**
-         * Value ‘{0}’ = {1} is invalid. Expected a number greater than 0.
+         * Value ‘{0}’ = {1,number} is invalid. Expected a number greater than 0.
          */
         public static final short ValueNotGreaterThanZero_2 = 165;
 

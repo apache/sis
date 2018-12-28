@@ -22,6 +22,7 @@ import java.util.logging.LogRecord;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Loggers;
@@ -44,7 +45,7 @@ import org.apache.sis.internal.system.Loggers;
  * the {@code CachedStatement} instance. This object is closed by a background thread of {@link MetadataSource}.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -124,7 +125,17 @@ final class CachedStatement implements AutoCloseable {
             results = r;
             identifier = id;
         }
-        return r.getObject(attribute);
+        /*
+         * As of Java 10, enumerations have no constants defined in java.sql.Types.
+         * Consequently databases returns an implementation-specific object, e.g.
+         * org.postgresql.util.PGobject. To avoid implementation-specific code,
+         * we are better to get those enumeration values as strings.
+         */
+        final int column = r.findColumn(attribute);
+        switch (r.getMetaData().getColumnType(column)) {
+            case Types.OTHER: return r.getString(column);       // For enumeration values.
+            default:          return r.getObject(column);       // For all standard types.
+        }
     }
 
     /**

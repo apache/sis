@@ -377,7 +377,7 @@ public final class Citations extends Static {
 
     /**
      * The <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
-     * The ISO-19115 metadata standard defines a specific attribute for this information,
+     * The ISO 19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
      * <div class="section">Main usage</div>
@@ -392,7 +392,7 @@ public final class Citations extends Static {
 
     /**
      * The <cite>International Standard Serial Number</cite> (ISSN) defined by ISO-3297.
-     * The ISO-19115 metadata standard defines a specific attribute for this information,
+     * The ISO 19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
      * <div class="section">Main usage</div>

@@ -31,7 +31,7 @@ import org.apache.sis.util.Static;
  * creates itself the instance to be tested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -239,6 +239,20 @@ public final class Constants extends Static {
      * Latitude of standard parallel is 71°S. All other parameters are zero.
      */
     public static final short EPSG_ANTARCTIC_POLAR_STEREOGRAPHIC = 3031;
+
+    /**
+     * EPSG code of "Unknown datum based upon the WGS 84 ellipsoid".
+     * This is a two-dimensional geographic CRS.
+     * Note that the EPSG database defines unknown CRS for many other ellipsoids.
+     * For now only the WGS 84 case is used by Apache SIS.
+     */
+    public static final short EPSG_UNKNOWN_CRS = 4030;
+
+    /**
+     * EPSG code of "Not specified (based upon the WGS 84 ellipsoid)".
+     * This is a geodetic datum.
+     */
+    public static final short EPSG_UNKNOWN_DATUM = 6030;
 
     /**
      * Do not allow instantiation of this class.

@@ -38,7 +38,6 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.io.wkt.Convention;
@@ -56,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  *
@@ -114,28 +113,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Tests if one math transform is the inverse of the other, or approximately the inverse.
-     * Used for {@link #createOptimized(MathTransform, MathTransform, MathTransformFactory)} implementation.
-     */
-    private static boolean areInverse(final MathTransform tr1, MathTransform tr2) {
-        try {
-            tr2 = tr2.inverse();
-        } catch (NoninvertibleTransformException e) {
-            return false;
-        }
-        if (tr1 == tr2) {
-            return true;
-        }
-        if (tr1 instanceof LenientComparable) {
-            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATIVE);
-        }
-        if (tr2 instanceof LenientComparable) {
-            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATIVE);
-        }
-        return tr1.equals(tr2);
-    }
-
-    /**
      * Concatenates the two given transforms.
      * If the concatenation result works with two-dimensional input and output points,
      * then the returned transform will implement {@link MathTransform2D}.
@@ -164,59 +141,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                     getName(tr2)) + ' ' + Errors.format(Errors.Keys.MismatchedDimension_2, dim1, dim2));
         }
         MathTransform mt = createOptimized(tr1, tr2, factory);
-        if (mt != null) {
-            return mt;
-        }
-        /*
-         * If at least one math transform is an instance of ConcatenatedTransform and assuming
-         * that MathTransforms are associatives, tries the following arrangements and select
-         * the one with the fewest amount of steps:
-         *
-         *   Assuming :  tr1 = (A * B)
-         *               tr2 = (C * D)
-         *
-         *   Current  :  (A * B) * (C * D)     Will be the selected one if nothing better.
-         *   Try k=0  :  A * (B * (C * D))     Implies A * ((B * C) * D) through recursivity.
-         *   Try k=1  :  ((A * B) * C) * D     Implies (A * (B * C)) * D through recursivity.
-         *   Try k=2  :                        Tried only if try k=1 changed something.
-         *
-         * TODO: The same combination may be computed more than once (e.g. (B * C) above).
-         *       Should not be a big deal if there is not two many steps. In the even where
-         *       it would appears a performance issue, we could maintain a Map of combinations
-         *       already computed. The map would be local to a "create" method execution.
-         */
-        int stepCount = getStepCount(tr1) + getStepCount(tr2);
-        boolean tryAgain = true;                                // Really 'true' because we want at least 2 iterations.
-        for (int k=0; ; k++) {
-            MathTransform c1 = tr1;
-            MathTransform c2 = tr2;
-            final boolean first = (k & 1) == 0;
-            MathTransform candidate = first ? c1 : c2;
-            while (candidate instanceof ConcatenatedTransform) {
-                final ConcatenatedTransform ctr = (ConcatenatedTransform) candidate;
-                if (first) {
-                    c1 = candidate = ctr.transform1;
-                    c2 = create(ctr.transform2, c2, factory);
-                } else {
-                    c1 = create(c1, ctr.transform1, factory);
-                    c2 = candidate = ctr.transform2;
-                }
-                final int c = getStepCount(c1) + getStepCount(c2);
-                if (c < stepCount) {
-                    tr1 = c1;
-                    tr2 = c2;
-                    stepCount = c;
-                    tryAgain = true;
-                }
-            }
-            if (!tryAgain) break;
-            tryAgain = false;
-        }
-        /*
-         * Tries again the check for optimized cases (identity, etc.), because a
-         * transform may have been simplified to identity as a result of the above.
-         */
-        mt = createOptimized(tr1, tr2, factory);
         if (mt != null) {
             return mt;
         }
@@ -271,6 +195,47 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (tr1.isIdentity()) return tr2;
         if (tr2.isIdentity()) return tr1;
         /*
+         * Give a chance to AbstractMathTransform to return an optimized object. For example LogarithmicTransform
+         * concatenated with ExponentialTransform can produce a new formula, PassThrouthTransform may concatenate
+         * its sub-transform, etc. We try both ways (concatenation and pre-concatenation) and see which way gives
+         * the shortest concatenation chain. It is not that much expensive given that must implementations return
+         * null directly.
+         */
+        int stepCount = 0;
+        MathTransform shortest = null;
+        boolean inverseCaseTested = false;
+        if (tr1 instanceof AbstractMathTransform) {
+            final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
+            inverseCaseTested = true;
+            if (optimized != null) {
+                stepCount = getStepCount(optimized);
+                shortest  = optimized;
+            }
+        }
+        if (tr2 instanceof AbstractMathTransform) {
+            final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
+            inverseCaseTested = true;
+            if (optimized != null) {
+                if (shortest == null || getStepCount(optimized) < stepCount) {
+                    return optimized;
+                }
+                shortest = optimized;
+            }
+        }
+        if (shortest != null) {
+            return shortest;
+        }
+        /*
+         * If one transform is the inverse of the other, return the identity transform.
+         * We need to test this case before the linear transform case below, because the
+         * matrices may contain NaN values.
+         */
+        if (!inverseCaseTested && (isInverseEquals(tr1, tr2) || isInverseEquals(tr2, tr1))) {
+            assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
+            assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
+            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
+        }
+        /*
          * If both transforms use matrix, then we can create
          * a single transform using the concatenated matrix.
          */
@@ -294,51 +259,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 } else {
                     return MathTransforms.linear(matrix);
                 }
-            }
-            /*
-             * If the second transform is a passthrough transform and all passthrough ordinates
-             * are unchanged by the matrix, we can move the matrix inside the passthrough transform.
-             */
-            if (tr2 instanceof PassThroughTransform) {
-                final PassThroughTransform candidate = (PassThroughTransform) tr2;
-                final Matrix sub = candidate.toSubMatrix(matrix1);
-                if (sub != null) {
-                    if (factory != null) {
-                        return factory.createPassThroughTransform(
-                                candidate.firstAffectedOrdinate,
-                                factory.createConcatenatedTransform(factory.createAffineTransform(sub), candidate.subTransform),
-                                candidate.numTrailingOrdinates);
-                    } else {
-                        return MathTransforms.passThrough(
-                                candidate.firstAffectedOrdinate,
-                                create(MathTransforms.linear(sub), candidate.subTransform, factory),
-                                candidate.numTrailingOrdinates);
-                    }
-                }
-            }
-        }
-        /*
-         * If one transform is the inverse of the other, return the identity transform.
-         */
-        if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
-            assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
-            assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
-            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
-        }
-        /*
-         * Give a chance to AbstractMathTransform to returns an optimized object.
-         * The main use case is Logarithmic vs Exponential transforms.
-         */
-        if (tr1 instanceof AbstractMathTransform) {
-            final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
-            if (optimized != null) {
-                return optimized;
-            }
-        }
-        if (tr2 instanceof AbstractMathTransform) {
-            final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
-            if (optimized != null) {
-                return optimized;
             }
         }
         // No optimized case found.
@@ -868,6 +788,20 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
+     * Gets the derivative of this transform at a point.
+     *
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
+     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     */
+    @Override
+    public Matrix derivative(final DirectPosition point) throws TransformException {
+        final Matrix matrix1 = transform1.derivative(point);
+        final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
+        return Matrices.multiply(matrix2, matrix1);
+    }
+
+    /**
      * Creates the inverse transform of this object.
      */
     @Override
@@ -885,17 +819,41 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Gets the derivative of this transform at a point.
+     * Concatenates or pre-concatenates in an optimized way this transform with the given transform, if possible.
+     * This method try to delegate the concatenation to {@link #transform1} or {@link #transform2}. Assuming that
+     * transforms are associative, this is equivalent to trying the following arrangements:
      *
-     * @param  point  the coordinate point where to evaluate the derivative.
-     * @return the derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * {@preformat text
+     *   Instead of : other → tr1 → tr2
+     *   Try:         (other → tr1) → tr2          where (…) denote an optimized concatenation.
+     *
+     *   Instead of : tr1 → tr2 → other
+     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.
+     * }
+     *
+     * @return the simplified transform, or {@code null} if no such optimization is available.
+     * @throws FactoryException if an error occurred while combining the transforms.
      */
     @Override
-    public Matrix derivative(final DirectPosition point) throws TransformException {
-        final Matrix matrix1 = transform1.derivative(point);
-        final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
-        return Matrices.multiply(matrix2, matrix1);
+    protected MathTransform tryConcatenate(final boolean applyOtherFirst, final MathTransform other, final MathTransformFactory factory)
+            throws FactoryException
+    {
+        if (applyOtherFirst) {
+            final MathTransform candidate = createOptimized(other, transform1, factory);
+            if (candidate != null) {
+                return create(candidate, transform2, factory);
+            }
+        } else {
+            final MathTransform candidate = createOptimized(transform2, other, factory);
+            if (candidate != null) {
+                return create(transform1, candidate, factory);
+            }
+        }
+        /*
+         * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); the test of whether 'this'
+         * is the inverse of 'other' has been done indirectly by the calls to 'createOptimized'.
+         */
+        return null;
     }
 
     /**

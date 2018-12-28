@@ -123,7 +123,7 @@ final class EnvelopeOperation extends AbstractOperation {
          * Get all property names without duplicated values. If a property is a link to an attribute,
          * then the key will be the name of the referenced attribute instead than the operation name.
          * The intent is to avoid querying the same geometry twice if the attribute is also specified
-         * explicitely in the array of properties.
+         * explicitly in the array of properties.
          *
          * The map values will be the default Coordinate Reference System, or null if none.
          */

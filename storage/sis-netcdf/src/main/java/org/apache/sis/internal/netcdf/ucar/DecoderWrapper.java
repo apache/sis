@@ -42,7 +42,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
@@ -53,7 +53,7 @@ import org.apache.sis.storage.DataStoreException;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -82,7 +82,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      *
      * @see #getVariables()
      */
-    private transient Variable[] variables;
+    private transient VariableWrapper[] variables;
 
     /**
      * The discrete sampling features, or {@code null} if none.
@@ -94,7 +94,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      *
      * @see #getGridGeometries()
      */
-    private transient GridGeometry[] geometries;
+    private transient Grid[] geometries;
 
     /**
      * Creates a new decoder for the given netCDF file. While this constructor accepts arbitrary
@@ -350,12 +350,26 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     public Variable[] getVariables() {
         if (variables == null) {
             final List<? extends VariableIF> all = file.getVariables();
-            variables = new Variable[(all != null) ? all.size() : 0];
+            variables = new VariableWrapper[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(all.get(i));
+                variables[i] = new VariableWrapper(listeners, all.get(i));
             }
         }
         return variables;
+    }
+
+    /**
+     * Returns the Apache SIS wrapper for the given UCAR variable. The given variable shall be non-null
+     * and should be one of the variables wrapped by the instances returned by {@link #getVariables()}.
+     */
+    final VariableWrapper getWrapperFor(final VariableIF variable) {
+        for (VariableWrapper c : (VariableWrapper[]) getVariables()) {
+            if (c.isWrapperFor(variable)) {
+                return c;
+            }
+        }
+        // We should not reach this point, but let be safe.
+        return new VariableWrapper(listeners, variable);
     }
 
     /**
@@ -396,7 +410,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
-    public GridGeometry[] getGridGeometries() throws IOException {
+    public Grid[] getGridGeometries() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = null;
             if (file instanceof NetcdfDataset) {
@@ -407,9 +421,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 }
                 systems = ds.getCoordinateSystems();
             }
-            geometries = new GridGeometry[(systems != null) ? systems.size() : 0];
+            geometries = new Grid[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridGeometryWrapper(systems.get(i));
+                geometries[i] = new GridWrapper(this, systems.get(i));
             }
         }
         return geometries;

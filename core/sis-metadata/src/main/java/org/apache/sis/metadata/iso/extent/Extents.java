@@ -197,7 +197,7 @@ public final class Extents extends Static {
      *   </ul>
      *
      *   <div class="note"><b>Rational:</b> like {@linkplain #getGeographicBoundingBox(Extent) geographic bounding box},
-     *   the vertical range is an approximative information; the range returned by this method does not carry any
+     *   the vertical range is an approximated information; the range returned by this method does not carry any
      *   information about the vertical CRS and this method does not attempt to perform coordinate transformation.
      *   But this method is more useful if the returned ranges are close to a frequently used surface, like the
      *   Mean Sea Level. The same simplification is applied in the
@@ -408,8 +408,8 @@ public final class Extents extends Static {
 
     /**
      * Returns an <em>estimation</em> of the area (in square metres) of the given bounding box.
-     * Since {@code GeographicBoundingBox} provides only approximative information (for example
-     * it does not specify the datum), the value returned by this method is also approximative.
+     * Since {@code GeographicBoundingBox} provides only approximated information (for example
+     * it does not specify the datum), the value returned by this method is also approximated.
      *
      * <p>The current implementation performs its computation on the
      * {@linkplain org.apache.sis.referencing.CommonCRS#SPHERE GRS 1980 Authalic Sphere}.

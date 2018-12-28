@@ -150,7 +150,7 @@ import org.apache.sis.util.resources.Errors;
  * math transform. The set of operation methods known to this factory can be obtained in two ways:
  *
  * <ul>
- *   <li>{@linkplain #DefaultMathTransformFactory(Iterable) specified explicitely at construction time}, or</li>
+ *   <li>{@linkplain #DefaultMathTransformFactory(Iterable) specified explicitly at construction time}, or</li>
  *   <li>{@linkplain #DefaultMathTransformFactory() discovered by scanning the classpath}.</li>
  * </ul>
  *
@@ -529,7 +529,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * <div class="note"><b>Design note:</b>
          * ellipsoidal coordinate systems and ellipsoids are associated indirectly, through a geodetic CRS.
-         * However this method expects those two components to be given explicitely instead than inferring
+         * However this method expects those two components to be given explicitly instead than inferring
          * them from a {@code CoordinateReferenceSystem} for making clear that {@code MathTransformFactory}
          * does not perform any {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
          * datum} analysis. For coordinate operations that take datum changes in account (including change

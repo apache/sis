@@ -25,6 +25,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.nio.FloatBuffer;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.After;
@@ -153,7 +154,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
         final WritableRaster raster = Raster.createWritableRaster(new PixelInterleavedSampleModel(dataType,
-                width, height, numBands, width * numBands, TiledImage.bandOffsets(numBands)), new Point(xmin, ymin));
+                width, height, numBands, width * numBands, ArraysExt.sequence(0, numBands)), new Point(xmin, ymin));
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values.
@@ -209,7 +210,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
-        final TiledImage image = new TiledImage(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, minTileX, minTileY);
+        final TiledImageMock image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, minTileX, minTileY);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values. We fill them tile-by-tile.

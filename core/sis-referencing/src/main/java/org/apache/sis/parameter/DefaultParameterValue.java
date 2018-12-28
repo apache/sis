@@ -329,7 +329,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * or throws an exception otherwise.</p>
      *
      * @return the numeric value represented by this parameter after conversion to type {@code double}.
-     *         This method returns {@link Double#NaN} only if such "value" has been explicitely set.
+     *         This method returns {@link Double#NaN} only if such "value" has been explicitly set.
      * @throws InvalidParameterTypeException if the value is not a numeric type.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -687,7 +687,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         try {
             setValue(wrap(newValue, descriptor.getValueClass()), unit);
         } catch (InvalidParameterValueException e) {
-            throw e;        // Need to be thrown explicitely because it is a subclass of IllegalArgumentException.
+            throw e;        // Need to be thrown explicitly because it is a subclass of IllegalArgumentException.
         } catch (IllegalArgumentException e) {
             throw (InvalidParameterValueException) new InvalidParameterValueException(
                     e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue).initCause(e);

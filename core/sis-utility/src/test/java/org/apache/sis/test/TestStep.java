@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * <p>If this annotation was supported, we would annotate some methods with the {@code TestStep} annotation
  * instead than the JUnit {@link org.junit.Test} one. However in current implementation, this functionality
- * is not supported and the test step methods must be explicitely invoked from another method. Consequently
+ * is not supported and the test step methods must be explicitly invoked from another method. Consequently
  * this annotation is currently used only for documentation purpose, in case a future JUnit version would
  * support tests chaining.</p>
  *

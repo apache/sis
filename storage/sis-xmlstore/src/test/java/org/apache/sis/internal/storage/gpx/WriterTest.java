@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.time.Instant;
 import java.net.URI;
+import java.io.UncheckedIOException;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import com.esri.core.geometry.Point;
@@ -98,7 +99,7 @@ public final strictfp class WriterTest extends TestCase {
         try {
             return output.toString("UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
+            throw new UncheckedIOException(e);
         }
     }
 

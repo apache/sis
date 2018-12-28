@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-sqlstore} module, in approximative dependency order.
+ * All tests from the {@code sis-sqlstore} module, in rough dependency order.
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.sql.SQLStoreTest.class

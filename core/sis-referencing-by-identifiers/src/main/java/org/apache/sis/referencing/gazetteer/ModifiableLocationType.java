@@ -99,7 +99,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * }
  *
  * Then, the towns and streets automatically inherit the same value for that property,
- * unless they are explicitely given another value.</div>
+ * unless they are explicitly given another value.</div>
  *
  * <div class="section">Limitation</div>
  * This class is not serializable and is not thread-safe. For thread safety or for serialization,
@@ -203,7 +203,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the property used as the defining characteristic of the location type.
-     * If no theme has been explicitely set, then this method inherits the value from
+     * If no theme has been explicitly set, then this method inherits the value from
      * the parents providing that all parents specify the same theme.
      *
      * @return property used as the defining characteristic of the location type,
@@ -234,7 +234,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the method(s) of uniquely identifying location instances.
-     * If no methods have been explicitely set, then this method inherits the values from
+     * If no methods have been explicitly set, then this method inherits the values from
      * the parents providing that all parents specify the same methods.
      *
      * <div class="note"><b>Examples:</b>
@@ -290,7 +290,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the way in which location instances are defined.
-     * If no definition has been explicitely set, then this method inherits the value from
+     * If no definition has been explicitly set, then this method inherits the value from
      * the parents providing that all parents specify the same definition.
      *
      * @return the way in which location instances are defined,
@@ -312,7 +312,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the geographic area within which the location type occurs.
-     * If no geographic area has been explicitely set, then this method inherits the value from
+     * If no geographic area has been explicitly set, then this method inherits the value from
      * the parents providing that all parents specify the same geographic area.
      *
      * @return geographic area within which the location type occurs,
@@ -350,7 +350,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the name of organization or class of organization able to create and destroy location instances.
-     * If no organization has been explicitely set, then this method inherits the value from
+     * If no organization has been explicitly set, then this method inherits the value from
      * the parents providing that all parents specify the same organization.
      *
      * <div class="warning"><b>Upcoming API change — generalization</b><br>

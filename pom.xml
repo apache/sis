@@ -524,7 +524,7 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <sis.non-free.version>1.0-M1</sis.non-free.version>
+    <sis.non-free.version>1.0-M1</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
     <geoapi.version>3.0.1</geoapi.version>
   </properties>
 
@@ -620,7 +620,7 @@
         <configuration>
           <release>${maven.compiler.target}</release>
           <encoding>${project.build.sourceEncoding}</encoding>
-          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
+          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://issues.apache.org/jira/browse/MCOMPILER-209 -->
           <compilerArgs>
             <arg>-Xlint:all</arg>
             <arg>-Xdoclint:syntax,html,missing/protected,accessibility/protected</arg>
@@ -655,7 +655,7 @@
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>

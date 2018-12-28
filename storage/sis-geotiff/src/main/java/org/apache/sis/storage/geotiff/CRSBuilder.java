@@ -27,6 +27,7 @@ import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
 import java.lang.reflect.Array;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
@@ -38,7 +39,6 @@ import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -59,24 +59,20 @@ import org.opengis.util.FactoryException;
 
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
-import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -84,9 +80,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
-
-// Branch-dependent imports
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 
 
 /**
@@ -139,7 +132,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * @since 0.8
  * @module
  */
-final class CRSBuilder {
+final class CRSBuilder extends ReferencingFactoryContainer {
     /**
      * Number of {@code short} values in each GeoKey entry.
      */
@@ -206,40 +199,6 @@ final class CRSBuilder {
     private final Map<Short,Object> geoKeys;
 
     /**
-     * Factory for creating geodetic objects from EPSG codes, or {@code null} if not yet fetched.
-     * The EPSG code for a complete CRS definition can be stored in a single {@link GeoKeys}.
-     *
-     * <div class="note"><b>Note:</b> we do not yet split this field into 3 separated fields for datums,
-     * coordinate systems and coordinate reference systems objects because it is not needed with Apache SIS
-     * implementation of those factories. However we may revisit this choice if we want to let the user specify
-     * his own factories.</div>
-     *
-     * @see #epsgFactory()
-     */
-    private GeodeticAuthorityFactory epsgFactory;
-
-    /**
-     * Factory for creating geodetic objects from their components, or {@code null} if not yet fetched.
-     * Constructing a CRS from its components requires parsing many {@link GeoKeys}.
-     *
-     * <div class="note"><b>Note:</b> we do not yet split this field into 3 separated fields for datums,
-     * coordinate systems and coordinate reference systems objects because it is not needed with Apache SIS
-     * implementation of those factories. However we may revisit this choice if we want to let the user specify
-     * his own factories.</div>
-     *
-     * @see #objectFactory()
-     */
-    private GeodeticObjectFactory objectFactory;
-
-    /**
-     * Factory for fetching operation methods and creating defining conversions.
-     * This is needed only for user-defined projected coordinate reference system.
-     *
-     * @see #operationFactory()
-     */
-    private DefaultCoordinateOperationFactory operationFactory;
-
-    /**
      * Name of the last object created. This is used by {@link #properties(Object)} for reusing existing instance
      * if possible. This is useful in GeoTIFF files since the same name is used for different geodetic components,
      * for example the datum and the ellipsoid.
@@ -290,51 +249,9 @@ final class CRSBuilder {
     }
 
     /**
-     * Returns the factory for creating geodetic objects from EPSG codes.
-     * The factory is fetched when first needed.
-     *
-     * @return the EPSG factory (never {@code null}).
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
-     */
-    private GeodeticAuthorityFactory epsgFactory() throws FactoryException {
-        if (epsgFactory == null) {
-            epsgFactory = (GeodeticAuthorityFactory) CRS.getAuthorityFactory(Constants.EPSG);
-        }
-        return epsgFactory;
-    }
-
-    /**
-     * Returns the factory for creating geodetic objects from their components.
-     * The factory is fetched when first needed.
-     *
-     * @return the object factory (never {@code null}).
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
-     */
-    private GeodeticObjectFactory objectFactory() {
-        if (objectFactory == null) {
-            objectFactory = DefaultFactories.forBuildin(CRSFactory.class, GeodeticObjectFactory.class);
-        }
-        return objectFactory;
-    }
-
-    /**
-     * Returns the factory for fetching operation methods and creating defining conversions.
-     * The factory is fetched when first needed.
-     *
-     * @return the operation factory (never {@code null}).
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
-     */
-    private DefaultCoordinateOperationFactory operationFactory() {
-        if (operationFactory == null) {
-            operationFactory = CoordinateOperations.factory();
-        }
-        return operationFactory;
-    }
-
-    /**
      * Returns a map with the given name associated to {@value org.opengis.referencing.IdentifiedObject#NAME_KEY}.
      * The given name shall be either an instance of {@link String} or {@link Identifier}.
-     * This is an helper method for creating geodetic objects with {@link #objectFactory}.
+     * This is an helper method for creating geodetic objects with {@link #getCRSFactory()}.
      */
     private Map<String,?> properties(Object name) {
         if (name == null) {
@@ -755,7 +672,7 @@ final class CRSBuilder {
                 if (crs == null) {
                     missingValue(GeoKeys.GeographicType);
                 } else {
-                    crs = objectFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                    crs = getCRSFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
             }
         }
@@ -802,7 +719,7 @@ final class CRSBuilder {
     private CartesianCS replaceLinearUnit(final CartesianCS cs, final Unit<Length> unit) throws FactoryException {
         final Integer epsg = CoordinateSystems.getEpsgCode(unit, CoordinateSystems.getAxisDirections(cs));
         if (epsg != null) try {
-            return epsgFactory().createCartesianCS(epsg.toString());
+            return getCSAuthorityFactory().createCartesianCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
             reader.owner.warning(null, e);
         }
@@ -820,7 +737,7 @@ final class CRSBuilder {
     private EllipsoidalCS replaceAngularUnit(final EllipsoidalCS cs, final Unit<Angle> unit) throws FactoryException {
         final Integer epsg = CoordinateSystems.getEpsgCode(unit, CoordinateSystems.getAxisDirections(cs));
         if (epsg != null) try {
-            return epsgFactory().createEllipsoidalCS(epsg.toString());
+            return getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
         } catch (NoSuchAuthorityCodeException e) {
             reader.owner.warning(null, e);
         }
@@ -870,7 +787,7 @@ final class CRSBuilder {
                  * But if the file also provide the scale value, we will verify that the value
                  * is consistent with what we would expect for a unit of the given EPSG code.
                  */
-                final Unit<Q> unit = epsgFactory().createUnit(String.valueOf(epsg)).asType(quantity);
+                final Unit<Q> unit = getCSAuthorityFactory().createUnit(String.valueOf(epsg)).asType(quantity);
                 if (scaleKey != 0) {
                     final double scale = getAsDouble(scaleKey);
                     if (!Double.isNaN(scale)) {
@@ -922,7 +839,7 @@ final class CRSBuilder {
                      * This is because the citation value is for the CRS (e.g. "WGS84") while the prime
                      * meridian names are very different (e.g. "Paris", "Madrid", etc).
                      */
-                    return objectFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
+                    return getDatumFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
                 }
                 break;                      // Default to Greenwich.
             }
@@ -932,7 +849,7 @@ final class CRSBuilder {
                  * But if the file also provide the longitude value, verify that the value is consistent
                  * with what we would expect for a prime meridian of the given EPSG code.
                  */
-                final PrimeMeridian pm = epsgFactory().createPrimeMeridian(String.valueOf(epsg));
+                final PrimeMeridian pm = getDatumAuthorityFactory().createPrimeMeridian(String.valueOf(epsg));
                 verify(pm, unit);
                 return pm;
             }
@@ -992,14 +909,14 @@ final class CRSBuilder {
                 double inverseFlattening = getAsDouble(GeoKeys.InvFlattening);
                 final Ellipsoid ellipsoid;
                 if (!Double.isNaN(inverseFlattening)) {
-                    ellipsoid = objectFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
+                    ellipsoid = getDatumFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
                 } else {
                     /*
                      * If the inverse flattening factory was not defined, fallback on semi-major axis length.
                      * This is a less common way to define ellipsoid (the most common way uses flattening).
                      */
                     final double semiMinor = getMandatoryDouble(GeoKeys.SemiMinorAxis);
-                    ellipsoid = objectFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
+                    ellipsoid = getDatumFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
                 }
                 lastName = ellipsoid.getName();
                 return ellipsoid;
@@ -1010,7 +927,7 @@ final class CRSBuilder {
                  * But if the file also provide defining parameter values, verify that those values
                  * are consistent with what we would expect for an ellipsoid of the given EPSG code.
                  */
-                final Ellipsoid ellipsoid = epsgFactory().createEllipsoid(String.valueOf(epsg));
+                final Ellipsoid ellipsoid = getDatumAuthorityFactory().createEllipsoid(String.valueOf(epsg));
                 verify(ellipsoid, unit);
                 return ellipsoid;
             }
@@ -1078,7 +995,7 @@ final class CRSBuilder {
                 String              name      = getOrDefault(names, DATUM);
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
-                final GeodeticDatum datum     = objectFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
+                final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
                 name = Utilities.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
                 lastName = datum.getName();
                 try {
@@ -1099,7 +1016,7 @@ final class CRSBuilder {
                  * But if the file also defines the components, verify that those components are
                  * consistent with what we would expect for a datum of the given EPSG code.
                  */
-                final GeodeticDatum datum = epsgFactory().createGeodeticDatum(String.valueOf(epsg));
+                final GeodeticDatum datum = getDatumAuthorityFactory().createGeodeticDatum(String.valueOf(epsg));
                 verify(datum, angularUnit, linearUnit);
                 return datum;
             }
@@ -1251,7 +1168,7 @@ final class CRSBuilder {
                 if (!Units.DEGREE.equals(angularUnit)) {
                     cs = replaceAngularUnit(cs, angularUnit);
                 }
-                final GeographicCRS crs = objectFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeographicCRS crs = getCRSFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1261,7 +1178,7 @@ final class CRSBuilder {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                GeographicCRS crs = epsgFactory().createGeographicCRS(String.valueOf(epsg));
+                GeographicCRS crs = getCRSAuthorityFactory().createGeographicCRS(String.valueOf(epsg));
                 if (rightHanded) {
                     crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                 }
@@ -1321,7 +1238,7 @@ final class CRSBuilder {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final GeocentricCRS crs = objectFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeocentricCRS crs = getCRSFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1331,7 +1248,7 @@ final class CRSBuilder {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                final GeocentricCRS crs = epsgFactory().createGeocentricCRS(String.valueOf(epsg));
+                final GeocentricCRS crs = getCRSAuthorityFactory().createGeocentricCRS(String.valueOf(epsg));
                 verify(crs);
                 return crs;
             }
@@ -1456,11 +1373,11 @@ final class CRSBuilder {
                 final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
                 final GeographicCRS baseCRS     = createGeographicCRS(false, angularUnit);
                 final Conversion    projection  = createConversion(name, angularUnit, linearUnit);
-                CartesianCS cs = epsgFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
+                CartesianCS cs = getCSAuthorityFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final ProjectedCRS crs = objectFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
+                final ProjectedCRS crs = getCRSFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1470,7 +1387,7 @@ final class CRSBuilder {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                final ProjectedCRS crs = epsgFactory().createProjectedCRS(String.valueOf(epsg));
+                final ProjectedCRS crs = getCRSAuthorityFactory().createProjectedCRS(String.valueOf(epsg));
                 verify(crs);
                 return crs;
             }
@@ -1518,7 +1435,7 @@ final class CRSBuilder {
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
                 final String              type        = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method      = operationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
+                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.
@@ -1571,7 +1488,7 @@ final class CRSBuilder {
                         }
                     }
                 }
-                final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
+                final Conversion c = getCoordinateOperationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
                 return c;
             }
@@ -1581,7 +1498,8 @@ final class CRSBuilder {
                  * But if the file also defines the components, verify that those components are
                  * consistent with what we would expect for a conversion of the given EPSG code.
                  */
-                final Conversion projection = (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(epsg));
+                final Conversion projection = (Conversion)
+                        getCoordinateOperationAuthorityFactory().createCoordinateOperation(String.valueOf(epsg));
                 verify(projection, angularUnit, linearUnit);
                 return projection;
             }
@@ -1657,7 +1575,7 @@ final class CRSBuilder {
                 throw new NoSuchElementException(missingValue(GeoKeys.VerticalDatum));
             }
             default: {
-                return epsgFactory().createVerticalDatum(String.valueOf(epsg));
+                return getDatumAuthorityFactory().createVerticalDatum(String.valueOf(epsg));
             }
         }
     }
@@ -1695,10 +1613,10 @@ final class CRSBuilder {
                 if (!Units.METRE.equals(unit)) {
                     cs = (VerticalCS) CoordinateSystems.replaceLinearUnit(cs, unit);
                 }
-                return objectFactory().createVerticalCRS(properties(name), datum, cs);
+                return getCRSFactory().createVerticalCRS(properties(name), datum, cs);
             }
             default: {
-                return epsgFactory().createVerticalCRS(String.valueOf(epsg));
+                return getCRSAuthorityFactory().createVerticalCRS(String.valueOf(epsg));
             }
         }
     }
@@ -1720,7 +1638,7 @@ final class CRSBuilder {
         try {
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuffer.
+            throw new UncheckedIOException(e);          // Should never happen since we wrote to a StringBuffer.
         }
         return buffer.toString();
     }

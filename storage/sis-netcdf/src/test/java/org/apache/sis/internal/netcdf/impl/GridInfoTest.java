@@ -18,17 +18,19 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
 import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.GridGeometryTest;
-import org.apache.sis.internal.netcdf.TestData;
+import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.internal.netcdf.GridTest;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOn;
 
+// Branch-specific imports
+import org.apache.sis.internal.netcdf.TestData;
+
 
 /**
- * Tests the {@link GridGeometry} implementation. This test shall be executed only if the
- * {@link GridGeometryTest} tests, which use the UCAR library has a reference implementation,
+ * Tests the {@link GridInfo} implementation. This test shall be executed only if the
+ * {@link GridTest} tests, which use the UCAR library has a reference implementation,
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -36,8 +38,8 @@ import org.apache.sis.test.DependsOn;
  * @since   0.3
  * @module
  */
-@DependsOn({VariableInfoTest.class, GridGeometryTest.class})
-public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
+@DependsOn({VariableInfoTest.class, GridTest.class})
+public final strictfp class GridInfoTest extends GridTest {
     /**
      * Creates a new decoder for the specified dataset.
      *
@@ -57,10 +59,10 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
      * @return the filtered grid geometries to test.
      */
     @Override
-    protected GridGeometry[] filter(final GridGeometry[] geometries) {
-        final GridGeometry[] copy = new GridGeometry[geometries.length];
+    protected Grid[] filter(final Grid[] geometries) {
+        final Grid[] copy = new Grid[geometries.length];
         int count = 0;
-        for (final GridGeometry geometry : geometries) {
+        for (final Grid geometry : geometries) {
             if (geometry.getSourceDimensions() != 1 || geometry.getTargetDimensions() != 1) {
                 copy[count++] = geometry;
             }

@@ -136,7 +136,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
 
     /**
      * Returns the date and time for the content of the dataset.
-     * If no extent has been {@linkplain #setExtent(TemporalPrimitive) explicitely set},
+     * If no extent has been {@linkplain #setExtent(TemporalPrimitive) explicitly set},
      * then this method will build an extent from the {@linkplain #getStartTime() start
      * time} and {@linkplain #getEndTime() end time} if any.
      *
