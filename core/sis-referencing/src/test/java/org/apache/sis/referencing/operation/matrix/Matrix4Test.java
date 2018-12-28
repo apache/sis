@@ -19,7 +19,8 @@ package org.apache.sis.referencing.operation.matrix;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static java.lang.Double.NaN;
+import static org.opengis.test.Assert.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 
 
@@ -28,7 +29,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -80,6 +81,41 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
     }
 
     /**
+     * Tests multiplication of a matrix that contains NaN numbers.
+     * We want to avoid having NaNs of a full row or full column.
+     *
+     * Note that a NaN may appear in the translation column, depending on the matrix order in multiplication.
+     * So handling of NaN during multiplication does not eliminate completely the need to write some NaN-safe
+     * code in the Apache SIS modules.
+     */
+    @Test
+    public void testMultiplyWithNaN() {
+        final Matrix4 m1 = new Matrix4(
+                0.5,  0,    0,   -179.5,
+                0,    0.25, 0,    -89.5,
+                0,    0,  NaN,  20989.0,
+                0,    0,    0,      1);
+
+        final Matrix4 m2 = new Matrix4(
+                4,  0,  0,      0,
+                0,  6,  0,      0,
+                0,  0,  1,  18262.5,
+                0,  0,  0,      1);
+
+        assertMatrixEquals("Multiplication with NaN", new Matrix4(
+                2.0,  0,      0,   -718.0,
+                0,    1.5,    0,   -537.0,
+                0,    0,    NaN,  39251.5,
+                0,    0,      0,      1), m2.multiply(m1), STRICT);
+
+        assertMatrixEquals("Multiplication with NaN", new Matrix4(
+                2.0,  0,      0,  -179.5,
+                0,    1.5,    0,   -89.5,
+                0,    0,    NaN,     NaN,
+                0,    0,      0,     1), m1.multiply(m2), STRICT);
+    }
+
+    /**
      * Tests the accuracy of a chain of matrix operations.
      *
      * @throws NoninvertibleMatrixException should never happen.
@@ -89,7 +125,7 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
         final double parisMeridian = 2 + (20 + 13.82/60)/60;            // Paris meridian: 2°20'13.82"
         final double toRadians = StrictMath.PI / 180;
         /*
-         * Gradians to degrees with a Prime Meridian shift
+         * Grads to degrees with a Prime Meridian shift
          * and a random conversion factor for z values.
          */
         final Matrix4 step1 = new Matrix4(

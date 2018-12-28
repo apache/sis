@@ -305,7 +305,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      * instances of {@code LegacyPropertyAdapter}, and returns {@code false} for all other kinds of collection.
      * We do <strong>not</strong> compare with arbitrary collection implementations.
      *
-     * <p><b>Rational:</b> {@link Collection#equals(Object)} contract explicitely forbids comparisons with
+     * <p><b>Rational:</b> {@link Collection#equals(Object)} contract explicitly forbids comparisons with
      * {@code List} and {@code Set}. The rational explained in {@code Collection} javadoc applies also to
      * other kind of {@code Collection} implementations: we can not enforce {@code Collection.equals(Object)}
      * to be symmetric in such cases.</p>

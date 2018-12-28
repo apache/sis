@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-earth-observation} module, in approximative dependency order.
+ * All tests from the {@code sis-earth-observation} module, in rough dependency order.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)

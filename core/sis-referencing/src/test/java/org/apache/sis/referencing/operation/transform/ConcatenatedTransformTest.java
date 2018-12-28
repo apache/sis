@@ -20,6 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -31,7 +32,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link ConcatenatedTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -86,12 +87,9 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      * @throws TransformException if an error occurred while transforming the test coordinate.
      */
     @Test
-    @org.junit.Ignore("Missing implementation of DimensionFilter.")
     public void testGeneric() throws FactoryException, TransformException {
-        final MathTransform first = null; //MathTransforms.dimensionFilter(4, new int[] {1,3});
-
-        final AffineTransform2D second = new AffineTransform2D(0.5, 0, 0, 0.25, 0, 0);  // scale(0.5, 0.25);
-
+        final MathTransform first = MathTransforms.linear(Matrices.createDimensionSelect(4, new int[] {1,3}));
+        final AffineTransform2D second = new AffineTransform2D(0.5, 0, 0, 0.25, 0, 0);     // scale(0.5, 0.25);
         transform = new ConcatenatedTransform(first, second);
         isInverseTransformSupported = false;
         validate();

@@ -32,7 +32,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.storage.AbstractResource;
+import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
@@ -177,7 +177,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
      */
     @Override
     public Envelope getEnvelope() throws DataStoreException {
-        return AbstractResource.envelope(getMetadata());
+        return StoreUtilities.getEnvelope(getMetadata());
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -25,19 +26,22 @@ import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 
@@ -57,7 +61,7 @@ import org.apache.sis.measure.Units;
  * @since 0.8
  * @module
  */
-final class ImageFileDirectory extends AbstractResource implements GridCoverageResource {
+final class ImageFileDirectory extends AbstractGridResource {
     /**
      * Possible value for the {@link #tileTagFamily} field. That field tells whether image tiling
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
@@ -329,8 +333,17 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
      *   <li>{@link GridGeometryBuilder#asciiParameters}</li>
      *   <li>{@link GridGeometryBuilder#modelTiePoints}</li>
      * </ul>
+     *
+     * @see #getGridGeometry()
      */
     private GridGeometryBuilder referencing;
+
+    /**
+     * The sample dimensions, or {@code null} if not yet created.
+     *
+     * @see #getSampleDimensions()
+     */
+    private List<SampleDimension> sampleDimensions;
 
     /**
      * Returns {@link #referencing}, created when first needed. We delay its creation since
@@ -1211,7 +1224,8 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
     }
 
     @Override
-    public Metadata getMetadata() throws DataStoreContentException {
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        super.createMetadata(metadata);
         /*
          * TODO:
          *   - Modify ImageFileDirectory.completeMetadata(…) with the addition of a boolean telling that
@@ -1223,11 +1237,10 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
          *   - Invoke that method from here if GeoTiffStore already has a metadata, or conversely from
          *     GeoTiffStore if ImageResource already has a metadata.
          */
-        return null;
     }
 
     /**
-     * Returns the grid geometry for this image.
+     * Returns an object containing the image size, the CRS and the conversion from pixel indices to CRS coordinates.
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreContentException {
@@ -1242,6 +1255,40 @@ final class ImageFileDirectory extends AbstractResource implements GridCoverageR
         } else {
             return new GridGeometry(new GridExtent(imageWidth, imageHeight), null);
         }
+    }
+
+    /**
+     * Returns the ranges of sample values together with the conversion from samples to real values.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
+        if (sampleDimensions == null) {
+            final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
+            final SampleDimension.Builder builder = new SampleDimension.Builder();
+            final InternationalString name = Vocabulary.formatInternational(Vocabulary.Keys.Value);
+            for (int band = 0; band < samplesPerPixel;) {
+                builder.addQualitative(name, minValues.get(Math.min(band, minValues.size()-1)),
+                                             maxValues.get(Math.min(band, maxValues.size()-1)));
+                dimensions[band] = builder.setName(++band).build();
+                builder.clear();
+            }
+            sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
+        }
+        return sampleDimensions;        // Safe because unmodifiable.
+    }
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource.
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  range   0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
+     * @return the grid coverage for the specified domain and range.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    @Override
+    public GridCoverage read(final GridGeometry domain, final int... range) throws DataStoreException {
+        throw new DataStoreException("Not yet implemented.");   // TODO
     }
 
     /**

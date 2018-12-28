@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
@@ -78,7 +79,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 0.5
+ * @version 1.0
  *
  * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
@@ -109,6 +110,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * Consequently if empty ranges were included in the pool, this method would return in some
      * occasions an empty range with different values than the given {@code range} argument.
      * </div>
+     *
+     * We use this method only for caching range of wrapper of primitive types ({@link Byte},
+     * {@link Short}, <i>etc.</i>) because those type are known to be immutable.
      */
     static <E extends Number & Comparable<? super E>, T extends NumberRange<E>> T unique(T range) {
         if (!range.isEmpty()) {
@@ -130,6 +134,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Byte> create(final byte minValue, final boolean isMinIncluded,
                                            final byte maxValue, final boolean isMaxIncluded)
     {
+        // No need to check for equality because all bytes values are cached by Byte.valueOf(…).
         return unique(new NumberRange<>(Byte.class,
                 Byte.valueOf(minValue), isMinIncluded,
                 Byte.valueOf(maxValue), isMaxIncluded));
@@ -148,9 +153,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Short> create(final short minValue, final boolean isMinIncluded,
                                             final short maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<>(Short.class,
-                Short.valueOf(minValue), isMinIncluded,
-                Short.valueOf(maxValue), isMaxIncluded));
+        final Short min = minValue;
+        final Short max = (minValue == maxValue) ? min : maxValue;
+        return unique(new NumberRange<>(Short.class, min, isMinIncluded, max, isMaxIncluded));
     }
 
     /**
@@ -168,9 +173,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Integer> create(final int minValue, final boolean isMinIncluded,
                                               final int maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<>(Integer.class,
-                Integer.valueOf(minValue), isMinIncluded,
-                Integer.valueOf(maxValue), isMaxIncluded));
+        final Integer min = minValue;
+        final Integer max = (minValue == maxValue) ? min : maxValue;
+        return unique(new NumberRange<>(Integer.class, min, isMinIncluded, max, isMaxIncluded));
     }
 
     /**
@@ -186,9 +191,9 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Long> create(final long minValue, final boolean isMinIncluded,
                                            final long maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<>(Long.class,
-                Long.valueOf(minValue), isMinIncluded,
-                Long.valueOf(maxValue), isMaxIncluded));
+        final Long min = minValue;
+        final Long max = (minValue == maxValue) ? min : maxValue;
+        return unique(new NumberRange<>(Long.class, min, isMinIncluded, max, isMaxIncluded));
     }
 
     /**
@@ -252,27 +257,6 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs a range of {@code int} values without upper bound.
-     * This method may return a shared instance, at implementation choice.
-     *
-     * <div class="note"><b>Note:</b> for creating left-bounded ranges of floating point values,
-     * use one of the {@code create(…)} methods with a {@code POSITIVE_INFINITY} constant.
-     * We do not provide variants for other integer types because this method is typically invoked for
-     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType multiplicity of an attribute}.</div>
-     *
-     * @param  minValue       the minimal value.
-     * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
-     * @return the new range of numeric values from {@code minValue} to positive infinity.
-     *
-     * @see #create(int, boolean, int, boolean)
-     *
-     * @since 0.5
-     */
-    public static NumberRange<Integer> createLeftBounded(final int minValue, final boolean isMinIncluded) {
-        return unique(new NumberRange<>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
-    }
-
-    /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
      * The given numbers don't need to be of the same type since they will
      * be {@linkplain Numbers#cast(Number, Class) casted} as needed.
@@ -297,6 +281,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  maxValue       the maximal value, or {@code null} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @return the new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
+     * @throws Illegal­Argument­Exception if the given numbers are not primitive wrappers for numeric types.
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     public static NumberRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
@@ -304,9 +289,33 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     {
         final Class<? extends Number> type = Numbers.widestClass(
                 Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
-        return (type == null) ? null : unique(new NumberRange(type,
-                Numbers.cast(minValue, type), isMinIncluded,
-                Numbers.cast(maxValue, type), isMaxIncluded));
+        if (type == null) {
+            return null;
+        }
+        final Number min = Numbers.cast(minValue, type);
+        final Number max = Objects.equals(minValue, maxValue) ? min : Numbers.cast(maxValue, type);
+        return unique(new NumberRange(type, min, isMinIncluded, max, isMaxIncluded));
+    }
+
+    /**
+     * Constructs a range of {@code int} values without upper bound.
+     * This method may return a shared instance, at implementation choice.
+     *
+     * <div class="note"><b>Note:</b> for creating left-bounded ranges of floating point values,
+     * use one of the {@code create(…)} methods with a {@code POSITIVE_INFINITY} constant.
+     * We do not provide variants for other integer types because this method is typically invoked for
+     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType multiplicity of an attribute}.</div>
+     *
+     * @param  minValue       the minimal value.
+     * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @return the new range of numeric values from {@code minValue} to positive infinity.
+     *
+     * @see #create(int, boolean, int, boolean)
+     *
+     * @since 0.5
+     */
+    public static NumberRange<Integer> createLeftBounded(final int minValue, final boolean isMinIncluded) {
+        return unique(new NumberRange<>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
     }
 
     /**

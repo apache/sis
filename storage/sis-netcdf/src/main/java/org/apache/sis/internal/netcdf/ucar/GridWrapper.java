@@ -24,10 +24,11 @@ import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
-import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
+import ucar.nc2.VariableIF;
 
 
 /**
@@ -37,23 +38,38 @@ import org.apache.sis.util.ArraysExt;
  * of the grid geometry information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
-final class GridGeometryWrapper extends GridGeometry {
+final class GridWrapper extends Grid {
+    /**
+     * The decoder which is creating this grid geometry.
+     * Used for fetching the variables when first needed.
+     */
+    private final DecoderWrapper decoder;
+
     /**
      * The netCDF coordinate system to wrap.
      */
-    private final CoordinateSystem netcdfCS;
+    final CoordinateSystem netcdfCS;
 
     /**
      * Creates a new grid geometry for the given netCDF coordinate system.
      *
-     * @param  cs  the netCDF coordinate system, or {@code null} if none.
+     * @param  cs  the netCDF coordinate system.
      */
-    GridGeometryWrapper(final CoordinateSystem cs) {
+    GridWrapper(final DecoderWrapper decoder, final CoordinateSystem cs) {
+        this.decoder = decoder;
         netcdfCS = cs;
+    }
+
+    /**
+     * Returns a name for this grid geometry, for information purpose only.
+     */
+    @Override
+    public String getName() {
+        return netcdfCS.getName();
     }
 
     /**
@@ -77,6 +93,27 @@ final class GridGeometryWrapper extends GridGeometry {
     }
 
     /**
+     * Returns the number of cells along each source dimension, in "natural" order.
+     * This method may return {@code null} if the grid shape can not be determined.
+     *
+     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order, or {@code null}.
+     */
+    @Override
+    protected long[] getShape() {
+        final List<Dimension> domain = netcdfCS.getDomain();
+        final int    dim  = domain.size();
+        final long[] size = new long[dim];
+        for (int i=0; i<dim; i++) {
+            final int length = domain.get(i).getLength();
+            if (length <= 0) {
+                return null;
+            }
+            size[(dim-1) - i] = length;
+        }
+        return size;
+    }
+
+    /**
      * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
      * is associated.
      *
@@ -94,7 +131,7 @@ final class GridGeometryWrapper extends GridGeometry {
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    public Axis[] getAxes() throws IOException, DataStoreException {
+    protected Axis[] createAxes() throws IOException, DataStoreException {
         final List<Dimension> domain = netcdfCS.getDomain();
         final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
         /*
@@ -109,15 +146,21 @@ final class GridGeometryWrapper extends GridGeometry {
              * The AttributeNames are for ISO 19115 metadata. They are not used for locating grid cells
              * on Earth, but we nevertheless get them now for making MetadataReader work easier.
              */
-            AttributeNames.Dimension attributeNames = null;
+            char abbreviation = 0;
             final AxisType type = axis.getAxisType();
             if (type != null) switch (type) {
-                case Lon:      attributeNames = AttributeNames.LONGITUDE; break;
-                case Lat:      attributeNames = AttributeNames.LATITUDE; break;
-                case Pressure: // Fallthrough: consider as Height
-                case Height:   attributeNames = AttributeNames.VERTICAL; break;
-                case RunTime:  // Fallthrough: consider as Time
-                case Time:     attributeNames = AttributeNames.TIME; break;
+                case GeoX:            abbreviation = 'x'; break;
+                case GeoY:            abbreviation = 'y'; break;
+                case GeoZ:            abbreviation = 'z'; break;
+                case Lon:             abbreviation = 'λ'; break;
+                case Lat:             abbreviation = 'φ'; break;
+                case Pressure:        // Fallthrough: consider as Height
+                case Height:          abbreviation = 'H'; break;
+                case RunTime:         // Fallthrough: consider as Time
+                case Time:            abbreviation = 't'; break;
+                case RadialAzimuth:   abbreviation = 'θ'; break;    // Spherical longitude
+                case RadialElevation: abbreviation = 'Ω'; break;    // Spherical latitude
+                case RadialDistance:  abbreviation = 'r'; break;    // Geocentric radius
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
@@ -140,9 +183,8 @@ final class GridGeometryWrapper extends GridGeometry {
                  * package, we can proceed as if the dimension does not exist ('i' not incremented).
                  */
             }
-            axes[targetDim] = new Axis(this, axis, attributeNames,
-                                       ArraysExt.resize(indices, i),
-                                       ArraysExt.resize(sizes, i));
+            axes[targetDim] = new Axis(this, decoder.getWrapperFor(axis), abbreviation,
+                    axis.getPositive(), ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         return axes;
     }
@@ -152,7 +194,8 @@ final class GridGeometryWrapper extends GridGeometry {
      * This is (indirectly) a callback method for {@link #getAxes()}.
      */
     @Override
-    protected double coordinateForAxis(final Object axis, final int j, final int i) {
-        return (axis instanceof CoordinateAxis2D) ? ((CoordinateAxis2D) axis).getCoordValue(j, i) : Double.NaN;
+    protected double coordinateForAxis(final Variable axis, final int j, final int i) {
+        final VariableIF v = ((VariableWrapper) axis).variable;
+        return (v instanceof CoordinateAxis2D) ? ((CoordinateAxis2D) v).getCoordValue(j, i) : Double.NaN;
     }
 }

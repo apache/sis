@@ -327,8 +327,8 @@ public final strictfp class DoubleDoubleTest extends TestCase {
          "1.8288",                                      // Fathom to metres
         "20.1168",                                      // Chain to metres
          "2.54",                                        // Inch to centimetres
-         "0.9",                                         // Degrees to gradians
-         "1.111111111111111111111111111111111",         // Gradian to degrees
+         "0.9",                                         // Degree to grads
+         "1.111111111111111111111111111111111",         // Grad to degrees
          "0.002777777777777777777777777777777778",      // 1/360°
          "0.0002777777777777777777777777777777778",     // Second to degrees
          "0.01666666666666666666666666666666667",       // Minute to degrees

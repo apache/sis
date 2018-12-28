@@ -16,6 +16,13 @@
  */
 package org.apache.sis.internal.jdk9;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
@@ -29,7 +36,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * This file will be deleted on the SIS JDK9 branch.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
+ * @since   1.0
  * @version 0.8
  * @module
  */
@@ -70,5 +77,21 @@ public final class JDK9 {
             case 1:  return Collections.singleton(elements[0]);
             default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(elements)));
         }
+    }
+
+    /**
+     * Place holder for {@code Buffer.slice()}.
+     *
+     * @param  b the buffer to slice.
+     * @return the sliced buffer.
+     */
+    public static Buffer slice(Buffer b) {
+        if (b instanceof ByteBuffer)   return ((ByteBuffer) b).slice();
+        if (b instanceof ShortBuffer)  return ((ShortBuffer) b).slice();
+        if (b instanceof IntBuffer)    return ((IntBuffer) b).slice();
+        if (b instanceof LongBuffer)   return ((LongBuffer) b).slice();
+        if (b instanceof FloatBuffer)  return ((FloatBuffer) b).slice();
+        if (b instanceof DoubleBuffer) return ((DoubleBuffer) b).slice();
+        throw new IllegalArgumentException();
     }
 }

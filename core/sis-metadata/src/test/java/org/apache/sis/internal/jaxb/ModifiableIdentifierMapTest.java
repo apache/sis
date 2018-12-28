@@ -228,7 +228,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
     }
 
     /**
-     * Tests explicitely the special handling of {@code href} values.
+     * Tests explicitly the special handling of {@code href} values.
      */
     @Test
     public void testHRefSubstitution() {

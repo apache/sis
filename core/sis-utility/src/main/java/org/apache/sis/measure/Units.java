@@ -1177,7 +1177,7 @@ public final class Units extends Static {
         /*
          * All Unit<Temperature>.
          */
-        K.related(1);
+        K.related(2);
         KELVIN       = K;
         CELSIUS      = add(K, LinearConverter.offset(  27315, 100), "°C", SI,    (short) 0);
         FAHRENHEIT   = add(K, new LinearConverter(100, 45967, 180), "°F", OTHER, (short) 0);
@@ -1263,11 +1263,18 @@ public final class Units extends Static {
     /**
      * Invoked by {@code Units} static class initializer for registering SI conventional units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
+     *
+     * <p>If the {@code target} unit holds a list of {@linkplain SystemUnit#related() related units}
+     * (i.e. conventional units that can not be computed easily by appending a SI prefix), then the new
+     * conventional unit is added to that list of related units. For example "foot" is related to "metre"
+     * and "degree Celsius" is related to "Kelvin", but "kilometre" is not recorded as related to "metre"
+     * because this relationship can be inferred automatically without the need of a {@code related} table.
+     * The unrecorded units are all SI units related to {@code target} by a scale factor without offset.</p>
      */
     private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
         final ConventionalUnit<Q> unit = UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
         final ConventionalUnit<Q>[] related = target.related();
-        if (related != null && unit.scope != UnitRegistry.SI) {
+        if (related != null && (unit.scope != UnitRegistry.SI || !toTarget.isLinear())) {
             // Search first empty slot. This algorithm is inefficient, but the length of those arrays is small (<= 7).
             int i = 0;
             while (related[i] != null) i++;

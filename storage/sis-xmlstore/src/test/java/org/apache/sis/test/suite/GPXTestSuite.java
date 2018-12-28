@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-xmlstore} module, in approximative dependency order.
+ * All tests from the {@code sis-xmlstore} module, in rough dependency order.
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.gpx.TypesTest.class,

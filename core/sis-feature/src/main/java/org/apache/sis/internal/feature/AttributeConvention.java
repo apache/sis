@@ -195,7 +195,7 @@ public final class AttributeConvention extends Static {
     /**
      * Returns {@code true} if the given name stands for one of the synthetic properties defined by convention.
      * Conventional properties are properties added by the {@code DataStore} to the {@code FeatureType} in order
-     * to provide a uniform way to access commonly used informations.
+     * to provide a uniform way to access commonly used information.
      *
      * <p>Synthetic properties should generally not be written by the user.
      * Those properties are calculated most of the time and have only a meaning within SIS.</p>

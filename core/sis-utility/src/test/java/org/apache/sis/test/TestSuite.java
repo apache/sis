@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URISyntaxException;
 import org.apache.sis.internal.system.Shutdown;
@@ -212,7 +213,7 @@ public abstract strictfp class TestSuite {
 
     /**
      * Same verification than {@link #verifyTestList(Class)}, except that the set of base classes
-     * is explicitely specified. This method is preferred to {@code verifyTestList(Class)} only in
+     * is explicitly specified. This method is preferred to {@code verifyTestList(Class)} only in
      * the rare cases where some test cases need to extend something else than geoapi-conformance
      * or Apache SIS test class.
      *
@@ -273,11 +274,11 @@ public abstract strictfp class TestSuite {
         if (!skipShutdown) {
             skipShutdown = true;
             TestCase.LOGGER.removeHandler(LogRecordCollector.INSTANCE);
-            System.err.flush();   // Flushs log messages sent by ConsoleHandler.
+            System.err.flush();                                         // Flushs log messages sent by ConsoleHandler.
             try {
                 LogRecordCollector.INSTANCE.report(System.out);
-            } catch (IOException e) {   // Should never happen.
-                throw new AssertionError(e);
+            } catch (IOException e) {                                   // Should never happen.
+                throw new UncheckedIOException(e);
             }
             SystemListener.fireClasspathChanged();
             Shutdown.stop(TestSuite.class);

@@ -700,7 +700,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             case IGNORE_METADATA: {
                 /*
                  * "Inverse flattening factor" and "semi-minor axis length" are computed from each other,
-                 * so we do not need to compare both of them. But in non-approximative mode we nevertheless
+                 * so we do not need to compare both of them. But in non-approximated mode we nevertheless
                  * compare both as a safety against rounding errors.
                  */
                 if (!Numerics.equals(getInverseFlattening(), ((Ellipsoid) object).getInverseFlattening())) {

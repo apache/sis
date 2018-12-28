@@ -22,11 +22,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.internal.storage.query.SimpleQuery;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 
 // Branch-dependent imports
@@ -34,7 +30,20 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * Base implementation of feature sets contained in data stores.
+ * Base implementation of feature sets contained in data stores. This class provides a {@link #getMetadata()}
+ * which extracts information from other methods. Subclasses shall or should override the following methods:
+ *
+ * <ul>
+ *   <li>{@link #getType()} (mandatory)</li>
+ *   <li>{@link #getFeatureCount()} (recommended)</li>
+ *   <li>{@link #getEnvelope()} (recommended)</li>
+ *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
+ *   <li>{@link #features(boolean parallel)} (mandatory)</li>
+ * </ul>
+ *
+ * {@section Thread safety}
+ * Default methods of this abstract class are thread-safe.
+ * Synchronization, when needed, uses {@code this} lock.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -43,13 +52,6 @@ import org.opengis.feature.FeatureType;
  * @module
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
-    /**
-     * A description of this set of features, or {@code null} if not yet computed.
-     * Those metadata are created by {@link #getMetadata()} when first needed.
-     * Subclasses can set a value to this field directly.
-     */
-    protected Metadata metadata;
-
     /**
      * Creates a new resource.
      *
@@ -70,32 +72,44 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     }
 
     /**
-     * Returns a description of this set of features.
-     * Current implementation sets only the resource name; this may change in any future Apache SIS version.
+     * Returns the feature type name as the identifier for this resource.
      *
-     * <div class="note"><b>Note:</b>
-     * we currently do not set the geographic extent from the envelope because default {@link #getEnvelope()}
-     * implementation itself invokes {@code getMetadata()}. Consequently requesting the envelope from this
-     * method could create a never-ending loop.</div>
+     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     *
+     * @see DataStore#getIdentifier()
      */
     @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) {
-            final DefaultMetadata metadata = new DefaultMetadata();
-            final FeatureType type = getType();
-            if (type != null) {
-                final GenericName name = type.getName();
-                if (name != null) {                         // Paranoiac check (should never be null).
-                    final DefaultCitation citation = new DefaultCitation(name.toInternationalString());
-                    final DefaultDataIdentification identification = new DefaultDataIdentification();
-                    identification.setCitation(citation);
-                }
-            }
-            // No geographic extent - see above javadoc.
-            metadata.transition(DefaultMetadata.State.FINAL);
-            this.metadata = metadata;
+    public GenericName getIdentifier() throws DataStoreException {
+        final FeatureType type = getType();
+        if (type != null) {
+            return type.getName();
         }
-        return metadata;
+        return null;
+    }
+
+    /**
+     * Returns an estimation of the number of features in this set, or {@code null} if unknown.
+     * The default implementation returns {@code null}.
+     *
+     * @return estimation of the number of features, or {@code null}.
+     */
+    protected Integer getFeatureCount() {
+        return null;
+    }
+
+    /**
+     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation populates metadata
+     * based on information provided by {@link #getType()}, {@link #getIdentifier()} and {@link #getEnvelope()}.
+     * Subclasses should override if they can provide more information.
+     *
+     * @param  metadata  the builder where to set metadata properties.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    @Override
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        super.createMetadata(metadata);
+        metadata.addFeatureType(getType(), getFeatureCount());
     }
 
     /**

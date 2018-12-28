@@ -433,7 +433,7 @@ public class XLink implements Serializable {
      *
      * @param  href  a URN to a resources, or {@code null} if none.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "href"} attribute.
      *
      * @category locator
@@ -461,7 +461,7 @@ public class XLink implements Serializable {
      *
      * @param  role  a URI reference for some description of the arc role, or {@code null} if none.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "role"} attribute.
      *
      * @category semantic
@@ -489,7 +489,7 @@ public class XLink implements Serializable {
      *
      * @param  arcrole  a URI reference for some description of the arc role, or {@code null} if none.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "arcrole"} attribute.
      *
      * @category semantic
@@ -516,7 +516,7 @@ public class XLink implements Serializable {
      *
      * @param  title  a human-readable string with a short description for the arc, or {@code null} if none.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "title"} attribute.
      *
      * @category semantic
@@ -591,7 +591,7 @@ public class XLink implements Serializable {
      *
      * @param  show  the desired presentation of the ending resource, or {@code null} if unspecified.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "show"} attribute.
      *
      * @category behavior
@@ -663,7 +663,7 @@ public class XLink implements Serializable {
      * @param  actuate  the desired timing of traversal from the starting resource to the ending resource,
      *                  or {@code null} if unspecified.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "actuate"} attribute.
      *
      * @category behavior
@@ -689,7 +689,7 @@ public class XLink implements Serializable {
      *
      * @param  label  an identification of the target of a {@code from} or {@code to} attribute, or {@code null}.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "label"} attribute.
      *
      * @category traversal
@@ -717,7 +717,7 @@ public class XLink implements Serializable {
      *
      * @param  from  the starting resource, or {@code null}.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "from"} attribute.
      *
      * @category traversal
@@ -745,7 +745,7 @@ public class XLink implements Serializable {
      *
      * @param  to  the ending resource, or {@code null}.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitely set}.
+     * @throws IllegalStateException if the link type {@linkplain #setType has been explicitly set}.
      *         and that type does not allow the {@code "to"} attribute.
      *
      * @category traversal

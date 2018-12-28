@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 import java.io.Serializable;
 
 import org.opengis.referencing.operation.Matrix;
@@ -42,7 +43,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </ul>
  *
  * This class provides also a few {@code translate(…)} convenience methods,
- * which apply the pixel translation on a given {@link MathTransform} instance.
+ * which apply the translation on a given {@link MathTransform} instance.
  *
  * <div class="note"><b>Example:</b>
  * if the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
@@ -164,7 +165,7 @@ public final class PixelTranslation extends Static implements Serializable {
     }
 
     /**
-     * Returns the position relative to the pixel center.
+     * Returns the position relative to the cell center.
      * This method is typically used for <var>n</var>-dimensional grids, where the number of dimension is unknown.
      * The translation is determined from the following table, with the same value applied to all dimensions:
      *
@@ -338,22 +339,20 @@ public final class PixelTranslation extends Static implements Serializable {
     }
 
     /**
-     * Creates an affine transform that apply the same linear conversion for all dimensions.
+     * Creates an affine transform that apply the same translation for all dimensions.
      * For each dimension, input values <var>x</var> are converted into output values <var>y</var>
      * using the following equation:
      *
-     * <blockquote><var>y</var> &nbsp;=&nbsp; <var>x</var> × {@code scale} + {@code offset}</blockquote>
+     * <blockquote><var>y</var> = <var>x</var> + {@code offset}</blockquote>
      *
      * @param  dimension  the input and output dimensions.
      * @param  offset     the {@code offset} term in the linear equation.
-     * @return the linear transform for the given scale and offset.
+     * @return the linear transform for the given offset.
      */
     private static MathTransform translate(final int dimension, final double offset) {
-        final Matrix matrix = Matrices.createIdentity(dimension + 1);
-        for (int i=0; i<dimension; i++) {
-            matrix.setElement(i, dimension, offset);
-        }
-        return MathTransforms.linear(matrix);
+        final double[] vector = new double[dimension];
+        Arrays.fill(vector, offset);
+        return MathTransforms.translation(vector);
     }
 
     /**

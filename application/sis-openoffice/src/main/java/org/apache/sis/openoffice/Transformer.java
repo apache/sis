@@ -46,7 +46,7 @@ import org.apache.sis.storage.DataStoreException;
 final class Transformer {
     /**
      * The geographic area of interest. All values are in degrees. Prime meridian is Greenwich.
-     * Datum does not need to be specified since area of interest is an approximative information.
+     * Datum does not need to be specified since area of interest is an approximated information.
      *
      * @see #hasAreaOfInterest()
      */

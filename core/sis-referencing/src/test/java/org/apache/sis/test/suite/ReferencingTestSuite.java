@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-referencing} module, in approximative dependency order.
+ * All tests from the {@code sis-referencing} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -110,6 +110,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
     org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
     org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
+    org.apache.sis.referencing.operation.transform.TranslationTransformTest.class,
     org.apache.sis.referencing.operation.transform.ScaleTransformTest.class,
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.LinearTransformTest.class,
@@ -250,6 +251,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.CurveExtremumTest.class,
     org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
+    org.apache.sis.geometry.EnvelopeReducerTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.internal.metadata.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,

@@ -17,11 +17,18 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -32,14 +39,14 @@ import static org.opengis.test.Assert.*;
  * Tests {@link MathTransforms}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.5
  * @module
  */
 public final strictfp class MathTransformsTest extends TestCase {
     /**
      * Creates a dummy transform for testing purpose.
-     * The transform has the folowing properties:
+     * The transform has the following properties:
      *
      * <ul>
      *   <li>The source and target dimensions are 3.</li>
@@ -119,5 +126,90 @@ public final strictfp class MathTransformsTest extends TestCase {
             0,  0,  0,  0,  7,  0, -9,
             0,  0,  0,  0,  0,  0,  1
         }), MathTransforms.getMatrix(r), STRICT);
+    }
+
+    /**
+     * Returns a three-dimensional transform which is non-linear in the second dimension.
+     * A sample source point is (x, 1.5, y), which interpolates to (x, 8, y) where 8 is
+     * the mid-point between 6 and 14. The transform can compute derivatives.
+     */
+    private static MathTransform nonLinear3D() {
+        MathTransform tr = MathTransforms.interpolate(null, new double[] {2, 6, 14, 15});
+        tr = MathTransforms.passThrough(1, tr, 1);
+        return tr;
+    }
+
+    /**
+     * Tests {@link MathTransforms#getMatrix(MathTransform, DirectPosition)}.
+     *
+     * @throws TransformException if an error occurred while computing the derivative.
+     */
+    @Test
+    public void testGetMatrix() throws TransformException {
+        MathTransform tr = MathTransforms.concatenate(nonLinear3D(), MathTransforms.linear(new Matrix4(
+            5,  0,  0,  9,
+            0,  1,  0,  0,      // Non-linear transform will be concatenated at this dimension.
+            0,  0,  2, -7,
+            0,  0,  0,  1)));
+
+        // In the following position, only 1.5 matter because only dimension 1 is non-linear.
+        final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
+        final Matrix affine = MathTransforms.getMatrix(tr, pos);
+        assertMatrixEquals("Affine approximation", new Matrix4(
+            5,  0,  0,  9,
+            0,  8,  0, -2,      // Non-linear transform shall be the only one with different coefficients.
+            0,  0,  2, -7,
+            0,  0,  0,  1), affine, STRICT);
+        /*
+         * Transformation using above approximation shall produce the same result than the original
+         * transform if we do the comparison at the position where the approximation has been computed.
+         */
+        DirectPosition expected = tr.transform(pos, null);
+        DirectPosition actual = MathTransforms.linear(affine).transform(pos, null);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Tests {@link MathTransforms#linear(MathTransform, DirectPosition)}.
+     *
+     * @throws TransformException if an error occurred while computing the derivative.
+     */
+    @Test
+    @DependsOnMethod("testGetMatrix")
+    public void testLinearUsingPosition() throws TransformException {
+        final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
+        MathTransform tr = MathTransforms.linear(new Matrix4(
+            0,  5,  0,  9,
+            1,  0,  0,  0,      // Non-linear transform will be concatenated at this dimension.
+            0,  0, 12, -3,
+            0,  0,  0,  1));
+
+        LinearTransform linear = MathTransforms.linear(tr, pos);
+        assertSame("Linear transform shall be returned unchanged.", tr, linear);
+
+        tr = MathTransforms.concatenate(nonLinear3D(), tr);
+        linear = MathTransforms.linear(tr, pos);
+        assertNotSame(tr, linear);
+        /*
+         * Transformation using above approximation shall produce the same result than the original
+         * transform if we do the comparison at the position where the approximation has been computed.
+         */
+        DirectPosition expected = tr.transform(pos, null);
+        DirectPosition actual = linear.transform(pos, null);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Tests the interfaces implemented by the transforms returned by {@link MathTransforms#translation(double...)}.
+     */
+    @Test
+    public void testTranslation() {
+        MathTransform tr = MathTransforms.translation(4);
+        assertInstanceOf("1D", MathTransform1D.class, tr);
+        assertFalse("isIdentity", tr.isIdentity());
+
+        tr = MathTransforms.translation(4, 7);
+        assertInstanceOf("2D", MathTransform2D.class, tr);
+        assertFalse("isIdentity", tr.isIdentity());
     }
 }

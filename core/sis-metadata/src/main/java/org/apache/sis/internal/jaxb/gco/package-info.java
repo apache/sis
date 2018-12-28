@@ -34,7 +34,7 @@
  *   requires those values to be wrapped by elements representing the data type.  A role of these
  *   adapters is to add these elements around the value.</li>
  *
- *   <li><b>JAXB adapters for <cite>unit of measure</cite></b> as specified in the ISO-19103 specifications.<br>
+ *   <li><b>JAXB adapters for <cite>unit of measure</cite></b> as specified in the ISO 19103 specifications.<br>
  *   For example, a measure marshalled with JAXB will be formatted like {@code <gco:Measure uom="m">220.0</gco:Measure>}.</li>
  *
  *   <li>JAXB adapters for date and time.</li>

@@ -38,7 +38,7 @@ public interface WritableAggregate extends Aggregate {
      * </ul>
      *
      * <div class="note"><b>Warning:</b>
-     * copying informations between stores may produce differences in many aspects.
+     * copying information between stores may produce differences in many aspects.
      * The range of changes depends both on the original {@link Resource} structure
      * and the target {@code Resource} structure. If the differences are too large,
      * then this {@code Aggregate} may throw an exception.

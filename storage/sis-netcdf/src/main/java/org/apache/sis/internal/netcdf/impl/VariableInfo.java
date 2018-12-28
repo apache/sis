@@ -16,27 +16,37 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.io.IOException;
+import java.util.regex.Matcher;
 import java.lang.reflect.Array;
+import java.io.IOException;
+import javax.measure.Unit;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
+import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
 
@@ -135,8 +145,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * The grid geometry associated to this variable,
      * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
+     *
+     * @see #getGridGeometry(Decoder)
      */
-    GridGeometryInfo gridGeometry;
+    GridInfo gridGeometry;
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
@@ -145,7 +157,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      *
      * @see #isCoordinateSystemAxis()
      */
-    private final boolean isCoordinateSystemAxis;
+    private boolean isCoordinateSystemAxis;
 
     /**
      * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
@@ -162,11 +174,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see #meaning(int)
      */
     private final String[] meanings;
-
-    /**
-     * Where to report warnings, if any.
-     */
-    private final WarningListeners<?> listeners;
 
     /**
      * Creates a new variable.
@@ -191,15 +198,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                  final long                  offset,
                  final WarningListeners<?>   listeners) throws DataStoreContentException
     {
-        final Object isUnsigned = attributes.get(CDM.UNSIGNED);
-        if (isUnsigned != null) {
-            dataType = dataType.unsigned(booleanValue(isUnsigned));
-        }
+        super(listeners);
         this.name       = name;
         this.dimensions = dimensions;
         this.attributes = attributes;
-        this.dataType   = dataType;
-        this.listeners  = listeners;
+        final Object isUnsigned = getAttributeValue(CDM.UNSIGNED, "_unsigned");
+        if (isUnsigned != null) {
+            dataType = dataType.unsigned(booleanValue(isUnsigned));
+        }
+        this.dataType = dataType;
         /*
          * The 'size' value is provided in the netCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
@@ -212,7 +219,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                     offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
                 } else if (i != 0) {
                     // Unlimited dimension, if any, must be first in a netCDF 3 classic format.
-                    throw new DataStoreContentException(listeners.getLocale(), "netCDF", input.filename, null);
+                    throw new DataStoreContentException(listeners.getLocale(), Decoder.FORMAT_NAME, input.filename, null);
                 }
             }
             reader = new HyperRectangleReader(dataType.number, input, offset);
@@ -229,12 +236,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             final long actual = Integer.toUnsignedLong(size);
             if (actual != expected) {
                 if (expected != 0) {
-                    final LogRecord record = resources(listeners).getLogRecord(Level.WARNING,
+                    warning(ChannelDecoder.class, "readVariables",          // Caller of this constructor.
                             Resources.Keys.MismatchedVariableSize_3, getFilename(), name, actual - expected);
-                    record.setLoggerName(Modules.NETCDF);
-                    record.setSourceClassName(ChannelDecoder.class.getName());      // Caller of this constructor.
-                    record.setSourceMethodName("readVariables");
-                    listeners.warning(record);
                 }
                 if (actual > offsetToNextRecord) {
                     offsetToNextRecord = actual;
@@ -255,8 +258,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 }
             }
             isCoordinateSystemAxis = dimensions[0].name.equals(value);
-        } else {
-            isCoordinateSystemAxis = false;
         }
         /*
          * Verify if this variable is an enumeration. If yes, we remove the attributes that define the
@@ -295,11 +296,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @throws ArithmeticException if the stride between two records exceeds {@link Long#MAX_VALUE}.
      */
     static void complete(final VariableInfo[] variables) {
+        final Set<CharSequence> referencedAsAxis = new HashSet<>();
         final VariableInfo[] unlimited = new VariableInfo[variables.length];
         int     count        = 0;               // Number of valid elements in the 'unlimited' array.
         long    recordStride = 0;               // Sum of the size of all variables having a unlimited dimension.
         boolean isUnknown    = false;           // True if 'total' is actually unknown.
         for (final VariableInfo variable : variables) {
+            // Opportunistically store names of all axes listed in "coordinates" attributes of all variables.
+            referencedAsAxis.addAll(Arrays.asList(variable.getCoordinateVariables()));
             if (variable.isUnlimited()) {
                 final long paddedSize = variable.paddedSize();
                 unlimited[count++] = variable;
@@ -317,12 +321,40 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         } else for (int i=0; i<count; i++) {
             unlimited[i].offsetToNextRecord = recordStride - unlimited[i].offsetToNextRecord;
         }
+        /*
+         * If some variables have a "coordinates" attribute listing names of variables used as axes,
+         * mark those variables as axes. We perform this check as a complement for the check done in
+         * the constructor in order to detect two-dimensional axes. Example:
+         *
+         *    dimensions:
+         *        Y = 471 ;
+         *        X = 720 ;
+         *    variables:
+         *        float lon(Y, X) ;                       // Not detected as coordinate axis by the constructor.
+         *            lon:long_name = "longitude" ;
+         *            lon:units = "degree_east" ;
+         *        float lat(Y, X) ;                       // Not detected as coordinate axis by the constructor.
+         *            lat:long_name = "latitude" ;
+         *            lat:units = "degree_north" ;
+         *        short temperature(Y, X) ;
+         *            temperature:long_name = "Potential Temperature" ;
+         *            temperature:coordinates = "lon lat" ;
+         */
+        if (!referencedAsAxis.isEmpty()) {
+            for (final VariableInfo variable : variables) {
+                if (referencedAsAxis.remove(variable.name)) {
+                    variable.isCoordinateSystemAxis = true;
+                    if (referencedAsAxis.isEmpty()) break;
+                }
+            }
+        }
     }
 
     /**
      * Returns the name of the netCDF file containing this variable, or {@code null} if unknown.
      */
-    final String getFilename() {
+    @Override
+    public String getFilename() {
         return (reader != null) ? reader.filename() : null;
     }
 
@@ -354,9 +386,27 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the unit of measurement as a string, or {@code null} if none.
      */
     @Override
-    public String getUnitsString() {
-        final Object value = getAttributeValue(CDM.UNITS);
-        return (value instanceof String) ? (String) value : null;
+    protected String getUnitsString() {
+        return getAttributeAsString(CDM.UNITS);
+    }
+
+    /**
+     * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
+     * This method is called by {@link #getUnit()}.
+     */
+    @Override
+    protected Unit<?> parseUnit(String symbols) {
+        final Matcher parts = TIME_UNIT_PATTERN.matcher(symbols);
+        if (parts.matches()) {
+            /*
+             * If we enter in this block, the unit is of the form "days since 1970-01-01 00:00:00".
+             * The TIME_PATTERN splits the string in two parts, "days" and "1970-01-01 00:00:00".
+             * The parse method will replace the space between date and time by 'T' letter.
+             */
+            epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+            symbols = parts.group(1);
+        }
+        return Units.valueOf(symbols);
     }
 
     /**
@@ -389,6 +439,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns {@code true} if this variable seems to be a coordinate system axis,
      * determined by comparing its name with the name of all dimensions in the netCDF file.
+     * Also determined by inspection of {@code "coordinates"} attribute on other variables.
      */
     @Override
     public boolean isCoordinateSystemAxis() {
@@ -404,8 +455,32 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the names of variables to use as axes for this variable, or an empty array if none.
+     */
+    final CharSequence[] getCoordinateVariables() {
+        return CharSequences.split(getAttributeAsString(CF.COORDINATES), ' ');
+    }
+
+    /**
+     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
+     * The grid geometries are opportunistically cached in {@code VariableInfo} instances after they have
+     * been computed by {@link ChannelDecoder#getGridGeometries()}.
+     * The same grid geometry may be shared by many variables.
+     *
+     * @see ChannelDecoder#getGridGeometries()
+     */
+    @Override
+    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+        if (gridGeometry == null) {
+            decoder.getGridGeometries();            // Force calculation of grid geometries if not already done.
+        }
+        return gridGeometry;
+    }
+
+    /**
      * Returns the names of the dimensions of this variable.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
+     * This information is used for completing ISO 19115 metadata.
      */
     @Override
     public String[] getGridDimensionNames() {
@@ -419,11 +494,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
+     * This method is used mostly for building string representations of this variable.
      *
      * @return the number of grid cells for each dimension, as unsigned integers.
      */
     @Override
-    public int[] getGridEnvelope() {
+    public int[] getShape() {
         final int[] shape = new int[dimensions.length];
         for (int i=0; i<shape.length; i++) {
             shape[i] = dimensions[i].length;
@@ -442,6 +518,25 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the numeric type of the attribute of the given name, or {@code null}
+     * if the given attribute is not found or its value is not numeric.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Number> getAttributeType(final String attributeName) {
+        final Object value = getAttributeValue(attributeName);
+        if (value != null) {
+            Class<?> type = value.getClass();
+            final Class<?> c = type.getComponentType();
+            if (c != null) type = c;
+            if (Number.class.isAssignableFrom(type)) {
+                return (Class<? extends Number>) type;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the value of the given attribute, or {@code null} if none.
      * This method should be invoked only for hard-coded names that mix lower-case and upper-case letters.
      *
@@ -450,7 +545,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @return variable attribute value of the given name, or {@code null} if none.
      */
     private Object getAttributeValue(final String attributeName, final String lowerCase) {
-        Object value = attributes.get(attributeName);
+        Object value = getAttributeValue(attributeName);
         if (value == null) {
             value = attributes.get(lowerCase);
         }
@@ -478,6 +573,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
         final Object value = getAttributeValue(attributeName);
         return numeric ? numberValues(value) : stringValues(value);
+    }
+
+    /**
+     * Returns the value of the given attribute as a string, or {@code null} if none.
+     */
+    @Override
+    public String getAttributeAsString(final String attributeName) {
+        final Object value = getAttributeValue(attributeName);
+        return (value instanceof String) ? (String) value : null;
     }
 
     /**
@@ -509,15 +613,34 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     static Number[] numberValues(final Object value) {
         if (value != null) {
+            if (value instanceof Number) {
+                return new Number[] {(Number) value};
+            }
             if (value.getClass().isArray()) {
                 final Number[] values = new Number[Array.getLength(value)];
                 for (int i=0; i<values.length; i++) {
-                    values[i] = (Number) Array.get(value, i);
+                    final Object element = Array.get(value, i);
+                    final Number n;
+                    if (element instanceof Number) {
+                        n = (Number) element;
+                    } else if (element instanceof String) {
+                        final String t = (String) element;
+                        try {
+                            if (t.indexOf('.') >= 0) {
+                                n = Double.valueOf(t);
+                            } else {
+                                n = Long.valueOf(t);
+                            }
+                        } catch (NumberFormatException e) {
+                            // TODO: log warning. See also Decoder.parseNumber(String).
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                    values[i] = n;
                 }
                 return values;
-            }
-            if (value instanceof Number) {
-                return new Number[] {(Number) value};
             }
         }
         return EMPTY;
@@ -532,8 +655,50 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean readTriesToCompress() {
+        return true;
+    }
+
+    /**
+     * Sets the values in this variable. The values are normally read from the netCDF file by the {@link #read()} method,
+     * but this {@code setValues(Object)} method may also be invoked if we want to overwrite those values.
+     *
+     * @param  array  the values as an array of primitive type (for example {@code float[]}.
+     */
+    final void setValues(final Object array) {
+        Vector data = createDecimalVector(array, dataType.isUnsigned);
+        /*
+         * This method is usually invoked with vector of increasing or decreasing values.  Set a tolerance threshold to the
+         * precision of gratest (in magnitude) number, provided that this precision is not larger than increment. If values
+         * are not sorted in increasing or decreasing order, the tolerance computed below will be smaller than it could be.
+         * This is okay it will cause more conservative compression (i.e. it does not increase the risk of data loss).
+         */
+        double tolerance = 0;
+        if (Numbers.isFloat(data.getElementType())) {
+            final int n = data.size() - 1;
+            if (n >= 0) {
+                double first = data.doubleValue(0);
+                double last  = data.doubleValue(n);
+                double inc   = Math.abs((last - first) / n);
+                if (!Double.isNaN(inc)) {
+                    double ulp = Math.ulp(Math.max(Math.abs(first), Math.abs(last)));
+                    tolerance = Math.min(inc, ulp);
+                }
+            }
+        }
+        values = data.compress(tolerance);
+        values = SHARED_VECTORS.unique(values);
+    }
+
+    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * Fill values/missing values are replaced by NaN if {@link #hasRealValues()} is {@code true}.
      * The vector is cached and returned as-is in all future invocation of this method.
      *
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -555,7 +720,21 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
             final Region region = new Region(upper, lower, upper, subsampling);
             applyUnlimitedDimensionStride(region);
-            values = Vector.create(reader.read(region), dataType.isUnsigned).compress(0);
+            Object array = reader.read(region);
+            replaceNaN(array);
+            /*
+             * If we can convert a double[] array to a float[] array, we should do that before
+             * to invoke 'setValues(array)' - we can not rely on data.compress(tolerance). The
+             * reason is because we assume that float[] arrays are accurate in base 10 even if
+             * the data were originally stored as doubles. The Vector class does not make such
+             * assumption since it is specific to what we observe with netCDF files. To enable
+             * this assumption, we need to convert to float[] before createDecimalVector(…).
+             */
+            if (array instanceof double[]) {
+                final float[] copy = ArraysExt.copyAsFloatsIfLossless((double[]) array);
+                if (copy != null) array = copy;
+            }
+            setValues(array);
         }
         return values;
     }
@@ -571,7 +750,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         if (isUnlimited()) {
             final int dataSize = reader.dataSize();
             if (offsetToNextRecord < 0 || (offsetToNextRecord % dataSize) != 0) {
-                throw new DataStoreContentException(resources(listeners)
+                throw new DataStoreContentException(resources()
                         .getString(Resources.Keys.CanNotComputeVariablePosition_2, getFilename(), name));
             }
             region.increaseStride(dimensions.length - 1, offsetToNextRecord / dataSize);
@@ -581,17 +760,20 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Reads a sub-sampled sub-area of the variable.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
+     * Array elements are in "natural" order (inverse of netCDF order).
      *
-     * @param  areaLower    index of the first value to read along each dimension, as unsigned integers.
-     * @param  areaUpper    index after the last value to read along each dimension, as unsigned integers.
+     * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
      * @return the data as an array of a Java primitive type.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreContentException {
+    public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
+        }
+        if (values != null) {
+            throw new DataStoreException();     // TODO: create a view.
         }
         /*
          * NetCDF sorts datas in reverse dimension order. Example:
@@ -616,17 +798,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final long[] size  = new long[dimension];
         final long[] lower = new long[dimension];
         final long[] upper = new long[dimension];
-        final int [] sub   = new int [dimension];
         for (int i=0; i<dimension; i++) {
-            final int j = (dimension - 1) - i;
-            lower[i] = Integer.toUnsignedLong(areaLower[j]);
-            upper[i] = Integer.toUnsignedLong(areaUpper[j]);
-            sub  [i] = subsampling[j];
-            size [i] = dimensions[j].length();
+            lower[i] = area.getLow(i);
+            upper[i] = Math.incrementExact(area.getHigh(i));
+            size [i] = dimensions[(dimension - 1) - i].length();
         }
-        final Region region = new Region(size, lower, upper, sub);
+        final Region region = new Region(size, lower, upper, subsampling);
         applyUnlimitedDimensionStride(region);
-        return Vector.create(reader.read(region), dataType.isUnsigned);
+        final Object array = reader.read(region);
+        replaceNaN(array);
+        return Vector.create(array, dataType.isUnsigned);
     }
 
     /**
@@ -645,7 +826,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the error message for an unknown data type.
      */
     private String unknownType() {
-        return resources(listeners).getString(Resources.Keys.UnsupportedDataType_3, getFilename(), name, dataType);
+        return resources().getString(Resources.Keys.UnsupportedDataType_3, getFilename(), name, dataType);
     }
 
     /**

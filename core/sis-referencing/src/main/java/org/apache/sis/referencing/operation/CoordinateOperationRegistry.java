@@ -121,7 +121,7 @@ class CoordinateOperationRegistry {
      * The identifier for a transformation which is a datum shift without
      * {@link org.apache.sis.referencing.datum.BursaWolfParameters}.
      * Only the changes in ellipsoid axis-length are taken in account.
-     * Such ellipsoid shifts are approximative and may have 1 kilometre error.
+     * Such ellipsoid shifts are approximations and may have 1 kilometre error.
      *
      * @see org.apache.sis.internal.referencing.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
@@ -296,7 +296,7 @@ class CoordinateOperationRegistry {
      * <p>Operations in the returned list are ordered in preference order (preferred operation first).
      * If no operation is found for those codes, then this method returns an empty list.
      * Note that it does not mean that no path exist;
-     * it only means that it was not defined explicitely in the registry.</p>
+     * it only means that it was not defined explicitly in the registry.</p>
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -762,7 +762,7 @@ class CoordinateOperationRegistry {
         /*
          * If the user-provided CRS are approximately equal to the coordinate operation CRS, keep the later.
          * The reason is that coordinate operation CRS are built from the definitions provided by the authority,
-         * while the user-provided CRS can be anything (e.g. parsed from a quite approximative WKT).
+         * while the user-provided CRS can be anything (e.g. parsed from a quite approximated WKT).
          */
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
@@ -1041,7 +1041,7 @@ class CoordinateOperationRegistry {
     /**
      * Returns the specified identifier in a map to be given to coordinate operation constructors.
      * In the special case where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
-     * the map will contains extra informations like positional accuracy.
+     * the map will contain extra information like positional accuracy.
      *
      * <div class="note"><b>Note:</b>
      * in the datum shift case, an operation version is mandatory but unknown at this time.
@@ -1124,7 +1124,7 @@ class CoordinateOperationRegistry {
             }
         }
         /*
-         * If the operation type was not explicitely specified, infers it from whether an accuracy is specified
+         * If the operation type was not explicitly specified, infers it from whether an accuracy is specified
          * or not. In principle, only transformations has an accuracy property; conversions do not. This policy
          * is applied by the properties(Identifier) method in this class.
          */

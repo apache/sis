@@ -561,7 +561,7 @@ public strictfp class DocumentComparator {
                     return true;
                 }
                 /*
-                 * The given attribute does not appear explicitely in the set of attributes to ignore.
+                 * The given attribute does not appear explicitly in the set of attributes to ignore.
                  * But maybe the user asked to ignore all attributes in the namespace.
                  * Typical example: "http://www.w3.org/2000/xmlns:*"
                  */
@@ -712,7 +712,7 @@ public strictfp class DocumentComparator {
 
     /**
      * Appends to the given buffer the string representation of the node hierarchy.
-     * The first line will contains the root of the tree. Other lines will contain
+     * The first line will contain the root of the tree. Other lines will contain
      * the child down in the hierarchy until the given node, inclusive.
      *
      * <p>This method formats only a summary if the hierarchy is equals to the expected one.</p>

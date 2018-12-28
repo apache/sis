@@ -144,7 +144,7 @@ public class Merger {
         /*
          * Only after we verified that the merge operation is theoretically allowed, remember that
          * we are going to merge those two metadata and verify that we are not in an infinite loop.
-         * We will also verify that the target metadata does not contain a source, or vis-versa.
+         * We will also verify that the target metadata does not contain a source, or vice-versa.
          */
         {   // For keeping 'sourceDone' and 'targetDone' more local.
             final Boolean sourceDone = done.put(source, Boolean.FALSE);

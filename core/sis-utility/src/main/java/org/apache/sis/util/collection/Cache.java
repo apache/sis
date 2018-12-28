@@ -62,7 +62,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  *     }
  * }
  *
- * Alternatively, one can handle explicitely the locks.
+ * Alternatively, one can handle explicitly the locks.
  * This alternative sometime provides more flexibility, for example in exception handling.
  * The steps are as below:
  *

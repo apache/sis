@@ -567,7 +567,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * i.e. it is caller responsibility to determine if range shall be considered as metadata.
      *
      * @param  that  the axis to compare with this axis.
-     * @param  mode  whether the unit comparison is approximative or exact.
+     * @param  mode  whether the unit comparison is an approximation or exact.
      * @param  cr    {@code true} for comparing also the range minimum and maximum values.
      * @return {@code true} if unit, direction and optionally range extremum are equal.
      */

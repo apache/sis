@@ -473,7 +473,7 @@ public class ConverterRegistry {
             }
             /*
              * If the source type is a class (not an interface), verify if a converter has been
-             * explicitely registered for that interface. We do not perform this check if the given
+             * explicitly registered for that interface. We do not perform this check if the given
              * sourceClass is already an interface because this case was handled by previous block.
              * If we find more than one converter for different interface, select the most specific.
              */

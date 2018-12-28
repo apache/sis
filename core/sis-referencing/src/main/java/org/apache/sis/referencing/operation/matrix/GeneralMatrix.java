@@ -615,13 +615,19 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
                 int iA = j * nc;                            // Index of values in a single row of A.
                 final int nextRow = iA + nc;
                 while (iA < nextRow) {
-                    dot.setFrom (eltA, iA, errA);
-                    dot.multiply(eltB, iB, errB);
-                    sum.add(dot);
+                    dot.setFrom(eltA, iA, errA);
+                    if (!dot.isZero()) {                    // For avoiding multiplication with NaN values.
+                        final double vB = eltB[iB];
+                        final double eB = eltB[iB + errB];
+                        if (vB != 0 || eB != 0) {           // For avoiding multiplication with NaN values.
+                            dot.multiply(vB, eB);
+                            sum.add(dot);
+                            final double value = Math.abs(dot.value);
+                            if (value > max) max = value;
+                        }
+                    }
                     iB += numCol;                           // Move to next row of B.
                     iA++;                                   // Move to next column of A.
-                    final double value = Math.abs(dot.value);
-                    if (value > max) max = value;
                 }
                 if (Math.abs(sum.value) < Math.ulp(max) * ZERO_THRESHOLD) {
                     sum.clear();                            // Sum is not significant according double arithmetic.

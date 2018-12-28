@@ -518,7 +518,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
             vector[2] = z - tZ;
             centricToEllipsoid.transform(vector, 0, vector, 0, derivate);
             /*
-             * We got a (λ,φ) using an approximative geocentric translation. Now interpolate the "real"
+             * We got a (λ,φ) using an approximated geocentric translation. Now interpolate the "real"
              * geocentric interpolation at that location and get the (λ,φ) again. In theory, we just
              * iterate until we got the desired precision. But in practice a single interation is enough.
              */

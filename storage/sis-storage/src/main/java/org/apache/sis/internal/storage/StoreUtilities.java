@@ -21,7 +21,11 @@ import java.util.stream.Stream;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.util.Static;
@@ -33,6 +37,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -92,7 +97,7 @@ public final class StoreUtilities extends Static {
      * @param  unicode   whether to restrict to valid Unicode identifiers.
      * @return a data identifier, or {@code null} if none.
      *
-     * @see AbstractResource#identifier(Metadata)
+     * @see DataStore#getIdentifier()
      * @see Citations#removeIgnorableCharacters(String)
      */
     private static String getAnyIdentifier(final Metadata metadata, final boolean unicode) {
@@ -138,6 +143,36 @@ public final class StoreUtilities extends Static {
             }
         }
         return title;
+    }
+
+    /**
+     * Returns the spatio-temporal envelope of the given metadata.
+     * This method computes the union of all {@link GeographicBoundingBox} in the metadata, assuming the
+     * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
+     * (usually WGS 84).
+     *
+     * @param  metadata  the metadata from which to compute the envelope, or {@code null}.
+     * @return the spatio-temporal extent, or {@code null} if none.
+     */
+    public static Envelope getEnvelope(final Metadata metadata) {
+        GeneralEnvelope bounds = null;
+        if (metadata != null) {
+            for (final Identification identification : metadata.getIdentificationInfo()) {
+                for (final Extent extent : identification.getExtents()) {
+                    for (final GeographicExtent ge : extent.getGeographicElements()) {
+                        if (ge instanceof GeographicBoundingBox) {
+                            final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
+                            if (bounds == null) {
+                                bounds = env;
+                            } else {
+                                bounds.add(env);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return bounds;
     }
 
     /**

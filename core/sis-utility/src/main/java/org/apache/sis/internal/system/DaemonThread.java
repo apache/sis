@@ -126,7 +126,7 @@ abstract class DaemonThread extends Thread {
      * and waits for the threads to die before to return.
      *
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
-     * Users should never invoke this method explicitely.</p>
+     * Users should never invoke this method explicitly.</p>
      *
      * @param  thread         the first thread in the chain of threads to kill.
      * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
@@ -155,7 +155,7 @@ abstract class DaemonThread extends Thread {
      * requiring an application reboot.
      *
      * <p><strong>This method is for internal use by Apache SIS only.</strong>
-     * Users should never invoke this method explicitely.</p>
+     * Users should never invoke this method explicitly.</p>
      *
      * @param  thread  the first thread in the chain of threads to verify.
      * @return the list of stalled or dead threads, or {@code null} if none.

@@ -37,7 +37,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Tests the {@link DefaultCoordinateSystemAxis} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -98,7 +98,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertWktEquals("AXIS[“Longitude (λ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",            GEODETIC_LONGITUDE);
         assertWktEquals("AXIS[“Spherical longitude (θ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",  SPHERICAL_LONGITUDE);
         assertWktEquals("AXIS[“Latitude (φ)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]",            GEODETIC_LATITUDE);
-        assertWktEquals("AXIS[“Spherical latitude (φ')”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
+        assertWktEquals("AXIS[“Spherical latitude (Ω)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
 
         assertWktEquals(Convention.WKT1,     "AXIS[“x”, EAST]",  X);
         assertWktEquals(Convention.WKT1,     "AXIS[“y”, NORTH]", Y);
@@ -106,7 +106,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic longitude (λ)”, east, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",   GEODETIC_LONGITUDE);
         assertWktEquals(Convention.INTERNAL, "Axis[“Spherical longitude (θ)”, east, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",  SPHERICAL_LONGITUDE);
         assertWktEquals(Convention.INTERNAL, "Axis[“Geodetic latitude (φ)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]",   GEODETIC_LATITUDE);
-        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical latitude (φ′)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]", SPHERICAL_LATITUDE);
+        assertWktEquals(Convention.INTERNAL, "Axis[“Spherical latitude (Ω)”, north, Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]]]", SPHERICAL_LATITUDE);
     }
 
     /**

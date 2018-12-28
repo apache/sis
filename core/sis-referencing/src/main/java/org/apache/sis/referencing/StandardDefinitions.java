@@ -373,7 +373,7 @@ final class StandardDefinitions {
                        dir  = AxisDirection.NORTH;
                        break;
             case 60:   name = "Spherical latitude";
-                       abrv = "φ′";                         // See HardCodedAxes.SPHERICAL_LATITUDE in tests.
+                       abrv = "Ω";                          // See HardCodedAxes.SPHERICAL_LATITUDE in tests.
                        unit = Units.DEGREE;
                        dir  = AxisDirection.NORTH;
                        min  = Latitude.MIN_VALUE;
@@ -389,7 +389,7 @@ final class StandardDefinitions {
                        rm   = RangeMeaning.WRAPAROUND;
                        break;
             case 62:   name = "Geocentric radius";
-                       abrv = "R";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
+                       abrv = "r";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
                        dir  = AxisDirection.UP;
                        rm   = RangeMeaning.EXACT;
                        min  = 0;

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -33,8 +34,10 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Static;
 
 
@@ -80,8 +83,50 @@ public final class MathTransforms extends Static {
      * @return an identity transform of the specified dimension.
      */
     public static LinearTransform identity(final int dimension) {
-        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
+        ArgumentChecks.ensurePositive("dimension", dimension);
         return IdentityTransform.create(dimension);
+    }
+
+    /**
+     * Creates a transform which applies the given translation.
+     * The source and target dimensions of the transform are the length of the given vector.
+     *
+     * @param  vector  the translation vector.
+     * @return a transform applying the given translation.
+     *
+     * @since 1.0
+     */
+    public static LinearTransform translation(final double... vector) {
+        ArgumentChecks.ensureNonNull("vector", vector);
+        final LinearTransform tr;
+        switch (vector.length) {
+            case 0:  return IdentityTransform.create(0);
+            case 1:  return LinearTransform1D.create(1, vector[0]);
+            case 2:  tr = new AffineTransform2D(1, 0, 0, 1, vector[0], vector[1]); break;
+            default: tr = new TranslationTransform(vector); break;
+        }
+        return tr.isIdentity() ? IdentityTransform.create(vector.length) : tr;
+    }
+
+    /**
+     * Creates a transform which applies the given scale.
+     * The source and target dimensions of the transform are the length of the given vector.
+     *
+     * @param  factors  the scale factors.
+     * @return a transform applying the given scale.
+     *
+     * @since 1.0
+     */
+    public static LinearTransform scale(final double... factors) {
+        ArgumentChecks.ensureNonNull("factors", factors);
+        final LinearTransform tr;
+        switch (factors.length) {
+            case 0:  return IdentityTransform.create(0);
+            case 1:  return LinearTransform1D.create(factors[0], 0);
+            case 2:  tr = new AffineTransform2D(factors[0], 0, 0, factors[1], 0, 0); break;
+            default: tr = new ScaleTransform(factors); break;
+        }
+        return tr.isIdentity() ? IdentityTransform.create(factors.length) : tr;
     }
 
     /**
@@ -149,6 +194,36 @@ public final class MathTransforms extends Static {
             return candidate;
         }
         return new ProjectiveTransform(matrix).optimize();
+    }
+
+    /**
+     * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
+     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
+     * Otherwise an approximation for the given position is created using the
+     * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that position.
+     *
+     * <p><b>Invariant:</b> transforming the given {@code position} using the given {@code transform} produces the same result
+     * (ignoring rounding error) than transforming the same {@code position} using the returned transform. This invariant holds
+     * only for that particular position; the transformation of any other positions may produce different results.</p>
+     *
+     * @param  transform  the transform to approximate by an affine transform.
+     * @param  position   position in source CRS around which to get the an affine transform approximation.
+     * @return a transform approximating the given transform around the given position.
+     * @throws TransformException if an error occurred while transforming the given position
+     *         or computing the derivative at that position.
+     *
+     * @since 1.0
+     *
+     * @see #getMatrix(MathTransform, DirectPosition)
+     */
+    public static LinearTransform linear(final MathTransform transform, final DirectPosition position) throws TransformException {
+        if (transform instanceof LinearTransform) {
+            // We accept null position here for consistency with MathTransform.derivative(DirectPosition).
+            ArgumentChecks.ensureDimensionMatches("position", transform.getSourceDimensions(), position);
+            return (LinearTransform) transform;
+        } else {
+            return linear(getMatrix(transform, position));
+        }
     }
 
     /**
@@ -499,6 +574,59 @@ public final class MathTransforms extends Static {
             return AffineTransforms2D.toMatrix((AffineTransform) transform);
         }
         return null;
+    }
+
+    /**
+     * Returns the coefficients of an affine transform in the vicinity of the given position.
+     * If the given transform is linear, then this method produces a result identical to {@link #getMatrix(MathTransform)}.
+     * Otherwise the returned matrix can be used for {@linkplain #linear(Matrix) building a linear transform} which can be
+     * used as an approximation of the given transform for short distances around the given position.
+     *
+     * @param  transform  the transform to approximate by an affine transform.
+     * @param  position   position in source CRS around which to get the coefficients of an affine transform approximation.
+     * @return the matrix of the given transform around the given position.
+     * @throws TransformException if an error occurred while transforming the given position or computing the derivative at
+     *         that position.
+     *
+     * @since 1.0
+     *
+     * @see #linear(MathTransform, DirectPosition)
+     */
+    public static Matrix getMatrix(final MathTransform transform, final DirectPosition position) throws TransformException {
+        ArgumentChecks.ensureNonNull("transform", transform);
+        final int srcDim = transform.getSourceDimensions();
+        ArgumentChecks.ensureDimensionMatches("position", srcDim, position);            // Null position is okay for now.
+        final Matrix affine = getMatrix(transform);
+        if (affine != null) {
+            return affine;
+            // We accept null position here for consistency with MathTransform.derivative(DirectPosition).
+        }
+        ArgumentChecks.ensureNonNull("position", position);
+        final int tgtDim = transform.getTargetDimensions();
+        double[] pts = new double[Math.max(srcDim + 1, tgtDim)];
+        for (int i=0; i<srcDim; i++) {
+            pts[i] = position.getOrdinate(i);
+        }
+        final Matrix d = derivativeAndTransform(transform, pts, 0, pts, 0);
+        final MatrixSIS a = Matrices.createZero(tgtDim + 1, srcDim + 1);
+        for (int j=0; j<tgtDim; j++) {
+            for (int i=0; i<srcDim; i++) {
+                a.setElement(j, i, d.getElement(j, i));
+            }
+            a.setElement(j, srcDim, pts[j]);
+            pts[j] = -position.getOrdinate(j);                  // To be used by a.translate(pts) later.
+        }
+        a.setElement(tgtDim, srcDim, 1);
+        /*
+         * At this point, the translation column in the matrix is set as if the coordinate system origin
+         * was at the given position. We want to keep the original coordinate system origin. We do that
+         * be applying a translation in the opposite direction before the affine transform. Translation
+         * terms were opportunistically set in the previous loop.
+         */
+        pts = ArraysExt.resize(pts, srcDim + 1);
+        pts[srcDim] = 1;
+        a.translate(pts);
+        return a;
     }
 
     /**

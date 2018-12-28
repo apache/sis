@@ -21,6 +21,8 @@ import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
@@ -28,6 +30,7 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -41,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -106,6 +109,20 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     @Override
     public int getNumCol() {
         return getSourceDimensions() + 1;
+    }
+
+    /**
+     * Returns an identity transform if this transform is the inverse of the given transform.
+     * If this method is unsure, it conservatively returns {@code null}.
+     */
+    @Override
+    protected final MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
+            throws FactoryException
+    {
+        if (other instanceof LinearTransform) {
+            return super.tryConcatenate(applyOtherFirst, other, factory);
+        }
+        return null;        // No need to compute the inverse if the other transform is not linear.
     }
 
     /**
@@ -286,7 +303,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
          * for a "Geographic 2D to 3D" conversion it will rather set the new dimensions to zero. So
          * A⁻¹ and B⁻¹ may differ in their "NaN versus 0" values even if A and B are equal.
          *
-         * Opportunistically, the comparison of inverse transforms in approximative mode also ensures
+         * Opportunistically, the comparison of inverse transforms in approximated mode also ensures
          * that we are below the tolerance threshold not only for this matrix, but for the inverse one
          * as well.
          */

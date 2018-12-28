@@ -108,7 +108,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
 
     /**
      * Infers the properties to give to an inverse coordinate operation.
-     * The returned map will contains three kind of information:
+     * The returned map will contain three kind of information:
      *
      * <ul>
      *   <li>Metadata (domain of validity, accuracy)</li>

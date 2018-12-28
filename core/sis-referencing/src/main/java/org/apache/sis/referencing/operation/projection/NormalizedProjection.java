@@ -279,7 +279,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *
          * <center>{@include ../transform/formulas.html#DenormalizeCartesian}</center>
          *
-         * <p>This enumeration shall be used <strong>only</strong> when the user requested explicitely spherical
+         * <p>This enumeration shall be used <strong>only</strong> when the user requested explicitly spherical
          * formulas, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026), but the figure
          * of the Earth may be an ellipsoid rather than a sphere. In the majority of cases, this enumeration should
          * not be used.</p>

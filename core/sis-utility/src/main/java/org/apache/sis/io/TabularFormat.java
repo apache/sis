@@ -116,7 +116,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     protected boolean omitTrailingNulls;
 
     /**
-     * {@code true} if the user defined the parsing pattern explicitely.
+     * {@code true} if the user defined the parsing pattern explicitly.
      */
     private boolean isParsePatternDefined;
 

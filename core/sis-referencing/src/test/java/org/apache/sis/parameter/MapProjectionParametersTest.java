@@ -118,7 +118,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
         assertEquals(6356752, parameters.parameter(SEMI_MINOR)        .doubleValue(), 0.5);
         assertTrue("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
 
-        parameters.parameter(SEMI_MAJOR).setValue(6378350.9);  // Clarke 1858 (approximative)
+        parameters.parameter(SEMI_MAJOR).setValue(6378350.9);  // Clarke 1858 (approximated)
         parameters.parameter(SEMI_MINOR).setValue(6356675.0);
         assertEquals(294.26, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.001);
         assertFalse("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());

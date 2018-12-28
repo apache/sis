@@ -115,7 +115,7 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     }
 
     /**
-     * Converts a date read from a XML stream to the object which will contains
+     * Converts a date read from a XML stream to the object which will contain
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  value  the adapter for this metadata value.

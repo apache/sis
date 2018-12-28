@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Random;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
@@ -252,7 +253,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
             try {
                 format.format(stats, out);
             } catch (IOException e) {
-                throw new AssertionError(e);
+                throw new UncheckedIOException(e);
             }
             out.flush();
         }
@@ -294,7 +295,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         try {
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e);
+            throw new UncheckedIOException(e);
         }
     }
 

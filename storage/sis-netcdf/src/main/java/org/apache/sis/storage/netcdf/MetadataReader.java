@@ -47,6 +47,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.WarningListeners;
@@ -59,13 +60,15 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
@@ -146,13 +149,6 @@ final class MetadataReader extends MetadataBuilder {
     private static final char QUOTE = '"';
 
     /**
-     * The vertical coordinate reference system to be given to the object created by {@link #addExtent()}.
-     *
-     * @todo Should be set to {@code CommonCRS.MEAN_SEA_LEVEL}.
-     */
-    private static final VerticalCRS VERTICAL_CRS = null;
-
-    /**
      * The source of netCDF attributes from which to infer ISO metadata.
      * This source is set at construction time.
      *
@@ -183,6 +179,12 @@ final class MetadataReader extends MetadataBuilder {
      * are often identical except for their role attribute.
      */
     private transient ResponsibleParty pointOfContact;
+
+    /**
+     * The vertical coordinate reference system to be given to the object created by {@link #addExtent()}.
+     * This is set to the first vertical CRS found.
+     */
+    private VerticalCRS verticalCRS;
 
     /**
      * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
@@ -553,7 +555,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds a {@code DataIdentification/Citation} element if at least one of the required attributes is non-null.
-     * This method will initialize the {@link #pointOfContact} field, than reuse it if non-null and suitable.
+     * This method will initialize the {@link #pointOfContact} field, then reuses it if non-null and suitable.
      *
      * <p>This method opportunistically collects the name of all publishers.
      * Those names are useful to {@link #addIdentificationInfo(Set)}.</p>
@@ -687,9 +689,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
         try {
-            setFormat("NetCDF");
+            setFormat(NetcdfStoreProvider.NAME);
         } catch (MetadataStoreException e) {
-            addFormatName("NetCDF");
+            addFormatName(NetcdfStoreProvider.NAME);
             warning(e);
         }
     }
@@ -701,7 +703,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  cs  the grid geometry (related to the netCDF coordinate system).
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    private void addSpatialRepresentationInfo(final GridGeometry cs) throws IOException, DataStoreException {
+    private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
         for (int i=axes.length; i>0;) {
             final int dim = axes.length - i;
@@ -715,34 +717,39 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             if (axis.sourceSizes.length >= 1) {
                 setAxisLength(dim, axis.sourceSizes[0]);
             }
-            final AttributeNames.Dimension attributeNames = axis.attributeNames;
-            if (attributeNames != null) {
-                final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
-                setAxisName(dim, name);
-                final String res = stringValue(attributeNames.RESOLUTION);
-                if (res != null) try {
-                    /*
-                     * ACDD convention recommends to write units after the resolution.
-                     * Examples: "100 meters", "0.1 degree".
-                     */
-                    final int s = res.indexOf(' ');
-                    final double value;
-                    Unit<?> units = null;
-                    if (s < 0) {
-                        value = numericValue(attributeNames.RESOLUTION);
-                    } else {
-                        value = Double.parseDouble(res.substring(0, s).trim());
-                        final String symbol = res.substring(s+1).trim();
-                        if (!symbol.isEmpty()) try {
-                            units = Units.valueOf(symbol);
-                        } catch (ParserException e) {
-                            warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
-                        }
+            final AttributeNames.Dimension attributeNames;
+            switch (axis.abbreviation) {
+                case 'λ': case 'θ':           attributeNames = AttributeNames.LONGITUDE; break;
+                case 'φ': case 'Ω':           attributeNames = AttributeNames.LATITUDE;  break;
+                case 'h': case 'H': case 'D': attributeNames = AttributeNames.VERTICAL;  break;
+                case 't': case 'T':           attributeNames = AttributeNames.TIME;      break;
+                default : continue;
+            }
+            final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
+            setAxisName(dim, name);
+            final String res = stringValue(attributeNames.RESOLUTION);
+            if (res != null) try {
+                /*
+                 * ACDD convention recommends to write units after the resolution.
+                 * Examples: "100 meters", "0.1 degree".
+                 */
+                final int s = res.indexOf(' ');
+                final double value;
+                Unit<?> units = null;
+                if (s < 0) {
+                    value = numericValue(attributeNames.RESOLUTION);
+                } else {
+                    value = Double.parseDouble(res.substring(0, s).trim());
+                    final String symbol = res.substring(s+1).trim();
+                    if (!symbol.isEmpty()) try {
+                        units = Units.valueOf(symbol);
+                    } catch (ParserException e) {
+                        warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
                     }
-                    setAxisResolution(dim, value, units);
-                } catch (NumberFormatException e) {
-                    warning(e);
                 }
+                setAxisResolution(dim, value, units);
+            } catch (NumberFormatException e) {
+                warning(e);
             }
         }
         setCellGeometry(CellGeometry.AREA);
@@ -751,6 +758,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     /**
      * Adds the extent declared in the current group. For more consistent results, the caller should restrict
      * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
+     * The {@link #verticalCRS} field should have been set before to invoke this method.
      *
      * @return {@code true} if at least one numerical value has been added.
      */
@@ -771,7 +779,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * If at least one vertical coordinate is available, add a VerticalExtent.
          */
         if (fillExtent(VERTICAL, Units.METRE, null, extent, 0)) {
-            addVerticalExtent(extent[0], extent[1], VERTICAL_CRS);
+            addVerticalExtent(extent[0], extent[1], verticalCRS);
             hasExtent = true;
         }
         /*
@@ -835,7 +843,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 }
                 boolean reverse = false;
                 if (positive != null) {
-                    reverse = Axis.direction(symbol, positive) < 0;
+                    reverse = AxisDirections.opposite(positive).equals(Axis.direction(symbol));
                 } else if (dim.POSITIVE != null) {
                     // For now, only the vertical axis have a "positive" attribute.
                     reverse = CF.POSITIVE_DOWN.equals(stringValue(dim.POSITIVE));
@@ -886,7 +894,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (variable.isCoverage(2)) {
+            if (variable.isCoverage()) {
                 final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
                 CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
             }
@@ -931,27 +939,17 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final NameFactory f = decoder.nameFactory;
             setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
         }
-        Object[] v = variable.getAttributeValues(CF.STANDARD_NAME, false);
-        final String id = (v.length == 1) ? trim((String) v[0]) : null;
+        final String id = trim(variable.getAttributeAsString(CF.STANDARD_NAME));
         if (id != null && !id.equals(name)) {
-            v = variable.getAttributeValues(ACDD.standard_name_vocabulary, false);
-            addBandName(v.length == 1 ? (String) v[0] : null, id);
+            addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }
         final String description = trim(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
             addBandDescription(description);
         }
-        final String units = variable.getUnitsString();
-        if (units != null) try {
-            setSampleUnits(Units.valueOf(units));
-        } catch (ParserException e) {
-            warning(Errors.Keys.CanNotAssignUnitToVariable_2, name, units, e);
-        }
-        double scale  = Double.NaN;
-        double offset = Double.NaN;
-        v = variable.getAttributeValues(CDM.SCALE_FACTOR, true); if (v.length == 1) scale  = ((Number) v[0]).doubleValue();
-        v = variable.getAttributeValues(CDM.ADD_OFFSET,   true); if (v.length == 1) offset = ((Number) v[0]).doubleValue();
-        setTransferFunction(scale, offset);
+        setSampleUnits(variable.getUnit());
+        setTransferFunction(variable.getAttributeAsNumber(CDM.SCALE_FACTOR),
+                            variable.getAttributeAsNumber(CDM.ADD_OFFSET));
         addContentType(forCodeName(CoverageContentType.class, stringValue(ACDD.coverage_content_type)));
     }
 
@@ -1012,6 +1010,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Creates an ISO {@code Metadata} object from the information found in the netCDF file.
+     * The returned metadata is unmodifiable, for allowing the caller to share a unique instance.
      *
      * @return the ISO metadata object.
      * @throws IOException if an I/O operation was necessary but failed.
@@ -1019,9 +1018,15 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Metadata read() throws IOException, DataStoreException {
+        for (final Grid cs : decoder.getGridGeometries()) {
+            final CoordinateReferenceSystem crs = cs.getCoordinateReferenceSystem(decoder);
+            addReferenceSystem(crs);
+            if (verticalCRS == null) {
+                verticalCRS = CRS.getVerticalComponent(crs, false);
+            }
+        }
         addResourceScope(ScopeCode.DATASET, null);
-        Set<InternationalString> publisher = addCitation();
-        addIdentificationInfo(publisher);
+        addIdentificationInfo(addCitation());
         for (final String service : SERVICES) {
             final String name = stringValue(service);
             if (name != null) {
@@ -1034,9 +1039,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
-        for (final GridGeometry cs : decoder.getGridGeometries()) {
-            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION &&
-                cs.getTargetDimensions() >= Variable.MIN_DIMENSION)
+        for (final Grid cs : decoder.getGridGeometries()) {
+            if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
+                cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {
                 addSpatialRepresentationInfo(cs);
             }
@@ -1056,6 +1061,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultMetadata metadata = build(false);
         metadata.setMetadataStandards(Citations.ISO_19115);
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
+        metadata.transition(DefaultMetadata.State.FINAL);
         return metadata;
     }
 }

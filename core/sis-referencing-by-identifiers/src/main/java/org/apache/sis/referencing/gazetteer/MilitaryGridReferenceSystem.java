@@ -444,11 +444,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *   <tr><td style="text-align:right">1000</td> <td>4 Q FJ 12 67</td></tr>
          *   <tr><td style="text-align:right">10 000</td> <td>4 Q FJ 1 6</td></tr>
          *   <tr><td style="text-align:right">100 000</td> <td>4 Q FJ</td></tr>
-         *   <tr><td style="text-align:right">(approximative) 1 000 000</td> <td>4 Q</td></tr>
+         *   <tr><td style="text-align:right">(approximated) 1 000 000</td> <td>4 Q</td></tr>
          * </table>
          *
          * Values smaller than 1 (e.g. 0.01 for a centimetre precision) may also be returned
-         * if that value has been {@linkplain #setPrecision(double) explicitely set},
+         * if that value has been {@linkplain #setPrecision(double) explicitly set},
          * but sub-metric precision are usually not used with MGRS.
          *
          * @return precision of formatted references in metres.
@@ -804,7 +804,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             }
 
             /**
-             * Guess the number of elements to be returned. The value returned by this method is very approximative,
+             * Guess the number of elements to be returned. The value returned by this method is very rough,
              * and likely greater than the real amount of elements that will actually be returned.
              */
             @Override

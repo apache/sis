@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.io.Serializable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.ObjectStreamException;
 import javax.measure.Dimension;
 import org.apache.sis.math.Fraction;
@@ -381,7 +382,7 @@ final class UnitDimension implements Dimension, Serializable {
         try {
             UnitFormat.formatComponents(components, UnitFormat.Style.SYMBOL, buffer);
         } catch (IOException e) {
-            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuilder.
+            throw new UncheckedIOException(e);      // Should never happen since we are writting to a StringBuilder.
         }
         return buffer.toString();
     }

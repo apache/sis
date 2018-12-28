@@ -124,7 +124,7 @@ public final class GeographicToGeocentric extends GeodeticOperation {
      * and {@code "Geocentric_To_Ellipsoid"} methods.
      *
      * <p><b>Note:</b>  we do not define similar method in {@link GeocentricToGeographic} class because the only
-     * way to obtain that operation method is to ask explicitely for {@code "Geocentric_To_Ellipsoid"} operation.
+     * way to obtain that operation method is to ask explicitly for {@code "Geocentric_To_Ellipsoid"} operation.
      * The ambiguity that we try to resolve here exists only if the user asked for the EPSG:9602 operation, which
      * is defined only in this class.</p>
      *

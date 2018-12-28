@@ -190,7 +190,7 @@ public final class Features extends Static {
             /*
              * Loop on quality elements and check conformance results.
              * NOTE: other types of result are ignored for now, since those other
-             * types may require threshold and other informations to be evaluated.
+             * types may require threshold and other information to be evaluated.
              */
             for (Element element : quality.getReports()) {
                 for (Result result : element.getResults()) {

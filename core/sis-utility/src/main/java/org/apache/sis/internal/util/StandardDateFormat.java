@@ -25,13 +25,12 @@ import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
-
-// Branch-dependent imports
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
@@ -43,13 +42,15 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
 
+import org.apache.sis.util.CharSequences;
+
 
 /**
  * A date format used for parsing dates in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
  * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
  * which is not necessarily identical to other ISO standards.
  *
- * External users should use nothing else than the parsing and formating methods.
+ * External users should use nothing else than the parsing and formatting methods.
  * The methods for configuring the {@code DateFormat} instances may or may not work
  * depending on the branch.
  *
@@ -60,7 +61,7 @@ import java.time.format.SignStyle;
  * but nevertheless allows to specify a timezone.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -72,8 +73,15 @@ public final class StandardDateFormat extends DateFormat {
 
     /**
      * The {@value} timezone ID.
+     *
+     * @see ZoneOffset#UTC
      */
     public static final String UTC = "UTC";
+
+    /**
+     * Midnight (00:00) UTC.
+     */
+    private static final OffsetTime MIDNIGHT = OffsetTime.of(0, 0, 0, 0, ZoneOffset.UTC);
 
     /**
      * The thread-safe instance to use for reading and formatting dates.
@@ -106,6 +114,8 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Parses the given date and/or time, which may have an optional timezone. This method applies heuristic rules
      * for choosing if the object should be returned as a local date, or a date and time with timezone, <i>etc</i>.
+     * The full date format is of the form "1970-01-01T00:00:00.000Z", but this method also accepts spaces in place
+     * of 'T' as in "1970-01-01 00:00:00".
      *
      * @param  text  the character string to parse, or {@code null}.
      * @return a temporal object for the given text, or {@code null} if the given text was null.
@@ -115,7 +125,75 @@ public final class StandardDateFormat extends DateFormat {
      */
     public static Temporal parseBest(final CharSequence text) {
         // Cast is safe if all QUERIES elements return a Temporal subtype.
-        return (text != null) ? (Temporal) FORMAT.parseBest(text, QUERIES) : null;
+        return (text != null) ? (Temporal) FORMAT.parseBest(toISO(text, 0, text.length()), QUERIES) : null;
+    }
+
+    /**
+     * Parses the given date as an instant, assuming UTC timezone if unspecified.
+     *
+     * @param  text   the text to parse as an instant in UTC timezone by default, or {@code null}.
+     * @return the instant for the given text, or {@code null} if the given text was null.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
+     */
+    public static Instant parseInstantUTC(final CharSequence text) {
+        return (text != null) ? parseInstantUTC(text, 0, text.length()) : null;
+    }
+
+    /**
+     * Parses the given date as an instant, assuming UTC timezone if unspecified.
+     *
+     * @param  text   the text to parse as an instant in UTC timezone by default.
+     * @param  lower  index of the first character to parse.
+     * @param  upper  index after the last character to parse.
+     * @return the instant for the given text.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
+     */
+    public static Instant parseInstantUTC(final CharSequence text, final int lower, final int upper) {
+        TemporalAccessor date = FORMAT.parseBest(toISO(text, lower, upper), QUERIES);
+        if (date instanceof Instant) {
+            return (Instant) date;
+        }
+        final OffsetDateTime time;
+        if (date instanceof LocalDateTime) {
+            time = ((LocalDateTime) date).atOffset(ZoneOffset.UTC);
+        } else {
+            time = ((LocalDate) date).atTime(MIDNIGHT);
+        }
+        return time.toInstant();
+    }
+
+    /**
+     * Modifies the given date and time string for making it more compliant to ISO syntax.
+     * If date and time are separated by spaces, then this method replaces those spaces by
+     * the 'T' letter.
+     *
+     * @param  text   the text to make more compliant with ISO syntax.
+     * @param  lower  index of the first character to examine.
+     * @param  upper  index after the last character to examine.
+     * @return sub-sequence of {@code text} from {@code lower} to {@code upper}, potentially modified.
+     */
+    static CharSequence toISO(CharSequence text, int lower, int upper) {
+        int sep = CharSequences.indexOf(text, ':', lower, upper);
+        if (sep >= lower) {
+            sep = CharSequences.skipTrailingWhitespaces(text, lower, sep);
+            while (sep > lower) {
+                final int c = Character.codePointBefore(text, sep);
+                final int timeStart = sep;
+                sep -= Character.charCount(c);
+                if (!Character.isDigit(c)) {
+                    if (Character.isWhitespace(c)) {
+                        sep = CharSequences.skipTrailingWhitespaces(text, lower, sep);
+                        if (sep > lower && Character.isDigit(Character.codePointBefore(text, sep))) {
+                            text = new StringBuilder(upper - lower).append(text, lower, upper).replace(sep, timeStart, "T");
+                            upper = text.length();
+                            lower = 0;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return CharSequences.trimWhitespaces(text, lower, upper);
     }
 
     /**
@@ -140,7 +218,7 @@ public final class StandardDateFormat extends DateFormat {
      * <ul>
      *   <li>If the given date has zero values in hours, minutes, seconds and milliseconds fields in UTC timezone,
      *       then the returned implementation will be a {@link LocalDate}, dropping the timezone information (i.e.
-     *       the date is considered approximative). Note that this is consistent with ISO 19162 requirement that
+     *       the date is considered an approximation). Note that this is consistent with ISO 19162 requirement that
      *       dates are always in UTC, even if Apache SIS allows some flexibility.</li>
      *   <li>Otherwise if the timezone is not {@code null} and not UTC, then this method returns an {@link OffsetDateTime}.</li>
      *   <li>Otherwise this method returns a {@link LocalDateTime} in the given timezone.</li>
@@ -320,6 +398,7 @@ public final class StandardDateFormat extends DateFormat {
 
     /**
      * Parses the given text starting at the given position.
+     * Contrarily to {@link #parse(String)}, this method does not accept spaces as a separator between date and time.
      *
      * @param  text      the text to parse.
      * @param  position  position where to start the parsing.
@@ -336,7 +415,7 @@ public final class StandardDateFormat extends DateFormat {
     }
 
     /**
-     * Parses the given text.
+     * Parses the given text. This method accepts space as a separator between date and time.
      *
      * @param  text  the text to parse.
      * @return the date (never null).
@@ -345,7 +424,7 @@ public final class StandardDateFormat extends DateFormat {
     @Override
     public Date parse(final String text) throws ParseException {
         try {
-            return toDate(format.parse(text));
+            return toDate(format.parse(toISO(text, 0, text.length())));
         } catch (DateTimeException | ArithmeticException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }

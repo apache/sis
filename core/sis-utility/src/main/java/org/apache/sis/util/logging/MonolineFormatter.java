@@ -19,6 +19,7 @@ package org.apache.sis.util.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.FieldPosition;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -34,6 +35,7 @@ import java.util.logging.*;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.ArgumentChecks;
@@ -245,7 +247,7 @@ public class MonolineFormatter extends Formatter {
     /**
      * The message format, or {@code null} if not yet created.
      */
-    private transient MessageFormat messageFormat;
+    private transient AutoMessageFormat messageFormat;
 
     /**
      * Value of the last call to {@link MessageFormat#applyPattern(String)}. Saved in order to avoid
@@ -772,7 +774,7 @@ loop:   for (int i=0; ; i++) {
                 }
                 writer.flush();
             } catch (IOException e) {
-                throw new AssertionError(e);
+                throw new UncheckedIOException(e);
             }
             /*
              * We wrote the main content, but maybe with some extra lines. Trim the last lines by skipping white spaces
@@ -841,13 +843,14 @@ loop:   for (int i=0; ; i++) {
                 if (c >= '0' && c <= '9') {
                     synchronized (buffer) {
                         if (messageFormat == null) {
-                            messageFormat = new MessageFormat(message);
+                            messageFormat = new AutoMessageFormat(message);
                         } else if (!message.equals(messagePattern)) {
                             messageFormat.applyPattern(message);
                         }
                         messagePattern = message;
                         final int base = buffer.length();
                         try {
+                            messageFormat.configure(parameters);
                             message = messageFormat.format(parameters, buffer, new FieldPosition(0)).substring(base);
                         } finally {
                             buffer.setLength(base);
@@ -879,7 +882,7 @@ loop:   for (int i=0; ; i++) {
              * Find the index of the stack trace element where the log has been produced.
              * If no exact match is found, some heuristic is applied (the first element
              * from the same class, or the first element from the logger package). If no
-             * approximative match is found, then the default value is the last element.
+             * approximated match is found, then the default value is the last element.
              */
             int logProducer = trace.length;
             boolean useLoggerName = (loggerName != null), useClassName = true;

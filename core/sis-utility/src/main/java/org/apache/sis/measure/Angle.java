@@ -312,7 +312,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Formats this angle using the provider formatter. This method is invoked when an
      * {@code Angle} object is formatted using the {@code "%s"} conversion specifier of
-     * {@link Formatter}. Users don't need to invoke this method explicitely.
+     * {@link Formatter}. Users don't need to invoke this method explicitly.
      *
      * <p>Special cases:</p>
      * <ul>

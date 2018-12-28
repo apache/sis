@@ -25,6 +25,10 @@ import java.util.Arrays;
  * <code>{@linkplain #offset} = constant</code>. However, this specialized {@code ConstantTransform1D} class is
  * faster.
  *
+ * <p>{@code ConstantTransform1D} behavior differs from {@link LinearTransform1D} behavior is one aspect:
+ * NaN values are ignored and converted to the constant value. By contrast, {@code LinearTransform1D} let
+ * those values to NaN. Overwriting NaN by the constant value is required by {@link org.apache.sis.coverage}.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5

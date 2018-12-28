@@ -23,7 +23,7 @@ import org.apache.sis.util.Static;
  * Information about the configuration of tests
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -41,6 +41,11 @@ public final strictfp class TestConfiguration extends Static {
      * then the content sent to the {@link TestCase#out} field will be printed after each test.
      */
     public static final String VERBOSE_OUTPUT_KEY = "org.apache.sis.test.verbose";
+
+    /**
+     * The {@value} system property for enabling display of test images or widgets.
+     */
+    public static final String SHOW_WIDGET_KEY = "org.apache.sis.test.gui.show";
 
     /**
      * The {@value} system property for setting the output encoding.

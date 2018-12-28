@@ -66,7 +66,7 @@
  * <ul>
  *   <li>{@code "+init=epsg:4326"} (<strong>not</strong> equivalent to the standard EPSG::4326 definition)</li>
  *   <li>{@code "+proj=latlong +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"} (default to two-dimensional CRS)</li>
- *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=ne"} (explicitely two-dimensional)</li>
+ *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=ne"} (explicitly two-dimensional)</li>
  *   <li>{@code "+proj=latlon +a=6378137.0 +b=6356752.314245179 +pm=0.0 +axis=neu"} (three-dimensional)</li>
  * </ul>
  * </div>

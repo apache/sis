@@ -144,7 +144,7 @@
   </gml:baseCRS>
 
   <!--
-   <gml:derivedCRSType> is specific to <gml:DerivedCRS> and is not stored explicitely in Apache SIS
+   <gml:derivedCRSType> is specific to <gml:DerivedCRS> and is not stored explicitly in Apache SIS
    implementation. Instead, we infer this value from the interface implemented by DefaultDerivedCRS.
   -->
   <gml:derivedCRSType codeSpace="EPSG">engineering</gml:derivedCRSType>

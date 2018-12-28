@@ -107,6 +107,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short AxisChanges = 8;
 
         /**
+         * Band {0}
+         */
+        public static final short Band_1 = 161;
+
+        /**
          * Barometric altitude
          */
         public static final short BarometricAltitude = 9;
@@ -185,6 +190,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Correlation
          */
         public static final short Correlation = 19;
+
+        /**
+         * Coverage domain
+         */
+        public static final short CoverageDomain = 162;
 
         /**
          * Current date and time
@@ -347,6 +357,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short File = 144;
 
         /**
+         * Fill value
+         */
+        public static final short FillValue = 159;
+
+        /**
          * Geocentric
          */
         public static final short Geocentric = 42;
@@ -502,6 +517,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short MeanValue = 68;
 
         /**
+         * Measures
+         */
+        public static final short Measures = 157;
+
+        /**
          * Methods
          */
         public static final short Methods = 69;
@@ -510,6 +530,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Minimum value
          */
         public static final short MinimumValue = 70;
+
+        /**
+         * Missing value
+         */
+        public static final short MissingValue = 160;
 
         /**
          * Modified Julian
@@ -525,6 +550,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Name
          */
         public static final short Name = 72;
+
+        /**
+         * No data
+         */
+        public static final short Nodata = 156;
 
         /**
          * None
@@ -592,6 +622,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Options = 83;
 
         /**
+         * Origin in a cell center
+         */
+        public static final short OriginInCellCenter = 155;
+
+        /**
          * Other surface
          */
         public static final short OtherSurface = 84;
@@ -655,6 +690,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Root Mean Square
          */
         public static final short RootMeanSquare = 91;
+
+        /**
+         * Sample dimensions
+         */
+        public static final short SampleDimensions = 163;
 
         /**
          * Scale
@@ -785,6 +825,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Value domain
          */
         public static final short ValueDomain = 112;
+
+        /**
+         * Values
+         */
+        public static final short Values = 158;
 
         /**
          * Variables

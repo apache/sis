@@ -24,7 +24,7 @@
        xmlns:xlink="http://www.w3.org/1999/xlink">
 
   <identifier value="org.apache.sis.openoffice"/>
-  <version    value="0.8"/>
+  <version    value="${project.version}"/>
   <platform   value="all"/>
 
   <publisher>

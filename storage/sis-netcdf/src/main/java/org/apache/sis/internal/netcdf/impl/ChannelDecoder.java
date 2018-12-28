@@ -18,18 +18,20 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.AbstractMap;
+import java.util.AbstractList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.time.DateTimeException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -42,8 +44,8 @@ import javax.measure.format.ParserException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
@@ -109,14 +111,6 @@ public final class ChannelDecoder extends Decoder {
      * @see #findAttribute(String)
      */
     static final Locale NAME_LOCALE = Locale.US;
-
-    /**
-     * The pattern to use for separating the component of a time unit.
-     * An example of time unit is <cite>"days since 1970-01-01T00:00:00Z"</cite>.
-     *
-     * @see #numberToDate(String, Number[])
-     */
-    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("\\s+since\\s+", Pattern.CASE_INSENSITIVE);
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -207,7 +201,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #getGridGeometries()
      */
-    private transient GridGeometry[] gridGeometries;
+    private transient Grid[] gridGeometries;
 
     /**
      * Creates a new decoder for the given file.
@@ -242,7 +236,7 @@ public final class ChannelDecoder extends Decoder {
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "netCDF", getFilename()));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, FORMAT_NAME, getFilename()));
         }
         /*
          * Check the version number.
@@ -251,7 +245,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, "netCDF", version));
+            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, FORMAT_NAME, version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -282,7 +276,35 @@ public final class ChannelDecoder extends Decoder {
         }
         this.attributeMap = attributes;
         this.variables    = variables;
-        this.variableMap  = NamedElement.toCaseInsensitiveNameMap(variables, NAME_LOCALE);
+        this.variableMap  = toCaseInsensitiveNameMap(variables);
+    }
+
+    /**
+     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
+     * If the name of an element is not all lower cases, then this method also adds an entry for the
+     * lower cases version of that name in order to allow case-insensitive searches.
+     *
+     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
+     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
+     *
+     * @param  <E>       the type of elements.
+     * @param  elements  the elements to store in the map, or {@code null} if none.
+     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
+     */
+    private static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements) {
+        return CollectionsExt.toCaseInsensitiveNameMap(new AbstractList<Map.Entry<String,E>>() {
+            @Override
+            public int size() {
+                return elements.length;
+            }
+
+            @Override
+            public Map.Entry<String,E> get(final int index) {
+                final E e = elements[index];
+                return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
+            }
+        }, NAME_LOCALE);
     }
 
     /**
@@ -326,7 +348,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a netCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreContentException malformedHeader() {
-        return new DataStoreContentException(listeners.getLocale(), "netCDF", getFilename(), null);
+        return new DataStoreContentException(listeners.getLocale(), FORMAT_NAME, getFilename(), null);
     }
 
     /**
@@ -488,7 +510,7 @@ public final class ChannelDecoder extends Decoder {
             }
             dimensions[i] = new Dimension(name, length, isUnlimited);
         }
-        dimensionMap = Dimension.toCaseInsensitiveNameMap(dimensions, NAME_LOCALE);
+        dimensionMap = toCaseInsensitiveNameMap(dimensions);
         return dimensions;
     }
 
@@ -595,6 +617,18 @@ public final class ChannelDecoder extends Decoder {
          */
         VariableInfo.complete(variables);
         return variables;
+    }
+
+    /**
+     * Checks and potentially modifies the content of this dataset for conventions other than CF-conventions.
+     * This method should be invoked after construction for handling the particularities of some datasets
+     * (HYCOM, …).
+     *
+     * @throws IOException if an error occurred while reading the channel.
+     * @throws DataStoreContentException if an error occurred while interpreting the netCDF file content.
+     */
+    public final void applyOtherConventions() throws IOException, DataStoreContentException {
+        HYCOM.convert(this, variables);
     }
 
 
@@ -762,10 +796,10 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public Date[] numberToDate(final String symbol, final Number... values) {
         final Date[] dates = new Date[values.length];
-        final String[] parts = TIME_UNIT_PATTERN.split(symbol);
-        if (parts.length == 2) try {
-            final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts[1])).getTime();
+        final Matcher parts = Variable.TIME_UNIT_PATTERN.matcher(symbol);
+        if (parts.matches()) try {
+            final UnitConverter converter = Units.valueOf(parts.group(1)).getConverterToAny(Units.MILLISECOND);
+            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts.group(2))).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
@@ -816,13 +850,13 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public GridGeometry[] getGridGeometries() {
+    public Grid[] getGridGeometries() {
         if (gridGeometries == null) {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are
              * the grid dimensions which are the domain of the variable (i.e. the sources of the conversion
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
-             * we try to make this code robust to unusual netCDF files.
+             * more complicated netCDF files (e.g. using two-dimensional localisation grids) also exist.
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
@@ -833,40 +867,69 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
             /*
-             * For each variables, get the list of all axes associated to their dimensions. The association
-             * is given by the above 'dimToVars' map. More than one variable may have the same dimensions,
-             * and consequently the same axes, so we will remember the previously created instances in order
-             * to share them.
+             * For each variable, get its list of axes. More than one variable may have the same list of axes,
+             * so we remember the previously created instances in order to share the grid geometry instances.
              */
-            final Set<VariableInfo> axes = new LinkedHashSet<>(4);
-            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
+            final Set<VariableInfo> axes = new LinkedHashSet<>(8);
+            final Set<Dimension> usedDimensions = new HashSet<>(8);
+            final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
                     continue;
                 }
-                final List<Dimension> dimensions = Arrays.asList(variable.dimensions);
-                GridGeometryInfo gridGeometry = dimsToGG.get(dimensions);
-                if (gridGeometry == null) {
-                    /*
-                     * Found a new list of dimensions for which no axes have been created yet.
-                     * If and only if we can find all axes, then create the GridGeometryInfo.
-                     * This is a "all or nothing" operation.
-                     */
-                    for (final Dimension dimension : variable.dimensions) {
+                /*
+                 * The axes can be inferred in two ways: if the variable contains a "coordinates" attribute,
+                 * that attribute lists explicitly the variables to use as axes. Otherwise we have to infer
+                 * the axes from the variable dimensions, using the 'dimToVars' map computed at the beginning
+                 * of this method. If and only if we can find all axes, we create the GridGeometryInfo.
+                 * This is a "all or nothing" operation.
+                 */
+                axes.clear();
+                usedDimensions.clear();
+                final CharSequence[] coordinates = variable.getCoordinateVariables();
+                if (coordinates.length != 0) {
+                    for (int i=coordinates.length; --i >= 0;) {
+                        final VariableInfo axis = findVariable(coordinates[i].toString());
+                        if (axis == null) {
+                            usedDimensions.clear();
+                            axes.clear();
+                            break;
+                        }
+                        axes.add(axis);
+                        usedDimensions.addAll(Arrays.asList(axis.dimensions));
+                    }
+                }
+                /*
+                 * In theory the "coordinates" attribute would enumerate all axis needed for covering all dimensions,
+                 * and we would not need to check for variables having dimension names. However in practice there is
+                 * incomplete attributes, so we check for other dimensions even if the above loop did some work.
+                 */
+                int mixedFlag = axes.isEmpty() ? 0 : 1;
+                for (final Dimension dimension : variable.dimensions) {
+                    if (usedDimensions.add(dimension)) {
                         final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
-                            axes.clear();
                             continue nextVar;
                         }
                         axes.addAll(axis);
+                        mixedFlag |= 2;
                     }
-                    gridGeometry = new GridGeometryInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
-                    dimsToGG.put(dimensions, gridGeometry);
-                    axes.clear();
+                }
+                /*
+                 * Creates the grid geometry using the given domain and range, reusing existing instance if one exists.
+                 * We usually try to preserve axis order as declared in the netCDF file. But if we mixed axes inferred
+                 * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
+                 * are better to sort them.
+                 */
+                GridInfo gridGeometry = new GridInfo(variable.dimensions,
+                        axes.toArray(new VariableInfo[axes.size()]), mixedFlag == 3);
+                GridInfo existing = shared.putIfAbsent(gridGeometry, gridGeometry);
+                if (existing != null) {
+                    gridGeometry = existing;
                 }
                 variable.gridGeometry = gridGeometry;
             }
-            gridGeometries = dimsToGG.values().toArray(new GridGeometry[dimsToGG.size()]);
+            gridGeometries = shared.values().toArray(new Grid[shared.size()]);
         }
         return gridGeometries;
     }

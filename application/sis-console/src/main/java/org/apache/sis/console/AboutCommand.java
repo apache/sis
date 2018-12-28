@@ -114,7 +114,7 @@ final class AboutCommand extends CommandRunner {
             } else {
                 /*
                  * Provide information about a remote SIS installation. Those information are accessible
-                 * only if explicitely enabled at JVM startup time.
+                 * only if explicitly enabled at JVM startup time.
                  *
                  * Tutorial: http://docs.oracle.com/javase/tutorial/jmx/remote/custom.html
                  */

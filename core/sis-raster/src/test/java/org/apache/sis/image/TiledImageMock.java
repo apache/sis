@@ -28,6 +28,7 @@ import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.util.Vector;
+import org.apache.sis.util.ArraysExt;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +44,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  * @module
  */
-final class TiledImage implements WritableRenderedImage {
+final class TiledImageMock implements WritableRenderedImage {
     /**
      * The minimum X or Y coordinate (inclusive) of the rendered image.
      */
@@ -96,11 +97,11 @@ final class TiledImage implements WritableRenderedImage {
      * @param dataType  sample data type as one of the {@link java.awt.image.DataBuffer} constants.
      * @param numBands  number of bands in the sample model to create.
      */
-    TiledImage(final int dataType,  final int numBands,
-               final int minX,      final int minY,
-               final int width,     final int height,
-               final int tileWidth, final int tileHeight,
-               final int minTileX,  final int minTileY)
+    TiledImageMock(final int dataType,  final int numBands,
+                   final int minX,      final int minY,
+                   final int width,     final int height,
+                   final int tileWidth, final int tileHeight,
+                   final int minTileX,  final int minTileY)
     {
         this.minX        = minX;
         this.minY        = minY;
@@ -114,18 +115,7 @@ final class TiledImage implements WritableRenderedImage {
         this.numYTiles   = (height + tileHeight - 1) / tileHeight;
         this.tiles       = new WritableRaster[numXTiles * numYTiles];
         this.sampleModel = new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight,
-                                numBands, tileWidth * numBands, bandOffsets(numBands));
-    }
-
-    /**
-     * Returns arbitrary band offsets for the given number of bands.
-     */
-    static int[] bandOffsets(final int numBands) {
-        final int[] bandOffsets = new int[numBands];
-        for (int i=1; i<numBands; i++) {
-            bandOffsets[i] = i;
-        }
-        return bandOffsets;
+                                numBands, tileWidth * numBands, ArraysExt.sequence(0, numBands));
     }
 
     /*

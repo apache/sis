@@ -797,6 +797,8 @@ public final class CollectionsExt extends Static {
      * @return the collection elements as an array, or {@code null} if {@code collection} is null.
      *
      * @since 0.6
+     *
+     * @todo Remove after migration to JDK11.
      */
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(final Collection<T> collection, final Class<T> valueClass) {

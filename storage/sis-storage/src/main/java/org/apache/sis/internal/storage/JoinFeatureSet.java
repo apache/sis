@@ -17,6 +17,8 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -24,14 +26,17 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
@@ -255,16 +260,6 @@ public class JoinFeatureSet extends AbstractFeatureSet {
     }
 
     /**
-     * Returns the name of the join operation resulting feature type.
-     *
-     * @return resulting feature type name.
-     */
-    @Override
-    public GenericName getIdentifier() {
-        return type.getName();
-    }
-
-    /**
      * Creates a minimal {@code properties} map for feature type or property type constructors.
      * This minimalist map contain only the mandatory entry, which is the name.
      */
@@ -294,15 +289,38 @@ public class JoinFeatureSet extends AbstractFeatureSet {
     }
 
     /**
-     * Returns {@code null} since computing an envelope would be costly for this set.
+     * Returns the union of the envelope on both sides, or {@code null} if none.
+     * The coordinate reference system is the CRS of the "main" side.
      *
-     * @return always {@code null} in default implementation.
-     *
-     * @todo Revisit the method contract by allowing the envelope to be only an estimation, potentially larger.
+     * @return union of envelopes of both sides, or {@code null}.
+     * @throws DataStoreException if an error occurred while computing the envelope.
      */
     @Override
-    public Envelope getEnvelope() {
-        return null;
+    public Envelope getEnvelope() throws DataStoreException {
+        final List<Envelope> envelopes = new ArrayList<>();
+        getEnvelopes(envelopes);
+        try {
+            return Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()]));
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
+        }
+    }
+
+    /**
+     * Adds the envelopes of the two joined feature set in the given list. If some of the feature sets
+     * are themselves joined feature sets, then this method traverses them recursively. We compute the
+     * union of all envelopes at once after we got all envelopes.
+     */
+    private void getEnvelopes(final List<Envelope> addTo) throws DataStoreException {
+        boolean side = swapSides;
+        do {
+            final FeatureSet f = side ? right : left;
+            if (f instanceof JoinFeatureSet) {
+                ((JoinFeatureSet) f).getEnvelopes(addTo);
+            } else {
+                addTo.add(f.getEnvelope());
+            }
+        } while ((side = !side) != swapSides);
     }
 
     /**

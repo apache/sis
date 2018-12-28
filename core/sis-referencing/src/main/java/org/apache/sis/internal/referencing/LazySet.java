@@ -128,7 +128,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     }
 
     /**
-     * Creates the {@link #cachedElements} array. This array will contains the elements
+     * Creates the {@link #cachedElements} array. This array will contain the elements
      * given by {@link #initialValues()} if that method returned a non-null and non-empty array.
      *
      * @return {@code true} if {@link #initialValues()} initialized the set with at least one value.

@@ -29,7 +29,7 @@
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td style="width: 50%; white-space: nowrap">
- * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO 19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>

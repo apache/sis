@@ -276,7 +276,7 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the timezone to use for marshalling, or {@code null} if none were explicitely specified.
+     * Returns the timezone to use for marshalling, or {@code null} if none were explicitly specified.
      *
      * @return the timezone in the context of current (un)marshalling process.
      */
@@ -542,7 +542,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Returns the reference resolver in use for the current marshalling or unmarshalling process.
-     * If no resolver were explicitely set, then this method returns {@link ReferenceResolver#DEFAULT}.
+     * If no resolver were explicitly set, then this method returns {@link ReferenceResolver#DEFAULT}.
      *
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>
@@ -562,7 +562,7 @@ public final class Context extends MarshalContext {
 
     /**
      * Returns the value converter in use for the current marshalling or unmarshalling process.
-     * If no converter were explicitely set, then this method returns {@link ValueConverter#DEFAULT}.
+     * If no converter were explicitly set, then this method returns {@link ValueConverter#DEFAULT}.
      *
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>

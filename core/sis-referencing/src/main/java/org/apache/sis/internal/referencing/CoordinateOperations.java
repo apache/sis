@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Set;
-import java.util.Objects;
 import java.util.Collections;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -229,9 +228,7 @@ compare:    for (int i=0; i<dim; i++) {
                     do {
                         final long mask = Long.lowestOneBit(candidates);
                         final CoordinateSystemAxis src = source.getAxis(Long.numberOfTrailingZeros(mask));
-                        if (Objects.equals(AxisDirections.absolute(src .getDirection()),
-                                           AxisDirections.absolute(axis.getDirection())))
-                        {
+                        if (AxisDirections.isColinear(src.getDirection(), axis.getDirection())) {
                             try {
                                 final UnitConverter c  = src.getUnit().getConverterToAny(axis.getUnit());
                                 final double minimum   = axis.getMinimumValue();

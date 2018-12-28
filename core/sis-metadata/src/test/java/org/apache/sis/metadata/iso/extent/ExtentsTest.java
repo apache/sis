@@ -149,7 +149,7 @@ public final strictfp class ExtentsTest extends TestCase {
         /*
          * The nautical mile is equals to the length of 1 second of arc along a meridian or parallel at the equator.
          * Since we are using the GRS80 authalic sphere instead than WGS84, and since the nautical mile definition
-         * itself is a little bit approximative, we add a slight empirical shift.
+         * itself is a little bit approximated, we add a slight empirical shift.
          */
         final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(10, 10+MINUTE, 2.9685, 2.9685+MINUTE);
         assertEquals(NAUTICAL_MILE * NAUTICAL_MILE, Extents.area(box), 0.1);

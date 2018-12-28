@@ -18,6 +18,7 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -39,7 +40,7 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -271,6 +272,17 @@ public final class AxisDirections extends Static {
     }
 
     /**
+     * Returns {@code true} if the given direction is {@code FUTURE} or {@code PAST}.
+     *
+     * @param  dir  the direction to test, or {@code null}.
+     * @return {@code true} if the direction is temporal, or {@code false} otherwise.
+     */
+    public static boolean isTemporal(final AxisDirection dir) {
+        if (dir == null) return false;
+        return ((dir.ordinal() - FUTURE.ordinal()) & ~1) == 0;
+    }
+
+    /**
      * Returns {@code true} if the given direction is {@code GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
      * or {@code GEOCENTRIC_Z}.
      *
@@ -485,14 +497,25 @@ public final class AxisDirections extends Static {
                 return -1;
             }
             while (--i > 0) {               // Intentionally exclude 0.
-                if (!absolute(subCS.getAxis(i).getDirection()).equals(
-                     absolute(cs.getAxis(i + dim).getDirection())))
-                {
+                if (!isColinear(subCS.getAxis(i).getDirection(), cs.getAxis(i + dim).getDirection())) {
                     return -1;
                 }
             }
         }
         return dim;
+    }
+
+    /**
+     * Returns whether the second axis is colinear with the first axis. This method returns {@code true}
+     * if the {@linkplain #absolute absolute} direction of the given directions are equal.
+     * For example "down" is considered colinear with "up".
+     *
+     * @param  d1  the first axis direction to compare.
+     * @param  d2  the second axis direction to compare.
+     * @return {@code true} if both directions are colinear.
+     */
+    public static boolean isColinear(final AxisDirection d1, final AxisDirection d2) {
+        return Objects.equals(absolute(d1), absolute(d2));
     }
 
     /**
@@ -626,11 +649,11 @@ public final class AxisDirections extends Static {
             return name;                    // Most common cases are "x", "y", "z", "t", "i" and "j".
         }
         /*
-         * Direction may be both "compass" (e.g. North) or "non-compass" (e.g. away from).
-         * Even if the radius at θ = 0° is oriented toward North, but we do not want the "N" abbreviation.
+         * Direction may be both "compass" (e.g. "North") or "non-compass" (e.g. "Away from").
+         * Even if the radius at θ = 0° is oriented toward North, we do not want the "N" abbreviation.
          */
         if (contains(name, "radius", true)) {
-            return contains(name, "Geocentric", false) ? "R" : "r";
+            return "r";
         }
         if (isCompass(direction)) {
             /*
@@ -640,7 +663,7 @@ public final class AxisDirections extends Static {
              */
             if (!isIntercardinal(direction) && Units.isAngular(unit)) {
                 if (contains(name, "Spherical", false)) {
-                    return NORTH.equals(absolute(direction)) ? "φ′" : "θ";
+                    return NORTH.equals(absolute(direction)) ? "Ω" : "θ";
                 } else {
                     return NORTH.equals(absolute(direction)) ? "φ" : "λ";
                 }
@@ -653,12 +676,12 @@ public final class AxisDirections extends Static {
              * use "h" as the fallback for unknown vertical axis.
              */
             if (UP.equals(direction)) {
-                if (contains(name, "Gravity",    false)) return "H";
-                if (contains(name, "Elevation",  false)) return "φ";
-                if (contains(name, "Geocentric", false)) return "r";
-                return "h";
+                if (Units.isAngular(unit))               return "α";                // Elevation angle
+                if (contains(name, "Gravity",    false)) return "H";                // Gravity-related height
+                if (contains(name, "Geocentric", false)) return "r";                // Geocentric radius
+                return "h";                                                         // Ellipsoidal height
             } else if (DOWN.equals(direction)) {
-                return "D";                         // "Depth"
+                return "D";                                                         // Depth
             } else if (isGeocentric(direction)) {
                 // For GEOCENTRIC_X, GEOCENTRIC_Y or GEOCENTRIC_Z, just take the last letter.
                 final String dir = direction.name();
@@ -671,6 +694,33 @@ public final class AxisDirections extends Static {
         }
         final String id = direction.identifier();   // UML identifier, or null if none.
         return camelCaseToAcronym(id != null ? id : direction.name()).toString().intern();
+    }
+
+    /**
+     * Returns an axis direction for the given abbreviation. This method is (partially) the converse
+     * of {@link #suggestAbbreviation(String, AxisDirection, Unit)}. Current implementation does not
+     * recognize all abbreviation generated by above method, but only the main ones.  This method is
+     * defined here for making easier to maintain consistency with {@code suggestAbbreviation(…)}.
+     *
+     * @param  abbreviation  the abbreviation.
+     * @return axis direction for the given abbreviation, or {@code null} if unrecognized.
+     */
+    public static AxisDirection fromAbbreviation(char abbreviation) {
+        if (abbreviation >= 'a' && abbreviation <= 'z') {
+            abbreviation -= ('a' - 'A');                    // To upper case, but only for latin characters.
+        }
+        final AxisDirection dir;
+        switch (abbreviation) {
+            default:                      dir = null;                 break;
+            case 'W':                     dir = AxisDirection.WEST;   break;
+            case 'S':                     dir = AxisDirection.SOUTH;  break;
+            case 'θ': case 'λ': case 'E': dir = AxisDirection.EAST;   break;
+            case 'Ω': case 'φ': case 'N': dir = AxisDirection.NORTH;  break;
+            case 'R': case 'H':           dir = AxisDirection.UP;     break;
+            case 'D':                     dir = AxisDirection.DOWN;   break;
+            case 'T':                     dir = AxisDirection.FUTURE; break;
+        }
+        return dir;
     }
 
     /**

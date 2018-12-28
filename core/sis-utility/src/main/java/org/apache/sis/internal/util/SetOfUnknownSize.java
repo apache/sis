@@ -21,6 +21,8 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Arrays;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -29,7 +31,7 @@ import org.apache.sis.util.ArraysExt;
  * This class overrides some methods in a way that avoid or reduce calls to {@link #size()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <E>  the type of elements in the set.
  *
@@ -107,13 +109,23 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     }
 
     /**
+     * Creates a {@code Spliterator} without knowledge of collection size.
+     *
+     * @return a {@code Spliterator} over the elements in this collection.
+     */
+    @Override
+    public Spliterator<E> spliterator() {
+        return isSizeKnown() ? super.spliterator() : Spliterators.spliteratorUnknownSize(iterator(), 0);
+    }
+
+    /**
      * Returns the elements in an array.
      *
      * @return an array containing all set elements.
      */
     @Override
     public Object[] toArray() {
-        return isSizeKnown() ? super.toArray() : toArray(new Object[32], true);
+        return isSizeKnown() ? super.toArray() : toArray(iterator(), new Object[32], true);
     }
 
     /**
@@ -127,16 +139,16 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     @Override
     @SuppressWarnings("SuspiciousToArrayCall")
     public <T> T[] toArray(final T[] array) {
-        return isSizeKnown() ? super.toArray(array) : toArray(array, false);
+        return isSizeKnown() ? super.toArray(array) : toArray(iterator(), array, false);
     }
 
     /**
-     * Implementation of the public {@code toArray()} methods.
+     * Implementation of the public {@code toArray()} methods without call to {@link #size()}.
      */
     @SuppressWarnings("unchecked")
-    private <T> T[] toArray(T[] array, boolean trimToSize) {
+    static <T> T[] toArray(final Iterator<?> it, T[] array, boolean trimToSize) {
         int i = 0;
-        for (final Iterator<E> it = iterator(); it.hasNext();) {
+        while (it.hasNext()) {
             if (i >= array.length) {
                 if (i >= Integer.MAX_VALUE >>> 1) {
                     throw new OutOfMemoryError("Required array size too large");

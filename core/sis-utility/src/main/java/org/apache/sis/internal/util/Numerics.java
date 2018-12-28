@@ -207,55 +207,6 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Returns {@code true} if every values in the given {@code double} array could be casted to the
-     * {@code float} type without precision lost. This method treats all {@code NaN} values as equal.
-     *
-     * @param  values  the value to test for their precision.
-     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
-     */
-    public static boolean isSimplePrecision(final double... values) {
-        for (final double value : values) {
-            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type.
-     *
-     * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values casted to the {@code float} type,
-     *         or {@code null} if the given array was null.
-     */
-    public static float[] copyAsFloats(final double[] data) {
-        if (data == null) return null;
-        final float[] result = new float[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = (float) data[i];
-        }
-        return result;
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been
-     * {@linkplain Math#round(double) rounded} to the {@code int} type.
-     *
-     * @param  data  the array to copy, or {@code null}.
-     * @return a copy of the given array with values rounded to the {@code int} type,
-     *         or {@code null} if the given array was null.
-     */
-    public static int[] copyAsInts(final double[] data) {
-        if (data == null) return null;
-        final int[] result = new int[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = Math.toIntExact(Math.round(data[i]));
-        }
-        return result;
-    }
-
-    /**
      * Returns {@code true} if the given floats are equals. Positive and negative zero are
      * considered different, while a NaN value is considered equal to all other NaN values.
      *

@@ -151,7 +151,7 @@ public final class XmlUtilities extends SystemListener {
 
     /**
      * Creates a new Gregorian calendar for the current timezone and locale. If no locale or
-     * timezone were explicitely set, then the default ones are used as documented in the
+     * timezone were explicitly set, then the default ones are used as documented in the
      * {@link org.apache.sis.xml.XML#TIMEZONE} constant.
      *
      * @return a Gregorian calendar initialized with the current timezone and locale.

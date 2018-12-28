@@ -16,7 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import java.util.List;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridCoverage;
 
 
 /**
@@ -28,13 +31,62 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * @since   1.0
  * @module
  */
-public interface GridCoverageResource extends Resource {
+public interface GridCoverageResource extends DataSet {
     /**
-     * Returns the valid extent of grid coordinates together with the transform
-     * from those grid coordinates to real world coordinates.
+     * Returns the valid extent of grid coordinates together with the conversion from those grid
+     * coordinates to real world coordinates. A grid geometry contains the following information:
      *
-     * @return grid coordinates valid extent and their mapping to "real world" coordinates.
+     * <ul class="verbose">
+     *   <li>The minimum and maximum grid coordinates as integers (the <cite>Grid Extent</cite>).
+     *       The minimum coordinates are typically (0,0, …, 0) but not necessarily.</li>
+     *   <li>The minimum and maximum "real world" coordinates (the <cite>Envelope</cite>).
+     *       Those coordinates are typically, but not necessarily, latitudes and longitudes
+     *       or projected coordinates, together with altitudes and dates.</li>
+     *   <li>A description of the datum and axes of above "real world" coordinates
+     *       (the <cite>Coordinate Reference System</cite>).</li>
+     *   <li>The conversion from grid coordinates to "real world" coordinates. This conversion is often,
+     *       but not necessarily, a linear relationship. Axis order or direction may be changed by the conversion.
+     *       For example row indices may be increasing toward down while latitude coordinates are increasing toward up.</li>
+     *   <li>An <em>estimation</em> of grid resolution for each "real world" axis.</li>
+     * </ul>
+     *
+     * @return extent of grid coordinates together with their mapping to "real world" coordinates.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     GridGeometry getGridGeometry() throws DataStoreException;
+
+    /**
+     * Returns the ranges of sample values together with the conversion from samples to real values.
+     * Sample dimensions contain the following information:
+     *
+     * <ul class="verbose">
+     *   <li>The range of valid <cite>sample values</cite>, typically but not necessarily as positive integers.</li>
+     *   <li>A <cite>transfer function</cite> for converting sample values to real values, for example measurements
+     *       of a geophysics phenomenon. The transfer function is typically defined by a scale factor and an offset,
+     *       but is not restricted to such linear equations.</li>
+     *   <li>The units of measurement of "real world" values after their conversions from sample values.</li>
+     *   <li>The sample values reserved for missing values.</li>
+     * </ul>
+     *
+     * @return ranges of sample values together with their mapping to "real values".
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     */
+    List<SampleDimension> getSampleDimensions() throws DataStoreException;
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource. If a non-null grid geometry is specified,
+     * then this method will try to return a grid coverage matching the given grid geometry on a best-effort basis;
+     * the coverage actually returned may have a different resolution, cover a different area in a different CRS,
+     * <i>etc</i>. The general contract is that the returned coverage should not contain less data than a coverage
+     * matching exactly the given geometry.
+     *
+     * <p>While this method name suggests an immediate reading, some implementations may defer the actual reading
+     * at a later stage.</p>
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  range   0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and range.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    GridCoverage read(GridGeometry domain, int... range) throws DataStoreException;
 }

@@ -570,8 +570,8 @@ final class Table extends AbstractFeatureSet {
      * change at any time.
      *
      * @param  metadata     information about the database.
-     * @param  approximate  whether approximative or outdated values are acceptable.
-     * @return number of rows (may be approximative), or -1 if unknown.
+     * @param  approximate  whether approximate or outdated values are acceptable.
+     * @return number of rows (may be approximate), or -1 if unknown.
      */
     final long countRows(final DatabaseMetaData metadata, final boolean approximate) throws SQLException {
         long count = -1;

@@ -454,7 +454,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             final Element uri = element.pullElement(OPTIONAL, WKTKeywords.URI);
             if (uri != null) {
-                uri.pullString("URI");      // TODO: not yet stored, since often redundant with other informations.
+                uri.pullString("URI");      // TODO: not yet stored, since often redundant with other information.
                 uri.close(ignoredElements);
             }
             element.close(ignoredElements);
@@ -825,7 +825,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * Ellipsoidal — can be two- or three- dimensional, in which case the height can
                  * only be ellipsoidal height. The default axis order depends on the WKT version:
                  *
-                 *   - WKT 1 said explicitely that the default order is (longitude, latitude).
+                 *   - WKT 1 said explicitly that the default order is (longitude, latitude).
                  *   - WKT 2 has no default, and allows only (latitude, longitude) order.
                  */
                 case WKTKeywords.ellipsoidal: {
@@ -2108,7 +2108,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         /*
          * Parse the projection parameters. If a default linear unit is specified, it will apply to
-         * all parameters that do not specify explicitely a LengthUnit. If no such crs-wide unit was
+         * all parameters that do not specify explicitly a LengthUnit. If no such crs-wide unit was
          * specified, then the default will be degrees.
          *
          * More specifically §9.3.4 in the specification said about the default units:
@@ -2129,7 +2129,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Conversion conversion = parseDerivingConversion(MANDATORY, element,
                 isWKT1 ? null : WKTKeywords.Conversion, linearUnit, angularUnit);
         /*
-         * Parse the coordinate system. The linear unit must be specified somewhere, either explicitely in each axis
+         * Parse the coordinate system. The linear unit must be specified somewhere, either explicitly in each axis
          * or for the whole CRS with the above 'csUnit' value. If 'csUnit' is null, then an exception will be thrown
          * with a message like "A LengthUnit component is missing in ProjectedCRS".
          *
@@ -2219,7 +2219,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         /*
          * WKT 1 provides no information about the underlying CS of a derived CRS.
          * We have to guess some reasonable one with arbitrary units. We try to construct the one which
-         * contains as few information as possible, in order to avoid providing wrong informations.
+         * contains as few information as possible, in order to avoid providing wrong information.
          */
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
         final StringBuilder buffer = new StringBuilder(name).append(" axis ");

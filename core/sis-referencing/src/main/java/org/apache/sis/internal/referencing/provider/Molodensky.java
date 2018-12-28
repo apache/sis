@@ -257,7 +257,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
 
     /**
      * A temporary ellipsoid used only for passing arguments to the {@link MolodenskyTransform} constructor.
-     * The intent is to use the Δa and Δf values explicitely specified in the EPSG parameters if available,
+     * The intent is to use the Δa and Δf values explicitly specified in the EPSG parameters if available,
      * or to compute them only if no Δa or Δf values where specified.
      */
     @SuppressWarnings("serial")
@@ -268,7 +268,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         /** The ellipsoid for which Δa and Δf are valid. */
         Ellipsoid other;
 
-        /** Creates a new temporary ellipsoid with explicitely provided Δa and Δf values. */
+        /** Creates a new temporary ellipsoid with explicitly provided Δa and Δf values. */
         Ellipsoid(Map<String,?> name, double a, double b, double Δa, double Δf) {
             super(name, a, b, Formulas.getInverseFlattening(a, b), false, Units.METRE);
             this.Δa = Δa;

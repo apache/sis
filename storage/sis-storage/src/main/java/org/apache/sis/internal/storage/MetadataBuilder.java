@@ -119,6 +119,7 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
@@ -149,11 +150,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * @module
  */
 public class MetadataBuilder {
-    /**
-     * Band numbers, created when first needed.
-     */
-    private static final MemberName[] BAND_NUMBERS = new MemberName[16];
-
     /**
      * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
      *
@@ -1903,7 +1899,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds and populates a "spatial representation info" node using the given grid geometry.
-     * If this method invokes implicitly {@link #newGridRepresentation(GridType)}, unless this
+     * This method invokes implicitly {@link #newGridRepresentation(GridType)}, unless this
      * method returns {@code false} in which case nothing has been done.
      * Storage location is:
      *
@@ -1917,7 +1913,12 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/referenceSystemInfo}</li>
      * </ul>
      *
+     * This method does not add the envelope provided by {@link GridGeometry#getEnvelope()}.
+     * That envelope appears in a separated node, which can be added by {@link #addExtent(Envelope)}.
+     * This separation is required by {@link AbstractGridResource} for instance.
+     *
      * @param  description    a general description of the "grid to CRS" transformation, or {@code null} if none.
+     *                        Can also be specified later by a call to {@link #setGridToCRS(CharSequence)}.
      * @param  grid           the grid extent, "grid to CRS" transform and target CRS, or {@code null} if none.
      * @param  addResolution  whether to declare the resolutions. Callers should set this argument to {@code false} if they intend
      *                        to provide the resolution themselves, or if grid axes are not in the same order than CRS axes.
@@ -2233,6 +2234,49 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Sets the sequence identifier, sample value ranges, transfer function and units of measurement
+     * from the given sample dimension. This method dispatch its work to other methods in this class.
+     * Before to set any value, this method starts a new band by calling {@link #newSampleDimension()}.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/sequenceIdentifier}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/minValue}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/maxValue}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/scale}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/offset}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/transferFunctionType}</li>
+     *   <li>{@code metadata/contentInfo/attributeGroup/attribute/unit}</li>
+     * </ul>
+     *
+     * @param  band  the sample dimension to describe in metadata, or {@code null} if none.
+     */
+    public final void addNewBand(final SampleDimension band) {
+        if (band != null) {
+            newSampleDimension();
+            final GenericName g = band.getName();
+            if (g != null) {
+                final MemberName name;
+                if (g instanceof MemberName) {
+                    name = (MemberName) g;
+                } else {
+                    name = Names.createMemberName(null, null, g.tip().toString(), String.class);
+                }
+                setBandIdentifier(name);
+            }
+            band.getSampleRange().ifPresent((range) -> {
+                addMinimumSampleValue(range.getMinDouble(true));
+                addMaximumSampleValue(range.getMaxDouble(true));
+            });
+            band.getTransferFunctionFormula().ifPresent((tr) -> {
+                setTransferFunction(tr.getScale(), tr.getOffset());
+                sampleDimension().setTransferFunctionType(tr.getType());
+            });
+            band.getUnits().ifPresent((unit) -> setSampleUnits(unit));
+        }
+    }
+
+    /**
      * Sets the name or number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      * If a coverage contains more than one band, additional bands can be created by calling
      * {@link #newSampleDimension()} before to call this method.
@@ -2259,28 +2303,13 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setBandIdentifier(final int sequenceIdentifier) {
         if (sequenceIdentifier > 0) {
-            final boolean cached = (sequenceIdentifier <= BAND_NUMBERS.length);
-            MemberName name = null;
-            if (cached) synchronized (BAND_NUMBERS) {
-                name = BAND_NUMBERS[sequenceIdentifier - 1];
-            }
-            if (name == null) {
-                name = Names.createMemberName(null, null, String.valueOf(sequenceIdentifier), Integer.class);
-                if (cached) synchronized (BAND_NUMBERS) {
-                    /*
-                     * No need to check if a value has been set concurrently because Names.createMemberName(…)
-                     * already checked if an equal instance exists in the current JVM.
-                     */
-                    BAND_NUMBERS[sequenceIdentifier - 1] = name;
-                }
-            }
-            setBandIdentifier(name);
+            setBandIdentifier(Names.createMemberName(null, null, sequenceIdentifier));
         }
     }
 
     /**
      * Adds an identifier for the current band.
-     * These identifiers can be use to provide names for the attribute from a standard set of names.
+     * These identifiers can be used to provide names for the attribute from a standard set of names.
      * If a coverage contains more than one band, additional bands can be created by calling
      * {@link #newSampleDimension()} before to call this method.
      * Storage location is:

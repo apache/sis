@@ -71,6 +71,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ElementAlreadyInitialized_1 = 2;
 
         /**
+         * … {0} elements omitted …
+         */
+        public static final short ElementsOmitted_1 = 4;
+
+        /**
          * This metadata is not modifiable.
          */
         public static final short UnmodifiableMetadata = 1;

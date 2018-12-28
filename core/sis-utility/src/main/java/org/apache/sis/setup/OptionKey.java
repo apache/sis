@@ -38,7 +38,7 @@ import org.apache.sis.internal.system.Modules;
  * For example most data file formats read by SIS do not require the user to specify the character encoding, since the
  * encoding it is often given in the file header or in the format specification. However if SIS needs to read plain
  * text files <em>and</em> the default platform encoding is not suitable, then the user can specify the desired encoding
- * explicitely using the {@link #ENCODING} option.
+ * explicitly using the {@link #ENCODING} option.
  *
  * <p>All options are <em>hints</em> and may be silently ignored. For example most {@code DataStore}s will ignore the
  * {@code ENCODING} option if irrelevant to their format, or if the encoding is specified in the data file header.</p>

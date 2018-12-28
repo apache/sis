@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.Instant;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -42,7 +43,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.*;
 
 
@@ -50,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests the {@link CommonCRS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -140,11 +141,13 @@ public final strictfp class CommonCRSTest extends TestCase {
         final GeographicCRS normalized = CommonCRS.WGS84.normalizedGeographic();
         Validators.validate(normalized);
         assertSame(geographic.getDatum(), normalized.getDatum());
-
+        /*
+         * Compare axes. Note that axes in different order have different EPSG codes.
+         */
         final CoordinateSystem φλ = geographic.getCoordinateSystem();
         final CoordinateSystem λφ = normalized.getCoordinateSystem();
-        assertSame("Longitude", φλ.getAxis(1), λφ.getAxis(0));
-        assertSame("Latitude",  φλ.getAxis(0), λφ.getAxis(1));
+        assertEqualsIgnoreMetadata(φλ.getAxis(1), λφ.getAxis(0));       // Longitude
+        assertEqualsIgnoreMetadata(φλ.getAxis(0), λφ.getAxis(1));       // Latitude
         assertSame("Cached value", normalized, CommonCRS.WGS84.normalizedGeographic());
     }
 
@@ -327,5 +330,13 @@ public final strictfp class CommonCRSTest extends TestCase {
     public void testForDatum() {
         assertSame("WGS84", CommonCRS.WGS84, CommonCRS.forDatum(CommonCRS.WGS84.geographic()));
         assertSame("WGS72", CommonCRS.WGS72, CommonCRS.forDatum(CommonCRS.WGS72.geographic()));
+    }
+
+    /**
+     * Tests {@link CommonCRS.Temporal#forEpoch(Instant)}.
+     */
+    @Test
+    public void testForEpoch() {
+        assertSame(CommonCRS.Temporal.UNIX, CommonCRS.Temporal.forEpoch(Instant.ofEpochMilli(0)));        // As specified in Javadoc.
     }
 }

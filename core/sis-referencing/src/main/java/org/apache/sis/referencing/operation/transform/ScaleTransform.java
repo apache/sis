@@ -34,7 +34,7 @@ import org.apache.sis.util.ArraysExt;
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
@@ -66,6 +66,15 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     private final int numDroppedDimensions;
 
     /**
+     * Constructs a scale transform for the given scale factors.
+     */
+    ScaleTransform(final double[] factors) {
+        this.factors = factors.clone();
+        errors = null;
+        numDroppedDimensions = 0;
+    }
+
+    /**
      * Constructs a scale transform from a matrix having the given elements.
      * This constructors assumes that the matrix is affine and contains only
      * scale coefficients (this is not verified).
@@ -73,17 +82,18 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     ScaleTransform(final int numRow, final int numCol, final double[] elements) {
         numDroppedDimensions = numCol - numRow;
         final int n = numRow * numCol;
-        factors = new double[numRow - 1];
+        final int tgtDim = numRow - 1;
+        factors = new double[tgtDim];
         double[] errors = null;
         int lastError = -1;
-        for (int i=0; i<factors.length; i++) {
+        for (int i=0; i<tgtDim; i++) {
             int j = numCol*i + i;
             factors[i] = elements[j];
             if ((j += n) < elements.length) {
                 final double e = elements[j];
                 if (e != 0) {
                     if (errors == null) {
-                        errors = new double[numRow];
+                        errors = new double[tgtDim];
                     }
                     errors[i] = e;
                     lastError = i;
@@ -146,11 +156,6 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
 
     /**
      * Tests whether this transform does not move any points.
-     *
-     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
-     * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
-     * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead than using a factory method.</div>
      */
     @Override
     public boolean isIdentity() {

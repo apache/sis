@@ -108,7 +108,7 @@ public interface MathTransformProvider {
      * Some math transforms may actually be implemented as a chain of operation steps, for example a
      * {@linkplain DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
      * concatenation} of {@linkplain DefaultMathTransformFactory#createAffineTransform affine transforms}
-     * with other kind of transforms. In such cases, implementors should use the given factory for creating
+     * with other kind of transforms. In such cases, implementations should use the given factory for creating
      * the steps.
      *
      * @param  factory     the factory to use if this constructor needs to create other math transforms.

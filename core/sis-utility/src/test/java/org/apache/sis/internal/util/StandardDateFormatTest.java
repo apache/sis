@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * Tests the {@link StandardDateFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -47,6 +47,24 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals("MILLISECONDS_PER_DAY",  TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
         assertEquals("NANOS_PER_MILLISECOND", TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
         assertEquals("NANOS_PER_SECOND",      TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
+    }
+
+    /**
+     * Tests {@link StandardDateFormat#toISO(CharSequence, int, int)}.
+     */
+    @Test
+    public void testToISO() {
+        assertSame  ("2009-01-01T06:00:00+01:00", toISO("2009-01-01T06:00:00+01:00"));
+        assertEquals("2005-09-22T04:30:15",       toISO("2005-09-22 04:30:15"));
+        assertSame  ("2005-09-22",                toISO("2005-09-22"));
+        assertEquals("2005-09-22T04 : 30 : 15",   toISO("  2005-09-22   04 : 30 : 15 "));
+    }
+
+    /**
+     * Helper method for {@link #testToISO()}.
+     */
+    private static String toISO(final String text) {
+        return StandardDateFormat.toISO(text, 0, text.length()).toString();
     }
 
     /**
@@ -67,6 +85,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15Z"));
         assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15"));
         assertEquals(date("2005-09-22 04:30:00"), f.parse("2005-09-22T04:30"));
+        assertEquals(date("2005-09-22 04:30:00"), f.parse("2005-09-22 04:30"));
         assertEquals(date("2005-09-22 04:00:00"), f.parse("2005-09-22T04"));
         assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-09-22"));
         assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-9-22"));
@@ -86,7 +105,25 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), StandardDateFormat.parseBest("2016-06-27T03:02:01.09Z"));
         assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48, 12),                    StandardDateFormat.parseBest("2016-06-27T16:48:12"));
         assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        StandardDateFormat.parseBest("2016-06-27T16:48"));
+        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        StandardDateFormat.parseBest("2016-06-27 16:48"));
         assertEquals(LocalDate.of(2016, 6, 27),                                    StandardDateFormat.parseBest("2016-06-27"));
+    }
+
+    /**
+     * Tests parsing a date as an instant, assuming UTC timezone if unspecified.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testParseInstant() {
+        final long day = 1466985600000L;
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48Z"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48:12Z"));
+        assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), StandardDateFormat.parseInstantUTC("2016-06-27T03:02:01.09Z"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48:12"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27 16:48"));
+        assertEquals(Instant.ofEpochMilli(day),                                    StandardDateFormat.parseInstantUTC("2016-06-27"));
     }
 
     /**

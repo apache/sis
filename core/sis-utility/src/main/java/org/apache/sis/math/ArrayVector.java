@@ -17,8 +17,18 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
@@ -27,10 +37,10 @@ import org.apache.sis.measure.NumberRange;
 
 /**
  * A vector backed by an array of a primitive type. This class does not copy the array,
- * so changes in the underlying array is reflected in this vector and vis-versa.
+ * so changes in the underlying array is reflected in this vector and vice-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -84,6 +94,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * or {@code null} if this method can not do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of integer values (this is not verified).
      */
+    @SuppressWarnings("null")
     static Vector compress(final Vector source, final long min, final long max) {
         boolean isSigned = (min >= Byte.MIN_VALUE && max <= Byte.MAX_VALUE);
         if (isSigned || (min >= 0 && max <= 0xFF)) {
@@ -243,8 +254,31 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override int indexOf(final int toSearch, int index, final boolean equality) {
+            final long first = Double.doubleToLongBits(array[toSearch]);
+            while (index < array.length && (first == Double.doubleToLongBits(array[index])) != equality) index++;
+            return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other instanceof Doubles) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final double[] cmp = ((Doubles) other).array;
+                while (lower < upper) {
+                    if (Double.doubleToLongBits(array[lower++]) != Double.doubleToLongBits(cmp[otherOffset++])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<Double> range(final IntSupplier indices, int n) {
+            // TODO: try to paralellize with streams.
             double min = Double.POSITIVE_INFINITY;
             double max = Double.NEGATIVE_INFINITY;
             while (--n >= 0) {
@@ -255,6 +289,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return NumberRange.create(min, true, max, true);
         }
 
+        /** Wraps this vector in a buffer. */
+        @Override public Optional<Buffer> buffer() {
+            return Optional.of(DoubleBuffer.wrap(array));
+        }
+
         /** Returns a copy of current data as a floating point array. */
         @Override public double[] doubleValues() {
             return array.clone();
@@ -262,7 +301,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns a copy of current data as a floating point array. */
         @Override public float[] floatValues() {
-            return Numerics.copyAsFloats(array);
+            return ArraysExt.copyAsFloats(array);
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -317,6 +361,28 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final int first = Float.floatToIntBits(array[toSearch]);
+            while (index < array.length && (first == Float.floatToIntBits(array[index])) != equality) index++;
+            return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final float[] cmp = ((Floats) other).array;
+                while (lower < upper) {
+                    if (Float.floatToIntBits(array[lower++]) != Float.floatToIntBits(cmp[otherOffset++])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override final NumberRange<?> range(final IntSupplier indices, int n) {
             float min = Float.POSITIVE_INFINITY;
@@ -338,9 +404,19 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return NumberRange.create(min, true, max, true);
         }
 
+        /** Wraps this vector in a buffer. */
+        @Override public final Optional<Buffer> buffer() {
+            return Optional.of(FloatBuffer.wrap(array));
+        }
+
         /** Returns a copy of current data as a floating point array. */
         @Override public final float[] floatValues() {
             return array.clone();
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -372,6 +448,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override NumberRange<?> createRange(final float min, final float max) {
             return NumberRange.create(DecimalFunctions.floatToDouble(min), true,
                                       DecimalFunctions.floatToDouble(max), true);
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public int hashCode() {
+            int hash = 0;
+            final int size = size();
+            for (int i=0; i<size; i++) {
+                hash = PRIME * hash + Double.hashCode(doubleValue(i));
+            }
+            return hash;
         }
     }
 
@@ -419,6 +505,28 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final long first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final long[] cmp = ((Longs) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             long min = Long.MAX_VALUE;
@@ -458,6 +566,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 return inc;
             }
             return null;
+        }
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Optional<Buffer> buffer() {
+            return Optional.of(LongBuffer.wrap(array));
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -506,6 +624,28 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final int first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final int[] cmp = ((Integers) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             int min = Integer.MAX_VALUE;
@@ -548,6 +688,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                 }
             }
             return null;
+        }
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Optional<Buffer> buffer() {
+            return Optional.of(IntBuffer.wrap(array));
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
@@ -597,6 +747,28 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final short first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final short[] cmp = ((Shorts) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             short min = Short.MAX_VALUE;
@@ -614,6 +786,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * (except if the increment is zero) and the implicit conversion of 'short' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Optional<Buffer> buffer() {
+            return Optional.of(ShortBuffer.wrap(array));
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
+        }
     }
 
     /**
@@ -663,6 +845,28 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Finds index of a match or mismatch (depending on {@code equality}). */
+        @Override final int indexOf(final int toSearch, int index, final boolean equality) {
+            final byte first = array[toSearch];
+            while (index < array.length && (first == array[index]) != equality) index++;
+            return index;
+        }
+
+        /** Returns whether this vector in the given range is equals to the specified vector. */
+        @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
+            if (other.getClass() == getClass()) {
+                // TODO: replace by Arrays.equals(…) with JDK9.
+                final byte[] cmp = ((Bytes) other).array;
+                while (lower < upper) {
+                    if (array[lower++] != cmp[otherOffset++]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return super.equals(lower, upper, other, otherOffset);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
             byte min = Byte.MAX_VALUE;
@@ -680,6 +884,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
+
+        /** Wraps this vector in a buffer. */
+        @Override public final Optional<Buffer> buffer() {
+            return Optional.of(ByteBuffer.wrap(array));
+        }
+
+        /** Applies hash code contract specified {@link Vector#hashCode()}. */
+        @Override public final int hashCode() {
+            return Arrays.hashCode(array);
+        }
     }
 
     /**

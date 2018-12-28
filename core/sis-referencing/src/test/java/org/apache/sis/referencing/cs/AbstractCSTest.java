@@ -80,9 +80,9 @@ public final strictfp class AbstractCSTest extends TestCase {
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.ALTITUDE,
                 HardCodedAxes.TIME);
-        assertSame("Right-handed CS shall be same as conventionally oriented for this test.",
+        assertSame("Right-handed CS shall be same as display-oriented for this test.",
                 cs.forConvention(AxesConvention.RIGHT_HANDED),
-                cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED));
+                cs.forConvention(AxesConvention.DISPLAY_ORIENTED));
         assertSame("Right-handed CS shall be same as normalized for this test.",
                 cs.forConvention(AxesConvention.RIGHT_HANDED),
                 cs.forConvention(AxesConvention.NORMALIZED));
@@ -111,7 +111,7 @@ public final strictfp class AbstractCSTest extends TestCase {
         assertEquals("maximumValue", Double.POSITIVE_INFINITY, HEIGHT.getMaximumValue(), STRICT);
         assertNull  ("rangeMeaning", HEIGHT.getRangeMeaning());
         /*
-         * Now the actual test. First we opportunistically test RIGHT_HANDED and CONVENTIONALLY_ORIENTED
+         * Now the actual test. First we opportunistically test RIGHT_HANDED and DISPLAY_ORIENTED
          * before to test NORMALIZED, in order to test in increasing complexity.
          */
         final AbstractCS cs = new AbstractCS(singletonMap(NAME_KEY, "Test"),
@@ -124,7 +124,7 @@ public final strictfp class AbstractCSTest extends TestCase {
                 HardCodedAxes.WESTING,
                 HardCodedAxes.HEIGHT_cm,
                 HardCodedAxes.TIME);
-        verifyAxesConvention(AxesConvention.CONVENTIONALLY_ORIENTED, cs,
+        verifyAxesConvention(AxesConvention.DISPLAY_ORIENTED, cs,
                 EASTING,
                 HardCodedAxes.NORTHING,
                 HardCodedAxes.HEIGHT_cm,

@@ -76,6 +76,7 @@ import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
@@ -156,7 +157,7 @@ public class Formatter implements Localized {
      * If non-null, the terminal must be ANSI X3.64 compatible.
      * The default value is {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
      */
     private Colors colors;
 
@@ -164,14 +165,14 @@ public class Formatter implements Localized {
      * The preferred convention for objects or parameter names.
      * This field should never be {@code null}.
      *
-     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
      */
     private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names.
      *
-     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
      */
     private Citation authority;
 
@@ -257,7 +258,7 @@ public class Formatter implements Localized {
     /**
      * {@code 1} if keywords shall be converted to upper cases, or {@code -1} for lower cases.
      *
-     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
      */
     private byte toUpperCase;
 
@@ -265,6 +266,16 @@ public class Formatter implements Localized {
      * {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
      */
     private byte longKeywords;
+
+    /**
+     * Maximum number of elements to show in lists, or {@link Integer#MAX_VALUE} if unlimited.
+     * If a list is longer than this length, only the first and the last elements will be shown.
+     * This limit applies in particular to {@link MathTransform} parameter values of {@code double[]}
+     * type, since those parameters may be large interpolation tables.
+     *
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
+     */
+    private int listSizeLimit;
 
     /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
@@ -276,7 +287,7 @@ public class Formatter implements Localized {
      * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      *
-     * @see #configure(Convention, Citation, Colors, byte, byte, byte)
+     * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
      */
     private byte indentation;
 
@@ -398,11 +409,11 @@ public class Formatter implements Localized {
      * @param  colors        the syntax coloring, or {@code null} if none.
      * @param  toUpperCase   whether keywords shall be converted to upper cases.
      * @param  longKeywords  {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
-     * @param  indentation   the amount of spaces to use in indentation for WKT formatting,
-     *                       or {@link WKTFormat#SINGLE_LINE}.
+     * @param  indentation   the amount of spaces to use in indentation for WKT formatting, or {@link WKTFormat#SINGLE_LINE}.
+     * @param  listSizeLimit maximum number of elements to show in lists, or {@link Integer#MAX_VALUE} if unlimited.
      */
     final void configure(Convention convention, final Citation authority, final Colors colors,
-            final byte toUpperCase, final byte longKeywords, final byte indentation)
+            final byte toUpperCase, final byte longKeywords, final byte indentation, final int listSizeLimit)
     {
         this.convention     = convention;
         this.authority      = (authority != null) ? authority : convention.getNameAuthority();
@@ -410,6 +421,7 @@ public class Formatter implements Localized {
         this.toUpperCase    = toUpperCase;
         this.longKeywords   = longKeywords;
         this.indentation    = indentation;
+        this.listSizeLimit  = listSizeLimit;
         this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         unitFormat.setLocale(convention.usesCommonUnits ? Locale.US : Locale.ROOT);
     }
@@ -554,7 +566,7 @@ public class Formatter implements Localized {
      */
     public String shortOrLong(final String shortKeyword, final String longKeyword) {
         return (longKeywords != 0
-                ? longKeywords < 0              // If keyword style was explicitely specified, use the setting.
+                ? longKeywords < 0              // If keyword style was explicitly specified, use the setting.
                 : convention.toUpperCase)       // Otherwise use the default value determined by the convention.
                ? shortKeyword : longKeyword;
     }
@@ -879,7 +891,7 @@ public class Formatter implements Localized {
      * <div class="section">Numerical precision</div>
      * The ISO 19162 standards recommends to format those values with only 2 decimal digits.
      * This is because {@code GeographicBoundingBox} does not specify the datum, so this box
-     * is an approximative information only.
+     * is an approximated information only.
      *
      * @param  bbox  the geographic bounding box to append to the WKT, or {@code null}.
      * @param  fractionDigits  the number of fraction digits to use. The recommended value is 2.
@@ -1469,15 +1481,7 @@ public class Formatter implements Localized {
      * @return {@code true} on success, or {@code false} if the given type is not recognized.
      */
     final boolean appendValue(final Object value) {
-        if (value.getClass().isArray()) {
-            appendSeparator();
-            elementStart = buffer.appendCodePoint(symbols.getOpenSequence()).length();
-            final int length = Array.getLength(value);
-            for (int i=0; i<length; i++) {
-                appendAny(Array.get(value, i));
-            }
-            buffer.appendCodePoint(symbols.getCloseSequence());
-        } else if (value instanceof Number) {
+        if (value instanceof Number) {
             final Number number = (Number) value;
             if (Numbers.isInteger(number.getClass())) {
                 append(number.longValue());
@@ -1493,6 +1497,35 @@ public class Formatter implements Localized {
         } else if (value instanceof CharSequence) {
             append((value instanceof InternationalString) ?
                     ((InternationalString) value).toString(locale) : value.toString(), null);
+        } else if (value.getClass().isArray()) {
+            /*
+             * All above cases delegated to another method which invoke 'appendSeparator()'.
+             * Since the following block is writing itself a new element, we need to invoke
+             * 'appendSeparator()' here. This block invokes (indirectly) this 'appendValue'
+             * method recursively for some or all elements in the list.
+             */
+            appendSeparator();
+            elementStart = buffer.appendCodePoint(symbols.getOpenSequence()).length();
+            final int length = Array.getLength(value);
+            final int cut = (length <= listSizeLimit) ? length : Math.max(listSizeLimit/2 - 1, 1);
+            for (int i=0; i<length; i++) {
+                if (i == cut) {
+                    /*
+                     * Skip elements in the middle if the list is too long. The 'cut' index has been computed
+                     * in such a way that the number of elements to skip should be greater than 1, otherwise
+                     * formatting the single missing element would often have been shorter.
+                     */
+                    final int skip = length - Math.min(2*cut, listSizeLimit);
+                    buffer.append(symbols.getSeparator());
+                    setColor(ElementKind.REMARKS);
+                    buffer.append(Resources.forLocale(locale).getString(Resources.Keys.ElementsOmitted_1, skip));
+                    resetColor();
+                    i += skip;
+                    setInvalidWKT(value.getClass().getSimpleName(), null);
+                }
+                appendAny(Array.get(value, i));
+            }
+            buffer.appendCodePoint(symbols.getCloseSequence());
         } else {
             return false;
         }

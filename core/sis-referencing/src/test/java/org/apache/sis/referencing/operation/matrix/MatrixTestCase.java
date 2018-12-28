@@ -45,7 +45,7 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -497,12 +497,50 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTransform}
-     * as a reference implementation. This test can be run only with matrices of size 3×3.
-     * Consequently it is sub-classes responsibility to add a {@code testMultiplyVector()}
-     * method which invoke this method.
+     * Tests {@link MatrixSIS#translate(double[])} using {@link AffineTransform} as a reference implementation.
+     * This test can be run only with matrices of size 3×3. Consequently it is sub-classes responsibility to add
+     * a {@code testTranslateVector()} method which invoke this method.
      *
-     * @param  matrix  the matrix of size 3×3 to test.
+     * @param  matrix  an initially empty matrix of size 3×3 to test.
+     *
+     * @since 1.0
+     */
+    final void testTranslateVector(final MatrixSIS matrix) {
+        initialize(-1691066807752485433L);
+        final AffineTransform at = new AffineTransform();
+        final double vector[] = new double[] {0, 0, 1};
+        for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
+            if ((n % 10) == 0) {
+                setRandomValues(at, matrix);
+            }
+            at.translate(vector[0] = random.nextDouble() * 50 - 25,
+                         vector[1] = random.nextDouble() * 50 - 25);
+            matrix.translate(vector);
+            assertMatrixEquals("translate", AffineTransforms2D.toMatrix(at), matrix, TOLERANCE);
+        }
+    }
+
+    /**
+     * Sets random values in the given affine transform and a copy of those values in the given matrix.
+     */
+    private void setRandomValues(final AffineTransform at, final MatrixSIS matrix) {
+        at.setToRotation(random.nextDouble() * StrictMath.PI);
+        at.scale(nextNonZeroRandom(), nextNonZeroRandom());
+        at.translate(random.nextDouble() * 100 - 50,
+                     random.nextDouble() * 100 - 50);
+        matrix.setElements(new double[] {
+            at.getScaleX(), at.getShearX(), at.getTranslateX(),
+            at.getShearY(), at.getScaleY(), at.getTranslateY(),
+                         0,              0,                  1
+        });
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTransform} as a reference implementation.
+     * This test can be run only with matrices of size 3×3. Consequently it is sub-classes responsibility to add
+     * a {@code testMultiplyVector()} method which invoke this method.
+     *
+     * @param  matrix  an initially empty matrix of size 3×3 to test.
      *
      * @since 0.8
      */
@@ -512,15 +550,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final double vector[] = new double[3];
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
             if ((n % 10) == 0) {
-                at.setToRotation(random.nextDouble() * StrictMath.PI);
-                at.scale(nextNonZeroRandom(), nextNonZeroRandom());
-                at.translate(random.nextDouble() * 100 - 50,
-                             random.nextDouble() * 100 - 50);
-                matrix.setElements(new double[] {
-                    at.getScaleX(), at.getShearX(), at.getTranslateX(),
-                    at.getShearY(), at.getScaleY(), at.getTranslateY(),
-                                 0,              0,                  1
-                });
+                setRandomValues(at, matrix);
             }
             vector[0] = random.nextDouble() * 50 - 25;
             vector[1] = random.nextDouble() * 50 - 25;

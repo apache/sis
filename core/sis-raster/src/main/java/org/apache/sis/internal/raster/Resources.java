@@ -59,14 +59,44 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Can not enumerate values in the {0} range.
+         */
+        public static final short CanNotEnumerateValuesInRange_1 = 18;
+
+        /**
+         * Some envelope dimensions can not be mapped to grid dimensions.
+         */
+        public static final short CanNotMapToGridDimensions = 12;
+
+        /**
+         * Can not simplify transfer function of sample dimension “{0}”.
+         */
+        public static final short CanNotSimplifyTransferFunction_1 = 19;
+
+        /**
+         * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.
+         */
+        public static final short CategoryRangeOverlap_4 = 13;
+
+        /**
          * The ({0}, {1}) pixel coordinate is outside iterator domain.
          */
         public static final short CoordinateOutsideDomain_2 = 1;
 
         /**
+         * Sample value range {1} for “{0}” category is illegal.
+         */
+        public static final short IllegalCategoryRange_2 = 15;
+
+        /**
          * Illegal grid envelope [{1} … {2}] for dimension {0}.
          */
         public static final short IllegalGridEnvelope_3 = 8;
+
+        /**
+         * Illegal transfer function for “{0}” category.
+         */
+        public static final short IllegalTransferFunction_1 = 16;
 
         /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
@@ -97,6 +127,21 @@ public final class Resources extends IndexedResourceBundle {
          * The two images have different tile grid.
          */
         public static final short MismatchedTileGrid = 7;
+
+        /**
+         * No category for value {0}.
+         */
+        public static final short NoCategoryForValue_1 = 14;
+
+        /**
+         * non-linear in {0} dimension{0,choice,1#|2#s}:
+         */
+        public static final short NonLinearInDimensions_1 = 20;
+
+        /**
+         * Too many qualitative categories.
+         */
+        public static final short TooManyQualitatives = 17;
 
         /**
          * Coordinate reference system is unspecified.

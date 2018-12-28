@@ -110,7 +110,7 @@ final strictfp class PackageVerifier {
     private final String packageName;
 
     /**
-     * The default namespace to use if a class does not define explicitely a namespace.
+     * The default namespace to use if a class does not define explicitly a namespace.
      */
     private final String packageNS;
 
@@ -186,7 +186,7 @@ final strictfp class PackageVerifier {
             }
             /*
              * Lists the type of all values for which an adapter is declared in package-info.
-             * If the type is not explicitely declared, then it is inferred from class signature.
+             * If the type is not explicitly declared, then it is inferred from class signature.
              */
             final XmlJavaTypeAdapters adapters = pkg.getAnnotation(XmlJavaTypeAdapters.class);
             if (adapters != null) {

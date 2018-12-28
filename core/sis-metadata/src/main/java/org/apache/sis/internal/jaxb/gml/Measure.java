@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.gml;
 
 import java.util.Locale;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -59,7 +60,7 @@ import org.apache.sis.measure.Units;
  * }
  *
  * Both have a value of type {@code xs:double} and a {@code uom} attribute (without namespace)
- * of type {@code gml:UomIdentifier}. Those two informations are represented by this class.
+ * of type {@code gml:UomIdentifier}. Those two information are represented by this class.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -109,7 +110,7 @@ public final class Measure {
     }
 
     /**
-     * Constructs a representation of the measure as defined in ISO-19103 standard,
+     * Constructs a representation of the measure as defined in ISO 19103 standard,
      * with the UOM attribute like {@code "gmxUom.xml#xpointer(//*[@gml:id='m'])"}.
      *
      * @param value  the value of the measure.
@@ -183,7 +184,7 @@ public final class Measure {
         try {
             UCUM.format(unit, link);
         } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuilder.
+            throw new UncheckedIOException(e);          // Should never happen since we wrote to a StringBuilder.
         }
         return link.append("'])").toString();
     }

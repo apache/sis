@@ -263,17 +263,11 @@ public final class Containers extends Static {
      * @return the minimal initial capacity to be given to the hash map constructor.
      */
     public static int hashMapCapacity(final int count) {
-        if (count > 0) {
-            /*
-             * Dividing 'count' by 0.75 is equivalent to multiplying by 1.333333…
-             */
-            int r = count / 3;
-            if ((count % 3) != 0) {
-                r++;
-            }
-            return count + r;
-        }
-        return 0;
+        /*
+         * Dividing 'count' by 0.75 is equivalent to multiplying by 1.333333…
+         * rounded to next integer.
+         */
+        return (count * 4 + 2) / 3;
     }
 
     /**

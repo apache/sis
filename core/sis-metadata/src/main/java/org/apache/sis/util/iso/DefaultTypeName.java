@@ -144,9 +144,9 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      * The value class to be returned by {@link #toClass()}, or {@code null} if not yet computed.
      * {@link Void#TYPE} is used as a sentinel value meaning explicit {@code null}.
      *
-     * <p>This value is only computed. We do not allow the user to explicitely specify it, because we
+     * <p>This value is only computed. We do not allow the user to explicitly specify it, because we
      * need that {@code DefaultTypeName}s having identical name also have the same {@code valueClass}.
-     * This is necessary {@link DefaultNameFactory#pool} cache integrity. Users who want to explicitely
+     * This is necessary {@link DefaultNameFactory#pool} cache integrity. Users who want to explicitly
      * specify their own value class can override {@link #toClass()} instead.</p>
      *
      * @see #setValueClass(NameSpace, String, Class)

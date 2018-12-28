@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlElement;
 
@@ -482,7 +483,7 @@ public final class Metadata extends SimpleMetadata {
         try {
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen since we are writing to a StringBuilder.
+            throw new UncheckedIOException(e);      // Should never happen since we are writing to a StringBuilder.
         }
         return buffer.toString();
     }

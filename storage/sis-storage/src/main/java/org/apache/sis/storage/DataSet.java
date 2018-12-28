@@ -49,7 +49,7 @@ import org.opengis.geometry.Envelope;
 public interface DataSet extends Resource {
     /**
      * Returns the spatio-temporal extent of this resource in its most natural coordinate reference system.
-     * The following relationship to {@linkplain #getMetadata()} should hold:
+     * The following relationship to {@linkplain #getMetadata()} should hold (departures may exist):
      *
      * <ul>
      *   <li>The envelope should be contained in the union of all geographic, vertical or temporal extents
@@ -66,6 +66,9 @@ public interface DataSet extends Resource {
      * {@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS engineering CRS} are also allowed.
      * If this resource uses many different CRS with none of them covering all data, then the envelope should use a
      * global system (typically a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geographic CRS}).
+     *
+     * <p>The returned envelope is not necessarily the smallest bounding box encompassing all data.
+     * If the smallest envelope is too costly to compute, this method may conservatively return a larger envelope.</p>
      *
      * @return the spatio-temporal resource extent. Should not be {@code null} (but may happen if too costly to compute).
      * @throws DataStoreException if an error occurred while reading or computing the envelope.

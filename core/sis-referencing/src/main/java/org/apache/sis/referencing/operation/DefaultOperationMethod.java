@@ -268,7 +268,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Convenience constructor that creates an operation method from a math transform.
-     * The information provided in the newly created object are approximative, and
+     * The information provided in the newly created object are approximations, and
      * usually acceptable only as a fallback when no other information are available.
      *
      * @param  transform  the math transform to describe.

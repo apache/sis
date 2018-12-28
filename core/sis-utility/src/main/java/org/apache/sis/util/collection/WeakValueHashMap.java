@@ -93,7 +93,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * {@code DEEP_EQUALS} if there is a chance that some keys are arrays. In the later case, comparisons will
      * be done by the more costly {@link Objects#deepEquals(Object, Object)} method instead.
      *
-     * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitely asks for this mode
+     * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitly asks for this mode
      * at construction time. This mode is provided because reference-equality semantic is sometime required, and
      * hard to simulate if not supported natively by the hash map. See {@link java.util.IdentityHashMap} javadoc
      * for some examples of cases where reference-equality semantic is useful.</p>

@@ -34,6 +34,8 @@ import java.text.ParsePosition;
 import java.security.AccessController;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -91,7 +93,7 @@ import org.apache.sis.internal.util.FinalFieldSetter;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Range#toString()
  * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
@@ -99,7 +101,7 @@ import org.apache.sis.internal.util.FinalFieldSetter;
  * @since 0.3
  * @module
  */
-public class RangeFormat extends Format {
+public class RangeFormat extends Format implements Localized {
     /**
      * For cross-version compatibility.
      */
@@ -345,6 +347,8 @@ public class RangeFormat extends Format {
      * @throws IllegalArgumentException if the given type is not recognized by this constructor.
      */
     public RangeFormat(final Locale locale, final Class<?> elementType) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("locale",      locale);
+        ArgumentChecks.ensureNonNull("elementType", elementType);
         this.locale      = locale;
         this.elementType = elementType;
         if (Angle.class.isAssignableFrom(elementType)) {
@@ -390,6 +394,19 @@ public class RangeFormat extends Format {
      */
     private boolean isClose(final int c) {
         return (c == closeInclusive) || (c == closeExclusive) || (c == closeExclusiveAlt);
+    }
+
+    /**
+     * Returns this formatter locale. This is the locale specified at construction time if any,
+     * or the {@linkplain Locale#getDefault() default locale} at construction time otherwise.
+     *
+     * @return this formatter locale (never {@code null}).
+     *
+     * @since 1.0
+     */
+    @Override
+    public Locale getLocale() {
+        return locale;
     }
 
     /**
@@ -459,7 +476,7 @@ public class RangeFormat extends Format {
      * formatting time. The alternate form expresses open intervals like {@code ]a…b[}
      * instead of {@code (a…b)}.
      *
-     * <p>This flag as no effect on parsing, since the parser accepts both forms.</p>
+     * <p>This flag has no effect on parsing, since the parser accepts both forms.</p>
      *
      * @return {@code true} for using the alternate format instead of the default format.
      */
@@ -469,6 +486,7 @@ public class RangeFormat extends Format {
 
     /**
      * Sets whether this {@code RangeFormat} shall use the alternate form at formatting time.
+     * The alternate form expresses open intervals like {@code ]a…b[} instead of {@code (a…b)}.
      *
      * @param alternateForm {@code true} for using the alternate format, or {@code false} for using the default format.
      */
@@ -964,7 +982,7 @@ public class RangeFormat extends Format {
             }
         }
         /*
-         * At this point, all required informations are available. Now build the range.
+         * At this point, all required information are available. Now build the range.
          * In the special case were the target type is the generic Number type instead
          * than a more specialized type, the finest suitable type will be determined.
          */

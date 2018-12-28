@@ -78,7 +78,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -791,8 +791,37 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
+     * Returns {@code true} if {@code tr1} is the inverse of {@code tr2}.
+     * If this method is unsure, it conservatively returns {@code false}.
+     * The transform that may be inverted is {@code tr1}.
+     *
+     * @param  tr1  the transform to inverse.
+     * @param  tr2  the transform that may be the inverse of {@code tr1}.
+     * @return whether this transform is the inverse of the given transform. If unsure, {@code false}.
+     */
+    static boolean isInverseEquals(MathTransform tr1, final MathTransform tr2) {
+        if (tr1.getSourceDimensions() != tr2.getTargetDimensions() ||
+            tr1.getTargetDimensions() != tr2.getSourceDimensions())
+        {
+            return false;
+        }
+        try {
+            tr1 = tr1.inverse();
+        } catch (NoninvertibleTransformException e) {
+            return false;
+        }
+        if (tr1 instanceof LenientComparable) {
+            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATIVE);
+        }
+        if (tr2 instanceof LenientComparable) {
+            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATIVE);
+        }
+        return tr1.equals(tr2);
+    }
+
+    /**
      * Concatenates or pre-concatenates in an optimized way this math transform with the given one, if possible.
-     * A new math transform is created to perform the combined transformation.
+     * If an optimization is possible, a new math transform is created to perform the combined transformation.
      * The {@code applyOtherFirst} value determines the transformation order as bellow:
      *
      * <ul>
@@ -804,12 +833,15 @@ public abstract class AbstractMathTransform extends FormattableObject
      *       <var>p</var> by {@code this} and then transforming the result by {@code other}.</li>
      * </ul>
      *
-     * If no special optimization is available for the combined transform, then this method returns {@code null}.
-     * In the later case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using a generic
-     * implementation.
+     * If no optimization is available for the combined transform, then this method returns {@code null}.
+     * In the later case, the concatenation will be prepared by {@link DefaultMathTransformFactory} using
+     * a generic implementation.
      *
-     * <p>The default implementation always returns {@code null}. This method is ought to be overridden
-     * by subclasses capable of concatenating some combination of transforms in a special way.</p>
+     * <p>The default implementation returns the identity transform if the other transform is the inverse
+     * of this transform, or returns {@code null} otherwise. This method is ought to be overridden
+     * by subclasses capable of concatenating some combination of transforms in a special way.
+     * {@link LinearTransform} implementations do not need to override this method since matrix multiplications
+     * will be handled automatically, and this method does not need to handle the {@link #isIdentity()} case.</p>
      *
      * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
      *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
@@ -825,6 +857,9 @@ public abstract class AbstractMathTransform extends FormattableObject
     protected MathTransform tryConcatenate(boolean applyOtherFirst, MathTransform other, MathTransformFactory factory)
             throws FactoryException
     {
+        if (isInverseEquals(this, other)) {
+            return MathTransforms.identity(applyOtherFirst ? getTargetDimensions() : getSourceDimensions());
+        }
         return null;
     }
 

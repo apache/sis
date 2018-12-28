@@ -51,7 +51,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * the locale and timezone. Some tests will need to fix the context to a particular locale and timezone before
  * to execute the test.</p>
  *
- * <p>The {@link #context} field can be initialized by subclasses either explicitely or by invoking
+ * <p>The {@link #context} field can be initialized by subclasses either explicitly or by invoking
  * a {@code createContext(…)} convenience method. The {@link #clearContext()} method will be invoked
  * after each test for clearing the SIS internal {@link ThreadLocal} which was holding that context.
  *
@@ -102,7 +102,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * The context containing locale, timezone, GML version and other information.
-     * The context is initially {@code null} and can be created either explicitely,
+     * The context is initially {@code null} and can be created either explicitly,
      * or by invoking the {@link #createContext(boolean, Locale, String)} convenience method.
      *
      * @see #createContext(boolean, Locale, String)
@@ -163,7 +163,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * Resets {@link #context} to {@code null} and clears the {@link ThreadLocal} which was holding that context.
-     * This method is automatically invoked by JUnit after each test, but can also be invoked explicitely before
+     * This method is automatically invoked by JUnit after each test, but can also be invoked explicitly before
      * to create a new context. It is safe to invoke this method more than once.
      */
     @After

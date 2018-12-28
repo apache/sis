@@ -148,7 +148,7 @@ public class DefaultRecordSchema implements RecordSchema {
     }
 
     /**
-     * Creates a new record type of the given name, which will contains the given members.
+     * Creates a new record type of the given name, which will contain the given members.
      * Members are declared in iteration order.
      *
      * @param  typeName  the record type name.

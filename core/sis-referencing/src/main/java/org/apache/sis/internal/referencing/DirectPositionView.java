@@ -101,6 +101,16 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
          * Creates a new direct position wrapping the given array.
          *
          * @param  ordinates  the ordinate values.
+         */
+        public Double(final double[] ordinates) {
+            super(0, ordinates.length);
+            this.ordinates = ordinates;
+        }
+
+        /**
+         * Creates a new direct position wrapping the given array.
+         *
+         * @param  ordinates  the ordinate values.
          * @param  offset     the first value index in the ordinates array.
          * @param  dimension  the number of valid ordinate values.
          */

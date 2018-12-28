@@ -57,7 +57,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
@@ -90,19 +90,53 @@ public final class MathFunctions extends Static {
 
     /**
      * The minimal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
+     * The current value is {@value}.
      *
-     * @see #toNanFloat(int)
-     * @see #toNanOrdinal(float)
+     * @since 1.0
      */
-    private static final int MIN_NAN_ORDINAL = -0x200000;
+    public static final int MIN_NAN_ORDINAL = -0x200000;
 
     /**
      * The maximal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
+     * The current value is {@value}.
+     *
+     * @since 1.0
+     */
+    public static final int MAX_NAN_ORDINAL =  0x1FFFFF;
+
+    /**
+     * The beginning of ranges of quiet NaN values.
+     * The range is selected in way to restrict ourselves to <cite>quiet</cite> NaN values.
+     * The following is an adaptation of evaluator's comments for bug #4471414
+     * (http://developer.java.sun.com/developer/bugParade/bugs/4471414.html):
+     *
+     * <blockquote>
+     *    There are actually two types of NaNs, signaling NaNs and quiet NaNs. Java doesn't support the features necessary
+     *    to reliably distinguish the two. However, the relevant point is that copying a signaling NaN may (or may not, at
+     *    the implementors discretion) yield a quiet NaN — a NaN with a different bit pattern (IEEE 754 6.2). Therefore, on
+     *    IEEE 754 compliant platforms it may be impossible to find a signaling NaN stored in an array since a signaling NaN
+     *    passed as an argument to binarySearch may get replaced by a quiet NaN.
+     * </blockquote>
+     *
+     * The relevant thresholds are:
+     * <ul>
+     *   <li>{@code 7F800000}: positive infinity.</li>
+     *   <li>{@code 7F800001}: first signaling NaN in the range of positive values.</li>
+     *   <li>{@code 7FBFFFFF}: last signaling NaN.</li>
+     *   <li>{@code 7FC00000}: first quiet NaN. Also the standard {@link Double#NaN} value.</li>
+     *   <li>{@code 7FFFFFFF}: last quiet NaN.</li>
+     *   <li>{@code FF800000}: negative infinity.</li>
+     *   <li>{@code FF800001}: first signaling NaN in the range of negative values.</li>
+     *   <li>{@code FFBFFFFF}: last signaling NaN.</li>
+     *   <li>{@code FFC00000}: first quiet NaN in the range of negative values.</li>
+     *   <li>{@code FFFFFFFF}: last quiet NaN.</li>
+     * </ul>
      *
      * @see #toNanFloat(int)
      * @see #toNanOrdinal(float)
      */
-    static final int MAX_NAN_ORDINAL = 0x1FFFFF;
+    static final int POSITIVE_NAN = 0x7FC00000,
+                     NEGATIVE_NAN = 0xFFC00000;
 
     /**
      * The highest prime number supported by the {@link #nextPrimeNumber(int)} method.
@@ -564,7 +598,7 @@ public final class MathFunctions extends Static {
      * and may change in any future version of the SIS library. The current implementation restricts the
      * range of allowed ordinal values to a smaller one than the range of all possible values.</p>
      *
-     * @param  ordinal  the NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
+     * @param  ordinal  the NaN ordinal value, from {@value #MIN_NAN_ORDINAL} to {@value #MAX_NAN_ORDINAL} inclusive.
      * @return one of the legal {@linkplain Float#isNaN(float) NaN} values as a float.
      * @throws IllegalArgumentException if the specified ordinal is out of range.
      *
@@ -572,7 +606,10 @@ public final class MathFunctions extends Static {
      */
     public static float toNanFloat(final int ordinal) throws IllegalArgumentException {
         ArgumentChecks.ensureBetween("ordinal", MIN_NAN_ORDINAL, MAX_NAN_ORDINAL, ordinal);
-        final float value = intBitsToFloat(0x7FC00000 + ordinal);
+        int bits = (ordinal >= 0) ? ordinal : ~ordinal;
+        bits = (bits + POSITIVE_NAN) | (ordinal & Integer.MIN_VALUE);
+        assert Integer.compareUnsigned(bits, ordinal >= 0 ? POSITIVE_NAN : NEGATIVE_NAN) >= 0 : ordinal;
+        final float value = intBitsToFloat(bits);
         assert Float.isNaN(value) && toNanOrdinal(value) == ordinal : ordinal;
         return value;
     }
@@ -591,7 +628,9 @@ public final class MathFunctions extends Static {
      *         or does not use a supported bits pattern.
      */
     public static int toNanOrdinal(final float value) throws IllegalArgumentException {
-        final int ordinal = floatToRawIntBits(value) - 0x7FC00000;
+        final int bits = floatToRawIntBits(value);
+        int ordinal = (bits & Integer.MAX_VALUE) - POSITIVE_NAN;
+        if (bits < 0) ordinal = ~ordinal;
         if (ordinal >= MIN_NAN_ORDINAL && ordinal <= MAX_NAN_ORDINAL) {
             return ordinal;
         }
@@ -599,10 +638,10 @@ public final class MathFunctions extends Static {
         final Object obj;
         if (Float.isNaN(value)) {
             resourceKey = Errors.Keys.IllegalBitsPattern_1;
-            obj = Integer.toHexString(ordinal);
+            obj = Integer.toHexString(bits);
         } else {
             resourceKey = Errors.Keys.IllegalArgumentValue_2;
-            obj = value;
+            obj = new Object[] {"value", value};
         }
         throw new IllegalArgumentException(Errors.format(resourceKey, obj));
     }

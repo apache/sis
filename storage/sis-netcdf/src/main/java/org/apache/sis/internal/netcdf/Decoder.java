@@ -21,13 +21,16 @@ import java.util.Objects;
 import java.util.Collection;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
 
 /**
@@ -41,7 +44,20 @@ import org.apache.sis.internal.system.DefaultFactories;
  * @since   0.3
  * @module
  */
-public abstract class Decoder implements Closeable {
+public abstract class Decoder extends ReferencingFactoryContainer implements Closeable {
+    /**
+     * The format name to use in error message. We use lower-case "n" because it seems to be what the netCDF community uses.
+     * By contrast, {@code NetcdfStoreProvider} uses upper-case "N" because it is considered at the beginning of sentences.
+     */
+    public static final String FORMAT_NAME = "netCDF";
+
+    /**
+     * The path to the netCDF file, or {@code null} if unknown.
+     * This is set by netCDF store constructor and shall not be modified afterward.
+     * This is used for information purpose only, not for actual reading operation.
+     */
+    public Path location;
+
     /**
      * The data store identifier created from the global attributes, or {@code null} if none.
      * Defined as a namespace for use as the scope of children resources (the variables).
@@ -60,6 +76,12 @@ public abstract class Decoder implements Closeable {
      * If the netCDF file contains only raster data, this value is ignored.
      */
     public final GeometryLibrary geomlib;
+
+    /**
+     * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
+     * To make that clearer, we will build datum with names like "Unknown datum presumably based on WGS 84".
+     */
+    final Datum[] datumCache;
 
     /**
      * Where to send the warnings.
@@ -83,6 +105,7 @@ public abstract class Decoder implements Closeable {
         this.geomlib     = geomlib;
         this.listeners   = listeners;
         this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+        this.datumCache  = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
     }
 
     /**
@@ -231,5 +254,5 @@ public abstract class Decoder implements Closeable {
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract GridGeometry[] getGridGeometries() throws IOException, DataStoreException;
+    public abstract Grid[] getGridGeometries() throws IOException, DataStoreException;
 }

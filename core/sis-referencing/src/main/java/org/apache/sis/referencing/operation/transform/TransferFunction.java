@@ -50,7 +50,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  * This {@code TransferFunction} class handles only the continuous part of transfer functions.
  * This class does <strong>not</strong> handle missing values other than {@code NaN}.
  * For a more complete class with support for non-NaN missing values,
- * see {@code GridSampleDimension}.
+ * see {@code org.apache.sis.coverage.SampleDimension}.
  *
  * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -59,7 +59,10 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.5
+ *
+ * @see org.apache.sis.coverage.SampleDimension#getTransferFunction()
+ *
+ * @since 0.5
  * @module
  */
 public class TransferFunction implements Cloneable, Serializable {
@@ -144,9 +147,11 @@ public class TransferFunction implements Cloneable, Serializable {
      * For other supported types, the default value is 10.
      *
      * @param  base  the new logarithm or exponent base.
+     * @throws IllegalArgumentException if the given base is NaN, negative, zero or infinite.
      */
     public void setBase(final double base) {
         ArgumentChecks.ensureStrictlyPositive("base", base);
+        ArgumentChecks.ensureFinite("base", base);
         this.base = base;
         transform = null;
     }
@@ -165,8 +170,13 @@ public class TransferFunction implements Cloneable, Serializable {
      * The default value is 1.
      *
      * @param  scale  the new scale factor.
+     * @throws IllegalArgumentException if the given scale is NaN, zero or infinite.
      */
     public void setScale(final double scale) {
+        ArgumentChecks.ensureFinite("scale", scale);
+        if (scale == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "scale", scale));
+        }
         this.scale = scale;
         transform = null;
     }
@@ -185,8 +195,10 @@ public class TransferFunction implements Cloneable, Serializable {
      * The default value is 0.
      *
      * @param  offset  the new offset.
+     * @throws IllegalArgumentException if the given scale is NaN or infinite.
      */
     public void setOffset(final double offset) {
+        ArgumentChecks.ensureFinite("offset",  offset);
         this.offset = offset;
         transform = null;
     }

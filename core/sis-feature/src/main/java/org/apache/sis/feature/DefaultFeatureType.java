@@ -840,7 +840,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * is {@code true}.
      *
      * @param  includeSuperTypes  {@code true} for including the properties inherited from the super-types,
-     *         or {@code false} for returning only the properties defined explicitely in this type.
+     *         or {@code false} for returning only the properties defined explicitly in this type.
      * @return feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */

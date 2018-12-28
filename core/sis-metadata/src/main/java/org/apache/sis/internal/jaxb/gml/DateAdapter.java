@@ -57,7 +57,7 @@ public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     }
 
     /**
-     * Converts a date read from a XML stream to the object which will contains
+     * Converts a date read from a XML stream to the object which will contain
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  value  the XML date, or {@code null}.

@@ -259,7 +259,7 @@ public final class Classes extends Static {
 
     /**
      * Returns the classes of all objects in the given collection. If the given collection
-     * contains some null elements, then the returned set will contains a null element as well.
+     * contains some null elements, then the returned set will contain a null element as well.
      * The returned set is modifiable and can be freely updated by the caller.
      *
      * <p>Note that interfaces are not included in the returned set.</p>
@@ -313,7 +313,7 @@ public final class Classes extends Static {
      * Returns every interfaces implemented, directly or indirectly, by the given class or interface.
      * This is similar to {@link Class#getInterfaces()} except that this method searches recursively
      * in the super-interfaces. For example if the given type is {@link java.util.ArrayList}, then
-     * the returned set will contains {@link java.util.List} (which is implemented directly)
+     * the returned set will contain {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
      * @param  <T>   the compile-time type of the {@code Class} argument.
@@ -529,7 +529,7 @@ next:       for (final Class<?> candidate : candidates) {
     /**
      * Returns the interfaces which are implemented by the two given classes. The returned set
      * does not include the parent interfaces. For example if the two given objects implement the
-     * {@link Collection} interface, then the returned set will contains the {@code Collection}
+     * {@link Collection} interface, then the returned set will contain the {@code Collection}
      * type but not the {@link Iterable} type, since it is implied by the collection type.
      *
      * @param  c1  the first class.

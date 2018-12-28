@@ -33,7 +33,7 @@ import org.opengis.feature.PropertyNotFoundException;
 
 /**
  * Implementation of {@link AbstractAttribute#characteristics()} map.
- * This map holds only the attribute characteristics which have been explicitely set or requested.
+ * This map holds only the attribute characteristics which have been explicitly set or requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
