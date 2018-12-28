@@ -38,11 +38,32 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class GridExtentTest extends TestCase {
     /**
+     * Creates a three-dimensional grid extent to be shared by different tests.
+     */
+    private static GridExtent create3D() {
+        return new GridExtent(
+                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
+                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+    }
+
+    /**
      * Verifies the low and high values in the specified dimension of the given extent
      */
-    private static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
+    static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
         assertEquals("low",  low,  extent.getLow (dimension));
         assertEquals("high", high, extent.getHigh(dimension));
+    }
+
+    /**
+     * Tests the {@link GridExtent#GridExtent(GridExtent, int[])} constructor.
+     */
+    @Test
+    public void testCreateFromStrides() {
+        GridExtent extent = create3D();
+        extent = new GridExtent(extent, new int[] {4, 3, 9});
+        assertExtentEquals(extent, 0, 25, 124);                 // 100 cells
+        assertExtentEquals(extent, 1, 66, 265);                 // 200 cells
+        assertExtentEquals(extent, 2,  4,   5);                 //   2 cells
     }
 
     /**
@@ -95,15 +116,6 @@ public final strictfp class GridExtentTest extends TestCase {
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
         assertEquals(DimensionNameType.TIME,   extent.getAxisType(2).get());
-    }
-
-    /**
-     * Creates a three-dimensional grid extent to be shared by different tests.
-     */
-    private static GridExtent create3D() {
-        return new GridExtent(
-                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
-                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
     }
 
     /**

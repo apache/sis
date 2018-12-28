@@ -43,7 +43,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </ul>
  *
  * This class provides also a few {@code translate(…)} convenience methods,
- * which apply the pixel translation on a given {@link MathTransform} instance.
+ * which apply the translation on a given {@link MathTransform} instance.
  *
  * <div class="note"><b>Example:</b>
  * if the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
@@ -165,7 +165,7 @@ public final class PixelTranslation extends Static implements Serializable {
     }
 
     /**
-     * Returns the position relative to the pixel center.
+     * Returns the position relative to the cell center.
      * This method is typically used for <var>n</var>-dimensional grids, where the number of dimension is unknown.
      * The translation is determined from the following table, with the same value applied to all dimensions:
      *

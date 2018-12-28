@@ -29,10 +29,15 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -71,7 +76,7 @@ public class GridChange implements Serializable {
     private static final long serialVersionUID = -7819047186271172885L;
 
     /**
-     * The conversions from source grid to target grid, mapping pixel corners or pixel centers.
+     * The conversions from source grid to target grid, mapping cell corners or cell centers.
      */
     private final MathTransform mapCorners, mapCenters;
 
@@ -177,8 +182,8 @@ public class GridChange implements Serializable {
                 throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
             }
             final GridExtent domain = source.getExtent();                             // May throw IncompleteGridGeometryException.
-            mapCorners  = path(source, crsChange, target, PixelInCell.CELL_CORNER);
-            mapCenters  = path(source, crsChange, target, PixelInCell.CELL_CENTER);
+            mapCorners = path(source, crsChange, target, PixelInCell.CELL_CORNER);
+            mapCenters = path(source, crsChange, target, PixelInCell.CELL_CENTER);
             final GridExtent extent = new GridExtent(domain.toCRS(mapCorners, mapCenters), rounding, margin, target.extent, null);
             targetExtent = extent.equals(target.extent) ? target.extent : extent.equals(domain) ? domain : extent;
             /*
@@ -203,7 +208,7 @@ public class GridChange implements Serializable {
      * @param  source     the source grid geometry.
      * @param  crsChange  the change of coordinate reference system, or {@code null} if none.
      * @param  target     the target grid geometry.
-     * @param  anchor     whether we want the transform for pixel corner or pixel center.
+     * @param  anchor     whether we want the transform for cell corner or cell center.
      */
     private static MathTransform path(final GridGeometry source, final CoordinateOperation crsChange,
             final GridGeometry target, final PixelInCell anchor) throws NoninvertibleTransformException
@@ -321,8 +326,9 @@ public class GridChange implements Serializable {
      * {@link #getTargetExtent()} as below for each dimension <var>i</var>:
      *
      * <ul>
-     *   <li>The {@linkplain GridExtent#getLow(int) low} coordinate is unchanged.</li>
-     *   <li>The {@linkplain GridExtent#getSize(int) size} is divided by {@code strides[i]}.</li>
+     *   <li>The {@linkplain GridExtent#getLow(int)  low}  is divided by {@code strides[i]}, rounded toward zero.</li>
+     *   <li>The {@linkplain GridExtent#getSize(int) size} is divided by {@code strides[i]}, rounded toward zero.</li>
+     *   <li>The {@linkplain GridExtent#getHigh(int) high} is recomputed from above low and size.</li>
      * </ul>
      *
      * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
@@ -338,6 +344,8 @@ public class GridChange implements Serializable {
         double[] factors = null;
         Matrix toGiven = null;
         if (strides != null) {
+            // Validity of the strides values will be verified by GridExtent constructor below.
+            final GridExtent unscaled = extent;
             final int dimension = extent.getDimension();
             for (int i = Math.min(dimension, strides.length); --i >= 0;) {
                 final int s = strides[i];
@@ -350,10 +358,12 @@ public class GridChange implements Serializable {
                             toGiven = Matrices.createIdentity(dimension + 1);
                         }
                     }
-                    factors[i] = s;
+                    final double sd = s;
+                    factors[i] = sd;
                     if (toGiven != null) {
-                        toGiven.setElement(i, i, s);
-                        toGiven.setElement(i, dimension, (1-s) * extent.getLow(i));
+                        final long low = unscaled.getLow(i);
+                        toGiven.setElement(i, i, sd);
+                        toGiven.setElement(i, dimension, low - (low / s) * sd);     // (low / s) must be consistent with GridExtent.
                     }
                 }
             }
@@ -406,6 +416,54 @@ public class GridChange implements Serializable {
     }
 
     /**
+     * Returns a tree representation of this grid change. The tree representation
+     * is for debugging purpose only and may change in any future SIS version.
+     *
+     * @param  locale  the locale to use for textual labels.
+     * @return a tree representation of this grid change.
+     */
+    @Debug
+    private TreeTable toTree(final Locale locale) {
+        final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
+        final TreeTable tree = new DefaultTreeTable(column);
+        final TreeTable.Node root = tree.getRoot();
+        root.setValue(column, Classes.getShortClassName(this));
+        /*
+         * GridChange (example)
+         *   └─Target range
+         *       ├─Dimension 0: [ 2000 … 5475] (3476 cells)
+         *       └─Dimension 1: [-1000 … 7999] (9000 cells)
+         */
+        TreeTable.Node section = root.newChild();
+        section.setValue(column, "Target range");
+        final StringBuilder buffer = new StringBuilder(256);
+        getTargetExtent().appendTo(buffer, Vocabulary.getResources(locale));
+        for (final CharSequence line : CharSequences.splitOnEOL(buffer)) {
+            String text = line.toString().trim();
+            if (!text.isEmpty()) {
+                section.newChild().setValue(column, text);
+            }
+        }
+        /*
+         * GridChange (example)
+         *   └─Target strides
+         *       ├─{50, 300}
+         *       └─Global ≈ 175.0
+         */
+        buffer.setLength(0);
+        buffer.append('{');
+        for (int s : getTargetStrides()) {
+            if (buffer.length() > 1) buffer.append(", ");
+            buffer.append(s);
+        }
+        section = root.newChild();
+        section.setValue(column, "Target strides");
+        section.newChild().setValue(column, buffer.append('}').toString()); buffer.setLength(0);
+        section.newChild().setValue(column, buffer.append("Global ≈ ").append((float) getGlobalScale()).toString());
+        return tree;
+    }
+
+    /**
      * Returns a string representation of this grid change for debugging purpose.
      * The returned string is implementation dependent and may change in any future version.
      *
@@ -413,12 +471,6 @@ public class GridChange implements Serializable {
      */
     @Override
     public String toString() {
-        final String lineSeparator = System.lineSeparator();
-        final StringBuilder buffer = new StringBuilder(256)
-                .append(Classes.getShortClassName(this)).append(lineSeparator)
-                .append("└ Scale factor ≈ ").append((float) getGlobalScale()).append(lineSeparator)
-                .append("Target range").append(lineSeparator);
-        targetExtent.appendTo(buffer, Vocabulary.getResources((Locale) null));
-        return buffer.toString();
+        return toTree(null).toString();
     }
 }

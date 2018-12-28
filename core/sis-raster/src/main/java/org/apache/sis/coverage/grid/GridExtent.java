@@ -211,10 +211,38 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Creates a new grid extent with the same lower values than the given extent, and high values adjusted by dividing
-     * the {@linkplain #getSize(int) size} by the given strides.  The policy of keeping the lower coordinates unchanged
-     * is consistent with {@link GridChange#getTargetGeometry(int...)} policy of keeping lower coordinates invariant
-     * under the scales.
+     * Creates a new grid extent with low and high values adjusted by dividing the {@linkplain #getSize(int) size}
+     * by the given strides. The policy of dividing the lower coordinates by the stride shall be kept consistent
+     * with {@link GridGeometry#subgrid(Envelope, double...)} and {@link GridChange#getTargetGeometry(int...)}
+     * computation of grid to CRS.
+     *
+     * <div class="note"><b>Note:</b>
+     * if a division does not produce an integer, then the size is rounded toward 0 (or toward negative infinity since
+     * sizes are always positive numbers). But the envelope computed by {@link GridChange#getTargetGeometry(int...)}
+     * will nevertheless be larger. This counter-intuitive effect is because the "grid to CRS" transform is scaled by
+     * the same factors, which results in larger cells. Assuming:
+     *
+     * <ul>
+     *   <li>All {@linkplain #getLow(int) low coordinates} = 0.</li>
+     *   <li>{@linkplain #getHigh(int) High coordinates} before scaling denoted <var>h₁</var>.</li>
+     *   <li>High coordinates after scaling denoted <var>h₂</var>.</li>
+     *   <li>Scale factor (or sub-sampling) <var>s</var> is an integer ≧ 1.</li>
+     * </ul>
+     *
+     * Then the envelope upper bounds <var>x</var> is:
+     *
+     * <ul>
+     *   <li>x = (h₁ + 1) × c</li>
+     *   <li>x = (h₂ + f) × c⋅s   which implies   h₂ = h₁/s   and   f = 1/s</li>
+     * </ul>
+     *
+     * If we modify the later equation for integer division instead than real numbers, we have:
+     *
+     * <blockquote>x = (h₂ + f) × c⋅s   where   h₂ = floor(h₁/s)   and   f = ((h₁ mod s) + 1)/s</blockquote>
+     *
+     * Because <var>s</var> ≧ 1, then <var>f</var> ≦ 1. But the <var>f</var> actually used by {@link #toCRS(MathTransform,
+     * MathTransform)} is hard-coded to 1 since it assumes that all cells are whole, i.e. it does not take in account that
+     * the last cell may actually be fraction of a cell. Since 1 ≧ <var>f</var>, the computed envelope may be larger.</div>
      *
      * @param  extent   the extent from which to compute a new extent.
      * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
@@ -222,19 +250,21 @@ public class GridExtent implements Serializable {
      */
     GridExtent(final GridExtent extent, final int[] strides) {
         types = extent.types;
-        coordinates = extent.coordinates.clone();
-        final int m = getDimension();
+        final int m = extent.getDimension();
+        coordinates = new long[m << 1];
         for (int i=0; i<m; i++) {
             final int s = strides[i];
             if (s <= 0) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "strides[" + i + ']', s));
             }
             final int j = i + m;
-            final long size = coordinates[j] - coordinates[i] + 1;                             // Result is an unsigned number.
+            long low  = extent.coordinates[i];
+            long size = extent.coordinates[j] - low + 1;                                       // Result is an unsigned number.
             if (size == 0) throw new ArithmeticException("long overflow");
             long r = Long.divideUnsigned(size, s);
             if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
-            coordinates[j] = coordinates[i] + r;
+            coordinates[i] = low /= s;
+            coordinates[j] = low + r;
         }
     }
 
@@ -627,11 +657,11 @@ public class GridExtent implements Serializable {
 
     /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
-     * The transform shall map <em>pixel corner</em> to real world coordinates.
+     * The transform shall map <em>cell corner</em> to real world coordinates.
      *
-     * @param  cornerToCRS  a transform from <em>pixel corners</em> to real world coordinates.
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
-     *                      If different, then this is assumed to map pixel centers instead than pixel corners.
+     *                      If different, then this is assumed to map cell centers instead than cell corners.
      * @return this grid extent in real world coordinates.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
@@ -640,6 +670,7 @@ public class GridExtent implements Serializable {
         final int dimension = getDimension();
         GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
+            // The +1.0 is for making high coordinate exclusive. See GridExtent(GridExtent, int...) for a discussion.
             envelope.setRange(i, coordinates[i], coordinates[i + dimension] + 1.0);
         }
         envelope = Envelopes.transform(cornerToCRS, envelope);
@@ -647,8 +678,8 @@ public class GridExtent implements Serializable {
             /*
              * If the envelope contains some NaN values, try to replace them by constant values inferred from the math transform.
              * We must use the MathTransform specified by the user (gridToCRS), not necessarily the cornerToCRS transform, because
-             * because inferring a 'cornerToCRS' by translation a 'centertoCRS' by 0.5 pixels increase the amount of NaN values in
-             * the matrix. For giving a chance to TransformSeparator to perform its work, we need the minimal amount of NaN values.
+             * inferring a 'cornerToCRS' by translating a 'centerToCRS' by 0.5 cell increase the amount of NaN values in the matrix.
+             * For giving a chance to TransformSeparator to perform its work, we need the minimal amount of NaN values.
              */
             final boolean isCenter = (gridToCRS != cornerToCRS);
             TransformSeparator separator = null;
@@ -674,8 +705,8 @@ public class GridExtent implements Serializable {
                             final double value = component.getElement(j, component.getNumCol() - 1);
                             /*
                              * Replace only the envelope NaN values by the translation term (non-NaN values are left unchanged).
-                             * If the gridToCRS map pixel corners, then we update only the lower bound since the transform maps
-                             * lower-left corner; the upper bound is unknown. If the gridToCRS maps pixel center, then we update
+                             * If the gridToCRS map cell corners, then we update only the lower bound since the transform maps
+                             * lower-left corner; the upper bound is unknown. If the gridToCRS maps cell center, then we update
                              * both lower and upper bounds to a value assumed to be in the center; the span is set to zero.
                              */
                             if (isCenter) {

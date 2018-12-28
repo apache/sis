@@ -143,6 +143,31 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
+     * Tests the {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
+     */
+    @Test
+    public void testFromOther() throws TransformException {
+        long[]        low       = new long[] {  1,   3, 2};
+        long[]        high      = new long[] {101, 203, 4};
+        GridExtent    extent    = new GridExtent(null, low, high, false);
+        MathTransform gridToCRS = MathTransforms.translation(5, 7, 8);
+        GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
+
+        low    = new long[] { 11,  35, 20};
+        high   = new long[] {120, 250, 39};
+        extent = new GridExtent(null, low, high, false);
+        grid   = new GridGeometry(grid, extent, MathTransforms.scale(2, 1, 3));
+        assertSame(extent, grid.getExtent());
+        assertMatrixEquals("gridToCRS", new Matrix4(
+                2, 0, 0, 5,
+                0, 1, 0, 7,     // Combination of above scales (diagonal) and translation (last column).
+                0, 0, 3, 8,
+                0, 0, 0, 1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+    }
+
+    /**
      * Tests construction from a <cite>grid to CRS</cite> having a 0.5 pixel translation.
      * This translation happens in transform mapping <cite>pixel center</cite> when the
      * corresponding <cite>pixel corner</cite> transformation is identity.
@@ -289,5 +314,38 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
+    }
+
+    /**
+     * Tests {@link GridGeometry#subgrid(Envelope, double...)}.
+     *
+     * @throws TransformException if an error occurred during computation.
+     */
+    @Test
+    @DependsOnMethod({"testFromGeospatialEnvelope", "testGetExtent"})
+    public void testSubgrid() throws TransformException {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        envelope.setRange(0, -70, +80);
+        envelope.setRange(1,   5,  15);
+        final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
+            0,   0.5, -90,
+            0.5, 0,  -180,
+            0,   0,     1));
+        GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
+        assertExtentEquals(new long[] {370, 40}, new long[] {389, 339}, grid.getExtent());
+        assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
+        /*
+         * Set a sub-region. The grid extent and "grid to CRS" transform shall be adjusted
+         * in such a way that envelope computed from the new grid geometry is the same.
+         */
+        envelope.setRange(0, -50, +30);
+        envelope.setRange(1,   8,  12);
+        grid = grid.subgrid(envelope, 1, 2);
+        assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
+        assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
+        assertMatrixEquals("gridToCRS", new Matrix3(
+                  0, 1,  -90,
+                  2, 0, -180,
+                  0, 0,    1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
     }
 }
