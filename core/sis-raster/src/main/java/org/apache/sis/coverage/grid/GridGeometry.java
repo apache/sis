@@ -30,11 +30,9 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.util.FactoryException;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -43,7 +41,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.raster.Resources;
@@ -55,7 +52,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
@@ -601,42 +597,10 @@ public class GridGeometry implements Serializable {
         if (extent == null) {
             throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
-        MathTransform gridToAOI = cornerToCRS;
-        if (gridToAOI == null) {
-            throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
+        if (cornerToCRS == null) {
+            throw incomplete(GridGeometry.GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
         }
-        int[] modifiedDimensions = null;
-        try {
-            /*
-             * If the envelope CRS is different than the expected CRS, concatenate the envelope transformation
-             * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
-             * transforms - because transforming envelopes twice add errors.
-             */
-            final CoordinateOperation operation = Envelopes.findOperation(envelope, areaOfInterest);
-            if (operation != null) {
-                gridToAOI = MathTransforms.concatenate(gridToAOI, operation.getMathTransform());
-            }
-            /*
-             * If the envelope dimensions does not encompass all grid dimensions, the envelope is probably non-invertible.
-             * We need to reduce the number of grid dimensions in the transform for having a one-to-one relationship.
-             */
-            final int modifiedDimensionCount = gridToAOI.getTargetDimensions();
-            ArgumentChecks.ensureDimensionMatches("areaOfInterest", modifiedDimensionCount, areaOfInterest);
-            if (modifiedDimensionCount < gridToAOI.getSourceDimensions()) {
-                final TransformSeparator sep = new TransformSeparator(gridToAOI);
-                sep.setTrimSourceDimensions(true);
-                gridToAOI = sep.separate();
-                modifiedDimensions = sep.getSourceDimensions();
-                if (modifiedDimensions.length != modifiedDimensionCount) {
-                    throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions));
-                }
-            }
-        } catch (FactoryException e) {
-            throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
-        }
-        final GridExtent sub = new GridExtent(Envelopes.transform(gridToAOI.inverse(), areaOfInterest),
-                GridRoundingMode.NEAREST, null, extent, modifiedDimensions);
-        return sub.equals(extent) ? extent : sub;
+        return new SubgridCalculator(this, cornerToCRS, areaOfInterest, null).extent;
     }
 
     /**
@@ -940,69 +904,32 @@ public class GridGeometry implements Serializable {
     /**
      * Returns a grid geometry over a sub-region of this grid geometry and optionally with sub-sampling.
      * The given envelope can be expressed in any coordinate reference system (CRS) accepted by {@link #getExtent(Envelope)}.
-     * The target resolution, if provided, shall be in the units of CRS axes, in same order.
+     * The target resolution, if provided, shall be in same units than the given envelope with axes in the same order.
+     * If the length of {@code targetResolution} array is less than the number of dimensions of {@code areaOfInterest},
+     * then no sub-sampling will be applied on the missing dimensions.
      *
      * @param  areaOfInterest    the desired spatiotemporal region in any CRS (transformations will be applied as needed),
      *                           or {@code null} for not restricting the sub-grid to a sub-area.
-     * @param  targetResolution  the desired resolution in units of the CRS axes, or {@code null} or an empty array
-     *                           if no sub-sampling is desired.
-     * @return a grid geometry over the specified sub-region of this grid geometry.
+     * @param  targetResolution  the desired resolution in the same units and order than the axes of the given envelope,
+     *                           or {@code null} or an empty array if no sub-sampling is desired.
+     * @return a grid geometry over the specified sub-region of this grid geometry with the specified resolution.
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #getExtent(Envelope)
      */
     public GridGeometry subgrid(final Envelope areaOfInterest, double... targetResolution) throws TransformException {
-        GridExtent domain = extent;
-        if (areaOfInterest != null) {
-            domain = getExtent(areaOfInterest);
+        if (extent == null) {
+            throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
-        MathTransform mt = null;
-        if (targetResolution != null && targetResolution.length != 0) {
-            /*
-             * Before to compute the strides, make sure we have all required information.
-             * One intent of following calls to getExtent() and getGridToCRS(…) is to get
-             * IncompleteGridGeometryException thrown if an information is missing.
-             */
-            if (domain == null) domain = getExtent();
-            final MathTransform gridToCRS = getGridToCRS(PixelInCell.CELL_CENTER);
-            /*
-             * Convert the target resolutions to sub-samplings as number of grid cells.
-             * The sub-sampling will be scale factors for the new "grid to CRS" transforms.
-             */
-            final int dimension = getDimension();
-            targetResolution = ArraysExt.resize(targetResolution, dimension);
-            Matrix m = gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest()));
-            final double[] scales = Matrices.inverse(m).multiply(targetResolution);
-            /*
-             * Creates the matrix to pre-concatenate to "grid to CRS" transform. The (low /si) term in translation
-             * below must be computed in the same way than the "low" coordinates in GridExtent(GridExtent, int...)
-             * constructor.
-             */
-            m = Matrices.createIdentity(dimension + 1);
-            final int[] strides = new int[dimension];
-            Arrays.fill(strides, 1);
-            boolean isIdentity = true;
-            for (int i=0; i<dimension; i++) {
-                final double s = Math.floor(Math.abs(scales[i]));
-                if (s > 1) {                                                // Also for skipping NaN values.
-                    final int  si  = (int) s;
-                    final long low = domain.getLow(i);
-                    m.setElement(i, i, s);
-                    m.setElement(i, dimension, low - (low / si) * s);       // (low / si) must be consistent with GridExtent.
-                    strides[i] = si;
-                    isIdentity = false;
-                }
-            }
-            if (!isIdentity) {
-                mt = MathTransforms.linear(m);
-                domain = new GridExtent(domain, strides);
-            }
+        if (cornerToCRS == null) {
+            throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
         }
-        if (mt == null && Objects.equals(domain, extent)) {
-            return this;
+        final SubgridCalculator sub = new SubgridCalculator(this, cornerToCRS, areaOfInterest, targetResolution);
+        if (sub.toSubsampled != null || sub.extent != extent) {
+            return new GridGeometry(this, sub.extent, sub.toSubsampled);
         }
-        return new GridGeometry(this, domain, mt);
+        return this;
     }
 
     /**

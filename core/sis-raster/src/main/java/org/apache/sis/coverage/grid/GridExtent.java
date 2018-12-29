@@ -213,8 +213,7 @@ public class GridExtent implements Serializable {
     /**
      * Creates a new grid extent with low and high values adjusted by dividing the {@linkplain #getSize(int) size}
      * by the given strides. The policy of dividing the lower coordinates by the stride shall be kept consistent
-     * with {@link GridGeometry#subgrid(Envelope, double...)} and {@link GridChange#getTargetGeometry(int...)}
-     * computation of grid to CRS.
+     * with {@link GridChange#getTargetGeometry(int...)} computation of grid to CRS.
      *
      * <div class="note"><b>Note:</b>
      * if a division does not produce an integer, then the size is rounded toward 0 (or toward negative infinity since

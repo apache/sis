@@ -344,7 +344,7 @@ public class GridChange implements Serializable {
         double[] factors = null;
         Matrix toGiven = null;
         if (strides != null) {
-            // Validity of the strides values will be verified by GridExtent constructor below.
+            // Validity of the strides values will be verified by GridExtent constructor invoked below.
             final GridExtent unscaled = extent;
             final int dimension = extent.getDimension();
             for (int i = Math.min(dimension, strides.length); --i >= 0;) {

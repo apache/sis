@@ -25,6 +25,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -347,5 +348,24 @@ public final strictfp class GridGeometryTest extends TestCase {
                   0, 1,  -90,
                   2, 0, -180,
                   0, 0,    1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+        /*
+         * A sub-region again but with a requested resolution which is not a divisor of the actual resolution.
+         * It will force GridGeometry to adjust the translation term to compensate. We verify that the adustment
+         * is correct by verifying that we still get the same envelope.
+         */
+        grid = grid.subgrid(envelope, 3, 2);
+        assertExtentEquals(new long[] {94, 13}, new long[] {95, 39}, grid.getExtent());
+        assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
+        MathTransform cornerToCRS = grid.getGridToCRS(PixelInCell.CELL_CORNER);
+        assertMatrixEquals("gridToCRS", new Matrix3(
+                  0, 3,  -89,
+                  2, 0, -180,
+                  0, 0,    1), MathTransforms.getMatrix(cornerToCRS), STRICT);
+
+        DirectPosition2D src = new DirectPosition2D();
+        DirectPosition2D tgt = new DirectPosition2D();
+        DirectPosition2D exp = new DirectPosition2D();
+        src.x = 94; src.y = 13; exp.x = -50; exp.y =  8; assertEquals("Lower corner", exp, cornerToCRS.transform(src, tgt));
+        src.x = 96; src.y = 40; exp.x = +31; exp.y = 12; assertEquals("Upper corner", exp, cornerToCRS.transform(src, tgt));
     }
 }
