@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Locale;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
@@ -33,6 +31,10 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+
+// Branch-specific imports
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**

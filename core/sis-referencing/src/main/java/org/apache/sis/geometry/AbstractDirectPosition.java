@@ -255,7 +255,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @param  isSinglePrecision  {@code true} if every ordinate values can be casted to {@code float}.
      * @return the point as a {@code POINT} in WKT format.
      *
-     * @see Numerics#isSinglePrecision(double[])
+     * @see ArraysExt#isSinglePrecision(double[])
      */
     static String toString(final DirectPosition position, final boolean isSinglePrecision) {
         final StringBuilder buffer = new StringBuilder(32).append("POINT");
