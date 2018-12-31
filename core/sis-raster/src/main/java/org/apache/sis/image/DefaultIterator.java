@@ -178,7 +178,7 @@ final class DefaultIterator extends WritablePixelIterator {
     @Override
     public void moveTo(final int px, final int py) {
         if (px < lowerX || px >= upperX ||  py < lowerY || py >= upperY) {
-            throw new IndexOutOfBoundsException(Resources.format(Resources.Keys.CoordinateOutsideDomain_2, px, py));
+            throw new IndexOutOfBoundsException(Resources.format(Resources.Keys.OutOfIteratorDomain_2, px, py));
         }
         if (image != null) {
             final int tx = Math.floorDiv(px - tileGridXOffset, tileWidth);

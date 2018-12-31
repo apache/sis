@@ -49,6 +49,13 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  */
 public final class ColorModelFactory {
     /**
+     * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
+     * This is a possible argument for {@link #createColorModel(List, int, int, Function)}.
+     */
+    public static final Function<Category,Color[]> GRAYSCALE =
+            (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
+
+    /**
      * Shared instances of {@link ColorModel}s. Maintaining shared instance is not that much interesting
      * for most kind of color models, except {@link IndexColorModel} which can potentially be quite big.
      * This class works for all color models because they were no technical reasons to restrict, but the
@@ -277,8 +284,10 @@ public final class ColorModelFactory {
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
     public static ColorModel createColorModel(final List<? extends SampleDimension> bands,
-            final int visibleBand, final int type, final Function<Category,Color[]> colors)
+            final int visibleBand, final int type, Function<Category,Color[]> colors)
     {
+        ArgumentChecks.ensureNonNull("bands",  bands);
+        ArgumentChecks.ensureNonNull("colors", colors);
         final Map<NumberRange<?>, Color[]> ranges = new LinkedHashMap<>();
         for (final Category category : bands.get(visibleBand).getCategories()) {
             ranges.put(category.getSampleRange(), colors.apply(category));
@@ -426,9 +435,12 @@ public final class ColorModelFactory {
             int combined = 0;
             final int[] ARGB = new int[colors.length];
             for (int i=0; i<ARGB.length; i++) {
-                int color = colors[i].getRGB();                     // Note: getRGB() is really getARGB().
-                combined |= color;
-                ARGB[i]   = color;
+                final Color color = colors[i];
+                if (color != null) {
+                    int c = color.getRGB();                         // Note: getRGB() is really getARGB().
+                    combined |= c;
+                    ARGB[i]   = c;
+                }
             }
             if ((combined & 0xFF000000) != 0) {
                 return ARGB;

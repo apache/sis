@@ -344,14 +344,14 @@ public class GridChange implements Serializable {
         double[] factors = null;
         Matrix toGiven = null;
         if (strides != null) {
-            // Validity of the strides values will be verified by GridExtent constructor invoked below.
+            // Validity of the strides values will be verified by GridExtent.subsampling(…) invoked below.
             final GridExtent unscaled = extent;
             final int dimension = extent.getDimension();
             for (int i = Math.min(dimension, strides.length); --i >= 0;) {
                 final int s = strides[i];
                 if (s != 1) {
                     if (factors == null) {
-                        extent = new GridExtent(extent, strides);
+                        extent = extent.subsample(strides);
                         factors = new double[dimension];
                         Arrays.fill(factors, 1);
                         if (!extent.startsWithZero()) {
@@ -361,22 +361,44 @@ public class GridChange implements Serializable {
                     final double sd = s;
                     factors[i] = sd;
                     if (toGiven != null) {
-                        final long low = unscaled.getLow(i);
                         toGiven.setElement(i, i, sd);
-                        toGiven.setElement(i, dimension, low - (low / s) * sd);     // (low / s) must be consistent with GridExtent.
+                        toGiven.setElement(i, dimension, unscaled.getLow(i) - extent.getLow(i) * sd);
                     }
                 }
             }
         }
         final MathTransform mt;
         if (factors == null) {
-            if (extent.equals(givenGeometry.extent)) {
+            if (extent == givenGeometry.extent) {
                 return givenGeometry;
             }
             mt = null;
         } else {
             mt = (toGiven != null) ? MathTransforms.linear(toGiven) : MathTransforms.scale(factors);
         }
+        /*
+         * Assuming:
+         *
+         *   • All low coordinates = 0
+         *   • h₁ the high coordinate before sub-sampling
+         *   • h₂ the high coordinates after sub-sampling
+         *   • c  a conversion factor from grid indices to "real world" coordinates
+         *   • s  a sub-sampling ≧ 1
+         *
+         * Then the envelope upper bounds x is:
+         *
+         *   • x = (h₁ + 1) × c
+         *   • x = (h₂ + f) × c⋅s      which implies       h₂ = h₁/s      and       f = 1/s
+         *
+         * If we modify the later equation for integer division instead than real numbers, we have:
+         *
+         *   • x = (h₂ + f) × c⋅s      where        h₂ = floor(h₁/s)      and       f = ((h₁ mod s) + 1)/s
+         *
+         * Because s ≧ 1, then f ≦ 1. But the f value actually used by GridExtent.toCRS(…) is hard-coded to 1
+         * since it assumes that all cells are whole, i.e. it does not take in account that the last cell may
+         * actually be fraction of a cell. Since 1 ≧ f, the computed envelope may be larger. This explains the
+         * need for envelope clipping performed by GridGeometry constructor.
+         */
         return new GridGeometry(givenGeometry, extent, mt);
     }
 

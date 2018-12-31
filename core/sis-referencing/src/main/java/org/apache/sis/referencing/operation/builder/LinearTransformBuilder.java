@@ -311,8 +311,9 @@ search: for (int j=numPoints; --j >= 0;) {
      * that positions are stored in this builder as they are read from user-provided collection,
      * with {@link #numPoints} the index of the next point that we failed to add.
      */
-    private String mismatchedDimension(final String name, final int expected, final int actual) {
-        return Errors.format(Errors.Keys.MismatchedDimension_3, name + '[' + numPoints + ']', expected, actual);
+    private MismatchedDimensionException mismatchedDimension(final String name, final int expected, final int actual) {
+        return new MismatchedDimensionException(Errors.format(
+                Errors.Keys.MismatchedDimension_3, name + '[' + numPoints + ']', expected, actual));
     }
 
     /**
@@ -484,12 +485,12 @@ search: for (int j=numPoints; --j >= 0;) {
             if (targets == null) {
                 tgtDim = tgt.getDimension();
                 if (tgtDim <= 0) {
-                    throw new MismatchedDimensionException(mismatchedDimension("target", 2, tgtDim));
+                    throw mismatchedDimension("target", 2, tgtDim);
                 }
                 if (gridSize == null) {
                     srcDim = src.getDimension();
                     if (srcDim <= 0) {
-                        throw new MismatchedDimensionException(mismatchedDimension("source", 2, srcDim));
+                        throw mismatchedDimension("source", 2, srcDim);
                     }
                     final int capacity = sourceToTarget.size();
                     sources = new double[srcDim][capacity];
@@ -505,8 +506,8 @@ search: for (int j=numPoints; --j >= 0;) {
              * we compute its index in the fixed-size target arrays.
              */
             int d;
-            if ((d = src.getDimension()) != srcDim) throw new MismatchedDimensionException(mismatchedDimension("source", srcDim, d));
-            if ((d = tgt.getDimension()) != tgtDim) throw new MismatchedDimensionException(mismatchedDimension("target", tgtDim, d));
+            if ((d = src.getDimension()) != srcDim) throw mismatchedDimension("source", srcDim, d);
+            if ((d = tgt.getDimension()) != tgtDim) throw mismatchedDimension("target", tgtDim, d);
             boolean isValid = true;
             int index;
             if (gridSize != null) {

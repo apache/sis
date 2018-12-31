@@ -223,10 +223,7 @@ public class GridGeometry implements Serializable {
      *
      * The new {@linkplain #getEnvelope() grid geometry envelope} will be {@linkplain GeneralEnvelope#intersect(Envelope)
      * clipped} to the envelope of the other grid geometry. This is for preventing the envelope to become larger under the
-     * effect of sub-sampling (because each cell become larger).
-     *
-     * <p>This constructor is for subclasses that wish to specialize their {@link #subgrid(Envelope, double...)} or related
-     * methods. Users should invoke {@code GridGeometry} member methods or use {@link GridChange} instead.</p>
+     * effect of sub-sampling (because {@linkplain GridExtent#subsample(int...) each cell become larger}).
      *
      * @param  other    the other grid geometry to copy.
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
@@ -237,13 +234,11 @@ public class GridGeometry implements Serializable {
      * @see #getExtent(Envelope)
      * @see #subgrid(Envelope, double...)
      */
-    protected GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
+    GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
         ArgumentChecks.ensureNonNull("other", other);
         final int dimension = other.getDimension();
         this.extent = extent;
-        if (extent != null) {
-            ensureDimensionMatches("extent", dimension, extent.getDimension());
-        }
+        ensureDimensionMatches(dimension, extent);
         if (toOther == null || toOther.isIdentity()) {
             gridToCRS   = other.gridToCRS;
             cornerToCRS = other.cornerToCRS;
@@ -311,12 +306,8 @@ public class GridGeometry implements Serializable {
             final CoordinateReferenceSystem crs) throws TransformException
     {
         if (gridToCRS != null) {
-            if (extent != null) {
-                ensureDimensionMatches("extent", gridToCRS.getSourceDimensions(), extent.getDimension());
-            }
-            if (crs != null) {
-                ensureDimensionMatches("crs", gridToCRS.getTargetDimensions(), crs.getCoordinateSystem().getDimension());
-            }
+            ensureDimensionMatches(gridToCRS.getSourceDimensions(), extent);
+            ArgumentChecks.ensureDimensionMatches("crs", gridToCRS.getTargetDimensions(), crs);
         } else if (crs == null) {
             ArgumentChecks.ensureNonNull("extent", extent);
         }
@@ -398,8 +389,8 @@ public class GridGeometry implements Serializable {
     {
         if (gridToCRS == null) {
             ArgumentChecks.ensureNonNull("envelope", envelope);
-        } else if (envelope != null) {
-            ensureDimensionMatches("envelope", gridToCRS.getTargetDimensions(), envelope.getDimension());
+        } else {
+            ArgumentChecks.ensureDimensionMatches("envelope", gridToCRS.getTargetDimensions(), envelope);
         }
         ArgumentChecks.ensureNonNull("rounding", rounding);
         this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
@@ -429,17 +420,20 @@ public class GridGeometry implements Serializable {
 
     /**
      * Ensures that the given dimension is equals to the expected value. If not, throws an exception.
+     * This method assumes that the argument name is {@code "extent"}.
      *
-     * @param argument  the name of the argument being tested.
+     * @param extent    the extent to validate, or {@code null} if none.
      * @param expected  the expected number of dimension.
-     * @param dimension the actual dimension of the argument value.
      */
-    private static void ensureDimensionMatches(final String argument, final int expected, final int dimension)
+    private static void ensureDimensionMatches(final int expected, final GridExtent extent)
             throws MismatchedDimensionException
     {
-        if (dimension != expected) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
+        if (extent != null) {
+            final int dimension = extent.getDimension();
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, "extent", expected, dimension));
+            }
         }
     }
 
@@ -575,7 +569,9 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns the coordinate range of the grid intersecting the given spatiotemporal region.
-     * The given envelope can be expressed in any coordinate reference system (CRS).
+     * The given envelope does not need to be expressed in the same coordinate reference system
+     * (CRS) than {@linkplain #getCoordinateReferenceSystem() the one of this grid geometry};
+     * coordinate conversions or transformations will be applied as needed.
      * That envelope CRS may have fewer dimensions than this grid geometry CRS,
      * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
      * In other words, the {@code GridGeometry} dimensions not found in the given {@code areaOfInterest}
@@ -590,7 +586,6 @@ public class GridGeometry implements Serializable {
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #subgrid(Envelope, double...)
-     * @see #GridGeometry(GridGeometry, GridExtent, MathTransform)
      */
     public GridExtent getExtent(final Envelope areaOfInterest) throws IncompleteGridGeometryException, TransformException {
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
@@ -903,7 +898,9 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns a grid geometry over a sub-region of this grid geometry and optionally with sub-sampling.
-     * The given envelope can be expressed in any coordinate reference system (CRS) accepted by {@link #getExtent(Envelope)}.
+     * The given envelope does not need to be expressed in the same coordinate reference system
+     * (CRS) than {@linkplain #getCoordinateReferenceSystem() the one of this grid geometry};
+     * coordinate conversions or transformations will be applied as needed.
      * The target resolution, if provided, shall be in same units than the given envelope with axes in the same order.
      * If the length of {@code targetResolution} array is less than the number of dimensions of {@code areaOfInterest},
      * then no sub-sampling will be applied on the missing dimensions.
@@ -917,6 +914,7 @@ public class GridGeometry implements Serializable {
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #getExtent(Envelope)
+     * @see GridExtent#subsample(int...)
      */
     public GridGeometry subgrid(final Envelope areaOfInterest, double... targetResolution) throws TransformException {
         if (extent == null) {

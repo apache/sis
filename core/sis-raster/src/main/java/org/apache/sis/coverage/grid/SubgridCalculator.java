@@ -17,20 +17,26 @@
 package org.apache.sis.coverage.grid;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+
+// Branch-dependent imports
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -56,6 +62,48 @@ final class SubgridCalculator {
     MathTransform toSubsampled;
 
     /**
+     * List of grid dimensions that are modified by the {@code cornerToCRS} transform, or null for all dimensions.
+     * The length of this array is the number of dimensions of the given Area Of Interest (AOI). Each value in this
+     * array is between 0 inclusive and {@code extent.getDimension()} exclusive.
+     */
+    private int[] modifiedDimensions;
+
+    /**
+     * Computes the sub-grid for a slice at the given slice point. The given position can be given in any CRS.
+     * The position should not define a coordinate for all dimensions, otherwise the sub-grid would degenerate
+     * to a single point. Dimensions can be left unspecified either by assigning to the position a CRS without
+     * those dimensions, or by assigning the NaN value to some coordinates.
+     *
+     * @param  grid         the enclosing grid geometry (mandatory).
+     * @param  cornerToCRS  the transform from cell corners to grid CRS (mandatory).
+     * @param  slicePoint   the coordinates where to get a slice.
+     * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
+     * @throws PointOutsideCoverageException if the given point is outside the grid extent.
+     */
+    SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final DirectPosition slicePoint)
+            throws TransformException
+    {
+        try {
+            if (grid.envelope != null) {
+                final CoordinateReferenceSystem sourceCRS = grid.envelope.getCoordinateReferenceSystem();
+                if (sourceCRS != null) {
+                    final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
+                    if (targetCRS != null) {
+                        final CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
+                        cornerToCRS = MathTransforms.concatenate(cornerToCRS, operation.getMathTransform());
+                    }
+                }
+            }
+            final int dimension = cornerToCRS.getTargetDimensions();
+            ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
+            cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
+        } catch (FactoryException e) {
+            throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
+        }
+        extent = grid.extent.slice(cornerToCRS.transform(slicePoint, null), modifiedDimensions);
+    }
+
+    /**
      * Computes the sub-grid over the given area of interest with the given resolution.
      * At least one of {@code areaOfInterest} and {@code resolution} shall be non-null.
      * It is caller's responsibility to ensure that {@link GridGeometry#extent} is non-null.
@@ -70,12 +118,6 @@ final class SubgridCalculator {
     SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest, double[] resolution)
             throws TransformException
     {
-        /*
-         * List of grid dimensions that are modified by the 'cornerToCRS' transform, or null for all dimensions.
-         * The length of this array is the number of dimensions of the given Area Of Interest (AOI). Each value
-         * in this array is between 0 inclusive and 'extent.getDimension()' exclusive.
-         */
-        int[] modifiedDimensions = null;
         try {
             /*
              * If the envelope CRS is different than the expected CRS, concatenate the envelope transformation
@@ -92,15 +134,7 @@ final class SubgridCalculator {
              */
             final int dimension = cornerToCRS.getTargetDimensions();
             ArgumentChecks.ensureDimensionMatches("areaOfInterest", dimension, areaOfInterest);
-            if (dimension < cornerToCRS.getSourceDimensions()) {
-                final TransformSeparator sep = new TransformSeparator(cornerToCRS);
-                sep.setTrimSourceDimensions(true);
-                cornerToCRS = sep.separate();
-                modifiedDimensions = sep.getSourceDimensions();
-                if (modifiedDimensions.length != dimension) {
-                    throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions));
-                }
-            }
+            cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
         } catch (FactoryException e) {
             throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
         }
@@ -114,7 +148,7 @@ final class SubgridCalculator {
         GeneralEnvelope indices = null;
         if (areaOfInterest != null) {
             indices = Envelopes.transform(cornerToCRS.inverse(), areaOfInterest);
-            setExtent(indices, extent, modifiedDimensions);
+            setExtent(indices, extent);
         }
         if (indices == null || indices.getDimension() != dimension) {
             indices = new GeneralEnvelope(dimension);
@@ -139,6 +173,7 @@ final class SubgridCalculator {
          */
         if (resolution != null && resolution.length != 0) {
             resolution = ArraysExt.resize(resolution, cornerToCRS.getTargetDimensions());
+            final int[] modifiedDimensions = this.modifiedDimensions;                     // Will not change anymore.
             Matrix m = cornerToCRS.derivative(new DirectPositionView.Double(getPointOfInterest(modifiedDimensions)));
             resolution = Matrices.inverse(m).multiply(resolution);
             boolean modified = false;
@@ -160,7 +195,7 @@ final class SubgridCalculator {
              */
             if (modified) {
                 final GridExtent unscaled = extent;
-                setExtent(indices, null, null);
+                setExtent(indices, null);
                 m = Matrices.createIdentity(dimension + 1);
                 for (int k=0; k<resolution.length; k++) {
                     final double s = resolution[k];
@@ -176,13 +211,35 @@ final class SubgridCalculator {
     }
 
     /**
+     * Drops the source dimensions that are not needed for producing the target dimensions.
+     * The retained source dimensions are stored in {@link #modifiedDimensions}.
+     * This method is invoked in an effort to make the transform invertible.
+     *
+     * @param  cornerToCRS  transform from grid coordinates to AOI coordinates.
+     * @param  dimension    value of {@code cornerToCRS.getTargetDimensions()}.
+     */
+    private MathTransform dropUnusedDimensions(MathTransform cornerToCRS, final int dimension)
+            throws FactoryException, TransformException
+    {
+        if (dimension < cornerToCRS.getSourceDimensions()) {
+            final TransformSeparator sep = new TransformSeparator(cornerToCRS);
+            sep.setTrimSourceDimensions(true);
+            cornerToCRS = sep.separate();
+            modifiedDimensions = sep.getSourceDimensions();
+            if (modifiedDimensions.length != dimension) {
+                throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions));
+            }
+        }
+        return cornerToCRS;
+    }
+
+    /**
      * Sets {@link #extent} to the given envelope, rounded to nearest integers.
      *
-     * @param  indices             the envelope to use for setting the grid extent.
-     * @param  enclosing           the enclosing grid extent if a sub-sampling is not yet applied, {@code null} otherwise.
-     * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
+     * @param  indices    the envelope to use for setting the grid extent.
+     * @param  enclosing  the enclosing grid extent if a sub-sampling is not yet applied, {@code null} otherwise.
      */
-    private void setExtent(final GeneralEnvelope indices, final GridExtent enclosing, final int[] modifiedDimensions) {
+    private void setExtent(final GeneralEnvelope indices, final GridExtent enclosing) {
         final GridExtent sub = new GridExtent(indices, GridRoundingMode.NEAREST, null, enclosing, modifiedDimensions);
         if (!sub.equals(extent)) {
             extent = sub;

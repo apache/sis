@@ -33,6 +33,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.AuthorityFactory;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -434,7 +435,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     static IllegalArgumentException unexpectedDimension(final Map<String,?> properties,
             final CoordinateSystemAxis[] axes, final int expected)
     {
-        return new IllegalArgumentException(Errors.getResources(properties).getString(
+        return new MismatchedDimensionException(Errors.getResources(properties).getString(
                 Errors.Keys.MismatchedDimension_3, "filter(cs)", expected, axes.length));
     }
 

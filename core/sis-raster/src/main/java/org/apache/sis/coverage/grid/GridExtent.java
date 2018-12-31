@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -49,6 +50,7 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -146,14 +148,14 @@ public class GridExtent implements Serializable {
      * @throws IllegalArgumentException if a coordinate value in the low part is
      *         greater than the corresponding coordinate value in the high part.
      */
-    private static void checkCoherence(final long[] coordinates) throws IllegalArgumentException {
+    private void validateCoordinates() throws IllegalArgumentException {
         final int dimension = coordinates.length >>> 1;
         for (int i=0; i<dimension; i++) {
             final long lower = coordinates[i];
             final long upper = coordinates[i + dimension];
             if (lower > upper) {
                 throw new IllegalArgumentException(Resources.format(
-                        Resources.Keys.IllegalGridEnvelope_3, i, lower, upper));
+                        Resources.Keys.IllegalGridEnvelope_3, getAxisIdentification(i,i), lower, upper));
             }
         }
     }
@@ -204,67 +206,12 @@ public class GridExtent implements Serializable {
      *
      * @param dimension  number of dimensions.
      * @param axisTypes  the axis types, or {@code null} if unspecified.
+     *
+     * @see #GridExtent(GridExtent)
      */
     private GridExtent(final int dimension, final DimensionNameType[] axisTypes) {
         coordinates = allocate(dimension);
         types = validateAxisTypes(axisTypes);
-    }
-
-    /**
-     * Creates a new grid extent with low and high values adjusted by dividing the {@linkplain #getSize(int) size}
-     * by the given strides. The policy of dividing the lower coordinates by the stride shall be kept consistent
-     * with {@link GridChange#getTargetGeometry(int...)} computation of grid to CRS.
-     *
-     * <div class="note"><b>Note:</b>
-     * if a division does not produce an integer, then the size is rounded toward 0 (or toward negative infinity since
-     * sizes are always positive numbers). But the envelope computed by {@link GridChange#getTargetGeometry(int...)}
-     * will nevertheless be larger. This counter-intuitive effect is because the "grid to CRS" transform is scaled by
-     * the same factors, which results in larger cells. Assuming:
-     *
-     * <ul>
-     *   <li>All {@linkplain #getLow(int) low coordinates} = 0.</li>
-     *   <li>{@linkplain #getHigh(int) High coordinates} before scaling denoted <var>h₁</var>.</li>
-     *   <li>High coordinates after scaling denoted <var>h₂</var>.</li>
-     *   <li>Scale factor (or sub-sampling) <var>s</var> is an integer ≧ 1.</li>
-     * </ul>
-     *
-     * Then the envelope upper bounds <var>x</var> is:
-     *
-     * <ul>
-     *   <li>x = (h₁ + 1) × c</li>
-     *   <li>x = (h₂ + f) × c⋅s   which implies   h₂ = h₁/s   and   f = 1/s</li>
-     * </ul>
-     *
-     * If we modify the later equation for integer division instead than real numbers, we have:
-     *
-     * <blockquote>x = (h₂ + f) × c⋅s   where   h₂ = floor(h₁/s)   and   f = ((h₁ mod s) + 1)/s</blockquote>
-     *
-     * Because <var>s</var> ≧ 1, then <var>f</var> ≦ 1. But the <var>f</var> actually used by {@link #toCRS(MathTransform,
-     * MathTransform)} is hard-coded to 1 since it assumes that all cells are whole, i.e. it does not take in account that
-     * the last cell may actually be fraction of a cell. Since 1 ≧ <var>f</var>, the computed envelope may be larger.</div>
-     *
-     * @param  extent   the extent from which to compute a new extent.
-     * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
-     * @throws IllegalArgumentException if a stride is not greater than zero.
-     */
-    GridExtent(final GridExtent extent, final int[] strides) {
-        types = extent.types;
-        final int m = extent.getDimension();
-        coordinates = new long[m << 1];
-        for (int i=0; i<m; i++) {
-            final int s = strides[i];
-            if (s <= 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "strides[" + i + ']', s));
-            }
-            final int j = i + m;
-            long low  = extent.coordinates[i];
-            long size = extent.coordinates[j] - low + 1;                                       // Result is an unsigned number.
-            if (size == 0) throw new ArithmeticException("long overflow");
-            long r = Long.divideUnsigned(size, s);
-            if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
-            coordinates[i] = low /= s;
-            coordinates[j] = low + r;
-        }
     }
 
     /**
@@ -313,6 +260,7 @@ public class GridExtent implements Serializable {
      *
      * @see #getLow()
      * @see #getHigh()
+     * @see #append(DimensionNameType, long, long, boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
         ArgumentChecks.ensureNonNull("high", high);
@@ -333,8 +281,8 @@ public class GridExtent implements Serializable {
                 coordinates[i] = Math.decrementExact(coordinates[i]);
             }
         }
-        checkCoherence(coordinates);
         types = validateAxisTypes(axisTypes);
+        validateCoordinates();
     }
 
     /**
@@ -352,8 +300,10 @@ public class GridExtent implements Serializable {
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
+     *                             This argument is ignored if {@code enclosing} is null.
      *
      * @see #toCRS(MathTransform, MathTransform)
+     * @see #slice(DirectPosition, int[])
      */
     GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final int[] margin,
             final GridExtent enclosing, final int[] modifiedDimensions)
@@ -434,7 +384,7 @@ public class GridExtent implements Serializable {
                 }
             } else if (enclosing == null || !Double.isNaN(min) || !Double.isNaN(max)) {
                 throw new IllegalArgumentException(Resources.format(
-                        Resources.Keys.IllegalGridEnvelope_3, i, min, max));
+                        Resources.Keys.IllegalGridEnvelope_3, getAxisIdentification(i,i), min, max));
             }
             /*
              * We do not throw an exception if 'enclosing' is non-null and envelope bounds are NaN
@@ -472,6 +422,19 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Creates a copy of the given grid extent. The {@link #coordinates} array is cloned
+     * by the {@link #types} array is shared between the two instances. This constructor
+     * is reserved to methods that modify the coordinates after construction. It must be
+     * private since we do not allow coordinates modifications by public API.
+     *
+     * @see #GridExtent(int, DimensionNameType[])
+     */
+    private GridExtent(final GridExtent extent) {
+        types = extent.types;
+        coordinates = extent.coordinates.clone();
+    }
+
+    /**
      * Creates a new grid envelope as a copy of the given one.
      *
      * @param  extent  the grid envelope to copy.
@@ -488,8 +451,8 @@ public class GridExtent implements Serializable {
             coordinates[i] = extent.getLow(i);
             coordinates[i + dimension] = extent.getHigh(i);
         }
-        checkCoherence(coordinates);
         types = (extent instanceof GridExtent) ? ((GridExtent) extent).types : null;
+        validateCoordinates();
     }
 
     /**
@@ -655,6 +618,23 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Returns the axis number followed by the localized axis type if available.
+     * This is used for error messages only.
+     *
+     * @param  index       index of the dimension as stored in this grid extent.
+     * @param  indexShown  index to write in the message. Often the same as {@code index}.
+     */
+    private Object getAxisIdentification(final int index, final int indexShown) {
+        if (types != null) {
+            final DimensionNameType type = types[index];
+            if (type != null) {
+                return indexShown + " (" + Types.getCodeTitle(type) + ')';
+            }
+        }
+        return indexShown;
+    }
+
+    /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
      * The transform shall map <em>cell corner</em> to real world coordinates.
      *
@@ -765,7 +745,7 @@ public class GridExtent implements Serializable {
         System.arraycopy(coordinates, dimension, ex.coordinates, newDim, dimension);
         ex.coordinates[dimension]          = low;
         ex.coordinates[dimension + newDim] = high;
-        checkCoherence(ex.coordinates);
+        ex.validateCoordinates();
         return ex;
     }
 
@@ -795,6 +775,91 @@ public class GridExtent implements Serializable {
         System.arraycopy(coordinates, lower,           sub.coordinates, 0,      newDim);
         System.arraycopy(coordinates, lower+dimension, sub.coordinates, newDim, newDim);
         return sub;
+    }
+
+    /**
+     * Creates a new grid extent sub-sampled by the given amount of cells along each grid dimensions.
+     * This method divides {@linkplain #getLow(int) low coordinates} and {@linkplain #getSize(int) grid sizes}
+     * by the given strides, rounding toward zero. The {@linkplain #getHigh(int) high coordinates} are adjusted
+     * accordingly (this is often equivalent to dividing high coordinates by the strides too, but a difference
+     * of one cell may exist).
+     *
+     * <div class="note"><b>Note:</b>
+     * The envelope computed from a grid extent may become <em>larger</em> after sub-sampling, not smaller.
+     * This effect can be understood intuitively if we consider that cells become larger after sub-sampling,
+     * which implies that accurate representation of the same envelope may require fractional cells on some
+     * grid borders.</div>
+     *
+     * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @return the sub-sampled extent, or {@code this} is sub-sampling results in the same extent.
+     * @throws IllegalArgumentException if a stride is not greater than zero.
+     *
+     * @see GridGeometry#subgrid(Envelope, double...)
+     */
+    public GridExtent subsample(final int... strides) {
+        ArgumentChecks.ensureNonNull("strides", strides);
+        final int m = getDimension();
+        ArgumentChecks.ensureDimensionMatches("strides", m, strides);
+        final GridExtent sub = new GridExtent(this);
+        for (int i=0; i<m; i++) {
+            final int s = strides[i];
+            if (s > 1) {
+                final int j = i + m;
+                long low  = coordinates[i];
+                long size = coordinates[j] - low + 1;                                             // Result is an unsigned number.
+                if (size == 0) throw new ArithmeticException("long overflow");
+                long r = Long.divideUnsigned(size, s);
+                if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
+                sub.coordinates[i] = low /= s;
+                sub.coordinates[j] = low + r;
+            } else if (s <= 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "strides[" + i + ']', s));
+            }
+        }
+        return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
+    }
+
+    /**
+     * Creates a new grid extent which represent a slice of this grid at the given point.
+     * The given point may have less dimensions than this grid extent, in which case the
+     * dimensions must be specified in the {@code modifiedDimensions} array. Coordinates
+     * of the given point will be rounded to nearest integer.
+     *
+     * @param  slicePoint           where to take a slice. NaN values are handled as if their dimensions were absent.
+     * @param  modifiedDimensions   mapping from {@code slicePoint} dimensions to this {@code GridExtent} dimensions,
+     *                              or {@code null} if {@code slicePoint} contains all grid dimensions in same order.
+     * @return a grid extent for the specified slice.
+     * @throws PointOutsideCoverageException if the given point is outside the grid extent.
+     */
+    final GridExtent slice(final DirectPosition slicePoint, final int[] modifiedDimensions) {
+        final GridExtent slice = new GridExtent(this);
+        final int n = slicePoint.getDimension();
+        final int m = getDimension();
+        for (int k=0; k<n; k++) {
+            double p = slicePoint.getOrdinate(k);
+            if (!Double.isNaN(p)) {
+                final long c = Math.round(p);
+                final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
+                final long low  = coordinates[i];
+                final long high = coordinates[i + m];
+                if (c >= low && c <= high) {
+                    slice.coordinates[i + m] = slice.coordinates[i] = c;
+                } else {
+                    final StringBuilder b = new StringBuilder();
+                    String separator = "";
+                    for (int j=0; j<n; j++) {
+                        p = slicePoint.getOrdinate(j);
+                        if (!Double.isNaN(p)) {
+                            b.append(separator).append(Math.round(p));
+                            separator = ", ";
+                        }
+                    }
+                    throw new PointOutsideCoverageException(Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
+                            getAxisIdentification(i,k), low, high, b.toString()));
+                }
+            }
+        }
+        return Arrays.equals(coordinates, slice.coordinates) ? this : slice;
     }
 
     /**

@@ -167,9 +167,9 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             if (i != 0) {
                 final Category previous = categories[i-1];
                 if (Category.compare(category.minimum, previous.maximum) <= 0) {
-                    throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4, new Object[] {
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4,
                                 previous.name, previous.getRangeLabel(),
-                                category.name, category.getRangeLabel()}));
+                                category.name, category.getRangeLabel()));
                 }
             }
             final NumberRange<?> extent = category.range;

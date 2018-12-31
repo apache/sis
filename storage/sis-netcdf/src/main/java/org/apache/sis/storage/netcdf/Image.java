@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.netcdf;
 
-import java.awt.Color;
 import java.util.List;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
@@ -71,7 +70,7 @@ final class Image extends GridCoverage {
         final int height = Math.toIntExact(extent.getSize(1));
         final WritableRaster raster = RasterFactory.createBandedRaster(data, width, height, width, null, null, null);
         final ColorModel colors = ColorModelFactory.createColorModel(getSampleDimensions(), VISIBLE_BAND, data.getDataType(),
-                (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null);
+                ColorModelFactory.GRAYSCALE);
         return new BufferedImage(colors, raster, false, null);
     }
 }

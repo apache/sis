@@ -24,7 +24,6 @@ import java.io.ObjectInputStream;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -214,10 +213,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         ArgumentChecks.ensureNonNull("gridSize",         gridSize);
         ArgumentChecks.ensureNonNull("translationUnit",  translationUnit);
         int n = coordinateToGrid.getTargetDimensions();
-        if (n != gridSize.length) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "gridSize", n, gridSize.length));
-        }
+        ArgumentChecks.ensureDimensionMatches("gridSize", n, gridSize);
         this.coordinateUnit   = coordinateUnit;
         this.coordinateToGrid = coordinateToGrid;
         this.isCellValueRatio = isCellValueRatio;
