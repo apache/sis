@@ -846,13 +846,11 @@ public class GridExtent implements Serializable {
                     slice.coordinates[i + m] = slice.coordinates[i] = c;
                 } else {
                     final StringBuilder b = new StringBuilder();
-                    String separator = "";
                     for (int j=0; j<n; j++) {
+                        if (j != 0) b.append(", ");
                         p = slicePoint.getOrdinate(j);
-                        if (!Double.isNaN(p)) {
-                            b.append(separator).append(Math.round(p));
-                            separator = ", ";
-                        }
+                        if (Double.isNaN(p)) b.append("NaN");
+                        else b.append(Math.round(p));
                     }
                     throw new PointOutsideCoverageException(Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
                             getAxisIdentification(i,k), low, high, b.toString()));

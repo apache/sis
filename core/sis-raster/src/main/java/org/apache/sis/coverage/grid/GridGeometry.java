@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.awt.image.RenderedImage;            // For javadoc only.
 import org.opengis.metadata.Identifier;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -55,6 +56,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
+
+// Branch-dependent imports
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -223,7 +227,7 @@ public class GridGeometry implements Serializable {
      *
      * The new {@linkplain #getEnvelope() grid geometry envelope} will be {@linkplain GeneralEnvelope#intersect(Envelope)
      * clipped} to the envelope of the other grid geometry. This is for preventing the envelope to become larger under the
-     * effect of sub-sampling (because {@linkplain GridExtent#subsample(int...) each cell become larger}).
+     * effect of sub-sampling (because {@link GridExtent#subsample(int[]) each cell become larger}).
      *
      * @param  other    the other grid geometry to copy.
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
@@ -898,10 +902,12 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns a grid geometry over a sub-region of this grid geometry and optionally with sub-sampling.
-     * The given envelope does not need to be expressed in the same coordinate reference system
-     * (CRS) than {@linkplain #getCoordinateReferenceSystem() the one of this grid geometry};
+     * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
+     * than {@linkplain #getCoordinateReferenceSystem() the CRS of this grid geometry};
      * coordinate conversions or transformations will be applied as needed.
-     * The target resolution, if provided, shall be in same units than the given envelope with axes in the same order.
+     * That envelope CRS may have fewer dimensions than this grid geometry CRS,
+     * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
+     * The target resolution, if provided, shall be in same units and same order than the given envelope axes.
      * If the length of {@code targetResolution} array is less than the number of dimensions of {@code areaOfInterest},
      * then no sub-sampling will be applied on the missing dimensions.
      *
@@ -914,7 +920,7 @@ public class GridGeometry implements Serializable {
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #getExtent(Envelope)
-     * @see GridExtent#subsample(int...)
+     * @see GridExtent#subsample(int[])
      */
     public GridGeometry subgrid(final Envelope areaOfInterest, double... targetResolution) throws TransformException {
         if (extent == null) {
@@ -928,6 +934,35 @@ public class GridGeometry implements Serializable {
             return new GridGeometry(this, sub.extent, sub.toSubsampled);
         }
         return this;
+    }
+
+    /**
+     * Returns a grid geometry for a slice at the given point.
+     * The given position can be expressed in any coordinate reference system (CRS).
+     * The position should not define a coordinate for all dimensions, otherwise the sub-grid would degenerate
+     * to a single point. Dimensions can be left unspecified either by assigning to {@code slicePoint} a CRS
+     * without those dimensions, or by assigning the NaN value to some coordinates.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the {@linkplain #getCoordinateReferenceSystem() coordinate reference system} of this grid geometry has
+     * (<var>longitude</var>, <var>latitude</var>, <var>time</var>) axes, then a (<var>longitude</var>, <var>latitude</var>)
+     * slice at time <var>t</var> can be created with one of the following two positions:
+     * <ul>
+     *   <li>A three-dimensional position with ({@link Double#NaN}, {@link Double#NaN}, <var>t</var>) coordinates.</li>
+     *   <li>A one-dimensional position with (<var>t</var>) coordinate and the coordinate reference system set to
+     *       {@linkplain org.apache.sis.referencing.CRS#getTemporalComponent(CoordinateReferenceSystem) the temporal component}
+     *       of the grid geometry CRS.</li>
+     * </ul></div>
+     *
+     * @param  slicePoint   the coordinates where to get a slice.
+     * @return a slice of this grid geometry at the given slice point. May be {@code this}.
+     * @throws TransformException if an error occurred while converting the point coordinates to grid coordinates.
+     * @throws PointOutsideCoverageException if the given point is outside the grid extent.
+     */
+    public GridGeometry slice(final DirectPosition slicePoint) throws TransformException {
+        ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
+        final GridExtent slice = new SubgridCalculator(this, cornerToCRS, slicePoint).extent;
+        return (slice != extent) ? new GridGeometry(this, slice, null) : this;
     }
 
     /**

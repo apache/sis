@@ -100,7 +100,7 @@ final class SubgridCalculator {
         } catch (FactoryException e) {
             throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
         }
-        extent = grid.extent.slice(cornerToCRS.transform(slicePoint, null), modifiedDimensions);
+        extent = grid.extent.slice(cornerToCRS.inverse().transform(slicePoint, null), modifiedDimensions);
     }
 
     /**

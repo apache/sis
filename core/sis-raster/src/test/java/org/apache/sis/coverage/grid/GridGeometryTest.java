@@ -26,6 +26,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -367,5 +368,37 @@ public final strictfp class GridGeometryTest extends TestCase {
         DirectPosition2D exp = new DirectPosition2D();
         src.x = 94; src.y = 13; exp.x = -50; exp.y =  8; assertEquals("Lower corner", exp, cornerToCRS.transform(src, tgt));
         src.x = 96; src.y = 40; exp.x = +31; exp.y = 12; assertEquals("Upper corner", exp, cornerToCRS.transform(src, tgt));
+    }
+
+    /**
+     * Tests {@link GridGeometry#slice(DirectPosition)}.
+     *
+     * @throws TransformException if an error occurred during computation.
+     */
+    @Test
+    public void testSlice() throws TransformException {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
+                PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
+                        0,   0.5, 0,  -90,
+                        0.5, 0,   0, -180,
+                        0,   0,   2,    3,
+                        0,   0,   0,    1)), HardCodedCRS.WGS84_3D);
+        GridGeometry slice = grid.slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15));
+        assertNotSame(grid, slice);
+        assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
+        final long[] expectedLow  = {336, 20, 6};
+        final long[] expectedHigh = {401, 419, 6};
+        assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
+        /*
+         * Same test, but using a one-dimensional slice point instead than NaN values.
+         * Opportunistically use different units for testing conversions.
+         */
+        GeneralDirectPosition p = new GeneralDirectPosition(HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
+        p.setOrdinate(0, 1500);
+        slice = grid.slice(p);
+        assertNotSame(grid, slice);
+        assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
+        assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
     }
 }

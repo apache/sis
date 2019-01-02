@@ -17,9 +17,12 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Locale;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
@@ -130,6 +133,34 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 1, 200, 799);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
         assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#slice(DirectPosition, int[])}.
+     */
+    @Test
+    public void testSlice() {
+        final GeneralDirectPosition slicePoint = new GeneralDirectPosition(226.7, 47.2);
+        final GridExtent extent = create3D();
+        final GridExtent slice  = extent.slice(slicePoint, new int[] {1, 2});
+        assertEquals("dimension", 3, slice.getDimension());
+        assertExtentEquals(slice, 0, 100, 499);
+        assertExtentEquals(slice, 1, 227, 227);
+        assertExtentEquals(slice, 2,  47,  47);
+        /*
+         * Verify that point outside the GridExtent causes an exception to be thrown.
+         * The message is localized but the grid coordinates "(900, 47)" are currently
+         * unlocalized, so the check below should work in any locale (note that it may
+         * change in future SIS version).
+         */
+        slicePoint.setOrdinate(0, 900);
+        try {
+            extent.slice(slicePoint, new int[] {1, 2});
+            fail("Expected PointOutsideCoverageException");
+        } catch (PointOutsideCoverageException e) {
+            final String message = e.getLocalizedMessage();
+            assertTrue(message, message.contains("(900, 47)"));     // See above comment.
+        }
     }
 
     /**
