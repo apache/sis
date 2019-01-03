@@ -142,9 +142,11 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests the {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromOther() {
+    public void testFromOther() throws TransformException {
         long[]        low       = new long[] {  1,   3, 2};
         long[]        high      = new long[] {101, 203, 4};
         GridExtent    extent    = new GridExtent(null, low, high, false);

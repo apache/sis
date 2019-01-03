@@ -164,9 +164,11 @@ public class GridExtent implements Serializable {
     /**
      * Verifies that the given array (if non-null) contains no duplicated values, then returns a copy of that array.
      * The returned copy may be shared by many {@code GridExtent} instances. Consequently it shall not be modified.
+     *
+     * @throws IllegalArgumentException if the given array contains duplicated elements.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private static DimensionNameType[] validateAxisTypes(DimensionNameType[] types) {
+    private static DimensionNameType[] validateAxisTypes(DimensionNameType[] types) throws IllegalArgumentException {
         if (types == null) {
             return null;
         }

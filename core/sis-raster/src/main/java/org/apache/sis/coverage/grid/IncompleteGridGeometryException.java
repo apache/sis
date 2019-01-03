@@ -16,8 +16,6 @@
  */
 package org.apache.sis.coverage.grid;
 
-import org.apache.sis.internal.raster.Resources;
-
 
 /**
  * Thrown by {@link GridGeometry} when a grid geometry can not provide the requested information.
@@ -39,14 +37,6 @@ public class IncompleteGridGeometryException extends IllegalStateException {
      * Constructs an exception with no detail message.
      */
     public IncompleteGridGeometryException() {
-    }
-
-    /**
-     * Constructs an exception with a detail message from the specified error code.
-     * Should not be public because the SIS I18N framework is not a committed one.
-     */
-    IncompleteGridGeometryException(final short code) {
-        super(Resources.format(code));
     }
 
     /**

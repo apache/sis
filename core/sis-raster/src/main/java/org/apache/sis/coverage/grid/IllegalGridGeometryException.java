@@ -16,6 +16,8 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.apache.sis.internal.raster.Resources;
+
 
 /**
  * Thrown when the argument specified to a method or constructor would result in an invalid {@link GridGeometry}.
@@ -25,7 +27,7 @@ package org.apache.sis.coverage.grid;
  * @since   1.0
  * @module
  */
-public class InvalidGridGeometryException extends IllegalArgumentException {
+public class IllegalGridGeometryException extends IllegalArgumentException {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -34,7 +36,7 @@ public class InvalidGridGeometryException extends IllegalArgumentException {
     /**
      * Constructs an exception with no detail message.
      */
-    public InvalidGridGeometryException() {
+    public IllegalGridGeometryException() {
     }
 
     /**
@@ -42,17 +44,8 @@ public class InvalidGridGeometryException extends IllegalArgumentException {
      *
      * @param  message  the detail message.
      */
-    public InvalidGridGeometryException(final String message) {
+    public IllegalGridGeometryException(final String message) {
         super(message);
-    }
-
-    /**
-     * Constructs an exception with the specified cause.
-     *
-     * @param  cause  the cause for this exception.
-     */
-    public InvalidGridGeometryException(final Throwable cause) {
-        super(cause);
     }
 
     /**
@@ -61,7 +54,17 @@ public class InvalidGridGeometryException extends IllegalArgumentException {
      * @param  message  the detail message.
      * @param  cause    the cause for this exception.
      */
-    public InvalidGridGeometryException(final String message, final Throwable cause) {
+    public IllegalGridGeometryException(final String message, final Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Constructs an exception with a detail message incriminating the given parameter.
+     *
+     * @param cause      the cause of the failure to create the grid geometry.
+     * @param component  name of the parameter that caused the failure.
+     */
+    IllegalGridGeometryException(final Throwable cause, final String component) {
+        super(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, component));
     }
 }

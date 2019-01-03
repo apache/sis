@@ -116,35 +116,31 @@ final class SubgridCalculator {
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      */
     SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest, double[] resolution)
-            throws TransformException
+            throws TransformException, FactoryException
     {
-        try {
-            /*
-             * If the envelope CRS is different than the expected CRS, concatenate the envelope transformation
-             * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
-             * transforms - because transforming envelopes twice would add errors.
-             */
-            final CoordinateOperation operation = Envelopes.findOperation(grid.envelope, areaOfInterest);
-            if (operation != null) {
-                cornerToCRS = MathTransforms.concatenate(cornerToCRS, operation.getMathTransform());
-            }
-            /*
-             * If the envelope dimensions does not encompass all grid dimensions, the envelope is probably non-invertible.
-             * We need to reduce the number of grid dimensions in the transform for having a one-to-one relationship.
-             */
-            final int dimension = cornerToCRS.getTargetDimensions();
-            ArgumentChecks.ensureDimensionMatches("areaOfInterest", dimension, areaOfInterest);
-            cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
-        } catch (FactoryException e) {
-            throw new TransformException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
+        /*
+         * If the envelope CRS is different than the expected CRS, concatenate the envelope transformation
+         * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
+         * transforms - because transforming envelopes twice would add errors.
+         */
+        final CoordinateOperation operation = Envelopes.findOperation(grid.envelope, areaOfInterest);
+        if (operation != null) {
+            cornerToCRS = MathTransforms.concatenate(cornerToCRS, operation.getMathTransform());
         }
+        /*
+         * If the envelope dimensions does not encompass all grid dimensions, the envelope is probably non-invertible.
+         * We need to reduce the number of grid dimensions in the transform for having a one-to-one relationship.
+         */
+        int dimension = cornerToCRS.getTargetDimensions();
+        ArgumentChecks.ensureDimensionMatches("areaOfInterest", dimension, areaOfInterest);
+        cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
         /*
          * Compute the sub-extent for the given Area Of Interest (AOI), ignoring for now the sub-sampling.
          * If no area of interest has been specified, or if the result is identical to the original extent,
          * then we will keep the reference to the original GridExtent (i.e. we share existing instances).
          */
         extent = grid.extent;
-        final int dimension = extent.getDimension();
+        dimension = extent.getDimension();
         GeneralEnvelope indices = null;
         if (areaOfInterest != null) {
             indices = Envelopes.transform(cornerToCRS.inverse(), areaOfInterest);

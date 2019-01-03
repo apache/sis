@@ -25,7 +25,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -38,6 +37,7 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.math.Vector;
@@ -397,7 +397,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                 }
             }
             geometry = new GridGeometry(getExtent(axes), anchor, gridToCRS, crs);
-        } catch (FactoryException ex) {
+        } catch (FactoryException | IllegalGridGeometryException ex) {
             canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }
         return geometry;

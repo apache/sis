@@ -237,39 +237,34 @@ public class GridGeometry implements Serializable {
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
      * @param  toOther  transform from this grid coordinates to {@code other} grid coordinates, or {@code null} if none.
      * @throws NullPointerException if {@code extent} is {@code null} and the other grid geometry contains no other information.
-     * @throws InvalidGridGeometryException if the math transform can not compute the geospatial envelope from the grid extent.
+     * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
      *
      * @see #subExtent(Envelope)
      * @see #subgrid(Envelope, double...)
      */
-    GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) {
-        ArgumentChecks.ensureNonNull("other", other);
+    GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
         final int dimension = other.getDimension();
         this.extent = extent;
         ensureDimensionMatches(dimension, extent);
-        try {
-            if (toOther == null || toOther.isIdentity()) {
-                gridToCRS   = other.gridToCRS;
-                cornerToCRS = other.cornerToCRS;
-                resolution  = other.resolution;
-                nonLinears  = other.nonLinears;
-            } else {
-                gridToCRS   = MathTransforms.concatenate(toOther, other.gridToCRS);
-                cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
-                resolution  = resolution(gridToCRS, extent);
-                nonLinears  = findNonLinearTargets(gridToCRS);
-            }
-            ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
-            ImmutableEnvelope computed = computeEnvelope(gridToCRS, (envelope != null) ? envelope.getCoordinateReferenceSystem() : null, envelope);
-            if (computed == null || !computed.equals(envelope)) {
-                envelope = computed;
-            }
-            this.envelope = envelope;
-            if (envelope == null && gridToCRS == null) {
-                ArgumentChecks.ensureNonNull("extent", extent);
-            }
-        } catch (TransformException e) {
-            throw new InvalidGridGeometryException(e);
+        if (toOther == null || toOther.isIdentity()) {
+            gridToCRS   = other.gridToCRS;
+            cornerToCRS = other.cornerToCRS;
+            resolution  = other.resolution;
+            nonLinears  = other.nonLinears;
+        } else {
+            gridToCRS   = MathTransforms.concatenate(toOther, other.gridToCRS);
+            cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
+            resolution  = resolution(gridToCRS, extent);
+            nonLinears  = findNonLinearTargets(gridToCRS);
+        }
+        ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
+        ImmutableEnvelope computed = computeEnvelope(gridToCRS, (envelope != null) ? envelope.getCoordinateReferenceSystem() : null, envelope);
+        if (computed == null || !computed.equals(envelope)) {
+            envelope = computed;
+        }
+        this.envelope = envelope;
+        if (envelope == null && gridToCRS == null) {
+            ArgumentChecks.ensureNonNull("extent", extent);
         }
     }
 
@@ -312,7 +307,7 @@ public class GridGeometry implements Serializable {
      * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
      * @throws NullPointerException if {@code extent}, {@code gridToCRS} and {@code crs} arguments are all null.
      * @throws MismatchedDimensionException if the math transform and the CRS do not have consistent dimensions.
-     * @throws InvalidGridGeometryException if the math transform can not compute the geospatial envelope or resolution from the grid extent.
+     * @throws IllegalGridGeometryException if the math transform can not compute the geospatial envelope or resolution from the grid extent.
      */
     public GridGeometry(final GridExtent extent, final PixelInCell anchor, final MathTransform gridToCRS, final CoordinateReferenceSystem crs) {
         if (gridToCRS != null) {
@@ -329,7 +324,7 @@ public class GridGeometry implements Serializable {
             this.resolution  = resolution(gridToCRS, extent);           // 'gridToCRS' or 'cornerToCRS' does not matter here.
             this.nonLinears  = findNonLinearTargets(gridToCRS);
         } catch (TransformException e) {
-            throw new InvalidGridGeometryException(e);
+            throw new IllegalGridGeometryException(e, "gridToCRS");
         }
     }
 
@@ -395,7 +390,7 @@ public class GridGeometry implements Serializable {
      *                    There is no guarantees that the envelope actually stored in the {@code GridGeometry}
      *                    will be equal to this specified envelope.
      * @param  rounding   controls behavior of rounding from floating point values to integers.
-     * @throws InvalidGridGeometryException if the math transform can not compute the grid extent or the resolution.
+     * @throws IllegalGridGeometryException if the math transform can not compute the grid extent or the resolution.
      */
     @SuppressWarnings("null")
     public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope, final GridRoundingMode rounding) {
@@ -416,7 +411,7 @@ public class GridGeometry implements Serializable {
                 extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
                 env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             } catch (TransformException e) {
-                throw new InvalidGridGeometryException(e);
+                throw new IllegalGridGeometryException(e, "gridToCRS");
             }
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
@@ -596,7 +591,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no CRS —
      *         i.e. <code>{@linkplain #isDefined isDefined}({@linkplain #CRS})</code> returned {@code false}.
      */
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws IncompleteGridGeometryException {
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         if (envelope != null) {
             final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
             if (crs != null) return crs;
@@ -617,7 +612,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no envelope —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ENVELOPE})</code> returned {@code false}.
      */
-    public Envelope getEnvelope() throws IncompleteGridGeometryException {
+    public Envelope getEnvelope() {
         if (envelope != null && !envelope.isAllNaN()) {
             return envelope;
         }
@@ -637,7 +632,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no extent —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #EXTENT})</code> returned {@code false}.
      */
-    public GridExtent getExtent() throws IncompleteGridGeometryException {
+    public GridExtent getExtent() {
         if (extent != null) {
             return extent;
         }
@@ -663,17 +658,17 @@ public class GridGeometry implements Serializable {
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed).
      * @return a grid extent of the same dimension than the grid geometry which intersects the given area of interest.
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
-     * @throws InvalidGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
+     * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #subgrid(Envelope, double...)
      */
-    public GridExtent subExtent(final Envelope areaOfInterest) throws IncompleteGridGeometryException {
+    public GridExtent subExtent(final Envelope areaOfInterest) {
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
         requireGridToCRS();
         try {
             return new SubgridCalculator(this, cornerToCRS, areaOfInterest, null).extent;
-        } catch (TransformException e) {
-            throw new InvalidGridGeometryException(e);
+        } catch (FactoryException | TransformException e) {
+            throw new IllegalGridGeometryException(e, "areaOfInterest");
         }
     }
 
@@ -690,8 +685,9 @@ public class GridGeometry implements Serializable {
      *
      * @param  slicePoint   the coordinates where to get a slice.
      * @return a slice of the grid extent at the given slice point.
-     * @throws InvalidGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
+     * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
+     * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      *
      * @see #slice(DirectPosition)
      */
@@ -701,7 +697,7 @@ public class GridGeometry implements Serializable {
         try {
             return new SubgridCalculator(this, cornerToCRS, slicePoint).extent;
         } catch (TransformException e) {
-            throw new InvalidGridGeometryException(e);
+            throw new IllegalGridGeometryException(e, "slicePoint");
         }
     }
 
@@ -737,7 +733,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no transform —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #GRID_TO_CRS})</code> returned {@code false}.
      */
-    public MathTransform getGridToCRS(final PixelInCell anchor) throws IncompleteGridGeometryException {
+    public MathTransform getGridToCRS(final PixelInCell anchor) {
         final MathTransform mt;
         if (PixelInCell.CELL_CENTER.equals(anchor)) {
             mt = gridToCRS;
@@ -805,7 +801,7 @@ public class GridGeometry implements Serializable {
      * <p>Note that for this computation, it does not matter if {@code gridToCRS} is the user-specified
      * transform or the {@code this.gridToCRS} field value; both should produce equivalent results.</p>
      */
-    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) throws TransformException {
+    static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) {
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
         if (matrix != null) {
             return resolution(matrix, 1);
@@ -1004,7 +1000,7 @@ public class GridGeometry implements Serializable {
      * @see #getResolution(boolean)
      * @see #getGridToCRS(PixelInCell)
      */
-    public boolean isDefined(final int bitmask) throws IllegalArgumentException {
+    public boolean isDefined(final int bitmask) {
         if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | RESOLUTION)) != 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
@@ -1036,21 +1032,20 @@ public class GridGeometry implements Serializable {
      *                           or {@code null} or an empty array if no sub-sampling is desired.
      * @return a grid geometry over the specified sub-region of this grid geometry with the specified resolution.
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
-     * @throws InvalidGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
+     * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #subExtent(Envelope)
      * @see GridExtent#subsample(int[])
      */
     public GridGeometry subgrid(final Envelope areaOfInterest, double... targetResolution) {
         requireGridToCRS();
-        final SubgridCalculator sub;
         try {
-            sub = new SubgridCalculator(this, cornerToCRS, areaOfInterest, targetResolution);
-        } catch (TransformException e) {
-            throw new InvalidGridGeometryException(e);
-        }
-        if (sub.toSubsampled != null || sub.extent != extent) {
-            return new GridGeometry(this, sub.extent, sub.toSubsampled);
+            final SubgridCalculator sub = new SubgridCalculator(this, cornerToCRS, areaOfInterest, targetResolution);
+            if (sub.toSubsampled != null || sub.extent != extent) {
+                return new GridGeometry(this, sub.extent, sub.toSubsampled);
+            }
+        } catch (FactoryException | TransformException e) {
+            throw new IllegalGridGeometryException(e, "areaOfInterest");
         }
         return this;
     }
@@ -1078,7 +1073,7 @@ public class GridGeometry implements Serializable {
      *
      * @param  slicePoint   the coordinates where to get a slice.
      * @return a slice of this grid geometry at the given slice point. May be {@code this}.
-     * @throws InvalidGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
+     * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      *
      * @see #subExtent(DirectPosition)
@@ -1086,13 +1081,15 @@ public class GridGeometry implements Serializable {
     public GridGeometry slice(final DirectPosition slicePoint) {
         ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
         requireGridToCRS();
-        final GridExtent slice;
         try {
-            slice = new SubgridCalculator(this, cornerToCRS, slicePoint).extent;
+            final GridExtent slice = new SubgridCalculator(this, cornerToCRS, slicePoint).extent;
+            if (slice != extent) {
+                return new GridGeometry(this, slice, null);
+            }
         } catch (TransformException e) {
-            throw new InvalidGridGeometryException(e);
+            throw new IllegalGridGeometryException(e, "slicePoint");
         }
-        return (slice != extent) ? new GridGeometry(this, slice, null) : this;
+        return this;
     }
 
     /**
@@ -1116,7 +1113,7 @@ public class GridGeometry implements Serializable {
         } else try {
             return new GridGeometry(this, lower, upper);
         } catch (FactoryException e) {
-            throw new InvalidGridGeometryException(e);
+            throw new IllegalGridGeometryException(e, "dimensions");
         }
     }
 

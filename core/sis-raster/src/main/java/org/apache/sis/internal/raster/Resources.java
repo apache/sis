@@ -95,6 +95,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalGridEnvelope_3 = 8;
 
         /**
+         * Can not create a grid geometry with the given “{0}” component.
+         */
+        public static final short IllegalGridGeometryComponent_1 = 23;
+
+        /**
          * Illegal transfer function for “{0}” category.
          */
         public static final short IllegalTransferFunction_1 = 16;
