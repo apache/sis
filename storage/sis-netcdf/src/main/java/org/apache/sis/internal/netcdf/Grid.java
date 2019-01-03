@@ -397,7 +397,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                 }
             }
             geometry = new GridGeometry(getExtent(axes), anchor, gridToCRS, crs);
-        } catch (FactoryException | TransformException ex) {
+        } catch (FactoryException ex) {
             canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }
         return geometry;
