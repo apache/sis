@@ -77,7 +77,7 @@ public final class Numerics extends Static {
      * classes have their number of dimensions limited mostly by the capacity of the {@code int} primitive type, but
      * we nevertheless set the maximum number of dimensions to a lower value for catching probable errors. Note that
      * this is not a "universal" limit through Apache SIS, as some algorithms impose a smaller number of dimensions.
-     * Some limits found in specific Apache SIS code are 20, {@value Integer#SIZE} or {@value Long#SIZE}.</p>
+     * Some other limits found in specific Apache SIS code are 20 or {@value Long#SIZE}.</p>
      */
     public static final int MAXIMUM_MATRIX_SIZE = Short.MAX_VALUE;
 
