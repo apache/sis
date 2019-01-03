@@ -56,11 +56,9 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests construction with an identity transform mapping pixel corner.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromPixelCorner() throws TransformException {
+    public void testFromPixelCorner() {
         final long[]         low     = new long[] {100, 300, 3, 6};
         final long[]         high    = new long[] {200, 400, 4, 7};
         final GridExtent    extent   = new GridExtent(null, low, high, true);
@@ -102,11 +100,9 @@ public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Tests construction with an identity transform mapping pixel center.
      * This results a 0.5 pixel shifts in the "real world" envelope.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromPixelCenter() throws TransformException {
+    public void testFromPixelCenter() {
         final long[]        low      = new long[] { 0,   0, 2};
         final long[]        high     = new long[] {99, 199, 4};
         final GridExtent    extent   = new GridExtent(null, low, high, true);
@@ -146,11 +142,9 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests the {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromOther() throws TransformException {
+    public void testFromOther() {
         long[]        low       = new long[] {  1,   3, 2};
         long[]        high      = new long[] {101, 203, 4};
         GridExtent    extent    = new GridExtent(null, low, high, false);
@@ -173,11 +167,9 @@ public final strictfp class GridGeometryTest extends TestCase {
      * Tests construction from a <cite>grid to CRS</cite> having a 0.5 pixel translation.
      * This translation happens in transform mapping <cite>pixel center</cite> when the
      * corresponding <cite>pixel corner</cite> transformation is identity.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testShifted() throws TransformException {
+    public void testShifted() {
         final long[]        low      = new long[] {100, 300};
         final long[]        high     = new long[] {200, 400};
         final GridExtent    extent   = new GridExtent(null, low, high, true);
@@ -191,11 +183,9 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests construction with a non-linear component in the transform.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testNonLinear() throws TransformException {
+    public void testNonLinear() {
         final GridExtent extent = new GridExtent(
                 new DimensionNameType[] {
                     DimensionNameType.COLUMN,
@@ -221,11 +211,9 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests the construction from a geospatial envelope.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromGeospatialEnvelope() throws TransformException {
+    public void testFromGeospatialEnvelope() {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
@@ -249,12 +237,10 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#subExtent(Envelope)}.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
     @DependsOnMethod("testFromGeospatialEnvelope")
-    public void testSubExtent() throws TransformException {
+    public void testSubExtent() {
         GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_3D);
         envelope.setRange(0, -80, 120);
         envelope.setRange(1, -12,  21);
@@ -281,12 +267,10 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#subExtent(Envelope)} with a non-linear "grid to CRS" transform.
-     *
-     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
     @DependsOnMethod({"testNonLinear", "testSubExtent"})
-    public void testSubExtentNonLinear() throws TransformException {
+    public void testSubExtentNonLinear() {
         final GridExtent extent = new GridExtent(
                 new DimensionNameType[] {
                     DimensionNameType.COLUMN,
@@ -372,11 +356,9 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#slice(DirectPosition)}.
-     *
-     * @throws TransformException if an error occurred during computation.
      */
     @Test
-    public void testSlice() throws TransformException {
+    public void testSlice() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
                 PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
