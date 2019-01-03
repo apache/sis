@@ -147,6 +147,23 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns a mask with the given bit set. The bit should be a number from 0 inclusive to {@value Long#SIZE} exclusive.
+     * If the given bit is outside that range, then this method returns 0. The later condition is the main difference with
+     * the {@code 1L << bit} operation since {@code 1L << 64} computes 1. By contrast, {@code bitmask(64)} returns 0.
+     *
+     * <p>This method is invoked in contexts where we really need value 0 for a {@code bit} value of {@value Long#SIZE}.
+     * For example if we want to compute the maximal value of an unsigned integer of the given number of bits, we can use
+     * {@code bitmask(n) - 1}. If <var>n</var> = 64, then {@code bitmask(64) - 1} = -1 which is the desired value (the
+     * signed value -1 has the same bits pattern than the maximal possible value in unsigned integer representation).</p>
+     *
+     * @param  bit  the bit to set.
+     * @return a mask with the given bit set, or 0 if the given argument is negative or ≧ {@value Long#SIZE}.
+     */
+    public static long bitmask(final int bit) {
+        return (bit >= 0 && bit < Long.SIZE) ? (1L << bit) : 0;
+    }
+
+    /**
      * Returns the smallest (closest to negative infinity) long value that is greater than or equals to x/y.
      *
      * @param  x  the dividend.

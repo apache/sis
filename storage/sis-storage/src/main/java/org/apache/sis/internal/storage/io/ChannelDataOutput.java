@@ -29,6 +29,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.storage.Resources;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
@@ -171,7 +172,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         if (numBits != 0) {
             int bitOffset = getBitOffset();
             if (bitOffset != 0) {
-                bits &= (1L << numBits) - 1; // Make sure that high-order bits are zero.
+                bits &= Numerics.bitmask(numBits) - 1;                  // Make sure that high-order bits are zero.
                 final int r = numBits - (Byte.SIZE - bitOffset);
                 /*
                  * 'r' is the number of bits than we can not store in the current byte. This value may be negative,

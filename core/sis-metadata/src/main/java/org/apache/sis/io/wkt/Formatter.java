@@ -1613,7 +1613,7 @@ public class Formatter implements Localized {
      */
     public boolean hasContextualUnit(final int depth) {
         ArgumentChecks.ensurePositive("depth", depth);
-        return (depth < Long.SIZE) && (hasContextualUnit & (1L << depth)) != 0;
+        return (hasContextualUnit & Numerics.bitmask(depth)) != 0;
     }
 
     /**

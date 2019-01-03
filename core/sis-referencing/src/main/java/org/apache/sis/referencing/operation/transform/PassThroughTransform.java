@@ -30,6 +30,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -796,7 +797,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * used operation in {@link #tryConcatenate(boolean, MathTransform, MathTransformFactory)}.
      */
     private static long maskLowBits(final int n) {
-        return (1L << n) - 1;
+        return Numerics.bitmask(n) - 1;
     }
 
     /**

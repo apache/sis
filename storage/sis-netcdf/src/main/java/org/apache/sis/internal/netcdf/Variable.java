@@ -35,6 +35,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
@@ -505,7 +506,7 @@ public abstract class Variable extends NamedElement {
             final int size = dataType.size() * Byte.SIZE;
             if (size > 0 && size <= Long.SIZE) {
                 long min = 0;
-                long max = (1L << size) - 1;
+                long max = Numerics.bitmask(size) - 1;
                 if (!dataType.isUnsigned) {
                     max >>>= 1;
                     min = ~max;
