@@ -144,7 +144,7 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
             id.setCodeSpace("md.id.ns");
             md.setMetadataIdentifier(id);
         }
-        // Languages — one language only, and one (country, language) tupple.
+        // Languages — one language only, and one (country, language) tuple.
         final Collection<Locale> languages = Arrays.asList(Locale.ENGLISH, Locale.CANADA_FRENCH);
         md.setLanguages(languages);
 

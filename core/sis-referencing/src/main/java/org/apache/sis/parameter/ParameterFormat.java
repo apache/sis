@@ -712,7 +712,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                         /*
                          * Format the value followed by the unit of measure, or followed by spaces if there is no unit
                          * for this value. The intent is the right align the numerical value rather than the numerical
-                         * + unit tupple.
+                         * + unit tuple.
                          */
                         final Format format = getFormat(value.getClass());
                         if (format != null) {
