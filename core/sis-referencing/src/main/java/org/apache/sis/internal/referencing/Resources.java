@@ -113,6 +113,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
+         * Can not separate the “{0}” coordinate reference system into sub-components.
+         */
+        public static final short CanNotSeparateCRS_1 = 84;
+
+        /**
          * Target dimension {0} depends on excluded source dimensions.
          */
         public static final short CanNotSeparateTargetDimension_1 = 7;

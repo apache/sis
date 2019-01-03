@@ -122,12 +122,12 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#subExtent(int, int)}.
+     * Tests {@link GridExtent#reduce(int, int)}.
      */
     @Test
-    public void testSubExtent() {
+    public void testReduce() {
         GridExtent extent = create3D();
-        extent = extent.subExtent(0, 2);
+        extent = extent.reduce(0, 2);
         assertEquals("dimension", 2, extent.getDimension());
         assertExtentEquals(extent, 0, 100, 499);
         assertExtentEquals(extent, 1, 200, 799);

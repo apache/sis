@@ -379,6 +379,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @param  axes  the set of axes to give to the new coordinate system.
      * @return a new coordinate system of the same type than {@code this}, but using the given axes.
+     * @throws IllegalArgumentException if {@code axes} contains an unexpected number of axes,
+     *         or if an axis has an unexpected direction or unexpected unit of measurement.
      */
     AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         return new AbstractCS(properties, axes);

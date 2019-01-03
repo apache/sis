@@ -751,17 +751,22 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Returns a new grid envelope that encompass only some dimensions of this grid envelope.
+     * Returns a grid envelope that encompass only some dimensions of this grid envelope.
      * This method copies this grid envelope into a new grid envelope, beginning at dimension
      * {@code lower} and extending to dimension {@code upper-1} inclusive. Thus the dimension
      * of the sub grid envelope is {@code upper - lower}.
+     *
+     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
+     * converse of {@link #append(DimensionNameType, long, long, boolean)}.</p>
      *
      * @param  lower  the first dimension to copy, inclusive.
      * @param  upper  the last  dimension to copy, exclusive.
      * @return the sub-envelope, or {@code this} if [{@code lower} … {@code upper}] is [0 … {@link #getDimension() dimension}].
      * @throws IndexOutOfBoundsException if an index is out of bounds.
+     *
+     * @see GridGeometry#reduce(int, int)
      */
-    public GridExtent subExtent(final int lower, final int upper) {
+    public GridExtent reduce(final int lower, final int upper) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
         final int newDim = upper - lower;
@@ -790,6 +795,9 @@ public class GridExtent implements Serializable {
      * This effect can be understood intuitively if we consider that cells become larger after sub-sampling,
      * which implies that accurate representation of the same envelope may require fractional cells on some
      * grid borders.</div>
+     *
+     * This method does not reduce the number of dimensions of the grid extent.
+     * For dimensionality reduction, see {@link #reduce(int, int)}.
      *
      * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the sub-sampled extent, or {@code this} is sub-sampling results in the same extent.
@@ -824,7 +832,11 @@ public class GridExtent implements Serializable {
      * Creates a new grid extent which represent a slice of this grid at the given point.
      * The given point may have less dimensions than this grid extent, in which case the
      * dimensions must be specified in the {@code modifiedDimensions} array. Coordinates
-     * of the given point will be rounded to nearest integer.
+     * in the given point will be rounded to nearest integer. This method does not reduce
+     * the number of dimensions of the grid extent.
+     *
+     * <p>This method does not reduce the number of dimensions of the grid extent.
+     * For dimensionality reduction, see {@link #reduce(int, int)}.</p>
      *
      * @param  slicePoint           where to take a slice. NaN values are handled as if their dimensions were absent.
      * @param  modifiedDimensions   mapping from {@code slicePoint} dimensions to this {@code GridExtent} dimensions,

@@ -248,13 +248,13 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#getExtent(Envelope)}.
+     * Tests {@link GridGeometry#subExtent(Envelope)}.
      *
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
     @DependsOnMethod("testFromGeospatialEnvelope")
-    public void testGetExtent() throws TransformException {
+    public void testSubExtent() throws TransformException {
         GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_3D);
         envelope.setRange(0, -80, 120);
         envelope.setRange(1, -12,  21);
@@ -276,17 +276,17 @@ public final strictfp class GridGeometryTest extends TestCase {
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.getExtent(envelope));
+                           new long[] {389, 339, 10}, grid.subExtent(envelope));
     }
 
     /**
-     * Tests {@link GridGeometry#getExtent(Envelope)} with a non-linear "grid to CRS" transform.
+     * Tests {@link GridGeometry#subExtent(Envelope)} with a non-linear "grid to CRS" transform.
      *
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    @DependsOnMethod({"testNonLinear", "testGetExtent"})
-    public void testGetExtentNonLinear() throws TransformException {
+    @DependsOnMethod({"testNonLinear", "testSubExtent"})
+    public void testSubExtentNonLinear() throws TransformException {
         final GridExtent extent = new GridExtent(
                 new DimensionNameType[] {
                     DimensionNameType.COLUMN,
@@ -304,7 +304,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         final MathTransform gridToCRS = MathTransforms.concatenate(linear, MathTransforms.passThrough(1, latitude, 1));
         final GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84_3D);
         /*
-         * Following tests is similar to the one executed in testGetExtent(). Expected values are only
+         * Following tests is similar to the one executed in testSubExtent(). Expected values are only
          * anti-regression values, except the vertical range which is expected to cover all cells. The
          * main purpose of this test is to verify that TransformSeparator has been able to extract the
          * two-dimensional transform despite its non-linear component.
@@ -312,7 +312,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
-        final GridExtent actual = grid.getExtent(envelope);
+        final GridExtent actual = grid.subExtent(envelope);
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
@@ -324,7 +324,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * @throws TransformException if an error occurred during computation.
      */
     @Test
-    @DependsOnMethod({"testFromGeospatialEnvelope", "testGetExtent"})
+    @DependsOnMethod({"testFromGeospatialEnvelope", "testSubExtent"})
     public void testSubgrid() throws TransformException {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
         envelope.setRange(0, -70, +80);

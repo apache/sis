@@ -479,29 +479,38 @@ public enum CommonCRS {
         }
         final Datum datum = single.getDatum();
         if (datum instanceof GeodeticDatum) {
-            /*
-             * First, try to search using only the EPSG code. This approach avoid initializing unneeded
-             * geodetic objects (such initializations are costly if they require connection to the EPSG
-             * database).
-             */
-            int epsg = 0;
-            final Identifier identifier = IdentifiedObjects.getIdentifier(datum, Citations.EPSG);
-            if (identifier != null) {
-                final String code = identifier.getCode();
-                if (code != null) try {
-                    epsg = Integer.parseInt(code);
-                } catch (NumberFormatException e) {
-                    Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), CommonCRS.class, "forDatum", e);
-                }
-            }
-            for (final CommonCRS c : values()) {
-                if ((epsg != 0) ? c.datum == epsg : Utilities.equalsIgnoreMetadata(c.datum(), datum)) {
-                    return c;
-                }
-            }
+            final CommonCRS c = forDatum((GeodeticDatum) datum);
+            if (c != null) return c;
         }
         throw new IllegalArgumentException(Errors.format(
                 Errors.Keys.UnsupportedDatum_1, IdentifiedObjects.getName(datum, null)));
+    }
+
+    /**
+     * Returns the {@code CommonCRS} enumeration value for the given datum, or {@code null} if none.
+     */
+    static CommonCRS forDatum(final GeodeticDatum datum) {
+        /*
+         * First, try to search using only the EPSG code. This approach avoid initializing unneeded
+         * geodetic objects (such initializations are costly if they require connection to the EPSG
+         * database).
+         */
+        int epsg = 0;
+        final Identifier identifier = IdentifiedObjects.getIdentifier(datum, Citations.EPSG);
+        if (identifier != null) {
+            final String code = identifier.getCode();
+            if (code != null) try {
+                epsg = Integer.parseInt(code);
+            } catch (NumberFormatException e) {
+                Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), CommonCRS.class, "forDatum", e);
+            }
+        }
+        for (final CommonCRS c : values()) {
+            if ((epsg != 0) ? c.datum == epsg : Utilities.equalsIgnoreMetadata(c.datum(), datum)) {
+                return c;
+            }
+        }
+        return null;
     }
 
     /**
