@@ -40,6 +40,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
@@ -813,7 +814,7 @@ public class GridExtent implements Serializable {
                 sub.coordinates[i] = low /= s;
                 sub.coordinates[j] = low + r;
             } else if (s <= 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "strides[" + i + ']', s));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("strides", i), s));
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;

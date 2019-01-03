@@ -40,6 +40,7 @@ import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.FinalFieldSetter;
+import org.apache.sis.internal.util.Strings;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -1055,7 +1056,7 @@ public class MetadataStandard implements Serializable {
      */
     @Override
     public String toString() {
-        return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
+        return Strings.bracket(getClass(), citation.getTitle());
     }
 
     /**

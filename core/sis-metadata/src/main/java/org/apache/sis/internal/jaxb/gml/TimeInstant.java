@@ -24,6 +24,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.opengis.temporal.Instant;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.xml.XmlUtilities;
 
 
@@ -102,6 +103,6 @@ public final class TimeInstant extends GMLAdapter {
      */
     @Override
     public String toString() {
-        return "TimeInstant[" + timePosition + ']';
+        return Strings.bracket(getClass(), timePosition);
     }
 }

@@ -22,6 +22,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -386,8 +387,8 @@ public class Plane implements Cloneable, Serializable {
             for (final DirectPosition p : points) {
                 final int dimension = p.getDimension();
                 if (dimension != DIMENSION) {
-                    throw new MismatchedDimensionException(Errors.format(
-                            Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
+                    throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                                Strings.toIndexed("points", i), DIMENSION, dimension));
                 }
                 i++;
                 final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
@@ -431,7 +432,7 @@ public class Plane implements Cloneable, Serializable {
                 for (int x=0; x<nx; x++) {
                     final double z = vz.doubleValue(n);
                     if (Double.isNaN(z)) {
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, "z[" + n + ']'));
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, Strings.toIndexed("z", n)));
                     }
                     zx.setToProduct(z, x);
                     zy.setToProduct(z, y);

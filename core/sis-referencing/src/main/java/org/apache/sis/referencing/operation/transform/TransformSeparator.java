@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -192,7 +193,7 @@ public class TransformSeparator {
             final int value = sequence[i];
             if (value <= previous || value >= max) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
-                        "dimensions[" + (i - offset) + ']', previous + 1, max - 1, value));
+                        Strings.toIndexed("dimensions", i - offset), previous + 1, max - 1, value));
             }
             previous = value;
         }

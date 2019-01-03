@@ -43,6 +43,7 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -312,8 +313,8 @@ search: for (int j=numPoints; --j >= 0;) {
      * with {@link #numPoints} the index of the next point that we failed to add.
      */
     private MismatchedDimensionException mismatchedDimension(final String name, final int expected, final int actual) {
-        return new MismatchedDimensionException(Errors.format(
-                Errors.Keys.MismatchedDimension_3, name + '[' + numPoints + ']', expected, actual));
+        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                    Strings.toIndexed(name, numPoints), expected, actual));
     }
 
     /**

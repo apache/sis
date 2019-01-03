@@ -32,7 +32,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -316,7 +316,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      */
     @Override
     public String toString() {
-        return Utilities.toString(getClass(), "file", (files.length != 0) ? files[0] : null);
+        return Strings.toString(getClass(), "file", (files.length != 0) ? files[0] : null);
     }
 
 

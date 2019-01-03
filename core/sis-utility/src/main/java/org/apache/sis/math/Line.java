@@ -21,6 +21,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -294,8 +295,8 @@ public class Line implements Cloneable, Serializable {
         for (final DirectPosition p : points) {
             final int dimension = p.getDimension();
             if (dimension != DIMENSION) {
-                throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                            Strings.toIndexed("points", i), DIMENSION, dimension));
             }
             i++;
             final double x,y;

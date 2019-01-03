@@ -17,7 +17,7 @@
 package org.apache.sis.internal.raster;
 
 import java.awt.color.ColorSpace;
-import org.apache.sis.util.Classes;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -166,6 +166,6 @@ public final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public String toString() {
-        return Classes.getShortClassName(this) + '[' + getMinValue(visibleBand) + " … " + getMaxValue(visibleBand) + ']';
+        return Strings.range(getClass(), getMinValue(visibleBand), getMaxValue(visibleBand));
     }
 }

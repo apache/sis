@@ -31,6 +31,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
@@ -223,7 +224,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
             if ((n = gridSize[i]) < 2) {
                 throw new IllegalArgumentException(Errors.format(n <= 0
                         ? Errors.Keys.ValueNotGreaterThanZero_2
-                        : Errors.Keys.IllegalArgumentValue_2, "gridSize[" + i + ']', n));
+                        : Errors.Keys.IllegalArgumentValue_2, Strings.toIndexed("gridSize", i), n));
             }
         }
         computeConversionFactors();

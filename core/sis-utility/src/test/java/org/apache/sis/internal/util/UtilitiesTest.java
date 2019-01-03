@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Utilities} class.
+ * Tests the {@link Strings} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -33,21 +33,21 @@ import static org.junit.Assert.*;
  */
 public final strictfp class UtilitiesTest extends TestCase {
     /**
-     * Tests the {@link Utilities#toString(Class, Object[])} method.
+     * Tests the {@link Strings#toString(Class, Object[])} method.
      */
     @Test
     public void testToString() {
-        assertEquals("Number[base=“decimal”, value=20]", Utilities.toString(Number.class, "base", "decimal", "value", 20));
+        assertEquals("Number[base=“decimal”, value=20]", Strings.toString(Number.class, "base", "decimal", "value", 20));
     }
 
     /**
-     * Tests the {@link Utilities#toUpperCase(String, Characters.Filter)} method.
+     * Tests the {@link Strings#toUpperCase(String, Characters.Filter)} method.
      */
     @Test
     public void testToUpperCase() {
         final String expected = "WGS84";
-        assertSame  (expected, Utilities.toUpperCase(expected, Characters.Filter.LETTERS_AND_DIGITS));
-        assertEquals(expected, Utilities.toUpperCase("WGS 84", Characters.Filter.LETTERS_AND_DIGITS));
-        assertEquals(expected, Utilities.toUpperCase("wgs 84", Characters.Filter.LETTERS_AND_DIGITS));
+        assertSame  (expected, Strings.toUpperCase(expected, Characters.Filter.LETTERS_AND_DIGITS));
+        assertEquals(expected, Strings.toUpperCase("WGS 84", Characters.Filter.LETTERS_AND_DIGITS));
+        assertEquals(expected, Strings.toUpperCase("wgs 84", Characters.Filter.LETTERS_AND_DIGITS));
     }
 }

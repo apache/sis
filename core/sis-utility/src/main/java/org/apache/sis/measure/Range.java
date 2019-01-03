@@ -22,7 +22,7 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
@@ -731,6 +731,6 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             format.setAlternateForm((flags & FormattableFlags.ALTERNATE) != 0);
             value = format.format(this, new StringBuffer(), null).toString();
         }
-        Utilities.formatTo(formatter, flags, width, precision, value);
+        Strings.formatTo(formatter, flags, width, precision, value);
     }
 }

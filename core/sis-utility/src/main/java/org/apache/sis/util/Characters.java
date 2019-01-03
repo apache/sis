@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import org.opengis.metadata.citation.Citation;  // For javadoc.
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -434,7 +435,7 @@ public final class Characters extends Static {
                 final int type = types[i];
                 if (type < 0 || type >= Long.SIZE) {
                     throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.IllegalArgumentValue_2, "types[" + i + ']', type));
+                            Errors.Keys.IllegalArgumentValue_2, Strings.toIndexed("types", i), type));
                 }
                 mask |= (1L << type);
             }

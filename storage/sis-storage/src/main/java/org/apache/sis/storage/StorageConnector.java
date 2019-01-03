@@ -56,7 +56,7 @@ import org.apache.sis.internal.storage.io.ChannelImageInputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
 
@@ -506,7 +506,7 @@ public class StorageConnector implements Serializable {
          */
         @Override
         public String toString() {
-            return Utilities.toString(getClass(),
+            return Strings.toString(getClass(),
                     "view",       Classes.getShortClassName(view),
                     "wrapperFor", (wrapperFor != null) ? Classes.getShortClassName(wrapperFor.view) : null,
                     "cascade",    cascade,

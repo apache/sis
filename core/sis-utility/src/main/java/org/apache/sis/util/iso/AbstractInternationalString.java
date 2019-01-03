@@ -22,7 +22,7 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
 
 
@@ -182,7 +182,7 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public void formatTo(final Formatter formatter, final int flags, final int width, final int precision) {
-        Utilities.formatTo(formatter, flags, width, precision, toString(formatter.locale()));
+        Strings.formatTo(formatter, flags, width, precision, toString(formatter.locale()));
     }
 
     /**

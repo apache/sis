@@ -44,7 +44,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.Markable;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.storage.ConcurrentReadException;
@@ -365,7 +365,7 @@ public abstract class StaxDataStore extends URIDataStore {
          */
         @Override
         public String toString() {
-            return Utilities.toString(getClass(), "locale", locale, "timezone", timezone);
+            return Strings.toString(getClass(), "locale", locale, "timezone", timezone);
         }
     }
 

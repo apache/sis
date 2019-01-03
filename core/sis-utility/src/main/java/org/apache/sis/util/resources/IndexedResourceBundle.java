@@ -43,6 +43,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
@@ -751,6 +752,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      */
     @Override
     public synchronized String toString() {
-        return getClass().getSimpleName() + '[' + getLocale() + ']';
+        return Strings.bracket(getClass(), getLocale());
     }
 }

@@ -32,6 +32,7 @@ import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
@@ -182,7 +183,7 @@ final class Verifier {
                                 n = Numbers.cast(n, componentType.asSubclass(Number.class));
                             } catch (IllegalArgumentException e) {
                                 throw new InvalidParameterValueException(e.getLocalizedMessage(),
-                                        getDisplayName(descriptor) + '[' + i + ']', value);
+                                        Strings.toIndexed(getDisplayName(descriptor), i), value);
                             }
                             Array.set(convertedValue, i, n);
                         }
@@ -350,7 +351,7 @@ final class Verifier {
     String message(final Map<?,?> properties, String name, Object value) {
         final Object index = arguments[0];
         if (index != null) {
-            name = name + '[' + index + ']';
+            name = Strings.bracket(name, index);
             value = Array.get(value, (Integer) index);
         }
         arguments[0] = name;

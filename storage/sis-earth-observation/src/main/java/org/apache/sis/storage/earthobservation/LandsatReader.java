@@ -70,7 +70,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
 
@@ -754,7 +754,7 @@ final class LandsatReader {
              * We ignore the "ELLIPSOID" attribute because it is implied by the datum.
              */
             case "DATUM": {
-                datum = CommonCRS.valueOf(Utilities.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
+                datum = CommonCRS.valueOf(Strings.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
                 break;
             }
             /*

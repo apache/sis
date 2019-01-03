@@ -59,6 +59,7 @@ import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.Containers;
@@ -966,7 +967,7 @@ public class MetadataSource implements AutoCloseable {
                         element = info.convert(elementType, element);
                     } catch (UnconvertibleObjectException e) {
                         throw new MetadataStoreException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
-                                columnName + '[' + i + ']', elementType, element.getClass()), e);
+                                Strings.toIndexed(columnName, i), elementType, element.getClass()), e);
                     }
                 }
                 values[i] = element;
