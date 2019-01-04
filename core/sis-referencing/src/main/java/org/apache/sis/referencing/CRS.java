@@ -933,7 +933,15 @@ public final class CRS extends Static {
 
     /**
      * Gets or creates a coordinate reference system with a subset of the dimensions of the given CRS.
-     * This method can be used for dimensionality reduction.
+     * This method can be used for dimensionality reduction, but not for changing axis order.
+     * The specified dimensions are used as if they were in strictly increasing order without duplicated values.
+     *
+     * <div class="section">Ellipsoidal height</div>
+     * This method can transform a three-dimensional geographic CRS into a two-dimensional geographic CRS.
+     * In this aspect, this method is the converse of {@link #compound(CoordinateReferenceSystem...)}.
+     * This method can also extract the {@linkplain CommonCRS.Vertical#ELLIPSOIDAL ellipsoidal height}
+     * from a three-dimensional geographic CRS, but this is generally not recommended since ellipsoidal
+     * heights make little sense without their (<var>latitude</var>, <var>longitude</var>) locations.
      *
      * @param  crs         the CRS to reduce the dimensionality, or {@code null} if none.
      * @param  dimensions  the dimensions to retain. The dimensions will be taken in increasing order, ignoring duplicated values.

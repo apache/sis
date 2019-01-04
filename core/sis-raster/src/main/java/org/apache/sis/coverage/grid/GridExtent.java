@@ -47,6 +47,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
@@ -753,35 +754,66 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Verifies the validity of a given {@code dimensions} argument.
+     *
+     * @param  dimensions  the user-supplied argument to validate.
+     * @param  limit       maximal number of dimensions, exclusive.
+     * @return {@code true} if the caller can return {@code this}.
+     */
+    static boolean verifyDimensions(final int[] dimensions, final int limit) {
+        ArgumentChecks.ensureNonNull("dimensions", dimensions);
+        final int n = dimensions.length;
+        if (n == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
+        }
+        if (!ArraysExt.isSorted(dimensions, true)) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.NotStrictlyOrderedDimensions));
+        }
+        int d = dimensions[0];
+        if (d >= 0) {
+            d = dimensions[n - 1];
+            if (d < limit) {
+                return n == limit;
+            }
+        }
+        throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
+    }
+
+    /**
      * Returns a grid envelope that encompass only some dimensions of this grid envelope.
-     * This method copies this grid envelope into a new grid envelope, beginning at dimension
-     * {@code lower} and extending to dimension {@code upper-1} inclusive. Thus the dimension
-     * of the sub grid envelope is {@code upper - lower}.
+     * This method copies the specified dimensions of this grid envelope into a new grid envelope.
+     * The given dimensions must be in strictly ascending order without duplicated values.
+     * The dimension of the sub grid envelope will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
-     * converse of {@link #append(DimensionNameType, long, long, boolean)}.</p>
+     * converse of {@link #append(DimensionNameType, long, long, boolean)}.
+     * This method can not be used for changing dimension order.</p>
      *
-     * @param  lower  the first dimension to copy, inclusive.
-     * @param  upper  the last  dimension to copy, exclusive.
-     * @return the sub-envelope, or {@code this} if [{@code lower} … {@code upper}] is [0 … {@link #getDimension() dimension}].
+     * @param  dimensions  the dimensions to select, in strictly increasing order.
+     * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
-     * @see GridGeometry#reduce(int, int)
+     * @see GridGeometry#reduce(int...)
      */
-    public GridExtent reduce(final int lower, final int upper) {
-        final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
-        final int newDim = upper - lower;
-        if (newDim == dimension) {
+    public GridExtent reduce(final int... dimensions) {
+        final int sd = getDimension();
+        if (verifyDimensions(dimensions, sd)) {
             return this;
         }
-        DimensionNameType[] axisTypes = types;
-        if (axisTypes != null) {
-            axisTypes = Arrays.copyOfRange(axisTypes, lower, upper);
+        final int td = dimensions.length;
+        DimensionNameType[] tt = null;
+        if (types != null) {
+            tt = new DimensionNameType[td];
+            for (int i=0; i<td; i++) {
+                tt[i] = types[dimensions[i]];
+            }
         }
-        final GridExtent sub = new GridExtent(newDim, axisTypes);
-        System.arraycopy(coordinates, lower,           sub.coordinates, 0,      newDim);
-        System.arraycopy(coordinates, lower+dimension, sub.coordinates, newDim, newDim);
+        final GridExtent sub = new GridExtent(td, tt);
+        for (int i=0; i<td; i++) {
+            final int j = dimensions[i];
+            sub.coordinates[i]    = coordinates[j];
+            sub.coordinates[i+td] = coordinates[j+sd];
+        }
         return sub;
     }
 
@@ -799,7 +831,7 @@ public class GridExtent implements Serializable {
      * grid borders.</div>
      *
      * This method does not reduce the number of dimensions of the grid extent.
-     * For dimensionality reduction, see {@link #reduce(int, int)}.
+     * For dimensionality reduction, see {@link #reduce(int...)}.
      *
      * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the sub-sampled extent, or {@code this} is sub-sampling results in the same extent.
@@ -838,7 +870,7 @@ public class GridExtent implements Serializable {
      * the number of dimensions of the grid extent.
      *
      * <p>This method does not reduce the number of dimensions of the grid extent.
-     * For dimensionality reduction, see {@link #reduce(int, int)}.</p>
+     * For dimensionality reduction, see {@link #reduce(int...)}.</p>
      *
      * @param  slicePoint           where to take a slice. NaN values are handled as if their dimensions were absent.
      * @param  modifiedDimensions   mapping from {@code slicePoint} dimensions to this {@code GridExtent} dimensions,

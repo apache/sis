@@ -145,6 +145,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NonLinearInDimensions_1 = 20;
 
         /**
+         * The specified dimensions are not in strictly ascending order.
+         */
+        public static final short NotStrictlyOrderedDimensions = 24;
+
+        /**
          * The ({0}, {1}) pixel coordinate is outside iterator domain.
          */
         public static final short OutOfIteratorDomain_2 = 1;

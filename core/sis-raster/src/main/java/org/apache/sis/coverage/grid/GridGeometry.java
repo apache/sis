@@ -482,35 +482,39 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Creates a new grid geometry over the specified range of dimensions of the given grid geometry.
+     * Creates a new grid geometry over the specified dimensions of the given grid geometry.
      *
-     * @param  other  the grid geometry to copy.
-     * @param  lower  the first dimension to copy, inclusive.
-     * @param  upper  the last  dimension to copy, exclusive.
+     * @param  other       the grid geometry to copy.
+     * @param  dimensions  the dimensions to select, in strictly increasing order (this may not be verified).
      * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
      *
-     * @see #reduce(int, int)
+     * @see #reduce(int...)
      */
-    private GridGeometry(final GridGeometry other, final int lower, final int upper) throws FactoryException {
-        extent = (other.extent != null) ? other.extent.reduce(lower, upper) : null;
-        final int n = upper - lower;
-        final int[] dimensions;
+    private GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
+        extent = (other.extent != null) ? other.extent.reduce(dimensions) : null;
+        final int n = dimensions.length;
         if (other.gridToCRS != null) {
+            final int[] sources = dimensions;
             TransformSeparator sep = new TransformSeparator(other.gridToCRS);
-            sep.addSourceDimensionRange(lower, upper);
+            sep.addSourceDimensions(sources);
             gridToCRS  = sep.separate();
             dimensions = sep.getTargetDimensions();
             assert dimensions.length == n : Arrays.toString(dimensions);
-
+            if (!ArraysExt.isSorted(dimensions, true)) {
+                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, "dimensions"));
+            }
+            /*
+             * We redo a separation for 'cornerToCRS' instead than applying a translation of the 'gridToCRS'
+             * computed above because we don't know which of 'gridToCRS' and 'cornerToCRS' has less NaN values.
+             */
             sep = new TransformSeparator(other.cornerToCRS);
-            sep.addSourceDimensionRange(lower, upper);
+            sep.addSourceDimensions(sources);
             sep.addTargetDimensions(dimensions);
             cornerToCRS = sep.separate();
             assert Arrays.equals(sep.getSourceDimensions(), dimensions) : Arrays.toString(dimensions);
         } else {
             gridToCRS   = null;
             cornerToCRS = null;
-            dimensions  = ArraysExt.sequence(lower, upper);
         }
         final ImmutableEnvelope env = other.envelope;
         if (env != null) {
@@ -653,7 +657,7 @@ public class GridGeometry implements Serializable {
      * In such case the envelope needs to contain all dimensions.</p>
      *
      * <p>This method does not reduce the number of dimensions of this grid geometry.
-     * For dimensionality reduction, see {@link #reduce(int, int)}.</p>
+     * For dimensionality reduction, see {@link #reduce(int...)}.</p>
      *
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed).
      * @return a grid extent of the same dimension than the grid geometry which intersects the given area of interest.
@@ -681,7 +685,7 @@ public class GridGeometry implements Serializable {
      * See {@link #slice(DirectPosition)} for examples.
      *
      * <p>This method does not reduce the number of dimensions of this grid geometry.
-     * For dimensionality reduction, see {@link #reduce(int, int)}.</p>
+     * For dimensionality reduction, see {@link #reduce(int...)}.</p>
      *
      * @param  slicePoint   the coordinates where to get a slice.
      * @return a slice of the grid extent at the given slice point.
@@ -1024,7 +1028,7 @@ public class GridGeometry implements Serializable {
      * then no sub-sampling will be applied on the missing dimensions.
      *
      * <p>This method does not reduce the number of dimensions of this grid geometry.
-     * For dimensionality reduction, see {@link #reduce(int, int)}.</p>
+     * For dimensionality reduction, see {@link #reduce(int...)}.</p>
      *
      * @param  areaOfInterest    the desired spatiotemporal region in any CRS (transformations will be applied as needed),
      *                           or {@code null} for not restricting the sub-grid to a sub-area.
@@ -1069,7 +1073,7 @@ public class GridGeometry implements Serializable {
      * </ul></div>
      *
      * This method does not reduce the number of dimensions of this grid geometry.
-     * For dimensionality reduction, see {@link #reduce(int, int)}.
+     * For dimensionality reduction, see {@link #reduce(int...)}.
      *
      * @param  slicePoint   the coordinates where to get a slice.
      * @return a slice of this grid geometry at the given slice point. May be {@code this}.
@@ -1094,24 +1098,25 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns a grid geometry that encompass only some dimensions of this grid geometry.
-     * This method copies this grid geometry into a new grid geometry, beginning at dimension
-     * {@code lower} and extending to dimension {@code upper-1} inclusive. Thus the dimension
-     * of the sub grid geometry is {@code upper - lower}.
+     * This method copies the specified dimensions of this grid geometry into a new grid geometry.
+     * The given dimensions must be in strictly ascending order without duplicated values.
+     * The dimension of the sub grid grid geometry will be {@code dimensions.length}.
      *
-     * <p>This method performs a <cite>dimensionality reduction</cite>.</p>
+     * <p>This method performs a <cite>dimensionality reduction</cite>.
+     * This method can not be used for changing dimension order.</p>
      *
-     * @param  lower  the first grid dimension to copy, inclusive.
-     * @param  upper  the last  grid dimension to copy, exclusive.
-     * @return the sub grid geometry, or {@code this} if [{@code lower} … {@code upper}] is [0 … {@link #getDimension() dimension}].
+     * @param  dimensions  the dimensions to select, in strictly increasing order.
+     * @return the sub grid geometry, or {@code this} if the given array contains all dimensions of this grid grid geometry.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
-     * @see GridExtent#reduce(int, int)
+     * @see GridExtent#reduce(int...)
+     * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
      */
-    public GridGeometry reduce(final int lower, final int upper) {
-        if (lower == 0 && upper == getDimension()) {
+    public GridGeometry reduce(final int... dimensions) {
+        if (GridExtent.verifyDimensions(dimensions, getDimension())) {
             return this;
         } else try {
-            return new GridGeometry(this, lower, upper);
+            return new GridGeometry(this, dimensions);
         } catch (FactoryException e) {
             throw new IllegalGridGeometryException(e, "dimensions");
         }
