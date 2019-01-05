@@ -239,7 +239,7 @@ public class GridGeometry implements Serializable {
     /**
      * Creates a new grid geometry derived from the given grid geometry with a new extent and a modified transform.
      * This constructor is used for creating a grid geometry over a subregion (for example with the grid extent
-     * computed by {@link #subExtent(Envelope)}) or grid geometry for a sub-sampled raster.
+     * computed by {@link #subExtent(Envelope)}) or grid geometry for a subsampled raster.
      *
      * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
      * {@code other} grid coordinates. That transform should be merely a {@linkplain MathTransforms#scale(double...)
@@ -250,7 +250,7 @@ public class GridGeometry implements Serializable {
      *
      * The new {@linkplain #getEnvelope() grid geometry envelope} will be {@linkplain GeneralEnvelope#intersect(Envelope)
      * clipped} to the envelope of the other grid geometry. This is for preventing the envelope to become larger under the
-     * effect of sub-sampling (because {@link GridExtent#subsample(int[]) each cell become larger}).
+     * effect of subsampling (because {@link GridExtent#subsample(int[]) each cell become larger}).
      *
      * @param  other    the other grid geometry to copy.
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
@@ -629,7 +629,7 @@ public class GridGeometry implements Serializable {
      * The initial envelope encompasses all cell surfaces, from the left border of leftmost cell
      * to the right border of the rightmost cell and similarly along other axes.
      * If this grid geometry is a {@linkplain #subgrid(Envelope, double...) subgrid}, then the envelope is also
-     * {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the original (non sub-sampled) grid geometry.
+     * {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the original (non subsampled) grid geometry.
      *
      * @return the bounding box in "real world" coordinates (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no envelope —
@@ -1036,7 +1036,7 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns a grid geometry over a sub-region of this grid geometry and optionally with sub-sampling.
+     * Returns a grid geometry over a sub-region of this grid geometry and optionally with subsampling.
      * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
      * than {@linkplain #getCoordinateReferenceSystem() the CRS of this grid geometry};
      * coordinate conversions or transformations will be applied as needed.
@@ -1044,7 +1044,7 @@ public class GridGeometry implements Serializable {
      * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
      * The target resolution, if provided, shall be in same units and same order than the given envelope axes.
      * If the length of {@code targetResolution} array is less than the number of dimensions of {@code areaOfInterest},
-     * then no sub-sampling will be applied on the missing dimensions.
+     * then no subsampling will be applied on the missing dimensions.
      *
      * <p>This method does not reduce the number of dimensions of this grid geometry.
      * For dimensionality reduction, see {@link #reduce(int...)}.</p>
@@ -1052,7 +1052,7 @@ public class GridGeometry implements Serializable {
      * @param  areaOfInterest    the desired spatiotemporal region in any CRS (transformations will be applied as needed),
      *                           or {@code null} for not restricting the sub-grid to a sub-area.
      * @param  targetResolution  the desired resolution in the same units and order than the axes of the given envelope,
-     *                           or {@code null} or an empty array if no sub-sampling is desired.
+     *                           or {@code null} or an empty array if no subsampling is desired.
      * @return a grid geometry over the specified sub-region of this grid geometry with the specified resolution.
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.

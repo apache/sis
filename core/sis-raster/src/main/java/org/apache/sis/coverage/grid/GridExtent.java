@@ -897,23 +897,23 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Creates a new grid extent sub-sampled by the given amount of cells along each grid dimensions.
+     * Creates a new grid extent subsampled by the given amount of cells along each grid dimensions.
      * This method divides {@linkplain #getLow(int) low coordinates} and {@linkplain #getSize(int) grid sizes}
      * by the given periods, rounding toward zero. The {@linkplain #getHigh(int) high coordinates} are adjusted
      * accordingly (this is often equivalent to dividing high coordinates by the periods too, but a difference
      * of one cell may exist).
      *
      * <div class="note"><b>Note:</b>
-     * The envelope computed from a grid extent may become <em>larger</em> after sub-sampling, not smaller.
-     * This effect can be understood intuitively if we consider that cells become larger after sub-sampling,
+     * The envelope computed from a grid extent may become <em>larger</em> after subsampling, not smaller.
+     * This effect can be understood intuitively if we consider that cells become larger after subsampling,
      * which implies that accurate representation of the same envelope may require fractional cells on some
      * grid borders.</div>
      *
      * This method does not reduce the number of dimensions of the grid extent.
      * For dimensionality reduction, see {@link #reduce(int...)}.
      *
-     * @param  periods  the sub-samplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
-     * @return the sub-sampled extent, or {@code this} is sub-sampling results in the same extent.
+     * @param  periods  the subsamplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
      * @see GridGeometry#subgrid(Envelope, double...)

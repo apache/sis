@@ -68,7 +68,7 @@ public final strictfp class GridChangeTest extends TestCase {
         assertExtentEquals(extent, 1, -1000, 8000);
         assertArrayEquals("subsamplings", new int[] {50, 300}, change.getTargetSubsamplings());  // s = scaleSource / scaleTarget
         /*
-         * Scale factors in following matrix shall be the same than above sub-samplings.
+         * Scale factors in following matrix shall be the same than above subsamplings.
          * Translation appears only with PixelInCell different than the one used at construction.
          */
         Matrix3 c = new Matrix3();
@@ -79,7 +79,7 @@ public final strictfp class GridChangeTest extends TestCase {
         c.m12 = 149.5;
         assertMatrixEquals("CELL_CENTER", c, MathTransforms.getMatrix(change.getConversion(PixelInCell.CELL_CENTER)), STRICT);
         /*
-         * If we do not ask for sub-samplings, the 'gridToCRS' transforms shall be the same than the 'target' geometry.
+         * If we do not ask for subsamplings, the 'gridToCRS' transforms shall be the same than the 'target' geometry.
          * The envelope is the intersection of the envelopes of 'source' and 'target' geometries, documented above.
          */
         GridGeometry tg = change.getTargetGeometry();
@@ -91,7 +91,7 @@ public final strictfp class GridChangeTest extends TestCase {
         expected.setRange(1, -7501,  1500);
         assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
         /*
-         * If we ask for sub-samplings, then the envelope should be approximately the same or smaller. Note that without
+         * If we ask for subsamplings, then the envelope should be approximately the same or smaller. Note that without
          * the clipping documented in GridExtent(GridExtent, int...) constructor, the envelope could be larger.
          */
         tg = change.getTargetGeometry(50, 300);

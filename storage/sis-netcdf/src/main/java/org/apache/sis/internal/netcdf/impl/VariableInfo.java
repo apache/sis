@@ -79,7 +79,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     };
 
     /**
-     * Helper class for reading a sub-area with a sub-sampling,
+     * Helper class for reading a sub-area with a subsampling,
      * or {@code null} if {@code dataType} is not a supported type.
      */
     private final HyperRectangleReader reader;
@@ -758,12 +758,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Reads a sub-sampled sub-area of the variable.
+     * Reads a subsampled sub-area of the variable.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Array elements are in "natural" order (inverse of netCDF order).
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
      * @return the data as an array of a Java primitive type.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */

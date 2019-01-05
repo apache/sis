@@ -42,7 +42,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
 /**
  * Helper class for computing the grid extent of a sub-area of a given grid geometry.
  * This class provides the {@link MathTransform} converting source grid coordinates to target grid coordinates,
- * where the source is the given {@link GridGeometry} instance and the target is the sub-sampled grid.
+ * where the source is the given {@link GridGeometry} instance and the target is the subsampled grid.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -56,7 +56,7 @@ final class SubgridCalculator {
     GridExtent extent;
 
     /**
-     * The conversion from the original grid to the sub-sampled grid, or {@code null} if no sub-sampling is applied.
+     * The conversion from the original grid to the subsampled grid, or {@code null} if no subsampling is applied.
      * This is computed by the constructor.
      */
     MathTransform toSubsampled;
@@ -112,7 +112,7 @@ final class SubgridCalculator {
      * @param  cornerToCRS     the transform from cell corners to grid CRS (mandatory).
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS, or {@code null} for the whole area.
      * @param  resolution      the desired resolution in the same units and order than the axes of the AOI envelope,
-     *                         or {@code null} or an empty array if no sub-sampling is desired.
+     *                         or {@code null} or an empty array if no subsampling is desired.
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      */
     SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest, double[] resolution)
@@ -135,7 +135,7 @@ final class SubgridCalculator {
         ArgumentChecks.ensureDimensionMatches("areaOfInterest", dimension, areaOfInterest);
         cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
         /*
-         * Compute the sub-extent for the given Area Of Interest (AOI), ignoring for now the sub-sampling.
+         * Compute the sub-extent for the given Area Of Interest (AOI), ignoring for now the subsampling.
          * If no area of interest has been specified, or if the result is identical to the original extent,
          * then we will keep the reference to the original GridExtent (i.e. we share existing instances).
          */
@@ -153,12 +153,12 @@ final class SubgridCalculator {
             indices.setRange(i, extent.getLow(i), extent.getHigh(i) + 1.0);
         }
         /*
-         * Convert the target resolutions to grid cell sub-samplings and adjust the extent consequently.
+         * Convert the target resolutions to grid cell subsamplings and adjust the extent consequently.
          * We perform this conversion by handling the resolution has a small translation vector located
          * at the point of interest, and converting it to a translation vector in grid coordinates. The
          * conversion is done by a multiplication with the "CRS to grid" derivative at that point.
          *
-         * The sub-sampling will be rounded in such a way that the difference in grid size is less than
+         * The subsampling will be rounded in such a way that the difference in grid size is less than
          * one half of cell. Demonstration:
          *
          *    e = Math.getExponent(span)     →    2^e ≦ span
@@ -185,7 +185,7 @@ final class SubgridCalculator {
                 resolution[k] = s;
             }
             /*
-             * If at least one sub-sampling is effective, build a scale from the old grid coordinates to the new
+             * If at least one subsampling is effective, build a scale from the old grid coordinates to the new
              * grid coordinates. If we had no rounding, the conversion would be only a scale. But because of rounding,
              * we need a small translation for the difference between the "real" coordinate and the integer coordinate.
              */
@@ -233,7 +233,7 @@ final class SubgridCalculator {
      * Sets {@link #extent} to the given envelope, rounded to nearest integers.
      *
      * @param  indices    the envelope to use for setting the grid extent.
-     * @param  enclosing  the enclosing grid extent if a sub-sampling is not yet applied, {@code null} otherwise.
+     * @param  enclosing  the enclosing grid extent if a subsampling is not yet applied, {@code null} otherwise.
      */
     private void setExtent(final GeneralEnvelope indices, final GridExtent enclosing) {
         final GridExtent sub = new GridExtent(indices, GridRoundingMode.NEAREST, null, enclosing, modifiedDimensions);

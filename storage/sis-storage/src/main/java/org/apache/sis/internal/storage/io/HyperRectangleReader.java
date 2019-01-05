@@ -42,7 +42,7 @@ public final class HyperRectangleReader {
     private final DataTransfer reader;
 
     /**
-     * The {@code input} position of the first sample (ignoring sub-area and sub-sampling).
+     * The {@code input} position of the first sample (ignoring sub-area and subsampling).
      * This is the {@code origin} argument given to the constructor, copied verbatim.
      * This field is public for callers wanting to order {@code HyperRectangleReader} instances
      * in increasing file offset order, for more sequential reading (less seek operations).
@@ -117,7 +117,7 @@ public final class HyperRectangleReader {
      * Reads data in the given region. It is caller's responsibility to ensure that the {@code Region}
      * object has been created with a {@code size} argument equals to this hyper-rectangle size.
      *
-     * @param  region  the sub-area to read and the sub-sampling to use.
+     * @param  region  the sub-area to read and the subsampling to use.
      * @return the data in an array of primitive type.
      * @throws IOException if an error occurred while transferring data from the channel.
      */

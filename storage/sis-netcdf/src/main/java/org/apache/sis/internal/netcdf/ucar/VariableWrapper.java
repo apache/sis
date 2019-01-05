@@ -380,11 +380,11 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Reads a sub-sampled sub-area of the variable.
+     * Reads a subsampled sub-area of the variable.
      * Array elements are in inverse of netCDF order.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
      * @return the data as an array of a Java primitive type.
      */
     @Override

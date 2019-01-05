@@ -618,7 +618,7 @@ public abstract class Variable extends NamedElement {
     public abstract Vector read() throws IOException, DataStoreException;
 
     /**
-     * Reads a sub-sampled sub-area of the variable.
+     * Reads a subsampled sub-area of the variable.
      * Constraints on the argument values are:
      *
      * <ul>
@@ -633,7 +633,7 @@ public abstract class Variable extends NamedElement {
      * method shall {@linkplain #replaceNaN(Object) replace fill/missing values by NaN values}.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.

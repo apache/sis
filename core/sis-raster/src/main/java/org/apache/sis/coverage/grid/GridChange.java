@@ -272,7 +272,7 @@ public class GridChange implements Serializable {
     /**
      * Returns the intersection of the two grid geometry extents, in units of the target grid cells.
      * This is the expected ranges of grid coordinates after conversions from source to target grid,
-     * clipped to target grid extent and ignoring {@linkplain #getTargetSubsamplings() sub-samplings}.
+     * clipped to target grid extent and ignoring {@linkplain #getTargetSubsamplings() subsamplings}.
      *
      * @return intersection of grid geometry extents in units of target cells.
      */
@@ -301,7 +301,7 @@ public class GridChange implements Serializable {
      * is the order of axes in the {@linkplain #getTargetExtent() target range}.
      *
      * <p>In a <em>inverse</em> conversion from target to source grid, the value returned by this
-     * method would be the sub-sampling to apply while reading the target grid.</p>
+     * method would be the subsampling to apply while reading the target grid.</p>
      *
      * @return an <em>estimation</em> of the steps for accessing cells along each axis of target range.
      */
@@ -320,7 +320,7 @@ public class GridChange implements Serializable {
     }
 
     /**
-     * Returns the grid geometry resulting from sub-sampling the target grid with the given periods.
+     * Returns the grid geometry resulting from subsampling the target grid with the given periods.
      * The {@code periods} argument is usually the array returned by {@link #getTargetSubsamplings()}, but
      * not necessarily. The {@linkplain GridGeometry#getExtent() extent} of the returned grid geometry will
      * be derived from {@link #getTargetExtent()} as below for each dimension <var>i</var>:
@@ -334,9 +334,9 @@ public class GridChange implements Serializable {
      * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
      * in order to map approximately to the same {@linkplain GridGeometry#getEnvelope() envelope}.
      *
-     * @param  periods  the sub-sampling to apply on each grid dimension. All values shall be greater than zero.
+     * @param  periods  the subsampling to apply on each grid dimension. All values shall be greater than zero.
      *         If the array length is shorter than the number of dimensions, missing values are assumed to be 1.
-     * @return a grid geometry derived from the target geometry with the given sub-sampling.
+     * @return a grid geometry derived from the target geometry with the given subsampling.
      * @throws TransformException if an error occurred during computation of target grid geometry.
      */
     public GridGeometry getTargetGeometry(final int... periods) throws TransformException {
@@ -380,10 +380,10 @@ public class GridChange implements Serializable {
          * Assuming:
          *
          *   • All low coordinates = 0
-         *   • h₁ the high coordinate before sub-sampling
-         *   • h₂ the high coordinates after sub-sampling
+         *   • h₁ the high coordinate before subsampling
+         *   • h₂ the high coordinates after subsampling
          *   • c  a conversion factor from grid indices to "real world" coordinates
-         *   • s  a sub-sampling ≧ 1
+         *   • s  a subsampling ≧ 1
          *
          * Then the envelope upper bounds x is:
          *
