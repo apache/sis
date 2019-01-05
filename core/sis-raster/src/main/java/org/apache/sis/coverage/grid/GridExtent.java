@@ -783,7 +783,7 @@ public class GridExtent implements Serializable {
      * Returns a grid envelope that encompass only some dimensions of this grid envelope.
      * This method copies the specified dimensions of this grid envelope into a new grid envelope.
      * The given dimensions must be in strictly ascending order without duplicated values.
-     * The dimension of the sub grid envelope will be {@code dimensions.length}.
+     * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
      * converse of {@link #append(DimensionNameType, long, long, boolean)}.

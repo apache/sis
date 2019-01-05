@@ -203,6 +203,25 @@ public class GridGeometry implements Serializable {
     private final long nonLinears;
 
     /**
+     * An "empty" grid geometry with no value defined. All getter methods invoked on this instance will cause
+     * {@link IncompleteGridGeometryException} to be thrown. This instance can be used as a place-holder when
+     * the grid geometry can not be obtained.
+     */
+    public static final GridGeometry UNDEFINED = new GridGeometry();
+
+    /**
+     * Constructor for {@link #UNDEFINED} singleton only.
+     */
+    private GridGeometry() {
+        extent      = null;
+        gridToCRS   = null;
+        cornerToCRS = null;
+        envelope    = null;
+        resolution  = null;
+        nonLinears  = 0;
+    }
+
+    /**
      * Creates a new grid geometry with the same values than the given grid geometry.
      * This is a copy constructor for subclasses.
      *
@@ -1097,10 +1116,12 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
-     * This method copies the specified dimensions of this grid geometry into a new grid geometry.
+     * Returns a grid geometry that encompass only some dimensions of the grid extent.
+     * This method copies the specified dimensions into a new grid geometry.
+     * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
+     * they are not necessarily the same than the {@linkplain #getEnvelope() envelope} dimensions.
      * The given dimensions must be in strictly ascending order without duplicated values.
-     * The dimension of the sub grid grid geometry will be {@code dimensions.length}.
+     * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite>.
      * This method can not be used for changing dimension order.</p>
