@@ -24,6 +24,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -139,7 +140,8 @@ public abstract class GridCoverage {
      *         May be {@code null} if this coverage can render only one image, for example because its CRS is two-dimensional.
      * @return the grid slice as a rendered image.
      * @throws PointOutsideCoverageException if the given slice point is illegal.
-     * @throws CannotEvaluateException if this method can not produce the render image for another reason.
+     * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
+     * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.
      */
     public abstract RenderedImage render(DirectPosition slicePoint) throws CannotEvaluateException;
 

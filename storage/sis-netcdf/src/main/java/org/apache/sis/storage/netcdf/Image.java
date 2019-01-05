@@ -23,10 +23,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.internal.raster.ColorModelFactory;
 
@@ -64,13 +64,15 @@ final class Image extends GridCoverage {
      */
     @Override
     public RenderedImage render(final DirectPosition slicePoint) {
-        // TODO: use slicePoint.
-        final GridExtent extent = getGridGeometry().getExtent();
-        final int width  = Math.toIntExact(extent.getSize(0));
-        final int height = Math.toIntExact(extent.getSize(1));
-        final WritableRaster raster = RasterFactory.createBandedRaster(data, width, height, width, null, null, null);
-        final ColorModel colors = ColorModelFactory.createColorModel(getSampleDimensions(), VISIBLE_BAND, data.getDataType(),
-                ColorModelFactory.GRAYSCALE);
-        return new BufferedImage(colors, raster, false, null);
+        GridGeometry source = getGridGeometry();
+        GridGeometry target = source;
+        if (slicePoint != null) target = target.slice(slicePoint);
+        try {
+            WritableRaster raster = RasterFactory.createRaster(data, null, null, source.getExtent(), target.getExtent(), true);
+            ColorModel colors = ColorModelFactory.createColorModel(getSampleDimensions(), VISIBLE_BAND, data.getDataType(), ColorModelFactory.GRAYSCALE);
+            return new BufferedImage(colors, raster, false, null);
+        } catch (ArithmeticException | IllegalArgumentException e) {
+            throw new CannotEvaluateException(null, e);
+        }
     }
 }

@@ -44,6 +44,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.io.TableAppender;
@@ -52,6 +53,7 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
+import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 
 
@@ -490,7 +492,7 @@ public class GridExtent implements Serializable {
      *
      * @return whether all low coordinates are zero.
      */
-    public boolean startsWithZero() {
+    public boolean startsAtZero() {
         for (int i = getDimension(); --i >= 0;) {
             if (coordinates[i] != 0) {
                 return false;
@@ -592,6 +594,83 @@ public class GridExtent implements Serializable {
             center[i] = ((double) coordinates[i] + (double) coordinates[i + dimension] + 1.0) * 0.5;
         }
         return center;
+    }
+
+    /**
+     * Returns indices of all dimensions where this grid extent has a size greater than 1.
+     * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
+     * in a <var>n</var>-dimensional cube where <var>s</var> ≦ <var>n</var>.
+     *
+     * <div class="note"><b>Example:</b>
+     * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.
+     * The first step is to specify the <var>x</var> and <var>t</var> coordinates of the slice.
+     * In this example we set <var>x</var> to 5 and <var>t</var> to 8.
+     *
+     * {@preformat java
+     *     GridGeometry grid = ...;             // Geometry of the (x,y,z,t) grid.
+     *     GridGeometry slice4D = grid.slice(new GeneralDirectPosition(5, NaN, NaN, 8));
+     * }
+     *
+     * Above code created a slice at the requested position, but that slice still have 4 dimensions.
+     * It is a "slice" because the <var>x</var> and <var>t</var> dimensions of {@code slice4D} have only one cell.
+     * If a two-dimensional slice is desired, then above operations can be completed as below.
+     * In this example, the result of {@code getSubspaceDimensions(2)} call will be {1,2}.
+     *
+     * {@preformat java
+     *     int[]  subDimensions = slice4D.getExtent().getSubspaceDimensions(2);
+     *     GridGeometry slice2D = slice4D.reduce(subDimensions);
+     * }
+     *
+     * Note that in this particular example, it would have been more efficient to execute {@code grid.reduce(1,2)} directly.
+     * This {@code getSubspaceDimensions(int)} method is more useful for inferring a {@code slice2D} from a {@code slice4D}
+     * which has been created elsewhere, or when we do not really want the {@code slice2D} but only its dimension indices.
+     * </div>
+     *
+     * This method returns exactly <var>s</var> indices. If there is more than <var>s</var> dimensions having a
+     * {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
+     * If there is less than <var>s</var> dimensions having a size greater than 1, then the returned list of
+     * dimensions is completed with some dimensions of size 1, starting with the first dimensions in this grid
+     * extent, until there is exactly <var>s</var> dimensions. This this grid extent does not have <var>s</var>
+     * dimensions, then a {@link CannotEvaluateException} is thrown.
+     *
+     * @param  s  number of dimensions of the sub-space.
+     * @return indices of sub-space dimensions, in increasing order in an array of length <var>s</var>.
+     * @throws SubspaceNotSpecifiedException if there is more than <var>s</var> dimensions having a size greater than 1.
+     * @throws CannotEvaluateException if this grid extent does not have at least <var>s</var> dimensions.
+     */
+    public int[] getSubspaceDimensions(final int s) {
+        ArgumentChecks.ensurePositive("s", s);
+        final int m = getDimension();
+        if (s > m) {
+            throw new CannotEvaluateException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, s));
+        }
+        final int[] selected = new int[s];
+        int count = 0;
+        for (int i=0; i<m; i++) {
+            final long low  = coordinates[i];
+            final long high = coordinates[i+m];
+            if (low != high) {
+                if (count < s) {
+                    selected[count++] = i;
+                } else {
+                    throw new SubspaceNotSpecifiedException(Resources.format(Resources.Keys.NoNDimensionalSlice_3,
+                                    s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(high - low)));
+                }
+            }
+        }
+        final int missing = s - count;
+        if (missing != 0) {
+            System.arraycopy(selected, 0, selected, missing, count);
+            count = 0;
+            for (int i=0; ; i++) {                          // An IndexOutOfBoundsException would be a bug in our algorithm.
+                if (coordinates[i] == coordinates[i+m]) {
+                    selected[count++] = i;
+                    if (count == missing) break;
+                }
+            }
+            Arrays.sort(selected);
+        }
+        return selected;
     }
 
     /**
@@ -820,8 +899,8 @@ public class GridExtent implements Serializable {
     /**
      * Creates a new grid extent sub-sampled by the given amount of cells along each grid dimensions.
      * This method divides {@linkplain #getLow(int) low coordinates} and {@linkplain #getSize(int) grid sizes}
-     * by the given strides, rounding toward zero. The {@linkplain #getHigh(int) high coordinates} are adjusted
-     * accordingly (this is often equivalent to dividing high coordinates by the strides too, but a difference
+     * by the given periods, rounding toward zero. The {@linkplain #getHigh(int) high coordinates} are adjusted
+     * accordingly (this is often equivalent to dividing high coordinates by the periods too, but a difference
      * of one cell may exist).
      *
      * <div class="note"><b>Note:</b>
@@ -833,19 +912,19 @@ public class GridExtent implements Serializable {
      * This method does not reduce the number of dimensions of the grid extent.
      * For dimensionality reduction, see {@link #reduce(int...)}.
      *
-     * @param  strides  the strides. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @param  periods  the sub-samplings. Length shall be equal to the number of dimension and all values shall be greater than zero.
      * @return the sub-sampled extent, or {@code this} is sub-sampling results in the same extent.
-     * @throws IllegalArgumentException if a stride is not greater than zero.
+     * @throws IllegalArgumentException if a period is not greater than zero.
      *
      * @see GridGeometry#subgrid(Envelope, double...)
      */
-    public GridExtent subsample(final int... strides) {
-        ArgumentChecks.ensureNonNull("strides", strides);
+    public GridExtent subsample(final int... periods) {
+        ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
-        ArgumentChecks.ensureDimensionMatches("strides", m, strides);
+        ArgumentChecks.ensureDimensionMatches("periods", m, periods);
         final GridExtent sub = new GridExtent(this);
         for (int i=0; i<m; i++) {
-            final int s = strides[i];
+            final int s = periods[i];
             if (s > 1) {
                 final int j = i + m;
                 long low  = coordinates[i];
@@ -856,7 +935,7 @@ public class GridExtent implements Serializable {
                 sub.coordinates[i] = low /= s;
                 sub.coordinates[j] = low + r;
             } else if (s <= 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("strides", i), s));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("periods", i), s));
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;

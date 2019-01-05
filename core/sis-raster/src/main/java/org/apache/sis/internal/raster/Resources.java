@@ -79,10 +79,15 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CategoryRangeOverlap_4 = 13;
 
         /**
-         * Indices ({3}) are outside grid coverage. The value at dimension {0} shall be between {1} and
-         * {2} inclusive.
+         * Indices ({3}) are outside grid coverage. The value at dimension {0} shall be between
+         * {1,number} and {2,number} inclusive.
          */
         public static final short GridCoordinateOutsideCoverage_4 = 21;
+
+        /**
+         * The grid envelope must have at least {0} dimensions.
+         */
+        public static final short GridEnvelopeMustBeNDimensional_1 = 25;
 
         /**
          * Sample value range {1} for “{0}” category is illegal.
@@ -90,7 +95,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalCategoryRange_2 = 15;
 
         /**
-         * Illegal grid envelope [{1} … {2}] for dimension {0}.
+         * Illegal grid envelope [{1,number} … {2,number}] for dimension {0}.
          */
         public static final short IllegalGridEnvelope_3 = 8;
 
@@ -140,6 +145,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoCategoryForValue_1 = 14;
 
         /**
+         * Can not infer a {0}-dimensional slice from the grid envelope. Dimension {1} has {2,number}
+         * cells.
+         */
+        public static final short NoNDimensionalSlice_3 = 26;
+
+        /**
          * non-linear in {0} dimension{0,choice,1#|2#s}:
          */
         public static final short NonLinearInDimensions_1 = 20;
@@ -150,7 +161,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotStrictlyOrderedDimensions = 24;
 
         /**
-         * The ({0}, {1}) pixel coordinate is outside iterator domain.
+         * The ({0,number}, {1,number}) pixel coordinate is outside iterator domain.
          */
         public static final short OutOfIteratorDomain_2 = 1;
 

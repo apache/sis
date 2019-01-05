@@ -101,6 +101,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MismatchedVariableSize_3 = 8;
 
         /**
+         * Variables “{1}” and “{2}” in netCDF file “{0}” does not have the same type.
+         */
+        public static final short MismatchedVariableType_3 = 13;
+
+        /**
          * Reference system of type ‘{1}’ can not have {2} axes. The axes found in the “{0}” netCDF
          * file are: {3}.
          */

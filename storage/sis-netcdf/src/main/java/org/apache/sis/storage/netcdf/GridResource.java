@@ -33,6 +33,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
@@ -353,13 +354,21 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         if (domain == null) {
             domain = gridGeometry;
         }
-        final DataType          dataType;
-        final DataBuffer        imageBuffer;
+        final Variable first = data[range[0]];
+        final DataType dataType = first.getDataType();
+        for (int i=1; i<data.length; i++) {
+            final Variable variable = data[range[i]];
+            if (!dataType.equals(variable.getDataType())) {
+                throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
+                        Resources.Keys.MismatchedVariableType_3, getFilename(), first.getName(), variable.getName()));
+            }
+        }
+        final DataBuffer imageBuffer;
         final SampleDimension[] selected = new SampleDimension[range.length];
         try {
             final Buffer[]   samples = new Buffer[range.length];
             final GridChange change  = new GridChange(domain, gridGeometry);
-            final int[]      strides = change.getTargetStrides();
+            final int[] subsamplings = change.getTargetSubsamplings();
             SampleDimension.Builder builder = null;
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
@@ -383,16 +392,15 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         }
                         if (values == null) {
                             // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                            values = variable.read(change.getTargetExtent(), strides).buffer().get();
+                            values = variable.read(change.getTargetExtent(), subsamplings).buffer().get();
                         }
                         selected[j] = def;
                         samples[j] = values;
                     }
                 }
             }
-            dataType = data[range[0]].getDataType();
+            domain = change.getTargetGeometry(subsamplings);
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
-            domain = change.getTargetGeometry(strides);
         } catch (TransformException e) {
             throw new DataStoreReferencingException(e);
         } catch (IOException e) {
@@ -404,6 +412,17 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer);
+    }
+
+    /**
+     * Returns the name of the netCDF file. This is used for error messages.
+     */
+    private String getFilename() {
+        if (location != null) {
+            return location.getFileName().toString();
+        } else {
+            return Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
+        }
     }
 
     /**

@@ -1126,10 +1126,11 @@ public class GridGeometry implements Serializable {
      * <p>This method performs a <cite>dimensionality reduction</cite>.
      * This method can not be used for changing dimension order.</p>
      *
-     * @param  dimensions  the dimensions to select, in strictly increasing order.
+     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
      * @return the sub grid geometry, or {@code this} if the given array contains all dimensions of this grid grid geometry.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
+     * @see GridExtent#getSubspaceDimensions(int)
      * @see GridExtent#reduce(int...)
      * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
      */

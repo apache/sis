@@ -23,6 +23,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
@@ -165,6 +166,23 @@ public final strictfp class GridExtentTest extends TestCase {
         } catch (PointOutsideCoverageException e) {
             final String message = e.getLocalizedMessage();
             assertTrue(message, message.contains("(900, 47)"));     // See above comment.
+        }
+    }
+
+    /**
+     * Tests {@link GridExtent#getSubspaceDimensions(int)}.
+     */
+    @Test
+    public void testGetSubspaceDimensions() {
+        final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
+        assertArrayEquals(new int[] {0,  2  }, extent.getSubspaceDimensions(2));
+        assertArrayEquals(new int[] {0,1,2  }, extent.getSubspaceDimensions(3));
+        assertArrayEquals(new int[] {0,1,2,3}, extent.getSubspaceDimensions(4));
+        try {
+            extent.getSubspaceDimensions(1);
+            fail("Should not reduce to 1 dimension.");
+        } catch (SubspaceNotSpecifiedException e) {
+            assertNotNull(e.getMessage());
         }
     }
 

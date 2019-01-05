@@ -57,7 +57,7 @@ import org.apache.sis.util.Debug;
  *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
  *             GridChange change = new GridChange(domain, getGridGeometry());
  *             GridExtent toRead = change.getTargetExtent();
- *             int[] subsampling = change.getTargetStrides());
+ *             int[] subsampling = change.getTargetSubsamplings());
  *             // Do reading here.
  *         }
  *     }
@@ -102,7 +102,7 @@ public class GridChange implements Serializable {
      * grid to target grid. Those factors appear in the order of <em>target</em> grid axes.
      * May be {@code null} if the conversion is identity.
      *
-     * @see #getTargetStrides()
+     * @see #getTargetSubsamplings()
      */
     private final double[] scales;
 
@@ -272,7 +272,7 @@ public class GridChange implements Serializable {
     /**
      * Returns the intersection of the two grid geometry extents, in units of the target grid cells.
      * This is the expected ranges of grid coordinates after conversions from source to target grid,
-     * clipped to target grid extent and ignoring {@linkplain #getTargetStrides() strides}.
+     * clipped to target grid extent and ignoring {@linkplain #getTargetSubsamplings() sub-samplings}.
      *
      * @return intersection of grid geometry extents in units of target cells.
      */
@@ -305,7 +305,7 @@ public class GridChange implements Serializable {
      *
      * @return an <em>estimation</em> of the steps for accessing cells along each axis of target range.
      */
-    public int[] getTargetStrides() {
+    public int[] getTargetSubsamplings() {
         final int[] subsamplings;
         if (scales == null) {
             subsamplings = new int[targetExtent.getDimension()];
@@ -320,41 +320,41 @@ public class GridChange implements Serializable {
     }
 
     /**
-     * Returns the grid geometry resulting from sub-sampling the target grid with the given strides.
-     * The {@code strides} argument is usually the array returned by {@link #getTargetStrides()}, but not necessarily.
-     * The {@linkplain GridGeometry#getExtent() extent} of the returned grid geometry will be derived from
-     * {@link #getTargetExtent()} as below for each dimension <var>i</var>:
+     * Returns the grid geometry resulting from sub-sampling the target grid with the given periods.
+     * The {@code periods} argument is usually the array returned by {@link #getTargetSubsamplings()}, but
+     * not necessarily. The {@linkplain GridGeometry#getExtent() extent} of the returned grid geometry will
+     * be derived from {@link #getTargetExtent()} as below for each dimension <var>i</var>:
      *
      * <ul>
-     *   <li>The {@linkplain GridExtent#getLow(int)  low}  is divided by {@code strides[i]}, rounded toward zero.</li>
-     *   <li>The {@linkplain GridExtent#getSize(int) size} is divided by {@code strides[i]}, rounded toward zero.</li>
+     *   <li>The {@linkplain GridExtent#getLow(int)  low}  is divided by {@code periods[i]}, rounded toward zero.</li>
+     *   <li>The {@linkplain GridExtent#getSize(int) size} is divided by {@code periods[i]}, rounded toward zero.</li>
      *   <li>The {@linkplain GridExtent#getHigh(int) high} is recomputed from above low and size.</li>
      * </ul>
      *
      * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
      * in order to map approximately to the same {@linkplain GridGeometry#getEnvelope() envelope}.
      *
-     * @param  strides  the sub-sampling to apply on each grid dimension. All values shall be greater than zero.
+     * @param  periods  the sub-sampling to apply on each grid dimension. All values shall be greater than zero.
      *         If the array length is shorter than the number of dimensions, missing values are assumed to be 1.
      * @return a grid geometry derived from the target geometry with the given sub-sampling.
      * @throws TransformException if an error occurred during computation of target grid geometry.
      */
-    public GridGeometry getTargetGeometry(final int... strides) throws TransformException {
+    public GridGeometry getTargetGeometry(final int... periods) throws TransformException {
         GridExtent extent = getTargetExtent();
         double[] factors = null;
         Matrix toGiven = null;
-        if (strides != null) {
-            // Validity of the strides values will be verified by GridExtent.subsampling(…) invoked below.
+        if (periods != null) {
+            // Validity of the periods values will be verified by GridExtent.subsampling(…) invoked below.
             final GridExtent unscaled = extent;
             final int dimension = extent.getDimension();
-            for (int i = Math.min(dimension, strides.length); --i >= 0;) {
-                final int s = strides[i];
+            for (int i = Math.min(dimension, periods.length); --i >= 0;) {
+                final int s = periods[i];
                 if (s != 1) {
                     if (factors == null) {
-                        extent = extent.subsample(strides);
+                        extent = extent.subsample(periods);
                         factors = new double[dimension];
                         Arrays.fill(factors, 1);
-                        if (!extent.startsWithZero()) {
+                        if (!extent.startsAtZero()) {
                             toGiven = Matrices.createIdentity(dimension + 1);
                         }
                     }
@@ -468,18 +468,18 @@ public class GridChange implements Serializable {
         }
         /*
          * GridChange (example)
-         *   └─Target strides
+         *   └─Target subsamplings
          *       ├─{50, 300}
          *       └─Global ≈ 175.0
          */
         buffer.setLength(0);
         buffer.append('{');
-        for (int s : getTargetStrides()) {
+        for (int s : getTargetSubsamplings()) {
             if (buffer.length() > 1) buffer.append(", ");
             buffer.append(s);
         }
         section = root.newChild();
-        section.setValue(column, "Target strides");
+        section.setValue(column, "Target subsamplings");
         section.newChild().setValue(column, buffer.append('}').toString()); buffer.setLength(0);
         section.newChild().setValue(column, buffer.append("Global ≈ ").append((float) getGlobalScale()).toString());
         return tree;
