@@ -55,12 +55,33 @@ import org.apache.sis.math.Vector;
  * computes automatically the offsets from that position to the position of the first value included
  * in the {@code sliceExtent} given to the constructor.</p>
  *
- * <p>Current implementation constructs only images made of a single tile.
- * Support for tiled images will be added in a future version.</p>
+ * <div class="note"><b>Usage example:</b>
+ * {@preformat java
+ *     class MyResource extends GridCoverage {
+ *         &#64;Override
+ *         public RenderedImage render(GridExtent sliceExtent) {
+ *             try {
+ *                 ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
+ *                 renderer.setData(data);
+ *                 return renderer.image();
+ *             } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
+ *                 throw new CannotEvaluateException("Can not create an image.", e);
+ *             }
+ *         }
+ *     }
+ * }
+ * </div>
+ *
+ * <div class="section">Limitations</div>
+ * Current implementation constructs only images made of a single tile.
+ * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see GridCoverage#render(GridExtent)
+ *
+ * @since 1.0
  * @module
  */
 public class ImageRenderer {
@@ -327,6 +348,7 @@ public class ImageRenderer {
      *
      * @return the raster.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
+     * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
      */
     public WritableRaster raster() {
         if (buffer == null) {
@@ -342,6 +364,7 @@ public class ImageRenderer {
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
+     * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
      */
     public RenderedImage image() {
         WritableRaster raster = raster();

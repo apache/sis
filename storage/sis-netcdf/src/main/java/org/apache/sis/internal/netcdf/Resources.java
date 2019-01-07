@@ -81,6 +81,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateGridGeometry_3 = 12;
 
         /**
+         * Can not render an image for “{0}”. The reason is: {1}
+         */
+        public static final short CanNotRender_2 = 14;
+
+        /**
          * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;

@@ -19,12 +19,14 @@ package org.apache.sis.storage.netcdf;
 import java.util.List;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
+import java.awt.image.RasterFormatException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
+import org.apache.sis.internal.netcdf.Resources;
 
 
 /**
@@ -42,11 +44,17 @@ final class Image extends GridCoverage {
     private final DataBuffer data;
 
     /**
+     * Name to display in error messages. Not to be used for processing.
+     */
+    private final String label;
+
+    /**
      * Creates a new raster from the given resource.
      */
-    Image(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data) {
+    Image(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final String label) {
         super(domain, range);
-        this.data = data;
+        this.data  = data;
+        this.label = label;
     }
 
     /**
@@ -59,8 +67,8 @@ final class Image extends GridCoverage {
             final ImageRenderer renderer = new ImageRenderer(this, target);
             renderer.setData(data);
             return renderer.image();
-        } catch (ArithmeticException | IllegalArgumentException e) {
-            throw new CannotEvaluateException(null, e);
+        } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
+            throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
         }
     }
 }

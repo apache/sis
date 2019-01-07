@@ -411,7 +411,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer);
+        return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getName());
     }
 
     /**
