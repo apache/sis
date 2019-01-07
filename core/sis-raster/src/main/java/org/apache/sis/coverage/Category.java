@@ -171,20 +171,51 @@ public class Category implements Serializable {
     final Category converse;
 
     /**
-     * Creates a copy of the given category except for the {@link #toConverse} function which is set to identity.
-     * This is used only if a user specify a {@code ConvertedCategory} to {@link SampleDimension} constructor.
-     * Such converted category can only come from another {@code SampleDimension} and may have inconsistent
-     * information for the new sample dimension that the user is creating.
+     * Creates a copy of the given category. This constructor is provided for subclasses
+     * wanting to extent an existing category with custom information.
      *
      * @param copy  the category to copy.
      */
-    Category(final Category copy) {
+    protected Category(final Category copy) {
         name       = copy.name;
         range      = copy.range;
         minimum    = copy.minimum;
         maximum    = copy.maximum;
-        toConverse = identity();
-        converse   = this;
+        toConverse = copy.toConverse;
+        if (copy.converse == copy) {
+            converse = this;
+        } else {
+            converse = new Category(copy.converse, this);
+        }
+    }
+
+    /**
+     * Creates a copy of the given category except for the {@link #converse} and {@link #toConverse} fields.
+     * This constructor serves two purposes:
+     * <ul>
+     *   <li>If {@code caller} is null, then {@link #toConverse} is is set to identity.
+     *       This is used only if a user specify a {@code ConvertedCategory} to {@link SampleDimension} constructor.
+     *       Such converted category can only come from another {@code SampleDimension} and may have inconsistent
+     *       information for the new sample dimension that the user is creating.</li>
+     *   <li>If {@code caller} is non-null, then {@link #toConverse} is set to the same transform than {@code copy} and
+     *       {@link #converse} is set to {@code caller}. This is used only as a complement for the copy constructor.</li>
+     * </ul>
+     *
+     * @param copy    the category to copy.
+     * @param caller  the converse, or {@code null} for {@code this}.
+     */
+    Category(final Category copy, final Category caller) {
+        name    = copy.name;
+        range   = copy.range;
+        minimum = copy.minimum;
+        maximum = copy.maximum;
+        if (caller != null) {
+            toConverse = copy.toConverse;
+            converse   = caller;
+        } else {
+            toConverse = identity();
+            converse   = this;
+        }
     }
 
     /**

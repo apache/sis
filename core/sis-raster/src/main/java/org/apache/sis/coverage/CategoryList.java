@@ -150,7 +150,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             for (int i=0; i<categories.length; i++) {
                 final Category c = categories[i];
                 if (c instanceof ConvertedCategory) {
-                    categories[i] = new Category(c);
+                    categories[i] = new Category(c, null);
                 }
             }
         }

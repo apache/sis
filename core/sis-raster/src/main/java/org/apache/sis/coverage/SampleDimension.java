@@ -517,9 +517,17 @@ public class SampleDimension implements Serializable {
         private Number background;
 
         /**
-         * The categories for this sample dimension.
+         * The categories for the sample dimension to create.
+         * This list is modified by the following methods:
+         *
+         * <ul>
+         *   <li>{@link #setBackground(CharSequence, Number)}</li>
+         *   <li>{@link #addQualitative(CharSequence, NumberRange)}</li>
+         *   <li>{@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}</li>
+         *   <li>{@link #clear()}</li>
+         * </ul>
          */
-        private final List<Category> categories;
+        protected final List<Category> categories;
 
         /**
          * The ordinal NaN values used for this sample dimension.
