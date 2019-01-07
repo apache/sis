@@ -116,12 +116,27 @@ public abstract class GridCoverage {
     }
 
     /**
-     * Returns a two-dimensional slice of grid data as a rendered image. The given {@code slicePoint} argument specifies
+     * Returns a two-dimensional slice of grid data as a rendered image. The given {@code sliceExtent} argument specifies
      * the coordinates of the slice in all dimensions that are not in the two-dimensional image. For example if this grid
-     * coverage has (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) dimensions and we want to render an image
-     * of data in the (<var>x</var>, <var>y</var>) dimensions, then the given {@code slicePoint} shall contain the
-     * (<var>z</var>, <var>t</var>) coordinates of the desired slice. The two coordinates of the data to be shown
-     * (<var>x</var> and <var>y</var> in our example) shall be excluded from the slice point in one of the following ways:
+     * coverage has <i>(<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)</i> dimensions and we want to render an image
+     * of data in the <i>(<var>x</var>,<var>y</var>)</i> dimensions, then the given {@code sliceExtent} shall contain the
+     * <i>(<var>z</var>,<var>t</var>)</i> coordinates of the desired slice. Those coordinates are specified in a grid extent
+     * where {@linkplain GridExtent#getLow(int) low coordinate} = {@linkplain GridExtent#getHigh(int) high coordinate} in the
+     * <var>z</var> and <var>t</var> dimensions. The two dimensions of the data to be shown (<var>x</var> and <var>y</var>
+     * in our example) shall be the only dimensions with a {@linkplain GridExtent#getSize(int) size} greater than 1 cell.
+     *
+     * <p>If the {@code sliceExtent} argument is {@code null}, then the default value is
+     * <code>{@linkplain #getGridGeometry()}.{@linkplain GridGeometry#getExtent() getExtent()}</code>.
+     * This means that {@code gridExtent} is optional for two-dimensional grid coverages or grid coverages where all dimensions
+     * except two have a size of 1 cell. If the grid extent contains more than 2 dimensions with a size greater than one cell,
+     * then a {@link SubspaceNotSpecifiedException} is thrown. If some {@code sliceExtent} coordinates are outside the extent
+     * of this grid coverage, then a {@link PointOutsideCoverageException} is thrown.</p>
+     *
+     * <div class="section">Computing a slice extent from a slice point in "real world" coordinates</div>
+     * The {@code sliceExtent} is specified to this method as grid indices. If the <var>z</var> and <var>t</var> values
+     * are not grid indices but are relative to some Coordinate Reference System (CRS) instead, then the slice extent can
+     * be computed as below. First, a <cite>slice point</cite> containing the <var>z</var> and <var>t</var> coordinates
+     * should be constructed as a {@link DirectPosition} in one of the following ways:
      *
      * <ul>
      *   <li>The {@code slicePoint} has a CRS with two dimensions less than this grid coverage CRS.</li>
@@ -129,21 +144,36 @@ public abstract class GridCoverage {
      *       exclude are set to {@link Double#NaN}.</li>
      * </ul>
      *
+     * Then:
+     *
+     * <blockquote><code>sliceExtent = {@linkplain #getGridGeometry()}.{@linkplain GridGeometry#subExtent(DirectPosition)
+     * subExtent}(slicePoint);</code></blockquote>
+     *
      * If the {@code slicePoint} CRS is different than this grid coverage CRS (except for the number of dimensions),
-     * a coordinate transformation will be applied. If the {@code slicePoint} CRS is {@code null}, it is assumed the
-     * same than this grid coverage CRS. If this grid coverage is two-dimensional or can render only one image for
-     * other reason, then the {@code slicePoint} can be null.
+     * a coordinate transformation will be applied as needed.
      *
-     * <p>Implementations should return a view as much as possible, without copying sample values.</p>
+     * <div class="section">Rendered image properties</div>
+     * The {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height} will be
+     * the {@code sliceExtent} {@linkplain GridExtent#getSize(int) sizes} in the first and second dimension respectively
+     * of the two-dimensional {@code sliceExtent} {@linkplain GridExtent#getSubspaceDimensions(int) subspace}.
+     * The image location ({@linkplain RenderedImage#getMinX() x}, {@linkplain RenderedImage#getMinY() y}) can be any point;
+     * that location may not be the same as the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low} coordinates
+     * since conversion from {@code long} to {@code int} primitive type may cause lost of precision, and some implementations
+     * like {@link java.awt.image.BufferedImage} restrict that location to (0,0).
      *
-     * @param  slicePoint  coordinates of the slice in all dimensions other than the two dimensions to be shown on the image.
-     *         May be {@code null} if this coverage can render only one image, for example because its CRS is two-dimensional.
+     * <p>Implementations should return a view as much as possible, without copying sample values.
+     * {@code GridCoverage} subclasses can use the {@link ImageRenderer} class as a helper tool for that purpose.
+     * This method does not mandate any behavior regarding tiling (size of tiles, their numbering system, <i>etc.</i>).
+     * Some implementations may defer data loading until {@linkplain RenderedImage#getTile(int, int) a tile is requested}.</p>
+     *
+     * @param  sliceExtent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
+     *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @return the grid slice as a rendered image.
-     * @throws PointOutsideCoverageException if the given slice point is illegal.
+     * @throws PointOutsideCoverageException if the given slice extent contains illegal coordinates.
      * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
      * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.
      */
-    public abstract RenderedImage render(DirectPosition slicePoint) throws CannotEvaluateException;
+    public abstract RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException;
 
     /**
      * Returns a string representation of this grid coverage for debugging purpose.

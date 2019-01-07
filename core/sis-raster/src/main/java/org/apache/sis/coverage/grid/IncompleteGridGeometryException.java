@@ -22,6 +22,18 @@ package org.apache.sis.coverage.grid;
  * For example this exception is thrown when {@link GridGeometry#getEnvelope()} is invoked while
  * the grid geometry has been built with a null envelope.
  *
+ * <p>The {@link GridGeometry#isDefined(int)} can be used for avoiding this exception.
+ * For example if a process is going to need both the grid extent and the "grid to CRS" transform,
+ * than it can verify if those two conditions are met in a single method call:</p>
+ *
+ * {@preformat java
+ *     if (gg.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS) {
+ *         GridExtent    extent    = gg.getGridExtent();
+ *         MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
+ *         // Do the process.
+ *     }
+ * }
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0

@@ -17,7 +17,6 @@
 package org.apache.sis.internal.raster;
 
 import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -50,7 +49,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 public final class ColorModelFactory {
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
-     * This is a possible argument for {@link #createColorModel(List, int, int, Function)}.
+     * This is a possible argument for {@link #createColorModel(SampleDimension[], int, int, Function)}.
      */
     public static final Function<Category,Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
@@ -283,16 +282,16 @@ public final class ColorModelFactory {
      * @param  colors       the colors to use for each category. The function may return {@code null}, which means transparent.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModel createColorModel(final List<? extends SampleDimension> bands,
+    public static ColorModel createColorModel(final SampleDimension[] bands,
             final int visibleBand, final int type, Function<Category,Color[]> colors)
     {
         ArgumentChecks.ensureNonNull("bands",  bands);
         ArgumentChecks.ensureNonNull("colors", colors);
         final Map<NumberRange<?>, Color[]> ranges = new LinkedHashMap<>();
-        for (final Category category : bands.get(visibleBand).getCategories()) {
+        for (final Category category : bands[visibleBand].getCategories()) {
             ranges.put(category.getSampleRange(), colors.apply(category));
         }
-        return createColorModel(ranges, visibleBand, bands.size(), type);
+        return createColorModel(ranges, visibleBand, bands.length, type);
     }
 
     /**

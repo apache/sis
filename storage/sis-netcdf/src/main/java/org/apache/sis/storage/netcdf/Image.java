@@ -18,17 +18,13 @@ package org.apache.sis.storage.netcdf;
 
 import java.util.List;
 import java.awt.image.DataBuffer;
-import java.awt.image.ColorModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.raster.RasterFactory;
-import org.apache.sis.internal.raster.ColorModelFactory;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.ImageRenderer;
 
 
 /**
@@ -40,11 +36,6 @@ import org.apache.sis.internal.raster.ColorModelFactory;
  * @module
  */
 final class Image extends GridCoverage {
-    /**
-     * Index of the band to show in rendered image.
-     */
-    private static final int VISIBLE_BAND = 0;
-
     /**
      * The sample values.
      */
@@ -63,14 +54,11 @@ final class Image extends GridCoverage {
      * This returns a view as much as possible; sample values are not copied.
      */
     @Override
-    public RenderedImage render(final DirectPosition slicePoint) {
-        GridGeometry source = getGridGeometry();
-        GridGeometry target = source;
-        if (slicePoint != null) target = target.slice(slicePoint);
+    public RenderedImage render(final GridExtent target) {
         try {
-            WritableRaster raster = RasterFactory.createRaster(data, null, null, source.getExtent(), target.getExtent(), true);
-            ColorModel colors = ColorModelFactory.createColorModel(getSampleDimensions(), VISIBLE_BAND, data.getDataType(), ColorModelFactory.GRAYSCALE);
-            return new BufferedImage(colors, raster, false, null);
+            final ImageRenderer renderer = new ImageRenderer(this, target);
+            renderer.setData(data);
+            return renderer.image();
         } catch (ArithmeticException | IllegalArgumentException e) {
             throw new CannotEvaluateException(null, e);
         }

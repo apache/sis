@@ -713,6 +713,7 @@ public class GridGeometry implements Serializable {
      * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      *
      * @see #slice(DirectPosition)
+     * @see GridCoverage#render(GridExtent)
      */
     public GridExtent subExtent(final DirectPosition slicePoint) {
         ArgumentChecks.ensureNonNull("slicePoint", slicePoint);

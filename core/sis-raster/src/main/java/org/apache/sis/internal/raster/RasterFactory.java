@@ -30,15 +30,13 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -57,57 +55,6 @@ public final class RasterFactory extends Static {
     }
 
     /**
-     * Wraps a sub-region of the given data buffer in a raster.
-     * The raster width, raster height, pixel stride and scanline stride are inferred from the grid extents.
-     * The sample model type is selected according the number of bands and the pixel stride.
-     *
-     * @param  buffer          buffer that contains the sample values.
-     * @param  bankIndices     bank indices for each band, or {@code null} for 0, 1, 2, 3….
-     * @param  bandOffsets     number of data elements from the first element of the bank to the first sample of the band, or {@code null} for all 0.
-     * @param  source          extent of the data wrapped by the given buffer. May have any number of dimensions.
-     * @param  target          extent of the subspace to wrap in a raster.
-     * @param  startAtZero     whether to force the raster to start at (0,0) instead than the target extent low coordinates.
-     * @return a raster built from given properties.
-     * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
-     * @throws SubspaceNotSpecifiedException if this method can not infer a two-dimensional slice from {@code target}.
-     */
-    public static WritableRaster createRaster(final DataBuffer buffer, final int[] bankIndices, final int[] bandOffsets,
-            final GridExtent source, final GridExtent target, final boolean startAtZero)
-    {
-        int dimension = target.getDimension();
-        if (source.getDimension() != dimension) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "target", source.getDimension(), dimension));
-        }
-        final int[] dimensions = target.getSubspaceDimensions(2);
-        int xd = dimensions[0];
-        int yd = dimensions[1];
-        final Point location;
-        if (startAtZero) {
-            location = null;
-        } else {
-            location = new Point(Math.toIntExact(target.getLow(xd)),
-                                 Math.toIntExact(target.getLow(yd)));
-        }
-        final int width  = Math.toIntExact(target.getSize(xd));
-        final int height = Math.toIntExact(target.getSize(yd));
-        /*
-         * After this point, xd and yd should be indices relative to source extent.
-         * For now we keep them unchanged on the assumption that the two grid extents have the same dimensions.
-         */
-        long pixelStride = 1;
-        for (int i=0; i<xd; i++) {
-            pixelStride = Math.multiplyExact(pixelStride, target.getSize(i));
-        }
-        long scanlineStride = pixelStride;
-        for (int i=xd; i<yd; i++) {
-            scanlineStride = Math.multiplyExact(scanlineStride, target.getSize(i));
-        }
-        return createRaster(buffer, width, height,
-                Math.toIntExact(pixelStride), Math.toIntExact(scanlineStride), bankIndices, bandOffsets, location);
-    }
-
-    /**
      * Wraps the given data buffer in a raster.
      * The sample model type is selected according the number of bands and the pixel stride.
      *
@@ -120,6 +67,8 @@ public final class RasterFactory extends Static {
      * @param  bandOffsets     number of data elements from the first element of the bank to the first sample of the band, or {@code null} for all 0.
      * @param  location        the upper-left corner of the raster, or {@code null} for (0,0).
      * @return a raster built from given properties.
+     * @throws NullPointerException if {@code buffer} is {@code null}.
+     * @throws RasterFormatException if the width or height is less than or equal to zero, or if there is an integer overflow.
      *
      * @see WritableRaster#createInterleavedRaster(DataBuffer, int, int, int, int, int[], Point)
      * @see WritableRaster#createBandedRaster(DataBuffer, int, int, int, int[], int[], Point)
@@ -129,10 +78,10 @@ public final class RasterFactory extends Static {
             final int width, final int height, final int pixelStride, final int scanlineStride,
             int[] bankIndices, int[] bandOffsets, final Point location)
     {
-        ArgumentChecks.ensureStrictlyPositive("width",          width);
-        ArgumentChecks.ensureStrictlyPositive("height",         height);
-        ArgumentChecks.ensureStrictlyPositive("pixelStride",    pixelStride);
-        ArgumentChecks.ensureStrictlyPositive("scanlineStride", scanlineStride);
+        /*
+         * We do not verify the argument validity. Since this class is internal, caller should have done verification
+         * itself. Furthermore those arguments are verified by WritableRaster constructors anyway.
+         */
         if (bandOffsets == null) {
             bandOffsets = new int[buffer.getNumBanks()];
         }
@@ -197,6 +146,25 @@ public final class RasterFactory extends Static {
     }
 
     /**
+     * Returns the {@link DataBuffer} constant for the given type. The given {@code sample} class
+     * should be a primitive type such as {@link Float#TYPE}. Wrappers class are also accepted.
+     *
+     * @param  sample    the primitive type or its wrapper class. May be {@code null}.
+     * @param  unsigned  whether the type should be considered unsigned.
+     * @return the {@link DataBuffer} type, or {@link DataBuffer#TYPE_UNDEFINED}.
+     */
+    public static int getType(final Class<?> sample, final boolean unsigned) {
+        switch (Numbers.getEnumConstant(sample)) {
+            case Numbers.BYTE:    if (unsigned) return DataBuffer.TYPE_BYTE; else break;
+            case Numbers.SHORT:   return unsigned ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_SHORT;
+            case Numbers.INTEGER: if (!unsigned) return DataBuffer.TYPE_INT; else break;
+            case Numbers.FLOAT:   return DataBuffer.TYPE_FLOAT;
+            case Numbers.DOUBLE:  return DataBuffer.TYPE_DOUBLE;
+        }
+        return DataBuffer.TYPE_UNDEFINED;
+    }
+
+    /**
      * Wraps the backing arrays of given NIO buffers into Java2D buffers.
      * This method wraps the underlying array of primitive types; data are not copied.
      * For each buffer, the data starts at {@linkplain Buffer#position() buffer position}
@@ -208,8 +176,8 @@ public final class RasterFactory extends Static {
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array.
      * @throws ReadOnlyBufferException if a buffer is backed by an array but is read-only.
      * @throws ArrayStoreException if the type of a backing array is not {@code dataType}.
-     * @throws ArithmeticException if the position of a buffer is too high.
-     * @throws IllegalArgumentException if buffers do not have the same amount of remaining values.
+     * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
+     * @throws RasterFormatException if buffers do not have the same amount of remaining values.
      */
     public static DataBuffer wrap(final int dataType, final Buffer... data) {
         final int numBands = data.length;
@@ -227,12 +195,13 @@ public final class RasterFactory extends Static {
         int length = 0;
         for (int i=0; i<numBands; i++) {
             final Buffer buffer = data[i];
+            ArgumentChecks.ensureNonNullElement("data", i, buffer);
             arrays [i] = buffer.array();
             offsets[i] = Math.addExact(buffer.arrayOffset(), buffer.position());
             final int r = buffer.remaining();
             if (i == 0) length = r;
             else if (length != r) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+                throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedBandSize));
             }
         }
         switch (dataType) {

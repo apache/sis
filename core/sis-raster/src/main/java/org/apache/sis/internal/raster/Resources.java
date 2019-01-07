@@ -125,6 +125,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IterationNotStarted = 4;
 
         /**
+         * The bands have different number of sample values.
+         */
+        public static final short MismatchedBandSize = 28;
+
+        /**
+         * The bands store sample values using different data types.
+         */
+        public static final short MismatchedDataType = 30;
+
+        /**
          * The two images have different size or pixel coordinates.
          */
         public static final short MismatchedImageLocation = 5;
@@ -176,6 +186,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short TooManyQualitatives = 17;
 
         /**
+         * Expected {0} bands but got {1}.
+         */
+        public static final short UnexpectedNumberOfBands_2 = 27;
+
+        /**
+         * Raster data type ‘{0}’ is unknown or unsupported.
+         */
+        public static final short UnknownDataType_1 = 29;
+
+        /**
          * Coordinate reference system is unspecified.
          */
         public static final short UnspecifiedCRS = 9;
@@ -184,6 +204,11 @@ public final class Resources extends IndexedResourceBundle {
          * Grid extent is unspecified.
          */
         public static final short UnspecifiedGridExtent = 10;
+
+        /**
+         * Raster data are unspecified.
+         */
+        public static final short UnspecifiedRasterData = 31;
 
         /**
          * Coordinates transform is unspecified.

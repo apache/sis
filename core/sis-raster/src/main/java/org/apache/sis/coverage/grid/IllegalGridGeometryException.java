@@ -21,6 +21,10 @@ import org.apache.sis.internal.raster.Resources;
 
 /**
  * Thrown when the argument specified to a method or constructor would result in an invalid {@link GridGeometry}.
+ * This exception may have a {@link org.opengis.referencing.operation.TransformException} as its cause, in which
+ * case the grid geometry failed to use a given "grid to CRS" transform over the given grid extent. Such failure
+ * may happen with non-linear transforms, but are less likely in the common case where the grid geometry uses a
+ * linear (or affine) "grid to CRS" transform.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
