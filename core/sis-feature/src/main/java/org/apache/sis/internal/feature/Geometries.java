@@ -19,6 +19,8 @@ package org.apache.sis.internal.feature;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -161,6 +163,8 @@ public abstract class Geometries<G> {
      *         or {@code null} if the given object is not a recognized implementation.
      *
      * @see #createPoint(double, double)
+     *
+     * @see #getCoordinateReferenceSystem(Object)
      */
     public static double[] getCoordinate(final Object point) {
         for (Geometries<?> g = implementation; g != null; g = g.fallback) {
@@ -291,6 +295,34 @@ public abstract class Geometries<G> {
      * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
      */
     public abstract Object parseWKT(String wkt) throws Exception;
+
+    /**
+     * If the given geometry is an implementation of this library, returns its coordinate reference system.
+     * Otherwise returns {@code null}.
+     *
+     * @param  geometry  the geometry from which to get the CRS.
+     * @return the coordinate reference system, or {@code null} if none.
+     * @throws FactoryException if the CRS can not be created from the SRID code.
+     */
+    CoordinateReferenceSystem tryGetCoordinateReferenceSystem(Object geometry) throws FactoryException {
+        return null;
+    }
+
+    /**
+     * If the given object is one of the recognized geometry implementations, gets its Coordinate Reference System (CRS).
+     * Otherwise returns {@code null}.
+     *
+     * @param  geometry  the geometry from which to get the CRS.
+     * @return the coordinate reference system, or {@code null} if none.
+     * @throws FactoryException if the CRS can not be created from the SRID code.
+     */
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Object geometry) throws FactoryException {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            CoordinateReferenceSystem crs = g.tryGetCoordinateReferenceSystem(geometry);
+            if (crs != null) return crs;
+        }
+        return null;
+    }
 
     /**
      * Returns an error message for an unsupported geometry object.

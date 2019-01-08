@@ -39,7 +39,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     /**
      * The factory to test.
      */
-    private final Geometries<?> factory;
+    final Geometries<?> factory;
 
     /**
      * The geometry created by the test. Provided for allowing sub-classes to perform additional verifications.

@@ -16,37 +16,32 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.awt.geom.AffineTransform;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.referencing.CommonCRS;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiLineString;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.junit.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
 
 import static org.junit.Assert.*;
-import org.locationtech.jts.geom.Point;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**
  * Tests {@link JTS} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public final strictfp class JTSTest extends GeometriesTestCase {
-
-    private static final double DELTA = 0.0000001;
-
     /**
      * Creates a new test case.
      */
@@ -101,28 +96,30 @@ public final strictfp class JTSTest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link JTS#findCoordinateReferenceSystem(org.locationtech.jts.geom.Geometry) }.
+     * Tests {@link JTS#tryGetCoordinateReferenceSystem(Object)}.
+     *
+     * @throws FactoryException if an EPSG code can not be resolved.
      */
     @Test
-    public void testFindCoordinateReferenceSystem() throws FactoryException {
+    public void testGetCoordinateReferenceSystem() throws FactoryException {
         final GeometryFactory gf = new GeometryFactory();
         final Geometry geometry = gf.createPoint(new Coordinate(5, 6));
 
-        CoordinateReferenceSystem crs = JTS.findCoordinateReferenceSystem(geometry);
+        CoordinateReferenceSystem crs = factory.tryGetCoordinateReferenceSystem(geometry);
         assertNull(crs);
 
-        // test crs as user data
+        // Test CRS as user data.
         geometry.setUserData(CommonCRS.ED50.geographic());
-        assertEquals(CommonCRS.ED50.geographic(), JTS.findCoordinateReferenceSystem(geometry));
+        assertEquals(CommonCRS.ED50.geographic(), factory.tryGetCoordinateReferenceSystem(geometry));
 
-        // test crs as map value
-        geometry.setUserData(Collections.singletonMap("crs", CommonCRS.NAD83.geographic()));
-        assertEquals(CommonCRS.NAD83.geographic(), JTS.findCoordinateReferenceSystem(geometry));
+        // Test CRS as map value.
+        geometry.setUserData(Collections.singletonMap(JTS.CRS_KEY, CommonCRS.NAD83.geographic()));
+        assertEquals(CommonCRS.NAD83.geographic(), factory.tryGetCoordinateReferenceSystem(geometry));
 
-        // test crs as srid
+        // Test CRS as srid.
         geometry.setUserData(null);
         geometry.setSRID(4326);
-        assertEquals(CommonCRS.WGS84.geographic(), JTS.findCoordinateReferenceSystem(geometry));
+        assertEquals(CommonCRS.WGS84.geographic(), factory.tryGetCoordinateReferenceSystem(geometry));
     }
 
     /**
@@ -158,7 +155,5 @@ public final strictfp class JTSTest extends GeometriesTestCase {
         assertEquals(15.0, ((Point) out).getX(), 0.0);
         assertEquals(26.0, ((Point) out).getY(), 0.0);
         assertEquals(CommonCRS.WGS84.normalizedGeographic(), out.getUserData());
-
     }
-
 }

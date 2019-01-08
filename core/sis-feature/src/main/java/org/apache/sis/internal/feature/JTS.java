@@ -21,6 +21,11 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -36,14 +41,8 @@ import org.apache.sis.internal.feature.jts.GeometryCoordinateTransform;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
 
 
 /**
@@ -58,11 +57,11 @@ import org.opengis.util.FactoryException;
  * @module
  */
 public final class JTS extends Geometries<Geometry> {
-
     /**
-     * Key use in Geometry userData Map to store an instanceof CoordinateReferenceSystem.
+     * Key used in {@linkplain Geometry#getUserData() user data} map for storing
+     * an instance of {@link CoordinateReferenceSystem}.
      */
-    public static final String KEY_CRS = "crs";
+    public static final String CRS_KEY = "CRS";
 
     /**
      * The factory to use for creating JTS geometries. Currently set to a factory using
@@ -137,6 +136,8 @@ public final class JTS extends Geometries<Geometry> {
 
     /**
      * Creates a two-dimensional point from the given coordinate.
+     *
+     * @return the point for the given ordinate values.
      */
     @Override
     public Object createPoint(final double x, final double y) {
@@ -147,6 +148,8 @@ public final class JTS extends Geometries<Geometry> {
      * Creates a polyline from the given ordinate values.
      * Each {@link Double#NaN} ordinate value start a new path.
      * The implementation returned by this method must be an instance of {@link #rootClass}.
+     *
+     * @return the geometric object for the given points.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... ordinates) {
@@ -260,6 +263,9 @@ public final class JTS extends Geometries<Geometry> {
 
     /**
      * Parses the given WKT.
+     *
+     * @return the geometry object for the given WKT.
+     * @throws ParseException if the WKT can not be parsed.
      */
     @Override
     public Object parseWKT(final String wkt) throws ParseException {
@@ -267,42 +273,44 @@ public final class JTS extends Geometries<Geometry> {
     }
 
     /**
-     * Extract CoordinateReferenceSystem from given geometry.
-     * <p>
-     * This method expect the CoordinateReferenceSystem to be store in one
-     * the following ways :
-     * </p>
-     * <ul>
-     *   <li>Geometry UserData value is a CoordinateReferenceSystem</li>
-     *   <li>Geometry UserData value is a Map with a value for key 'crs'</li>
-     *   <li>Geometry SRID is positive, interpreted as an EPSG code</li>
-     * </ul>
-     * <p>
-     * If none of the above is valid, null is returned.
-     * </p>
+     * Gets the Coordinate Reference System (CRS) from the given geometry.
+     * This method expects the CRS to be stored in one the following ways:
      *
-     * @param geometry source geometry
-     * @return CoordinateReferenceSystem or null
-     * @throws org.opengis.util.FactoryException
+     * <ul>
+     *   <li>Geometry {@linkplain Geometry#getUserData() user data} is an instance of {@code CoordinateReferenceSystem}.</li>
+     *   <li>{@linkplain Geometry#getUserData() user data} is a (@link Map} with a value for the {@value #CRS_KEY} key.</li>
+     *   <li>Geometry SRID is strictly positive, in which case it is interpreted as an EPSG code.</li>
+     * </ul>
+     *
+     * If none of the above is valid, {@code null} is returned.
+     *
+     * @param  geometry the geometry from which to get the CRS.
+     * @return the coordinate reference system, or {@code null} if none.
+     * @throws FactoryException if the CRS can not be created from the SRID code.
      */
-    public static CoordinateReferenceSystem findCoordinateReferenceSystem(Geometry geometry) throws FactoryException {
-        Object userData = geometry.getUserData();
-        if (userData instanceof CoordinateReferenceSystem) {
-            return (CoordinateReferenceSystem) userData;
-        } else if (userData instanceof Map) {
-            final Map map = (Map) userData;
-            final Object value = map.get(KEY_CRS);
-            if (value instanceof CoordinateReferenceSystem) {
-                return (CoordinateReferenceSystem) value;
+    @Override
+    CoordinateReferenceSystem tryGetCoordinateReferenceSystem(final Object geometry) throws FactoryException {
+        if (geometry instanceof Geometry) {
+            final Geometry jts = (Geometry) geometry;
+            final Object userData = jts.getUserData();
+            if (userData instanceof CoordinateReferenceSystem) {
+                return (CoordinateReferenceSystem) userData;
+            } else if (userData instanceof Map<?,?>) {
+                final Map<?,?> map = (Map<?,?>) userData;
+                final Object value = map.get(CRS_KEY);
+                if (value instanceof CoordinateReferenceSystem) {
+                    return (CoordinateReferenceSystem) value;
+                }
+            }
+            /*
+             * Fallback on SRID.
+             */
+            final int srid = jts.getSRID();
+            if (srid > 0) {
+                return CRS.forCode("EPSG:" + srid);
             }
         }
-
-        //fallback on SRID
-        int srid = geometry.getSRID();
-        if (srid > 0) {
-            return CRS.forCode("EPSG:"+srid);
-        }
-        return null;
+        return super.tryGetCoordinateReferenceSystem(geometry);
     }
 
     /**
@@ -323,12 +331,12 @@ public final class JTS extends Geometries<Geometry> {
      * @throws org.opengis.util.FactoryException
      */
     public static Geometry transform(Geometry geometry, CoordinateReferenceSystem targetCrs)
-            throws TransformException, FactoryException {
+            throws TransformException, FactoryException
+    {
         if (geometry == null || targetCrs == null) {
             return geometry;
         }
-
-        final CoordinateReferenceSystem sourceCrs = findCoordinateReferenceSystem(geometry);
+        final CoordinateReferenceSystem sourceCrs = getCoordinateReferenceSystem(geometry);
         if (sourceCrs == null) {
             throw new TransformException("Geometry CRS is undefined");
         } else if (Utilities.equalsIgnoreMetadata(sourceCrs, targetCrs)) {
