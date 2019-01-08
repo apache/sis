@@ -22,17 +22,20 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
+
 /**
- * This implementation use a MathTransform to transform each coordinate of
- * the geometry.
+ * A geometry transformer which uses a {@link MathTransform} for changing coordinate values.
+ * This class does not change the number of points.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public class GeometryCoordinateTransform extends GeometryTransform {
-
+    /**
+     * The transform to apply on coordinate values.
+     */
     private final MathTransform transform;
 
     public GeometryCoordinateTransform(MathTransform transform) {
@@ -53,7 +56,7 @@ public class GeometryCoordinateTransform extends GeometryTransform {
     protected CoordinateSequence transform(CoordinateSequence in, int minpoints) throws TransformException {
         final int dim = in.getDimension();
         final int size = in.size();
-        final CoordinateSequence out = csf.create(size, dim);
+        final CoordinateSequence out = coordinateFactory.create(size, dim);
 
         final double[] val = new double[dim];
         for (int i = 0; i<size; i++) {
@@ -78,5 +81,4 @@ public class GeometryCoordinateTransform extends GeometryTransform {
         }
         return out;
     }
-
 }

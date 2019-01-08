@@ -30,43 +30,49 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.referencing.operation.TransformException;
 
+
 /**
- * Abstract class parent to all JTS geometry transformations.
- * This class decompose the geometry to it's most primitive element, the
- * CoordinateSequence, then rebuild the geometry.
+ * An operation transforming a geometry into another geometry. This class decomposes the geometry into it's
+ * most primitive elements, the {@link CoordinateSequence}, applies an operation, then rebuilds the geometry.
+ * The operation may change coordinate values (for example a map projection), but not necessarily. An operation
+ * could also be a clipping for example.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public abstract class GeometryTransform {
+    /**
+     * The factory to use for creating geometries.
+     */
+    private final GeometryFactory geometryFactory;
 
-    protected final GeometryFactory gf;
-    protected final CoordinateSequenceFactory csf;
+    /**
+     * The factory to use for creating sequences of coordinate tuples.
+     */
+    protected final CoordinateSequenceFactory coordinateFactory;
 
-    public GeometryTransform() {
-        this((CoordinateSequenceFactory) null);
+    protected GeometryTransform() {
+        this((GeometryFactory) null);
     }
 
-    public GeometryTransform(final CoordinateSequenceFactory csf) {
-        if (csf == null) {
-            this.gf = new GeometryFactory();
-            this.csf = gf.getCoordinateSequenceFactory();
+    protected GeometryTransform(final CoordinateSequenceFactory factory) {
+        if (factory == null) {
+            geometryFactory   = new GeometryFactory();
+            coordinateFactory = geometryFactory.getCoordinateSequenceFactory();
         } else {
-            this.csf = csf;
-            this.gf = new GeometryFactory(csf);
+            coordinateFactory = factory;
+            geometryFactory   = new GeometryFactory(factory);
         }
     }
 
-    public GeometryTransform(final GeometryFactory gf) {
-        if (gf == null) {
-            this.gf = new GeometryFactory();
-            this.csf = gf.getCoordinateSequenceFactory();
-        } else {
-            this.csf = gf.getCoordinateSequenceFactory();
-            this.gf = gf;
+    protected GeometryTransform(GeometryFactory factory) {
+        if (factory == null) {
+            factory = new GeometryFactory();
         }
+        geometryFactory   = factory;
+        coordinateFactory = factory.getCoordinateSequenceFactory();
     }
 
     public Geometry transform(final Geometry geom) throws TransformException {
@@ -87,33 +93,32 @@ public abstract class GeometryTransform {
         } else if (geom instanceof GeometryCollection) {
             return transform((GeometryCollection) geom);
         } else {
-            throw new IllegalArgumentException("Geometry type is unknowed or null : " + geom);
+            throw new IllegalArgumentException("Geometry type is unknown or null: " + geom);
         }
     }
 
     protected Point transform(final Point geom) throws TransformException {
         final CoordinateSequence coord = geom.getCoordinateSequence();
-        return gf.createPoint(transform(coord, 1));
+        return geometryFactory.createPoint(transform(coord, 1));
     }
 
     protected MultiPoint transform(final MultiPoint geom) throws TransformException {
         final int nbGeom = geom.getNumGeometries();
-
         final Point[] subs = new Point[geom.getNumGeometries()];
         for (int i = 0; i < nbGeom; i++) {
             subs[i] = transform((Point) geom.getGeometryN(i));
         }
-        return gf.createMultiPoint(subs);
+        return geometryFactory.createMultiPoint(subs);
     }
 
     protected LineString transform(final LineString geom) throws TransformException {
         final CoordinateSequence seq = transform(geom.getCoordinateSequence(), 2);
-        return gf.createLineString(seq);
+        return geometryFactory.createLineString(seq);
     }
 
     protected LinearRing transform(final LinearRing geom) throws TransformException {
         final CoordinateSequence seq = transform(geom.getCoordinateSequence(), 4);
-        return gf.createLinearRing(seq);
+        return geometryFactory.createLinearRing(seq);
     }
 
     protected MultiLineString transform(final MultiLineString geom) throws TransformException {
@@ -121,7 +126,7 @@ public abstract class GeometryTransform {
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform((LineString) geom.getGeometryN(i));
         }
-        return gf.createMultiLineString(subs);
+        return geometryFactory.createMultiLineString(subs);
     }
 
     protected Polygon transform(final Polygon geom) throws TransformException {
@@ -130,7 +135,7 @@ public abstract class GeometryTransform {
         for (int i = 0; i < holes.length; i++) {
             holes[i] = transform((LinearRing) geom.getInteriorRingN(i));
         }
-        return gf.createPolygon(exterior, holes);
+        return geometryFactory.createPolygon(exterior, holes);
     }
 
     protected MultiPolygon transform(final MultiPolygon geom) throws TransformException {
@@ -138,7 +143,7 @@ public abstract class GeometryTransform {
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform((Polygon) geom.getGeometryN(i));
         }
-        return gf.createMultiPolygon(subs);
+        return geometryFactory.createMultiPolygon(subs);
     }
 
     protected GeometryCollection transform(final GeometryCollection geom) throws TransformException {
@@ -146,16 +151,16 @@ public abstract class GeometryTransform {
         for (int i = 0; i < subs.length; i++) {
             subs[i] = transform(geom.getGeometryN(i));
         }
-        return gf.createGeometryCollection(subs);
+        return geometryFactory.createGeometryCollection(subs);
     }
 
     /**
+     * Transforms the given sequence of coordinate tuples, producing a new sequence of tuples.
      *
-     * @param sequence Sequence to transform
-     * @param minpoints Minimum number of point to preserve
-     * @return transformed sequence
-     * @throws TransformException
+     * @param  sequence   sequence of coordinate tuples to transform.
+     * @param  minpoints  minimum number of points to preserve.
+     * @return the transformed sequence of coordinate tuples.
+     * @throws TransformException if an error occurred while transforming a tuple.
      */
     protected abstract CoordinateSequence transform(CoordinateSequence sequence, int minpoints) throws TransformException;
-
 }

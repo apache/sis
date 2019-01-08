@@ -55,6 +55,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.feature.Java2DTest.class,
     org.apache.sis.internal.feature.ESRITest.class,
     org.apache.sis.internal.feature.JTSTest.class,
+    org.apache.sis.internal.feature.jts.JTSTest.class,
     org.apache.sis.feature.builder.CharacteristicTypeBuilderTest.class,
     org.apache.sis.feature.builder.AttributeTypeBuilderTest.class,
     org.apache.sis.feature.builder.AssociationRoleBuilderTest.class,
