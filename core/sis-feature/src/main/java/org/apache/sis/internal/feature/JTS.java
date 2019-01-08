@@ -32,11 +32,17 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.ParseException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.jts.GeometryCoordinateTransform;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Utilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 
 
@@ -269,7 +275,7 @@ public final class JTS extends Geometries<Geometry> {
      * <ul>
      *   <li>Geometry UserData value is a CoordinateReferenceSystem</li>
      *   <li>Geometry UserData value is a Map with a value for key 'crs'</li>
-     *   <li>Geometry SRID if positive, interpreted as an EPSG code</li>
+     *   <li>Geometry SRID is positive, interpreted as an EPSG code</li>
      * </ul>
      * <p>
      * If none of the above is valid, null is returned.
@@ -299,4 +305,81 @@ public final class JTS extends Geometries<Geometry> {
         return null;
     }
 
+    /**
+     * Transform given geometry to a new CoordinateReferenceSystem.
+     *
+     * <p>
+     * If CoordinateReferenceSystem of geometry is null, geometry is returned unchanged.
+     * </p>
+     * <p>
+     * If geometry has no CoordinateReferenceSystem a TransformException is throwed.
+     * </p>
+     *
+     * @param geometry source geometry
+     * @param targetCrs target CoordinateReferenceSystem
+     * @return transformed geometry, or same geometry if it is already in target crs
+     * @throws org.opengis.referencing.operation.TransformException if geometry
+     *         has no CRS or failed to apply transform.
+     * @throws org.opengis.util.FactoryException
+     */
+    public static Geometry transform(Geometry geometry, CoordinateReferenceSystem targetCrs)
+            throws TransformException, FactoryException {
+        if (geometry == null || targetCrs == null) {
+            return geometry;
+        }
+
+        final CoordinateReferenceSystem sourceCrs = findCoordinateReferenceSystem(geometry);
+        if (sourceCrs == null) {
+            throw new TransformException("Geometry CRS is undefined");
+        } else if (Utilities.equalsIgnoreMetadata(sourceCrs, targetCrs)) {
+            return geometry;
+        }
+        return transform(geometry, CRS.findOperation(sourceCrs, targetCrs, null));
+    }
+
+    /**
+     * Transform geometry, result is a new geometry.
+     *
+     * <p>
+     * If geometry or operation is null, geometry is returned unchanged.
+     * </p>
+     *
+     * TODO : handle antemeridian cases.
+     *
+     * @param geometry
+     * @param operation
+     * @return
+     * @throws TransformException if transformation failed
+     */
+    public static Geometry transform(Geometry geometry, CoordinateOperation operation) throws TransformException {
+        if (geometry == null || operation == null) {
+            return geometry;
+        }
+        geometry = transform(geometry, operation.getMathTransform());
+        geometry.setUserData(operation.getTargetCRS());
+        return geometry;
+    }
+
+    /**
+     * Transform geometry, result is a new geometry.
+     *
+     * <p>
+     * If geometry or transform is null, geometry is returned unchanged.
+     * </p>
+     *
+     * @param geometry
+     * @param transform
+     * @return transformed geometry or null.
+     * @throws TransformException if transformation failed
+     */
+    public static Geometry transform(Geometry geometry, MathTransform transform) throws TransformException {
+        if (geometry == null || transform == null) {
+            return geometry;
+        }
+        final GeometryCoordinateTransform gct = new GeometryCoordinateTransform(transform, geometry.getFactory());
+        final Geometry result = gct.transform(geometry);
+        result.setSRID(geometry.getSRID());
+        result.setUserData(geometry.getUserData());
+        return result;
+    }
 }
