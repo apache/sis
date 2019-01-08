@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -33,7 +34,10 @@ import org.locationtech.jts.io.ParseException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Classes;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -47,7 +51,13 @@ import org.apache.sis.util.Classes;
  * @since   0.7
  * @module
  */
-final class JTS extends Geometries<Geometry> {
+public final class JTS extends Geometries<Geometry> {
+
+    /**
+     * Key use in Geometry userData Map to store an instanceof CoordinateReferenceSystem.
+     */
+    public static final String KEY_CRS = "crs";
+
     /**
      * The factory to use for creating JTS geometries. Currently set to a factory using
      * double-precision floating point numbers and a spatial-reference ID of 0.
@@ -249,4 +259,44 @@ final class JTS extends Geometries<Geometry> {
     public Object parseWKT(final String wkt) throws ParseException {
         return new WKTReader(factory).read(wkt);
     }
+
+    /**
+     * Extract CoordinateReferenceSystem from given geometry.
+     * <p>
+     * This method expect the CoordinateReferenceSystem to be store in one
+     * the following ways :
+     * </p>
+     * <ul>
+     *   <li>Geometry UserData value is a CoordinateReferenceSystem</li>
+     *   <li>Geometry UserData value is a Map with a value for key 'crs'</li>
+     *   <li>Geometry SRID if positive, interpreted as an EPSG code</li>
+     * </ul>
+     * <p>
+     * If none of the above is valid, null is returned.
+     * </p>
+     *
+     * @param geometry source geometry
+     * @return CoordinateReferenceSystem or null
+     * @throws org.opengis.util.FactoryException
+     */
+    public static CoordinateReferenceSystem findCoordinateReferenceSystem(Geometry geometry) throws FactoryException {
+        Object userData = geometry.getUserData();
+        if (userData instanceof CoordinateReferenceSystem) {
+            return (CoordinateReferenceSystem) userData;
+        } else if (userData instanceof Map) {
+            final Map map = (Map) userData;
+            final Object value = map.get(KEY_CRS);
+            if (value instanceof CoordinateReferenceSystem) {
+                return (CoordinateReferenceSystem) value;
+            }
+        }
+
+        //fallback on SRID
+        int srid = geometry.getSRID();
+        if (srid > 0) {
+            return CRS.forCode("EPSG:"+srid);
+        }
+        return null;
+    }
+
 }

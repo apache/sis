@@ -16,9 +16,15 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Collections;
+import org.apache.sis.referencing.CommonCRS;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiLineString;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 
 import static org.junit.Assert.*;
 
@@ -84,4 +90,30 @@ public final strictfp class JTSTest extends GeometriesTestCase {
                 new Coordinate(15, 11),
                 new Coordinate(13, 10)}, mp.getGeometryN(2).getCoordinates());
     }
+
+    /**
+     * Tests {@link JTS#findCoordinateReferenceSystem(org.locationtech.jts.geom.Geometry) }.
+     */
+    @Test
+    public void testFindCoordinateReferenceSystem() throws FactoryException {
+        final GeometryFactory gf = new GeometryFactory();
+        final Geometry geometry = gf.createPoint(new Coordinate(5, 6));
+
+        CoordinateReferenceSystem crs = JTS.findCoordinateReferenceSystem(geometry);
+        assertNull(crs);
+
+        // test crs as user data
+        geometry.setUserData(CommonCRS.ED50.geographic());
+        assertEquals(CommonCRS.ED50.geographic(), JTS.findCoordinateReferenceSystem(geometry));
+
+        // test crs as map value
+        geometry.setUserData(Collections.singletonMap("crs", CommonCRS.NAD83.geographic()));
+        assertEquals(CommonCRS.NAD83.geographic(), JTS.findCoordinateReferenceSystem(geometry));
+
+        // test crs as srid
+        geometry.setUserData(null);
+        geometry.setSRID(4326);
+        assertEquals(CommonCRS.WGS84.geographic(), JTS.findCoordinateReferenceSystem(geometry));
+    }
+
 }
