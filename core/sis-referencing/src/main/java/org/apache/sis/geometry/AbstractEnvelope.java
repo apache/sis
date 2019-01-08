@@ -1003,7 +1003,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Compares to the specified envelope for equality up to the specified tolerance value.
      * The tolerance value {@code eps} can be either relative to the {@linkplain #getSpan(int)
      * envelope span} along each dimension or can be an absolute value (as for example some
-     * ground resolution of a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}).
+     * ground resolution of a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}).
      *
      * <ul>
      *   <li>If {@code epsIsRelative} is set to {@code true}, the actual tolerance value for a
