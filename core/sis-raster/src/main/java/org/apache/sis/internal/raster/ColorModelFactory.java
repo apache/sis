@@ -184,8 +184,8 @@ public final class ColorModelFactory {
         }
         this.minimum     = (float) minimum;
         this.maximum     = (float) maximum;
-        this.pieceStarts = starts;
-        this.ARGB        = codes;
+        this.pieceStarts = ArraysExt.resize(starts, count + 1);
+        this.ARGB        = ArraysExt.resize(codes,  count);
     }
 
     /**
@@ -394,10 +394,10 @@ public final class ColorModelFactory {
      * @return the number of bits to use.
      */
     public static int getBitCount(final int mapSize) {
-        final int count = Math.max(1, Integer.SIZE - Integer.numberOfLeadingZeros(mapSize - 1));
+        final int count = Integer.SIZE - Integer.numberOfLeadingZeros(mapSize - 1);
         assert (1 << count) >= mapSize : mapSize;
         assert (1 << (count-1)) < mapSize : mapSize;
-        return count;
+        return Math.max(1, count);
     }
 
     /**
