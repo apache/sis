@@ -18,8 +18,12 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.text.Format;
+import java.text.DecimalFormat;
+import java.util.function.BiFunction;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.opengis.referencing.operation.Matrix;    // For javadoc
@@ -520,5 +524,32 @@ public final class Numerics extends Static {
             }
         }
         return fractionDigits;
+    }
+
+    /**
+     * Formats the given value with the given format, using scientific notation if needed.
+     * This is a workaround for {@link DecimalFormat} not switching automatically to scientific notation for large numbers.
+     *
+     * @param  format  the format to use for formatting the given value.
+     * @param  value   the value to format.
+     * @param  action  the method to invoke. Typically {@code Format::format}.
+     * @return the result of {@code action}.
+     */
+    @Workaround(library="JDK", version="10")
+    public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format,Object,String> action) {
+        if (value instanceof Number) {
+            final double m = Math.abs(((Number) value).doubleValue());
+            if (m > 0 && (m >= 1E+9 || m < 1E-4) && format instanceof DecimalFormat) {
+                final DecimalFormat df = (DecimalFormat) format;
+                final String pattern = df.toPattern();
+                df.applyPattern("0.######E00");
+                try {
+                    return action.apply(format, value);
+                } finally {
+                    df.applyPattern(pattern);
+                }
+            }
+        }
+        return action.apply(format, value);
     }
 }

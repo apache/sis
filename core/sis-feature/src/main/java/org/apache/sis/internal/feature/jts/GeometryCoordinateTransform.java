@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.TransformException;
  * @since   1.0
  * @module
  */
-public class GeometryCoordinateTransform extends GeometryTransform {
+final class GeometryCoordinateTransform extends GeometryTransform {
     /**
      * The transform to apply on coordinate values.
      */

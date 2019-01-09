@@ -82,7 +82,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private static final long serialVersionUID = -1730166945430878916L;
 
     /**
-     * Set to {@code true} if parsing and formatting of number in scientific notation is allowed.
+     * Set to {@code true} if parsing and formatting of numbers in scientific notation is allowed.
      * The way to achieve that is currently a hack, because {@link NumberFormat} has no API for
      * managing that as of JDK 1.8.
      *

@@ -160,7 +160,7 @@ import org.apache.sis.internal.util.StandardDateFormat;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -170,6 +170,12 @@ import org.apache.sis.internal.util.StandardDateFormat;
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
+    /**
+     * The vertical datum type, which is fixed to a hard-coded value for all vertical datum for now.
+     * Note that vertical datum type is no longer part of ISO 19111:2007.
+     */
+    private static final VerticalDatumType VERTICAL_DATUM_TYPE = VerticalDatumType.GEOIDAL;
+
     /**
      * The deprecated ellipsoidal coordinate systems and their replacements. Those coordinate systems are deprecated
      * because they use a unit of measurement which is no longer supported by OGC (for example degree-minute-second).
@@ -1671,7 +1677,7 @@ addURIs:    for (int i=0; ; i++) {
                      * ISO 19111:2007, it is probably not worth to handle such cases.
                      */
                     case "vertical": {
-                        datum = datumFactory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
+                        datum = datumFactory.createVerticalDatum(properties, VERTICAL_DATUM_TYPE);
                         break;
                     }
                     /*
@@ -3131,6 +3137,12 @@ next:               while (r.next()) {
                     where      = "ELLIPSOID_CODE";
                     table      = TableInfo.DATUM;
                 } else {
+                    if (object instanceof VerticalDatum) {
+                        final VerticalDatumType type = ((VerticalDatum) object).getVerticalDatumType();
+                        if (type != null && !type.equals(VERTICAL_DATUM_TYPE)) {
+                            return Collections.emptySet();
+                        }
+                    }
                     // Not a supported type. Returns all codes.
                     return super.getCodeCandidates(object);
                 }

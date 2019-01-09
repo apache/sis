@@ -213,12 +213,13 @@ public abstract class Variable extends NamedElement {
         if (overwrite != null) {
             unit = overwrite;
         }
+        unitParsed = true;
         return epoch;
     }
 
     /**
      * Returns the unit of measurement for this variable, or {@code null} if unknown.
-     * This method parse the units from {@link #getUnitsString()} when first needed
+     * This method parses the units from {@link #getUnitsString()} when first needed
      * and sets {@link #epoch} as a side-effect if the unit is temporal.
      *
      * @return the unit of measurement, or {@code null}.

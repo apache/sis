@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.text.NumberFormat;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.text.DecimalFormat;
+import java.text.Format;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Range;
@@ -134,20 +134,9 @@ final class SampleRangeFormat extends RangeFormat {
      *       We do that because the range may be repeated in the "Measure" column with units.</li>
      * </ul>
      */
-    private String formatSample(Object value) {
+    private String formatSample(final Object value) {
         if (value instanceof Number) {
-            final double m = Math.abs(((Number) value).doubleValue());
-            final String text;
-            if (m > 0 && (m >= 1E+9 || m < 1E-4) && elementFormat instanceof DecimalFormat) {
-                final DecimalFormat df = (DecimalFormat) elementFormat;
-                final String pattern = df.toPattern();
-                df.applyPattern("0.######E00");
-                text = df.format(value);
-                df.applyPattern(pattern);
-            } else {
-                text = elementFormat.format(value);
-            }
-            return text.concat(" ");
+            return Numerics.useScientificNotationIfNeeded(elementFormat, value, Format::format).concat(" ");
         } else if (value instanceof Range<?>) {
             if (value instanceof MeasurementRange<?>) {
                 /*

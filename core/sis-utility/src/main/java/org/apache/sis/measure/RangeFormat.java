@@ -40,6 +40,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.FinalFieldSetter;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -630,11 +631,14 @@ public class RangeFormat extends Format implements Localized {
                 } else {
                     format = elementFormat;
                 }
-                if (characterIterator != null) {
-                    characterIterator.append(format.formatToCharacterIterator(value), toAppendTo);
-                } else {
-                    format.format(value, toAppendTo, new FieldPosition(-1));
-                }
+                Numerics.useScientificNotationIfNeeded(format, value, (f,v) -> {
+                    if (characterIterator != null) {
+                        characterIterator.append(f.formatToCharacterIterator(v), toAppendTo);
+                    } else {
+                        f.format(v, toAppendTo, new FieldPosition(-1));
+                    }
+                    return null;
+                });
             }
             /*
              * At this point, the field has been formatted. Now store the field index,

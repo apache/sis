@@ -69,6 +69,6 @@ public class IllegalGridGeometryException extends IllegalArgumentException {
      * @param component  name of the parameter that caused the failure.
      */
     IllegalGridGeometryException(final Throwable cause, final String component) {
-        super(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, component));
+        super(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, component), cause);
     }
 }
