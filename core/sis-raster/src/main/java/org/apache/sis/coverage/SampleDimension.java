@@ -20,11 +20,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Optional;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
@@ -512,11 +513,6 @@ public class SampleDimension implements Serializable {
         private GenericName dimensionName;
 
         /**
-         * The background value, or {@code null} if unspecified.
-         */
-        private Number background;
-
-        /**
          * The categories for the sample dimension to create.
          * This list is modified by the following methods:
          *
@@ -524,6 +520,7 @@ public class SampleDimension implements Serializable {
          *   <li>{@link #setBackground(CharSequence, Number)}</li>
          *   <li>{@link #addQualitative(CharSequence, NumberRange)}</li>
          *   <li>{@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}</li>
+         *   <li>{@link #remove(String)}</li>
          *   <li>{@link #clear()}</li>
          * </ul>
          */
@@ -646,8 +643,8 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
             final NumberRange<?> samples = range(sample.getClass(), sample, sample);
-            background = samples.getMinValue();
-            toNaN.background = background.doubleValue();
+            // Use of 'getMinValue()' below shall be consistent with this.remove(…).
+            toNaN.background = samples.getMinValue();
             categories.add(new Category(name, samples, null, null, toNaN));
             return this;
         }
@@ -928,6 +925,31 @@ public class SampleDimension implements Serializable {
         }
 
         /**
+         * Removes and returns the first category having the given name.
+         * Category names are compared using their {@link InternationalString#toString()} representation.
+         * If no category has the given name, then this method returns {@code null}.
+         * If more than one category has the given name, then only the first occurrence is removed.
+         *
+         * @param  name  name of the category to remove.
+         * @return the removed category, or {@code null} if none.
+         *
+         * @see Category#getName()
+         */
+        public Category remove(final String name) {
+            ArgumentChecks.ensureNonNull("name", name);
+            for (final Iterator<Category> it = categories.iterator(); it.hasNext();) {
+                final Category c = it.next();
+                if (name.equals(c.name.toString())) {
+                    it.remove();
+                    // Use of 'c.minimum' shall be consistent with 'this.setBackground(…)'.
+                    toNaN.remove(c.minimum, c.converse.minimum);
+                    return c;
+                }
+            }
+            return null;
+        }
+
+        /**
          * Returns {@code true} if the given range intersects the range of a previously added category.
          * This method can be invoked before to add a new category for checking if it would cause a range collision.
          *
@@ -960,7 +982,7 @@ defName:    if (name == null) {
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
             }
-            return new SampleDimension(name, background, categories);
+            return new SampleDimension(name, toNaN.background, categories);
         }
 
         /**
@@ -970,7 +992,6 @@ defName:    if (name == null) {
          */
         public void clear() {
             dimensionName = null;
-            background    = null;
             categories.clear();
             toNaN.clear();
         }

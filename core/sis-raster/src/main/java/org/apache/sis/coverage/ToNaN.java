@@ -38,14 +38,14 @@ final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     /**
      * The value which should be assigned ordinal 0 if that ordinal value is available.
      * For performance reason, the background value should be assigned ordinal 0 when possible.
+     * This is {@code null} if unspecified.
      */
-    double background;
+    Number background;
 
     /**
      * To be constructed only from this package.
      */
     ToNaN() {
-        background = Double.NaN;
     }
 
     /**
@@ -55,7 +55,14 @@ final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     @Override
     public void clear() {
         super.clear();
-        background = Double.NaN;
+        background = null;
+    }
+
+    /**
+     * Returns {@code true} if the specified value is the background value.
+     */
+    private boolean isBackground(final double value) {
+        return (background != null) && (value == background.doubleValue());
     }
 
     /**
@@ -68,7 +75,7 @@ final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
      */
     @Override
     public int applyAsInt(final double value) {
-        if (value == background && add(0)) {
+        if (isBackground(value) && add(0)) {
             return 0;
         }
         /*
@@ -98,5 +105,21 @@ search: if (!add(ordinal)) {
             throw new IllegalStateException(Resources.format(Resources.Keys.TooManyQualitatives));
         }
         return ordinal;
+    }
+
+    /**
+     * Removes the NaN value which has been reserved for a qualitative category.
+     * This method does nothing if {@code converted} is not a NaN value, i.e. if
+     * the category is quantitative instead than qualitative.
+     *
+     * @param  value      the real value of the presumed qualitative category.
+     * @param  converted  the converted value, which should be one of NaN values.
+     */
+    void remove(final double value, final double converted) {
+        if (Double.isNaN(converted) && super.remove(MathFunctions.toNanOrdinal((float) converted))) {
+            if (isBackground(value)) {
+                background = null;
+            }
+        }
     }
 }

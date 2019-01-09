@@ -113,4 +113,19 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertSame("forConvertedValues", dimension, dimension.forConvertedValues(true));
         assertSame("forConvertedValues", dimension, dimension.forConvertedValues(false));
     }
+
+    /**
+     * Tests a few builder methods not tested by other methods in this class.
+     */
+    @Test
+    public void testBuilder() {
+        final SampleDimension.Builder builder = new SampleDimension.Builder()
+                .setBackground (null,      0)
+                .addQualitative("Clouds",  1)
+                .addQualitative("Lands", 255);
+        assertEquals(3, builder.categories.size());
+        assertNotNull(builder.remove("Clouds"));
+        assertEquals(2, builder.categories.size());
+        assertNull(builder.remove("Clouds"));
+    }
 }
