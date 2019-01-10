@@ -27,6 +27,7 @@ import java.nio.DoubleBuffer;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.IntSupplier;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
@@ -84,7 +85,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         } else if (array instanceof String[]) {
             vec = new ASCII((String[]) array);
         } else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", Classes.getClass(array)));
         }
         return vec;
     }
@@ -181,10 +182,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * Verifies that a value of the given type can be casted to the expected type.
+     * Verifies that the given value can be casted to the expected type.
      * The expected type must be one of the {@link Numbers} constants.
      */
-    final void verifyType(final Class<? extends Number> type, final byte expected) {
+    void verifyType(final Number value, final byte expected) {
+        final Class<? extends Number> type = value.getClass();
         final byte t = Numbers.getEnumConstant(type);
         if (t < Numbers.BYTE || t > expected) {
             throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
@@ -498,8 +500,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public long     longValue(int index) {return array[index];}
         @Override public final Number   get(int index) {return longValue(index);}
         @Override public final Number   set(int index, final Number value) {
-            verifyType(value.getClass(), Numbers.LONG);
-            final long old = array[index];
+            verifyType(value, Numbers.LONG);
+            final Number old = get(index);
             array[index] = value.longValue();
             modCount++;
             return old;
@@ -615,10 +617,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public float   floatValue(int index) {return array[index];}
         @Override public long     longValue(int index) {return array[index];}
         @Override public int       intValue(int index) {return array[index];}
-        @Override public final Number   get(int index) {return intValue(index);}
+        @Override public Number         get(int index) {return array[index];}
         @Override public final Number   set(int index, final Number value) {
-            verifyType(value.getClass(), Numbers.INTEGER);
-            final int old = array[index];
+            verifyType(value, Numbers.INTEGER);
+            final Number old = get(index);
             array[index] = value.intValue();
             modCount++;
             return old;
@@ -738,10 +740,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public long     longValue(int index) {return array[index];}
         @Override public int       intValue(int index) {return array[index];}
         @Override public short   shortValue(int index) {return array[index];}
-        @Override public final Number   get(int index) {return shortValue(index);}
+        @Override public Number         get(int index) {return array[index];}
         @Override public final Number   set(int index, final Number value) {
-            verifyType(value.getClass(), Numbers.SHORT);
-            final short old = array[index];
+            verifyType(value, Numbers.SHORT);
+            final Number old = get(index);
             array[index] = value.shortValue();
             modCount++;
             return old;
@@ -836,10 +838,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public int       intValue(int index) {return array[index];}
         @Override public short   shortValue(int index) {return array[index];}
         @Override public byte     byteValue(int index) {return array[index];}
-        @Override public final Number   get(int index) {return shortValue(index);}
+        @Override public Number         get(int index) {return array[index];}
         @Override public final Number   set(int index, final Number value) {
-            verifyType(value.getClass(), Numbers.BYTE);
-            final byte old = array[index];
+            verifyType(value, Numbers.BYTE);
+            final Number old = get(index);
             array[index] = value.byteValue();
             modCount++;
             return old;
@@ -969,6 +971,20 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             throw new ArithmeticException();
         }
 
+        /** Uses a larger type if the value exceed integer capacity. */
+        @Override public Number get(int index) {
+            final int value = super.intValue(index);
+            if (value >= 0) return value;
+            return Integer.toUnsignedLong(value);
+        }
+
+        /** Verifies that the given value can be stored as an unsigned integer. */
+        @Override void verifyType(final Number value, byte expected) {
+            final long v = value.longValue();
+            if ((v & ~0xFFFFFFFFL) == 0) expected = Numbers.LONG;
+            super.verifyType(value, expected);
+        }
+
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
             return Integer.toUnsignedString(super.intValue(index));
@@ -1009,6 +1025,20 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             final short value = super.shortValue(index);
             if (value >= 0) return value;
             throw new ArithmeticException();
+        }
+
+        /** Uses a larger type if the value exceed short integer capacity. */
+        @Override public Number get(int index) {
+            final short value = super.shortValue(index);
+            if (value >= 0) return value;
+            return Short.toUnsignedInt(value);
+        }
+
+        /** Verifies that the given value can be stored as an unsigned integer. */
+        @Override void verifyType(final Number value, byte expected) {
+            final int v = value.intValue();
+            if ((v & ~0xFFFF) == 0) expected = Numbers.INTEGER;
+            super.verifyType(value, expected);
         }
 
         /** Returns the string representation at the given index. */
@@ -1052,6 +1082,20 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             final byte value = super.byteValue(index);
             if (value >= 0) return value;
             throw new ArithmeticException();
+        }
+
+        /** Uses a larger type if the value exceed integer capacity. */
+        @Override public Number get(int index) {
+            final byte value = super.byteValue(index);
+            if (value >= 0) return value;
+            return (short) Byte.toUnsignedInt(value);
+        }
+
+        /** Verifies that the given value can be stored as an unsigned integer. */
+        @Override void verifyType(final Number value, byte expected) {
+            final int v = value.intValue();
+            if ((v & ~0xFF) == 0) expected = Numbers.SHORT;
+            super.verifyType(value, expected);
         }
 
         /** Returns the string representation at the given index. */

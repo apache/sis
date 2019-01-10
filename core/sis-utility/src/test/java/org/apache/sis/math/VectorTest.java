@@ -127,6 +127,45 @@ public final strictfp class VectorTest extends TestCase {
     }
 
     /**
+     * Tests {@link ArrayVector} backed by an array of primitive type handled as unsigned values.
+     */
+    @Test
+    public void testUnsignedByteArray() {
+        final byte[] array = new byte[100];
+        for (int i=0; i<array.length; i++) {
+            array[i] = (byte) ((i + 3) * 2);
+        }
+        vector = Vector.create(array, true);
+        assertTrue(vector instanceof ArrayVector);
+        assertSame(vector, Vector.create(vector, true));
+        assertEquals(array.length, vector.size());
+        assertEquals(Byte.class, vector.getElementType());
+
+        // Verifies element values.
+        for (int i=0; i<array.length; i++) {
+            final int expected = Byte.toUnsignedInt(array[i]);
+            assertEquals(expected, vector.shortValue (i));
+            assertEquals(expected, vector.intValue   (i));
+            assertEquals(expected, vector.floatValue (i), 0f);
+            assertEquals(expected, vector.doubleValue(i), STRICT);
+        }
+
+        // Tests exception.
+        assertEquals(106, vector.byteValue(50));
+        assertEquals(146, vector.shortValue(70));
+        try {
+            vector.byteValue(70);
+            fail("Expected a ArithmeticException");
+        } catch (ArithmeticException e) {
+            // This is the expected exception.
+        }
+
+        // Test writing.
+        vector.set(70, (short) 200);
+        assertEquals(200, vector.shortValue(70));
+    }
+
+    /**
      * Tests {@link ArrayVector} backed by an array of float type.
      */
     @Test
