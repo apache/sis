@@ -389,6 +389,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         if (def == null) {
                             if (builder == null) builder = new SampleDimension.Builder();
                             ranges[i] = def = createSampleDimension(builder, variable);
+                            builder.clear();
                         }
                         if (values == null) {
                             // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
