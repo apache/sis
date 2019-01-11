@@ -239,7 +239,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#subExtent(Envelope)}.
+     * Tests {@link GridGeometry#subExtent(Envelope, GridRoundingMode)}.
      */
     @Test
     @DependsOnMethod("testFromGeospatialEnvelope")
@@ -269,7 +269,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#subExtent(Envelope)} with a non-linear "grid to CRS" transform.
+     * Tests {@link GridGeometry#subExtent(Envelope, GridRoundingMode)} with a non-linear "grid to CRS" transform.
      */
     @Test
     @DependsOnMethod({"testNonLinear", "testSubExtent"})
@@ -306,7 +306,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#subgrid(Envelope, double...)}.
+     * Tests {@link GridGeometry#subgrid(Envelope, GridRoundingMode, double...)}.
      *
      * @throws TransformException if an error occurred during computation.
      */

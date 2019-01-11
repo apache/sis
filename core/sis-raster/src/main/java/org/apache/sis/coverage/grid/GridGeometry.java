@@ -239,7 +239,7 @@ public class GridGeometry implements Serializable {
     /**
      * Creates a new grid geometry derived from the given grid geometry with a new extent and a modified transform.
      * This constructor is used for creating a grid geometry over a subregion (for example with the grid extent
-     * computed by {@link #subExtent(Envelope)}) or grid geometry for a subsampled raster.
+     * computed by {@link #subExtent(Envelope, GridRoundingMode)}) or grid geometry for a subsampled raster.
      *
      * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
      * {@code other} grid coordinates. That transform should be merely a {@linkplain MathTransforms#scale(double...)
@@ -258,8 +258,8 @@ public class GridGeometry implements Serializable {
      * @throws NullPointerException if {@code extent} is {@code null} and the other grid geometry contains no other information.
      * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
      *
-     * @see #subExtent(Envelope)
-     * @see #subgrid(Envelope, double...)
+     * @see #subExtent(Envelope, GridRoundingMode)
+     * @see #subgrid(Envelope, GridRoundingMode, double...)
      */
     GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
         final int dimension = other.getDimension();
@@ -628,7 +628,7 @@ public class GridGeometry implements Serializable {
      * {@linkplain #getGridToCRS(PixelInCell) transformed} to the "real world" coordinate system.
      * The initial envelope encompasses all cell surfaces, from the left border of leftmost cell
      * to the right border of the rightmost cell and similarly along other axes.
-     * If this grid geometry is a {@linkplain #subgrid(Envelope, double...) subgrid}, then the envelope is also
+     * If this grid geometry is a {@linkplain #subgrid(Envelope, GridRoundingMode, double...) subgrid}, then the envelope is also
      * {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the original (non subsampled) grid geometry.
      *
      * @return the bounding box in "real world" coordinates (never {@code null}).
@@ -684,7 +684,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
-     * @see #subgrid(Envelope, double...)
+     * @see #subgrid(Envelope, GridRoundingMode, double...)
      */
     public GridExtent subExtent(final Envelope areaOfInterest, final GridRoundingMode roundingMode) {
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
@@ -1060,7 +1060,7 @@ public class GridGeometry implements Serializable {
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
-     * @see #subExtent(Envelope)
+     * @see #subExtent(Envelope, GridRoundingMode)
      * @see GridExtent#subsample(int[])
      */
     public GridGeometry subgrid(final Envelope areaOfInterest, final GridRoundingMode roundingMode,
