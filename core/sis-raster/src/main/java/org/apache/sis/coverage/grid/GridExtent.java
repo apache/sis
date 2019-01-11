@@ -379,11 +379,15 @@ public class GridExtent implements Serializable {
              * If the user specified a margin, add it now. The margin dimension indices follow the envelope
              * dimension indices.  Note that the resulting extent will be intersected with enclosing extent
              * at the next step, which may cancel the margin effect.
+             *
+             * Note about overflow checks: if m>0, then x < x+m unless the result overflows the 'long' capacity.
+             * We detect overflows for the m>0 case with compare(x, x+m) > 0. If m<0 the logic is inverted; this
+             * is the purpose of ^m.
              */
             if (margin != null && i < margin.length) {
                 final int m = margin[i];
-                lower = Math.subtractExact(lower, m);
-                upper = Math.addExact(upper, m);
+                if ((Long.compare(lower, lower -= m) ^ m) < 0) lower = Long.MIN_VALUE;      // Clamp to MIN/MAX if overflow.
+                if ((Long.compare(upper, upper += m) ^ m) > 0) upper = Long.MAX_VALUE;
             }
             if (lower > upper) {
                 upper += (lower - upper) >>> 1;         // (upper - lower) as unsigned integer: overflow-safe.
