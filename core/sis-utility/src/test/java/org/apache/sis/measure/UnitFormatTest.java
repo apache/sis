@@ -305,6 +305,17 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests formatting ratio of units.
+     */
+    @Test
+    public void testFormatRatio() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        f.setStyle(UnitFormat.Style.SYMBOL);
+        assertEquals( "m∕h", f.format(Units.METRE.divide(Units.HOUR)));
+        assertEquals("mm∕h", f.format(Units.MILLIMETRE.divide(Units.HOUR)));
+    }
+
+    /**
      * Tests formatting of some more unusual units. The units tested by this method are artificial
      * and somewhat convolved. The intent is to verify that unit formatting is still robust.
      */
@@ -328,7 +339,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertEquals(   "1∕m²", f.format(Units.UNITY.divide(Units.SQUARE_METRE)));
         assertEquals("10⁻²∕m²", f.format(Units.UNITY.divide(100).divide(Units.SQUARE_METRE)));
-        assertEquals("10⁻²∕m²", f.format(Units.PERCENT.divide(Units.SQUARE_METRE)));
+        assertEquals("%∕m²",    f.format(Units.PERCENT.divide(Units.SQUARE_METRE)));
     }
 
     /**
@@ -686,6 +697,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         roundtrip(f, "rad.s-1",          "rad∕s");
         roundtrip(f, "(m2.s)^-1",        "1∕(m²⋅s)");
         roundtrip(f, "(m2.s)-1",         "1∕(m²⋅s)");
+        roundtrip(f, "cm/day",           "cm∕d");
     }
 
     /**
@@ -719,7 +731,6 @@ public final strictfp class UnitFormatTest extends TestCase {
         final UnitFormat f = new UnitFormat(Locale.UK);
         roundtrip(f, "kg.kg-1.m.s-1",    "m∕s");
         roundtrip(f, "(m2.s.sr)-1",      "1∕(m²⋅s)");
-        roundtrip(f, "cm/day",           "1.1574074074074074E-7⋅m∕s");
         roundtrip(f, "m-2.s.rad-1",      "s∕m²");
         roundtrip(f, "kg.kg-1.s-1",      "Hz");
         roundtrip(f, "kg/kg*kg/kg",      "kg∕kg");

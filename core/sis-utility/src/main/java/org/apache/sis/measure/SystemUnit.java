@@ -62,12 +62,6 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     static final String ONE = "1";
 
     /**
-     * Maximum number of multiplications or divisions in the symbol of the first unit
-     * for allowing the use of that symbol for inferring a new symbol.
-     */
-    private static final int MAX_OPERATIONS_IN_SYMBOL = 1;
-
-    /**
      * The type of quantity that uses this unit, or {@code null} if unknown.
      */
     final Class<Q> quantity;
@@ -150,18 +144,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
          */
         String symbol = null;
         if (operation != 0) {
-            final boolean allowExponents = (operation == MULTIPLY || operation == DIVIDE);
-            if (inverse || isValidSymbol(ts, allowExponents ? MAX_OPERATIONS_IN_SYMBOL : 0, allowExponents)) {
-                if (other != null) {
-                    final String os = other.getSymbol();
-                    if (isValidSymbol(os, 0, allowExponents)) {
-                        if (inverse) ts = ONE;
-                        symbol = (ts + operation + os).intern();
-                    }
-                } else if (!allowExponents) {
-                    symbol = (ts + operation).intern();             // The operation is an exponent.
-                }
-            }
+            symbol = inferSymbol(operation, other);
         }
         /*
          * Performs now the check that we did not performed at the
@@ -185,52 +168,6 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     private boolean sameSymbol(final String symbol) {
         return (symbol == null) || symbol.equals(getSymbol());
-    }
-
-    /**
-     * Returns {@code true} if the given unit symbol is valid.
-     *
-     * @param  symbol          the symbol to verify for validity.
-     * @param  maxMultiply     maximal number of multiplication symbol to accept.
-     * @param  allowExponents  whether to accept also exponent characters.
-     * @return {@code true} if the given symbol is valid.
-     */
-    private static boolean isValidSymbol(final String symbol, int maxMultiply, final boolean allowExponents) {
-        return invalidCharForSymbol(symbol, maxMultiply, allowExponents) == -1;
-    }
-
-    /**
-     * If the given symbol contains an invalid character for a unit symbol, returns the character code point.
-     * Otherwise if the given symbol is null or empty, returns -2. Otherwise (the symbol is valid) returns -1.
-     *
-     * <p>The check for valid symbols can be relaxed, for example when building a new symbol from existing units.
-     * For example we may want to accept "W" and "m²" as valid symbols for deriving "W∕m²" without being rejected
-     * because of the "²" in "m²". We do not want to relax too much however, because a long sequence of arithmetic
-     * operations would result in a long and maybe meaningless unit symbol, while declaring "no symbol" would allow
-     * {@link UnitFormat} to create a new one from the base units. The criterion for accepting a symbol or not (for
-     * example how many multiplications) is arbitrary.</p>
-     *
-     * @param  symbol          the symbol to verify for invalid characters.
-     * @param  maxMultiply     maximal number of multiplication symbol to accept.
-     * @param  allowExponents  whether to accept also exponent characters.
-     * @return Unicode code point of the invalid character, or a negative value.
-     */
-    private static int invalidCharForSymbol(final String symbol, int maxMultiply, final boolean allowExponents) {
-        if (symbol == null || symbol.isEmpty()) {
-            return -2;
-        }
-        for (int i=0; i < symbol.length();) {
-            final int c = symbol.codePointAt(i);
-            if (!isSymbolChar(c)) {
-                if (c == MULTIPLY) {
-                    if (--maxMultiply < 0) return c;
-                } else if (!allowExponents || !Characters.isSuperScript(c)) {
-                    return c;
-                }
-            }
-            i += Character.charCount(c);
-        }
-        return -1;
     }
 
     /**
@@ -541,7 +478,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * @param  inverse  wether to use the inverse of {@code other}.
      */
-    private <T extends Quantity<T>> Unit<?> product(final Unit<T> other, boolean inverse) {
+    private <T extends Quantity<T>> Unit<?> product(final Unit<T> other, final boolean inverse) {
         final Unit<T> intermediate = other.getSystemUnit();
         final Dimension dim = intermediate.getDimension();
         final UnitDimension newDimension;
@@ -567,17 +504,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
                  * If the system unit product is an Apache SIS implementation, try to infer a unit symbol
                  * to be given to our customized 'transform' method. Otherwise fallback on standard API.
                  */
-                if (result.getSymbol() == null && result instanceof ConventionalUnit<?>) {
-                    String ts = getSymbol();
-                    inverse &= (ts != null && ts.isEmpty());
-                    if (inverse || isValidSymbol(ts, MAX_OPERATIONS_IN_SYMBOL, true)) {
-                        final String os = other.getSymbol();
-                        if (isValidSymbol(os, 0, true)) {
-                            if (inverse) ts = ONE;
-                            result = ((ConventionalUnit<?>) result).forSymbol((ts + operation + os).intern());
-                        }
-                    }
-                }
+                result = inferSymbol(result, operation, other);
             }
         }
         return result;
