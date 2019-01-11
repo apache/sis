@@ -265,7 +265,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.subExtent(envelope));
+                           new long[] {389, 339, 10}, grid.subExtent(envelope, GridRoundingMode.NEAREST));
     }
 
     /**
@@ -299,7 +299,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
-        final GridExtent actual = grid.subExtent(envelope);
+        final GridExtent actual = grid.subExtent(envelope, GridRoundingMode.NEAREST);
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
@@ -329,7 +329,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         envelope.setRange(0, -50, +30);
         envelope.setRange(1,   8,  12);
-        grid = grid.subgrid(envelope, 1, 2);
+        grid = grid.subgrid(envelope, GridRoundingMode.NEAREST, 1, 2);
         assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         assertMatrixEquals("gridToCRS", new Matrix3(
@@ -341,7 +341,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * It will force GridGeometry to adjust the translation term to compensate. We verify that the adustment
          * is correct by verifying that we still get the same envelope.
          */
-        grid = grid.subgrid(envelope, 3, 2);
+        grid = grid.subgrid(envelope, GridRoundingMode.NEAREST, 3, 2);
         assertExtentEquals(new long[] {94, 13}, new long[] {95, 39}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         MathTransform cornerToCRS = grid.getGridToCRS(PixelInCell.CELL_CORNER);

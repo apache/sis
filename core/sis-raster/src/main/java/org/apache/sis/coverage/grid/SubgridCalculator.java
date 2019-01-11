@@ -113,9 +113,11 @@ final class SubgridCalculator {
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS, or {@code null} for the whole area.
      * @param  resolution      the desired resolution in the same units and order than the axes of the AOI envelope,
      *                         or {@code null} or an empty array if no subsampling is desired.
+     * @param  roundingMode    the grid extent envelope rounding mode.
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      */
-    SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest, double[] resolution)
+    SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest,
+            double[] resolution, final GridRoundingMode roundingMode)
             throws TransformException, FactoryException
     {
         /*
@@ -144,7 +146,7 @@ final class SubgridCalculator {
         GeneralEnvelope indices = null;
         if (areaOfInterest != null) {
             indices = Envelopes.transform(cornerToCRS.inverse(), areaOfInterest);
-            setExtent(indices, extent);
+            setExtent(indices, extent, roundingMode);
         }
         if (indices == null || indices.getDimension() != dimension) {
             indices = new GeneralEnvelope(dimension);
@@ -191,7 +193,7 @@ final class SubgridCalculator {
              */
             if (modified) {
                 final GridExtent unscaled = extent;
-                setExtent(indices, null);
+                setExtent(indices, null, roundingMode);
                 m = Matrices.createIdentity(dimension + 1);
                 for (int k=0; k<resolution.length; k++) {
                     final double s = resolution[k];
@@ -230,13 +232,15 @@ final class SubgridCalculator {
     }
 
     /**
-     * Sets {@link #extent} to the given envelope, rounded to nearest integers.
+     * Sets {@link #extent} to the given envelope.
      *
      * @param  indices    the envelope to use for setting the grid extent.
      * @param  enclosing  the enclosing grid extent if a subsampling is not yet applied, {@code null} otherwise.
+     * @param  roundingMode  the grid extent envelope rounding mode.
      */
-    private void setExtent(final GeneralEnvelope indices, final GridExtent enclosing) {
-        final GridExtent sub = new GridExtent(indices, GridRoundingMode.NEAREST, null, enclosing, modifiedDimensions);
+    private void setExtent(final GeneralEnvelope indices, final GridExtent enclosing,
+            final GridRoundingMode roundingMode) {
+        final GridExtent sub = new GridExtent(indices, roundingMode, null, enclosing, modifiedDimensions);
         if (!sub.equals(extent)) {
             extent = sub;
         }

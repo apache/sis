@@ -679,17 +679,18 @@ public class GridGeometry implements Serializable {
      * For dimensionality reduction, see {@link #reduce(int...)}.</p>
      *
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed).
+     * @param  roundingMode  the grid extent envelope rounding mode.
      * @return a grid extent of the same dimension than the grid geometry which intersects the given area of interest.
      * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      *
      * @see #subgrid(Envelope, double...)
      */
-    public GridExtent subExtent(final Envelope areaOfInterest) {
+    public GridExtent subExtent(final Envelope areaOfInterest, final GridRoundingMode roundingMode) {
         ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
         requireGridToCRS();
         try {
-            return new SubgridCalculator(this, cornerToCRS, areaOfInterest, null).extent;
+            return new SubgridCalculator(this, cornerToCRS, areaOfInterest, null, roundingMode).extent;
         } catch (FactoryException | TransformException e) {
             throw new IllegalGridGeometryException(e, "areaOfInterest");
         }
@@ -1052,6 +1053,7 @@ public class GridGeometry implements Serializable {
      *
      * @param  areaOfInterest    the desired spatiotemporal region in any CRS (transformations will be applied as needed),
      *                           or {@code null} for not restricting the sub-grid to a sub-area.
+     * @param  roundingMode  the grid extent envelope rounding mode.
      * @param  targetResolution  the desired resolution in the same units and order than the axes of the given envelope,
      *                           or {@code null} or an empty array if no subsampling is desired.
      * @return a grid geometry over the specified sub-region of this grid geometry with the specified resolution.
@@ -1061,10 +1063,11 @@ public class GridGeometry implements Serializable {
      * @see #subExtent(Envelope)
      * @see GridExtent#subsample(int[])
      */
-    public GridGeometry subgrid(final Envelope areaOfInterest, double... targetResolution) {
+    public GridGeometry subgrid(final Envelope areaOfInterest, final GridRoundingMode roundingMode,
+            double... targetResolution) {
         requireGridToCRS();
         try {
-            final SubgridCalculator sub = new SubgridCalculator(this, cornerToCRS, areaOfInterest, targetResolution);
+            final SubgridCalculator sub = new SubgridCalculator(this, cornerToCRS, areaOfInterest, targetResolution, roundingMode);
             if (sub.toSubsampled != null || sub.extent != extent) {
                 return new GridGeometry(this, sub.extent, sub.toSubsampled);
             }
