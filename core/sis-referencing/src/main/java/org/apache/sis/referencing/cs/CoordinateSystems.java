@@ -281,9 +281,6 @@ public final class CoordinateSystems extends Static {
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
         }
-        if (sourceCS.equals(targetCS)) {
-            return Matrices.createIdentity(sourceCS.getDimension() + 1);
-        }
         final AxisDirection[] srcAxes = getAxisDirections(sourceCS);
         final AxisDirection[] dstAxes = getAxisDirections(targetCS);
         final MatrixSIS matrix = Matrices.createTransform(srcAxes, dstAxes);

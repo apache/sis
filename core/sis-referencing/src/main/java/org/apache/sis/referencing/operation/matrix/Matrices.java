@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -68,7 +69,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.parameter.TensorParameters
  *
@@ -438,6 +439,13 @@ public final class Matrices extends Static {
     public static MatrixSIS createTransform(final AxisDirection[] srcAxes, final AxisDirection[] dstAxes) {
         ArgumentChecks.ensureNonNull("srcAxes", srcAxes);
         ArgumentChecks.ensureNonNull("dstAxes", dstAxes);
+        if (Arrays.equals(srcAxes, dstAxes)) {
+            /*
+             * createTransform(…) may fail if the arrays contain two axes with the same direction, for example
+             * AxisDirection.OTHER. This check prevents that failure for the common case of an identity transform.
+             */
+            return Matrices.createIdentity(srcAxes.length + 1);
+        }
         return createTransform(null, srcAxes, null, dstAxes, false);
     }
 
