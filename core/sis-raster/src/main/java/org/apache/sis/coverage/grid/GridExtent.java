@@ -68,7 +68,8 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * We follow this specification for all getters methods, but developers should keep in mind
  * that this is the opposite of Java2D usage where {@link java.awt.Rectangle} maximal values are exclusive.</div>
  *
- * {@code GridExtent} instances are unmodifiable, so they can be shared between different {@link GridGeometry} instances.
+ * <p>{@code GridExtent} instances are immutable and thread-safe.
+ * The same instance can be shared by different {@link GridGeometry} instances.</p>
  *
  * <div class="note"><b>Upcoming API generalization:</b>
  * this class may implement the {@code GridEnvelope} interface in a future Apache SIS version.
@@ -890,7 +891,7 @@ public class GridExtent implements Serializable {
      * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
-     * @see GridGeometry#reduce(int...)
+     * @see GridGeometry.Modifier#reduce(int...)
      */
     public GridExtent reduce(final int... dimensions) {
         final int sd = getDimension();
@@ -934,7 +935,7 @@ public class GridExtent implements Serializable {
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridGeometry#subgrid(Envelope, GridRoundingMode, double...)
+     * @see GridGeometry.Modifier#subgrid(Envelope, double...)
      */
     public GridExtent subsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);

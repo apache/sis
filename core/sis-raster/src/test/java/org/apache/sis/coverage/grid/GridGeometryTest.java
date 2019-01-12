@@ -239,7 +239,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#subExtent(Envelope, GridRoundingMode)}.
+     * Tests {@link GridGeometry.Modifier#subgrid(Envelope, double...)}.
      */
     @Test
     @DependsOnMethod("testFromGeospatialEnvelope")
@@ -265,11 +265,11 @@ public final strictfp class GridGeometryTest extends TestCase {
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.subExtent(envelope, GridRoundingMode.NEAREST));
+                           new long[] {389, 339, 10}, grid.modify().subgrid(envelope).extent());
     }
 
     /**
-     * Tests {@link GridGeometry#subExtent(Envelope, GridRoundingMode)} with a non-linear "grid to CRS" transform.
+     * Tests {@link GridGeometry.Modifier#subgrid(Envelope, double...)} with a non-linear "grid to CRS" transform.
      */
     @Test
     @DependsOnMethod({"testNonLinear", "testSubExtent"})
@@ -299,14 +299,14 @@ public final strictfp class GridGeometryTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
-        final GridExtent actual = grid.subExtent(envelope, GridRoundingMode.NEAREST);
+        final GridExtent actual = grid.modify().subgrid(envelope).extent();
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
     }
 
     /**
-     * Tests {@link GridGeometry#subgrid(Envelope, GridRoundingMode, double...)}.
+     * Tests {@link GridGeometry.Modifier#subgrid(Envelope, double...)}.
      *
      * @throws TransformException if an error occurred during computation.
      */
@@ -329,7 +329,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         envelope.setRange(0, -50, +30);
         envelope.setRange(1,   8,  12);
-        grid = grid.subgrid(envelope, GridRoundingMode.NEAREST, 1, 2);
+        grid = grid.modify().subgrid(envelope, 1, 2).apply();
         assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         assertMatrixEquals("gridToCRS", new Matrix3(
@@ -341,7 +341,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * It will force GridGeometry to adjust the translation term to compensate. We verify that the adustment
          * is correct by verifying that we still get the same envelope.
          */
-        grid = grid.subgrid(envelope, GridRoundingMode.NEAREST, 3, 2);
+        grid = grid.modify().subgrid(envelope, 3, 2).apply();
         assertExtentEquals(new long[] {94, 13}, new long[] {95, 39}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         MathTransform cornerToCRS = grid.getGridToCRS(PixelInCell.CELL_CORNER);
@@ -358,7 +358,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#slice(DirectPosition)}.
+     * Tests {@link GridGeometry.Modifier#slice(DirectPosition)}.
      */
     @Test
     public void testSlice() {
@@ -372,7 +372,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * There is two ways to ask for a slice. The first way is to set some coordinates to NaN.
          */
-        GridGeometry slice = grid.slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15));
+        GridGeometry slice = grid.modify().slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15)).apply();
         assertNotSame(grid, slice);
         assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
         final long[] expectedLow  = {336,  20, 6};
@@ -384,14 +384,14 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         GeneralDirectPosition p = new GeneralDirectPosition(HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
         p.setOrdinate(0, 1500);
-        slice = grid.slice(p);
+        slice = grid.modify().slice(p).apply();
         assertNotSame(grid, slice);
         assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
         assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
     }
 
     /**
-     * Tests {@link GridGeometry#reduce(int...)}.
+     * Tests {@link GridGeometry.Modifier#reduce(int...)}.
      */
     @Test
     public void testReduce() {
@@ -405,7 +405,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Tests on the two first dimensions.
          */
-        GridGeometry reduced = grid.reduce(0, 1);
+        GridGeometry reduced = grid.modify().reduce(0, 1).apply();
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {336, 20}, new long[] {401, 419}, reduced.getExtent());
         assertSame("CRS", HardCodedCRS.WGS84, reduced.getCoordinateReferenceSystem());
@@ -417,7 +417,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Tests on the last dimension.
          */
-        reduced = grid.reduce(2);
+        reduced = grid.modify().reduce(2).apply();
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {4}, new long[] {10}, reduced.getExtent());
         assertSame("CRS", HardCodedCRS.GRAVITY_RELATED_HEIGHT, reduced.getCoordinateReferenceSystem());
