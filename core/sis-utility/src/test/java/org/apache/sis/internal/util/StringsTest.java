@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
-public final strictfp class UtilitiesTest extends TestCase {
+public final strictfp class StringsTest extends TestCase {
     /**
      * Tests the {@link Strings#toString(Class, Object[])} method.
      */
