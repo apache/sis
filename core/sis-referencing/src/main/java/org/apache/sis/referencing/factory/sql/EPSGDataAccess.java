@@ -82,6 +82,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -120,10 +121,8 @@ import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+import static org.apache.sis.internal.referencing.WKTUtilities.ESRI_DATUM_PREFIX;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
-
-// Branch-dependent imports
-import org.apache.sis.internal.util.StandardDateFormat;
 
 
 /**
@@ -516,9 +515,7 @@ addURIs:    for (int i=0; ; i++) {
      * {@code Set.toString()} result, <i>etc.</i> with one exception:
      * a call to {@code Set.contains(…)} will return {@code true} if the given identifier exists
      * for a deprecated object, even if that identifier does not show up in iterations.
-     *
-     * <p>An other point of view could be to said that the returned collection behaves as if the deprecated codes
-     * were included in the set but invisible.</p>
+     * In other words, the returned collection behaves as if deprecated codes were included in the set but invisible.
      *
      * @param  type  the spatial reference objects type (may be {@code Object.class}).
      * @return the set of authority codes for spatial reference objects of the given type (may be an empty set).
@@ -3107,18 +3104,22 @@ next:               while (r.next()) {
          */
         @Override
         protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
-            String select = "COORD_REF_SYS_CODE";
-            String from   = "Coordinate Reference System";
-            final String where;
-            final Set<Number> codes;
-            final TableInfo table;
-            boolean isFloat = false;
+            /*
+             * SQL query will be of the form shown below, except that the WHERE clause will be modified
+             * to accommodate the cases where <filters> is a floating point value or a list of integers.
+             *
+             *     SELECT <codeColumn> FROM <table> WHERE <where> = <filters>
+             */
+            final String      where;                // Column to use for filtering, or null if none.
+            final TableInfo   table;                // Contains 'codeColumn' and 'table' names.
+            final Set<Number> filters;              // Values to put in the WHERE clause, or null if none.
+            boolean isFloat = false;                // Whether 'filters' shall be handled as a floating point value.
+            Set<String>   namePatterns = null;      // SQL patterns for filtering by names, or null for no filtering.
+            StringBuilder buffer       = null;      // Temporary buffer for building SQL queries, created when first needed.
             if (object instanceof Ellipsoid) {
-                select  = "ELLIPSOID_CODE";
-                from    = "Ellipsoid";
                 where   = "SEMI_MAJOR_AXIS";
                 table   = TableInfo.ELLIPSOID;
-                codes   = Collections.singleton(((Ellipsoid) object).getSemiMajorAxis());
+                filters = Collections.singleton(((Ellipsoid) object).getSemiMajorAxis());
                 isFloat = true;
             } else {
                 final IdentifiedObject dependency;
@@ -3130,19 +3131,33 @@ next:               while (r.next()) {
                     dependency = ((SingleCRS) object).getDatum();
                     where      = "DATUM_CODE";
                     table      = TableInfo.CRS;
-                } else if (object instanceof GeodeticDatum) {
-                    dependency = ((GeodeticDatum) object).getEllipsoid();
-                    select     = "DATUM_CODE";
-                    from       = "Datum";
-                    where      = "ELLIPSOID_CODE";
+                } else if (object instanceof Datum) {
                     table      = TableInfo.DATUM;
-                } else {
-                    if (object instanceof VerticalDatum) {
-                        final VerticalDatumType type = ((VerticalDatum) object).getVerticalDatumType();
-                        if (type != null && !type.equals(VERTICAL_DATUM_TYPE)) {
-                            return Collections.emptySet();
+                    if (object instanceof GeodeticDatum) {
+                        dependency = ((GeodeticDatum) object).getEllipsoid();
+                        where      = "ELLIPSOID_CODE";
+                    } else {
+                        dependency = null;
+                        where      = null;
+                        if (object instanceof VerticalDatum) {
+                            final VerticalDatumType type = ((VerticalDatum) object).getVerticalDatumType();
+                            if (type != null && !type.equals(VERTICAL_DATUM_TYPE)) {
+                                return Collections.emptySet();
+                            }
                         }
                     }
+                    /*
+                     * We currently have no better way to filter datum (or reference frames) than their names.
+                     * Filtering must be at least as tolerant as AbstractDatum.isHeuristicMatchForName(String).
+                     * We initialize a larger StringBuilder since SQL query using names may be long.
+                     */
+                    buffer = new StringBuilder(350);
+                    namePatterns = new LinkedHashSet<>();
+                    namePatterns.add(toDatumPattern(object.getName().getCode(), buffer));
+                    for (final GenericName id : object.getAlias()) {
+                        namePatterns.add(toDatumPattern(id.tip().toString(), buffer));
+                    }
+                } else {
                     // Not a supported type. Returns all codes.
                     return super.getCodeCandidates(object);
                 }
@@ -3154,98 +3169,204 @@ next:               while (r.next()) {
                  * cache. This is desirable since this method may be invoked (indirectly) in a loop for many CRS objects
                  * sharing the same CoordinateSystem or Datum dependencies.
                  */
-                final boolean previous = isIgnoringAxes();
-                final Set<IdentifiedObject> find;
-                try {
-                    setIgnoringAxes(true);
-                    find = find(dependency);
-                } finally {
-                    setIgnoringAxes(previous);
-                }
-                codes = new LinkedHashSet<>(Containers.hashMapCapacity(find.size()));
-                for (final IdentifiedObject dep : find) {
-                    Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
-                    if (id != null) try {           // Should never be null, but let be safe.
-                        codes.add(Integer.parseInt(id.getCode()));
-                    } catch (NumberFormatException e) {
-                        Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), Finder.class, "getCodeCandidates", e);
+                if (dependency != null) {
+                    final boolean previous = isIgnoringAxes();
+                    final Set<IdentifiedObject> find;
+                    try {
+                        setIgnoringAxes(true);
+                        find = find(dependency);
+                    } finally {
+                        setIgnoringAxes(previous);
                     }
-                }
-                if (codes.isEmpty()) {
-                    // Dependency not found.
-                    return Collections.emptySet();
-                }
-            }
-            /*
-             * Build the SQL statement. The parameters depend on whether the search criterion is an EPSG code
-             * or a numeric value.
-             *
-             * - If EPSG code, there is only one parameter which is the code to search.
-             * - If numeric, there is 3 parameters: lower value, upper value, exact value to search.
-             */
-            final StringBuilder buffer = new StringBuilder(200);
-            buffer.append("SELECT ").append(select).append(" FROM [").append(from).append(']');
-            table.where(object.getClass(), buffer);
-            buffer.append(where);
-            if (isFloat) {
-                buffer.append(">=? AND ").append(where).append("<=?");
-            } else {
-                buffer.append("=?");
-            }
-            buffer.append(getSearchDomain() == Domain.ALL_DATASET
-                          ? " ORDER BY ABS(DEPRECATED), "
-                          : " AND DEPRECATED=0 ORDER BY ");     // Do not put spaces around "=" - SQLTranslator searches for this exact match.
-            if (isFloat) {
-                buffer.append("ABS(").append(where).append("-?), ");
-            }
-            buffer.append(select);          // Only for making order determinist.
-            /*
-             * Run the SQL statement. The parameter can be any of the following types:
-             *
-             * - A String, which represent a foreigner key as an integer value.
-             *   The search will require an exact match.
-             *
-             * - A floating point number, in which case the search will be performed
-             *   with a tolerance threshold of 1 cm for a planet of the size of Earth.
-             */
-            final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
-            try {
-                try (PreparedStatement s = connection.prepareStatement(translator.apply(buffer.toString()))) {
-                    for (final Number code : codes) {
-                        if (isFloat) {
-                            final double value = code.doubleValue();
-                            final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
-                            s.setDouble(1, value - tolerance);
-                            s.setDouble(2, value + tolerance);
-                            s.setDouble(3, value);
-                        } else {
-                            s.setInt(1, code.intValue());
+                    filters = new LinkedHashSet<>(Containers.hashMapCapacity(find.size()));
+                    for (final IdentifiedObject dep : find) {
+                        Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
+                        if (id != null) try {           // Should never be null, but let be safe.
+                            filters.add(Integer.parseInt(id.getCode()));
+                        } catch (NumberFormatException e) {
+                            Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), Finder.class, "getCodeCandidates", e);
                         }
-                        try (ResultSet r = s.executeQuery()) {
-                            while (r.next()) {
-                                result.add(r.getString(1));
+                    }
+                    if (filters.isEmpty()) {
+                        // Dependency not found.
+                        return Collections.emptySet();
+                    }
+                } else {
+                    filters = null;
+                }
+            }
+            /*
+             * At this point we collected the information needed for creating the main SQL query. We need an
+             * additional query if we are going to filter by names, since we will need to take aliases in account.
+             */
+            if (buffer == null) {
+                buffer = new StringBuilder(200);
+            }
+            final String aliasSQL;
+            if (namePatterns != null) {
+                buffer.setLength(0);
+                buffer.append("SELECT OBJECT_CODE FROM [Alias] WHERE OBJECT_TABLE_NAME='Datum'");
+                String separator = " AND (";
+                for (final String pattern : namePatterns) {
+                    appendFilterByName(buffer.append(separator), "ALIAS", pattern);
+                    separator = " OR ";
+                }
+                aliasSQL = translator.apply(buffer.append(')').toString());
+            } else {
+                aliasSQL = null;
+            }
+            /*
+             * Prepare the first part of SQL statement:
+             *
+             *    SELECT <codeColumn> FROM <table> WHERE <where> = <filters>
+             *
+             * The filters depend on whether the search criterion is any code in a list of EPSG codes or a numeric value.
+             * In the later case, the numeric value is assumed a linear distance in metres and the tolerance threshold is
+             * 1 cm for a planet of the size of Earth.
+             */
+            buffer.setLength(0);
+            buffer.append("SELECT ").append(table.codeColumn).append(" FROM ").append(table.table);
+            if (filters != null) {
+                table.where(object.getClass(), buffer);
+                buffer.append(where);
+                if (isFloat) {
+                    final double value = filters.iterator().next().doubleValue();
+                    final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
+                    buffer.append(">=").append(value - tolerance).append(" AND ").append(where)
+                          .append("<=").append(value + tolerance);
+                } else {
+                    String separator = " IN (";
+                    for (Number code : filters) {
+                        buffer.append(separator).append(code.intValue());
+                        separator = ",";
+                    }
+                    buffer.append(')');
+                }
+            }
+            /*
+             * We did not finished to build the SQL query, but the remaining part may require a JDBC connection.
+             * We do not use PreparedStatement because the number of parameters varies, and we may need to use a
+             * Statement two times for completely different queries.
+             */
+            try (Statement stmt = connection.createStatement()) {
+                if (namePatterns != null) {
+                    String separator = (where == null) ? " WHERE (" : " AND (";
+                    for (final String pattern : namePatterns) {
+                        appendFilterByName(buffer.append(separator), table.nameColumn, pattern);
+                        separator = " OR ";
+                    }
+                    boolean hasAlias = false;
+                    try (ResultSet result = stmt.executeQuery(aliasSQL)) {
+                        while (result.next()) {
+                            final int code = result.getInt(1);
+                            if (!result.wasNull()) {            // Should never be null but we are paranoiac.
+                                buffer.append(separator);
+                                if (!hasAlias) {
+                                    hasAlias = true;
+                                    buffer.append(table.codeColumn).append(" IN (");
+                                }
+                                buffer.append(code);
+                                separator = ", ";
                             }
                         }
                     }
+                    if (hasAlias) buffer.append(')');
+                    buffer.append(')');
                 }
-                result.remove(null);    // Should not have null element, but let be safe.
+                buffer.append(getSearchDomain() == Domain.ALL_DATASET
+                              ? " ORDER BY ABS(DEPRECATED), "
+                              : " AND DEPRECATED=0 ORDER BY ");     // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+                if (isFloat) {
+                    @SuppressWarnings("null")
+                    final double value = filters.iterator().next().doubleValue();
+                    buffer.append("ABS(").append(where).append('-').append(value).append("), ");
+                }
+                buffer.append(table.codeColumn);          // Only for making order determinist.
                 /*
-                 * Sort the result by taking in account the supersession table.
+                 * At this point the SQL query is complete. Run it, preserving order.
+                 * The sort the result by taking in account the supersession table.
                  */
+                final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
+                try (ResultSet r = stmt.executeQuery(translator.apply(buffer.toString()))) {
+                    while (r.next()) {
+                        result.add(r.getString(1));
+                    }
+                }
+                result.remove(null);                    // Should not have null element, but let be safe.
                 if (result.size() > 1) {
                     final Object[] id = result.toArray();
-                    if (sort(select, id)) {
+                    if (sort(table.codeColumn, id)) {
                         result.clear();
                         for (final Object c : id) {
                             result.add((String) c);
                         }
                     }
                 }
+                return result;
             } catch (SQLException exception) {
-                throw databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(codes)), exception);
+                throw databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(filters)), exception);
             }
-            return result;
         }
+    }
+
+    /**
+     * Returns a SQL pattern for the given datum name. The name is returned in all lower cases for allowing
+     * case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'}) and
+     * non-ASCII letters are replaced by any single character ({@code '_'}). The returned pattern should be
+     * flexible enough for accepting all names considered equal in {@code DefaultGeodeticDatum} comparisons.
+     * In case of doubt, it is okay to return a pattern accepting more names.
+     *
+     * @param  name    the datum name for which to return a SQL pattern.
+     * @param  buffer  temporary buffer to use for creating the pattern.
+     * @return the SQL pattern for the given name.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
+     */
+    private static String toDatumPattern(String name, final StringBuilder buffer) {
+        int i = 0;
+        if (name.startsWith(ESRI_DATUM_PREFIX)) {
+            i = ESRI_DATUM_PREFIX.length();
+        }
+        int end = name.indexOf('(');        // Ignore "Paris" in "Nouvelle Triangulation Française (Paris)".
+        if (end < 0) end = name.length();
+        end = CharSequences.skipTrailingWhitespaces(name, i, end);
+        buffer.setLength(0);
+        while (i < end) {
+            final int c = name.codePointAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                if (c < 128) {                                   // Use only ASCII characters in the search.
+                    buffer.appendCodePoint(Character.toLowerCase(c));
+                } else {
+                    appendIfNotRedundant(buffer, '_');
+                }
+            } else {
+                appendIfNotRedundant(buffer, '%');
+            }
+            i += Character.charCount(c);
+        }
+        appendIfNotRedundant(buffer, '%');
+        for (i=0; (i = buffer.indexOf("_%", i)) >= 0;) {
+            buffer.deleteCharAt(i);
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Appends the given wildcard character to the given buffer if the buffer does not ends with {@code '%'}.
+     */
+    private static void appendIfNotRedundant(final StringBuilder buffer, final char wildcard) {
+        final int length = buffer.length();
+        if (length == 0 || buffer.charAt(length - 1) != '%') {
+            buffer.append(wildcard);
+        }
+    }
+
+    /**
+     * Appends to the given buffer the SQL statement for filtering datum names using a pattern created by
+     * {@link #toDatumPattern(String, StringBuilder)}.
+     */
+    private static void appendFilterByName(final StringBuilder buffer, final String column, final String pattern) {
+        buffer.append("LOWER(").append(column).append(") LIKE '").append(pattern).append('\'');
     }
 
     /**
