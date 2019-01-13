@@ -26,7 +26,6 @@ import java.awt.image.RenderedImage;            // For javadoc only.
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
@@ -59,9 +58,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
-
-// Branch-dependent imports
-import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -242,7 +238,7 @@ public class GridGeometry implements Serializable {
     /**
      * Creates a new grid geometry derived from the given grid geometry with a new extent and a modified transform.
      * This constructor is used for creating a grid geometry over a subregion (for example with the grid extent
-     * computed by {@link Modifier#subgrid(Envelope, double...)}) or grid geometry for a subsampled raster.
+     * computed by {@link GridDerivation#subgrid(Envelope, double...)}) or grid geometry for a subsampled raster.
      *
      * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
      * {@code other} grid coordinates. That transform should be merely a {@linkplain MathTransforms#scale(double...)
@@ -261,7 +257,7 @@ public class GridGeometry implements Serializable {
      * @throws NullPointerException if {@code extent} is {@code null} and the other grid geometry contains no other information.
      * @throws TransformException if the math transform can not compute the geospatial envelope from the grid extent.
      *
-     * @see Modifier#subgrid(Envelope, double...)
+     * @see GridDerivation#subgrid(Envelope, double...)
      */
     GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
         final int dimension = other.getDimension();
@@ -509,9 +505,9 @@ public class GridGeometry implements Serializable {
      * @param  dimensions  the dimensions to select, in strictly increasing order (this may not be verified).
      * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
      *
-     * @see Modifier#reduce(int...)
+     * @see GridDerivation#reduce(int...)
      */
-    private GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
+    GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
         extent = (other.extent != null) ? other.extent.reduce(dimensions) : null;
         final int n = dimensions.length;
         if (other.gridToCRS != null) {
@@ -630,7 +626,7 @@ public class GridGeometry implements Serializable {
      * {@linkplain #getGridToCRS(PixelInCell) transformed} to the "real world" coordinate system.
      * The initial envelope encompasses all cell surfaces, from the left border of leftmost cell
      * to the right border of the rightmost cell and similarly along other axes.
-     * If this grid geometry is a {@linkplain Modifier#subgrid(Envelope, double...) subgrid}, then the envelope is also
+     * If this grid geometry is a {@linkplain GridDerivation#subgrid(Envelope, double...) subgrid}, then the envelope is also
      * {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the original (non subsampled) grid geometry.
      *
      * @return the bounding box in "real world" coordinates (never {@code null}).
@@ -936,14 +932,17 @@ public class GridGeometry implements Serializable {
     /**
      * Verifies that this grid geometry defines an {@linkplain #extent} and a {@link #cornerToCRS} transform.
      * They are the information required for mapping the grid to a spatiotemporal envelope.
+     *
+     * @return {@link #cornerToCRS}.
      */
-    private void requireGridToCRS() throws IncompleteGridGeometryException {
+    final MathTransform requireGridToCRS() throws IncompleteGridGeometryException {
         if (extent == null) {
             throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
         if (cornerToCRS == null) {
             throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
         }
+        return cornerToCRS;
     }
 
     /**
@@ -977,9 +976,9 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns an object that can be used for creating a new grid geometry derived from this grid geometry.
-     * Despite its name, {@code Modifier} does not change the state of this {@code GridGeometry} but instead
-     * creates new instances as needed. Examples of modifications include clipping to a sub-area, applying a
-     * sub-sampling, or selecting some grid dimensions.
+     * Despite its name, {@code GridDerivation} does not change the state of this {@code GridGeometry} but
+     * instead creates new instances as needed. Examples of modifications include clipping to a sub-area,
+     * applying a sub-sampling, or selecting some grid dimensions.
      *
      * <div class="note"><b>Example:</b>
      * for clipping this grid geometry to a sub-area, one can use:
@@ -992,222 +991,12 @@ public class GridGeometry implements Serializable {
      * }
      * </div>
      *
-     * Each {@code Modifier} instance can be used only once.
+     * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */
-    public Modifier derive() {
-        return new Modifier();
-    }
-
-    /**
-     * Creates a new grid geometry derived from the enclosing grid geometry with different extent or resolution.
-     * {@code Modifier} are created by calls to {@link GridGeometry#derive()}. Properties of the desired grid
-     * geometry can be specified by {@link #rounding rounding}, {@link #subgrid subgrid}, {@link #slice slice}
-     * or {@link #reduce reduce} methods, and the grid geometry is created by {@link #build()}.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
-     *
-     * @see GridGeometry#derive()
-     *
-     * @since 1.0
-     * @module
-     */
-    public class Modifier {
-        /**
-         * Builder of grid geometry based on a slice of enclosing grid geometry, or {@code null} if none.
-         */
-        private GridDerivation subgrid;
-
-        /**
-         * The grid dimension to keep, or {@code null} if no filtering is applied.
-         */
-        private int[] dimensions;
-
-        /**
-         * Controls behavior of rounding from floating point values to integers.
-         */
-        private GridRoundingMode rounding;
-
-        /**
-         * Creates a new modifier based on the enclosing grid geometry.
-         * This constructor is for subclasses only.
-         *
-         * @see GridGeometry#derive()
-         */
-        protected Modifier() {
-            rounding = GridRoundingMode.NEAREST;
-        }
-
-        /**
-         * Verifies that a sub-grid has not yet been defined.
-         */
-        private void ensureBeforeSubgrid() {
-            if (subgrid != null) {
-                throw new IllegalStateException();
-            }
-        }
-
-        /**
-         * Controls behavior of rounding from floating point values to integers.
-         * This method can be invoked before any method expecting an {@link Envelope} argument.
-         * If this method is never invoked, the default value is {@link GridRoundingMode#NEAREST}.
-         * If this method is invoked too late, an {@link IllegalStateException} is thrown.
-         *
-         * @param  mode  the new rounding mode.
-         * @return {@code this} for method call chaining.
-         * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} has already been invoked.
-         */
-        public Modifier rounding(final GridRoundingMode mode) {
-            ArgumentChecks.ensureNonNull("mode", mode);
-            ensureBeforeSubgrid();
-            rounding = mode;
-            return this;
-        }
-
-        /**
-         * Returns a grid geometry over a sub-region of this grid geometry and optionally with subsampling.
-         * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
-         * than {@linkplain #getCoordinateReferenceSystem() the CRS of this grid geometry};
-         * coordinate conversions or transformations will be applied as needed.
-         * That envelope CRS may have fewer dimensions than this grid geometry CRS,
-         * in which case grid dimensions not mapped to envelope dimensions will be returned unchanged.
-         * The target resolution, if provided, shall be in same units and same order than the given envelope axes.
-         * If the length of {@code targetResolution} array is less than the number of dimensions of {@code areaOfInterest},
-         * then no subsampling will be applied on the missing dimensions.
-         *
-         * <p>This method does not reduce the number of dimensions of this grid geometry.
-         * For dimensionality reduction, see {@link #reduce(int...)}.</p>
-         *
-         * @param  areaOfInterest    the desired spatiotemporal region in any CRS (transformations will be applied as needed),
-         *                           or {@code null} for not restricting the sub-grid to a sub-area.
-         * @param  targetResolution  the desired resolution in the same units and order than the axes of the given envelope,
-         *                           or {@code null} or an empty array if no subsampling is desired.
-         * @return {@code this} for method call chaining.
-         * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
-         * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
-         *
-         * @see GridExtent#subsample(int[])
-         */
-        public Modifier subgrid(final Envelope areaOfInterest, double... targetResolution) {
-            ensureBeforeSubgrid();
-            requireGridToCRS();
-            try {
-                subgrid = new GridDerivation(GridGeometry.this, cornerToCRS, areaOfInterest, targetResolution, rounding);
-            } catch (FactoryException | TransformException e) {
-                throw new IllegalGridGeometryException(e, "areaOfInterest");
-            }
-            return this;
-        }
-
-        /**
-         * Requests a grid geometry for a slice at the given point.
-         * The given position can be expressed in any coordinate reference system (CRS).
-         * The position should not define a coordinate for all dimensions, otherwise the slice would degenerate
-         * to a single point. Dimensions can be left unspecified either by assigning to {@code slicePoint} a CRS
-         * without those dimensions, or by assigning the NaN value to some coordinates.
-         *
-         * <div class="note"><b>Example:</b>
-         * if the {@linkplain #getCoordinateReferenceSystem() coordinate reference system} of current grid geometry has
-         * (<var>longitude</var>, <var>latitude</var>, <var>time</var>) axes, then a (<var>longitude</var>, <var>latitude</var>)
-         * slice at time <var>t</var> can be created with one of the following two positions:
-         * <ul>
-         *   <li>A three-dimensional position with ({@link Double#NaN}, {@link Double#NaN}, <var>t</var>) coordinates.</li>
-         *   <li>A one-dimensional position with (<var>t</var>) coordinate and the coordinate reference system set to
-         *       {@linkplain org.apache.sis.referencing.CRS#getTemporalComponent(CoordinateReferenceSystem) the temporal component}
-         *       of the grid geometry CRS.</li>
-         * </ul></div>
-         *
-         * This method does not reduce the number of dimensions of this grid geometry.
-         * For dimensionality reduction, see {@link #reduce(int...)}.
-         *
-         * @param  slicePoint   the coordinates where to get a slice.
-         * @return {@code this} for method call chaining.
-         * @throws IncompleteGridGeometryException if this grid geometry has no extent or no "grid to CRS" transform.
-         * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
-         * @throws PointOutsideCoverageException if the given point is outside the grid extent.
-         */
-        public Modifier slice(final DirectPosition slicePoint) {
-            ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
-            ensureBeforeSubgrid();
-            requireGridToCRS();
-            try {
-                subgrid = new GridDerivation(GridGeometry.this, cornerToCRS, slicePoint);
-            } catch (TransformException e) {
-                throw new IllegalGridGeometryException(e, "slicePoint");
-            }
-            return this;
-        }
-
-        /**
-         * Requests a grid geometry that encompass only some dimensions of the grid extent.
-         * The specified dimensions will be copied into a new grid geometry.
-         * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
-         * they are not necessarily the same than the {@linkplain #getEnvelope() envelope} dimensions.
-         * The given dimensions must be in strictly ascending order without duplicated values.
-         * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
-         *
-         * <p>This method performs a <cite>dimensionality reduction</cite>.
-         * This method can not be used for changing dimension order.</p>
-         *
-         * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
-         * @return {@code this} for method call chaining.
-         * @throws IndexOutOfBoundsException if an index is out of bounds.
-         *
-         * @see GridExtent#getSubspaceDimensions(int)
-         * @see GridExtent#reduce(int...)
-         * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
-         */
-        public Modifier reduce(int... dimensions) {
-            if (GridExtent.verifyDimensions(dimensions, getDimension())) {
-                this.dimensions = null;
-            } else {
-                this.dimensions = dimensions.clone();
-            }
-            return this;
-        }
-
-        /**
-         * Returns the extent of the modified grid geometry. This method is more efficient than
-         * {@link #build()} if only the grid extent is desired instead than the full grid geometry.
-         *
-         * @return the modified grid geometry extent.
-         */
-        public GridExtent extent() {
-            GridExtent e = (subgrid != null) ? subgrid.extent : getExtent();
-            if (dimensions != null) {
-                e = e.reduce(dimensions);
-            }
-            return e;
-        }
-
-        /**
-         * Builds a grid geometry with the configuration specified by the other methods in this {@code Modifier} class.
-         *
-         * @return the modified grid geometry. May be the enclosing geometry if no change apply.
-         */
-        public GridGeometry build() {
-            GridGeometry gg = GridGeometry.this;
-            String cause = null;
-            try {
-                cause = "subgrid";
-                if (subgrid != null) {
-                    final GridExtent    slice        = subgrid.extent;
-                    final MathTransform toSubsampled = subgrid.toSubsampled;
-                    if (toSubsampled != null || slice != extent) {
-                        gg = new GridGeometry(gg, slice, toSubsampled);
-                    }
-                }
-                cause = "dimensions";
-                if (dimensions != null) {
-                    gg = new GridGeometry(gg, dimensions);
-                }
-            } catch (FactoryException | TransformException e) {
-                throw new IllegalGridGeometryException(e, cause);
-            }
-            return gg;
-        }
+    public GridDerivation derive() {
+        return new GridDerivation(this);
     }
 
     /**

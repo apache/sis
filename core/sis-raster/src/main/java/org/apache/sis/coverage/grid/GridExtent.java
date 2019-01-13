@@ -856,14 +856,18 @@ public class GridExtent implements Serializable {
      *
      * @param  dimensions  the user-supplied argument to validate.
      * @param  limit       maximal number of dimensions, exclusive.
-     * @return {@code true} if the caller can return {@code this}.
+     * @return a clone of the given array, or {@code null} if the caller can return {@code this}.
      */
-    static boolean verifyDimensions(final int[] dimensions, final int limit) {
+    static int[] verifyDimensions(int[] dimensions, final int limit) {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
         final int n = dimensions.length;
         if (n == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
         }
+        if (n > limit) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.TooManyOccurrences_2, limit, "dimension"));
+        }
+        dimensions = dimensions.clone();
         if (!ArraysExt.isSorted(dimensions, true)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotStrictlyOrderedDimensions));
         }
@@ -871,7 +875,7 @@ public class GridExtent implements Serializable {
         if (d >= 0) {
             d = dimensions[n - 1];
             if (d < limit) {
-                return n == limit;
+                return (n != limit) ? dimensions : null;
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
@@ -891,11 +895,12 @@ public class GridExtent implements Serializable {
      * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
-     * @see GridGeometry.Modifier#reduce(int...)
+     * @see GridDerivation#reduce(int...)
      */
-    public GridExtent reduce(final int... dimensions) {
+    public GridExtent reduce(int... dimensions) {
         final int sd = getDimension();
-        if (verifyDimensions(dimensions, sd)) {
+        dimensions = verifyDimensions(dimensions, sd);
+        if (dimensions == null) {
             return this;
         }
         final int td = dimensions.length;
@@ -935,7 +940,7 @@ public class GridExtent implements Serializable {
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridGeometry.Modifier#subgrid(Envelope, double...)
+     * @see GridDerivation#subgrid(Envelope, double...)
      */
     public GridExtent subsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);
@@ -964,8 +969,7 @@ public class GridExtent implements Serializable {
      * Creates a new grid extent which represent a slice of this grid at the given point.
      * The given point may have less dimensions than this grid extent, in which case the
      * dimensions must be specified in the {@code modifiedDimensions} array. Coordinates
-     * in the given point will be rounded to nearest integer. This method does not reduce
-     * the number of dimensions of the grid extent.
+     * in the given point will be rounded to nearest integer.
      *
      * <p>This method does not reduce the number of dimensions of the grid extent.
      * For dimensionality reduction, see {@link #reduce(int...)}.</p>

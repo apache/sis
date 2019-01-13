@@ -147,8 +147,8 @@ public abstract class GridCoverage {
      * Then:
      *
      * <blockquote><code>sliceExtent = {@linkplain #getGridGeometry()}.{@link GridGeometry#derive()
-     * derive()}.{@linkplain GridGeometry.Modifier#slice(DirectPosition)
-     * slice}(slicePoint).{@linkplain GridGeometry.Modifier#build() build()};</code></blockquote>
+     * derive()}.{@linkplain GridDerivation#slice(DirectPosition)
+     * slice}(slicePoint).{@linkplain GridDerivation#build() build()};</code></blockquote>
      *
      * If the {@code slicePoint} CRS is different than this grid coverage CRS (except for the number of dimensions),
      * a coordinate transformation will be applied as needed.

@@ -69,6 +69,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotMapToGridDimensions = 12;
 
         /**
+         * Can not set this derived grid property after a call to “{0}” method.
+         */
+        public static final short CanNotSetDerivedGridProperty_1 = 32;
+
+        /**
          * Can not simplify transfer function of sample dimension “{0}”.
          */
         public static final short CanNotSimplifyTransferFunction_1 = 19;
