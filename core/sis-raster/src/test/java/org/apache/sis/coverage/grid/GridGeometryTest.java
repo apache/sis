@@ -265,7 +265,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.modify().subgrid(envelope).extent());
+                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).extent());
     }
 
     /**
@@ -299,7 +299,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
-        final GridExtent actual = grid.modify().subgrid(envelope).extent();
+        final GridExtent actual = grid.derive().subgrid(envelope).extent();
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
@@ -329,7 +329,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         envelope.setRange(0, -50, +30);
         envelope.setRange(1,   8,  12);
-        grid = grid.modify().subgrid(envelope, 1, 2).apply();
+        grid = grid.derive().subgrid(envelope, 1, 2).build();
         assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         assertMatrixEquals("gridToCRS", new Matrix3(
@@ -341,7 +341,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          * It will force GridGeometry to adjust the translation term to compensate. We verify that the adustment
          * is correct by verifying that we still get the same envelope.
          */
-        grid = grid.modify().subgrid(envelope, 3, 2).apply();
+        grid = grid.derive().subgrid(envelope, 3, 2).build();
         assertExtentEquals(new long[] {94, 13}, new long[] {95, 39}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         MathTransform cornerToCRS = grid.getGridToCRS(PixelInCell.CELL_CORNER);
@@ -372,7 +372,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * There is two ways to ask for a slice. The first way is to set some coordinates to NaN.
          */
-        GridGeometry slice = grid.modify().slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15)).apply();
+        GridGeometry slice = grid.derive().slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15)).build();
         assertNotSame(grid, slice);
         assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
         final long[] expectedLow  = {336,  20, 6};
@@ -384,7 +384,7 @@ public final strictfp class GridGeometryTest extends TestCase {
          */
         GeneralDirectPosition p = new GeneralDirectPosition(HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
         p.setOrdinate(0, 1500);
-        slice = grid.modify().slice(p).apply();
+        slice = grid.derive().slice(p).build();
         assertNotSame(grid, slice);
         assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
         assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
@@ -405,7 +405,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Tests on the two first dimensions.
          */
-        GridGeometry reduced = grid.modify().reduce(0, 1).apply();
+        GridGeometry reduced = grid.derive().reduce(0, 1).build();
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {336, 20}, new long[] {401, 419}, reduced.getExtent());
         assertSame("CRS", HardCodedCRS.WGS84, reduced.getCoordinateReferenceSystem());
@@ -417,7 +417,7 @@ public final strictfp class GridGeometryTest extends TestCase {
         /*
          * Tests on the last dimension.
          */
-        reduced = grid.modify().reduce(2).apply();
+        reduced = grid.derive().reduce(2).build();
         assertNotSame(grid, reduced);
         assertExtentEquals(new long[] {4}, new long[] {10}, reduced.getExtent());
         assertSame("CRS", HardCodedCRS.GRAVITY_RELATED_HEIGHT, reduced.getCoordinateReferenceSystem());

@@ -49,7 +49,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @since   1.0
  * @module
  */
-final class SubgridCalculator {
+final class GridDerivation {
     /**
      * The sub-extent computed by the constructor.
      */
@@ -80,7 +80,7 @@ final class SubgridCalculator {
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
-    SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final DirectPosition slicePoint)
+    GridDerivation(final GridGeometry grid, MathTransform cornerToCRS, final DirectPosition slicePoint)
             throws TransformException
     {
         try {
@@ -116,7 +116,7 @@ final class SubgridCalculator {
      * @param  rounding        controls behavior of rounding from floating point values to integers.
      * @throws TransformException if an error occurred while converting the envelope coordinates to grid coordinates.
      */
-    SubgridCalculator(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest,
+    GridDerivation(final GridGeometry grid, MathTransform cornerToCRS, final Envelope areaOfInterest,
             double[] resolution, final GridRoundingMode rounding) throws TransformException, FactoryException
     {
         /*

@@ -987,8 +987,8 @@ public class GridGeometry implements Serializable {
      * {@preformat java
      *     GridGeometry gg = ...;
      *     Envelope areaOfInterest = ...;
-     *     gg = gg.modify().rounding(GridRoundingMode.ENCLOSING)
-     *                     .subgrid(areaOfInterest).apply();
+     *     gg = gg.derive().rounding(GridRoundingMode.ENCLOSING)
+     *                     .subgrid(areaOfInterest).build();
      * }
      * </div>
      *
@@ -996,20 +996,20 @@ public class GridGeometry implements Serializable {
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */
-    public Modifier modify() {
+    public Modifier derive() {
         return new Modifier();
     }
 
     /**
      * Creates a new grid geometry derived from the enclosing grid geometry with different extent or resolution.
-     * {@code Modifier} are created by calls to {@link GridGeometry#modify()}. Properties of the desired grid
+     * {@code Modifier} are created by calls to {@link GridGeometry#derive()}. Properties of the desired grid
      * geometry can be specified by {@link #rounding rounding}, {@link #subgrid subgrid}, {@link #slice slice}
-     * or {@link #reduce reduce} methods, and the grid geometry is created by {@link #apply()}.
+     * or {@link #reduce reduce} methods, and the grid geometry is created by {@link #build()}.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      *
-     * @see GridGeometry#modify()
+     * @see GridGeometry#derive()
      *
      * @since 1.0
      * @module
@@ -1018,7 +1018,7 @@ public class GridGeometry implements Serializable {
         /**
          * Builder of grid geometry based on a slice of enclosing grid geometry, or {@code null} if none.
          */
-        private SubgridCalculator subgrid;
+        private GridDerivation subgrid;
 
         /**
          * The grid dimension to keep, or {@code null} if no filtering is applied.
@@ -1034,7 +1034,7 @@ public class GridGeometry implements Serializable {
          * Creates a new modifier based on the enclosing grid geometry.
          * This constructor is for subclasses only.
          *
-         * @see GridGeometry#modify()
+         * @see GridGeometry#derive()
          */
         protected Modifier() {
             rounding = GridRoundingMode.NEAREST;
@@ -1094,7 +1094,7 @@ public class GridGeometry implements Serializable {
             ensureBeforeSubgrid();
             requireGridToCRS();
             try {
-                subgrid = new SubgridCalculator(GridGeometry.this, cornerToCRS, areaOfInterest, targetResolution, rounding);
+                subgrid = new GridDerivation(GridGeometry.this, cornerToCRS, areaOfInterest, targetResolution, rounding);
             } catch (FactoryException | TransformException e) {
                 throw new IllegalGridGeometryException(e, "areaOfInterest");
             }
@@ -1133,7 +1133,7 @@ public class GridGeometry implements Serializable {
             ensureBeforeSubgrid();
             requireGridToCRS();
             try {
-                subgrid = new SubgridCalculator(GridGeometry.this, cornerToCRS, slicePoint);
+                subgrid = new GridDerivation(GridGeometry.this, cornerToCRS, slicePoint);
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "slicePoint");
             }
@@ -1170,7 +1170,7 @@ public class GridGeometry implements Serializable {
 
         /**
          * Returns the extent of the modified grid geometry. This method is more efficient than
-         * {@link #apply()} if only the grid extent is desired instead than the full grid geometry.
+         * {@link #build()} if only the grid extent is desired instead than the full grid geometry.
          *
          * @return the modified grid geometry extent.
          */
@@ -1187,7 +1187,7 @@ public class GridGeometry implements Serializable {
          *
          * @return the modified grid geometry. May be the enclosing geometry if no change apply.
          */
-        public GridGeometry apply() {
+        public GridGeometry build() {
             GridGeometry gg = GridGeometry.this;
             String cause = null;
             try {
