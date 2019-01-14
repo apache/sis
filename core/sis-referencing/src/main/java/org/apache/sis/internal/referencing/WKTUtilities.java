@@ -68,11 +68,6 @@ import org.apache.sis.math.DecimalFunctions;
  */
 public final class WKTUtilities extends Static {
     /**
-     * The prefix used by ESRI at the beginning of datum names.
-     */
-    public static final String ESRI_DATUM_PREFIX = "D_";
-
-    /**
      * Do not allow instantiation of this class.
      */
     private WKTUtilities() {

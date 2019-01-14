@@ -26,19 +26,30 @@ import static org.junit.Assert.*;
  * Tests the {@link SQLUtilities} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
 public final strictfp class SQLUtilitiesTest extends TestCase {
     /**
-     * Tests {@link SQLUtilities#toLikePattern(String)}.
+     * Tests {@link SQLUtilities#toLikePattern(String, int, int, boolean, boolean, StringBuilder)}.
      */
     @Test
     public void testToLikePattern() {
-        assertEquals("WGS84",                       SQLUtilities.toLikePattern("WGS84"));
-        assertEquals("WGS%84",                      SQLUtilities.toLikePattern("WGS 84"));
-        assertEquals("A%text%with%random%symbols%", SQLUtilities.toLikePattern("A text !* with_random:/symbols;+"));
-        assertEquals("*_+_=With%non%letter%start",  SQLUtilities.toLikePattern("*_+%=With non-letter  start"));
+        final StringBuilder buffer = new StringBuilder(30);
+        assertEquals("WGS84",                       toLikePattern(buffer, "WGS84"));
+        assertEquals("WGS%84",                      toLikePattern(buffer, "WGS 84"));
+        assertEquals("A%text%with%random%symbols%", toLikePattern(buffer, "A text !* with_random:/symbols;+"));
+        assertEquals("*%With%non%letter%start",     toLikePattern(buffer, "*_+%=With non-letter  start"));
+        assertEquals("_Special%case",               toLikePattern(buffer, "%Special_case"));
+    }
+
+    /**
+     * Helper method for {@link #testToLikePattern()}.
+     */
+    private static String toLikePattern(final StringBuilder buffer, final String identifier) {
+        buffer.setLength(0);
+        SQLUtilities.toLikePattern(identifier, 0, identifier.length(), false, false, buffer);
+        return buffer.toString();
     }
 }

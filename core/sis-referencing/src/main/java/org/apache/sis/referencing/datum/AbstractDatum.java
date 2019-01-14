@@ -42,7 +42,6 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.referencing.WKTUtilities.ESRI_DATUM_PREFIX;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -466,8 +465,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
             if (name == null) {                                 // Should never happen, but be safe.
                 return super.formatTo(formatter);
             }
-            if ("ESRI".equalsIgnoreCase(Citations.toCodeSpace(authority)) && !name.startsWith(ESRI_DATUM_PREFIX)) {
-                name = ESRI_DATUM_PREFIX + name;
+            if ("ESRI".equalsIgnoreCase(Citations.toCodeSpace(authority)) && !name.startsWith(Simplifier.ESRI_DATUM_PREFIX)) {
+                name = Simplifier.ESRI_DATUM_PREFIX + name;
             }
         }
         formatter.append(name, ElementKind.DATUM);

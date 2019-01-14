@@ -121,8 +121,8 @@ import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
-import static org.apache.sis.internal.referencing.WKTUtilities.ESRI_DATUM_PREFIX;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
+import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
 /**
@@ -436,8 +436,8 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
             final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
                                                   " ORDER BY VERSION_DATE DESC, VERSION_HISTORY_CODE DESC");
             String version = null;
-            try (Statement statement = connection.createStatement();
-                 ResultSet result = statement.executeQuery(query))
+            try (Statement stmt = connection.createStatement();
+                 ResultSet result = stmt.executeQuery(query))
             {
                 while (result.next()) {
                     version = getOptionalString(result, 1);
@@ -673,7 +673,7 @@ addURIs:    for (int i=0; ; i++) {
      * <div class="note"><b>Note:</b>
      * this method could be seen as the converse of above {@link #getDescriptionText(String)} method.</div>
      *
-     * @param  table       the table where the code should appears, or {@code null} if none.
+     * @param  table       the table where the code should appears, or {@code null} if {@code codeColumn} is null.
      * @param  codeColumn  the column name for the codes, or {@code null} if none.
      * @param  nameColumn  the column name for the names, or {@code null} if none.
      * @param  codes       the codes or names to convert to primary keys, as an array of length 1 or 2.
@@ -684,48 +684,64 @@ addURIs:    for (int i=0; ; i++) {
             throws SQLException, FactoryException
     {
         final int[] primaryKeys = new int[codes.length];
-        for (int i=0; i<codes.length; i++) {
+codes:  for (int i=0; i<codes.length; i++) {
             final String code = codes[i];
             if (codeColumn != null && nameColumn != null && !isPrimaryKey(code)) {
                 /*
                  * The given string is not a numerical code. Search the value in the database.
-                 * If a prepared statement is already available, reuse it providing that it was
-                 * created for the current table. Otherwise we will create a new statement.
+                 * We search first in the primary table. If no name is not found there, then we
+                 * will search in the aliases table as a fallback.
                  */
-                final String KEY = "PrimaryKey";
-                PreparedStatement statement = statements.get(KEY);
-                if (statement != null) {
-                    if (!table.equals(lastTableForName)) {
-                        statements.remove(KEY);
-                        statement.close();
-                        statement        = null;
-                        lastTableForName = null;
-                    }
-                }
-                if (statement == null) {
-                    statement = connection.prepareStatement(translator.apply(
-                            "SELECT " + codeColumn + ", " + nameColumn +
-                            " FROM [" + table + "] WHERE " + nameColumn + " LIKE ?"));
-                    statements.put(KEY, statement);
-                    lastTableForName = table;
-                }
-                statement.setString(1, toLikePattern(code));
+                final String pattern = toLikePattern(code);
                 Integer resolved = null;
-                try (ResultSet result = statement.executeQuery()) {
-                    while (result.next()) {
-                        if (SQLUtilities.filterFalsePositive(code, result.getString(2))) {
-                            resolved = ensureSingleton(getOptionalInteger(result, 1), resolved, code);
+                boolean alias = false;
+                do {
+                    PreparedStatement stmt;
+                    if (alias) {
+                        stmt = prepareStatement("AliasKey", "SELECT OBJECT_CODE, ALIAS FROM [Alias] WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
+                        stmt.setString(1, table);
+                        stmt.setString(2, pattern);
+                    } else {
+                        /*
+                         * The SQL query for searching in the primary table is a little bit more complicated than the query for
+                         * searching in the aliass table. If a prepared statement is already available, reuse it providing that
+                         * it was created for the current table. Otherwise we will create a new statement here.
+                         */
+                        final String KEY = "PrimaryKey";
+                        stmt = statements.get(KEY);
+                        if (stmt != null) {
+                            if (!table.equals(lastTableForName)) {
+                                statements.remove(KEY);
+                                stmt.close();
+                                stmt = null;
+                                lastTableForName = null;
+                            }
+                        }
+                        if (stmt == null) {
+                            stmt = connection.prepareStatement(translator.apply(
+                                    "SELECT " + codeColumn + ", " + nameColumn +
+                                    " FROM [" + table + "] WHERE " + nameColumn + " LIKE ?"));
+                            statements.put(KEY, stmt);
+                            lastTableForName = table;
+                        }
+                        stmt.setString(1, pattern);
+                    }
+                    try (ResultSet result = stmt.executeQuery()) {
+                        while (result.next()) {
+                            if (SQLUtilities.filterFalsePositive(code, result.getString(2))) {
+                                resolved = ensureSingleton(getOptionalInteger(result, 1), resolved, code);
+                            }
                         }
                     }
-                }
-                if (resolved != null) {
-                    primaryKeys[i] = resolved;
-                    continue;
-                }
+                    if (resolved != null) {
+                        primaryKeys[i] = resolved;
+                        continue codes;
+                    }
+                } while ((alias = !alias) == true);
             }
             /*
              * At this point, 'identifier' should be the primary key. It may still be a non-numerical string
-             * if we the above code did not found a match in the name column.
+             * if the above code did not found a match in the name column or in the alias table.
              */
             try {
                 primaryKeys[i] = Integer.parseInt(code);
@@ -775,17 +791,27 @@ addURIs:    for (int i=0; ; i++) {
      */
     private ResultSet executeQuery(final String table, final String sql, final int... codes) throws SQLException {
         assert Thread.holdsLock(this);
-        PreparedStatement stmt = statements.get(table);
-        if (stmt == null) {
-            stmt = connection.prepareStatement(translator.apply(sql));
-            statements.put(table, stmt);
-        }
+        PreparedStatement stmt = prepareStatement(table, sql);
         // Partial check that the statement is for the right SQL query.
         assert stmt.getParameterMetaData().getParameterCount() == CharSequences.count(sql, '?');
         for (int i=0; i<codes.length; i++) {
             stmt.setInt(i+1, codes[i]);
         }
         return stmt.executeQuery();
+    }
+
+    /**
+     * Returns the cached statement or create a new one for the given table.
+     * The {@code table} argument shall be a key uniquely identifying the caller.
+     * The {@code sql} argument is used for preparing a new statement if no cached instance exists.
+     */
+    private PreparedStatement prepareStatement(final String table, final String sql) throws SQLException {
+        PreparedStatement stmt = statements.get(table);
+        if (stmt == null) {
+            stmt = connection.prepareStatement(translator.apply(sql));
+            statements.put(table, stmt);
+        }
+        return stmt;
     }
 
     /**
@@ -1181,11 +1207,11 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Returns a string like the given string but with accented letters replaced by ASCII letters
      * and all characters that are not letter or digit replaced by the wildcard % character.
-     *
-     * @see SQLUtilities#toLikePattern(String)
      */
     private static String toLikePattern(final String name) {
-        return SQLUtilities.toLikePattern(CharSequences.toASCII(name).toString());
+        final StringBuilder buffer = new StringBuilder(name.length());
+        SQLUtilities.toLikePattern(name, 0, name.length(), false, false, buffer);
+        return buffer.toString();
     }
 
     /**
@@ -3322,43 +3348,17 @@ next:               while (r.next()) {
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
      */
-    private static String toDatumPattern(String name, final StringBuilder buffer) {
-        int i = 0;
+    private static String toDatumPattern(final String name, final StringBuilder buffer) {
+        int start = 0;
         if (name.startsWith(ESRI_DATUM_PREFIX)) {
-            i = ESRI_DATUM_PREFIX.length();
+            start = ESRI_DATUM_PREFIX.length();
         }
         int end = name.indexOf('(');        // Ignore "Paris" in "Nouvelle Triangulation Française (Paris)".
         if (end < 0) end = name.length();
-        end = CharSequences.skipTrailingWhitespaces(name, i, end);
+        end = CharSequences.skipTrailingWhitespaces(name, start, end);
         buffer.setLength(0);
-        while (i < end) {
-            final int c = name.codePointAt(i);
-            if (Character.isLetterOrDigit(c)) {
-                if (c < 128) {                                   // Use only ASCII characters in the search.
-                    buffer.appendCodePoint(Character.toLowerCase(c));
-                } else {
-                    appendIfNotRedundant(buffer, '_');
-                }
-            } else {
-                appendIfNotRedundant(buffer, '%');
-            }
-            i += Character.charCount(c);
-        }
-        appendIfNotRedundant(buffer, '%');
-        for (i=0; (i = buffer.indexOf("_%", i)) >= 0;) {
-            buffer.deleteCharAt(i);
-        }
+        SQLUtilities.toLikePattern(name, start, end, true, true, buffer);
         return buffer.toString();
-    }
-
-    /**
-     * Appends the given wildcard character to the given buffer if the buffer does not ends with {@code '%'}.
-     */
-    private static void appendIfNotRedundant(final StringBuilder buffer, final char wildcard) {
-        final int length = buffer.length();
-        if (length == 0 || buffer.charAt(length - 1) != '%') {
-            buffer.append(wildcard);
-        }
     }
 
     /**

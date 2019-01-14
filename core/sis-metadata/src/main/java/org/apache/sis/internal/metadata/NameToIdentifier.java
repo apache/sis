@@ -291,9 +291,15 @@ public final class NameToIdentifier implements Identifier {
      * A function for simplifying an {@link org.opengis.referencing.IdentifiedObject} name before comparison with
      * {@link NameToIdentifier#isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}.
      *
-     * @since 0.7
+     * @since 1.0
      */
     public static class Simplifier {
+        /**
+         * The prefix used by ESRI at the beginning of datum names.
+         * This prefix should be omitted when simplifying a datum name.
+         */
+        public static final String ESRI_DATUM_PREFIX = "D_";
+
         /**
          * The default instance, which replaces some non-ASCII characters by ASCII ones.
          */

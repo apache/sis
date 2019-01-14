@@ -563,6 +563,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assumeNotNull(factory);
         assertSame   (factory.createUnit("9002"), factory.createUnit("foot"));
         assertNotSame(factory.createUnit("9001"), factory.createUnit("foot"));
+        assertSame   (factory.createUnit("9202"), factory.createUnit("ppm"));       // Search in alias table.
         /*
          * Test a name with colons.
          */
