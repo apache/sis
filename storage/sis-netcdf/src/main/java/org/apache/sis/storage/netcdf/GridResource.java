@@ -67,7 +67,11 @@ import ucar.nc2.constants.CDM;                      // We use only String consta
 final class GridResource extends AbstractGridResource implements ResourceOnFileSystem {
     /**
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
-     * that the variable is a component of a vector. Example of standard variable names:
+     * that the variable is a component of a vector. Those words are used in heuristic rules
+     * for deciding if two variables should be stored in a single {@code Coverage} instance.
+     * For example the eastward (u) and northward (v) components of oceanic current vectors
+     * should be stored as two sample dimensions of a single "Current" coverage.
+     * Example of standard variable names:
      *
      * <ul>
      *   <li>{@code baroclinic_eastward_sea_water_velocity}</li>

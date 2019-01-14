@@ -268,6 +268,18 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(RADIAN,       valueOf("radian"));
         assertSame(RADIAN,       valueOf("radians"));
         assertSame(SECOND,       valueOf("s"));
+        assertSame(SECOND,       valueOf("second"));
+        assertSame(SECOND,       valueOf("seconds"));
+        assertSame(MINUTE,       valueOf("min"));
+        assertSame(MINUTE,       valueOf("minute"));
+        assertSame(MINUTE,       valueOf("minutes"));
+        assertSame(HOUR,         valueOf("h"));
+        assertSame(HOUR,         valueOf("hr"));
+        assertSame(HOUR,         valueOf("hour"));
+        assertSame(HOUR,         valueOf("hours"));
+        assertSame(DAY,          valueOf("d"));
+        assertSame(DAY,          valueOf("day"));
+        assertSame(DAY,          valueOf("days"));
         assertSame(METRE,        valueOf("m"));
         assertSame(METRE,        valueOf("metre"));
         assertSame(METRE,        valueOf("meter"));

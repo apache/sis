@@ -17,10 +17,12 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
+import java.time.Instant;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.opengis.test.dataset.TestData;
 import org.junit.Test;
@@ -66,7 +68,7 @@ public strictfp class VariableTest extends TestCase {
      * Gets the variable from the given decoder, reordering them if the decoder is a wrapper for UCAR library.
      * We perform this reordering because UCAR library does not always return the variables in the order they
      * are declared. In the case of the {@link TestData#NETCDF_4D_PROJECTED} file, the CIP variable is expected
-     * last but UCAR library put it second.
+     * last but UCAR library puts it second.
      */
     @Workaround(library = "UCAR", version = "4.6.11")
     private Variable[] getVariablesCIP(final Decoder decoder) {
@@ -134,6 +136,39 @@ public strictfp class VariableTest extends TestCase {
         assertEquals("Expected more variables.",
                 expected.length / NUM_BASIC_PROPERTY_COLUMNS,
                 propertyIndex   / NUM_BASIC_PROPERTY_COLUMNS);
+    }
+
+    /**
+     * Tests {@link Variable#parseUnit(String)} method.
+     *
+     * @throws Exception if an I/O or logical error occurred while opening the file.
+     */
+    @Test
+    public void testParseUnit() throws Exception {
+        final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[0];
+        assertSame(Units.SECOND, variable.parseUnit("s"));
+        assertSame(Units.SECOND, variable.parseUnit("second"));
+        assertSame(Units.SECOND, variable.parseUnit("seconds"));
+        assertSame(Units.MINUTE, variable.parseUnit("min"));
+        assertSame(Units.MINUTE, variable.parseUnit("minute"));
+        assertSame(Units.MINUTE, variable.parseUnit("minutes"));
+        assertSame(Units.HOUR,   variable.parseUnit("h"));
+        assertSame(Units.HOUR,   variable.parseUnit("hr"));
+        assertSame(Units.HOUR,   variable.parseUnit("hour"));
+        assertSame(Units.HOUR,   variable.parseUnit("hours"));
+        assertSame(Units.DAY,    variable.parseUnit("d"));
+        assertSame(Units.DAY,    variable.parseUnit("day"));
+        assertSame(Units.DAY,    variable.parseUnit("days"));
+        /*
+         * Parsing date set the epoch as a side effect.
+         */
+        final Instant save = variable.epoch;
+        try {
+            assertSame(Units.DAY, variable.parseUnit("days since 1992-10-8 15:15:42.5 -6:00"));
+            assertEquals("epoch", variable.epoch, Instant.parse("1992-10-08T21:15:42.500Z"));
+        } finally {
+            variable.epoch = save;
+        }
     }
 
     /**
