@@ -164,7 +164,7 @@ public strictfp class VariableTest extends TestCase {
          */
         final Instant save = variable.epoch;
         try {
-            assertSame(Units.DAY, variable.parseUnit("days since 1992-10-8 15:15:42.5 -6:00"));
+            assertSame(Units.DAY, variable.parseUnit("days since 1992-10-8 15:15:42.5 -06:00"));
             assertEquals("epoch", variable.epoch, Instant.parse("1992-10-08T21:15:42.500Z"));
         } finally {
             variable.epoch = save;

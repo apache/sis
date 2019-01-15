@@ -98,7 +98,8 @@ public final class StandardDateFormat extends DateFormat {
             .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                                                .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
-            .optionalStart().appendOffset("+H:MM:ss", "Z")
+//          .optionalStart().appendOffset("+H:MM:ss", "Z")
+            .optionalStart().appendOffsetId()               // TODO: replace by above line after we migrated to JDK10.
             .toFormatter(Locale.ROOT);
 
     /**
