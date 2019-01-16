@@ -16,8 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.util.List;
-import java.util.Collections;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.measure.UnitConverter;
@@ -388,14 +386,6 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
             otherDivisor /= cf;
         }
         return create(otherScale, otherOffset, otherDivisor);
-    }
-
-    /**
-     * Returns the steps of fundamental converters making up this converter, which is only {@code this}.
-     */
-    @Override
-    public List<LinearConverter> getConversionSteps() {
-        return Collections.singletonList(this);
     }
 
     /**

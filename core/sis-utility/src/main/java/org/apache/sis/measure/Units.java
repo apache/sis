@@ -74,7 +74,7 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -1026,6 +1026,13 @@ public final class Units extends Static {
     public static final Unit<Dimensionless> PPM;
 
     /**
+     * Sub-division of logarithm of ratio of the measured quantity to a reference quantity (dB).
+     *
+     * @since 1.0
+     */
+    public static final Unit<Dimensionless> DECIBEL;
+
+    /**
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
      * is sometime added to PSS-78 measurement. However this is officially discouraged.
      *
@@ -1218,12 +1225,15 @@ public final class Units extends Static {
          * All Unit<Dimensionless>.
          */
         final SystemUnit<Salinity> sal;
+        ConventionalUnit<Dimensionless> bel;
         SIGMA   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "sigma", OTHER, (short) 0);
         PIXEL   = add(Dimensionless.class, Scalar.Dimensionless::new, dimensionless, "px",    OTHER, (short) 0);
         sal     = add(Salinity.class,      null,                      dimensionless, null,    OTHER, (short) 0);
         PSU     = add(sal, milli,                                                    "psu",   OTHER, (short) 0);
         PERCENT = add(one, centi,                                                    "%",     OTHER, (short) 0);
         PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
+        bel     = add(one, PowerOf10.belToOne(), "B", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
+        DECIBEL = add(bel, Prefixes.converter('d'), "dB", ACCEPTED, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
@@ -1264,6 +1274,9 @@ public final class Units extends Static {
      * Invoked by {@code Units} static class initializer for registering SI conventional units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      *
+     * <p>The {@code target} argument should be an instance of {@link SystemUnit}.
+     * The only exception is for creating the {@link DECIBEL} unit base on the bel conventional unit.</p>
+     *
      * <p>If the {@code target} unit holds a list of {@linkplain SystemUnit#related() related units}
      * (i.e. conventional units that can not be computed easily by appending a SI prefix), then the new
      * conventional unit is added to that list of related units. For example "foot" is related to "metre"
@@ -1271,7 +1284,7 @@ public final class Units extends Static {
      * because this relationship can be inferred automatically without the need of a {@code related} table.
      * The unrecorded units are all SI units related to {@code target} by a scale factor without offset.</p>
      */
-    private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
+    private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(AbstractUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
         final ConventionalUnit<Q> unit = UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
         final ConventionalUnit<Q>[] related = target.related();
         if (related != null && (unit.scope != UnitRegistry.SI || !toTarget.isLinear())) {

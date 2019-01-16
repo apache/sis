@@ -76,7 +76,7 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
     }
 
     /**
-     * Resources to the singleton instance on deserialization.
+     * Returns the singleton instance on deserialization.
      */
     private Object readResolve() throws ObjectStreamException {
         return target ? TARGET : SOURCE;

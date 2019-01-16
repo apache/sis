@@ -210,6 +210,27 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
+     * Tests the conversion factor of {@link Units#DECIBEL}.
+     *
+     * @throws IncommensurableException if the conversion can not be applied.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Decibel#Conversions">Decibel on Wikipedia</a>
+     */
+    @Test
+    public void testDecibelConversionFactor() throws IncommensurableException {
+        final Unit<?> bel = Units.valueOf("B");
+        assertEquals(10,      bel.getConverterToAny(DECIBEL).convert(1), STRICT);
+        assertEquals(0.1,     DECIBEL.getConverterToAny(bel).convert(1), STRICT);
+        assertEquals(3.16228,     bel.getConverterToAny(UNITY).convert(1), 5E-6);
+        assertEquals(1.12202, DECIBEL.getConverterToAny(UNITY).convert(1), 5E-6);
+        /*
+         * Reverse of last two lines above.
+         */
+        assertEquals(1, UNITY.getConverterToAny(bel)    .convert(3.16228), 2E-5);
+        assertEquals(1, UNITY.getConverterToAny(DECIBEL).convert(1.12202), 2E-5);
+    }
+
+    /**
      * Tests getting a unit for a given quantity type.
      */
     @Test
@@ -298,6 +319,7 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(CELSIUS,      valueOf("degree Celsius"));
         assertSame(CELSIUS,      valueOf("degree_Celcius"));
         assertSame(PASCAL,       valueOf("Pa"));
+        assertSame(DECIBEL,      valueOf("dB"));
     }
 
     /**
