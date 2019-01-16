@@ -34,6 +34,7 @@ import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
@@ -155,8 +156,11 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         final List<Resource> resources = new ArrayList<>();
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
-            final Grid grid;
-            if (variable == null || !variable.isCoverage() || (grid = variable.getGridGeometry(decoder)) == null) {
+            if (decoder.roleOf(variable) != VariableRole.COVERAGE) {
+                continue;                                                   // Skip variables that are not grid coverages.
+            }
+            final Grid grid = variable.getGridGeometry(decoder);
+            if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
             siblings.add(variable);
@@ -180,7 +184,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     int suffixLength = name.length() - suffixStart;
                     for (int j=i; ++j < variables.length;) {
                         final Variable candidate = variables[j];
-                        if (candidate == null || !candidate.isCoverage()) {
+                        if (decoder.roleOf(candidate) != VariableRole.COVERAGE) {
                             variables[j] = null;                                // For avoiding to revisit that variable again.
                             continue;
                         }

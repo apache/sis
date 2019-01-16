@@ -34,6 +34,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
@@ -154,10 +155,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
      * with the name of all dimensions in the netCDF file. This information is computed at construction time
      * because requested more than once.
-     *
-     * @see #isCoordinateSystemAxis()
      */
-    private boolean isCoordinateSystemAxis;
+    boolean isCoordinateSystemAxis;
 
     /**
      * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
@@ -437,13 +436,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis,
+     * Returns {@code AXIS} if this variable seems to be a coordinate system axis,
      * determined by comparing its name with the name of all dimensions in the netCDF file.
      * Also determined by inspection of {@code "coordinates"} attribute on other variables.
      */
     @Override
-    public boolean isCoordinateSystemAxis() {
-        return isCoordinateSystemAxis;
+    protected VariableRole getRole() {
+        return isCoordinateSystemAxis ? VariableRole.AXIS : super.getRole();
     }
 
     /**
@@ -556,6 +555,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the value of the given attribute, or {@code null} if none.
      * This method does not search the lower-case variant of the given name because the argument given to this method
      * is usually a hard-coded value from {@link CF} or {@link CDM} conventions, which are already in lower-cases.
+     *
+     * <p>All {@code getAttributeValue(…)} methods in this class ultimately invokes this method.
+     * This provide a single point to override if the functionality needs to be extended.</p>
      *
      * @param  attributeName  name of attribute to search, in the expected case.
      * @return variable attribute value of the given name, or {@code null} if none.

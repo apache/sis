@@ -277,6 +277,7 @@ public final class ChannelDecoder extends Decoder {
         this.attributeMap = attributes;
         this.variables    = variables;
         this.variableMap  = toCaseInsensitiveNameMap(variables);
+        initialize();
     }
 
     /**
@@ -843,6 +844,33 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Adds to the given set all variables of the given names. This operation is performed when the set of axes is
+     * specified by a {@code "coordinates"} attribute associated to a data variable, or by customized conventions
+     * specified by {@link org.apache.sis.internal.netcdf.Convention#namesOfAxisVariables(Variable)}.
+     *
+     * @param  names       names of variables containing axis data, or {@code null} if none.
+     * @param  axes        where to add named variables.
+     * @param  dimensions  where to report all dimensions used by added axes.
+     * @return whether {@code names} was non-null.
+     */
+    private boolean listAxes(final CharSequence[] names, final Set<VariableInfo> axes, final Set<Dimension> dimensions) {
+        if (names == null) {
+            return false;
+        }
+        for (int i=names.length; --i >= 0;) {
+            final VariableInfo axis = findVariable(names[i].toString());
+            if (axis == null) {
+                dimensions.clear();
+                axes.clear();
+                break;
+            }
+            axes.add(axis);
+            dimensions.addAll(Arrays.asList(axis.dimensions));
+        }
+        return true;
+    }
+
+    /**
      * Returns all grid geometries found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
@@ -860,9 +888,18 @@ public final class ChannelDecoder extends Decoder {
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
-                if (variable.isCoordinateSystemAxis()) {
-                    for (final Dimension dimension : variable.dimensions) {
-                        CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                switch (roleOf(variable)) {
+                    case COVERAGE: {
+                        // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
+                        // remember the new value for avoiding to ask again in next loops.
+                        variable.isCoordinateSystemAxis = false;
+                        break;
+                    }
+                    case AXIS: {
+                        variable.isCoordinateSystemAxis = true;
+                        for (final Dimension dimension : variable.dimensions) {
+                            CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                        }
                     }
                 }
             }
@@ -874,7 +911,7 @@ public final class ChannelDecoder extends Decoder {
             final Set<Dimension> usedDimensions = new HashSet<>(8);
             final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
-                if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
+                if (variable.isCoordinateSystemAxis || variable.dimensions.length == 0) {
                     continue;
                 }
                 /*
@@ -886,21 +923,11 @@ nextVar:    for (final VariableInfo variable : variables) {
                  */
                 axes.clear();
                 usedDimensions.clear();
-                final CharSequence[] coordinates = variable.getCoordinateVariables();
-                if (coordinates.length != 0) {
-                    for (int i=coordinates.length; --i >= 0;) {
-                        final VariableInfo axis = findVariable(coordinates[i].toString());
-                        if (axis == null) {
-                            usedDimensions.clear();
-                            axes.clear();
-                            break;
-                        }
-                        axes.add(axis);
-                        usedDimensions.addAll(Arrays.asList(axis.dimensions));
-                    }
+                if (!listAxes(variable.getCoordinateVariables(), axes, usedDimensions)) {
+                    listAxes(namesOfAxisVariables(variable), axes, usedDimensions);
                 }
                 /*
-                 * In theory the "coordinates" attribute would enumerate all axis needed for covering all dimensions,
+                 * In theory the "coordinates" attribute would enumerate all axes needed for covering all dimensions,
                  * and we would not need to check for variables having dimension names. However in practice there is
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */

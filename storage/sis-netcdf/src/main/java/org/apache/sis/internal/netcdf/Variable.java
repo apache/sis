@@ -295,8 +295,13 @@ public abstract class Variable extends NamedElement {
     public abstract boolean isUnlimited();
 
     /**
-     * Returns {@code true} if the given variable can be used for generating an image.
-     * This method checks for the following conditions:
+     * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
+     * In particular this method shall return {@link VariableRole#AXIS} if this variable seems to be a
+     * coordinate system axis instead than the actual data. By netCDF convention, coordinate system axes
+     * have the name of one of the dimensions defined in the netCDF header.
+     *
+     * <p>The default implementation returns {@link VariableRole#COVERAGE} if the given variable can be used
+     * for generating an image, by checking the following conditions:</p>
      *
      * <ul>
      *   <li>Images require at least {@value Grid#MIN_DIMENSION} dimensions of size equals or greater than {@value Grid#MIN_SPAN}.
@@ -308,9 +313,16 @@ public abstract class Variable extends NamedElement {
      *       to confuse them with images.</li>
      * </ul>
      *
-     * @return {@code true} if the variable can be considered a coverage.
+     * Subclasses shall override this method for checking the {@link VariableRole#AXIS} case before to delegate
+     * to this method.
+     *
+     * <p>This method has protected access because it should not be invoked directly except in overridden methods.
+     * Code using variable role should invoke {@link Decoder#roleOf(Variable)} instead, for allowing specialization
+     * by {@link Convention}.</p>
+     *
+     * @return the role of this variable.
      */
-    public final boolean isCoverage() {
+    protected VariableRole getRole() {
         int numVectors = 0;                                     // Number of dimension having more than 1 value.
         for (final int length : getShape()) {
             if (Integer.toUnsignedLong(length) >= Grid.MIN_SPAN) {
@@ -320,19 +332,11 @@ public abstract class Variable extends NamedElement {
         if (numVectors >= Grid.MIN_DIMENSION) {
             final DataType dataType = getDataType();
             if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
-                return !isCoordinateSystemAxis();
+                return VariableRole.COVERAGE;
             }
         }
-        return false;
+        return VariableRole.OTHER;
     }
-
-    /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis instead than the actual data.
-     * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
-     *
-     * @return {@code true} if this variable seems to be a coordinate system axis.
-     */
-    public abstract boolean isCoordinateSystemAxis();
 
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
@@ -361,7 +365,7 @@ public abstract class Variable extends NamedElement {
      * Values shall be handled as unsigned 32 bits integers.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0, 0, …, 0). This method is used by {@link #isCoverage()} method,
+     * The lower corner is always (0, 0, …, 0). This method is used by {@link #getRole()} method,
      * or for building string representations of this variable.</p>
      *
      * @return the number of grid cells for each dimension, as unsigned integer in netCDF order (reverse of "natural" order).

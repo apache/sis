@@ -41,6 +41,7 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
@@ -206,11 +207,11 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis.
+     * Returns {@code AXIS} if this variable seems to be a coordinate system axis.
      */
     @Override
-    public boolean isCoordinateSystemAxis() {
-        return variable.isCoordinateVariable();
+    protected VariableRole getRole() {
+        return variable.isCoordinateVariable() ? VariableRole.AXIS : super.getRole();
     }
 
     /**

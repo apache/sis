@@ -47,7 +47,7 @@ public strictfp class VariableTest extends TestCase {
      * Expected number of columns per variables for the {@code expected} argument
      * given to the {@link #assertBasicPropertiesEqual(Object[], Variable[])} method.
      */
-    private static final int NUM_BASIC_PROPERTY_COLUMNS = 6;
+    private static final int NUM_BASIC_PROPERTY_COLUMNS = 5;
 
     /**
      * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is considered an axis or not.
@@ -92,8 +92,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
      *   <li>{@link Variable#getShape()} length</li>
-     *   <li>{@link Variable#isCoordinateSystemAxis()}</li>
-     *   <li>{@link Variable#isCoverage()}</li>
+     *   <li>{@link Variable#getRole()}</li>
      * </ul>
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -102,14 +101,14 @@ public strictfp class VariableTest extends TestCase {
     @Test
     public void testBasicProperties() throws IOException, DataStoreException {
         assertBasicPropertiesEqual(new Object[] {
-        // __name______________description_____________________datatype_______dim__axis?__raster?
-            "grid_mapping_0", null,                            DataType.INT,    0, false, false,
-            "x0",             "projection_x_coordinate",       DataType.FLOAT,  1, true,  false,
-            "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, true,  false,
-            "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, true,  false,
-            "time",           "Data time",                     DataType.DOUBLE, 1, true,  false,
-            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis, false,
-            "CIP",            "Current Icing Product",         DataType.FLOAT,  4, false, true
+        // __name______________description_____________________datatype_______dim__role
+            "grid_mapping_0", null,                            DataType.INT,    0, VariableRole.OTHER,
+            "x0",             "projection_x_coordinate",       DataType.FLOAT,  1, VariableRole.AXIS,
+            "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, VariableRole.AXIS,
+            "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, VariableRole.AXIS,
+            "time",           "Data time",                     DataType.DOUBLE, 1, VariableRole.AXIS,
+            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis ? VariableRole.AXIS : VariableRole.OTHER,
+            "CIP",            "Current Icing Product",         DataType.FLOAT,  4, VariableRole.COVERAGE
         }, getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED)));
     }
 
@@ -129,8 +128,7 @@ public strictfp class VariableTest extends TestCase {
             assertEquals(name, expected[propertyIndex++], variable.getDescription());
             assertEquals(name, expected[propertyIndex++], dataType);
             assertEquals(name, expected[propertyIndex++], variable.getShape().length);
-            assertEquals(name, expected[propertyIndex++], variable.isCoordinateSystemAxis());
-            assertEquals(name, expected[propertyIndex++], variable.isCoverage());
+            assertEquals(name, expected[propertyIndex++], variable.getRole());
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
         }
         assertEquals("Expected more variables.",

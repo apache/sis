@@ -60,6 +60,7 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -893,7 +894,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (variable.isCoverage()) {
+            if (decoder.roleOf(variable) == VariableRole.COVERAGE) {
                 final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
                 CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
             }
