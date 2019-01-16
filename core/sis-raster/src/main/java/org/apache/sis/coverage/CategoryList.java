@@ -548,7 +548,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         {
             category = search(value);
             if (category == null) {
-                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
+                return Double.NaN;
+                //throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
             }
             last = category;
         }
