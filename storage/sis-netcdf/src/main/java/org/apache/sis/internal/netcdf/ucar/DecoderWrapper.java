@@ -152,6 +152,25 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
+     * Returns the file format information provided by the UCAR library.
+     *
+     * @return identification of the file format, human-readable description and version number.
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public String[] getFormatDescription() {
+        final String version = file.getFileTypeVersion();
+        final String[] format = new String["N/A".equalsIgnoreCase(version) ? 2 : 3];
+        switch (format.length) {
+            default: format[2] = version;                           // Fallthrough everywhere.
+            case 2:  format[1] = file.getFileTypeDescription();
+            case 1:  format[0] = file.getFileTypeId();
+            case 0:  break;                                         // As a matter of principle.
+        }
+        return format;
+    }
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      */

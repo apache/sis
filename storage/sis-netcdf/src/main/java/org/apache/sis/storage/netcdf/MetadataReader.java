@@ -688,12 +688,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
-        try {
+        final String[] format = decoder.getFormatDescription();
+        String id = format[0];
+        if (NetcdfStoreProvider.NAME.equalsIgnoreCase(id)) try {
             setFormat(NetcdfStoreProvider.NAME);
+            id = null;
         } catch (MetadataStoreException e) {
-            addFormatName(NetcdfStoreProvider.NAME);
+            // Will add 'id' at the end of this method.
             warning(e);
         }
+        if (format.length >= 2) {
+            addFormatName(format[1]);
+            if (format.length >= 3) {
+                setFormatEdition(format[2]);
+            }
+        }
+        addFormatName(id);          // Do nothing is 'id' is null.
     }
 
     /**

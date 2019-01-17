@@ -650,6 +650,17 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Returns an identification of the file format. The returned value is a reference to a database entry
+     * known to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.
+     *
+     * @return an identification of the file format in an array of length 1.
+     */
+    @Override
+    public String[] getFormatDescription() {
+        return new String[] {"NetCDF"};
+    }
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *

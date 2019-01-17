@@ -2844,6 +2844,7 @@ parse:      for (int i = 0; i < length;) {
      * @param value  the format name, or {@code null} for no-operation.
      *
      * @see #setFormat(String)
+     * @see #setFormatEdition(CharSequence)
      * @see #addCompression(CharSequence)
      */
     public final void addFormatName(final CharSequence value) {
@@ -2857,6 +2858,34 @@ parse:      for (int i = 0; i < length;) {
                 addIfNotPresent(citation.getAlternateTitles(), i18n);
             }
             format.setFormatSpecificationCitation(citation);
+        }
+    }
+
+    /**
+     * Sets a version number for the resource format. Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/resourceFormat/formatSpecificationCitation/edition}</li>
+     * </ul>
+     *
+     * If this method is used together with {@link #setFormat(String)},
+     * then {@code setFormat} should be invoked <strong>before</strong> this method.
+     *
+     * @param value  the format edition, or {@code null} for no-operation.
+     *
+     * @see #setFormat(String)
+     * @see #addFormatName(CharSequence)
+     */
+    public final void setFormatEdition(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            final DefaultFormat format = format();
+            DefaultCitation citation = DefaultCitation.castOrCopy(format.getFormatSpecificationCitation());
+            if (citation == null) {
+                citation = new DefaultCitation();
+                format.setFormatSpecificationCitation(citation);
+            }
+            citation.setEdition(i18n);
         }
     }
 

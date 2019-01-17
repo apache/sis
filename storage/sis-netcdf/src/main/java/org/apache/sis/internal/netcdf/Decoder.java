@@ -130,12 +130,27 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public abstract String getFilename();
 
     /**
+     * Returns an identification of the file format. This method should returns an array of length 1, 2 or 3 as below:
+     *
+     * <ul>
+     *   <li>One of the following identifier in the first element: {@code "NetCDF"}, {@code "NetCDF-4"} or other values
+     *       defined by the UCAR library. If known, it will be used as an identifier for a more complete description to
+     *       be provided by {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.</li>
+     *   <li>Optionally a human-readable description in the second array element.</li>
+     *   <li>Optionally a version in the third array element.</li>
+     * </ul>
+     *
+     * @return identification of the file format, human-readable description and version number.
+     */
+    public abstract String[] getFormatDescription();
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
      * @param  groupNames  the name of the group where to search, in preference order.
      */
-    public abstract void setSearchPath(final String... groupNames);
+    public abstract void setSearchPath(String... groupNames);
 
     /**
      * Returns the path which is currently set. The array returned by this method may be only
@@ -161,7 +176,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or empty or if the given name was null.
      */
-    public abstract String stringValue(final String name);
+    public abstract String stringValue(String name);
 
     /**
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
@@ -169,7 +184,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
-    public abstract Number numericValue(final String name);
+    public abstract Number numericValue(String name);
 
     /**
      * Convenience method for {@link #numericValue(String)} implementation.
@@ -200,7 +215,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
-    public abstract Date dateValue(final String name);
+    public abstract Date dateValue(String name);
 
     /**
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
@@ -210,7 +225,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  values  the values to convert. May contains {@code null} elements.
      * @return the converted values. May contains {@code null} elements.
      */
-    public abstract Date[] numberToDate(final String symbol, final Number... values);
+    public abstract Date[] numberToDate(String symbol, Number... values);
 
     /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
