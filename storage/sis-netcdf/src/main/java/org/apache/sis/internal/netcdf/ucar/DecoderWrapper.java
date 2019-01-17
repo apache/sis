@@ -108,6 +108,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     public DecoderWrapper(final NetcdfFile file, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         super(geomlib, listeners);
         this.file = file;
+        groups = new Group[1];
         initialize();
     }
 
@@ -125,6 +126,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     {
         super(geomlib, listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
+        groups = new Group[1];
         initialize();
     }
 
