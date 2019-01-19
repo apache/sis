@@ -110,7 +110,7 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the name of this variable, or {@code null} if none.
+     * Returns the name of this variable.
      */
     @Override
     public String getName() {

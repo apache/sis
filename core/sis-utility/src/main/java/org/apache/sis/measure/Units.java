@@ -1525,8 +1525,8 @@ public final class Units extends Static {
     /**
      * Creates a linear converter from the given scale and offset.
      *
-     * @param  scale   the scale factor, or {@code null} if none.
-     * @param  offset  the offset, or {@code null} if none.
+     * @param  scale   the scale factor, or {@code null} if none (default value of 1).
+     * @param  offset  the offset, or {@code null} if none (default value of 0).
      * @return a converter for the given scale and offset.
      *
      * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(double, double)

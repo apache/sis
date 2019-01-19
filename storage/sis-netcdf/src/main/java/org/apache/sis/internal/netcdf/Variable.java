@@ -144,9 +144,9 @@ public abstract class Variable extends NamedElement {
     public abstract String getFilename();
 
     /**
-     * Returns the name of this variable, or {@code null} if none.
+     * Returns the name of this variable.
      *
-     * @return the name of this variable, or {@code null}.
+     * @return the name of this variable.
      */
     @Override
     public abstract String getName();

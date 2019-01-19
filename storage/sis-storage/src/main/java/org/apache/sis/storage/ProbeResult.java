@@ -289,7 +289,7 @@ public class ProbeResult implements Serializable {
             try {
                 return ProbeResult.class.getField(name).get(null);
             } catch (ReflectiveOperationException e) {
-                return this; // See javadoc
+                return this;                                            // See javadoc
             }
         }
 
