@@ -309,7 +309,9 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     }
                 }
             }
-            builder.addQuantitative(data.getName(), range, mt, data.getUnit());
+            String name = data.getDescription();
+            if (name == null) name = data.getName();
+            builder.addQuantitative(name, range, mt, data.getUnit());
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -345,7 +347,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                 builder.addQualitative(name, n, n);
             }
         }
-        return builder.build();
+        return builder.setName(data.getName()).build();
     }
 
     /**
