@@ -17,6 +17,7 @@
 package org.apache.sis.coverage;
 
 import java.util.Set;
+import java.util.List;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
@@ -123,9 +124,9 @@ public final strictfp class SampleDimensionTest extends TestCase {
                 .setBackground (null,      0)
                 .addQualitative("Clouds",  1)
                 .addQualitative("Lands", 255);
-        assertEquals(3, builder.categories.size());
-        assertNotNull(builder.remove("Clouds"));
-        assertEquals(2, builder.categories.size());
-        assertNull(builder.remove("Clouds"));
+        final List<Category> categories = builder.categories();
+        assertEquals(3, categories.size());
+        assertEquals("Clouds", categories.remove(1).getName().toString());
+        assertEquals(2, categories.size());
     }
 }
