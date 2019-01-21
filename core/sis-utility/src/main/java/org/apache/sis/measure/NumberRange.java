@@ -122,6 +122,22 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
+     * Constructs a range containing a single value of the given type.
+     * The given value is used as the minimum and maximum values, inclusive.
+     *
+     * @param  <N>     compile-time value of {@code type}.
+     * @param  type    the element type, usually one of {@link Byte}, {@link Short},
+     *                 {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param  value   the value, or {@code null} for creating an unbounded range.
+     * @return a range containing the given value as its inclusive minimum and maximum.
+     *
+     * @since 1.0
+     */
+    public static <N extends Number & Comparable<? super N>> NumberRange<N> create(final Class<N> type, final N value) {
+        return unique(new NumberRange<>(type, value, true, value, true));
+    }
+
+    /**
      * Constructs a range of {@code byte} values.
      * This method may return a shared instance, at implementation choice.
      *
@@ -592,12 +608,12 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Returns {@code true} if the supplied range is fully contained within this range.
+     * Returns {@code true} if the supplied range intersects this range.
      * This method converts {@code this} or the given argument to the widest numeric type,
      * then delegates to {@link #intersects(Range)}.
      *
-     * @param  range  the range to check for inclusion in this range.
-     * @return {@code true} if the given range is included in this range.
+     * @param  range  the range to check for intersection with this range.
+     * @return {@code true} if the given range intersects this range.
      * @throws IllegalArgumentException if the given range can not be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */

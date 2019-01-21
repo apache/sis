@@ -44,6 +44,15 @@ public final strictfp class CategoryTest extends TestCase {
     static final double EPS = 1E-9;
 
     /**
+     * Asserts that the given range contains NaN values.
+     */
+    private static void assertNaN(final String message, final NumberRange<?> range) {
+        final double value = range.getMinDouble();
+        assertTrue(message, Double.isNaN(value));
+        assertEquals(message, Double.doubleToRawLongBits(value), Double.doubleToRawLongBits(range.getMaxDouble()));
+    }
+
+    /**
      * Checks if a {@link Comparable} is a number identical to the supplied integer value.
      */
     private static void assertBoundEquals(final String message, final int expected, final Comparable<?> actual) {
@@ -107,7 +116,7 @@ public final strictfp class CategoryTest extends TestCase {
             assertEquals ("name",               "Random", String.valueOf(converse.getName()));
             assertTrue   ("minimum",                      Double.isNaN(converse.minimum));
             assertTrue   ("maximum",                      Double.isNaN(converse.maximum));
-            assertNull   ("range",                        converse.range);
+            assertNaN    ("range",                        converse.range);
             assertNotNull("sampleRange",                  converse.getSampleRange());
             assertFalse  ("measurementRange",             category.getMeasurementRange().isPresent());
             assertFalse  ("toConverse.isIdentity",        converse.toConverse.isIdentity());
@@ -231,7 +240,7 @@ public final strictfp class CategoryTest extends TestCase {
         assertEquals("name",           "NaN",      String.valueOf(category.getName()));
         assertEquals("minimum",        Double.NaN, category.minimum, STRICT);
         assertEquals("maximum",        Double.NaN, category.maximum, STRICT);
-        assertNull  ("sampleRange",                category.range);
+        assertNaN   ("sampleRange",                category.range);
         assertEquals("range.minValue", Float.NaN,  range.getMinValue());
         assertEquals("range.maxValue", Float.NaN,  range.getMaxValue());
         assertFalse ("measurementRange",           category.getMeasurementRange().isPresent());

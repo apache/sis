@@ -160,9 +160,6 @@ final class SampleRangeFormat extends RangeFormat {
      * @return the range to write, or {@code null} if the given {@code range} argument was null.
      */
     private String formatMeasure(final Range<?> range) {
-        if (range == null) {
-            return null;
-        }
         final NumberFormat nf = (NumberFormat) elementFormat;
         final int min = nf.getMinimumFractionDigits();
         final int max = nf.getMaximumFractionDigits();
@@ -226,9 +223,11 @@ final class SampleRangeFormat extends RangeFormat {
                  */
                 if (hasQuantitative) {
                     final Category converted = category.converted();
-                    String text = formatMeasure(converted.range);               // Example: [6.0 … 25.0)°C
-                    if (text == null) {
+                    final String text;
+                    if (converted.isConvertedQualitative()) {
                         text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
+                    } else {
+                        text = formatMeasure(converted.getSampleRange());       // Example: [6.0 … 25.0)°C
                     }
                     table.append(text);
                     table.nextColumn();

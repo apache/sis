@@ -63,7 +63,7 @@ public final strictfp class CategoryListTest extends TestCase {
      */
     private static void assertNotConverted(final CategoryList categories) {
         for (final Category c : categories) {
-            assertNotNull(c.range);
+            assertFalse("isNaN", Double.isNaN(c.range.getMinDouble()));
             assertFalse(c.range instanceof ConvertedRange);
         }
     }

@@ -327,11 +327,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (ordinal >= 0) {
                 n = MathFunctions.toNanFloat(ordinal++);        // Must be consistent with Variable.replaceNaN(Object).
             } else {
-                n = entry.getKey();
-                final double fp = n.doubleValue();
-                if (builder.rangeCollides(fp, fp)) {
-                    continue;
-                }
+                n = entry.getKey();                             // Should be real number, made unique by the HashMap.
             }
             final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
             final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.

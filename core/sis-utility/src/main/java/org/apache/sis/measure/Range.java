@@ -587,10 +587,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * <ul>
      *   <li>are both {@linkplain #isEmpty() empty}, or</li>
      *   <li>have equal {@linkplain #getMinValue() minimum} and {@linkplain #getMaxValue() maximum} values
-     *       with equal inclusive/exclusive flags.</li>
+     *       with equal inclusive/exclusive flags. Note that numbers in {@link Float} or {@link Double}
+     *       wrappers consider all {@code NaN} values as equal.</li>
      * </ul>
      *
-     * Note that subclasses may add other requirements, for example on units of measurement.
+     * Subclasses may add other requirements, for example on units of measurement.
      *
      * @param  object  the object to compare with this range for equality.
      * @return {@code true} if the given object is equal to this range.

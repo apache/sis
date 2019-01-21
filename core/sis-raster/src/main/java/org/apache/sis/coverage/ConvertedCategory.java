@@ -69,6 +69,6 @@ final class ConvertedCategory extends Category {
      */
     @Override
     public Optional<MathTransform1D> getTransferFunction() {
-        return (range != null) ? Optional.of(identity()) : Optional.empty();
+        return isConvertedQualitative() ? Optional.empty() : Optional.of(identity());
     }
 }

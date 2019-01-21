@@ -134,7 +134,7 @@ public class SampleDimension implements Serializable {
      * @param  original  the original sample dimension for packed values.
      * @param  bc        category of the background value in original sample dimension, or {@code null}.
      */
-    private SampleDimension(final SampleDimension original, Category bc) {
+    private SampleDimension(final SampleDimension original, final Category bc) {
         converse         = original;
         name             = original.name;
         categories       = original.categories.converse;
@@ -143,13 +143,7 @@ public class SampleDimension implements Serializable {
         if (bc == null) {
             background = null;
         } else {
-            bc = bc.converse;
-            final NumberRange<?> range = bc.range;
-            if (range != null) {
-                background = range.getMinValue();
-            } else {
-                background = (float) bc.minimum;
-            }
+            background = bc.converse.range.getMinValue();
         }
     }
 
@@ -263,8 +257,9 @@ public class SampleDimension implements Serializable {
             Class<? extends Number> widestClass = Byte.class;
             int count = 0;
             for (final Category category : categories) {
-                final NumberRange<?> range = category.range;
-                if (range != null && !category.isQuantitative()) {
+                final Category converted = category.converted();
+                if (category != converted && converted.isConvertedQualitative()) {
+                    final NumberRange<?> range = category.range;
                     if (!range.isBounded()) {
                         throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
                     }
@@ -950,20 +945,12 @@ public class SampleDimension implements Serializable {
         }
 
         /**
-         * Returns {@code true} if the given range intersects the range of a previously added category.
-         * This method can be invoked before to add a new category for checking if it would cause a range collision.
+         * Returns an unmodifiable view of the list of categories added so far.
          *
-         * @param  minimum  minimal value of the range to test, inclusive.
-         * @param  maximum  maximal value of the range to test, inclusive.
-         * @return whether the given range intersects at least one previously added range.
+         * @return an unmodifiable view of the current category list.
          */
-        public boolean rangeCollides(final double minimum, final double maximum) {
-            for (final Category category : categories) {
-                if (maximum >= category.minimum && minimum <= category.maximum) {
-                    return true;
-                }
-            }
-            return false;
+        public List<Category> categories() {
+            return Collections.unmodifiableList(categories);
         }
 
         /**

@@ -86,7 +86,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * The category to use if {@link #search(double)} is invoked with a sample value greater than all ranges in this list.
      * This is usually a reference to the last category to have a range of real values. A {@code null} value means that no
      * extrapolation should be used. By extension, a {@code null} value also means that {@link #search(double)} should not
-     * try to find any fallback at all if the requested sample value does not fall in a category range.
+     * try to find any fallback if the requested sample value does not fall in a category range.
      *
      * <p>There is no explicit extrapolation field for values less than all ranges in this list because the extrapolation
      * to use in such case is {@code categories[0]}.</p>
@@ -131,7 +131,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
 
     /**
      * Constructs a category list using the specified array of categories.
-     * The {@code categories} array should contain at least one element.
+     * The {@code categories} array should contain at least one element,
+     * otherwise the {@link #EMPTY} constant should be used.
      *
      * @param  categories  the list of categories. May be empty, but can not be null.
      *                     This array is not cloned and is modified in-place.
@@ -172,17 +173,16 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                                 category.name, category.getRangeLabel()));
                 }
             }
-            final NumberRange<?> extent = category.range;
-            if (extent != null) {
+            if (!category.isConvertedQualitative()) {
                 /*
-                 * Initialize with the union of ranges at index 0 and index i.  In most cases, it will cover the whole range
-                 * so all future calls to 'range.unionAny(extent)' will be no-op. The 'categories[0].range' field should not
-                 * be null because categories with null ranges are sorted last (because their 'minimum' field is NaN).
+                 * Initialize with the union of ranges at index 0 and index i.  In most cases, the result will cover the whole
+                 * range so all future calls to 'range.unionAny(…)' will be no-op.  The 'categories[0].range' field should not
+                 * be NaN because categories with NaN ranges are sorted last.
                  */
                 if (range == null) {
                     range = categories[0].range;
                 }
-                range = range.unionAny(extent);
+                range = range.unionAny(category.range);
             }
         }
         this.range = range;
@@ -203,10 +203,11 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             boolean hasQuantitative = false;
             final Category[] convertedCategories = new Category[categories.length];
             for (int i=0; i < convertedCategories.length; i++) {
-                final Category category = categories[i];
-                hasConversion   |= (category != category.converse);
-                hasQuantitative |= (category.converse.range != null);
-                convertedCategories[i] = category.converse;
+                final Category category  = categories[i];
+                final Category converted = category.converse;
+                hasConversion   |= (category != converted);
+                hasQuantitative |= !converted.isConvertedQualitative();
+                convertedCategories[i] = converted;
             }
             if (hasQuantitative) {
                 converse = hasConversion ? new CategoryList(convertedCategories, this) : this;
@@ -457,6 +458,10 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                     piece.transform(srcPts, srcOff, dstPts, stepOff, count);
                 }
             }
+            /*
+             * If extrapolation may have happened, verify that transformed values are in expected ranges.
+             * Values out of range will be clamped.
+             */
             if (extrapolation != null) {
                 dstOff = srcOff + srcToDst;
                 final Category converse = category.converse;
