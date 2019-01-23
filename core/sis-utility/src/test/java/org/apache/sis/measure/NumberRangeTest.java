@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import org.apache.sis.math.MathFunctions;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
  * Tests the {@link NumberRange} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -36,6 +37,20 @@ import static org.junit.Assert.*;
     org.apache.sis.util.NumbersTest.class
 })
 public final strictfp class NumberRangeTest extends TestCase {
+    /**
+     * Tests {@link NumberRange#isOtherNaN(Number)}.
+     */
+    @Test
+    public void testIsOtherNaN() {
+        assertFalse(NumberRange.isOtherNaN(0));
+        assertFalse(NumberRange.isOtherNaN(0f));
+        assertFalse(NumberRange.isOtherNaN(0d));
+        assertFalse(NumberRange.isOtherNaN(Float.NaN));
+        assertFalse(NumberRange.isOtherNaN(Double.NaN));
+        assertFalse(NumberRange.isOtherNaN(MathFunctions.toNanFloat(0)));
+        assertTrue (NumberRange.isOtherNaN(MathFunctions.toNanFloat(1)));
+    }
+
     /**
      * Tests the endpoint values of a range of integers.
      */

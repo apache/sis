@@ -122,6 +122,23 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
+     * Returns {@code true} if the given value is a NaN value other than the canonical {@link Float#NaN}
+     * or {@link Double#NaN} value. This is used for determining if the range should be omitted from the
+     * {@link POOL} cache, since {@link #equals(Object)} considers all NaN values as equal.
+     */
+    static boolean isOtherNaN(final Number n) {
+        if (n instanceof Double) {
+            final double value = (Double) n;
+            return Double.isNaN(value) && Double.doubleToRawLongBits(value) != 0x7ff8000000000000L;
+        } else if (n instanceof Float) {
+            final float value = (Float) n;
+            return Float.isNaN(value) && Float.floatToRawIntBits(value) != 0x7fc00000;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Constructs a range containing a single value of the given type.
      * The given value is used as the minimum and maximum values, inclusive.
      *
@@ -134,7 +151,11 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @since 1.0
      */
     public static <N extends Number & Comparable<? super N>> NumberRange<N> create(final Class<N> type, final N value) {
-        return unique(new NumberRange<>(type, value, true, value, true));
+        NumberRange<N> range = new NumberRange<>(type, value, true, value, true);
+        if (!isOtherNaN(value)) {
+            range = unique(range);
+        }
+        return range;
     }
 
     /**
@@ -310,7 +331,11 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         }
         final Number min = Numbers.cast(minValue, type);
         final Number max = Objects.equals(minValue, maxValue) ? min : Numbers.cast(maxValue, type);
-        return unique(new NumberRange(type, min, isMinIncluded, max, isMaxIncluded));
+        NumberRange range = new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
+        if (!isOtherNaN(min) && !isOtherNaN(max)) {
+            range = unique(range);
+        }
+        return range;
     }
 
     /**

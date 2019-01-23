@@ -151,14 +151,18 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
             final Number maxValue, final boolean isMaxIncluded, final Unit<?> unit)
     {
-        final Class<? extends Number> type = Numbers.widestClass(
-                Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
+        final Class<? extends Number> type = Numbers.widestClass(Numbers.narrowestClass(minValue),
+                                                                 Numbers.narrowestClass(maxValue));
         if (type == null) {
             return null;
         }
-        return unique(new MeasurementRange(type,
+        MeasurementRange range = new MeasurementRange(type,
                 Numbers.cast(minValue, type), isMinIncluded,
-                Numbers.cast(maxValue, type), isMaxIncluded, unit));
+                Numbers.cast(maxValue, type), isMaxIncluded, unit);
+        if (!isOtherNaN(minValue) && !isOtherNaN(maxValue)) {
+            range = unique(range);
+        }
+        return range;
     }
 
     /**

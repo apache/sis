@@ -112,12 +112,13 @@ search: if (!add(ordinal)) {
      * This method does nothing if {@code converted} is not a NaN value, i.e. if
      * the category is quantitative instead than qualitative.
      *
-     * @param  value      the real value of the presumed qualitative category.
-     * @param  converted  the converted value, which should be one of NaN values.
+     * @param  c  the presumed qualitative category.
      */
-    void remove(final double value, final double converted) {
-        if (Double.isNaN(converted) && super.remove(MathFunctions.toNanOrdinal((float) converted))) {
-            if (isBackground(value)) {
+    void remove(final Category c) {
+        final float converted = (float) c.converse.range.getMinDouble();
+        if (Float.isNaN(converted) && super.remove(MathFunctions.toNanOrdinal(converted))) {
+            // Use of 'c.getMinDouble()' shall be consistent with 'SampleDimension.Builder.setBackground(…)'.
+            if (isBackground(c.range.getMinDouble())) {
                 background = null;
             }
         }

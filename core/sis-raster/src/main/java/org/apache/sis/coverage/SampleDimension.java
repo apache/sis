@@ -79,7 +79,7 @@ public class SampleDimension implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6026936545776852758L;
+    private static final long serialVersionUID = -4966135180995819364L;
 
     /**
      * Identification for this sample dimension. Typically used as a way to perform a band select by
@@ -646,7 +646,7 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
             final NumberRange<?> samples = range(sample.getClass(), sample, sample);
-            // Use of 'getMinValue()' below shall be consistent with this.remove(…).
+            // Use of 'getMinValue()' below shall be consistent with ToNaN.remove(Category).
             toNaN.background = samples.getMinValue();
             add(new Category(name, samples, null, null, toNaN));
             return this;
@@ -963,8 +963,7 @@ public class SampleDimension implements Serializable {
                     final Category c = categories[i];
                     System.arraycopy(categories, i+1, categories, i, --count - i);
                     categories[count] = null;
-                    // Use of 'c.minimum' shall be consistent with 'this.setBackground(…)'.
-                    toNaN.remove(c.minimum, c.converse.minimum);
+                    toNaN.remove(c);
                     return c;
                 }
             };

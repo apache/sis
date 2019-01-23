@@ -98,16 +98,21 @@ final class SampleRangeFormat extends RangeFormat {
         for (int i=0; i<count; i++) {
             int ndigits = 0;
             for (final Category category : dimensions[i].getCategories()) {
-                final Category converted = category.converted();
-                final boolean  isPacked  = (Double.doubleToRawLongBits(category.minimum) != Double.doubleToRawLongBits(converted.minimum))
-                                         | (Double.doubleToRawLongBits(category.maximum) != Double.doubleToRawLongBits(converted.maximum));
+                final NumberRange<?> sr = category.getSampleRange();
+                final NumberRange<?> cr = category.converted().range;
+                final double  smin = sr.getMinDouble(true);
+                final double  smax = sr.getMaxDouble(false);
+                final double  cmin = cr.getMinDouble(true);
+                final double  cmax = cr.getMaxDouble(false);
+                final boolean isPacked = (Double.doubleToRawLongBits(smin) != Double.doubleToRawLongBits(cmin))
+                                       | (Double.doubleToRawLongBits(smax) != Double.doubleToRawLongBits(cmax));
                 hasPackedValues |= isPacked;
                 /*
                  * If the sample values are already real values, pretend that they are packed in bytes.
                  * The intent is only to compute an arbitrary number of fraction digits.
                  */
-                final double range = isPacked ? ( category.maximum -  category.minimum) : 255;
-                final double increment =        (converted.maximum - converted.minimum) / range;
+                final double range = isPacked ? (smax - smin) : 256;
+                final double increment =        (cmax - cmin) / range;
                 if (!Double.isNaN(increment)) {
                     hasQuantitative = true;
                     final int n = -Numerics.toExp10(Math.getExponent(increment));
@@ -232,7 +237,7 @@ final class SampleRangeFormat extends RangeFormat {
                     table.append(text);
                     table.nextColumn();
                 }
-                table.append(category.name.toString(getLocale()));
+                table.append(category.getName().toString(getLocale()));
                 table.nextLine();
             }
         }

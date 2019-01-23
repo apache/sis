@@ -58,7 +58,7 @@ public final class Numerics extends Static {
         cache( 360);
         cache(1000);
         cache(Double.POSITIVE_INFINITY);
-        cache(Double.NaN);
+        // Do not cache NaN values because Double.equals(Object) consider all NaN as equal.
     }
 
     /**

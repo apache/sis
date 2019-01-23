@@ -32,7 +32,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
@@ -1236,7 +1235,7 @@ search:     for (;;) {
          */
         int i = 0;
         do if (i >= length) {
-            final Double NaN = Numerics.valueOf(Double.NaN);
+            final Double NaN = Double.NaN;
             return createSequence(getElementType(), NaN, NaN, length);
         } while (isNaN(i++));
         /*

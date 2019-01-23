@@ -94,8 +94,6 @@ public final strictfp class CategoryTest extends TestCase {
              */
             assertEquals     ("name",           "Random",       String.valueOf(category.name));
             assertEquals     ("name",           "Random",       String.valueOf(category.getName()));
-            assertEquals     ("minimum",        sample,         category.minimum, STRICT);
-            assertEquals     ("maximum",        sample,         category.maximum, STRICT);
             assertBoundEquals("range.minValue", sample,         category.range.getMinValue());
             assertBoundEquals("range.maxValue", sample,         category.range.getMaxValue());
             assertSame       ("sampleRange",    category.range, category.getSampleRange());
@@ -114,8 +112,6 @@ public final strictfp class CategoryTest extends TestCase {
             assertSame   ("converted",          converse, converse.converted());
             assertEquals ("name",               "Random", String.valueOf(converse.name));
             assertEquals ("name",               "Random", String.valueOf(converse.getName()));
-            assertTrue   ("minimum",                      Double.isNaN(converse.minimum));
-            assertTrue   ("maximum",                      Double.isNaN(converse.maximum));
             assertNaN    ("range",                        converse.range);
             assertNotNull("sampleRange",                  converse.getSampleRange());
             assertFalse  ("measurementRange",             category.getMeasurementRange().isPresent());
@@ -168,14 +164,12 @@ public final strictfp class CategoryTest extends TestCase {
             assertEquals     ("name",               "Random",            String.valueOf(converse.name));
             assertEquals     ("name",               "Random",            String.valueOf(category.getName()));
             assertEquals     ("name",               "Random",            String.valueOf(converse.getName()));
-            assertEquals     ("minimum",            lower,               category.minimum, STRICT);
-            assertEquals     ("maximum",            upper,               category.maximum, STRICT);
-            assertEquals     ("minimum",            lower*scale+offset,  converse.minimum, EPS);
-            assertEquals     ("maximum",            upper*scale+offset,  converse.maximum, EPS);
+            assertEquals     ("minimum",            lower,               category.range.getMinDouble(true), STRICT);
+            assertEquals     ("maximum",            upper,               category.range.getMaxDouble(true), STRICT);
+            assertEquals     ("minimum",            lower*scale+offset,  converse.range.getMinDouble(true), EPS);
+            assertEquals     ("maximum",            upper*scale+offset,  converse.range.getMaxDouble(true), EPS);
             assertBoundEquals("range.minValue",     lower,               category.range.getMinValue());
             assertBoundEquals("range.maxValue",     upper,               category.range.getMaxValue());
-            assertBoundEquals("range.minValue",     converse.minimum,    converse.range.getMinValue());
-            assertBoundEquals("range.maxValue",     converse.maximum,    converse.range.getMaxValue());
             assertSame       ("sampleRange",        category.range,      category.getSampleRange());
             assertSame       ("sampleRange",        converse.range,      converse.getSampleRange());
             assertSame       ("measurementRange",   converse.range,      category.getMeasurementRange().get());
@@ -216,8 +210,6 @@ public final strictfp class CategoryTest extends TestCase {
             assertSame       ("converse",           category,            category.converse);
             assertEquals     ("name",               "Random",            String.valueOf(category.name));
             assertEquals     ("name",               "Random",            String.valueOf(category.getName()));
-            assertEquals     ("minimum",            lower,               category.minimum, STRICT);
-            assertEquals     ("maximum",            upper,               category.maximum, STRICT);
             assertBoundEquals("range.minValue",     lower,               category.range.getMinValue());
             assertBoundEquals("range.maxValue",     upper,               category.range.getMaxValue());
             assertSame       ("sampleRange",        category.range,      category.getSampleRange());
@@ -238,8 +230,6 @@ public final strictfp class CategoryTest extends TestCase {
         assertSame  ("converse",       category,   category.converse);
         assertEquals("name",           "NaN",      String.valueOf(category.name));
         assertEquals("name",           "NaN",      String.valueOf(category.getName()));
-        assertEquals("minimum",        Double.NaN, category.minimum, STRICT);
-        assertEquals("maximum",        Double.NaN, category.maximum, STRICT);
         assertNaN   ("sampleRange",                category.range);
         assertEquals("range.minValue", Float.NaN,  range.getMinValue());
         assertEquals("range.maxValue", Float.NaN,  range.getMaxValue());
