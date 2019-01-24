@@ -39,6 +39,26 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class SampleDimensionTest extends TestCase {
     /**
+     * Tests a sample dimension having only qualitative categories.
+     */
+    @Test
+    public void testQualitative() {
+        final SampleDimension dimension = new SampleDimension.Builder()
+                .addQualitative("Clouds",    1)
+                .addQualitative("Lands",     2)
+                .addQualitative("Missing", 255)
+                .setName("Some data").build();
+
+        assertEquals("name", "Some data",  String.valueOf(dimension.getName()));
+        assertTrue  ("nodataValues",       dimension.getNoDataValues().isEmpty());
+        assertFalse ("background",         dimension.getBackground().isPresent());
+        assertFalse ("transferFunction",   dimension.getTransferFunction().isPresent());
+        assertFalse ("units",              dimension.getUnits().isPresent());
+        assertSame  ("forConvertedValues", dimension, dimension.forConvertedValues(false));
+        assertSame  ("forConvertedValues", dimension, dimension.forConvertedValues(true));
+    }
+
+    /**
      * Tests a sample dimension having one quantitative category and a few "no data" values.
      */
     @Test
