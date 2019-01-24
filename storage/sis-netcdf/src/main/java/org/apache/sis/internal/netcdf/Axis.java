@@ -36,6 +36,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
@@ -376,14 +377,14 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      * added to the {@code nonLinears} list.</p>
      *
      * @param  gridToCRS   the matrix in which to set scale and offset coefficient.
-     * @param  srcEnd      number of source dimensions (grid dimensions) - 1. Identifies the last column in the matrix.
-     * @param  tgtDim      the target dimension, which is a dimension of the CRS. Identifies the matrix row of scale factor.
+     * @param  lastSrcDim  number of source dimensions (grid dimensions) - 1. Used for conversion from netCDF to "natural" order.
+     * @param  tgtDim      the target dimension, which is a dimension of the CRS. Identifies the matrix row of scale factor to set.
      * @param  nonLinears  where to add a non-linear transform if we can not compute a linear one. {@code null} may be added.
      * @return whether this method successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    final boolean trySetTransform(final Matrix gridToCRS, final int srcEnd, final int tgtDim,
+    final boolean trySetTransform(final Matrix gridToCRS, final int lastSrcDim, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
         switch (sourceDimensions.length) {
@@ -395,7 +396,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
              * Normal case where the axis has only one dimension.
              */
             case 1: {
-                final int srcDim = srcEnd - sourceDimensions[0];
+                final int srcDim = lastSrcDim - sourceDimensions[0];                // Convert from netCDF to "natural" order.
                 if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, null)) {
                     return true;
                 } else {
@@ -420,21 +421,27 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
              */
             case 2: {
                 Vector data = coordinates.read();
-                final int[] repetitions = data.repetitions(sourceSizes);    // Detects repetitions as illustrated above.
+                final int[] repetitions = data.repetitions(sourceSizes);        // Detects repetitions as illustrated above.
                 if (repetitions.length != 0) {
                     for (int i=0; i<sourceDimensions.length; i++) {
-                        final int srcDim = srcEnd - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
+                        final int srcDim = lastSrcDim - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
                         final int length = sourceSizes[i];
-                        int step = 1;
+                        int step = 1, dim = 0;
                         for (int j=0; j<sourceDimensions.length; j++) {
-                            int previous = srcEnd - sourceDimensions[j];
-                            if (previous < srcDim) step *= sourceSizes[j];
+                            int previous = lastSrcDim - sourceDimensions[j];
+                            if (previous < srcDim) {
+                                step *= sourceSizes[j];
+                                dim++;
+                            }
                         }
                         final boolean condition;
-                        switch (srcDim) {
+                        switch (dim) {
                             case 0:  condition = repetitions.length > 1 && (repetitions[1] % length) == 0; break;
                             case 1:  condition =                           (repetitions[0] % step)   == 0; break;
-                            default: throw new AssertionError();        // I don't know yet how to generalize to n dimensions.
+                            default: {
+                                // I don't know yet how to generalize to n dimensions.
+                                throw new InternalDataStoreException();
+                            }
                         }
                         if (condition) {                                // Repetition length shall be grid size (or a multiple).
                             data = data.subSampling(0, step, length);

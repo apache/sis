@@ -695,7 +695,7 @@ public abstract class Variable extends NamedElement {
      * @param  srcDim     the source dimension, which is a dimension of the grid. Identifies the matrix column of scale factor.
      * @param  tgtDim     the target dimension, which is a dimension of the CRS.  Identifies the matrix row of scale factor.
      * @param  values     the vector to use for computing scale and offset, or {@code null} if it has not been read yet.
-     * @return whether this method successfully set the scale and offset coefficients.
+     * @return whether this method has successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -718,7 +718,7 @@ public abstract class Variable extends NamedElement {
                     error = Math.max(Math.ulp(first), Math.ulp(last));
                 }
                 error = Math.max(Math.ulp(last - first), error) / n;
-                increment = values.increment(error);
+                increment = values.increment(error);                        // May return null.
             } else {
                 increment = Double.NaN;
             }

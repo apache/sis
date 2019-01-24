@@ -428,12 +428,20 @@ final class VariableWrapper extends Variable {
     protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
             throws IOException, DataStoreException
     {
-        if (variable instanceof CoordinateAxis1D) {
+        if (values == null && variable instanceof CoordinateAxis1D) {
             final CoordinateAxis1D axis = (CoordinateAxis1D) variable;
             if (axis.isRegular()) {
-                gridToCRS.setElement(tgtDim, srcDim, axis.getIncrement());
-                gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, axis.getStart());
-                return true;
+                final double start     = axis.getStart();
+                final double increment = axis.getIncrement();
+                if (start != 0 || increment != 0) {
+                    gridToCRS.setElement(tgtDim, srcDim, increment);
+                    gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, start);
+                    return true;
+                }
+                /*
+                 * The UCAR library sometime left those information uninitialized.
+                 * If it seems to be the case, fallback on our own code.
+                 */
             }
         }
         return super.trySetTransform(gridToCRS, srcDim, tgtDim, values);

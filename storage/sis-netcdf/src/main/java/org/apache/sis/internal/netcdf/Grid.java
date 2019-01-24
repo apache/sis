@@ -267,14 +267,15 @@ public abstract class Grid extends NamedElement {
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
              * The order of dimensions in the transform is the reverse of the netCDF axis order.
              */
-            int srcEnd = getSourceDimensions();
-            int tgtEnd = getTargetDimensions();
+            int lastSrcDim = getSourceDimensions();                         // Will be decremented later, then keep final.
+            int lastTgtDim = getTargetDimensions();
             final int[] deferred = new int[axes.length];                    // Indices of axes that have been deferred.
-            final List<MathTransform> nonLinears = new ArrayList<>();
-            final Matrix affine = Matrices.createZero(tgtEnd + 1, srcEnd + 1);
-            affine.setElement(tgtEnd--, srcEnd--, 1);
+            final List<MathTransform> nonLinears = new ArrayList<>(axes.length);
+            final Matrix affine = Matrices.createZero(lastTgtDim + 1, lastSrcDim + 1);
+            affine.setElement(lastTgtDim--, lastSrcDim--, 1);
             for (int i=axes.length; --i >= 0;) {
-                if (!axes[i].trySetTransform(affine, srcEnd, tgtEnd - i, nonLinears)) {
+                final int tgtDim = lastTgtDim - i;                          // Convert from netCDF to "natural" order.
+                if (!axes[i].trySetTransform(affine, lastSrcDim, tgtDim, nonLinears)) {
                     deferred[nonLinears.size() - 1] = i;
                 }
             }
@@ -289,14 +290,14 @@ public abstract class Grid extends NamedElement {
                 final int d = deferred[i];
                 final Axis axis = axes[d];
 findFree:       for (int srcDim : axis.sourceDimensions) {
-                    srcDim = srcEnd - srcDim;
+                    srcDim = lastSrcDim - srcDim;
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
                         }
                     }
                     sourceDimensions[i] = srcDim;
-                    final int tgtDim = tgtEnd - d;
+                    final int tgtDim = lastTgtDim - d;
                     affine.setElement(tgtDim, srcDim, 1);
                     break;
                 }
@@ -376,7 +377,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                     if (i < nonLinearCount) {
                         final int srcDim = sourceDimensions[i];
                         tr = factory.createPassThroughTransform(srcDim, tr,
-                                        (srcEnd + 1) - (srcDim + tr.getSourceDimensions()));
+                                        (lastSrcDim + 1) - (srcDim + tr.getSourceDimensions()));
                     }
                     gridToCRS = (gridToCRS == null) ? tr : factory.createConcatenatedTransform(gridToCRS, tr);
                 }
