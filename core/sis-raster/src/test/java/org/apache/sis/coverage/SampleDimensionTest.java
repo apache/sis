@@ -58,7 +58,8 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertEquals("background", 0, dimension.getBackground().get());
 
         final Set<Number> nodataValues = dimension.getNoDataValues();
-        assertArrayEquals(new Integer[] {0, 1, 255}, nodataValues.toArray());
+        assertArrayEquals("nodataValues", new Integer[] {0, 1, 255}, nodataValues.toArray());
+        assertEquals("nodataValues.size", 0, dimension.forConvertedValues(true).getNoDataValues().size());
 
         NumberRange<?> range = dimension.getSampleRange().get();
         assertEquals("minimum",   0, range.getMinDouble(), STRICT);

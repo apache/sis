@@ -140,7 +140,6 @@ public class SampleDimension implements Serializable {
         name             = original.name;
         categories       = original.categories.converse;
         transferFunction = Category.identity();
-        assert hasQuantitative();
         if (bc == null) {
             background = null;
         } else {
@@ -174,14 +173,14 @@ public class SampleDimension implements Serializable {
         this.name       = name;
         this.background = background;
         this.categories = list;
-        if (list.converse.range == null) {      // !hasQuantitative() inlined since we can not yet invoke that method.
+        if (list.converse.range == null) {                  // Case where there is no quantitative category.
             transferFunction = null;
             converse = null;
-        } else if (list == list.converse) {
+        } else if (list == list.converse) {                 // Case where values are already converted.
             transferFunction = Category.identity();
             converse = this;
         } else {
-            assert !list.isEmpty();             // Verified by inlined !hasQuantitative() above.
+            assert !list.isEmpty();                         // If empty, list.converse.range would have been null.
             transferFunction = list.getTransferFunction();
             converse = new SampleDimension(this, (background != null) ? list.search(background.doubleValue()) : null);
         }
@@ -235,25 +234,16 @@ public class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns {@code true} if this list contains at least one quantitative category.
-     * We use the converted range has a criterion, since it shall be null if the result
-     * of all conversions is NaN.
-     *
-     * @see Category#isQuantitative()
-     */
-    private boolean hasQuantitative() {
-        return converted().categories.range != null;
-    }
-
-    /**
      * Returns the values to indicate "no data" for this sample dimension.
+     * If the sample dimension describes {@linkplain #forConvertedValues(boolean) converted values},
+     * then the "no data values" are NaN values.
      *
      * @return the values to indicate no data values for this sample dimension, or an empty set if none.
      * @throws IllegalStateException if this method can not expand the range of no data values, for example
      *         because some ranges contain an infinite amount of values.
      */
     public Set<Number> getNoDataValues() {
-        if (hasQuantitative()) {
+        if (converse != null) {             // Null if SampleDimension does not contain at least one quantitative category.
             final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
             Class<? extends Number> widestClass = Byte.class;
             int count = 0;
@@ -314,6 +304,9 @@ public class SampleDimension implements Serializable {
      * @see #getUnits()
      */
     public Optional<MeasurementRange<?>> getMeasurementRange() {
+        if (converse == null) {
+            return Optional.empty();
+        }
         // A ClassCastException below would be a bug in our constructors.
         return Optional.ofNullable((MeasurementRange<?>) converted().categories.range);
     }
@@ -380,8 +373,7 @@ public class SampleDimension implements Serializable {
      */
     public Optional<Unit<?>> getUnits() {
         Unit<?> unit = null;
-        final SampleDimension converted = converted();
-        for (final Category category : converted.categories) {
+        for (final Category category : converted().categories) {
             final NumberRange<?> r = category.range;
             if (r instanceof MeasurementRange<?>) {
                 final Unit<?> c = ((MeasurementRange<?>) r).unit();
