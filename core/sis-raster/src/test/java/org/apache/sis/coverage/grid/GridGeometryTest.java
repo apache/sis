@@ -26,11 +26,15 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
+import org.junit.Ignore;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -232,5 +236,25 @@ public final strictfp class GridGeometryTest extends TestCase {
                 0,   0.5, -89.75,
                 0.5, 0,  -179.75,
                 0,   0,     1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+    }
+
+    /**
+     * Test derivate grid geometry with an envelope crossing the antimeridian.
+     */
+    @Test
+    @Ignore
+    public void testSubGridCrossingAntiMeridian() {
+
+        final GridExtent extent = new GridExtent(200, 180);
+        final AffineTransform2D gridToCrs = new AffineTransform2D(1, 0, 0, -1, 80, 90);
+        final GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCrs, CommonCRS.WGS84.normalizedGeographic());
+
+        final GeneralEnvelope aoi = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        aoi.setRange(0, 140, -179);
+        aoi.setRange(1, -90, 90);
+
+        final GridGeometry subgrid = grid.derive().subgrid(aoi).build();
+        Envelope subEnv = subgrid.getEnvelope();
+        assertEquals(aoi, subEnv);
     }
 }
