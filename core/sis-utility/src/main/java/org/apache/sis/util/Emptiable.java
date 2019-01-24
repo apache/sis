@@ -19,7 +19,7 @@ package org.apache.sis.util;
 
 /**
  * Interface of classes for which empty instances may exist.
- * This interface is typically used for filtering empty elements from a collection or a tree of objects.
+ * This interface is typically used for filtering empty elements from a tree of objects.
  * Some examples of emptiable classes are:
  *
  * <ul>
@@ -33,7 +33,7 @@ package org.apache.sis.util;
  *
  * SIS collections do <strong>not</strong> implement this interface even if they provide a {@code isEmpty()} method,
  * for consistency with collections in {@code java.util} and other libraries. This policy avoid duplicated calls to
- * {@code isEmpty()} methods when the caller need to check for both {@code Collection} and {@code Emptiable} interfaces.
+ * {@code isEmpty()} methods when the caller needs to check for both {@code Collection} and {@code Emptiable} interfaces.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4

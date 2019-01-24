@@ -79,6 +79,8 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Constructs a range of {@code float} values.
+     * The minimum and maximum values can not be NaN but can be infinite.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value, or {@link Float#NEGATIVE_INFINITY} if none.
@@ -87,17 +89,21 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           the unit of measurement, or {@code null} if unknown.
      * @return the new range of numeric values for the given endpoints and unit of measurement.
+     * @throws IllegalArgumentException if {@link Float#isNaN(float)} is {@code true} for a given value.
      */
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
                                                  float maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return unique(new MeasurementRange<>(Float.class,
-                valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit));
+        final Float min = valueOf("minValue", minValue, Float.NEGATIVE_INFINITY);
+        final Float max = valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY);
+        // No need to test isCacheable(Number) because the type is known and valueOf(…) disallows NaN values.
+        return unique(new MeasurementRange<>(Float.class, min, isMinIncluded, Objects.equals(min, max) ? min : max, isMaxIncluded, unit));
     }
 
     /**
      * Constructs a range of {@code double} values.
+     * The minimum and maximum values can not be NaN but can be infinite.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value, or {@link Double#NEGATIVE_INFINITY} if none.
@@ -106,13 +112,15 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           the unit of measurement, or {@code null} if unknown.
      * @return the new range of numeric values for the given endpoints and unit of measurement.
+     * @throws IllegalArgumentException if {@link Double#isNaN(double)} is {@code true} for a given value.
      */
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
                                                   double maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return unique(new MeasurementRange<>(Double.class,
-                valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit));
+        final Double min = valueOf("minValue", minValue, Double.NEGATIVE_INFINITY);
+        final Double max = valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY);
+        // No need to test isCacheable(Number) because the type is known and valueOf(…) disallows NaN values.
+        return unique(new MeasurementRange<>(Double.class, min, isMinIncluded, Objects.equals(min, max) ? min : max, isMaxIncluded, unit));
     }
 
     /**
@@ -123,18 +131,20 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  minValue  the minimal value (exclusive), or {@link Double#NEGATIVE_INFINITY} if none.
      * @param  unit      the unit of measurement, or {@code null} if unknown.
      * @return the new range of numeric values greater than the given value.
+     * @throws IllegalArgumentException if {@link Double#isNaN(double)} is {@code true} for the given value.
      *
      * @since 0.6
      */
     public static MeasurementRange<Double> createGreaterThan(final double minValue, final Unit<?> unit) {
+        // No need to test isCacheable(Number) because the type is known and valueOf(…) disallows NaN values.
         return unique(new MeasurementRange<>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), false, null, false, unit));
     }
 
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
-     * This method performs the same work than {@link NumberRange#createBestFit
-     * NumberRange.createBestFit(…)} with an additional {@code unit} argument.
+     * This method performs the same work than {@link NumberRange#createBestFit NumberRange.createBestFit(…)}
+     * with an additional {@code unit} argument.
      *
      * <p>This method may return a shared instance, at implementation choice.</p>
      *
@@ -149,17 +159,22 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     public static MeasurementRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
-            final Number maxValue, final boolean isMaxIncluded, final Unit<?> unit)
+                                                    final Number maxValue, final boolean isMaxIncluded, final Unit<?> unit)
     {
-        final Class<? extends Number> type = Numbers.widestClass(Numbers.narrowestClass(minValue),
-                                                                 Numbers.narrowestClass(maxValue));
+        final Class<? extends Number> type;
+        type = Numbers.widestClass(Numbers.narrowestClass(minValue),
+                                   Numbers.narrowestClass(maxValue));
         if (type == null) {
             return null;
         }
-        MeasurementRange range = new MeasurementRange(type,
-                Numbers.cast(minValue, type), isMinIncluded,
-                Numbers.cast(maxValue, type), isMaxIncluded, unit);
-        if (!isOtherNaN(minValue) && !isOtherNaN(maxValue)) {
+        Number min = Numbers.cast(minValue, type);
+        Number max = Numbers.cast(maxValue, type);
+        final boolean isCacheable = isCacheable(min) && isCacheable(max);
+        if (isCacheable && Objects.equals(min, max)) {
+            max = min;      // Share the same instance.
+        }
+        MeasurementRange range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
+        if (isCacheable) {
             range = unique(range);
         }
         return range;
@@ -454,7 +469,10 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Compares this range with the specified object for equality.
+     * Compares this measurement range with the specified object for equality. Two {@code MeasurementRange} instances
+     * are considered equal if they met all conditions {@linkplain Range#equals(Object) documented in the parent class}
+     * and their {@link #unit()} are equal in the sense of {@link Objects#equals(Object, Object)}.
+     * Note that this comparison does not distinguish the various {@link Float#NaN} or {@link Double#NaN} bit patterns.
      *
      * @return {@inheritDoc}
      */

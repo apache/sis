@@ -38,17 +38,17 @@ import static org.junit.Assert.*;
 })
 public final strictfp class NumberRangeTest extends TestCase {
     /**
-     * Tests {@link NumberRange#isOtherNaN(Number)}.
+     * Tests {@link NumberRange#isCacheable(Number)}.
      */
     @Test
-    public void testIsOtherNaN() {
-        assertFalse(NumberRange.isOtherNaN(0));
-        assertFalse(NumberRange.isOtherNaN(0f));
-        assertFalse(NumberRange.isOtherNaN(0d));
-        assertFalse(NumberRange.isOtherNaN(Float.NaN));
-        assertFalse(NumberRange.isOtherNaN(Double.NaN));
-        assertFalse(NumberRange.isOtherNaN(MathFunctions.toNanFloat(0)));
-        assertTrue (NumberRange.isOtherNaN(MathFunctions.toNanFloat(1)));
+    public void testIsCacheable() {
+        assertTrue (NumberRange.isCacheable(0));
+        assertTrue (NumberRange.isCacheable(0f));
+        assertTrue (NumberRange.isCacheable(0d));
+        assertTrue (NumberRange.isCacheable(Float.NaN));
+        assertTrue (NumberRange.isCacheable(Double.NaN));
+        assertTrue (NumberRange.isCacheable(MathFunctions.toNanFloat(0)));
+        assertFalse(NumberRange.isCacheable(MathFunctions.toNanFloat(1)));
     }
 
     /**
