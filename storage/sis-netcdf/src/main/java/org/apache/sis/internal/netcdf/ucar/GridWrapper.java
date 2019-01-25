@@ -183,8 +183,8 @@ final class GridWrapper extends Grid {
                  * package, we can proceed as if the dimension does not exist ('i' not incremented).
                  */
             }
-            axes[targetDim] = new Axis(this, decoder.getWrapperFor(axis), abbreviation,
-                    axis.getPositive(), ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
+            axes[targetDim] = new Axis(this, decoder.getWrapperFor(axis), abbreviation, axis.getPositive(),
+                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axes);
         }
         return axes;
     }

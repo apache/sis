@@ -36,7 +36,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
@@ -105,6 +104,10 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      * {@code MetadataReader.addSpatialRepresentationInfo(…)} method to get the most appropriate value
      * for ISO 19115 {@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}
      * metadata property.
+     *
+     * <p>A given {@link Grid} should not have two {@code Axis} instances with equal {@code sourceDimensions} array.
+     * When {@code sourceDimensions.length} ≧ 2 we may have two {@code Axis} instances with the same indices in their
+     * {@code sourceDimensions} arrays, but those indices should be in different order.</p>
      */
     final int[] sourceDimensions;
 
@@ -133,12 +136,14 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
      * @param  sourceDimensions  the index of the grid dimension associated to this axis.
      * @param  sourceSizes       the number of cell elements along that axis.
+     * @param  previousAxes      other axes built before this axis. May contain null elements. This array will not be modified.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Axis(final Grid owner, final Variable axis, char abbreviation, final String direction,
-                final int[] sourceDimensions, final int[] sourceSizes) throws IOException, DataStoreException
+                final int[] sourceDimensions, final int[] sourceSizes, final Axis[] previousAxes)
+            throws IOException, DataStoreException
     {
         /*
          * Try to get the axis direction from one of the following sources,
@@ -171,7 +176,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             }
         }
         if (!isConsistent) {
-            axis.warning(Grid.class, "getAxes",                 // Caller of this constructor.
+            axis.warning(Grid.class, "getAxes",                     // Caller of this constructor.
                          Resources.Keys.AmbiguousAxisDirection_4, axis.getFilename(), axis.getName(), dir, check);
             if (isSigned) {
                 if (AxisDirections.isOpposite(dir)) {
@@ -185,16 +190,33 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
         this.sourceDimensions = sourceDimensions;
         this.sourceSizes      = sourceSizes;
         this.coordinates      = axis;
-        if (sourceDimensions.length == 2) {
-            final int up0  = sourceSizes[0];
-            final int up1  = sourceSizes[1];
-            final int mid0 = up0 / 2;
-            final int mid1 = up1 / 2;
-            final double inc0 = (owner.coordinateForAxis(axis,     0, mid1) -
-                                 owner.coordinateForAxis(axis, up0-1, mid1)) / up0;
-            final double inc1 = (owner.coordinateForAxis(axis, mid0,     0) -
-                                 owner.coordinateForAxis(axis, mid0, up1-1)) / up1;
-            if (Math.abs(inc1) > Math.abs(inc0)) {
+        /*
+         * The grid dimension which varies fastest should be first.  The code below will swap axes if needed in order to
+         * achieve that goal, except if a previous axis was already using the same order. We avoid collision only in the
+         * first dimension because it is the one used by metadata and by trySetTransform(…).
+         */
+        if (sourceDimensions.length >= 2) {
+            boolean s = false;
+            for (final Axis previous : previousAxes) {
+                if (previous != null && previous.sourceDimensions.length != 0) {
+                    final int first = previous.sourceDimensions[0];
+                    if  (first == sourceDimensions[1]) return;              // Swapping would cause a collision. Avoid that.
+                    s = (first == sourceDimensions[0]);                     // Tell if need swapping for avoiding collision.
+                    if (s) break;
+                }
+            }
+            final int up0 = sourceSizes[0];
+            final int up1 = sourceSizes[1];
+            if (!s) {
+                final int mid0 = up0 / 2;
+                final int mid1 = up1 / 2;
+                final double inc0 = (owner.coordinateForAxis(axis,     0, mid1) -
+                                     owner.coordinateForAxis(axis, up0-1, mid1)) / up0;
+                final double inc1 = (owner.coordinateForAxis(axis, mid0,     0) -
+                                     owner.coordinateForAxis(axis, mid0, up1-1)) / up1;
+                s = Math.abs(inc1) > Math.abs(inc0);
+            }
+            if (s) {
                 sourceSizes[0] = up1;
                 sourceSizes[1] = up0;
                 ArraysExt.swap(sourceDimensions, 0, 1);
@@ -374,7 +396,8 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      *
      * <p>If this method returns {@code true}, then the {@code nonLinears} list is left unchanged.
      * If this method returns {@code false}, then a non-linear transform or {@code null} has been
-     * added to the {@code nonLinears} list.</p>
+     * added to the {@code nonLinears} list. A {@code null} element means that the caller will need
+     * to construct himself a transform backed by a localization grid.</p>
      *
      * @param  gridToCRS   the matrix in which to set scale and offset coefficient.
      * @param  lastSrcDim  number of source dimensions (grid dimensions) - 1. Used for conversion from netCDF to "natural" order.
@@ -387,7 +410,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
     final boolean trySetTransform(final Matrix gridToCRS, final int lastSrcDim, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
-        switch (sourceDimensions.length) {
+main:   switch (sourceDimensions.length) {
             /*
              * Defined as a matter of principle, but should never happen.
              */
@@ -415,6 +438,11 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
              *    20 20 20 20                  10 12 15 20
              *
              * can be reduced to a one-dimensional {10 12 15 20} vector (orientation matter however).
+             * We detect those cases by the call to data.repetitions(sourceSizes). In above examples,
+             * we would get {4} for the case illustrated on left side, and {1,4} for the right side.
+             * The array length tells us if the variation is horizontal or vertical, and the product
+             * of all numbers gives us the variation width. That width must match the grid width,
+             * which is the size of the last dimension in netCDF order.
              *
              * Note: following block is currently restricted to the two-dimensional case, but it could
              * be generalized to n-dimensional case if we resolve the default case in the switch statement.
@@ -422,35 +450,28 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             case 2: {
                 Vector data = coordinates.read();
                 final int[] repetitions = data.repetitions(sourceSizes);        // Detects repetitions as illustrated above.
-                if (repetitions.length != 0) {
-                    for (int i=0; i<sourceDimensions.length; i++) {
-                        final int srcDim = lastSrcDim - sourceDimensions[i];    // "Natural" order is reverse of netCDF order.
-                        final int length = sourceSizes[i];
-                        int step = 1, dim = 0;
-                        for (int j=0; j<sourceDimensions.length; j++) {
-                            int previous = lastSrcDim - sourceDimensions[j];
-                            if (previous < srcDim) {
-                                step *= sourceSizes[j];
-                                dim++;
-                            }
+                long repetitionLength = 1;
+                for (int r : repetitions) {
+                    repetitionLength = Math.multiplyExact(repetitionLength, r);
+                }
+                for (int i=0; i<=1; i++) {
+                    final int width  = sourceSizes[i    ];
+                    final int height = sourceSizes[i ^ 1];
+                    if (repetitionLength % width == 0) {            // Repetition length shall be grid width (or a divisor).
+                        final int length, step;
+                        if (repetitions.length >= 2) {
+                            length = height;
+                            step   = width;
+                        } else {
+                            length = width;
+                            step   = 1;
                         }
-                        final boolean condition;
-                        switch (dim) {
-                            case 0:  condition = repetitions.length > 1 && (repetitions[1] % length) == 0; break;
-                            case 1:  condition =                           (repetitions[0] % step)   == 0; break;
-                            default: {
-                                // I don't know yet how to generalize to n dimensions.
-                                throw new InternalDataStoreException();
-                            }
-                        }
-                        if (condition) {                                // Repetition length shall be grid size (or a multiple).
-                            data = data.subSampling(0, step, length);
-                            if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, data)) {
-                                return true;
-                            } else {
-                                nonLinears.add(MathTransforms.interpolate(null, data.doubleValues()));
-                                return false;
-                            }
+                        data = data.subSampling(0, step, length);
+                        if (coordinates.trySetTransform(gridToCRS, lastSrcDim - i, tgtDim, data)) {
+                            return true;
+                        } else {
+                            nonLinears.add(MathTransforms.interpolate(null, data.doubleValues()));
+                            return false;
                         }
                     }
                 }

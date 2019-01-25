@@ -589,7 +589,10 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 search:     for (;;) {
                 if (candidates != null) {
                     do {
-                        if (candidateIndex >= candidates.length) break search;
+                        if (candidateIndex >= candidates.length) {
+                            r = size;                                       // Sentinel value for repetition not found.
+                            break search;
+                        }
                         r = r0 * candidates[candidateIndex++];
                     } while (r <= 0 || r >= size);
                 } else {

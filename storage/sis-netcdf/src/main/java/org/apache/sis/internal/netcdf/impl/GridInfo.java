@@ -78,6 +78,8 @@ final class GridInfo extends Grid {
     /**
      * Describes the input values expected by the function converting grid indices to geodetic coordinates.
      * They are the dimensions of the grid (<strong>not</strong> the dimensions of the CRS).
+     *
+     * @see #getShape()
      */
     private final Dimension[] domain;
 
@@ -242,7 +244,7 @@ final class GridInfo extends Grid {
                 }
             }
             axes[targetDim] = new Axis(this, axis, abbreviation, axis.getAttributeAsString(CF.POSITIVE),
-                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
+                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axes);
         }
         if (sortAxes) {
             Arrays.sort(axes);

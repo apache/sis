@@ -41,6 +41,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.Strings;
@@ -229,7 +230,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @see ControlPoints#search(double[][], double[])
      */
     private int search(final int[] source) {
-        assert gridSize == null;         // This method should not be invoked for points distributed on a grid.
+        assert gridSize == null;         // This method can not be invoked for points distributed on a grid.
 search: for (int j=numPoints; --j >= 0;) {
             for (int i=0; i<source.length; i++) {
                 if (source[i] != sources[i][j]) {
@@ -249,7 +250,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @throws IllegalArgumentException if an ordinate value is illegal.
      */
     private int flatIndex(final int[] source) {
-        assert sources == null;               // This method should not be invoked for randomly distributed points.
+        assert sources == null;               // This method can not be invoked for randomly distributed points.
         int offset = 0;
         for (int i = gridSize.length; i != 0;) {
             final int size = gridSize[--i];
@@ -272,7 +273,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * @see ControlPoints#flatIndex(DirectPosition)
      */
     private int flatIndex(final DirectPosition source) {
-        assert sources == null;               // This method should not be invoked for randomly distributed points.
+        assert sources == null;               // This method can not be invoked for randomly distributed points.
         int offset = 0;
         for (int i = gridSize.length; i != 0;) {
             final int size = gridSize[--i];
@@ -839,7 +840,8 @@ search:         for (int j=domain(); --j >= 0;) {
         correlation = null;
         if (!isValid) {
             if (gridSize == null) numPoints--;
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMapping_2, source, target));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMapping_2,
+                                               source, new DirectPositionView.Double(target)));
         }
     }
 
