@@ -353,7 +353,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  gridX   the column index in the grid where to store the given target position.
      * @param  gridY   the row index in the grid where to store the given target position.
      * @param  target  the target coordinates, assumed uncertain.
-     * @throws IllegalArgumentException if the {@code x} or {@code y} ordinate value is out of grid range.
+     * @throws IllegalArgumentException if the {@code x} or {@code y} coordinate value is out of grid range.
      * @throws MismatchedDimensionException if the target position does not have the expected number of dimensions.
      */
     public void setControlPoint(final int gridX, final int gridY, final double... target) {
@@ -368,7 +368,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  gridX  the column index in the grid where to read the target position.
      * @param  gridY  the row index in the grid where to read the target position.
      * @return the target coordinates associated to the given source, or {@code null} if none.
-     * @throws IllegalArgumentException if the {@code x} or {@code y} ordinate value is out of grid range.
+     * @throws IllegalArgumentException if the {@code x} or {@code y} coordinate value is out of grid range.
      */
     public double[] getControlPoint(final int gridX, final int gridY) {
         tmp[0] = gridX;

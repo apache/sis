@@ -82,7 +82,7 @@ public class LinearTransformBuilder extends TransformBuilder {
     private final int[] gridSize;
 
     /**
-     * The arrays of source ordinate values. Accessed with indices in that order: {@code sources[dimension][point]}.
+     * The arrays of source coordinate values. Accessed with indices in that order: {@code sources[dimension][point]}.
      * This layout allows to create only a few (typically two) large arrays instead of a multitude of small arrays.
      * Example: {x[], y[]}.
      *
@@ -99,7 +99,7 @@ public class LinearTransformBuilder extends TransformBuilder {
     private double[][] sources;
 
     /**
-     * The arrays of target ordinate values. Accessed with indices in that order: {@code targets[dimension][point]}.
+     * The arrays of target coordinate values. Accessed with indices in that order: {@code targets[dimension][point]}.
      * This layout allows to create only a few (typically two) large arrays instead of a multitude of small arrays.
      * Example: {x[], y[], z[]}.
      * This is {@code null} if not yet specified.
@@ -114,7 +114,7 @@ public class LinearTransformBuilder extends TransformBuilder {
 
     /**
      * Number of valid positions in the {@link #sources} or {@link #targets} arrays.
-     * Note that the "valid" positions may contain {@link Double#NaN} ordinate values.
+     * Note that the "valid" positions may contain {@link Double#NaN} coordinate values.
      * This field is only indicative if this {@code LinearTransformBuilder} instance
      * has been created by {@link #LinearTransformBuilder(int...)} because we do not
      * try to detect if user adds a new point or overwrites an existing one.
@@ -148,7 +148,7 @@ public class LinearTransformBuilder extends TransformBuilder {
 
     /**
      * Creates a new linear transform builder for source positions distributed on a regular grid.
-     * This constructor notifies {@code LinearTransformBuilder} that ordinate values of all source positions will
+     * This constructor notifies {@code LinearTransformBuilder} that coordinate values of all source positions will
      * be integers in the [0 … {@code gridSize[0]}-1] range for the first dimension (typically column indices),
      * in the [0 … {@code gridSize[1]}-1] range for the second dimension (typically row indices), <i>etc.</i>
      * The dimension of all source positions is the length of the given {@code gridSize} array.
@@ -156,7 +156,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * <p>An empty array is equivalent to invoking the no-argument constructor,
      * i.e. no restriction is put on the source coordinates.</p>
      *
-     * @param  gridSize  the number of integer ordinate values in each grid dimension.
+     * @param  gridSize  the number of integer coordinate values in each grid dimension.
      * @throws IllegalArgumentException if a grid size is not strictly positive, or if the product
      *         of all values (∏{@code gridSize}) is greater than {@link Integer#MAX_VALUE}.
      *
@@ -247,7 +247,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * This method should be invoked only when this {@code LinearTransformBuilder} has been created for a grid
      * of known size. Caller must have verified the array length before to invoke this method.
      *
-     * @throws IllegalArgumentException if an ordinate value is illegal.
+     * @throws IllegalArgumentException if a coordinate value is illegal.
      */
     private int flatIndex(final int[] source) {
         assert sources == null;               // This method can not be invoked for randomly distributed points.
@@ -268,7 +268,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * This method should be invoked only when this {@code LinearTransformBuilder} has been created for a grid
      * of known size. Callers must have verified the position dimension before to invoke this method.
      *
-     * @throws IllegalArgumentException if an ordinate value is illegal.
+     * @throws IllegalArgumentException if a coordinate value is illegal.
      *
      * @see ControlPoints#flatIndex(DirectPosition)
      */
@@ -277,10 +277,10 @@ search: for (int j=numPoints; --j >= 0;) {
         int offset = 0;
         for (int i = gridSize.length; i != 0;) {
             final int size = gridSize[--i];
-            final double ordinate = source.getOrdinate(i);
-            final int index = (int) ordinate;
-            if (index != ordinate) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnInteger_1, ordinate));
+            final double coordinate = source.getOrdinate(i);
+            final int index = (int) coordinate;
+            if (index != coordinate) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnInteger_1, coordinate));
             }
             if (index < 0 || index >= size) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4, "source", 0, size-1, index));
@@ -452,7 +452,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * together with arbitrary target dimension.</p>
      *
      * <p>If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
-     * then the ordinate values of all source positions shall be integers in the [0 … {@code gridSize[0]}-1]
+     * then the coordinate values of all source positions shall be integers in the [0 … {@code gridSize[0]}-1]
      * range for the first dimension (typically column indices), in the [0 … {@code gridSize[1]}-1] range for
      * the second dimension (typically row indices), <i>etc</i>. This constraint does not apply for builders
      * created with the {@link #LinearTransformBuilder()} constructor.</p>
@@ -461,7 +461,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *         Source positions are assumed precise and target positions are assumed uncertain.
      * @throws IllegalArgumentException if the given positions contain NaN or infinite coordinate values.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...)
-     *         created for a grid} but some source ordinates are not indices in that grid.
+     *         created for a grid} but some source coordinates are not indices in that grid.
      * @throws MismatchedDimensionException if some positions do not have the expected number of dimensions.
      *
      * @since 0.8
@@ -662,9 +662,9 @@ search:         for (int j=domain(); --j >= 0;) {
                     int offset = 0;
                     while (i != 0) {
                         final int size = gridSize[--i];
-                        final double ordinate = source.getOrdinate(i);
-                        final int index = (int) ordinate;
-                        if (index < 0 || index >= size || index != ordinate) {
+                        final double coordinate = source.getOrdinate(i);
+                        final int index = (int) coordinate;
+                        if (index < 0 || index >= size || index != coordinate) {
                             return -1;
                         }
                         offset = offset * size + index;
@@ -789,7 +789,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *                 If this builder has been created with the {@link #LinearTransformBuilder()} constructor, then no constraint apply.
      * @param  target  the target coordinates, assumed uncertain.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...) created for a grid}
-     *         but some source ordinates are out of index range, or if {@code target} contains NaN of infinite numbers.
+     *         but some source coordinates are out of index range, or if {@code target} contains NaN of infinite numbers.
      * @throws MismatchedDimensionException if the source or target position does not have the expected number of dimensions.
      *
      * @since 0.8
@@ -859,7 +859,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *                 If this builder has been created with the {@link #LinearTransformBuilder()} constructor, then no constraint apply.
      * @return the target coordinates associated to the given source, or {@code null} if none.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...) created for a grid}
-     *         but some source ordinates are out of index range.
+     *         but some source coordinates are out of index range.
      * @throws MismatchedDimensionException if the source position does not have the expected number of dimensions.
      *
      * @since 0.8
@@ -908,7 +908,7 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
-     * Returns the vector of source ordinate names.
+     * Returns the vector of source coordinates.
      * It is caller responsibility to ensure that this builder is not backed by a grid.
      */
     final Vector[] sources() {
