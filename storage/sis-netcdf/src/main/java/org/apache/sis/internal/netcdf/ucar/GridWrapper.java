@@ -23,11 +23,9 @@ import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
-import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
-import ucar.nc2.VariableIF;
 
 
 /**
@@ -184,15 +182,5 @@ final class GridWrapper extends Grid {
                                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         return axes;
-    }
-
-    /**
-     * Returns a coordinate for the given two-dimensional grid coordinate axis.
-     * This is (indirectly) a callback method for {@link #getAxes()}.
-     */
-    @Override
-    protected double coordinateForAxis(final Variable axis, final int j, final int i) {
-        final VariableIF v = ((VariableWrapper) axis).variable;
-        return (v instanceof CoordinateAxis2D) ? ((CoordinateAxis2D) v).getCoordValue(j, i) : Double.NaN;
     }
 }

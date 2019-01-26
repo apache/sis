@@ -813,6 +813,18 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns a coordinate for this two-dimensional grid coordinate axis.
+     * This is (indirectly) a callback method for {@link Grid#getAxes()}.
+     *
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    @Override
+    protected double coordinateForAxis(final int j, final int i) throws IOException, DataStoreException {
+        final int n = dimensions[0].length;
+        return read().doubleValue(j + n*i);
+    }
+
+    /**
      * Returns the meaning of the given ordinal value, or {@code null} if none.
      * Callers must have verified that {@link #isEnumeration()} returned {@code true}
      * before to invoke this method

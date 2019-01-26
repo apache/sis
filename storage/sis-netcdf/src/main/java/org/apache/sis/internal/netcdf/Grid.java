@@ -193,10 +193,10 @@ public abstract class Grid extends NamedElement {
                     final int mid0 = up0 / 2;
                     final int mid1 = up1 / 2;
                     final Variable coordinates = axis.coordinates;
-                    final double inc0 = (coordinateForAxis(coordinates,     0, mid1) -
-                                         coordinateForAxis(coordinates, up0-1, mid1)) / up0;
-                    final double inc1 = (coordinateForAxis(coordinates, mid0,     0) -
-                                         coordinateForAxis(coordinates, mid0, up1-1)) / up1;
+                    final double inc0 = (coordinates.coordinateForAxis(    0, mid1) -
+                                         coordinates.coordinateForAxis(up0-1, mid1)) / up0;
+                    final double inc1 = (coordinates.coordinateForAxis(mid0,     0) -
+                                         coordinates.coordinateForAxis(mid0, up1-1)) / up1;
                     swap = Math.abs(inc1) > Math.abs(inc0);
                 }
                 if (swap) {
@@ -216,22 +216,6 @@ public abstract class Grid extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      */
     protected abstract Axis[] createAxes() throws DataStoreException;
-
-    /**
-     * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly) a callback
-     * method for {@link #getAxes()}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
-     * they get reordered by the {@link Axis} constructor. In the netCDF UCAR API, this method maps directly to
-     * {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
-     *
-     * @param  axis  an implementation-dependent object representing the two-dimensional axis.
-     * @param  j     the fastest varying (right-most) index.
-     * @param  i     the slowest varying (left-most) index.
-     * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
-     * @throws IOException if an I/O operation was necessary but failed.
-     * @throws DataStoreException if a logical error occurred.
-     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
-     */
-    protected abstract double coordinateForAxis(Variable axis, int j, int i) throws IOException, DataStoreException;
 
     /**
      * Returns the coordinate reference system, or {@code null} if none.

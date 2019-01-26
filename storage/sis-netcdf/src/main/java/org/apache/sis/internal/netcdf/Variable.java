@@ -685,6 +685,21 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
+     * Returns a coordinate for this two-dimensional grid coordinate axis. This is (indirectly) a callback method
+     * for {@link Grid#getAxes()}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
+     * they get reordered by the {@link Grid#getAxes()} method. In the netCDF UCAR API, this method maps directly
+     * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
+     *
+     * @param  j     the fastest varying (right-most) index.
+     * @param  i     the slowest varying (left-most) index.
+     * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    protected abstract double coordinateForAxis(int j, int i) throws IOException, DataStoreException;
+
+    /**
      * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
      * Source and target dimensions given to this method are in "natural" order (reverse of netCDF order).
      * This method is invoked only for variables that represent a coordinate system axis.

@@ -30,6 +30,7 @@ import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
 import ucar.nc2.dataset.CoordinateAxis1D;
+import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.EnhanceScaleMissing;
 import ucar.nc2.units.SimpleUnit;
@@ -62,7 +63,7 @@ final class VariableWrapper extends Variable {
     /**
      * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
-    final VariableIF variable;
+    private final VariableIF variable;
 
     /**
      * The variable without enhancements. May be the same instance than {@link #variable}
@@ -418,6 +419,15 @@ final class VariableWrapper extends Variable {
         final Object data = array.get1DJavaArray(array.getElementType());
         replaceNaN(data);
         return data;
+    }
+
+    /**
+     * Returns a coordinate for this two-dimensional grid coordinate axis.
+     * This is (indirectly) a callback method for {@link Grid#getAxes()}.
+     */
+    @Override
+    protected double coordinateForAxis(final int j, final int i) {
+        return (variable instanceof CoordinateAxis2D) ? ((CoordinateAxis2D) variable).getCoordValue(j, i) : Double.NaN;
     }
 
     /**

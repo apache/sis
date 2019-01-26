@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
-import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
@@ -248,19 +246,6 @@ final class GridInfo extends Grid {
             Arrays.sort(axes);
         }
         return axes;
-    }
-
-    /**
-     * Returns a coordinate for the given two-dimensional grid coordinate axis.
-     * This is (indirectly) a callback method for {@link #getAxes()}.
-     *
-     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
-     */
-    @Override
-    protected double coordinateForAxis(final Variable axis, final int j, final int i) throws IOException, DataStoreException {
-        final VariableInfo v = (VariableInfo) axis;
-        final int n = v.dimensions[0].length;
-        return v.read().doubleValue(j + n*i);
     }
 
     /**
