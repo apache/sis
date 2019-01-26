@@ -38,10 +38,12 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
+import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -115,7 +117,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      * equals to the {@link #sourceDimensions} length. For each element, {@code sourceSizes[i]} shall
      * be equals to the number of grid cells in the grid dimension at index {@code sourceDimensions[i]}.
      */
-    public final int[] sourceSizes;
+    final int[] sourceSizes;
 
     /**
      * Values of coordinates on this axis for given grid indices. This variables is often one-dimensional,
@@ -201,6 +203,71 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             }
         }
         return null;
+    }
+
+    /**
+     * Swaps the two first source dimensions if needed for making the fastest varying dimension first.
+     * This is a helper method for {@link Grid#getAxes()} invoked after all axes of a grid have been created.
+     * This method needs to know other axes in order to avoid collision.
+     *
+     * @param  axes   previously created axes.
+     * @param  count  number of elements to consider in the {@code axes} array.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     *
+     * @see #getDimension()
+     */
+    final void mainDimensionFirst(final Axis[] axes, final int count) throws IOException, DataStoreException {
+        final int d0 = sourceDimensions[0];
+        final int d1 = sourceDimensions[1];
+        boolean s = false;
+        for (int i=0; i<count; i++) {
+            final int[] other = axes[i].sourceDimensions;
+            if (other.length != 0) {
+                final int first = other[0];
+                if  (first == d1) return;          // Swapping would cause a collision.
+                s = (first == d0);
+                if (s) break;                      // Need swapping for avoiding collision.
+            }
+        }
+        if (!s) {
+            final int up0  = sourceSizes[0];
+            final int up1  = sourceSizes[1];
+            final int mid0 = up0 / 2;
+            final int mid1 = up1 / 2;
+            final double inc0 = (coordinates.coordinateForAxis(    0, mid1) -
+                                 coordinates.coordinateForAxis(up0-1, mid1)) / up0;
+            final double inc1 = (coordinates.coordinateForAxis(mid0,     0) -
+                                 coordinates.coordinateForAxis(mid0, up1-1)) / up1;
+            if (!(Math.abs(inc1) > Math.abs(inc0))) {
+                return;
+            }
+        }
+        ArraysExt.swap(sourceSizes,      0, 1);
+        ArraysExt.swap(sourceDimensions, 0, 1);
+    }
+
+    /**
+     * Returns the number of dimension of the localization grid used by this axis.
+     * This method returns 2 if this axis if backed by a localization grid having 2 or more dimensions.
+     * In the netCDF UCAR library, such axes are handled by a {@link ucar.nc2.dataset.CoordinateAxis2D}.
+     *
+     * @return number of dimension of the localization grid used by this axis.
+     */
+    public final int getDimension() {
+        return sourceDimensions.length;
+    }
+
+    /**
+     * Returns the number of cells in the first dimension of the localization grid used by this axis.
+     * If the localization grid has more than one dimension ({@link #getDimension()} {@literal > 1}),
+     * then all additional dimensions are ignored. The first dimension should be the main one.
+     *
+     * @return number of cells in the first (main) dimension of the localization grid.
+     */
+    public final int getLength() {
+        return (sourceSizes.length != 0) ? sourceSizes[0] : 0;
     }
 
     /**
@@ -381,7 +448,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
     final boolean trySetTransform(final Matrix gridToCRS, final int lastSrcDim, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
-main:   switch (sourceDimensions.length) {
+main:   switch (getDimension()) {
             /*
              * Defined as a matter of principle, but should never happen.
              */
@@ -455,5 +522,47 @@ main:   switch (sourceDimensions.length) {
         }
         nonLinears.add(null);
         return false;
+    }
+
+    /**
+     * Tries to create a two-dimensional localization grid using this axis and the given axis.
+     * This method is invoked as a fallback when {@link #trySetTransform(Matrix, int, int, List)}
+     * could not set coefficients in the matrix of an affine transform.
+     *
+     * @param  other  the other axis to use for creating a localization grid.
+     * @return the localization grid, or {@code null} if none can be built.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    final LocalizationGridBuilder createLocalizationGrid(final Axis other) throws IOException, DataStoreException {
+        if (other.getDimension() == 2) {
+            final int d1 =       sourceDimensions[0];
+            final int d2 =       sourceDimensions[1];
+            final int o1 = other.sourceDimensions[0];
+            final int o2 = other.sourceDimensions[1];
+            if ((o1 == d1 && o2 == d2) || (o1 == d2 && o2 == d1)) {
+                /*
+                 * Found two axes for the same set of dimensions, which implies that they have
+                 * the same shape (width and height).
+                 */
+                final int width  = sourceSizes[0];
+                final int height = sourceSizes[1];
+                final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
+                final Vector v1 =       coordinates.read();
+                final Vector v2 = other.coordinates.read();
+                final double[] target = new double[2];
+                int index = 0;
+                for (int y=0; y<height; y++) {
+                    for (int x=0; x<width; x++) {
+                        target[0] = v1.doubleValue(index);
+                        target[1] = v2.doubleValue(index);
+                        grid.setControlPoint(x, y, target);
+                        index++;
+                    }
+                }
+                return grid;
+            }
+        }
+        return null;
     }
 }

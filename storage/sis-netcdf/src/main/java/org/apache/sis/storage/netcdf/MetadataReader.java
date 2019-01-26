@@ -724,8 +724,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
              */
-            if (axis.sourceSizes.length >= 1) {
-                setAxisLength(dim, axis.sourceSizes[0]);
+            if (axis.getDimension() >= 1) {
+                setAxisLength(dim, axis.getLength());
             }
             final AttributeNames.Dimension attributeNames;
             switch (axis.abbreviation) {

@@ -40,8 +40,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.math.Vector;
 
 
 /**
@@ -159,12 +157,11 @@ public abstract class Grid extends NamedElement {
             int i = 0, deferred = workspace.length;
             for (final Axis axis : axes) {
                 // Put one-dimensional axes first, all other axes last.
-                workspace[axis.sourceDimensions.length <= 1 ? i++ : --deferred] = axis;
+                workspace[axis.getDimension() <= 1 ? i++ : --deferred] = axis;
             }
             deferred = workspace.length;        // Will become index of the first axis whose examination has been deferred.
             while (i < workspace.length) {      // Start the loop at the first n-dimensional axis (n > 1).
                 final Axis axis = workspace[i];
-                final int[] sourceDimensions = axis.sourceDimensions;
                 /*
                  * If an axis has a "wraparound" range (for example a longitude axis where the next value after +180°
                  * may be -180°), we will examine it last. The reason is that if a wraparound occurs in the middle of
@@ -175,35 +172,10 @@ public abstract class Grid extends NamedElement {
                 if (i < deferred && axis.isWraparound()) {
                     System.arraycopy(workspace, i+1, workspace, i, --deferred - i);
                     workspace[deferred] = axis;
-                    continue;                                           // Continue the loop without incrementing 'i'.
+                } else {
+                    axis.mainDimensionFirst(workspace, i);
+                    i++;
                 }
-                Boolean swap = null;
-                for (int p=0; p<i; p++) {
-                    final int[] other = workspace[p].sourceDimensions;
-                    if (other.length != 0) {
-                        final int first = other[0];
-                        if (first == sourceDimensions[1]) {swap=false; break;}    // Swapping would cause a collision.
-                        if (first == sourceDimensions[0]) {swap=true;  break;}    // Need swapping for avoiding collision.
-                    }
-                }
-                final int[] sourceSizes = axis.sourceSizes;
-                if (swap == null) {
-                    final int up0  = sourceSizes[0];
-                    final int up1  = sourceSizes[1];
-                    final int mid0 = up0 / 2;
-                    final int mid1 = up1 / 2;
-                    final Variable coordinates = axis.coordinates;
-                    final double inc0 = (coordinates.coordinateForAxis(    0, mid1) -
-                                         coordinates.coordinateForAxis(up0-1, mid1)) / up0;
-                    final double inc1 = (coordinates.coordinateForAxis(mid0,     0) -
-                                         coordinates.coordinateForAxis(mid0, up1-1)) / up1;
-                    swap = Math.abs(inc1) > Math.abs(inc0);
-                }
-                if (swap) {
-                    ArraysExt.swap(sourceSizes,      0, 1);
-                    ArraysExt.swap(sourceDimensions, 0, 1);
-                }
-                i++;
             }
         }
         return axes;
@@ -269,7 +241,7 @@ public abstract class Grid extends NamedElement {
             case 0:  break;
         }
         for (final Axis axis : axes) {
-            if (axis.sourceDimensions.length == 1) {
+            if (axis.getDimension() == 1) {
                 final DimensionNameType name;
                 if (AxisDirections.isVertical(axis.direction)) {
                     name = DimensionNameType.VERTICAL;
@@ -349,51 +321,25 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
                     final Axis axis = axes[deferred[i]];
-                    if (axis.sourceDimensions.length == 2) {
-                        final int d1 = axis.sourceDimensions[0];
-                        final int d2 = axis.sourceDimensions[1];
+                    if (axis.getDimension() == 2) {
                         for (int j=i; ++j < nonLinears.size();) {
                             if (nonLinears.get(j) == null) {
-                                final Axis other = axes[deferred[j]];
-                                if (other.sourceDimensions.length == 2) {
-                                    final int o1 = other.sourceDimensions[0];
-                                    final int o2 = other.sourceDimensions[1];
-                                    if ((o1 == d1 && o2 == d2) || (o1 == d2 && o2 == d1)) {
+                                final int srcDim   = sourceDimensions[i];
+                                final int otherDim = sourceDimensions[j];
+                                if (Math.abs(srcDim - otherDim) == 1) {     // Need axes at consecutive source dimensions.
+                                    final LocalizationGridBuilder grid = axis.createLocalizationGrid(axes[deferred[j]]);
+                                    if (grid != null) {
                                         /*
-                                         * Found two axes for the same set of dimensions, which implies that they have
-                                         * the same shape (width and height).  In current implementation, we also need
-                                         * those axes to be at consecutive source dimensions.
+                                         * Replace the first transform by the two-dimensional localization grid and
+                                         * remove the other transform. Removals need to be done in arrays too.
                                          */
-                                        final int srcDim   = sourceDimensions[i];
-                                        final int otherDim = sourceDimensions[j];
-                                        if (Math.abs(srcDim - otherDim) == 1) {
-                                            final int width  = axis.sourceSizes[0];
-                                            final int height = axis.sourceSizes[1];
-                                            final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
-                                            final Vector v1 =  axis.coordinates.read();
-                                            final Vector v2 = other.coordinates.read();
-                                            final double[] target = new double[2];
-                                            int index = 0;
-                                            for (int y=0; y<height; y++) {
-                                                for (int x=0; x<width; x++) {
-                                                    target[0] = v1.doubleValue(index);
-                                                    target[1] = v2.doubleValue(index);
-                                                    grid.setControlPoint(x, y, target);
-                                                    index++;
-                                                }
-                                            }
-                                            /*
-                                             * Replace the first transform by the two-dimensional localization grid and
-                                             * remove the other transform. Removals need to be done in arrays too.
-                                             */
-                                            nonLinears.set(i, grid.create(factory));
-                                            nonLinears.remove(j);
-                                            final int n = nonLinears.size() - j;
-                                            System.arraycopy(deferred,         j+1, deferred,         j, n);
-                                            System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
-                                            if (otherDim < srcDim) {
-                                                sourceDimensions[i] = otherDim;
-                                            }
+                                        nonLinears.set(i, grid.create(factory));
+                                        nonLinears.remove(j);
+                                        final int n = nonLinears.size() - j;
+                                        System.arraycopy(deferred,         j+1, deferred,         j, n);
+                                        System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
+                                        if (otherDim < srcDim) {
+                                            sourceDimensions[i] = otherDim;
                                         }
                                     }
                                 }
