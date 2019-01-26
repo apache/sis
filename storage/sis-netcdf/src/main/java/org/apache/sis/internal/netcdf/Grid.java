@@ -40,6 +40,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Vector;
 
 
@@ -149,6 +150,61 @@ public abstract class Grid extends NamedElement {
     public final Axis[] getAxes() throws IOException, DataStoreException {
         if (axes == null) {
             axes = createAxes();
+            /*
+             * The grid dimension which varies fastest should be first.  The code below will swap axes if needed in order to
+             * achieve that goal, except if a previous axis was already using the same order. We avoid collision only in the
+             * first dimension because it is the one used by metadata and by trySetTransform(…).
+             */
+            final Axis[] workspace = new Axis[axes.length];
+            int i = 0, deferred = workspace.length;
+            for (final Axis axis : axes) {
+                // Put one-dimensional axes first, all other axes last.
+                workspace[axis.sourceDimensions.length <= 1 ? i++ : --deferred] = axis;
+            }
+            deferred = workspace.length;        // Will become index of the first axis whose examination has been deferred.
+            while (i < workspace.length) {      // Start the loop at the first n-dimensional axis (n > 1).
+                final Axis axis = workspace[i];
+                final int[] sourceDimensions = axis.sourceDimensions;
+                /*
+                 * If an axis has a "wraparound" range (for example a longitude axis where the next value after +180°
+                 * may be -180°), we will examine it last. The reason is that if a wraparound occurs in the middle of
+                 * the localization grid, it will confuse the computation based on 'coordinateForAxis(…)' calls below.
+                 * We are better to resolve the latitude axis first, and then resolve the longitude axis with the code
+                 * path checking for dimension collisions, without using coordinateForAxis(…) on longitude axis.
+                 */
+                if (i < deferred && axis.isWraparound()) {
+                    System.arraycopy(workspace, i+1, workspace, i, --deferred - i);
+                    workspace[deferred] = axis;
+                    continue;                                           // Continue the loop without incrementing 'i'.
+                }
+                Boolean swap = null;
+                for (int p=0; p<i; p++) {
+                    final int[] other = workspace[p].sourceDimensions;
+                    if (other.length != 0) {
+                        final int first = other[0];
+                        if (first == sourceDimensions[1]) {swap=false; break;}    // Swapping would cause a collision.
+                        if (first == sourceDimensions[0]) {swap=true;  break;}    // Need swapping for avoiding collision.
+                    }
+                }
+                final int[] sourceSizes = axis.sourceSizes;
+                if (swap == null) {
+                    final int up0  = sourceSizes[0];
+                    final int up1  = sourceSizes[1];
+                    final int mid0 = up0 / 2;
+                    final int mid1 = up1 / 2;
+                    final Variable coordinates = axis.coordinates;
+                    final double inc0 = (coordinateForAxis(coordinates,     0, mid1) -
+                                         coordinateForAxis(coordinates, up0-1, mid1)) / up0;
+                    final double inc1 = (coordinateForAxis(coordinates, mid0,     0) -
+                                         coordinateForAxis(coordinates, mid0, up1-1)) / up1;
+                    swap = Math.abs(inc1) > Math.abs(inc0);
+                }
+                if (swap) {
+                    ArraysExt.swap(sourceSizes,      0, 1);
+                    ArraysExt.swap(sourceDimensions, 0, 1);
+                }
+                i++;
+            }
         }
         return axes;
     }
@@ -157,11 +213,9 @@ public abstract class Grid extends NamedElement {
      * Creates the axes to be returned by {@link #getAxes()}. This method is invoked only once when first needed.
      *
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
-     * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
-     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    protected abstract Axis[] createAxes() throws IOException, DataStoreException;
+    protected abstract Axis[] createAxes() throws DataStoreException;
 
     /**
      * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly) a callback

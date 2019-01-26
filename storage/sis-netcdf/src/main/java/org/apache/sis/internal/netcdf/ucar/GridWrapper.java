@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
-import java.io.IOException;
 import java.util.List;
 import ucar.nc2.Dimension;
 import ucar.nc2.constants.AxisType;
@@ -126,12 +125,10 @@ final class GridWrapper extends Grid {
      * of {@link CoordinateAxis2D}.</p>
      *
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
-     * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
-     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected Axis[] createAxes() throws IOException, DataStoreException {
+    protected Axis[] createAxes() throws DataStoreException {
         final List<Dimension> domain = netcdfCS.getDomain();
         final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
         /*
@@ -183,8 +180,8 @@ final class GridWrapper extends Grid {
                  * package, we can proceed as if the dimension does not exist ('i' not incremented).
                  */
             }
-            axes[targetDim] = new Axis(this, decoder.getWrapperFor(axis), abbreviation, axis.getPositive(),
-                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axes);
+            axes[targetDim] = new Axis(decoder.getWrapperFor(axis), abbreviation, axis.getPositive(),
+                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         return axes;
     }

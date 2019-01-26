@@ -190,12 +190,10 @@ final class GridInfo extends Grid {
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
-     * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
-     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected Axis[] createAxes() throws IOException, DataStoreException {
+    protected Axis[] createAxes() throws DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the same order than the indices, but not necessarily. The intent is to reduce the
@@ -243,8 +241,8 @@ final class GridInfo extends Grid {
                     }
                 }
             }
-            axes[targetDim] = new Axis(this, axis, abbreviation, axis.getAttributeAsString(CF.POSITIVE),
-                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axes);
+            axes[targetDim] = new Axis(axis, abbreviation, axis.getAttributeAsString(CF.POSITIVE),
+                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         if (sortAxes) {
             Arrays.sort(axes);

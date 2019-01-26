@@ -38,7 +38,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -125,25 +124,17 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
     final Variable coordinates;
 
     /**
-     * Constructs a new axis associated to an arbitrary number of grid dimension.
-     * In the particular case where the number of dimensions is equals to 2, this constructor will detect
-     * by itself which grid dimension varies fastest and reorder in-place the elements in the given arrays
-     * (those array are modified, not cloned).
+     * Constructs a new axis associated to an arbitrary number of grid dimension. The given arrays are stored
+     * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes()}.
      *
-     * @param  owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
      * @param  axis              an implementation-dependent object representing the axis.
      * @param  abbreviation      axis abbreviation, also identifying its type. This is a controlled vocabulary.
      * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
      * @param  sourceDimensions  the index of the grid dimension associated to this axis.
      * @param  sourceSizes       the number of cell elements along that axis.
-     * @param  previousAxes      other axes built before this axis. May contain null elements. This array will not be modified.
-     * @throws IOException if an I/O operation was necessary but failed.
-     * @throws DataStoreException if a logical error occurred.
-     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final Grid owner, final Variable axis, char abbreviation, final String direction,
-                final int[] sourceDimensions, final int[] sourceSizes, final Axis[] previousAxes)
-            throws IOException, DataStoreException
+    public Axis(final Variable axis, char abbreviation, final String direction,
+                final int[] sourceDimensions, final int[] sourceSizes)
     {
         /*
          * Try to get the axis direction from one of the following sources,
@@ -190,38 +181,6 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
         this.sourceDimensions = sourceDimensions;
         this.sourceSizes      = sourceSizes;
         this.coordinates      = axis;
-        /*
-         * The grid dimension which varies fastest should be first.  The code below will swap axes if needed in order to
-         * achieve that goal, except if a previous axis was already using the same order. We avoid collision only in the
-         * first dimension because it is the one used by metadata and by trySetTransform(…).
-         */
-        if (sourceDimensions.length >= 2) {
-            boolean s = false;
-            for (final Axis previous : previousAxes) {
-                if (previous != null && previous.sourceDimensions.length != 0) {
-                    final int first = previous.sourceDimensions[0];
-                    if  (first == sourceDimensions[1]) return;              // Swapping would cause a collision. Avoid that.
-                    s = (first == sourceDimensions[0]);                     // Tell if need swapping for avoiding collision.
-                    if (s) break;
-                }
-            }
-            final int up0 = sourceSizes[0];
-            final int up1 = sourceSizes[1];
-            if (!s) {
-                final int mid0 = up0 / 2;
-                final int mid1 = up1 / 2;
-                final double inc0 = (owner.coordinateForAxis(axis,     0, mid1) -
-                                     owner.coordinateForAxis(axis, up0-1, mid1)) / up0;
-                final double inc1 = (owner.coordinateForAxis(axis, mid0,     0) -
-                                     owner.coordinateForAxis(axis, mid0, up1-1)) / up1;
-                s = Math.abs(inc1) > Math.abs(inc0);
-            }
-            if (s) {
-                sourceSizes[0] = up1;
-                sourceSizes[1] = up0;
-                ArraysExt.swap(sourceDimensions, 0, 1);
-            }
-        }
     }
 
     /**
@@ -269,6 +228,18 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
         return axis.getDirection().equals(direction) && axis.getUnit().equals(getUnit());
+    }
+
+    /**
+     * Returns {@code true} if this axis is likely to have a "wraparound" range. The main case is the longitude
+     * axis with a [-180 … +180]° range or a [0 … 360]° range, where the next value after +180° may be -180°.
+     */
+    final boolean isWraparound() {
+        if (abbreviation == 0) {
+            return AxisDirection.EAST.equals(AxisDirections.absolute(direction)) && Units.isAngular(getUnit());
+        } else {
+            return abbreviation == 'λ';
+        }
     }
 
     /**
