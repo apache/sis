@@ -96,6 +96,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * The dimensions of this variable, in the order they appear in netCDF file. When iterating over the values stored in
      * this variable (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[length-1]}
      * varies faster, followed by index in the domain of {@code dimensions[length-2]}, <i>etc.</i>
+     *
+     * @see #getShape()
+     * @see GridInfo#domain
      */
     final Dimension[] dimensions;
 
@@ -493,7 +496,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     * This method is used mostly for building string representations of this variable.
      *
      * @return the number of grid cells for each dimension, as unsigned integers.
      */
@@ -820,8 +822,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     protected double coordinateForAxis(final int j, final int i) throws IOException, DataStoreException {
-        final int n = dimensions[0].length;
-        return read().doubleValue(j + n*i);
+        assert j >= 0 && j < dimensions[0].length : j;
+        assert i >= 0 && i < dimensions[1].length : i;
+        final long n = dimensions[0].length();
+        return read().doubleValue(Math.toIntExact(j + n*i));
     }
 
     /**

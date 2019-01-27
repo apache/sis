@@ -185,9 +185,11 @@ public abstract class Grid extends NamedElement {
      * Creates the axes to be returned by {@link #getAxes()}. This method is invoked only once when first needed.
      *
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    protected abstract Axis[] createAxes() throws DataStoreException;
+    protected abstract Axis[] createAxes() throws IOException, DataStoreException;
 
     /**
      * Returns the coordinate reference system, or {@code null} if none.

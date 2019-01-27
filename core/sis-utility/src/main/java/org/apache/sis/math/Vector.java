@@ -561,7 +561,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         if (size >= 2) {
             /*
              * For the first level of repetitions, we rely on a method to be overridden by subclasses
-             * for detecting the length of consecutive identical numbers. We could have use the more
+             * for detecting the length of consecutive identical numbers. We could have used the more
              * generic algorithm based on 'equals(int, int, Vector, int)' instead, but this approach
              * is faster.
              */
@@ -593,7 +593,9 @@ search:     for (;;) {
                             r = size;                                       // Sentinel value for repetition not found.
                             break search;
                         }
-                        r = r0 * candidates[candidateIndex++];
+                        final int n = candidates[candidateIndex++];
+                        ArgumentChecks.ensureStrictlyPositive("candidates", n);
+                        r = Math.multiplyExact(r0, n);
                     } while (r <= 0 || r >= size);
                 } else {
                     r += r0;

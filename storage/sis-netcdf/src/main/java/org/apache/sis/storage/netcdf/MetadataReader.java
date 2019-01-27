@@ -725,7 +725,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * oriented toward the axis direction.
              */
             if (axis.getDimension() >= 1) {
-                setAxisLength(dim, axis.getLength());
+                setAxisSize(dim, axis.getSize());
             }
             final AttributeNames.Dimension attributeNames;
             switch (axis.abbreviation) {

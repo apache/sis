@@ -32,6 +32,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -113,15 +114,25 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
     final int[] sourceDimensions;
 
     /**
-     * The number of cell elements along the source grid dimensions. The length of this array shall be
-     * equals to the {@link #sourceDimensions} length. For each element, {@code sourceSizes[i]} shall
-     * be equals to the number of grid cells in the grid dimension at index {@code sourceDimensions[i]}.
+     * The number of cell elements along the source grid dimensions, as unsigned integers. The length of this
+     * array shall be equal to the {@link #sourceDimensions} length. For each element, {@code sourceSizes[i]}
+     * shall be equal to the number of grid cells in the grid dimension at index {@code sourceDimensions[i]}.
+     *
+     * <p>This array should contain the same information as {@code coordinates.getShape()} but potentially in
+     * a different order and with potentially one element (not necessarily the first one) set to a lower value
+     * in order to avoid trailing {@link Float#NaN} values.</p>
+     *
+     * <p>Note that while we defined those values as unsigned for consistency with {@link Variable} dimensions,
+     * not all operations in this {@code Axis} class support values greater than the signed integer range.</p>
+     *
+     * @see Variable#getShape()
      */
-    final int[] sourceSizes;
+    private final int[] sourceSizes;
 
     /**
      * Values of coordinates on this axis for given grid indices. This variables is often one-dimensional,
-     * but can also be two-dimensional.
+     * but can also be two-dimensional. Coordinate values should be read with the {@link #read()} method
+     * in this {@code Axis} class instead than {@link Variable#read()} for trimming trailing NaN values.
      */
     final Variable coordinates;
 
@@ -129,14 +140,17 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
      * Constructs a new axis associated to an arbitrary number of grid dimension. The given arrays are stored
      * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes()}.
      *
-     * @param  axis              an implementation-dependent object representing the axis.
      * @param  abbreviation      axis abbreviation, also identifying its type. This is a controlled vocabulary.
      * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
-     * @param  sourceDimensions  the index of the grid dimension associated to this axis.
-     * @param  sourceSizes       the number of cell elements along that axis.
+     * @param  sourceDimensions  the index of the grid dimension associated to this axis, initially in netCDF order.
+     * @param  sourceSizes       the number of cell elements along that axis, as unsigned integers.
+     * @param  coordinates       coordinates of the localization grid used by this axis.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public Axis(final Variable axis, char abbreviation, final String direction,
-                final int[] sourceDimensions, final int[] sourceSizes)
+    public Axis(final char abbreviation, final String direction, final int[] sourceDimensions, final int[] sourceSizes,
+                final Variable coordinates) throws IOException, DataStoreException
     {
         /*
          * Try to get the axis direction from one of the following sources,
@@ -161,7 +175,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             isConsistent = AxisDirections.isColinear(dir, check);
         }
         if (isConsistent) {
-            check = direction(axis.getUnitsString());
+            check = direction(coordinates.getUnitsString());
             if (dir == null) {
                 dir = check;
             } else if (check != null) {
@@ -169,8 +183,8 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             }
         }
         if (!isConsistent) {
-            axis.warning(Grid.class, "getAxes",                     // Caller of this constructor.
-                         Resources.Keys.AmbiguousAxisDirection_4, axis.getFilename(), axis.getName(), dir, check);
+            coordinates.warning(Grid.class, "getAxes",              // Caller of this constructor.
+                    Resources.Keys.AmbiguousAxisDirection_4, coordinates.getFilename(), coordinates.getName(), dir, check);
             if (isSigned) {
                 if (AxisDirections.isOpposite(dir)) {
                     check = AxisDirections.opposite(check);         // Apply the sign of 'dir' on 'check'.
@@ -182,7 +196,23 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
         this.abbreviation     = abbreviation;
         this.sourceDimensions = sourceDimensions;
         this.sourceSizes      = sourceSizes;
-        this.coordinates      = axis;
+        this.coordinates      = coordinates;
+        /*
+         * If the variable for localization grid declares a fill value, maybe the last rows are all NaN.
+         * We need to trim them from this axis, otherwise it will confuse the grid geometry calculation.
+         * Following operation must be done before mainDimensionFirst(…) is invoked, otherwise the order
+         * of elements in 'sourceSizes' would not be okay anymore.
+         */
+        if (coordinates.getAttributeType(CDM.FILL_VALUE) != null) {
+            final int page = getSizeProduct(1);            // Must exclude first dimension from computation.
+            final Vector data = coordinates.read();
+            int n = data.size();
+            while (--n >= 0 && data.isNaN(n)) {}
+            final int nr = Numerics.ceilDiv(++n, page);
+            assert nr <= sourceSizes[0] : nr;
+            sourceSizes[0] = nr;
+            assert getSizeProduct(0) == n : n;
+        }
     }
 
     /**
@@ -226,16 +256,18 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             final int[] other = axes[i].sourceDimensions;
             if (other.length != 0) {
                 final int first = other[0];
-                if  (first == d1) return;          // Swapping would cause a collision.
+                if  (first == d1) return;           // Swapping would cause a collision.
                 s = (first == d0);
-                if (s) break;                      // Need swapping for avoiding collision.
+                if (s) break;                       // Need swapping for avoiding collision.
             }
         }
         if (!s) {
-            final int up0  = sourceSizes[0];
-            final int up1  = sourceSizes[1];
-            final int mid0 = up0 / 2;
-            final int mid1 = up1 / 2;
+            int up0 = sourceSizes[0];
+            int up1 = sourceSizes[1];
+            final int mid0 = up0 >>> 1;             // Division by 2 of unsigned integers.
+            final int mid1 = up1 >>> 1;
+            if (up0 < 0) up0 = Integer.MAX_VALUE;   // For unsigned integers, < 0 means overflow.
+            if (up1 < 0) up1 = Integer.MAX_VALUE;
             final double inc0 = (coordinates.coordinateForAxis(    0, mid1) -
                                  coordinates.coordinateForAxis(up0-1, mid1)) / up0;
             final double inc1 = (coordinates.coordinateForAxis(mid0,     0) -
@@ -260,14 +292,43 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
     }
 
     /**
+     * Returns the product of all {@link #sourceSizes} values starting at the given index.
+     * The product of all sizes given by {@code getSizeProduct(0)} shall be the length of
+     * the vector returned by {@link #read()}.
+     *
+     * @param  i  index of the first size to include in the product.
+     * @return the product of all {@link #sourceSizes} values starting at the given index.
+     * @throws ArithmeticException if the product can not be represented as a signed 32 bits integer.
+     */
+    private int getSizeProduct(int i) {
+        int length = 1;
+        while (i < sourceSizes.length) {
+            length = Math.multiplyExact(length, getSize(i++));
+        }
+        return length;
+    }
+
+    /**
+     * Returns the {@link #sourceSizes} value at the given index, making sure it is representable as a
+     * signed integer value. This method is invoked by operations not designed for unsigned integers.
+     *
+     * @throws ArithmeticException if the size can not be represented as a signed 32 bits integer.
+     */
+    private int getSize(final int i) {
+        final int n = sourceSizes[i];
+        if (n >= 0) return n;
+        throw new ArithmeticException("signed integer overflow");
+    }
+
+    /**
      * Returns the number of cells in the first dimension of the localization grid used by this axis.
      * If the localization grid has more than one dimension ({@link #getDimension()} {@literal > 1}),
      * then all additional dimensions are ignored. The first dimension should be the main one.
      *
      * @return number of cells in the first (main) dimension of the localization grid.
      */
-    public final int getLength() {
-        return (sourceSizes.length != 0) ? sourceSizes[0] : 0;
+    public final long getSize() {
+        return (sourceSizes.length != 0) ? Integer.toUnsignedLong(sourceSizes[0]) : 0;
     }
 
     /**
@@ -327,7 +388,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
             case 'φ': min =  Latitude.MIN_VALUE; wraparound = false; break;
             default: return false;
         }
-        final Vector data = coordinates.read();
+        final Vector data = read();
         final int size = data.size();
         if (size != 0) {
             Unit<?> unit = getUnit();
@@ -457,11 +518,12 @@ main:   switch (getDimension()) {
              * Normal case where the axis has only one dimension.
              */
             case 1: {
+                final Vector data = read();
                 final int srcDim = lastSrcDim - sourceDimensions[0];                // Convert from netCDF to "natural" order.
-                if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, null)) {
+                if (coordinates.trySetTransform(gridToCRS, srcDim, tgtDim, data)) {
                     return true;
                 } else {
-                    nonLinears.add(MathTransforms.interpolate(null, coordinates.read().doubleValues()));
+                    nonLinears.add(MathTransforms.interpolate(null, data.doubleValues()));
                     return false;
                 }
             }
@@ -486,15 +548,16 @@ main:   switch (getDimension()) {
              * be generalized to n-dimensional case if we resolve the default case in the switch statement.
              */
             case 2: {
-                Vector data = coordinates.read();
+                Vector data = read();
                 final int[] repetitions = data.repetitions(sourceSizes);        // Detects repetitions as illustrated above.
                 long repetitionLength = 1;
                 for (int r : repetitions) {
                     repetitionLength = Math.multiplyExact(repetitionLength, r);
                 }
+                final int ri = (sourceDimensions[0] <= sourceDimensions[1]) ? 0 : 1;
                 for (int i=0; i<=1; i++) {
-                    final int width  = sourceSizes[i    ];
-                    final int height = sourceSizes[i ^ 1];
+                    final int width  = getSize(ri ^ i    );
+                    final int height = getSize(ri ^ i ^ 1);
                     if (repetitionLength % width == 0) {            // Repetition length shall be grid width (or a divisor).
                         final int length, step;
                         if (repetitions.length >= 2) {
@@ -542,27 +605,49 @@ main:   switch (getDimension()) {
             final int o2 = other.sourceDimensions[1];
             if ((o1 == d1 && o2 == d2) || (o1 == d2 && o2 == d1)) {
                 /*
-                 * Found two axes for the same set of dimensions, which implies that they have
-                 * the same shape (width and height).
+                 * Found two axes for the same set of dimensions, which implies that they have the same
+                 * shape (width and height) unless the two axes ignored a different amount of NaN values.
+                 * Negative width and height means that their actual values overflow the 'int' capacity,
+                 * which we can not process here.
                  */
-                final int width  = sourceSizes[0];
-                final int height = sourceSizes[1];
-                final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
-                final Vector v1 =       coordinates.read();
-                final Vector v2 = other.coordinates.read();
-                final double[] target = new double[2];
-                int index = 0;
-                for (int y=0; y<height; y++) {
-                    for (int x=0; x<width; x++) {
-                        target[0] = v1.doubleValue(index);
-                        target[1] = v2.doubleValue(index);
-                        grid.setControlPoint(x, y, target);
-                        index++;
+                final int ri = (d1 <= d2) ? 0 : 1;  // Take in account that mainDimensionFirst(…) may have reordered values.
+                final int ro = (o1 <= o2) ? 0 : 1;
+                final int width  = getSize(ri    );
+                final int height = getSize(ri ^ 1);
+                if (other.sourceSizes[ro    ] != width ||
+                    other.sourceSizes[ro ^ 1] != height)
+                {
+                    coordinates.error(Grid.class, "getGridGeometry", null,
+                            Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
+                } else {
+                    final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
+                    final Vector v1 =       read();
+                    final Vector v2 = other.read();
+                    final double[] target = new double[2];
+                    int index = 0;
+                    for (int y=0; y<height; y++) {
+                        for (int x=0; x<width; x++) {
+                            target[0] = v1.doubleValue(index);
+                            target[1] = v2.doubleValue(index);
+                            grid.setControlPoint(x, y, target);
+                            index++;
+                        }
                     }
+                    return grid;
                 }
-                return grid;
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the coordinates in the localization grid, excluding some trailing NaN values if any.
+     * This method typically returns a cached vector if the coordinates have already been read.
+     *
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    final Vector read() throws IOException, DataStoreException {
+        return coordinates.read().subList(0, getSizeProduct(0));
     }
 }

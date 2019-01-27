@@ -90,8 +90,8 @@ public strictfp class GridTest extends TestCase {
         assertArrayEquals(new int[] {1}, x.sourceDimensions);
         assertArrayEquals(new int[] {0}, y.sourceDimensions);
 
-        assertArrayEquals(new int[] {73}, x.sourceSizes);
-        assertArrayEquals(new int[] {73}, y.sourceSizes);
+        assertEquals(73, x.getSize());
+        assertEquals(73, y.getSize());
     }
 
     /**
@@ -120,9 +120,9 @@ public strictfp class GridTest extends TestCase {
         assertArrayEquals(new int[] {1}, z.sourceDimensions);
         assertArrayEquals(new int[] {0}, t.sourceDimensions);
 
-        assertArrayEquals(new int[] {38}, x.sourceSizes);
-        assertArrayEquals(new int[] {19}, y.sourceSizes);
-        assertArrayEquals(new int[] { 4}, z.sourceSizes);
-        assertArrayEquals(new int[] { 1}, t.sourceSizes);
+        assertEquals(38, x.getSize());
+        assertEquals(19, y.getSize());
+        assertEquals( 4, z.getSize());
+        assertEquals( 1, t.getSize());
     }
 }

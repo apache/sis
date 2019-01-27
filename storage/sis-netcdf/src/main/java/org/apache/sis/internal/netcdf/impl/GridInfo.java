@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -76,8 +77,10 @@ final class GridInfo extends Grid {
     /**
      * Describes the input values expected by the function converting grid indices to geodetic coordinates.
      * They are the dimensions of the grid (<strong>not</strong> the dimensions of the CRS).
+     * Dimensions are listed in the order they appear in netCDF file (reverse of "natural" order).
      *
      * @see #getShape()
+     * @see VariableInfo#dimensions
      */
     private final Dimension[] domain;
 
@@ -96,7 +99,7 @@ final class GridInfo extends Grid {
      * Constructs a new grid geometry information.
      * The {@code domain} and {@code range} arrays often have the same length, but not necessarily.
      *
-     * @param  domain    describes the input values of the "grid to CRS" conversion.
+     * @param  domain    describes the input values of the "grid to CRS" conversion, in netCDF order.
      * @param  range     the output values of the "grid to CRS" conversion.
      * @param  sortAxes  whether axes should be sorted instead than relying on the order found in netCDF file.
      */
@@ -170,7 +173,7 @@ final class GridInfo extends Grid {
         final int    dim  = domain.length;
         final long[] size = new long[dim];
         for (int i=0; i<dim; i++) {
-            size[(dim-1) - i] = Integer.toUnsignedLong(domain[i].length);
+            size[(dim-1) - i] = domain[i].length();
         }
         return size;
     }
@@ -188,10 +191,12 @@ final class GridInfo extends Grid {
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
      * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected Axis[] createAxes() throws DataStoreException {
+    protected Axis[] createAxes() throws IOException, DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the same order than the indices, but not necessarily. The intent is to reduce the
@@ -231,7 +236,7 @@ final class GridInfo extends Grid {
             final int[] indices = new int[axisDomain.length];
             final int[] sizes   = new int[axisDomain.length];
             for (final Dimension dimension : axisDomain) {
-                for (int sourceDim = domain.length; --sourceDim >= 0;) {
+                for (int sourceDim = 0; sourceDim < domain.length; sourceDim++) {
                     if (domain[sourceDim] == dimension) {
                         indices[i] = sourceDim;
                         sizes[i++] = dimension.length;
@@ -239,8 +244,8 @@ final class GridInfo extends Grid {
                     }
                 }
             }
-            axes[targetDim] = new Axis(axis, abbreviation, axis.getAttributeAsString(CF.POSITIVE),
-                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
+            axes[targetDim] = new Axis(abbreviation, axis.getAttributeAsString(CF.POSITIVE),
+                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axis);
         }
         if (sortAxes) {
             Arrays.sort(axes);

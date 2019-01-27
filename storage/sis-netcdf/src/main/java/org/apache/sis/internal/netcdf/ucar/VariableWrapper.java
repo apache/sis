@@ -255,7 +255,6 @@ final class VariableWrapper extends Variable {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     * This method is used mostly for building string representations of this variable.
      */
     @Override
     public int[] getShape() {
@@ -438,7 +437,7 @@ final class VariableWrapper extends Variable {
     protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
             throws IOException, DataStoreException
     {
-        if (values == null && variable instanceof CoordinateAxis1D) {
+        if (variable instanceof CoordinateAxis1D) {
             final CoordinateAxis1D axis = (CoordinateAxis1D) variable;
             if (axis.isRegular()) {
                 final double start     = axis.getStart();

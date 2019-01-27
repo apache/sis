@@ -663,7 +663,7 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Maybe replace fill values and missing values by {@code NaN} values in the given array.
+     * Maybe replaces fill values and missing values by {@code NaN} values in the given array.
      * This method does nothing if {@link #hasRealValues()} returns {@code false}.
      * The NaN values used by this method must be consistent with the NaN values declared in
      * the sample dimensions created by {@link org.apache.sis.storage.netcdf.GridResource}.
@@ -709,17 +709,14 @@ public abstract class Variable extends NamedElement {
      * @param  gridToCRS  the matrix in which to set scale and offset coefficient.
      * @param  srcDim     the source dimension, which is a dimension of the grid. Identifies the matrix column of scale factor.
      * @param  tgtDim     the target dimension, which is a dimension of the CRS.  Identifies the matrix row of scale factor.
-     * @param  values     the vector to use for computing scale and offset, or {@code null} if it has not been read yet.
+     * @param  values     the vector to use for computing scale and offset.
      * @return whether this method has successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, Vector values)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
             throws IOException, DataStoreException
     {
-        if (values == null) {
-            values = read();
-        }
         final int n = values.size() - 1;
         if (n >= 0) {
             final double first = values.doubleValue(0);
