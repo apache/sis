@@ -29,8 +29,9 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -42,16 +43,16 @@ import org.opengis.coverage.PointOutsideCoverageException;
 /**
  * Creates a new grid geometry derived from a base grid geometry with different extent or resolution.
  * {@code GridDerivation} are created by calls to {@link GridGeometry#derive()}.
- * Properties of the desired grid geometry can be specified by calls to the following methods:
+ * Properties of the desired grid geometry can be specified by calls to the following methods,
+ * in that order (each method is optional):
  *
- * <ul>
- *   <li>{@link #rounding(GridRoundingMode)} — if invoked, should be first.</li>
- *   <li>At most one of the following methods:<ul>
- *     <li>{@link #subgrid(Envelope, double...)}</li>
- *     <li>{@link #slice(DirectPosition)}</li>
- *   </ul></li>
+ * <ol>
+ *   <li>{@link #rounding(GridRoundingMode)} and/or {@link #margin(int...)} in any order</li>
+ *   <li>{@link #subgrid(Envelope, double...)}</li>
+ *   <li>{@link #slice(DirectPosition)}</li>
+ *   <li>{@link #sliceByRatio(double, int...)}</li>
  *   <li>{@link #reduce(int...)}</li>
- * </ul>
+ * </ol>
  *
  * Then the grid geometry is created by a call to {@link #build()}.
  * Alternatively, {@link #extent()} can be invoked if only the {@link GridExtent} is desired
@@ -72,22 +73,25 @@ public class GridDerivation {
     protected final GridGeometry base;
 
     /**
-     * If {@link #slice(DirectPosition)} or {@link #subgrid(Envelope, double...)} has been invoked, the method name.
-     * This is used for preventing those methods to be invoked twice, which is currently not supported.
+     * If {@link #subgrid(Envelope, double...)},  {@link #slice(DirectPosition)} or {@link #reduce(int...)} has been invoked,
+     * the method name. This is used for preventing those methods to be invoked twice or out-of-order, which is currently not
+     * supported.
      */
     private String subGridSetter;
 
     /**
      * The sub-extent computed by a {@link #slice(DirectPosition)} or {@link #subgrid(Envelope, double...)} methods,
-     * or {@code null} if no slice or sub-grid has been requested.
+     * or {@code base.extent} if no slice or sub-grid has been requested. This field may be {@code null} if the base
+     * grid geometry does not define any extent. A successful call to {@link GridGeometry#requireGridToCRS()} guarantees
+     * that this field is non-null.
      */
     private GridExtent subExtent;
 
     /**
-     * The conversion from the original grid to the subsampled grid, or {@code null} if no subsampling is applied.
+     * The conversion from the subsampled grid to the original grid, or {@code null} if no subsampling is applied.
      * This is computed by {@link #subgrid(Envelope, double...)}.
      */
-    private MathTransform toSubsampled;
+    private MathTransform toBase;
 
     /**
      * List of grid dimensions that are modified by the {@code cornerToCRS} transform, or null for all dimensions.
@@ -101,6 +105,13 @@ public class GridDerivation {
      * Those values are set by {@link #reduce(int...)}.
      */
     private int[] selectedDimensions;
+
+    /**
+     * If non-null, the extent will be expanded by that amount of cells on each grid dimension.
+     *
+     * @see #margin(int...)
+     */
+    private int[] margin;
 
     /**
      * Controls behavior of rounding from floating point values to integers.
@@ -117,7 +128,28 @@ public class GridDerivation {
     protected GridDerivation(final GridGeometry base) {
         ArgumentChecks.ensureNonNull("base", base);
         this.base = base;
-        rounding = GridRoundingMode.NEAREST;
+        subExtent = base.extent;                    // May be null.
+        rounding  = GridRoundingMode.NEAREST;
+    }
+
+    /**
+     * Verifies that a sub-grid has not yet been defined.
+     * This method is invoked for enforcing the method call order defined in javadoc.
+     */
+    private void ensureSubgridNotSet() {
+        if (subGridSetter != null) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetDerivedGridProperty_1, subGridSetter));
+        }
+    }
+
+    /**
+     * Verifies that {@link #reduce(int...)} has not yet been invoked.
+     * This method is invoked for enforcing the method call order defined in javadoc.
+     */
+    private void ensureReduceNotSet() {
+        if (selectedDimensions != null) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetDerivedGridProperty_1, "reduce"));
+        }
     }
 
     /**
@@ -134,8 +166,8 @@ public class GridDerivation {
      *
      * @param  mode  the new rounding mode.
      * @return {@code this} for method call chaining.
-     * @throws IllegalStateException if {@link #slice(DirectPosition)} or
-     *         {@link #subgrid(Envelope, double...)} has already been invoked.
+     * @throws IllegalStateException if {@link #slice(DirectPosition)}, {@link #subgrid(Envelope, double...)} or
+     *         {@link #reduce(int...)} have already been invoked.
      */
     public GridDerivation rounding(final GridRoundingMode mode) {
         ArgumentChecks.ensureNonNull("mode", mode);
@@ -145,73 +177,46 @@ public class GridDerivation {
     }
 
     /**
-     * Verifies that a sub-grid has not yet been defined.
-     */
-    private void ensureSubgridNotSet() {
-        if (subGridSetter != null) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetDerivedGridProperty_1, subGridSetter));
-        }
-    }
-
-    /**
-     * Requests a grid geometry for a slice at the given point.
-     * The given position can be expressed in any coordinate reference system (CRS).
-     * The position should not define a coordinate for all dimensions, otherwise the slice would degenerate
-     * to a single point. Dimensions can be left unspecified either by assigning to {@code slicePoint} a CRS
-     * without those dimensions, or by assigning the NaN value to some coordinates.
-     *
-     * <div class="note"><b>Example:</b>
-     * if the {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system} of base grid geometry has
-     * (<var>longitude</var>, <var>latitude</var>, <var>time</var>) axes, then a (<var>longitude</var>, <var>latitude</var>)
-     * slice at time <var>t</var> can be created with one of the following two positions:
+     * Specifies an amount of cells by which to expand {@code GridExtent} after rounding.
+     * This setting modifies computations performed by the following methods
+     * (it has no effect on other methods in this {@code GridDerivation} class):
      * <ul>
-     *   <li>A three-dimensional position with ({@link Double#NaN}, {@link Double#NaN}, <var>t</var>) coordinates.</li>
-     *   <li>A one-dimensional position with (<var>t</var>) coordinate and the coordinate reference system set to
-     *       {@linkplain org.apache.sis.referencing.CRS#getTemporalComponent(CoordinateReferenceSystem) the temporal component}
-     *       of the grid geometry CRS.</li>
-     * </ul></div>
-     *
-     * <p>Notes:</p>
-     * <ul>
-     *   <li>This method can be invoked only once.</li>
-     *   <li>This method can not be used together with {@link #subgrid(Envelope, double...)}.</li>
-     *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
-     *       before to invoke this method.</li>
-     *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link #reduce(int...)}.</li>
+     *   <li>{@link #subgrid(Envelope, double...)}</li>
      * </ul>
      *
-     * @param  slicePoint   the coordinates where to get a slice.
+     * For each dimension <var>i</var> of the grid computed by above methods, the {@linkplain GridExtent#getLow(int) low} grid
+     * coordinate is subtracted by {@code cellCount[i]} and the {@linkplain GridExtent#getHigh(int) high} grid coordinate is
+     * increased by {@code cellCount[i]}. The result is intersected with the extent of the {@linkplain #base} grid geometry
+     * given to the constructor.
+     *
+     * <div class="note"><b>Use case:</b>
+     * if the caller wants to apply bilinear interpolations in an image, (s)he will need 1 more pixel on each image border.
+     * If the caller wants to apply bi-cubic interpolations, (s)he will need 2 more pixels on each image border.</div>
+     *
+     * If this method is never invoked, the default value is zero for all dimensions.
+     * If this method is invoked too late, an {@link IllegalStateException} is thrown.
+     * If the {@code count} array length is shorter than the grid dimension,
+     * then zero is assumed for all missing dimensions.
+     *
+     * @param  cellCounts  number of cells by which to expand the grid extent.
      * @return {@code this} for method call chaining.
-     * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
-     * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
-     * @throws PointOutsideCoverageException if the given point is outside the grid extent.
+     * @throws IllegalArgumentException if a value is negative.
+     * @throws IllegalStateException if {@link #slice(DirectPosition)}, {@link #subgrid(Envelope, double...)} or
+     *         {@link #reduce(int...)} have already been invoked.
      */
-    public GridDerivation slice(final DirectPosition slicePoint) {
-        ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
+    public GridDerivation margin(final int... cellCounts) {
+        ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
         ensureSubgridNotSet();
-        MathTransform cornerToCRS = base.requireGridToCRS();
-        subGridSetter = "slice";
-        try {
-            if (base.envelope != null) {
-                final CoordinateReferenceSystem sourceCRS = base.envelope.getCoordinateReferenceSystem();
-                if (sourceCRS != null) {
-                    final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
-                    if (targetCRS != null) {
-                        final CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
-                        cornerToCRS = MathTransforms.concatenate(cornerToCRS, operation.getMathTransform());
-                    }
-                }
+        int[] margin = null;
+        for (int i=cellCounts.length; --i >= 0;) {
+            final int n = cellCounts[i];
+            ArgumentChecks.ensurePositive("cellCounts", n);
+            if (margin == null) {
+                margin = new int[i+1];
             }
-            final int dimension = cornerToCRS.getTargetDimensions();
-            ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
-            cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
-            subExtent = base.extent.slice(cornerToCRS.inverse().transform(slicePoint, null), modifiedDimensions);
-        } catch (FactoryException e) {
-            throw new IllegalGridGeometryException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
-        } catch (TransformException e) {
-            throw new IllegalGridGeometryException(e, "slicePoint");
+            margin[i] = n;
         }
+        this.margin = margin;           // Set only on success.
         return this;
     }
 
@@ -236,13 +241,17 @@ public class GridDerivation {
      *       For dimensionality reduction, see {@link #reduce(int...)}.</li>
      * </ul>
      *
-     * @param  areaOfInterest    the desired spatiotemporal region in any CRS (transformations will be applied as needed),
-     *                           or {@code null} for not restricting the sub-grid to a sub-area.
-     * @param  resolution        the desired resolution in the same units and order than the axes of the given envelope,
-     *                           or {@code null} or an empty array if no subsampling is desired.
+     * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed),
+     *                         or {@code null} for not restricting the sub-grid to a sub-area.
+     * @param  resolution      the desired resolution in the same units and order than the axes of the given envelope,
+     *                         or {@code null} or an empty array if no subsampling is desired. The array length should
+     *                         be equal to the {@code areaOfInterest} dimension, but this is not mandatory
+     *                         (zero or missing values mean no sub-sampling, extraneous values are ignored).
      * @return {@code this} for method call chaining.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
+     * @throws IllegalStateException if {@code subgrid(Envelope, double...)}, {@link #slice(DirectPosition)} or
+     *         {@link #reduce(int...)} have already been invoked.
      *
      * @see GridExtent#subsample(int[])
      */
@@ -272,7 +281,6 @@ public class GridDerivation {
              * If no area of interest has been specified, or if the result is identical to the original extent,
              * then we will keep the reference to the original GridExtent (i.e. we share existing instances).
              */
-            subExtent = base.extent;
             dimension = subExtent.getDimension();
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
@@ -312,7 +320,8 @@ public class GridDerivation {
                         final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
                         final int accuracy = Math.max(0, Math.getExponent(indices.getSpan(i))) + 1;         // Power of 2.
                         s = Math.scalb(Math.rint(Math.scalb(s, accuracy)), -accuracy);
-                        indices.setRange(i, indices.getLower(i) / s, indices.getUpper(i) / s);
+                        indices.setRange(i, indices.getLower(i) / s,
+                                            indices.getUpper(i) / s);
                         modified = true;
                     }
                     resolution[k] = s;
@@ -321,6 +330,8 @@ public class GridDerivation {
                  * If at least one subsampling is effective, build a scale from the old grid coordinates to the new
                  * grid coordinates. If we had no rounding, the conversion would be only a scale. But because of rounding,
                  * we need a small translation for the difference between the "real" coordinate and the integer coordinate.
+                 *
+                 * TODO: need to clip to base.extent, taking in account the difference in resolution.
                  */
                 if (modified) {
                     final GridExtent unscaled = subExtent;
@@ -334,12 +345,13 @@ public class GridDerivation {
                             m.setElement(i, dimension, unscaled.getLow(i) - subExtent.getLow(i) * s);
                         }
                     }
-                    toSubsampled = MathTransforms.linear(m);
+                    toBase = MathTransforms.linear(m);
                 }
             }
         } catch (FactoryException | TransformException e) {
             throw new IllegalGridGeometryException(e, "areaOfInterest");
         }
+        modifiedDimensions = null;                  // Not needed anymore.
         return this;
     }
 
@@ -389,10 +401,105 @@ public class GridDerivation {
      * @param  enclosing  the enclosing grid extent if a subsampling is not yet applied, {@code null} otherwise.
      */
     private void setSubExtent(final GeneralEnvelope indices, final GridExtent enclosing) {
-        final GridExtent sub = new GridExtent(indices, rounding, null, enclosing, modifiedDimensions);
+        final GridExtent sub = new GridExtent(indices, rounding, margin, enclosing, modifiedDimensions);
         if (!sub.equals(subExtent)) {
             subExtent = sub;
         }
+    }
+
+    /**
+     * Requests a grid geometry for a slice at the given "real world" position.
+     * The given position can be expressed in any coordinate reference system (CRS).
+     * The position should not define a coordinate for all dimensions, otherwise the slice would degenerate
+     * to a single point. Dimensions can be left unspecified either by assigning to {@code slicePoint} a CRS
+     * without those dimensions, or by assigning the NaN value to some coordinates.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system} of base grid geometry has
+     * (<var>longitude</var>, <var>latitude</var>, <var>time</var>) axes, then a (<var>longitude</var>, <var>latitude</var>)
+     * slice at time <var>t</var> can be created with one of the following two positions:
+     * <ul>
+     *   <li>A three-dimensional position with ({@link Double#NaN}, {@link Double#NaN}, <var>t</var>) coordinates.</li>
+     *   <li>A one-dimensional position with (<var>t</var>) coordinate and the coordinate reference system set to
+     *       {@linkplain org.apache.sis.referencing.CRS#getTemporalComponent(CoordinateReferenceSystem) the temporal component}
+     *       of the grid geometry CRS.</li>
+     * </ul></div>
+     *
+     * <p>Notes:</p>
+     * <ul>
+     *   <li>This method can be invoked after {@link #subgrid(Envelope, double...)}, but not before.</li>
+     *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
+     *       before to invoke this method.</li>
+     *   <li>This method does not reduce the number of dimensions of the grid geometry.
+     *       For dimensionality reduction, see {@link #reduce(int...)}.</li>
+     * </ul>
+     *
+     * @param  slicePoint   the coordinates where to get a slice.
+     * @return {@code this} for method call chaining.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
+     * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
+     * @throws PointOutsideCoverageException if the given point is outside the grid extent.
+     * @throws IllegalStateException if {@link #reduce(int...)} has already been invoked.
+     */
+    public GridDerivation slice(final DirectPosition slicePoint) {
+        ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
+        ensureReduceNotSet();
+        MathTransform cornerToCRS = base.requireGridToCRS();
+        subGridSetter = "slice";
+        try {
+            if (toBase != null) {
+                cornerToCRS = MathTransforms.concatenate(toBase, cornerToCRS);
+            }
+            if (base.envelope != null) {
+                final CoordinateReferenceSystem sourceCRS = base.envelope.getCoordinateReferenceSystem();
+                if (sourceCRS != null) {
+                    final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
+                    if (targetCRS != null) {
+                        final CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
+                        cornerToCRS = MathTransforms.concatenate(cornerToCRS, operation.getMathTransform());
+                    }
+                }
+            }
+            final int dimension = cornerToCRS.getTargetDimensions();
+            ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
+            cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
+            subExtent = subExtent.slice(cornerToCRS.inverse().transform(slicePoint, null), modifiedDimensions);
+        } catch (FactoryException e) {
+            throw new IllegalGridGeometryException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
+        } catch (TransformException e) {
+            throw new IllegalGridGeometryException(e, "slicePoint");
+        }
+        modifiedDimensions = null;              // Not needed anymore.
+        return this;
+    }
+
+    /**
+     * Requests a grid geometry for a slice at the given relative position.
+     * The relative position is specified by a ratio between 0 and 1 where 0 maps to {@linkplain GridExtent#getLow(int) low}
+     * grid coordinates, 1 maps to {@linkplain GridExtent#getHigh(int) high grid coordinates} and 0.5 maps the median point.
+     * The slicing is applied on all dimensions except the specified dimensions to keep.
+     *
+     * @param  sliceRatio        the ration to apply on all grid dimensions except the ones to keep.
+     * @param  dimensionsToKeep  the grid dimension to keep unchanged.
+     * @return {@code this} for method call chaining.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent.
+     * @throws IndexOutOfBoundsException if a {@code dimensionsToKeep} value is out of bounds.
+     * @throws IllegalStateException if {@link #reduce(int...)} has already been invoked.
+     */
+    public GridDerivation sliceByRatio(final double sliceRatio, final int... dimensionsToKeep) {
+        ArgumentChecks.ensureBetween("sliceRatio", 0, 1, sliceRatio);
+        ArgumentChecks.ensureNonNull("dimensionsToKeep", dimensionsToKeep);
+        ensureReduceNotSet();
+        final GridExtent extent = (subExtent != null) ? subExtent : base.getExtent();
+        final GeneralDirectPosition slicePoint = new GeneralDirectPosition(extent.getDimension());
+        for (int i=0; i<slicePoint.ordinates.length; i++) {
+            slicePoint.ordinates[i] = sliceRatio * (extent.getSize(i) - 1) + extent.getLow(i);
+        }
+        for (int i=0; i<dimensionsToKeep.length; i++) {
+            slicePoint.ordinates[dimensionsToKeep[i]] = Double.NaN;
+        }
+        subExtent = extent.slice(slicePoint, null);
+        return this;
     }
 
     /**
@@ -415,9 +522,8 @@ public class GridDerivation {
      * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
      */
     public GridDerivation reduce(final int... dimensions) {
-        if (selectedDimensions != null) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetDerivedGridProperty_1, "reduce"));
-        }
+        ensureReduceNotSet();
+        subGridSetter = "reduce";
         selectedDimensions = GridExtent.verifyDimensions(dimensions, base.getDimension());
         return this;
     }
@@ -443,12 +549,11 @@ public class GridDerivation {
      */
     public GridGeometry build() {
         GridGeometry grid = base;
-        GridExtent extent = (subExtent != null) ? subExtent : base.extent;
         String cause = null;
         try {
-            if (toSubsampled != null || extent != base.extent) {
+            if (toBase != null || subExtent != base.extent) {
                 cause = "subgrid";
-                grid = new GridGeometry(grid, extent, toSubsampled);
+                grid = new GridGeometry(grid, subExtent, toBase);
             }
             if (selectedDimensions != null) {
                 cause = "dimensions";

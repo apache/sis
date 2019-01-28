@@ -151,8 +151,8 @@ public class GridChange implements Serializable {
      * </ul>
      *
      * An optional {@code margin} can be specified for increasing the size of the grid extent computed by this constructor.
-     * For example if the caller wants to apply bilinear interpolations in an image, it will needs 1 more pixel on each
-     * image border. If the caller wants to apply bi-cubic interpolations, it will needs 2 more pixels on each image border.
+     * For example if the caller wants to apply bilinear interpolations in an image, it will need 1 more pixel on each
+     * image border. If the caller wants to apply bi-cubic interpolations, it will need 2 more pixels on each image border.
      * If the {@code margin} array length is shorter than the target dimension, then zero is assumed for all missing dimensions.
      *
      * @param  source     the source grid geometry.

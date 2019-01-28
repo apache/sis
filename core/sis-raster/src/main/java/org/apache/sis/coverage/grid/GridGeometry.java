@@ -425,7 +425,7 @@ public class GridGeometry implements Serializable {
             GeneralEnvelope env;
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
-                extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+                extent = new GridExtent(env, rounding, null, null, null);
                 env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");

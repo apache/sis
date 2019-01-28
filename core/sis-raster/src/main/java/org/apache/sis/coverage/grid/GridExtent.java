@@ -303,7 +303,7 @@ public class GridExtent implements Serializable {
      *
      * @param  envelope            the envelope containing cell indices to store in a {@code GridExtent}.
      * @param  rounding            controls behavior of rounding from floating point values to integers.
-     * @param  margin              if non-null, expand the extent by that amount of cells on each envelope dimension.
+     * @param  margin              if non-null, expands the extent by that amount of cells on each envelope dimension.
      * @param  enclosing           if the new grid is a sub-grid of a larger grid, that larger grid. Otherwise {@code null}.
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
