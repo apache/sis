@@ -500,6 +500,8 @@ public class GridExtent implements Serializable {
      * Returns the number of dimensions.
      *
      * @return the number of dimensions.
+     *
+     * @see #reduce(int...)
      */
     public final int getDimension() {
         return coordinates.length >>> 1;
@@ -1011,7 +1013,7 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Returns a hash value for this grid envelope. This value need not remain
+     * Returns a hash value for this grid envelope. This value needs not to remain
      * consistent between different implementations of the same class.
      *
      * @return a hash value for this grid envelope.

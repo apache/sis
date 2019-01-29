@@ -571,12 +571,15 @@ public class GridGeometry implements Serializable {
      * but not necessarily.
      *
      * @return the number of grid dimensions.
+     *
+     * @see #reduce(int...)
+     * @see GridExtent#getDimension()
      */
-    public int getDimension() {
-        if (gridToCRS != null) {
+    public final int getDimension() {
+        if (extent != null) {
+            return extent.getDimension();       // Most reliable source since that method is final.
+        } else if (gridToCRS != null) {
             return gridToCRS.getSourceDimensions();
-        } else if (extent != null) {
-            return extent.getDimension();
         } else {
             /*
              * Last resort only since we have no guarantee that the envelope dimension is the same
@@ -592,10 +595,10 @@ public class GridGeometry implements Serializable {
      * number of {@linkplain #getDimension() grid dimensions}, but not necessarily.
      */
     private int getTargetDimension() {
-        if (gridToCRS != null) {
+        if (envelope != null) {
+            return envelope.getDimension();     // Most reliable source since that class is final.
+        } else if (gridToCRS != null) {
             return gridToCRS.getTargetDimensions();
-        } else if (envelope != null) {
-            return envelope.getDimension();
         } else {
             /*
              * Last resort only since we have no guarantee that the grid dimension is the same
@@ -1031,7 +1034,7 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns a hash value for this grid geometry. This value need not remain
+     * Returns a hash value for this grid geometry. This value needs not to remain
      * consistent between different implementations of the same class.
      */
     @Override
