@@ -895,7 +895,8 @@ public class GridExtent implements Serializable {
      * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
-     * @see GridDerivation#reduce(int...)
+     * @see #getSubspaceDimensions(int)
+     * @see GridGeometry#reduce(int...)
      */
     public GridExtent reduce(int... dimensions) {
         final int sd = getDimension();

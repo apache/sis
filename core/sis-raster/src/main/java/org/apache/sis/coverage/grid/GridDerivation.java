@@ -49,19 +49,23 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * <ol>
  *   <li>{@link #rounding(GridRoundingMode)} and/or {@link #margin(int...)} in any order</li>
  *   <li>{@link #subgrid(Envelope, double...)}</li>
- *   <li>{@link #slice(DirectPosition)}</li>
- *   <li>{@link #sliceByRatio(double, int...)}</li>
- *   <li>{@link #reduce(int...)}</li>
+ *   <li>{@link #slice(DirectPosition)} and/or {@link #sliceByRatio(double, int...)}</li>
  * </ol>
  *
  * Then the grid geometry is created by a call to {@link #build()}.
- * Alternatively, {@link #extent()} can be invoked if only the {@link GridExtent} is desired
+ * Alternatively, {@link #buildExtent()} can be invoked if only the {@link GridExtent} is desired
  * instead than the full {@link GridGeometry}.
+ *
+ * <p>All methods in this class preserve the number of dimensions. For example the {@link #slice(DirectPosition)} method sets
+ * the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <cite>slice point</cite>,
+ * but does not remove those dimensions from the grid geometry.
+ * For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
  * @see GridGeometry#derive()
+ * @see GridGeometry#reduce(int...)
  *
  * @since 1.0
  * @module
@@ -73,9 +77,8 @@ public class GridDerivation {
     protected final GridGeometry base;
 
     /**
-     * If {@link #subgrid(Envelope, double...)},  {@link #slice(DirectPosition)} or {@link #reduce(int...)} has been invoked,
-     * the method name. This is used for preventing those methods to be invoked twice or out-of-order, which is currently not
-     * supported.
+     * If {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)} has been invoked, the method name.
+     * This is used for preventing those methods to be invoked twice or out-of-order, which is currently not supported.
      */
     private String subGridSetter;
 
@@ -99,12 +102,6 @@ public class GridDerivation {
      * array is between 0 inclusive and {@code extent.getDimension()} exclusive.
      */
     private int[] modifiedDimensions;
-
-    /**
-     * The grid dimension to keep, or {@code null} if no filtering is applied.
-     * Those values are set by {@link #reduce(int...)}.
-     */
-    private int[] selectedDimensions;
 
     /**
      * If non-null, the extent will be expanded by that amount of cells on each grid dimension.
@@ -143,16 +140,6 @@ public class GridDerivation {
     }
 
     /**
-     * Verifies that {@link #reduce(int...)} has not yet been invoked.
-     * This method is invoked for enforcing the method call order defined in javadoc.
-     */
-    private void ensureReduceNotSet() {
-        if (selectedDimensions != null) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetDerivedGridProperty_1, "reduce"));
-        }
-    }
-
-    /**
      * Controls behavior of rounding from floating point values to integers.
      * This setting modifies computations performed by the following methods
      * (it has no effect on other methods in this {@code GridDerivation} class):
@@ -166,8 +153,8 @@ public class GridDerivation {
      *
      * @param  mode  the new rounding mode.
      * @return {@code this} for method call chaining.
-     * @throws IllegalStateException if {@link #slice(DirectPosition)}, {@link #subgrid(Envelope, double...)} or
-     *         {@link #reduce(int...)} have already been invoked.
+     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
+     *         has already been invoked.
      */
     public GridDerivation rounding(final GridRoundingMode mode) {
         ArgumentChecks.ensureNonNull("mode", mode);
@@ -201,8 +188,8 @@ public class GridDerivation {
      * @param  cellCounts  number of cells by which to expand the grid extent.
      * @return {@code this} for method call chaining.
      * @throws IllegalArgumentException if a value is negative.
-     * @throws IllegalStateException if {@link #slice(DirectPosition)}, {@link #subgrid(Envelope, double...)} or
-     *         {@link #reduce(int...)} have already been invoked.
+     * @throws IllegalStateException if {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
+     *         has already been invoked.
      */
     public GridDerivation margin(final int... cellCounts) {
         ArgumentChecks.ensureNonNull("cellCounts", cellCounts);
@@ -238,7 +225,7 @@ public class GridDerivation {
      *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link #reduce(int...)}.</li>
+     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
      * </ul>
      *
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed),
@@ -250,8 +237,8 @@ public class GridDerivation {
      * @return {@code this} for method call chaining.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
-     * @throws IllegalStateException if {@code subgrid(Envelope, double...)}, {@link #slice(DirectPosition)} or
-     *         {@link #reduce(int...)} have already been invoked.
+     * @throws IllegalStateException if {@code subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
+     *         has already been invoked.
      *
      * @see GridExtent#subsample(int[])
      */
@@ -431,7 +418,7 @@ public class GridDerivation {
      *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
-     *       For dimensionality reduction, see {@link #reduce(int...)}.</li>
+     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
      * </ul>
      *
      * @param  slicePoint   the coordinates where to get a slice.
@@ -439,11 +426,9 @@ public class GridDerivation {
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
-     * @throws IllegalStateException if {@link #reduce(int...)} has already been invoked.
      */
     public GridDerivation slice(final DirectPosition slicePoint) {
         ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
-        ensureReduceNotSet();
         MathTransform cornerToCRS = base.requireGridToCRS();
         subGridSetter = "slice";
         try {
@@ -484,12 +469,10 @@ public class GridDerivation {
      * @return {@code this} for method call chaining.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent.
      * @throws IndexOutOfBoundsException if a {@code dimensionsToKeep} value is out of bounds.
-     * @throws IllegalStateException if {@link #reduce(int...)} has already been invoked.
      */
     public GridDerivation sliceByRatio(final double sliceRatio, final int... dimensionsToKeep) {
         ArgumentChecks.ensureBetween("sliceRatio", 0, 1, sliceRatio);
         ArgumentChecks.ensureNonNull("dimensionsToKeep", dimensionsToKeep);
-        ensureReduceNotSet();
         final GridExtent extent = (subExtent != null) ? subExtent : base.getExtent();
         final GeneralDirectPosition slicePoint = new GeneralDirectPosition(extent.getDimension());
         for (int i=0; i<slicePoint.ordinates.length; i++) {
@@ -502,30 +485,25 @@ public class GridDerivation {
         return this;
     }
 
-    /**
-     * Requests a grid geometry that encompass only some dimensions of the grid extent.
-     * The specified dimensions will be copied into a new grid geometry.
-     * The selection is applied on {@linkplain GridGeometry#getExtent() grid extent} dimensions;
-     * they are not necessarily the same than the {@linkplain GridGeometry#getEnvelope() envelope} dimensions.
-     * The given dimensions must be in strictly ascending order without duplicated values.
-     * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
-     *
-     * <p>This method performs a <cite>dimensionality reduction</cite>.
-     * This method can not be used for changing dimension order.</p>
-     *
-     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
-     * @return {@code this} for method call chaining.
-     * @throws IndexOutOfBoundsException if an index is out of bounds.
-     *
-     * @see GridExtent#getSubspaceDimensions(int)
-     * @see GridExtent#reduce(int...)
-     * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
+    /*
+     * RATIONAL FOR NOT PROVIDING reduce(int... dimensions) METHOD HERE: that method would need to be the last method invoked,
+     * otherwise it makes more complicated to implement other methods in this class.  Forcing users to invoke 'build()' before
+     * (s)he can invoke GridGeometry.reduce(…) makes that clear and avoid the need for more flags in this GridDerivation class.
+     * Furthermore declaring the 'reduce(…)' method in GridGeometry is more consistent with 'GridExtent.reduce(…)'.
      */
-    public GridDerivation reduce(final int... dimensions) {
-        ensureReduceNotSet();
-        subGridSetter = "reduce";
-        selectedDimensions = GridExtent.verifyDimensions(dimensions, base.getDimension());
-        return this;
+
+    /**
+     * Builds a grid geometry with the configuration specified by the other methods in this {@code GridDerivation} class.
+     *
+     * @return the modified grid geometry. May be the {@linkplain #base} grid geometry if no change apply.
+     */
+    public GridGeometry build() {
+        if (toBase != null || subExtent != base.extent) try {
+            return new GridGeometry(base, subExtent, toBase);
+        } catch (TransformException e) {
+            throw new IllegalGridGeometryException(e, "envelope");
+        }
+        return base;
     }
 
     /**
@@ -534,34 +512,7 @@ public class GridDerivation {
      *
      * @return the modified grid geometry extent.
      */
-    public GridExtent extent() {
-        GridExtent extent = (subExtent != null) ? subExtent : base.getExtent();
-        if (selectedDimensions != null) {
-            extent = extent.reduce(selectedDimensions);
-        }
-        return extent;
-    }
-
-    /**
-     * Builds a grid geometry with the configuration specified by the other methods in this {@code GridDerivation} class.
-     *
-     * @return the modified grid geometry. May be the {@linkplain #base} grid geometry if no change apply.
-     */
-    public GridGeometry build() {
-        GridGeometry grid = base;
-        String cause = null;
-        try {
-            if (toBase != null || subExtent != base.extent) {
-                cause = "subgrid";
-                grid = new GridGeometry(grid, subExtent, toBase);
-            }
-            if (selectedDimensions != null) {
-                cause = "dimensions";
-                grid = new GridGeometry(grid, selectedDimensions);
-            }
-        } catch (FactoryException | TransformException e) {
-            throw new IllegalGridGeometryException(e, cause);
-        }
-        return grid;
+    public GridExtent buildExtent() {
+        return (subExtent != null) ? subExtent : base.getExtent();
     }
 }

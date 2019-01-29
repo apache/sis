@@ -505,9 +505,9 @@ public class GridGeometry implements Serializable {
      * @param  dimensions  the dimensions to select, in strictly increasing order (this may not be verified).
      * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
      *
-     * @see GridDerivation#reduce(int...)
+     * @see #reduce(int...)
      */
-    GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
+    private GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
         extent = (other.extent != null) ? other.extent.reduce(dimensions) : null;
         final int n = dimensions.length;
         if (other.gridToCRS != null) {
@@ -976,9 +976,8 @@ public class GridGeometry implements Serializable {
 
     /**
      * Returns an object that can be used for creating a new grid geometry derived from this grid geometry.
-     * Despite its name, {@code GridDerivation} does not change the state of this {@code GridGeometry} but
-     * instead creates new instances as needed. Examples of modifications include clipping to a sub-area,
-     * applying a sub-sampling, or selecting some grid dimensions.
+     * {@code GridDerivation} does not change the state of this {@code GridGeometry} but instead creates
+     * new instances as needed. Examples of modifications include clipping to a sub-area or applying a sub-sampling.
      *
      * <div class="note"><b>Example:</b>
      * for clipping this grid geometry to a sub-area, one can use:
@@ -992,11 +991,43 @@ public class GridGeometry implements Serializable {
      * </div>
      *
      * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
+     * {@code GridDerivation} preserves the number of dimensions. For example {@linkplain GridDerivation#slice slicing}
+     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
+     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #reduce(int...)}.
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */
     public GridDerivation derive() {
         return new GridDerivation(this);
+    }
+
+    /**
+     * Returns a grid geometry that encompass only some dimensions of the grid geometry.
+     * The specified dimensions will be copied into a new grid geometry.
+     * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
+     * they are not necessarily the same than the {@linkplain #getEnvelope() envelope} dimensions.
+     * The given dimensions must be in strictly ascending order without duplicated values.
+     * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
+     *
+     * <p>This method performs a <cite>dimensionality reduction</cite>.
+     * This method can not be used for changing dimension order.</p>
+     *
+     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
+     * @throws IndexOutOfBoundsException if an index is out of bounds.
+     *
+     * @see GridExtent#getSubspaceDimensions(int)
+     * @see GridExtent#reduce(int...)
+     * @see org.apache.sis.referencing.CRS#reduce(CoordinateReferenceSystem, int...)
+     */
+    public GridGeometry reduce(int... dimensions) {
+        dimensions = GridExtent.verifyDimensions(dimensions, getDimension());
+        if (dimensions != null) try {
+            return new GridGeometry(this, dimensions);
+        } catch (FactoryException e) {
+            throw new IllegalGridGeometryException(e, "dimensions");
+        }
+        return this;
     }
 
     /**

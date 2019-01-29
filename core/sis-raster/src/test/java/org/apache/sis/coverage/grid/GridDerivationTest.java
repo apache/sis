@@ -16,11 +16,11 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -32,6 +32,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
@@ -73,7 +74,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).extent());
+                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).buildExtent());
     }
 
     /**
@@ -107,7 +108,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
-        final GridExtent actual = grid.derive().subgrid(envelope).extent();
+        final GridExtent actual = grid.derive().subgrid(envelope).buildExtent();
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
@@ -199,39 +200,24 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridDerivation#reduce(int...)}.
+     * Tests deriving a grid geometry with an envelope crossing the antimeridian.
      */
     @Test
-    public void testReduce() {
+    @Ignore("TODO: not yet fixed.")
+    public void testSubGridCrossingAntiMeridian() {
         final GridGeometry grid = new GridGeometry(
-                new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
-                PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
-                        0,   0.5, 0,  -90,
-                        0.5, 0,   0, -180,
-                        0,   0,   2,    3,
-                        0,   0,   0,    1)), HardCodedCRS.GEOID_3D);
-        /*
-         * Tests on the two first dimensions.
-         */
-        GridGeometry reduced = grid.derive().reduce(0, 1).build();
-        assertNotSame(grid, reduced);
-        assertExtentEquals(new long[] {336, 20}, new long[] {401, 419}, reduced.getExtent());
-        assertSame("CRS", HardCodedCRS.WGS84, reduced.getCoordinateReferenceSystem());
-        assertArrayEquals("resolution", new double[] {0.5, 0.5}, reduced.getResolution(false), STRICT);
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                  0, 0.5,  -90,
-                  0.5, 0, -180,
-                  0,   0,    1), MathTransforms.getMatrix(reduced.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
-        /*
-         * Tests on the last dimension.
-         */
-        reduced = grid.derive().reduce(2).build();
-        assertNotSame(grid, reduced);
-        assertExtentEquals(new long[] {4}, new long[] {10}, reduced.getExtent());
-        assertSame("CRS", HardCodedCRS.GRAVITY_RELATED_HEIGHT, reduced.getCoordinateReferenceSystem());
-        assertArrayEquals("resolution", new double[] {2}, reduced.getResolution(false), STRICT);
-        assertMatrixEquals("gridToCRS", new Matrix2(
-                  2, 3,
-                  0, 1), MathTransforms.getMatrix(reduced.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+                new GridExtent(200, 180), PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                1,  0, 80,
+                0, -1, 90,
+                0,  0,  1)), HardCodedCRS.WGS84);
+
+        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
+        aoi.setRange(0, 140, -179);
+        aoi.setRange(1, -90,   90);
+
+        final GridGeometry subgrid = grid.derive().subgrid(aoi).build();
+        Envelope subEnv = subgrid.getEnvelope();
+        assertEquals(aoi, subEnv);
     }
 }
