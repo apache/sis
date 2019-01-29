@@ -74,7 +74,59 @@ public final strictfp class GridDerivationTest extends TestCase {
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,   4.997,  15.003);
         assertExtentEquals(new long[] {370,  40,  4},
-                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).buildExtent());
+                           new long[] {389, 339, 10}, grid.derive().subgrid(envelope).getIntersection());
+    }
+
+    /**
+     * Creates a grid geometry with the given extent and scale for testing purpose.
+     * An arbitrary translation of (2,3) is added to the "grid to CRS" conversion.
+     */
+    private static GridGeometry grid(int xmin, int ymin, int xmax, int ymax, int xScale, int yScale) throws TransformException {
+        GridExtent extent = new GridExtent(null, new long[] {xmin, ymin}, new long[] {xmax, ymax}, true);
+        Matrix3 gridToCRS = new Matrix3();
+        gridToCRS.m00 = xScale;
+        gridToCRS.m11 = yScale;
+        gridToCRS.m02 = 200;            // Arbitrary translation.
+        gridToCRS.m12 = 500;
+        return new GridGeometry(extent, PixelInCell.CELL_CORNER, MathTransforms.linear(gridToCRS), null);
+    }
+
+    /**
+     * Tests the construction from grid geometries having a linear "grid to CRS" conversion.
+     *
+     * @throws TransformException if an error occurred while computing the grid geometry.
+     */
+    @Test
+    public void testSubgridFromOtherGrid() throws TransformException {
+        GridGeometry   source = grid(  10,   -20,  110,  180, 100, -300);     // Envelope x: [1200 … 11300]   y: [-53800 … 6500]
+        GridGeometry   target = grid(2000, -1000, 9000, 8000,   2,   -1);     // Envelope x: [4200 … 18202]   y: [ -7501 … 1500]
+        GridDerivation change = target.derive().subgrid(source);              // Envelope x: [4200 … 11300]   y: [ -7501 … 1500]
+        GridExtent     extent = change.getIntersection();
+        GridExtentTest.assertExtentEquals(extent, 0,  2000, 5549);            // Subrange of target extent.
+        GridExtentTest.assertExtentEquals(extent, 1, -1000, 8000);
+        assertArrayEquals("subsamplings", new int[] {50, 300}, change.getSubsamplings());       // s = scaleSource / scaleTarget
+        /*
+         * If we do not ask for subsamplings, the 'gridToCRS' transforms shall be the same than the 'target' geometry.
+         * The envelope is the intersection of the envelopes of 'source' and 'target' geometries, documented above.
+         */
+        GridGeometry tg = change.build();
+        assertSame("extent",      extent, tg.getExtent());
+        assertSame("CELL_CORNER", target.getGridToCRS(PixelInCell.CELL_CORNER), tg.getGridToCRS(PixelInCell.CELL_CORNER));
+        assertSame("CELL_CENTER", target.getGridToCRS(PixelInCell.CELL_CENTER), tg.getGridToCRS(PixelInCell.CELL_CENTER));
+        GeneralEnvelope expected = new GeneralEnvelope(2);
+        expected.setRange(0,  4200, 11300);
+        expected.setRange(1, -7501,  1500);
+        assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
+        /*
+         * If we ask for subsamplings, then the envelope should be approximately the same or smaller. Note that without
+         * the clipping documented in GridExtent(GridExtent, int...) constructor, the envelope could be larger.
+         */
+        tg = change.subsample(50, 300).build();
+        assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
+        assertMatrixEquals("gridToCRS", new Matrix3(
+                100,    0, 200,
+                  0, -300, 600,
+                  0,    0,   1), MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
     }
 
     /**
@@ -108,7 +160,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70.001, +80.002);
         envelope.setRange(1,  -4.997,  15.003);
-        final GridExtent actual = grid.derive().subgrid(envelope).buildExtent();
+        final GridExtent actual = grid.derive().subgrid(envelope).getIntersection();
         assertEquals(extent.getAxisType(0), actual.getAxisType(0));
         assertExtentEquals(new long[] { 56, 69, 2},
                            new long[] {130, 73, 4}, actual);
@@ -121,7 +173,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testSubExtent")
-    public void testSubgrid() throws TransformException {
+    public void testSubgridFromEnvelope() throws TransformException {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
@@ -204,7 +256,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      */
     @Test
     @Ignore("TODO: not yet fixed.")
-    public void testSubGridCrossingAntiMeridian() {
+    public void testSubgridCrossingAntiMeridian() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(

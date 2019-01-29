@@ -16,13 +16,17 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Arrays;
+import java.util.Locale;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
@@ -33,8 +37,16 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 
 // Branch-dependent imports
 import org.opengis.coverage.PointOutsideCoverageException;
@@ -48,13 +60,14 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * <ol>
  *   <li>{@link #rounding(GridRoundingMode)} and/or {@link #margin(int...)} in any order</li>
- *   <li>{@link #subgrid(Envelope, double...)}</li>
+ *   <li>{@link #subgrid(GridGeometry)} or {@link #subgrid(Envelope, double...)}</li>
+ *   <li>{@link #subsample(int...)}</li>
  *   <li>{@link #slice(DirectPosition)} and/or {@link #sliceByRatio(double, int...)}</li>
  * </ol>
  *
  * Then the grid geometry is created by a call to {@link #build()}.
- * Alternatively, {@link #buildExtent()} can be invoked if only the {@link GridExtent} is desired
- * instead than the full {@link GridGeometry}.
+ * Alternatively, {@link #getIntersection()} can be invoked if only the {@link GridExtent} is desired
+ * instead than the full {@link GridGeometry} and no subsampling is applied.
  *
  * <p>All methods in this class preserve the number of dimensions. For example the {@link #slice(DirectPosition)} method sets
  * the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <cite>slice point</cite>,
@@ -77,18 +90,39 @@ public class GridDerivation {
     protected final GridGeometry base;
 
     /**
-     * If {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)} has been invoked, the method name.
-     * This is used for preventing those methods to be invoked twice or out-of-order, which is currently not supported.
+     * Controls behavior of rounding from floating point values to integers.
+     *
+     * @see #rounding(GridRoundingMode)
      */
-    private String subGridSetter;
+    private GridRoundingMode rounding;
 
     /**
-     * The sub-extent computed by a {@link #slice(DirectPosition)} or {@link #subgrid(Envelope, double...)} methods,
-     * or {@code base.extent} if no slice or sub-grid has been requested. This field may be {@code null} if the base
-     * grid geometry does not define any extent. A successful call to {@link GridGeometry#requireGridToCRS()} guarantees
-     * that this field is non-null.
+     * If non-null, the extent will be expanded by that amount of cells on each grid dimension.
+     *
+     * @see #margin(int...)
      */
-    private GridExtent subExtent;
+    private int[] margin;
+
+    // ──────── COMPUTED BY METHODS IN THIS CLASS ─────────────────────────────────────────────────────────────────────
+    /**
+     * The sub-extent of {@link #base} grid geometry to use for the new grid geometry. This is the intersection of
+     * {@code base.extent} with any area of interest specified to a {@link #subgrid(Envelope, double...)} method,
+     * potentially with some grid size set to 1 by a {@link #slice(DirectPosition)} method.
+     * This extent is <strong>not</strong> subsampled for a given resolution.
+     *
+     * <p>This extent is initialized to {@code base.extent} if no slice or sub-grid has been requested.
+     * This field may be {@code null} if the base grid geometry does not define any extent.
+     * A successful call to {@link GridGeometry#requireGridToCRS()} guarantees that this field is non-null.</p>
+     */
+    private GridExtent baseExtent;
+
+    /**
+     * Same as {@link #baseExtent}, but takes resolution or subsampling in account.
+     * This is {@code null} if no subsampling has been applied.
+     *
+     * @todo if a {@linkplain #margin} has been specified, then we need to perform an additional clipping.
+     */
+    private GridExtent subsampledExtent;
 
     /**
      * The conversion from the subsampled grid to the original grid, or {@code null} if no subsampling is applied.
@@ -104,16 +138,19 @@ public class GridDerivation {
     private int[] modifiedDimensions;
 
     /**
-     * If non-null, the extent will be expanded by that amount of cells on each grid dimension.
+     * An estimation of the multiplication factors when converting cell coordinates from {@code gridOfInterest} to {@link #base}
+     * grid. Those factors appear in the order of <em>base</em> grid axes. May be {@code null} if the conversion is identity.
+     * This is sometime redundant with {@link #toBase} but not always.
      *
-     * @see #margin(int...)
+     * @see #getSubsamplings()
      */
-    private int[] margin;
+    private double[] scales;
 
     /**
-     * Controls behavior of rounding from floating point values to integers.
+     * If {@link #subgrid(Envelope, double...)} or {@link #slice(DirectPosition)} has been invoked, the method name.
+     * This is used for preventing those methods to be invoked twice or out-of-order, which is currently not supported.
      */
-    private GridRoundingMode rounding;
+    private String subGridSetter;
 
     /**
      * Creates a new builder for deriving a grid geometry from the specified base.
@@ -124,9 +161,9 @@ public class GridDerivation {
      */
     protected GridDerivation(final GridGeometry base) {
         ArgumentChecks.ensureNonNull("base", base);
-        this.base = base;
-        subExtent = base.extent;                    // May be null.
-        rounding  = GridRoundingMode.NEAREST;
+        this.base  = base;
+        baseExtent = base.extent;                    // May be null.
+        rounding   = GridRoundingMode.NEAREST;
     }
 
     /**
@@ -173,7 +210,7 @@ public class GridDerivation {
      *
      * For each dimension <var>i</var> of the grid computed by above methods, the {@linkplain GridExtent#getLow(int) low} grid
      * coordinate is subtracted by {@code cellCount[i]} and the {@linkplain GridExtent#getHigh(int) high} grid coordinate is
-     * increased by {@code cellCount[i]}. The result is intersected with the extent of the {@linkplain #base} grid geometry
+     * increased by {@code cellCount[i]}. The result is intersected with the extent of the {@link #base} grid geometry
      * given to the constructor.
      *
      * <div class="note"><b>Use case:</b>
@@ -208,6 +245,117 @@ public class GridDerivation {
     }
 
     /**
+     * Adapts the base grid for the geographic area and resolution of the given grid geometry.
+     * After this method invocation, {@code GridDerivation} will hold information about conversion
+     * from the given {@code gridOfInterest} to the {@link #base} grid geometry.
+     * Those information include the {@link MathTransform}s converting cell coordinates
+     * from the {@code gridOfInterest} to cell coordinates in the {@code base} grid,
+     * together with the grid extent that results from this conversion.
+     *
+     * <div class="note"><b>Usage:</b>
+     * This method can be helpful for implementation of
+     * {@link org.apache.sis.storage.GridCoverageResource#read(GridGeometry, int...)}.
+     * Example:
+     *
+     * {@preformat java
+     *     class MyDataStorage extends GridCoverageResource {
+     *         &#64;Override
+     *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+     *             GridDerivation change = getGridGeometry().derive().subgrid(domain);
+     *             GridExtent toRead = change.buildExtent();
+     *             int[] subsampling = change.getSubsamplings());
+     *             // Do reading here.
+     *         }
+     *     }
+     * }
+     * </div>
+     *
+     * The following information are mandatory:
+     * <ul>
+     *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@code gridOfInterest}.</li>
+     *   <li>{@linkplain GridGeometry#getGridToCRS(PixelInCell) Grid to CRS} conversion in {@code gridOfInterest}.</li>
+     *   <li>{@linkplain GridGeometry#getGridToCRS(PixelInCell) Grid to CRS} conversion in {@link #base} grid.</li>
+     * </ul>
+     *
+     * The following information are optional but recommended:
+     * <ul>
+     *   <li>{@linkplain GridGeometry#getCoordinateReferenceSystem() Coordinate reference system} in {@code gridOfInterest}.</li>
+     *   <li>{@linkplain GridGeometry#getCoordinateReferenceSystem() Coordinate reference system} in {@link #base} grid.</li>
+     *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@link #base} grid.</li>
+     * </ul>
+     *
+     * An optional {@link #margin(int...) margin} can be specified for increasing the size of the grid extent computed by this method.
+     * For example if the caller wants to apply bilinear interpolations in an image, (s)he will need 1 more pixel on each image border.
+     * If the caller wants to apply bi-cubic interpolations, (s)he will need 2 more pixels on each image border.
+     *
+     * <p>Notes:</p>
+     * <ul>
+     *   <li>This method can be invoked only once.</li>
+     *   <li>This method can not be used together with {@link #subgrid(Envelope, double...)}.</li>
+     *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
+     *       before to invoke this method.</li>
+     *   <li>This method does not reduce the number of dimensions of the grid geometry.
+     *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     * </ul>
+     *
+     * @param  gridOfInterest  the area of interest and desired resolution as a grid geometry.
+     * @return {@code this} for method call chaining.
+     * @throws IncompleteGridGeometryException if a mandatory property of a grid geometry is absent.
+     * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
+     * @throws IllegalStateException if a {@link #subgrid(Envelope, double...) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
+     *         method has already been invoked.
+     *
+     * @see #getSubsamplings()
+     * @see #subsample(int...)
+     */
+    public GridDerivation subgrid(final GridGeometry gridOfInterest) {
+        ArgumentChecks.ensureNonNull("gridOfInterest", gridOfInterest);
+        ensureSubgridNotSet();
+        subGridSetter = "subgrid";
+        if (!base.equals(gridOfInterest)) {
+            final MathTransform mapCorners, mapCenters;
+            final GridExtent domain = gridOfInterest.getExtent();                  // May throw IncompleteGridGeometryException.
+            try {
+                final CoordinateOperation crsChange;
+                crsChange  = Envelopes.findOperation(gridOfInterest.envelope, base.envelope);       // Any envelope may be null.
+                mapCorners = path(gridOfInterest, crsChange, base, PixelInCell.CELL_CORNER);
+                mapCenters = path(gridOfInterest, crsChange, base, PixelInCell.CELL_CENTER);
+                clipExtent(domain.toCRS(mapCorners, mapCenters));
+            } catch (FactoryException | TransformException e) {
+                throw new IllegalGridGeometryException(e, "gridOfInterest");
+            }
+            if (baseExtent != base.extent && baseExtent.equals(gridOfInterest.extent)) {
+                baseExtent = gridOfInterest.extent;                                                 // Share common instance.
+            }
+            scales = GridGeometry.resolution(mapCenters, domain);
+        }
+        return this;
+    }
+
+    /**
+     * Returns the concatenation of all transformation steps from the given source to the given target.
+     *
+     * @param  source     the source grid geometry.
+     * @param  crsChange  the change of coordinate reference system, or {@code null} if none.
+     * @param  target     the target grid geometry.
+     * @param  anchor     whether we want the transform for cell corner or cell center.
+     */
+    private static MathTransform path(final GridGeometry source, final CoordinateOperation crsChange,
+            final GridGeometry target, final PixelInCell anchor) throws NoninvertibleTransformException
+    {
+        MathTransform step1 = source.getGridToCRS(anchor);
+        MathTransform step2 = target.getGridToCRS(anchor);
+        if (crsChange != null) {
+            step1 = MathTransforms.concatenate(step1, crsChange.getMathTransform());
+        }
+        if (step1.equals(step2)) {                                          // Optimization for a common case.
+            return MathTransforms.identity(step1.getSourceDimensions());
+        } else {
+            return MathTransforms.concatenate(step1, step2.inverse());
+        }
+    }
+
+    /**
      * Requests a grid geometry over a sub-region of the base grid geometry and optionally with subsampling.
      * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
      * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS of the base grid geometry};
@@ -221,7 +369,7 @@ public class GridDerivation {
      * <p>Notes:</p>
      * <ul>
      *   <li>This method can be invoked only once.</li>
-     *   <li>This method can not be used together with {@link #slice(DirectPosition)}.</li>
+     *   <li>This method can not be used together with {@link #subgrid(GridGeometry)}.</li>
      *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
@@ -237,8 +385,8 @@ public class GridDerivation {
      * @return {@code this} for method call chaining.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
-     * @throws IllegalStateException if {@code subgrid(Envelope, double...)} or {@link #slice(DirectPosition)}
-     *         has already been invoked.
+     * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
+     *         method has already been invoked.
      *
      * @see GridExtent#subsample(int[])
      */
@@ -268,17 +416,17 @@ public class GridDerivation {
              * If no area of interest has been specified, or if the result is identical to the original extent,
              * then we will keep the reference to the original GridExtent (i.e. we share existing instances).
              */
-            dimension = subExtent.getDimension();
+            dimension = baseExtent.getDimension();
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
                 indices = Envelopes.transform(cornerToCRS.inverse(), areaOfInterest);
-                setSubExtent(indices, subExtent);
+                clipExtent(indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
                 indices = new GeneralEnvelope(dimension);
             }
             for (int i=0; i<dimension; i++) {
-                indices.setRange(i, subExtent.getLow(i), subExtent.getHigh(i) + 1.0);
+                indices.setRange(i, baseExtent.getLow(i), baseExtent.getHigh(i) + 1.0);
             }
             /*
              * Convert the target resolutions to grid cell subsamplings and adjust the extent consequently.
@@ -318,21 +466,22 @@ public class GridDerivation {
                  * grid coordinates. If we had no rounding, the conversion would be only a scale. But because of rounding,
                  * we need a small translation for the difference between the "real" coordinate and the integer coordinate.
                  *
-                 * TODO: need to clip to base.extent, taking in account the difference in resolution.
+                 * TODO: need to clip to baseExtent, taking in account the difference in resolution.
                  */
                 if (modified) {
-                    final GridExtent unscaled = subExtent;
-                    setSubExtent(indices, null);
+                    subsampledExtent = new GridExtent(indices, rounding, null, null, modifiedDimensions);
+                    if (baseExtent.equals(subsampledExtent)) subsampledExtent = baseExtent;
                     m = Matrices.createIdentity(dimension + 1);
                     for (int k=0; k<resolution.length; k++) {
                         final double s = resolution[k];
                         if (s > 1) {                            // Also for skipping NaN values.
                             final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
                             m.setElement(i, i, s);
-                            m.setElement(i, dimension, unscaled.getLow(i) - subExtent.getLow(i) * s);
+                            m.setElement(i, dimension, baseExtent.getLow(i) - subsampledExtent.getLow(i) * s);
                         }
                     }
                     toBase = MathTransforms.linear(m);
+                    scales = resolution;                        // For information purpose only.
                 }
             }
         } catch (FactoryException | TransformException e) {
@@ -366,11 +515,12 @@ public class GridDerivation {
     }
 
     /**
-     * Returns the point of interest of current {@link #subExtent}, keeping only the remaining
+     * Returns the point of interest of current {@link #baseExtent}, keeping only the remaining
      * dimensions after {@link #dropUnusedDimensions(MathTransform, int)} execution.
+     * The position is in units of {@link #base} grid coordinates.
      */
     private double[] getPointOfInterest() {
-        final double[] pointOfInterest = subExtent.getPointOfInterest();
+        final double[] pointOfInterest = baseExtent.getPointOfInterest();
         if (modifiedDimensions == null) {
             return pointOfInterest;
         }
@@ -382,16 +532,80 @@ public class GridDerivation {
     }
 
     /**
-     * Sets {@link #subExtent} to the given envelope.
+     * Sets {@link #baseExtent} to the given envelope clipped to the previous extent.
+     * This method shall be invoked for clipping only, without any subsampling applied.
      *
-     * @param  indices    the envelope to use for setting the grid extent.
-     * @param  enclosing  the enclosing grid extent if a subsampling is not yet applied, {@code null} otherwise.
+     * @param  indices  the envelope to intersect in units of {@link #base} grid coordinates.
      */
-    private void setSubExtent(final GeneralEnvelope indices, final GridExtent enclosing) {
-        final GridExtent sub = new GridExtent(indices, rounding, margin, enclosing, modifiedDimensions);
-        if (!sub.equals(subExtent)) {
-            subExtent = sub;
+    private void clipExtent(final GeneralEnvelope indices) {
+        final GridExtent sub = new GridExtent(indices, rounding, margin, baseExtent, modifiedDimensions);
+        if (!sub.equals(baseExtent)) {
+            baseExtent = sub;
         }
+    }
+
+    /**
+     * Applies a subsampling on the grid geometry to build.
+     * The {@code subsamplings} argument is often the array returned by {@link #getSubsamplings()}, but not necessarily.
+     * The {@linkplain GridGeometry#getExtent() extent} of the {@linkplain #build() built} grid geometry will be derived
+     * from {@link #getIntersection()} as below for each dimension <var>i</var>:
+     *
+     * <ul>
+     *   <li>The {@linkplain GridExtent#getLow(int)  low}  is divided by {@code subsamplings[i]}, rounded toward zero.</li>
+     *   <li>The {@linkplain GridExtent#getSize(int) size} is divided by {@code subsamplings[i]}, rounded toward zero.</li>
+     *   <li>The {@linkplain GridExtent#getHigh(int) high} is recomputed from above low and size.</li>
+     * </ul>
+     *
+     * The {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform is scaled accordingly
+     * in order to map approximately to the same {@linkplain GridGeometry#getEnvelope() envelope}.
+     *
+     * @param  subsamplings  the subsampling to apply on each grid dimension. All values shall be greater than zero.
+     *         If the array length is shorter than the number of dimensions, missing values are assumed to be 1.
+     * @return {@code this} for method call chaining.
+     * @throws IllegalStateException if a subsampling has already been set,
+     *         for example by a call to {@link #subgrid(Envelope, double...) subgrid(…)}.
+     *
+     * @see #subgrid(GridGeometry)
+     * @see #getSubsamplings()
+     * @see GridExtent#subsample(int...)
+     */
+    public GridDerivation subsample(final int... subsamplings) {
+        ArgumentChecks.ensureNonNull("subsamplings", subsamplings);
+        if (toBase != null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, "subsamplings"));
+        }
+        final GridExtent extent = (baseExtent != null) ? baseExtent : base.getExtent();
+        Matrix affine = null;
+        scales = null;
+        if (subsamplings != null) {
+            // Validity of the subsamplings values will be verified by GridExtent.subsample(…) invoked below.
+            final int dimension = extent.getDimension();
+            for (int i = Math.min(dimension, subsamplings.length); --i >= 0;) {
+                final int s = subsamplings[i];
+                if (s != 1) {
+                    if (scales == null) {
+                        subsampledExtent = extent.subsample(subsamplings);
+                        scales = new double[dimension];
+                        Arrays.fill(scales, 1);
+                        if (!subsampledExtent.startsAtZero()) {
+                            affine = Matrices.createIdentity(dimension + 1);
+                        }
+                    }
+                    final double sd = s;
+                    scales[i] = sd;
+                    if (affine != null) {
+                        affine.setElement(i, i, sd);
+                        affine.setElement(i, dimension, extent.getLow(i) - subsampledExtent.getLow(i) * sd);
+                    }
+                }
+            }
+        }
+        if (affine != null) {
+            toBase = MathTransforms.linear(affine);
+        } else if (scales != null) {
+            toBase = MathTransforms.scale(scales);
+        }
+        return this;
     }
 
     /**
@@ -448,7 +662,14 @@ public class GridDerivation {
             final int dimension = cornerToCRS.getTargetDimensions();
             ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
             cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
-            subExtent = subExtent.slice(cornerToCRS.inverse().transform(slicePoint, null), modifiedDimensions);
+            DirectPosition gridPoint = cornerToCRS.inverse().transform(slicePoint, null);
+            if (subsampledExtent != null) {
+                subsampledExtent = subsampledExtent.slice(gridPoint, modifiedDimensions);
+            }
+            if (toBase != null) {
+                gridPoint = toBase.transform(gridPoint, gridPoint);
+            }
+            baseExtent = baseExtent.slice(gridPoint, modifiedDimensions);
         } catch (FactoryException e) {
             throw new IllegalGridGeometryException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
         } catch (TransformException e) {
@@ -473,16 +694,33 @@ public class GridDerivation {
     public GridDerivation sliceByRatio(final double sliceRatio, final int... dimensionsToKeep) {
         ArgumentChecks.ensureBetween("sliceRatio", 0, 1, sliceRatio);
         ArgumentChecks.ensureNonNull("dimensionsToKeep", dimensionsToKeep);
-        final GridExtent extent = (subExtent != null) ? subExtent : base.getExtent();
+        subGridSetter = "sliceByRatio";
+        final GridExtent extent = (baseExtent != null) ? baseExtent : base.getExtent();
         final GeneralDirectPosition slicePoint = new GeneralDirectPosition(extent.getDimension());
+        baseExtent = sliceByRatio(extent, slicePoint, sliceRatio, dimensionsToKeep);
+        if (subsampledExtent != null) {
+            subsampledExtent = sliceByRatio(subsampledExtent, slicePoint, sliceRatio, dimensionsToKeep);
+        }
+        return this;
+    }
+
+    /**
+     * Returns a slice of the given grid extent computed by a ratio between 0 and 1 inclusive.
+     * This is for {@link #sliceByRatio(double, int...)} implementation only.
+     *
+     * @param  extent      the extent to slice.
+     * @param  slicePoint  a pre-allocated direct position to be overwritten by this method.
+     */
+    private static GridExtent sliceByRatio(final GridExtent extent, final GeneralDirectPosition slicePoint,
+            final double sliceRatio, final int[] dimensionsToKeep)
+    {
         for (int i=0; i<slicePoint.ordinates.length; i++) {
             slicePoint.ordinates[i] = sliceRatio * (extent.getSize(i) - 1) + extent.getLow(i);
         }
         for (int i=0; i<dimensionsToKeep.length; i++) {
             slicePoint.ordinates[dimensionsToKeep[i]] = Double.NaN;
         }
-        subExtent = extent.slice(slicePoint, null);
-        return this;
+        return extent.slice(slicePoint, null);
     }
 
     /*
@@ -495,11 +733,35 @@ public class GridDerivation {
     /**
      * Builds a grid geometry with the configuration specified by the other methods in this {@code GridDerivation} class.
      *
-     * @return the modified grid geometry. May be the {@linkplain #base} grid geometry if no change apply.
+     * @return the modified grid geometry. May be the {@link #base} grid geometry if no change apply.
      */
     public GridGeometry build() {
-        if (toBase != null || subExtent != base.extent) try {
-            return new GridGeometry(base, subExtent, toBase);
+        /*
+         * Assuming:
+         *
+         *   • All low coordinates = 0
+         *   • h₁ the high coordinate before subsampling
+         *   • h₂ the high coordinates after subsampling
+         *   • c  a conversion factor from grid indices to "real world" coordinates
+         *   • s  a subsampling ≧ 1
+         *
+         * Then the envelope upper bounds x is:
+         *
+         *   • x = (h₁ + 1) × c
+         *   • x = (h₂ + f) × c⋅s      which implies       h₂ = h₁/s      and       f = 1/s
+         *
+         * If we modify the later equation for integer division instead than real numbers, we have:
+         *
+         *   • x = (h₂ + f) × c⋅s      where        h₂ = floor(h₁/s)      and       f = ((h₁ mod s) + 1)/s
+         *
+         * Because s ≧ 1, then f ≦ 1. But the f value actually used by GridExtent.toCRS(…) is hard-coded to 1
+         * since it assumes that all cells are whole, i.e. it does not take in account that the last cell may
+         * actually be fraction of a cell. Since 1 ≧ f, the computed envelope may be larger. This explains the
+         * need for envelope clipping performed by GridGeometry constructor.
+         */
+        final GridExtent extent = (subsampledExtent != null) ? subsampledExtent : baseExtent;
+        if (toBase != null || extent != base.extent) try {
+            return new GridGeometry(base, extent, toBase);
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "envelope");
         }
@@ -507,12 +769,147 @@ public class GridDerivation {
     }
 
     /**
-     * Returns the extent of the modified grid geometry. This method is more efficient than
-     * {@link #build()} if only the grid extent is desired instead than the full grid geometry.
+     * Returns the extent of the modified grid geometry, ignoring subsamplings or changes in resolution.
+     * This is the intersection of the {@link #base} grid geometry with the (grid or geospatial) envelope
+     * given to a {@link #subgrid(Envelope, double...) subgrid(…)} method,
+     * expanded by the {@linkplain #margin(int...) specified margin} (if any)
+     * and potentially with some {@linkplain GridExtent#getSize(int) grid sizes} set to 1
+     * if a {@link #slice(DirectPosition) slice(…)} method has been invoked.
+     * The returned extent is in units of the {@link #base} grid cells, i.e.
+     * {@linkplain #getSubsamplings() subsamplings} are ignored.
      *
-     * @return the modified grid geometry extent.
+     * @return intersection of grid geometry extents in units of {@link #base} grid cells.
      */
-    public GridExtent buildExtent() {
-        return (subExtent != null) ? subExtent : base.getExtent();
+    public GridExtent getIntersection() {
+        return (baseExtent != null) ? baseExtent : base.getExtent();
+    }
+
+    /**
+     * Returns an <em>estimation</em> of the steps for accessing cells along each axis of base grid.
+     * Given a conversion from {@code gridOfInterest} grid coordinates
+     * (<var>x</var>, <var>y</var>, <var>z</var>) to {@link #base} grid coordinates
+     * (<var>x′</var>, <var>y′</var>, <var>z′</var>) defined as below (generalize to as many dimensions as needed):
+     *
+     * <ul>
+     *   <li><var>x′</var> = s₀⋅<var>x</var></li>
+     *   <li><var>y′</var> = s₁⋅<var>y</var></li>
+     *   <li><var>z′</var> = s₂⋅<var>z</var></li>
+     * </ul>
+     *
+     * Then this method returns {|s₀|, |s₁|, |s₂|} rounded toward zero and clamped to 1
+     * (i.e. all values in the returned array are strictly positive, no zero values).
+     * It means that an iteration over {@code gridOfInterest} grid coordinates with a step Δ<var>x</var>=1
+     * corresponds approximately to an iteration in {@link #base} grid coordinates with a step of Δ<var>x′</var>=s₀,
+     * a step Δ<var>y</var>=1 corresponds approximately to a step Δ<var>y′</var>=s₁, <i>etc.</i>
+     * If the conversion changes grid axis order, then the order of elements in the returned array
+     * is the order of axes in the {@link #base} grid.
+     *
+     * @return an <em>estimation</em> of the steps for accessing cells along each axis of {@link #base} grid.
+     *
+     * @see #subgrid(GridGeometry)
+     * @see #subgrid(Envelope, double...)
+     * @see #subsample(int...)
+     */
+    public int[] getSubsamplings() {
+        final int[] subsamplings;
+        if (scales == null) {
+            subsamplings = new int[getIntersection().getDimension()];
+            Arrays.fill(subsamplings, 1);
+        } else {
+            subsamplings = new int[scales.length];
+            for (int i=0; i<subsamplings.length; i++) {
+                subsamplings[i] = Math.max(1, (int) Math.nextUp(scales[i]));    // Really want rounding toward 0.
+            }
+        }
+        return subsamplings;
+    }
+
+    /**
+     * Returns an <em>estimation</em> of the scale factor when converting sub-grid coordinates to {@link #base} grid coordinates.
+     * This is for information purpose only since this method combines potentially different scale factors for all dimensions.
+     *
+     * @return an <em>estimation</em> of the scale factor for all dimensions.
+     *
+     * @see #subgrid(GridGeometry)
+     * @see #subgrid(Envelope, double...)
+     */
+    public double getGlobalScale() {
+        if (scales != null) {
+            double sum = 0;
+            int count = 0;
+            for (final double value : scales) {
+                if (Double.isFinite(value)) {
+                    sum += value;
+                    count++;
+                }
+            }
+            if (count != 0) {
+                return sum / count;
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * Returns a tree representation of this {@code GridDerivation}.
+     * The tree representation is for debugging purpose only and may change in any future SIS version.
+     *
+     * @param  locale  the locale to use for textual labels.
+     * @return a tree representation of this {@code GridDerivation}.
+     */
+    @Debug
+    private TreeTable toTree(final Locale locale) {
+        final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
+        final TreeTable tree = new DefaultTreeTable(column);
+        final TreeTable.Node root = tree.getRoot();
+        root.setValue(column, Classes.getShortClassName(this));
+        final StringBuilder buffer = new StringBuilder(256);
+        /*
+         * GridDerivation (example)
+         *   └─Intersection
+         *       ├─Dimension 0: [ 2000 … 5475] (3476 cells)
+         *       └─Dimension 1: [-1000 … 7999] (9000 cells)
+         */
+        if (baseExtent != null) {
+            TreeTable.Node section = root.newChild();
+            section.setValue(column, "Intersection");
+            getIntersection().appendTo(buffer, Vocabulary.getResources(locale));
+            for (final CharSequence line : CharSequences.splitOnEOL(buffer)) {
+                String text = line.toString().trim();
+                if (!text.isEmpty()) {
+                    section.newChild().setValue(column, text);
+                }
+            }
+        }
+        /*
+         * GridDerivation (example)
+         *   └─Subsamplings
+         *       ├─{50, 300}
+         *       └─Global ≈ 175.0
+         */
+        if (scales != null) {
+            buffer.setLength(0);
+            buffer.append('{');
+            for (int s : getSubsamplings()) {
+                if (buffer.length() > 1) buffer.append(", ");
+                buffer.append(s);
+            }
+            TreeTable.Node section = root.newChild();
+            section.setValue(column, "Subsamplings");
+            section.newChild().setValue(column, buffer.append('}').toString()); buffer.setLength(0);
+            section.newChild().setValue(column, buffer.append("Global ≈ ").append((float) getGlobalScale()).toString());
+        }
+        return tree;
+    }
+
+    /**
+     * Returns a string representation of this {@code GridDerivation} for debugging purpose.
+     * The returned string is implementation dependent and may change in any future version.
+     *
+     * @return a string representation of this {@code GridDerivation} for debugging purpose.
+     */
+    @Override
+    public String toString() {
+        return toTree(null).toString();
     }
 }

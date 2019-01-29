@@ -943,7 +943,7 @@ public class GridExtent implements Serializable {
      * @return the subsampled extent, or {@code this} is subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridDerivation#subgrid(Envelope, double...)
+     * @see GridDerivation#subsample(int...)
      */
     public GridExtent subsample(final int... periods) {
         ArgumentChecks.ensureNonNull("periods", periods);

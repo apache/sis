@@ -38,8 +38,8 @@ import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridChange;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -372,9 +372,9 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         final DataBuffer imageBuffer;
         final SampleDimension[] selected = new SampleDimension[range.length];
         try {
-            final Buffer[]   samples = new Buffer[range.length];
-            final GridChange change  = new GridChange(domain, gridGeometry);
-            final int[] subsamplings = change.getTargetSubsamplings();
+            final Buffer[] samples = new Buffer[range.length];
+            final GridDerivation change = gridGeometry.derive().subgrid(domain);
+            final int[] subsamplings = change.getSubsamplings();
             SampleDimension.Builder builder = null;
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
@@ -399,20 +399,22 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         }
                         if (values == null) {
                             // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                            values = variable.read(change.getTargetExtent(), subsamplings).buffer().get();
+                            values = variable.read(change.getIntersection(), subsamplings).buffer().get();
                         }
                         selected[j] = def;
                         samples[j] = values;
                     }
                 }
             }
-            domain = change.getTargetGeometry(subsamplings);
+            domain = change.subsample(subsamplings).build();
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (RuntimeException e) {                  // Many exceptions thrown by RasterFactory.wrap(…).
+            final Throwable cause = e.getCause();
+            if (cause instanceof TransformException) {
+                throw new DataStoreReferencingException(cause);
+            }
             throw new DataStoreContentException(e);
         }
         if (imageBuffer == null) {
