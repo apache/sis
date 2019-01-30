@@ -229,8 +229,9 @@ final class VariableWrapper extends Variable {
             final List<CoordinateSystem> cs = ((Enhancements) variable).getCoordinateSystems();
             if (cs != null && !cs.isEmpty()) {
                 for (final Grid grid : decoder.getGrids()) {
-                    if (cs.contains(((GridWrapper) grid).netcdfCS)) {
-                        return grid;
+                    final GridWrapper g = ((GridWrapper) grid).forVariable(variable, cs);
+                    if (g != null) {
+                        return g;
                     }
                 }
             }
@@ -427,7 +428,7 @@ final class VariableWrapper extends Variable {
 
     /**
      * Returns a coordinate for this two-dimensional grid coordinate axis.
-     * This is (indirectly) a callback method for {@link Grid#getAxes()}.
+     * This is (indirectly) a callback method for {@link Grid#getAxes(Decoder)}.
      */
     @Override
     protected double coordinateForAxis(final int j, final int i) {

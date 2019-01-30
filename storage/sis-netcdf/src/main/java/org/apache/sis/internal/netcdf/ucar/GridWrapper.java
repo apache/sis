@@ -19,12 +19,14 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.io.IOException;
 import java.util.List;
 import ucar.nc2.Dimension;
+import ucar.nc2.VariableIF;
 import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 
@@ -42,24 +44,49 @@ import org.apache.sis.util.ArraysExt;
  */
 final class GridWrapper extends Grid {
     /**
-     * The decoder which is creating this grid geometry.
-     * Used for fetching the variables when first needed.
-     */
-    private final DecoderWrapper decoder;
-
-    /**
      * The netCDF coordinate system to wrap.
      */
-    final CoordinateSystem netcdfCS;
+    private final CoordinateSystem netcdfCS;
+
+    /**
+     * Dimensions of the grid in netCDF order (reverse of "natural" order).
+     * This is the same content than {@code netcdfCS.getDomain()} but potentially in a different order.
+     * Reordering is needed when the order of dimensions in a variable does not match the order of dimensions in the grid.
+     * There is no such mismatch with Apache SIS implementation of netCDF reader, but those mismatches sometime happen with
+     * the wrappers around UCAR library where the following methods may return lists with elements in different order:
+     *
+     * <ul>
+     *   <li>{@link ucar.nc2.Variable#getDimensions()}</li>
+     *   <li>{@link ucar.nc2.dataset.CoordinateSystem#getDomain()}</li>
+     * </ul>
+     */
+    private final List<Dimension> domain;
 
     /**
      * Creates a new grid geometry for the given netCDF coordinate system.
      *
      * @param  cs  the netCDF coordinate system.
      */
-    GridWrapper(final DecoderWrapper decoder, final CoordinateSystem cs) {
-        this.decoder = decoder;
+    GridWrapper(final CoordinateSystem cs, final List<Dimension> dimensions) {
         netcdfCS = cs;
+        domain = (dimensions != null) ? dimensions : cs.getDomain();
+    }
+
+    /**
+     * Returns the grid to use for the given variable. This method is needed because the order of dimensions declared
+     * in the {@link CoordinateSystem} may not be the same order than the dimensions of the given variable.
+     */
+    GridWrapper forVariable(final VariableIF variable, final List<CoordinateSystem> cs) {
+        if (cs.contains(netcdfCS)) {
+            final List<Dimension> source = variable.getDimensions();
+            if (domain.equals(source)) {
+                return this;
+            }
+            if (domain.size() == source.size() && domain.containsAll(source)) {
+                return new GridWrapper(netcdfCS, source);
+            }
+        }
+        return null;
     }
 
     /**
@@ -82,7 +109,7 @@ final class GridWrapper extends Grid {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      */
     @Override
@@ -98,15 +125,14 @@ final class GridWrapper extends Grid {
      */
     @Override
     protected long[] getShape() {
-        final List<Dimension> domain = netcdfCS.getDomain();
-        final int    dim  = domain.size();
-        final long[] size = new long[dim];
-        for (int i=0; i<dim; i++) {
+        int dim = domain.size();
+        final long[] size = new long[dim--];
+        for (int i=0; i<=dim; i++) {
             final int length = domain.get(i).getLength();
             if (length <= 0) {
                 return null;
             }
-            size[(dim-1) - i] = length;
+            size[dim - i] = length;
         }
         return size;
     }
@@ -123,14 +149,14 @@ final class GridWrapper extends Grid {
      * In particular, the relationship is not straightforward when the coordinate system contains instances
      * of {@link CoordinateAxis2D}.</p>
      *
+     * @param  decoder  the decoder of the netCDF file from which to create axes.
      * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected Axis[] createAxes() throws IOException, DataStoreException {
-        final List<Dimension> domain = netcdfCS.getDomain();
+    protected Axis[] createAxes(final Decoder decoder) throws IOException, DataStoreException {
         final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
         /*
          * In this method, 'sourceDim' and 'targetDim' are relative to "grid to CRS" conversion.
@@ -182,7 +208,8 @@ final class GridWrapper extends Grid {
                  */
             }
             axes[targetDim] = new Axis(abbreviation, axis.getPositive(),
-                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), decoder.getWrapperFor(axis));
+                    ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i),
+                    ((DecoderWrapper) decoder).getWrapperFor(axis));
         }
         /*
          * We want axes in "natural" order. But the netCDF UCAR library sometime provides axes already

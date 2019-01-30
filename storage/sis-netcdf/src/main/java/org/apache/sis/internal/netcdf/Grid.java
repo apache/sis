@@ -70,7 +70,7 @@ public abstract class Grid extends NamedElement {
      * The ordering of axes is based on the order in which dimensions are declared for variables using this grid.
      * This is not necessarily the same order than the order in which variables are listed in the netCDF file.
      *
-     * @see #getAxes()
+     * @see #getAxes(Decoder)
      */
     private Axis[] axes;
 
@@ -115,7 +115,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      *
      * @return number of CRS dimensions.
@@ -140,15 +140,16 @@ public abstract class Grid extends NamedElement {
      *
      * <p>This method returns a direct reference to the cached array; do not modify.</p>
      *
+     * @param  decoder  the decoder, given in case this method needs to create axes.
      * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final Axis[] getAxes() throws IOException, DataStoreException {
+    public final Axis[] getAxes(final Decoder decoder) throws IOException, DataStoreException {
         if (axes == null) {
-            axes = createAxes();
+            axes = createAxes(decoder);
             /*
              * The grid dimension which varies fastest should be first.  The code below will swap axes if needed in order to
              * achieve that goal, except if a previous axis was already using the same order. We avoid collision only in the
@@ -183,15 +184,16 @@ public abstract class Grid extends NamedElement {
     }
 
     /**
-     * Creates the axes to be returned by {@link #getAxes()}. This method is invoked only once when first needed.
+     * Creates the axes to be returned by {@link #getAxes(Decoder)}. This method is invoked only once when first needed.
      * Axes shall be returned in the order they will appear in the Coordinate Reference System.
      *
+     * @param  decoder  the decoder of the netCDF file from which to create axes.
      * @return the CRS axes, in "natural" order (reverse of CRS order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    protected abstract Axis[] createAxes() throws IOException, DataStoreException;
+    protected abstract Axis[] createAxes(Decoder decoder) throws IOException, DataStoreException;
 
     /**
      * Returns the coordinate reference system, or {@code null} if none.
@@ -206,7 +208,7 @@ public abstract class Grid extends NamedElement {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
-            for (final Axis axis : getAxes()) {
+            for (final Axis axis : getAxes(decoder)) {
                 CRSBuilder.dispatch(builders, axis);
             }
             final SingleCRS[] components = new SingleCRS[builders.size()];
@@ -229,8 +231,7 @@ public abstract class Grid extends NamedElement {
      * Builds the grid extent if the shape is available. The shape may not be available
      * if a dimension has unlimited length. The dimension names are informative only.
      *
-     * @param  axes  value of {@link #getAxes()}. Should be the same as {@link #axes}.
-     *               Order does not matter for this method.
+     * @param  axes  value of {@link #getAxes(Decoder)}. Element order does not matter for this method.
      */
     @SuppressWarnings("fallthrough")
     private GridExtent getExtent(final Axis[] axes) {
@@ -254,9 +255,10 @@ public abstract class Grid extends NamedElement {
                 } else {
                     continue;
                 }
-                final int dim = axis.sourceDimensions[0];
-                if (dim >= 0 && dim < names.length) {
-                    names[names.length - 1 - dim] = name;
+                int dim = axis.sourceDimensions[0];
+                if (dim >= 0) {
+                    dim = names.length - 1 - dim;               // Convert netCDF order to "natural" order.
+                    if (dim >= 0) names[dim] = name;
                 }
             }
         }
@@ -274,8 +276,8 @@ public abstract class Grid extends NamedElement {
      */
     public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
-            isGeometryDetermined = true;        // Set now for avoiding new attempts if creation fail.
-            final Axis[] axes = getAxes();      // In CRS order (reverse of netCDF order).
+            isGeometryDetermined = true;                    // Set now for avoiding new attempts if creation fail.
+            final Axis[] axes = getAxes(decoder);           // In CRS order (reverse of netCDF order).
             /*
              * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.

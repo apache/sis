@@ -71,7 +71,7 @@ public strictfp class GridTest extends TestCase {
     }
 
     /**
-     * Tests {@link Grid#getAxes()} on a two-dimensional dataset.
+     * Tests {@link Grid#getAxes(Decoder)} on a two-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -79,7 +79,7 @@ public strictfp class GridTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes2D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGrids())).getAxes();
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGrids())).getAxes(decoder());
         assertEquals(2, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
@@ -95,7 +95,7 @@ public strictfp class GridTest extends TestCase {
     }
 
     /**
-     * Tests {@link Grid#getAxes()} on a four-dimensional dataset.
+     * Tests {@link Grid#getAxes(Decoder)} on a four-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -103,7 +103,7 @@ public strictfp class GridTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes4D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids())).getAxes();
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids())).getAxes(decoder());
         assertEquals(4, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];

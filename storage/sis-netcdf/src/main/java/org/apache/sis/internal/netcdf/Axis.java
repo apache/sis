@@ -61,7 +61,7 @@ import ucar.nc2.constants.CF;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see Grid#getAxes()
+ * @see Grid#getAxes(Decoder)
  *
  * @since 0.3
  * @module
@@ -138,7 +138,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
 
     /**
      * Constructs a new axis associated to an arbitrary number of grid dimension. The given arrays are stored
-     * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes()}.
+     * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes(Decoder)}.
      *
      * @param  abbreviation      axis abbreviation, also identifying its type. This is a controlled vocabulary.
      * @param  direction         direction of positive values ("up" or "down"), or {@code null} if unknown.
@@ -237,7 +237,7 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
 
     /**
      * Swaps the two first source dimensions if needed for making the fastest varying dimension first.
-     * This is a helper method for {@link Grid#getAxes()} invoked after all axes of a grid have been created.
+     * This is a helper method for {@link Grid#getAxes(Decoder)} invoked after all axes of a grid have been created.
      * This method needs to know other axes in order to avoid collision.
      *
      * @param  axes   previously created axes.

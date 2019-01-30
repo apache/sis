@@ -816,7 +816,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * Returns a coordinate for this two-dimensional grid coordinate axis.
-     * This is (indirectly) a callback method for {@link Grid#getAxes()}.
+     * This is (indirectly) a callback method for {@link Grid#getAxes(Decoder)}.
      *
      * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */

@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -156,7 +157,7 @@ final class GridInfo extends Grid {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      */
     @Override
@@ -181,8 +182,8 @@ final class GridInfo extends Grid {
 
     /**
      * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
-     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridWrapper#getAxes()} for a closer look
-     * on the relationship between this algorithm and the UCAR library.
+     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridWrapper#getAxes(Decoder)} for a
+     * closer look on the relationship between this algorithm and the UCAR library.
      *
      * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
@@ -191,13 +192,14 @@ final class GridInfo extends Grid {
      * In particular, the relationship is not straightforward when the coordinate system contains
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
+     * @param  decoder  the decoder of the netCDF file from which to create axes.
      * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected Axis[] createAxes() throws IOException, DataStoreException {
+    protected Axis[] createAxes(final Decoder decoder) throws IOException, DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the reverse order of range indices, but not necessarily. The intent is to reduce the

@@ -708,8 +708,8 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns a coordinate for this two-dimensional grid coordinate axis. This is (indirectly) a callback method
-     * for {@link Grid#getAxes()}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
-     * they get reordered by the {@link Grid#getAxes()} method. In the netCDF UCAR API, this method maps directly
+     * for {@link Grid#getAxes(Decoder)}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
+     * they get reordered by the {@link Grid#getAxes(Decoder)} method. In the netCDF UCAR API, this method maps directly
      * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
      * @param  j     the fastest varying (right-most) index.

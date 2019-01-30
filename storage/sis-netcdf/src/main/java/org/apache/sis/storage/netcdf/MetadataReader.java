@@ -713,7 +713,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
-        final Axis[] axes = cs.getAxes();
+        final Axis[] axes = cs.getAxes(decoder);
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*
