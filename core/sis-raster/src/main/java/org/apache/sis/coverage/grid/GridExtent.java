@@ -969,6 +969,24 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Returns a slice of this given grid extent computed by a ratio between 0 and 1 inclusive.
+     * This is a helper method for {@link GridDerivation#sliceByRatio(double, int...)} implementation.
+     *
+     * @param  slicePoint        a pre-allocated direct position to be overwritten by this method.
+     * @param  sliceRatio        the ratio to apply on all grid dimensions except the ones to keep.
+     * @param  dimensionsToKeep  the grid dimension to keep unchanged.
+     */
+    final GridExtent sliceByRatio(final DirectPosition slicePoint, final double sliceRatio, final int[] dimensionsToKeep) {
+        for (int i=slicePoint.getDimension(); --i >= 0;) {
+            slicePoint.setOrdinate(i, sliceRatio * (getSize(i) - 1) + getLow(i));
+        }
+        for (int i=0; i<dimensionsToKeep.length; i++) {
+            slicePoint.setOrdinate(dimensionsToKeep[i], Double.NaN);
+        }
+        return slice(slicePoint, null);
+    }
+
+    /**
      * Creates a new grid extent which represent a slice of this grid at the given point.
      * The given point may have less dimensions than this grid extent, in which case the
      * dimensions must be specified in the {@code modifiedDimensions} array. Coordinates

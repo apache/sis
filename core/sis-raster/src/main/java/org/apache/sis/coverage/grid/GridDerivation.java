@@ -685,7 +685,7 @@ public class GridDerivation {
      * grid coordinates, 1 maps to {@linkplain GridExtent#getHigh(int) high grid coordinates} and 0.5 maps the median point.
      * The slicing is applied on all dimensions except the specified dimensions to keep.
      *
-     * @param  sliceRatio        the ration to apply on all grid dimensions except the ones to keep.
+     * @param  sliceRatio        the ratio to apply on all grid dimensions except the ones to keep.
      * @param  dimensionsToKeep  the grid dimension to keep unchanged.
      * @return {@code this} for method call chaining.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent.
@@ -697,30 +697,11 @@ public class GridDerivation {
         subGridSetter = "sliceByRatio";
         final GridExtent extent = (baseExtent != null) ? baseExtent : base.getExtent();
         final GeneralDirectPosition slicePoint = new GeneralDirectPosition(extent.getDimension());
-        baseExtent = sliceByRatio(extent, slicePoint, sliceRatio, dimensionsToKeep);
+        baseExtent = extent.sliceByRatio(slicePoint, sliceRatio, dimensionsToKeep);
         if (subsampledExtent != null) {
-            subsampledExtent = sliceByRatio(subsampledExtent, slicePoint, sliceRatio, dimensionsToKeep);
+            subsampledExtent = subsampledExtent.sliceByRatio(slicePoint, sliceRatio, dimensionsToKeep);
         }
         return this;
-    }
-
-    /**
-     * Returns a slice of the given grid extent computed by a ratio between 0 and 1 inclusive.
-     * This is for {@link #sliceByRatio(double, int...)} implementation only.
-     *
-     * @param  extent      the extent to slice.
-     * @param  slicePoint  a pre-allocated direct position to be overwritten by this method.
-     */
-    private static GridExtent sliceByRatio(final GridExtent extent, final GeneralDirectPosition slicePoint,
-            final double sliceRatio, final int[] dimensionsToKeep)
-    {
-        for (int i=0; i<slicePoint.ordinates.length; i++) {
-            slicePoint.ordinates[i] = sliceRatio * (extent.getSize(i) - 1) + extent.getLow(i);
-        }
-        for (int i=0; i<dimensionsToKeep.length; i++) {
-            slicePoint.ordinates[dimensionsToKeep[i]] = Double.NaN;
-        }
-        return extent.slice(slicePoint, null);
     }
 
     /*
