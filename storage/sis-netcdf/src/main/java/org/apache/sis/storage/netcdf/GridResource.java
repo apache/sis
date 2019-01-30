@@ -46,6 +46,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -281,32 +282,26 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (!Double.isNaN(scale))  tr.setScale (scale);
             if (!Double.isNaN(offset)) tr.setOffset(offset);
             final MathTransform1D mt = tr.getTransform();
-            if (!mt.isIdentity()) {
+            if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
-                 * if the type of the range is equals to the type of the scale, and the type of the
+                 * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
+                 * This is identified in Apache SIS by the range given as a MeasurementRange.
                  */
-                final int dataType  = data.getDataType().number;
-                final int rangeType = Numbers.getEnumConstant(range.getElementType());
-                if (rangeType >= dataType &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(data.getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(data.getAttributeType(CDM.ADD_OFFSET))))
-                {
-                    final boolean isMinIncluded = range.isMinIncluded();
-                    final boolean isMaxIncluded = range.isMaxIncluded();
-                    double minimum = (range.getMinDouble() - offset) / scale;
-                    double maximum = (range.getMaxDouble() - offset) / scale;
-                    if (maximum > minimum) {
-                        final double swap = maximum;
-                        maximum = minimum;
-                        minimum = swap;
-                    }
-                    if (dataType < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
-                        range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
-                    } else {
-                        range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
-                    }
+                final boolean isMinIncluded = range.isMinIncluded();
+                final boolean isMaxIncluded = range.isMaxIncluded();
+                double minimum = (range.getMinDouble() - offset) / scale;
+                double maximum = (range.getMaxDouble() - offset) / scale;
+                if (maximum < minimum) {
+                    final double swap = maximum;
+                    maximum = minimum;
+                    minimum = swap;
+                }
+                if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                    range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
+                } else {
+                    range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
                 }
             }
             String name = data.getDescription();

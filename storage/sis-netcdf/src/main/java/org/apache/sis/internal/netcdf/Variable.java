@@ -31,6 +31,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -469,6 +470,12 @@ public abstract class Variable extends NamedElement {
      *   <li>{@code "valid_max"}    — idem.</li>
      * </ol>
      *
+     * Whether the returned range is a range of packed values or a range of real values is ambiguous.
+     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
+     * If both type of ranges are available, this method should return the range of packed value.
+     * Otherwise if this method return the range of real values, then that range shall be an instance
+     * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
+     *
      * @return the range of valid values, or {@code null} if unknown.
      */
     public NumberRange<?> getValidValues() {
@@ -497,9 +504,24 @@ public abstract class Variable extends NamedElement {
                 }
             }
             if (minimum != null && maximum != null) {
-                @SuppressWarnings({"unchecked", "rawtypes"})
-                final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
-                return range;
+                /*
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * if the type of the range is equal to the type of the scale, and the type of the
+                 * data is not wider, then assume that the minimum and maximum are real values.
+                 */
+                final int rangeType = Numbers.getEnumConstant(type);
+                if (rangeType >= getDataType().number &&
+                    rangeType >= Math.max(Numbers.getEnumConstant(getAttributeType(CDM.SCALE_FACTOR)),
+                                          Numbers.getEnumConstant(getAttributeType(CDM.ADD_OFFSET))))
+                {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, getUnit());
+                    return range;
+                } else {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
+                    return range;
+                }
             }
         }
         /*

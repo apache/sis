@@ -46,6 +46,7 @@ import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
@@ -339,18 +340,22 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the minimum and maximum values as determined by the UCAR library.
-     * If that library has not seen valid range, then fallbacks on Apache SIS.
+     * Returns the minimum and maximum values as determined by Apache SIS, using the UCAR library as a fallback.
+     * This method gives precedence to the range computed by Apache SIS instead than the range provided by UCAR
+     * because we need the range of packed values instead than the range of converted values. Only if Apache SIS
+     * can not determine that range, we use the UCAR library and returns the value in a {@link MeasurementRange}
+     * instance of signaling the caller that this is converted values.
      */
     @Override
     public NumberRange<?> getValidValues() {
-        if (variable instanceof EnhanceScaleMissing) {
+        NumberRange<?> range = super.getValidValues();
+        if (range == null && variable instanceof EnhanceScaleMissing) {
             final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
             if (ev.hasInvalidData()) {
-                return NumberRange.create(ev.getValidMin(), true, ev.getValidMax(), true);
+                range = MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
             }
         }
-        return super.getValidValues();
+        return range;
 
     }
 
