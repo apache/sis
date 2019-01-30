@@ -282,7 +282,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid[] getGridGeometries() throws IOException, DataStoreException;
+    public abstract Grid[] getGrids() throws IOException, DataStoreException;
 
     /**
      * Returns the role of the given variable. In particular, this method shall return

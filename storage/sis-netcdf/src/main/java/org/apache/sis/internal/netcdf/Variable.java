@@ -349,7 +349,7 @@ public abstract class Variable extends NamedElement {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid getGridGeometry(Decoder decoder) throws IOException, DataStoreException;
+    public abstract Grid getGrid(Decoder decoder) throws IOException, DataStoreException;
 
     /**
      * Returns the names of the dimensions of this variable, in the order they are declared in the netCDF file.

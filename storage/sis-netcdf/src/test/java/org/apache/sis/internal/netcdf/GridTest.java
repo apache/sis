@@ -61,11 +61,11 @@ public strictfp class GridTest extends TestCase {
      */
     @Test
     public void testDimensions() throws IOException, DataStoreException {
-        Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries()));
+        Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGrids()));
         assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 2, geometry.getTargetDimensions());
 
-        geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridGeometries()));
+        geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids()));
         assertEquals("getSourceDimensions()", 4, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 4, geometry.getTargetDimensions());
     }
@@ -79,7 +79,7 @@ public strictfp class GridTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes2D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries())).getAxes();
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGrids())).getAxes();
         assertEquals(2, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];
@@ -103,7 +103,7 @@ public strictfp class GridTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes4D() throws IOException, DataStoreException {
-        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridGeometries())).getAxes();
+        final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGrids())).getAxes();
         assertEquals(4, axes.length);
         final Axis x = axes[0];
         final Axis y = axes[1];

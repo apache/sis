@@ -659,10 +659,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * Add spatial representation type only if it was not explicitly given in the metadata.
-         * The call to getGridGeometries() may be relatively costly, so we don't want to invoke
-         * it without necessity.
+         * The call to getGrids() may be relatively costly, so we don't want to invoke it without necessity.
          */
-        if (!hasDataType && decoder.getGridGeometries().length != 0) {
+        if (!hasDataType && decoder.getGrids().length != 0) {
             addSpatialRepresentation(SpatialRepresentationType.GRID);
         }
         /*
@@ -1027,7 +1026,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Metadata read() throws IOException, DataStoreException {
-        for (final Grid cs : decoder.getGridGeometries()) {
+        for (final Grid cs : decoder.getGrids()) {
             final CoordinateReferenceSystem crs = cs.getCoordinateReferenceSystem(decoder);
             addReferenceSystem(crs);
             if (verticalCRS == null) {
@@ -1048,7 +1047,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
-        for (final Grid cs : decoder.getGridGeometries()) {
+        for (final Grid cs : decoder.getGrids()) {
             if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
                 cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {

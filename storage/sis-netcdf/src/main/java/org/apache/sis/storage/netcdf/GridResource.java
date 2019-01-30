@@ -128,7 +128,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     private final Path location;
 
     /**
-     * Creates a new resource.
+     * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
      * @param  name     the name for the resource.
@@ -160,7 +160,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (decoder.roleOf(variable) != VariableRole.COVERAGE) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
-            final Grid grid = variable.getGridGeometry(decoder);
+            final Grid grid = variable.getGrid(decoder);
             if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
@@ -192,7 +192,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         final String cn = candidate.getStandardName();
                         if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
                             cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
-                            candidate.getGridGeometry(decoder) == grid)
+                            candidate.getGrid(decoder) == grid)
                         {
                             /*
                              * Found another variable with the same name except for the keyword. Verify that the

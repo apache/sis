@@ -147,12 +147,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * The grid geometry associated to this variable,
-     * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
+     * computed by {@link ChannelDecoder#getGrids()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
      *
-     * @see #getGridGeometry(Decoder)
+     * @see #getGrid(Decoder)
      */
-    GridInfo gridGeometry;
+    GridInfo grid;
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
@@ -466,17 +466,17 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
      * The grid geometries are opportunistically cached in {@code VariableInfo} instances after they have
-     * been computed by {@link ChannelDecoder#getGridGeometries()}.
+     * been computed by {@link ChannelDecoder#getGrids()}.
      * The same grid geometry may be shared by many variables.
      *
-     * @see ChannelDecoder#getGridGeometries()
+     * @see ChannelDecoder#getGrids()
      */
     @Override
-    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
-        if (gridGeometry == null) {
-            decoder.getGridGeometries();            // Force calculation of grid geometries if not already done.
+    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+        if (grid == null) {
+            decoder.getGrids();            // Force calculation of grid geometries if not already done.
         }
-        return gridGeometry;
+        return grid;
     }
 
     /**

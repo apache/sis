@@ -23,13 +23,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArraysExt;
 import ucar.nc2.constants.CF;
 
 
@@ -256,7 +256,7 @@ final class GridInfo extends Grid {
 
     /**
      * Returns a hash code for this grid. A map of {@code GridInfo} is used by
-     * {@link ChannelDecoder#getGridGeometries()} for sharing existing instances.
+     * {@link ChannelDecoder#getGrids()} for sharing existing instances.
      */
     @Override
     public int hashCode() {

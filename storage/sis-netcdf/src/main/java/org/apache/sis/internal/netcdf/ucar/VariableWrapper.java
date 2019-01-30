@@ -218,17 +218,17 @@ final class VariableWrapper extends Variable {
 
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
-     * This method searches for a grid previously computed by {@link DecoderWrapper#getGridGeometries()}.
+     * This method searches for a grid previously computed by {@link DecoderWrapper#getGrids()}.
      * The same grid geometry may be shared by many variables.
      *
-     * @see DecoderWrapper#getGridGeometries()
+     * @see DecoderWrapper#getGrids()
      */
     @Override
-    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
         if (variable instanceof Enhancements) {
             final List<CoordinateSystem> cs = ((Enhancements) variable).getCoordinateSystems();
             if (cs != null && !cs.isEmpty()) {
-                for (final Grid grid : decoder.getGridGeometries()) {
+                for (final Grid grid : decoder.getGrids()) {
                     if (cs.contains(((GridWrapper) grid).netcdfCS)) {
                         return grid;
                     }

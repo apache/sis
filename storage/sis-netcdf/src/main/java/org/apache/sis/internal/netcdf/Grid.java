@@ -49,7 +49,7 @@ import org.apache.sis.util.NullArgumentException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see Decoder#getGridGeometries()
+ * @see Decoder#getGrids()
  *
  * @since 0.3
  * @module
@@ -281,7 +281,7 @@ public abstract class Grid extends NamedElement {
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
              * The order of dimensions in the transform is the reverse of the netCDF axis order.
              */
-            int lastSrcDim = getSourceDimensions();                         // Will be decremented later, then keep final.
+            int lastSrcDim = getSourceDimensions();                         // Will be decremented later, then kept final.
             int lastTgtDim = getTargetDimensions();
             final int[] deferred = new int[axes.length];                    // Indices of axes that have been deferred.
             final List<MathTransform> nonLinears = new ArrayList<>(axes.length);

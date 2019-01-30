@@ -199,7 +199,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * The grid geometries, created when first needed.
      *
-     * @see #getGridGeometries()
+     * @see #getGrids()
      */
     private transient Grid[] gridGeometries;
 
@@ -889,7 +889,7 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Grid[] getGridGeometries() {
+    public Grid[] getGrids() {
         if (gridGeometries == null) {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are
@@ -960,13 +960,13 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
                  * are better to sort them.
                  */
-                GridInfo gridGeometry = new GridInfo(variable.dimensions,
+                GridInfo grid = new GridInfo(variable.dimensions,
                         axes.toArray(new VariableInfo[axes.size()]), mixedFlag == 3);
-                GridInfo existing = shared.putIfAbsent(gridGeometry, gridGeometry);
+                GridInfo existing = shared.putIfAbsent(grid, grid);
                 if (existing != null) {
-                    gridGeometry = existing;
+                    grid = existing;
                 }
-                variable.gridGeometry = gridGeometry;
+                variable.grid = grid;
             }
             gridGeometries = shared.values().toArray(new Grid[shared.size()]);
         }

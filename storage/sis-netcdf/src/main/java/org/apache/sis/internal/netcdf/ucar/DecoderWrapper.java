@@ -92,7 +92,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The grid geometries, computed when first needed.
      *
-     * @see #getGridGeometries()
+     * @see #getGrids()
      */
     private transient Grid[] geometries;
 
@@ -433,7 +433,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
-    public Grid[] getGridGeometries() throws IOException {
+    public Grid[] getGrids() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = null;
             if (file instanceof NetcdfDataset) {
