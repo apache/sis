@@ -81,8 +81,8 @@ public strictfp class GridTest extends TestCase {
     public void testAxes2D() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridGeometries())).getAxes();
         assertEquals(2, axes.length);
-        final Axis x = axes[1];
-        final Axis y = axes[0];
+        final Axis x = axes[0];
+        final Axis y = axes[1];
 
         assertEquals('λ', x.abbreviation);
         assertEquals('φ', y.abbreviation);
@@ -105,10 +105,10 @@ public strictfp class GridTest extends TestCase {
     public void testAxes4D() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridGeometries())).getAxes();
         assertEquals(4, axes.length);
-        final Axis x = axes[3];
-        final Axis y = axes[2];
-        final Axis z = axes[1];
-        final Axis t = axes[0];
+        final Axis x = axes[0];
+        final Axis y = axes[1];
+        final Axis z = axes[2];
+        final Axis t = axes[3];
 
         assertEquals('x', x.abbreviation);
         assertEquals('y', y.abbreviation);

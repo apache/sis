@@ -135,11 +135,12 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
      * value returned by {@link #getTargetDimensions()}, but the caller should be robust to inconsistencies.
-     * The axis order is as declared in the netCDF file (reverse of "natural" order).
+     * The axis order is CRS order (reverse of netCDF order) for consistency with the common practice in the
+     * {@code "coordinates"} attribute.
      *
      * <p>This method returns a direct reference to the cached array; do not modify.</p>
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -183,8 +184,9 @@ public abstract class Grid extends NamedElement {
 
     /**
      * Creates the axes to be returned by {@link #getAxes()}. This method is invoked only once when first needed.
+     * Axes shall be returned in the order they will appear in the Coordinate Reference System.
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @return the CRS axes, in "natural" order (reverse of CRS order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -204,9 +206,8 @@ public abstract class Grid extends NamedElement {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
-            final Axis[] axes = getAxes();
-            for (int i=axes.length; --i >= 0;) {                // NetCDF order is reverse of "natural" order.
-                CRSBuilder.dispatch(builders, axes[i]);
+            for (final Axis axis : getAxes()) {
+                CRSBuilder.dispatch(builders, axis);
             }
             final SingleCRS[] components = new SingleCRS[builders.size()];
             for (int i=0; i < components.length; i++) {
@@ -229,6 +230,7 @@ public abstract class Grid extends NamedElement {
      * if a dimension has unlimited length. The dimension names are informative only.
      *
      * @param  axes  value of {@link #getAxes()}. Should be the same as {@link #axes}.
+     *               Order does not matter for this method.
      */
     @SuppressWarnings("fallthrough")
     private GridExtent getExtent(final Axis[] axes) {
@@ -273,7 +275,7 @@ public abstract class Grid extends NamedElement {
     public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
             isGeometryDetermined = true;        // Set now for avoiding new attempts if creation fail.
-            final Axis[] axes = getAxes();      // In netCDF order (reverse of "natural" order).
+            final Axis[] axes = getAxes();      // In CRS order (reverse of netCDF order).
             /*
              * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
@@ -285,10 +287,9 @@ public abstract class Grid extends NamedElement {
             final List<MathTransform> nonLinears = new ArrayList<>(axes.length);
             final Matrix affine = Matrices.createZero(lastTgtDim + 1, lastSrcDim + 1);
             affine.setElement(lastTgtDim--, lastSrcDim--, 1);
-            for (int i=axes.length; --i >= 0;) {
-                final int tgtDim = lastTgtDim - i;                          // Convert from netCDF to "natural" order.
-                if (!axes[i].trySetTransform(affine, lastSrcDim, tgtDim, nonLinears)) {
-                    deferred[nonLinears.size() - 1] = i;
+            for (int tgtDim=0; tgtDim < axes.length; tgtDim++) {
+                if (!axes[tgtDim].trySetTransform(affine, lastSrcDim, tgtDim, nonLinears)) {
+                    deferred[nonLinears.size() - 1] = tgtDim;
                 }
             }
             /*
@@ -299,8 +300,8 @@ public abstract class Grid extends NamedElement {
             final int[] sourceDimensions = new int[nonLinears.size()];
             Arrays.fill(sourceDimensions, -1);
             for (int i=0; i<sourceDimensions.length; i++) {
-                final int d = deferred[i];
-                final Axis axis = axes[d];
+                final int tgtDim = deferred[i];
+                final Axis axis = axes[tgtDim];
 findFree:       for (int srcDim : axis.sourceDimensions) {
                     srcDim = lastSrcDim - srcDim;
                     for (int j=affine.getNumRow(); --j>=0;) {
@@ -309,7 +310,6 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                         }
                     }
                     sourceDimensions[i] = srcDim;
-                    final int tgtDim = lastTgtDim - d;
                     affine.setElement(tgtDim, srcDim, 1);
                     break;
                 }

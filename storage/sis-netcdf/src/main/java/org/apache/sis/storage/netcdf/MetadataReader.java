@@ -715,9 +715,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      */
     private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
         final Axis[] axes = cs.getAxes();
-        for (int i=axes.length; i>0;) {
-            final int dim = axes.length - i;
-            final Axis axis = axes[--i];
+        for (int i=0; i<axes.length; i++) {
+            final Axis axis = axes[i];
             /*
              * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
@@ -725,7 +724,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
              * oriented toward the axis direction.
              */
             if (axis.getDimension() >= 1) {
-                setAxisSize(dim, axis.getSize());
+                setAxisSize(i, axis.getSize());
             }
             final AttributeNames.Dimension attributeNames;
             switch (axis.abbreviation) {
@@ -736,7 +735,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 default : continue;
             }
             final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
-            setAxisName(dim, name);
+            setAxisName(i, name);
             final String res = stringValue(attributeNames.RESOLUTION);
             if (res != null) try {
                 /*
@@ -757,7 +756,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                         warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
                     }
                 }
-                setAxisResolution(dim, value, units);
+                setAxisResolution(i, value, units);
             } catch (NumberFormatException e) {
                 warning(e);
             }

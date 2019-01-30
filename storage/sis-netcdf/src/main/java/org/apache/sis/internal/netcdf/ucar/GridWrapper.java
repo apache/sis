@@ -123,7 +123,7 @@ final class GridWrapper extends Grid {
      * In particular, the relationship is not straightforward when the coordinate system contains instances
      * of {@link CoordinateAxis2D}.</p>
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -184,6 +184,22 @@ final class GridWrapper extends Grid {
             axes[targetDim] = new Axis(abbreviation, axis.getPositive(),
                     ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), decoder.getWrapperFor(axis));
         }
+        /*
+         * We want axes in "natural" order. But the netCDF UCAR library sometime provides axes already
+         * in that order and sometime in reverse order (netCDF order). I'm not aware of a reliable way
+         * to determine whether axis order provided by UCAR library needs to be reverted since I don't
+         * know what determines that order (the file format? the presence of "coordinates" attribute?).
+         * For now we compare axis order with dimension order, and if the axis contains all dimensions
+         * in the same order we presume that this is the "netCDF" order (as opposed to a "coordinates"
+         * attribute value order).
+         */
+        for (int i = Math.min(domain.size(), range.size()); --i >= 0;) {
+            final List<Dimension> dimensions = range.get(i).getDimensions();
+            if (dimensions.size() != 1 || !dimensions.get(0).equals(domain.get(i))) {
+                return axes;
+            }
+        }
+        ArraysExt.reverse(axes);
         return axes;
     }
 }

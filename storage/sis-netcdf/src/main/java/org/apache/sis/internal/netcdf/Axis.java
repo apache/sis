@@ -410,15 +410,15 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
 
     /**
      * Compares this axis with the given axis for ordering based on the dimensions declared in a variable.
-     * This is used for sorting axes in the same order than the dimension order on the variable using axes.
-     * This order is not necessarily the same than the order in which variables are listed in the netCDF file.
+     * This is used for sorting axes in the reverse order than the dimension order on the variable using axes.
+     * This order is not necessarily related to the order in which axis variables are listed in the netCDF file.
      *
      * @param  other  the other axis to compare to this axis.
      * @return -1 if this axis should be before {@code other}, +1 if it should be after.
      */
     @Override
     public int compareTo(final Axis other) {
-        return sourceDimensions[0] - other.sourceDimensions[0];
+        return other.sourceDimensions[0] - sourceDimensions[0];         // Reverse of netCDF order.
     }
 
     /**

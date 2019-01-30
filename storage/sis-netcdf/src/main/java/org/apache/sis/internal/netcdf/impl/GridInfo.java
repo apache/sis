@@ -86,7 +86,8 @@ final class GridInfo extends Grid {
 
     /**
      * Describes the output values calculated by the function converting grid indices to geodetic coordinates.
-     * They are the coordinate values expressed in the CRS.
+     * They are the coordinate values expressed in the CRS. Order should be the order to be declared in the CRS.
+     * This is often, but not necessarily, the reverse order than the {@link #domain} dimension.
      */
     private final VariableInfo[] range;
 
@@ -100,7 +101,7 @@ final class GridInfo extends Grid {
      * The {@code domain} and {@code range} arrays often have the same length, but not necessarily.
      *
      * @param  domain    describes the input values of the "grid to CRS" conversion, in netCDF order.
-     * @param  range     the output values of the "grid to CRS" conversion.
+     * @param  range     the output values of the "grid to CRS" conversion, in CRS order as much as possible.
      * @param  sortAxes  whether axes should be sorted instead than relying on the order found in netCDF file.
      */
     GridInfo(final Dimension[] domain, final VariableInfo[] range, final boolean sortAxes) {
@@ -190,7 +191,7 @@ final class GridInfo extends Grid {
      * In particular, the relationship is not straightforward when the coordinate system contains
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
@@ -199,7 +200,7 @@ final class GridInfo extends Grid {
     protected Axis[] createAxes() throws IOException, DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
-         * This is often the same order than the indices, but not necessarily. The intent is to reduce the
+         * This is often the reverse order of range indices, but not necessarily. The intent is to reduce the
          * amount of disk seek operations. Data loading may happen in this method through Axis constructor.
          */
         final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();

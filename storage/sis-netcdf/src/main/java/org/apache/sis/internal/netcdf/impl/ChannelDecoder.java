@@ -943,7 +943,8 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
                 int mixedFlag = axes.isEmpty() ? 0 : 1;
-                for (final Dimension dimension : variable.dimensions) {
+                for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
+                    final Dimension dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
                         final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
