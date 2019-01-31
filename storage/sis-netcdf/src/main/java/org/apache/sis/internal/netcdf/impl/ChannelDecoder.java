@@ -868,8 +868,8 @@ public final class ChannelDecoder extends Decoder {
         if (names == null) {
             return false;
         }
-        for (int i=names.length; --i >= 0;) {
-            final VariableInfo axis = findVariable(names[i].toString());
+        for (final CharSequence name : names) {
+            final VariableInfo axis = findVariable(name.toString());
             if (axis == null) {
                 dimensions.clear();
                 axes.clear();
@@ -942,7 +942,6 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * and we would not need to check for variables having dimension names. However in practice there is
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
-                int mixedFlag = axes.isEmpty() ? 0 : 1;
                 for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
                     final Dimension dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
@@ -951,17 +950,15 @@ nextVar:    for (final VariableInfo variable : variables) {
                             continue nextVar;
                         }
                         axes.addAll(axis);
-                        mixedFlag |= 2;
                     }
                 }
                 /*
                  * Creates the grid geometry using the given domain and range, reusing existing instance if one exists.
                  * We usually try to preserve axis order as declared in the netCDF file. But if we mixed axes inferred
                  * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
-                 * are better to sort them.
+                 * use axes from "coordinates" attribute first followed by other axes.
                  */
-                GridInfo grid = new GridInfo(variable.dimensions,
-                        axes.toArray(new VariableInfo[axes.size()]), mixedFlag == 3);
+                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
                 GridInfo existing = shared.putIfAbsent(grid, grid);
                 if (existing != null) {
                     grid = existing;

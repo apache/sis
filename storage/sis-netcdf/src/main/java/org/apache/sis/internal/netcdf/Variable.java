@@ -712,8 +712,8 @@ public abstract class Variable extends NamedElement {
      * they get reordered by the {@link Grid#getAxes(Decoder)} method. In the netCDF UCAR API, this method maps directly
      * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
-     * @param  j     the fastest varying (right-most) index.
-     * @param  i     the slowest varying (left-most) index.
+     * @param  j  the slowest varying (left-most) index.
+     * @param  i  the fastest varying (right-most) index.
      * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.

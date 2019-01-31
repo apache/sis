@@ -446,7 +446,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
             geometries = new Grid[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridWrapper(systems.get(i), null);
+                geometries[i] = new GridWrapper(systems.get(i));
             }
         }
         return geometries;

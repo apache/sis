@@ -824,8 +824,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     protected double coordinateForAxis(final int j, final int i) throws IOException, DataStoreException {
         assert j >= 0 && j < dimensions[0].length : j;
         assert i >= 0 && i < dimensions[1].length : i;
-        final long n = dimensions[0].length();
-        return read().doubleValue(Math.toIntExact(j + n*i));
+        final long n = dimensions[1].length();
+        return read().doubleValue(Math.toIntExact(i + n*j));
     }
 
     /**

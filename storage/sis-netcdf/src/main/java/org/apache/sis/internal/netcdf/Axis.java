@@ -55,9 +55,6 @@ import ucar.nc2.constants.CF;
  * Whether the array length is 1 or 2 depends on whether the wrapped netCDF axis is an instance of
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
- * <p>The natural ordering of axes is based on the order in which dimensions are declared for a variable.
- * This is not necessarily the same order than the order in which variables are listed in the netCDF file.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
@@ -66,7 +63,7 @@ import ucar.nc2.constants.CF;
  * @since 0.3
  * @module
  */
-public final class Axis extends NamedElement implements Comparable<Axis> {
+public final class Axis extends NamedElement {
     /**
      * The abbreviation, also used as a way to identify the axis type.
      * This is a controlled vocabulary: if any abbreviation is changed,
@@ -409,19 +406,6 @@ public final class Axis extends NamedElement implements Comparable<Axis> {
     }
 
     /**
-     * Compares this axis with the given axis for ordering based on the dimensions declared in a variable.
-     * This is used for sorting axes in the reverse order than the dimension order on the variable using axes.
-     * This order is not necessarily related to the order in which axis variables are listed in the netCDF file.
-     *
-     * @param  other  the other axis to compare to this axis.
-     * @return -1 if this axis should be before {@code other}, +1 if it should be after.
-     */
-    @Override
-    public int compareTo(final Axis other) {
-        return other.sourceDimensions[0] - sourceDimensions[0];         // Reverse of netCDF order.
-    }
-
-    /**
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
@@ -599,36 +583,36 @@ main:   switch (getDimension()) {
      */
     final LocalizationGridBuilder createLocalizationGrid(final Axis other) throws IOException, DataStoreException {
         if (other.getDimension() == 2) {
-            final int d1 =       sourceDimensions[0];
-            final int d2 =       sourceDimensions[1];
-            final int o1 = other.sourceDimensions[0];
-            final int o2 = other.sourceDimensions[1];
-            if ((o1 == d1 && o2 == d2) || (o1 == d2 && o2 == d1)) {
+            final int xd =  this.sourceDimensions[0];
+            final int yd =  this.sourceDimensions[1];
+            final int xo = other.sourceDimensions[0];
+            final int yo = other.sourceDimensions[1];
+            if ((xo == xd && yo == yd) || (xo == yd && yo == xd)) {
                 /*
                  * Found two axes for the same set of dimensions, which implies that they have the same
                  * shape (width and height) unless the two axes ignored a different amount of NaN values.
                  * Negative width and height means that their actual values overflow the 'int' capacity,
                  * which we can not process here.
                  */
-                final int ri = (d1 <= d2) ? 0 : 1;  // Take in account that mainDimensionFirst(…) may have reordered values.
-                final int ro = (o1 <= o2) ? 0 : 1;
-                final int width  = getSize(ri    );
-                final int height = getSize(ri ^ 1);
-                if (other.sourceSizes[ro    ] != width ||
-                    other.sourceSizes[ro ^ 1] != height)
+                final int ri = (xd <= yd) ? 0 : 1;      // Take in account that mainDimensionFirst(…) may have reordered values.
+                final int ro = (xo <= yo) ? 0 : 1;
+                final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension.
+                final int height = getSize(ri    );     // Slowest varying if left-most dimension.
+                if (other.sourceSizes[ro ^ 1] != width ||
+                    other.sourceSizes[ro    ] != height)
                 {
                     coordinates.error(Grid.class, "getGridGeometry", null,
                             Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
                 } else {
                     final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
-                    final Vector v1 =       read();
-                    final Vector v2 = other.read();
+                    final Vector vx =  this.read();
+                    final Vector vy = other.read();
                     final double[] target = new double[2];
                     int index = 0;
                     for (int y=0; y<height; y++) {
                         for (int x=0; x<width; x++) {
-                            target[0] = v1.doubleValue(index);
-                            target[1] = v2.doubleValue(index);
+                            target[0] = vx.doubleValue(index);
+                            target[1] = vy.doubleValue(index);
                             grid.setControlPoint(x, y, target);
                             index++;
                         }

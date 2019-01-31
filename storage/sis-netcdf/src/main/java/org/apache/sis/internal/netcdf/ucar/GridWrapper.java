@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.io.IOException;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import ucar.nc2.constants.AxisType;
@@ -63,13 +65,30 @@ final class GridWrapper extends Grid {
     private final List<Dimension> domain;
 
     /**
+     * Other {@code GridWrapper} using the same UCAR coordinate systems but with {@link #domain} dimensions in a different order.
+     * We keep previously created {@code GridWrapper} instances in order to keep the cached value in {@link #geometry} field,
+     * since its computation may be costly.
+     */
+    private final Map<List<Dimension>, GridWrapper> reordered;
+
+    /**
      * Creates a new grid geometry for the given netCDF coordinate system.
      *
      * @param  cs  the netCDF coordinate system.
      */
-    GridWrapper(final CoordinateSystem cs, final List<Dimension> dimensions) {
-        netcdfCS = cs;
-        domain = (dimensions != null) ? dimensions : cs.getDomain();
+    GridWrapper(final CoordinateSystem cs) {
+        netcdfCS  = cs;
+        domain    = cs.getDomain();
+        reordered = new HashMap<>();
+    }
+
+    /**
+     * Creates a new grid geometry with the same coordinate system than the given parent.
+     */
+    private GridWrapper(final GridWrapper parent, final List<Dimension> dimensions) {
+        netcdfCS  = parent.netcdfCS;
+        domain    = dimensions;
+        reordered = parent.reordered;
     }
 
     /**
@@ -82,9 +101,12 @@ final class GridWrapper extends Grid {
             if (domain.equals(source)) {
                 return this;
             }
-            if (domain.size() == source.size() && domain.containsAll(source)) {
-                return new GridWrapper(netcdfCS, source);
-            }
+            return reordered.computeIfAbsent(source, k -> {
+                if (domain.size() == k.size() && domain.containsAll(k)) {
+                    return new GridWrapper(this, k);
+                }
+                return null;
+            });
         }
         return null;
     }

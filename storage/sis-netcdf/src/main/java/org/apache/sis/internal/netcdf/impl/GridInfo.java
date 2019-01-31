@@ -93,22 +93,15 @@ final class GridInfo extends Grid {
     private final VariableInfo[] range;
 
     /**
-     * Whether axes should be sorted instead than relying on the order found in netCDF file.
-     */
-    private final boolean sortAxes;
-
-    /**
      * Constructs a new grid geometry information.
      * The {@code domain} and {@code range} arrays often have the same length, but not necessarily.
      *
-     * @param  domain    describes the input values of the "grid to CRS" conversion, in netCDF order.
-     * @param  range     the output values of the "grid to CRS" conversion, in CRS order as much as possible.
-     * @param  sortAxes  whether axes should be sorted instead than relying on the order found in netCDF file.
+     * @param  domain  describes the input values of the "grid to CRS" conversion, in netCDF order.
+     * @param  range   the output values of the "grid to CRS" conversion, in CRS order as much as possible.
      */
-    GridInfo(final Dimension[] domain, final VariableInfo[] range, final boolean sortAxes) {
+    GridInfo(final Dimension[] domain, final VariableInfo[] range) {
         this.domain   = domain;
         this.range    = range;
-        this.sortAxes = sortAxes;
     }
 
     /**
@@ -249,9 +242,6 @@ final class GridInfo extends Grid {
             }
             axes[targetDim] = new Axis(abbreviation, axis.getAttributeAsString(CF.POSITIVE),
                                        ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axis);
-        }
-        if (sortAxes) {
-            Arrays.sort(axes);
         }
         return axes;
     }
