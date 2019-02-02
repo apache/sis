@@ -698,6 +698,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 do {
                     PreparedStatement stmt;
                     if (alias) {
+                        // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
                         stmt = prepareStatement("AliasKey", "SELECT OBJECT_CODE, ALIAS FROM [Alias] WHERE OBJECT_TABLE_NAME=? AND ALIAS LIKE ?");
                         stmt.setString(1, table);
                         stmt.setString(2, pattern);
@@ -791,12 +792,34 @@ codes:  for (int i=0; i<codes.length; i++) {
      */
     private ResultSet executeQuery(final String table, final String sql, final int... codes) throws SQLException {
         assert Thread.holdsLock(this);
+        assert CharSequences.count(sql, '?') == codes.length;
         PreparedStatement stmt = prepareStatement(table, sql);
         // Partial check that the statement is for the right SQL query.
-        assert stmt.getParameterMetaData().getParameterCount() == CharSequences.count(sql, '?');
+        assert stmt.getParameterMetaData().getParameterCount() == codes.length;
         for (int i=0; i<codes.length; i++) {
             stmt.setInt(i+1, codes[i]);
         }
+        return stmt.executeQuery();
+    }
+
+    /**
+     * Executes a query of the form {@code "SELECT … FROM Alias WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?"}.
+     * The first argument shall be the name of a database table.
+     *
+     * @param  key    a key uniquely identifying the caller.
+     * @param  sql    the SQL statement to use for creating the {@link PreparedStatement} object.
+     * @param  table  the table to set in the first parameter.
+     * @param  code   the object code to set in the second parameter.
+     * @return the result of the query.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private ResultSet executeMetadataQuery(final String key, final String sql, final String table, final int code) throws SQLException {
+        assert Thread.holdsLock(this);
+        assert CharSequences.count(sql, '?') == 2;
+        PreparedStatement stmt = prepareStatement(key, sql);
+        assert stmt.getParameterMetaData().getParameterCount() == 2;
+        stmt.setString(1, table);
+        stmt.setInt(2, code);
         return stmt.executeQuery();
     }
 
@@ -1009,28 +1032,6 @@ codes:  for (int i=0; i<codes.length; i++) {
     }
 
     /**
-     * Returns {@code true} if the given table {@code name} matches the {@code expected} name.
-     * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
-     * For example {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
-     *
-     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
-     * {@code EPSG_Prepare.sql} file.</p>
-     *
-     * @param  expected  the expected table name (e.g. {@code "Coordinate_Operation"}).
-     * @param  name      the actual table name.
-     * @return whether the given {@code name} is considered to match the expected name.
-     */
-    static boolean tableMatches(final String expected, String name) {
-        if (name == null) {
-            return false;
-        }
-        if (name.startsWith(SQLTranslator.TABLE_PREFIX)) {
-            name = name.substring(SQLTranslator.TABLE_PREFIX.length());
-        }
-        return CharSequences.isAcronymForWords(name, expected);
-    }
-
-    /**
      * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
      * @param  table   the table of the deprecated code.
@@ -1040,16 +1041,15 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getSupersession(final String table, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
         Object replacedBy = null;
-        try (ResultSet result = executeQuery("Deprecation",
-                "SELECT OBJECT_TABLE_NAME, DEPRECATION_REASON, REPLACED_BY" +
-                " FROM [Deprecation] WHERE OBJECT_CODE = ?", code))
+        try (ResultSet result = executeMetadataQuery("Deprecation",
+                "SELECT DEPRECATION_REASON, REPLACED_BY FROM [Deprecation]" +
+                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?", table, code))
+                // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
         {
             while (result.next()) {
-                if (tableMatches(table, result.getString(1))) {
-                    reason     = getOptionalString (result, 2);
-                    replacedBy = getOptionalInteger(result, 3);
-                    break;
-                }
+                reason     = getOptionalString (result, 1);
+                replacedBy = getOptionalInteger(result, 2);
+                if (replacedBy != null) break;                  // Prefer the first record providing a replacement.
             }
         }
         if (replacedBy == null) {
@@ -1064,7 +1064,7 @@ codes:  for (int i=0; i<codes.length; i++) {
          */
         String method = "create";
         for (final TableInfo info : TableInfo.EPSG) {
-            if (tableMatches(info.table, table)) {
+            if (TableInfo.tableMatches(info.table, table)) {
                 method += info.type.getSimpleName();
                 break;
             }
@@ -1106,30 +1106,29 @@ codes:  for (int i=0; i<codes.length; i++) {
          *     convenient for implementing accent-insensitive searches.
          */
         final List<GenericName> aliases = new ArrayList<>();
-        try (ResultSet result = executeQuery("Alias",
-                "SELECT OBJECT_TABLE_NAME, NAMING_SYSTEM_NAME, ALIAS" +
+        try (ResultSet result = executeMetadataQuery("Alias",
+                "SELECT NAMING_SYSTEM_NAME, ALIAS" +
                 " FROM [Alias] INNER JOIN [Naming System]" +
                   " ON [Alias].NAMING_SYSTEM_CODE =" +
                 " [Naming System].NAMING_SYSTEM_CODE" +
-                " WHERE OBJECT_CODE = ?", code))
+                " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?", table, code))
+                // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
         {
             while (result.next()) {
-                if (tableMatches(table, result.getString(1))) {
-                    final String naming = getOptionalString(result, 2);
-                    final String alias  = getString(code,   result, 3);
-                    NameSpace ns = null;
-                    if (naming != null) {
-                        ns = namingSystems.get(naming);
-                        if (ns == null) {
-                            ns = owner.nameFactory.createNameSpace(owner.nameFactory.createLocalName(null, naming), null);
-                            namingSystems.put(naming, ns);
-                        }
+                final String naming = getOptionalString(result, 1);
+                final String alias  = getString(code,   result, 2);
+                NameSpace ns = null;
+                if (naming != null) {
+                    ns = namingSystems.get(naming);
+                    if (ns == null) {
+                        ns = owner.nameFactory.createNameSpace(owner.nameFactory.createLocalName(null, naming), null);
+                        namingSystems.put(naming, ns);
                     }
-                    if (CharSequences.toASCII(alias).toString().equals(name)) {
-                        name = alias;
-                    } else {
-                        aliases.add(owner.nameFactory.createLocalName(ns, alias));
-                    }
+                }
+                if (CharSequences.toASCII(alias).toString().equals(name)) {
+                    name = alias;
+                } else {
+                    aliases.add(owner.nameFactory.createLocalName(ns, alias));
                 }
             }
         }
@@ -3232,6 +3231,7 @@ next:               while (r.next()) {
             if (namePatterns != null) {
                 buffer.setLength(0);
                 buffer.append("SELECT OBJECT_CODE FROM [Alias] WHERE OBJECT_TABLE_NAME='Datum'");
+                // PostgreSQL does not require explicit cast when the value is a literal instead than "?".
                 String separator = " AND (";
                 for (final String pattern : namePatterns) {
                     appendFilterByName(buffer.append(separator), "ALIAS", pattern);
@@ -3310,7 +3310,7 @@ next:               while (r.next()) {
                 buffer.append(table.codeColumn);          // Only for making order determinist.
                 /*
                  * At this point the SQL query is complete. Run it, preserving order.
-                 * The sort the result by taking in account the supersession table.
+                 * Then sort the result by taking in account the supersession table.
                  */
                 final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
                 try (ResultSet r = stmt.executeQuery(translator.apply(buffer.toString()))) {
@@ -3321,7 +3321,7 @@ next:               while (r.next()) {
                 result.remove(null);                    // Should not have null element, but let be safe.
                 if (result.size() > 1) {
                     final Object[] id = result.toArray();
-                    if (sort(table.codeColumn, id)) {
+                    if (sort(table.tableName(), id)) {
                         result.clear();
                         for (final Object c : id) {
                             result.add((String) c);
@@ -3478,27 +3478,31 @@ next:               while (r.next()) {
         do {
             boolean changed = false;
             for (int i=0; i<codes.length; i++) {
-                final String code = codes[i].toString();
-                try (ResultSet result = executeQuery("Supersession", null, null,
-                        "SELECT OBJECT_TABLE_NAME, SUPERSEDED_BY" +
-                        " FROM [Supersession]" +
-                        " WHERE OBJECT_CODE = ?" +
-                        " ORDER BY SUPERSESSION_YEAR DESC", code))
+                final int code;
+                try {
+                    code = Integer.parseInt(codes[i].toString());
+                } catch (NumberFormatException e) {
+                    unexpectedException("sort", e);
+                    continue;
+                }
+                // Note: "OBJECT_TABLE_NAME=?" is handled in a special way by SQLTranslator.
+                try (ResultSet result = executeMetadataQuery("Supersession",
+                        "SELECT SUPERSEDED_BY FROM [Supersession]" +
+                        " WHERE OBJECT_TABLE_NAME=? AND OBJECT_CODE=?" +
+                        " ORDER BY SUPERSESSION_YEAR DESC", table, code))
                 {
                     while (result.next()) {
-                        if (tableMatches(table, result.getString(1))) {
-                            final String replacement = result.getString(2);
-                            if (replacement != null) {
-                                for (int j=i+1; j<codes.length; j++) {
-                                    final Object candidate = codes[j];
-                                    if (replacement.equals(candidate.toString())) {
-                                        /*
-                                         * Found a code to move in front of the superceded one.
-                                         */
-                                        System.arraycopy(codes, i, codes, i+1, j-i);
-                                        codes[i++] = candidate;
-                                        changed = true;
-                                    }
+                        final String replacement = result.getString(1);
+                        if (replacement != null) {
+                            for (int j=i+1; j<codes.length; j++) {
+                                final Object candidate = codes[j];
+                                if (replacement.equals(candidate.toString())) {
+                                    /*
+                                     * Found a code to move in front of the superceded one.
+                                     */
+                                    System.arraycopy(codes, i, codes, i+1, j-i);
+                                    codes[i++] = candidate;
+                                    changed = true;
                                 }
                             }
                         }

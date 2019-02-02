@@ -29,6 +29,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
 
 
 /**
@@ -100,7 +101,7 @@ import org.apache.sis.internal.metadata.sql.Reflection;
  * @author  Martin Desruisseaux (IRD)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -131,11 +132,18 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * The columns that may be of {@code BOOLEAN} type instead of {@code SMALLINT}.
      */
-    private static final String[] BOOLEAN_FIELDS = {
+    private static final String[] BOOLEAN_COLUMNS = {
         "SHOW_CRS",
         "SHOW_OPERATION",
         "DEPRECATED"
     };
+
+    /**
+     * The column where {@code VARCHAR} value may need to be casted to an enumeration.
+     * With PostgreSQL, only columns in the {@code WHERE} part of the SQL statement needs
+     * an explicit cast; the columns in the {@code SELECT} part are implicitly casted.
+     */
+    private static final String ENUMERATION_COLUMN = "OBJECT_TABLE_NAME";           // In "Alias" table.
 
     /**
      * The name of the catalog that contains the EPSG tables, or {@code null} or an empty string.
@@ -177,7 +185,8 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * Mapping from words used in the MS-Access database to words used in the ANSI versions of EPSG databases.
      * A word may be a table or a column name, or a part of it. A table name may consist in many words separated
-     * by spaces.
+     * by spaces. This map does not list all tables used in EPSG schema, but only the ones that can not be mapped
+     * by more generic code (e.g. by replacing spaces by '_').
      *
      * <p>The keys are the names in the MS-Access database, and the values are the names in the SQL scripts.
      * By convention, all column names in keys are in upper-case while table names are in mixed-case characters.</p>
@@ -198,6 +207,13 @@ public class SQLTranslator implements Function<String,String> {
      * This information is provided by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
     private final String quote;
+
+    /**
+     * Non-null if the {@value #ENUMERATION_COLUMN} column in {@code "Alias"} table uses enumeration instead
+     * than character varying. In such case, this field contains the enumeration type. If {@code null}, then
+     * then column type is {@code VARCHAR} and the cast can be omitted.
+     */
+    private String tableNameEnum;
 
     /**
      * {@code true} if the database uses the {@code BOOLEAN} type instead than {@code SMALLINT}
@@ -254,12 +270,14 @@ public class SQLTranslator implements Function<String,String> {
      */
     final void setup(final DatabaseMetaData md) throws SQLException {
         final boolean toUpperCase = md.storesUpperCaseIdentifiers();
+        final String escape = md.getSearchStringEscape();
+        String schemaPattern = SQLUtilities.escape(schema, escape);
         for (int i = SENTINEL.length; --i >= 0;) {
             String table = SENTINEL[i];
             if (toUpperCase && i != MIXED_CASE) {
                 table = table.toUpperCase(Locale.US);
             }
-            try (ResultSet result = md.getTables(catalog, schema, table, null)) {
+            try (ResultSet result = md.getTables(catalog, schemaPattern, table, null)) {
                 if (result.next()) {
                     isTableFound    = true;
                     isPrefixed      = table.startsWith(TABLE_PREFIX);
@@ -269,6 +287,7 @@ public class SQLTranslator implements Function<String,String> {
                         schema  = result.getString(Reflection.TABLE_SCHEM);
                     } while (!Constants.EPSG.equalsIgnoreCase(schema) && result.next());
                     if (schema == null) schema = "";
+                    schemaPattern = SQLUtilities.escape(schema, escape);
                     break;
                 }
             }
@@ -285,7 +304,7 @@ public class SQLTranslator implements Function<String,String> {
              * This column has been renamed "coord_axis_order" in DLL scripts.
              * We need to check which name our current database uses.
              */
-            try (ResultSet result = md.getColumns(catalog, schema, "Coordinate Axis", "ORDER")) {
+            try (ResultSet result = md.getColumns(catalog, schemaPattern, "Coordinate Axis", "ORDER")) {
                 translateColumns = !result.next();
             }
         } else {
@@ -299,11 +318,14 @@ public class SQLTranslator implements Function<String,String> {
          * Detect if the database uses boolean types where applicable.
          * We arbitrarily use the Datum table as a representative value.
          */
-        String deprecated = "DEPRECATED";
+        String deprecated  = "DEPRECATED";
+        String objectTable = ENUMERATION_COLUMN;
         if (md.storesLowerCaseIdentifiers()) {
-            deprecated = deprecated.toLowerCase(Locale.US);
+            deprecated  =  deprecated.toLowerCase(Locale.US);
+            objectTable = objectTable.toLowerCase(Locale.US);
         }
-        try (ResultSet result = md.getColumns(catalog, schema, null, deprecated)) {
+        final String tablePattern = isPrefixed ? SQLUtilities.escape(TABLE_PREFIX, escape) + '%' : null;
+        try (ResultSet result = md.getColumns(catalog, schemaPattern, tablePattern, deprecated)) {
             while (result.next()) {
                 if (CharSequences.endsWith(result.getString(Reflection.TABLE_NAME), "Datum", true)) {
                     final int type = result.getInt(Reflection.DATA_TYPE);
@@ -312,7 +334,22 @@ public class SQLTranslator implements Function<String,String> {
                 }
             }
         }
-    };
+        /*
+         * Detect if the table use enumeration (on PostgreSQL database) instead of VARCHAR.
+         * Enumerations appear in various tables, but is used in WHERE clause in the Alias table.
+         */
+        try (ResultSet result = md.getColumns(catalog, schemaPattern, tablePattern, objectTable)) {
+            while (result.next()) {
+                if (CharSequences.endsWith(result.getString(Reflection.TABLE_NAME), "Alias", true)) {
+                    final String type = result.getString(Reflection.TYPE_NAME);
+                    if (!CharSequences.startsWith(type, "VARCHAR", true)) {
+                        tableNameEnum = type;
+                    }
+                    break;
+                }
+            }
+        }
+    }
 
     /**
      * Returns the catalog that contains the EPSG schema. This is the catalog specified at construction time
@@ -362,10 +399,10 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * If the given string is empty, returns {@code null} instead.
+     * If {@code true} if the given string is null or empty.
      */
-    private static String nonEmpty(final String s) {
-        return (s != null && !s.isEmpty()) ? s : null;
+    private static boolean isEmpty(final String s) {
+        return (s == null) || s.isEmpty();
     }
 
     /**
@@ -377,9 +414,7 @@ public class SQLTranslator implements Function<String,String> {
      */
     @Override
     public String apply(final String sql) {
-        final String catalog = nonEmpty(this.catalog);
-        final String schema  = nonEmpty(this.schema);
-        if (quote.isEmpty() && accessToAnsi.isEmpty() && schema == null && catalog == null) {
+        if (quote.isEmpty() && accessToAnsi.isEmpty() && isEmpty(schema) && isEmpty(catalog)) {
             return sql;
         }
         final StringBuilder ansi = new StringBuilder(sql.length() + 16);
@@ -404,25 +439,7 @@ public class SQLTranslator implements Function<String,String> {
             if (CharSequences.isUpperCase(name)) {
                 ansi.append(accessToAnsi.getOrDefault(name, name));
             } else {
-                if (catalog != null) {
-                    ansi.append(quote).append(catalog).append(quote).append('.');
-                }
-                if (schema != null) {
-                    ansi.append(quote).append(schema).append(quote).append('.');
-                }
-                if (quoteTableNames) {
-                    ansi.append(quote);
-                }
-                if (isPrefixed) {
-                    ansi.append(TABLE_PREFIX);
-                }
-                if (quoteTableNames) {
-                    ansi.append(accessToAnsi.getOrDefault(name, name)).append(quote);
-                } else {
-                    for (final String word : name.split("\\s")) {
-                        ansi.append(accessToAnsi.getOrDefault(word, word));
-                    }
-                }
+                appendIdentifier(ansi, name);
             }
         }
         ansi.append(sql, end, sql.length());
@@ -433,7 +450,7 @@ public class SQLTranslator implements Function<String,String> {
             int w = ansi.indexOf("WHERE");
             if (w >= 0) {
                 w += 5;
-                for (final String field : BOOLEAN_FIELDS) {
+                for (final String field : BOOLEAN_COLUMNS) {
                     int p = ansi.indexOf(field, w);
                     if (p >= 0) {
                         p += field.length();
@@ -449,7 +466,44 @@ public class SQLTranslator implements Function<String,String> {
                 }
             }
         }
+        /*
+         * If the database uses enumeration, we need an explicit cast with PostgreSQL.
+         * The enumeration type is typically "EPSG"."Table Name".
+         */
+        if (tableNameEnum != null) {
+            int w = ansi.lastIndexOf(ENUMERATION_COLUMN + "=?");
+            if (w >= 0) {
+                w += ENUMERATION_COLUMN.length() + 1;
+                ansi.replace(w, w+1, "CAST(? AS " + tableNameEnum + ')');
+            }
+        }
         return ansi.toString();
+    }
+
+    /**
+     * Appends the given identifier in the given buffer, between quotes and prefixed with the schema name.
+     * This is used mostly for appending table names, but can also be used for appending enumeration types.
+     */
+    private void appendIdentifier(final StringBuilder buffer, final String identifier) {
+        if (!isEmpty(catalog)) {
+            buffer.append(quote).append(catalog).append(quote).append('.');
+        }
+        if (!isEmpty(schema)) {
+            buffer.append(quote).append(schema).append(quote).append('.');
+        }
+        if (quoteTableNames) {
+            buffer.append(quote);
+        }
+        if (isPrefixed) {
+            buffer.append(TABLE_PREFIX);
+        }
+        if (quoteTableNames) {
+            buffer.append(accessToAnsi.getOrDefault(identifier, identifier)).append(quote);
+        } else {
+            for (final String word : identifier.split("\\s")) {
+                buffer.append(accessToAnsi.getOrDefault(word, word));
+            }
+        }
     }
 
     /**

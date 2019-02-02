@@ -219,6 +219,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.ConcurrentAuthorityFactoryTest.class,
     org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
     org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
+    org.apache.sis.referencing.factory.sql.TableInfoTest.class,
     org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
     org.apache.sis.referencing.factory.sql.EPSGInstallerTest.class,
     org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatterTest.class,

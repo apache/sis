@@ -96,6 +96,39 @@ public final class SQLUtilities extends Static {
     }
 
     /**
+     * Returns the given pattern with {@code '_'} and {@code '%'} characters escaped by the database-specific
+     * escape characters. This method should be invoked for escaping the values of all {@link DatabaseMetaData}
+     * method arguments with a name ending by {@code "Pattern"}. Note that not all arguments are pattern; please
+     * checks carefully {@link DatabaseMetaData} javadoc for each method.
+     *
+     * <div class="note"><b>Example:</b> if a method expects an argument named {@code tableNamePattern},
+     * then that argument value should be escaped. But if the argument name is only {@code tableName},
+     * then the value should not be escaped.</div>
+     *
+     * @param  pattern  the pattern to escape, or {@code null} if none.
+     * @param  escape   value of {@link DatabaseMetaData#getSearchStringEscape()}.
+     * @return escaped strings, or the same instance than {@code pattern} if there is no character to escape.
+     */
+    public static String escape(final String pattern, final String escape) {
+        if (pattern != null) {
+            StringBuilder buffer = null;
+            for (int i = pattern.length(); --i >= 0;) {
+                final char c = pattern.charAt(i);
+                if (c == '_' || c == '%') {
+                    if (buffer == null) {
+                        buffer = new StringBuilder(pattern);
+                    }
+                    buffer.insert(i, escape);
+                }
+            }
+            if (buffer != null) {
+                return buffer.toString();
+            }
+        }
+        return pattern;
+    }
+
+    /**
      * Returns a SQL LIKE pattern for the given identifier. The identifier is optionally returned in all lower cases
      * for allowing case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'})
      * and non-ASCII letters or digits are replaced by any single character ({@code '_'}). This method avoid to put
