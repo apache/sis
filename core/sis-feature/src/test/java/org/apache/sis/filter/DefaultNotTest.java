@@ -16,12 +16,10 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import static org.apache.sis.test.Assert.assertSerializedEquals;
 import org.apache.sis.test.TestCase;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
@@ -31,14 +29,14 @@ import org.opengis.filter.expression.Literal;
 import org.opengis.filter.expression.PropertyName;
 
 /**
- * Tests {@link DefaultOr}.
+ * Tests {@link DefaultNot}.
  *
  * @author Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class DefaultOrTest extends TestCase {
+public class DefaultNotTest extends TestCase {
     /**
      * Test factory.
      */
@@ -47,27 +45,7 @@ public class DefaultOrTest extends TestCase {
         final FilterFactory2 factory = new DefaultFilterFactory();
         final Literal literal = factory.literal("text");
         final Filter filter = factory.isNull(literal);
-
-        assertNotNull(factory.or(filter, filter));
-        assertNotNull(factory.or(Arrays.asList(filter, filter, filter)));
-
-        try {
-            factory.or(null, null);
-            Assert.fail("Creation of an OR with a null child filter must raise an exception");
-        } catch (Exception ex) {}
-        try {
-            factory.or(filter, null);
-            Assert.fail("Creation of an OR with a null child filter must raise an exception");
-        } catch (Exception ex) {}
-        try {
-            factory.or(null, filter);
-            Assert.fail("Creation of an OR with a null child filter must raise an exception");
-        } catch (Exception ex) {}
-        try {
-            factory.or(Arrays.asList(filter));
-            Assert.fail("Creation of an OR with less then two children filters must raise an exception");
-        } catch (Exception ex) {}
-
+        assertNotNull(factory.not(filter));
     }
 
     /**
@@ -80,14 +58,11 @@ public class DefaultOrTest extends TestCase {
         final PropertyName literalNull = factory.property("attNull");
         final Filter filterTrue = factory.isNull(literalNull);
         final Filter filterFalse = factory.isNull(literalNotNull);
-
         final Map<String,String> feature = new HashMap<>();
         feature.put("attNotNull", "text");
 
-        assertEquals(true, new DefaultOr(Arrays.asList(filterTrue, filterTrue)).evaluate(feature));
-        assertEquals(true, new DefaultOr(Arrays.asList(filterFalse, filterTrue)).evaluate(feature));
-        assertEquals(true, new DefaultOr(Arrays.asList(filterTrue, filterFalse)).evaluate(feature));
-        assertEquals(false, new DefaultOr(Arrays.asList(filterFalse, filterFalse)).evaluate(feature));
+        assertEquals(false, new DefaultNot(filterTrue).evaluate(feature));
+        assertEquals(true, new DefaultNot(filterFalse).evaluate(feature));
     }
 
     /**
@@ -98,7 +73,7 @@ public class DefaultOrTest extends TestCase {
         final FilterFactory2 factory = new DefaultFilterFactory();
         final Literal literal = factory.literal("text");
         final Filter filter = factory.isNull(literal);
-        assertSerializedEquals(new DefaultOr(Arrays.asList(filter,filter)));
+        assertSerializedEquals(new DefaultNot(filter));
     }
 
 }

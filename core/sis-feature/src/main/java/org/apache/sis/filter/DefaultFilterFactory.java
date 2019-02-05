@@ -297,7 +297,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public FeatureId featureId(final String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultFeatureId(id);
     }
 
     /**
@@ -305,7 +305,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public GmlObjectId gmlObjectId(final String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultFeatureId(id);
     }
 
     // FILTERS /////////////////////////////////////////////////////////////////
@@ -351,7 +351,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Not not(final Filter filter) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultNot(filter);
     }
 
     /**
@@ -359,7 +359,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Id id(final Set<? extends Identifier> ids) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultId(ids);
     }
 
     /**

@@ -81,7 +81,7 @@ public class DefaultAndTest extends TestCase {
         final Filter filterTrue = factory.isNull(literalNull);
         final Filter filterFalse = factory.isNull(literalNotNull);
 
-        final Map<String,String> feature = new HashMap();
+        final Map<String,String> feature = new HashMap<>();
         feature.put("attNotNull", "text");
 
         assertEquals(true, new DefaultAnd(Arrays.asList(filterTrue, filterTrue)).evaluate(feature));
