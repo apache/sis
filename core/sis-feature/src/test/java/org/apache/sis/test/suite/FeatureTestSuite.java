@@ -51,6 +51,8 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.FeaturesTest.class,
     org.apache.sis.filter.DefaultLiteralTest.class,
     org.apache.sis.filter.DefaultPropertyNameTest.class,
+    org.apache.sis.filter.DefaultAndTest.class,
+    org.apache.sis.filter.DefaultOrTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.Java2DTest.class,
     org.apache.sis.internal.feature.ESRITest.class,

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.opengis.filter.*;
@@ -314,7 +315,9 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public And and(final Filter filter1, final Filter filter2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ArgumentChecks.ensureNonNull("filter1", filter1);
+        ArgumentChecks.ensureNonNull("filter2", filter2);
+        return and(Arrays.asList(filter1, filter2));
     }
 
     /**
@@ -322,7 +325,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public And and(final List<Filter> filters) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultAnd(filters);
     }
 
     /**
@@ -330,7 +333,9 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Or or(final Filter filter1, final Filter filter2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ArgumentChecks.ensureNonNull("filter1", filter1);
+        ArgumentChecks.ensureNonNull("filter2", filter2);
+        return or(Arrays.asList(filter1, filter2));
     }
 
     /**
@@ -338,7 +343,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Or or(final List<Filter> filters) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultOr(filters);
     }
 
     /**
