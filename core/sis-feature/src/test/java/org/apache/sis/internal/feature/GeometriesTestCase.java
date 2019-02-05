@@ -78,7 +78,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                 NaN, NaN,
                  -3,  -2,
                  -2,  -5,
-                 -1,  -6}, false));
+                 -1,  -6}));
 
         final GeneralEnvelope env = factory.tryGetEnvelope(geometry);
         assertEquals("xmin", -3, env.getLower(0), STRICT);

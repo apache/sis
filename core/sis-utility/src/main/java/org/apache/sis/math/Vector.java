@@ -148,6 +148,29 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
+     * Wraps the given array of floating point values. This method does not clone the array:
+     * changes in the given array will be reflected in the returned vector and vice-versa.
+     * This method is equivalent to
+     * <code>{@link #create(Object, boolean) create}(array, false)</code> but potentially faster.
+     *
+     * @param  array  the array of floating point values to wrap in a vector, or {@code null}.
+     * @return the given array wrapped in a vector, or {@code null} if the argument was {@code null}.
+     *
+     * @since 1.0
+     */
+    public static Vector create(final double[] array) {
+        /*
+         * NOTE: we do not use variable-length argument (double...) because doing so may force us to
+         * declare 'create' methods for all other primitive types,  otherwise some developers may be
+         * surprised that 'create(0, 1, 2, 3)' converts the integer values to doubles. We do not yet
+         * provide explicit 'create(...)' methods for other primitive types because it is not needed
+         * by Apache SIS and it would lost a feature of current API, which is to force developers to
+         * think whether their integers are signed or unsigned.
+         */
+        return (array != null) ? new ArrayVector.Doubles(array) : null;
+    }
+
+    /**
      * Wraps the given {@code float[]} array in a vector that preserve the string representations in base 10.
      * For example the 0.1 {@code float} value casted to {@code double} normally produces 0.10000000149011612
      * because of the way IEEE 754 arithmetic represents numbers (in base 2 instead than base 10). But the
@@ -160,7 +183,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * from decimal representations, for example an ASCII file. There is usually no reason to use this method
      * if the values are the result of some numerical computations.
      *
-     * @param  array  the object to wrap in a vector, or {@code null}.
+     * @param  array  the array of floating point values to wrap in a vector, or {@code null}.
      * @return the given array wrapped in a vector, or {@code null} if the argument was {@code null}.
      *
      * @see DecimalFunctions#floatToDouble(float)

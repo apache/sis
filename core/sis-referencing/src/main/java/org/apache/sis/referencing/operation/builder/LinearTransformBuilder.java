@@ -965,7 +965,7 @@ search:         for (int j=domain(); --j >= 0;) {
                             c = line.fit(vector(sources[0]), vector(targets[j]));
                         } else {
                             c = line.fit(Vector.createSequence(0, 1, gridSize[0]),
-                                         Vector.create(targets[j], false));
+                                         Vector.create(targets[j]));
                         }
                         break;
                     }
@@ -982,7 +982,7 @@ search:         for (int j=domain(); --j >= 0;) {
                         if (sources != null) {
                             c = plan.fit(vector(sources[0]), vector(sources[1]), vector(targets[j]));
                         } else try {
-                            c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j], false));
+                            c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j]));
                         } catch (IllegalArgumentException e) {
                             // This may happen if the z vector still contain some "NaN" values.
                             throw new InvalidGeodeticParameterException(noData(), e);
@@ -1007,7 +1007,7 @@ search:         for (int j=domain(); --j >= 0;) {
      */
     private Vector vector(final double[] data) {
         assert gridSize == null;
-        return Vector.create(data, false).subList(0, numPoints);
+        return Vector.create(data).subList(0, numPoints);
     }
 
     /**
