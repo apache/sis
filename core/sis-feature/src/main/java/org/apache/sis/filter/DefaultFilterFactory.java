@@ -441,7 +441,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsGreaterThan greater(final Expression expr1,
             final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsGreaterThan(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -459,7 +459,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(
             final Expression expr1, final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsGreaterThanOrEqualTo(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -476,7 +476,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsLessThan less(final Expression expr1,
             final Expression expr2, final boolean matchCase, MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsLessThan(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -494,7 +494,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expr1,
             final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsLessThanOrEqualTo(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -521,7 +521,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public PropertyIsLike like(final Expression expr, final String pattern,
             final String wildcard, final String singleChar,
             final String escape, final boolean matchCase) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsLike(expr, pattern, wildcard, singleChar, escape, matchCase);
     }
 
     /**
