@@ -662,7 +662,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Add add(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultAdd(expr1, expr2);
     }
 
     /**
@@ -670,7 +670,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Divide divide(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultDivide(expr1, expr2);
     }
 
     /**
@@ -678,7 +678,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Multiply multiply(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultMultiply(expr1, expr2);
     }
 
     /**
@@ -686,7 +686,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Subtract subtract(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultSubtract(expr1, expr2);
     }
 
     /**
