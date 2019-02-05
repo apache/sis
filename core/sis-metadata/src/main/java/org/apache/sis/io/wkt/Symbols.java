@@ -571,6 +571,21 @@ public class Symbols implements Localized, Cloneable, Serializable {
     }
 
     /**
+     * Returns {@code true} if the formatter should use scientific notation for the given value.
+     * We use scientific notation if the number magnitude is too high or too low. The threshold values used here
+     * may be different than the threshold values used in the standard {@link StringBuilder#append(double)} method.
+     * In particular, we use a higher threshold for large numbers because ellipsoid axis lengths are above the JDK
+     * threshold when the axis length is given in feet (about 2.1E+7) while we still want to format them as usual numbers.
+     *
+     * Note that we perform this special formatting only if the 'NumberFormat' is not localized (which is the usual case).
+     *
+     * @param  abs  the absolute value of the number to format.
+     */
+    final boolean useScientificNotation(final double abs) {
+        return SCIENTIFIC_NOTATION && (abs < 1E-3 || abs >= 1E+9) && locale == Locale.ROOT;
+    }
+
+    /**
      * Returns {@code true} if the given WKT contains at least one instance of the given element.
      * Invoking this method is equivalent to invoking {@link String#contains(CharSequence)} except
      * for the following:

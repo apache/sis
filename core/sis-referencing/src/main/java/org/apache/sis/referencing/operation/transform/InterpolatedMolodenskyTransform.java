@@ -224,7 +224,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
             pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.UNITY);
         }
         if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setFileParameters(pg);
+            ((DatumShiftGridFile<?,?>) grid).setGridParameters(pg);
         }
     }
 

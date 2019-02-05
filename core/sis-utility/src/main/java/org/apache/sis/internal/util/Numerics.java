@@ -26,10 +26,14 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.Statistics;
+import org.apache.sis.math.Vector;
 import org.opengis.referencing.operation.Matrix;    // For javadoc
 
+import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
+import static java.lang.Math.ulp;
 
 
 /**
@@ -480,6 +484,39 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Suggests an amount of fraction digits for data having the given statistics.
+     * This method uses heuristic rules that may be modified in any future SIS version.
+     *
+     * @param  stats  statistics on the data to format.
+     * @return number of fraction digits suggested. May be negative.
+     *
+     * @since 1.0
+     */
+    public static int suggestFractionDigits(final Statistics stats) {
+        final double minimum = stats.minimum();
+        final double maximum = stats.maximum();
+        double delta = stats.standardDeviation(true);                       // 'true' is for avoiding NaN when count = 1.
+        if (delta == 0) {
+            delta = stats.span();                                           // May happen that the span is very narrow.
+            if (delta == 0) {
+                delta = abs(maximum) / 1E+6;                                // The 1E+6 factor is arbitrary.
+            }
+        } else {
+            /*
+             * Computes a representative range of values. We take 2 standard deviations away
+             * from the mean. Assuming that data have a gaussian distribution, this is 97.7%
+             * of data. If the data have a uniform distribution, then this is 100% of data.
+             */
+            final double mean = stats.mean();
+            delta *= 2;
+            delta  = min(maximum, mean+delta) - max(minimum, mean-delta);   // Range of 97.7% of values.
+            delta /= min(stats.count() * 1E+2, 1E+6);                       // Mean delta for uniform distribution + 2 decimal digits.
+            delta  = max(delta, max(ulp(minimum), ulp(maximum)));           // Not finer than 'double' accuracy.
+        }
+        return DecimalFunctions.fractionDigitsForDelta(delta, false);
+    }
+
+    /**
      * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
      * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
      *
@@ -487,41 +524,34 @@ public final class Numerics extends Static {
      * @return suggested amount of fraction digits as an array as long as the longest row.
      *
      * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
+     *
+     * @todo Move into {@link org.apache.sis.internal.referencing.WKTUtilities}
+     *       if we move WKT parser/formatter to referencing module.
      */
-    public static int[] suggestFractionDigits(final double[][] rows) {
+    public static int[] suggestFractionDigits(final Vector[] rows) {
         int length = 0;
         final int n = rows.length - 1;
         for (int j=0; j <= n; j++) {
-            final int rl = rows[j].length;
+            final int rl = rows[j].size();
             if (rl > length) length = rl;
         }
         final int[] fractionDigits = new int[length];
+        final Statistics stats = new Statistics(null);
         for (int i=0; i<length; i++) {
-            double min = Double.POSITIVE_INFINITY;
-            double max = Double.NEGATIVE_INFINITY;
             boolean isInteger = true;
-            for (final double[] row : rows) {
-                if (row.length > i) {
-                    final double value = row[i];
-                    if (value < min) min = value;
-                    if (value > max) max = value;
+            for (final Vector row : rows) {
+                if (row.size() > i) {
+                    final double value = row.doubleValue(i);
+                    stats.accept(value);
                     if (isInteger && Math.floor(value) != value && !Double.isNaN(value)) {
                         isInteger = false;
                     }
                 }
             }
             if (!isInteger) {
-                final double  delta;
-                final boolean strict;
-                if (min < max) {
-                    delta  = (max - min) / n;
-                    strict = (n == 1);
-                } else {
-                    delta  = Math.max(Math.abs(min), Math.abs(max)) * 1E-6;     // The 1E-6 factor is arbitrary.
-                    strict = false;
-                }
-                fractionDigits[i] = DecimalFunctions.fractionDigitsForDelta(delta, strict);
+                fractionDigits[i] = suggestFractionDigits(stats);
             }
+            stats.reset();
         }
         return fractionDigits;
     }
@@ -538,7 +568,7 @@ public final class Numerics extends Static {
     @Workaround(library="JDK", version="10")
     public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format,Object,String> action) {
         if (value instanceof Number) {
-            final double m = Math.abs(((Number) value).doubleValue());
+            final double m = abs(((Number) value).doubleValue());
             if (m > 0 && (m >= 1E+9 || m < 1E-4) && format instanceof DecimalFormat) {
                 final DecimalFormat df = (DecimalFormat) format;
                 final String pattern = df.toPattern();

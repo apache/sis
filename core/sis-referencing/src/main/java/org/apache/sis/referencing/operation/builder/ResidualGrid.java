@@ -16,20 +16,32 @@
  */
 package org.apache.sis.referencing.operation.builder;
 
+import java.util.function.Function;
 import javax.measure.quantity.Dimensionless;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.measure.Units;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.math.Statistics;
+import org.apache.sis.math.Vector;
+import org.apache.sis.measure.Units;
 
 
 /**
  * The residuals after an affine approximation has been created for a set of matching control point pairs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -41,11 +53,53 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
 
     /**
      * The parameter descriptors for the "Localization grid" operation.
+     * Current implementation accepts a maximum of 3 dimensions; if the residual grid contains more dimensions,
+     * the extra dimensions will not be shown in the parameters. This is not a committed set of parameters and
+     * they may change in any future SIS version. We define them mostly for {@code toString()} implementation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = new ParameterBuilder();
-        PARAMETERS = builder.addName("Localization grid").createGroup();
+        final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
+        @SuppressWarnings("rawtypes")
+        final ParameterDescriptor<?>[] grids = new ParameterDescriptor[] {
+            builder.addName(Constants.NUM_ROW).createBounded(Integer.class, 2, null, null),
+            builder.addName(Constants.NUM_COL).createBounded(Integer.class, 2, null, null),
+            builder.addName("num_dim").createBounded(Integer.class, 1, null, 2),
+            builder.addName("grid_x").create(Matrix.class, null),
+            builder.addName("grid_y").setRequired(false).create(Matrix.class, null),
+            builder.addName("grid_z").create(Matrix.class, null)
+        };
+        PARAMETERS = builder.addName("Localization grid").createGroup(grids);
+    }
+
+    /**
+     * Sets the parameters of the {@code InterpolatedTransform} which uses that localization grid.
+     * The given {@code parameters} must have been created from {@link #PARAMETERS} descriptor.
+     * This method sets the matrix parameters using views over the {@link #offsets} array.
+     */
+    @Override
+    public void setGridParameters(final Parameters parameters) {
+        super.setGridParameters(parameters);
+        final Matrix denormalization;
+        if (parameters instanceof ContextualParameters) {
+            denormalization = ((ContextualParameters) parameters).getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
+        } else {
+            denormalization = new Matrix3();            // Identity.
+        }
+        final int[] size = getGridSize();
+        parameters.parameter(Constants.NUM_ROW).setValue(size[1]);
+        parameters.parameter(Constants.NUM_COL).setValue(size[0]);
+        parameters.parameter("num_dim").setValue(numDim);
+        String name = "grid_x";
+        for (int dim = 0; dim < numDim; dim++) {
+            final Matrix m = new Data(dim, denormalization);
+            parameters.parameter(name).setValue(m);
+            switch (dim) {
+                case 0: name = "grid_y"; break;         // Next parameter to set after "grid_x".
+                case 1: name = "grid_z"; break;         // Next parameter to set after "grid_y".
+                default: return;                        // Current implementation does not show more than 3 dimensions.
+            }
+        }
     }
 
     /**
@@ -146,6 +200,97 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     @Override
     public double getCellValue(int dim, int gridX, int gridY) {
         return offsets[(gridX + gridY*nx) * numDim + dim];
+    }
+
+    /**
+     * View over one dimension of the offset vectors. This is used for populating the {@link ParameterDescriptorGroup}
+     * that describes the {@code MathTransform}. Those parameters are themselves used for formatting Well Known Text.
+     */
+    private final class Data extends FormattableObject implements Matrix, Function<int[],Number> {
+        /** Coefficients from the denormalization matrix for the row corresponding to this dimension. */
+        private final double[] affine;
+
+        /** Creates a new matrix for the specified dimension. */
+        Data(final int dim, final Matrix denormalization) {
+            affine = new double[denormalization.getNumCol()];
+            for (int i=0; i<affine.length; i++) {
+                affine[i] = denormalization.getElement(dim, i);
+            }
+        }
+
+        @SuppressWarnings("CloneInNonCloneableClass")
+        @Override public Matrix  clone()                            {return this;}
+        @Override public boolean isIdentity()                       {return false;}
+        @Override public int     getNumCol()                        {return nx;}
+        @Override public int     getNumRow()                        {return getGridSize()[1];}
+        @Override public Number  apply     (int[] p)                {return getElement(p[1], p[0]);}
+        @Override public void    setElement(int y, int x, double v) {throw new UnsupportedOperationException();}
+
+        /** Computes the matrix element in the given row and column. */
+        @Override public double  getElement(final int y, final int x) {
+            int i = affine.length;
+            double sum = affine[--i];
+            while (--i >= 0) {
+                sum += affine[i] * getCellValue(i, x, y);       // TODO: use Math.fma with JDK9.
+            }
+            return sum;
+        }
+
+        /**
+         * Returns a short string representation on one line. This appears as a single row
+         * in the table formatted for {@link ParameterDescriptorGroup} string representation.
+         */
+        @Override public String toString() {
+            final int[] size = getGridSize();
+            return new StringBuilder(80).append('[')
+                    .append(getElement(0, 0)).append(", …, ")
+                    .append(getElement(size[1] - 1, size[0] - 1))
+                    .append(']').toString();
+        }
+
+        /**
+         * Returns a multi-lines string representation. This appears in the Well Known Text (WKT)
+         * formatting of {@link org.opengis.referencing.operation.MathTransform}.
+         */
+        @Override protected String formatTo(final Formatter formatter) {
+            final Object[] numbers = WKTUtilities.cornersAndCenter(this, getGridSize(), 3);
+            final Vector[] rows = new Vector[numbers.length];
+            final Statistics stats = new Statistics(null);          // For computing accuracy.
+            Vector before = null;
+            for (int j=0; j<rows.length; j++) {
+                final Vector row = Vector.create(numbers[j], false);
+                /*
+                 * Estimate an accuracy to use for formatting values. This computation is specific to ResidualGrid
+                 * since it assumes that values in each corner are globally increasing or decreasing. Consequently
+                 * the differences between consecutive values are assumed a good indication of desired accuracy
+                 * (this assumption does not hold for arbitrary matrix).
+                 */
+                Number right = null;
+                for (int i=row.size(); --i >= 0;) {
+                    final Number n = row.get(i);
+                    if (n != null) {
+                        final double value = n.doubleValue();
+                        if (right != null) {
+                            stats.accept(Math.abs(right.doubleValue() - value));
+                        }
+                        if (before != null) {
+                            final Number up = before.get(i);
+                            if (up != null) {
+                                stats.accept(Math.abs(up.doubleValue() - value));
+                            }
+                        }
+                    }
+                    right = n;
+                }
+                before  = row;
+                rows[j] = row;
+            }
+            final int accuracy = Numerics.suggestFractionDigits(stats);
+            formatter.newLine();
+            formatter.append(rows, Math.max(0, accuracy));
+            formatter.setInvalidWKT(Matrix.class, null);
+            return "Matrix";
+        }
     }
 
     /**

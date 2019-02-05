@@ -44,7 +44,7 @@ import org.apache.sis.internal.util.Strings;
  *   <li>Subclasses need to give an access to their internal data (not a copy) through the {@link #getData()}
  *       and {@link #setData(Object[])} methods. We use that for managing the cache, reducing memory usage by
  *       sharing data and for {@link #equals(Object)} and {@link #hashCode()} implementations.</li>
- *   <li>{@link #descriptor}, {@link #gridToTarget()} and {@link #setFileParameters(Parameters)} are convenience
+ *   <li>{@link #descriptor}, {@link #gridToTarget()} and {@link #setGridParameters(Parameters)} are convenience
  *       members for {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform} constructor.
  *       What they do are closely related to how {@code InterpolatedTransform} works, and trying to document that
  *       in a public API would probably be too distracting for the users.</li>
@@ -53,7 +53,7 @@ import org.apache.sis.internal.util.Strings;
  * The main concrete subclass is {@link DatumShiftGridFile.Float}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -93,7 +93,8 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     /**
      * The files from which the grid has been loaded. This is not used directly by this class
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
-     * transform for setting the parameter values.
+     * transform for setting the parameter values. Never empty but may be null if the grid is
+     * computed instead than loaded from file(s).
      */
     private final Path[] files;
 
@@ -138,7 +139,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     {
         super(coordinateUnit, coordinateToGrid, new int[] {nx, ny}, isCellValueRatio, translationUnit);
         this.descriptor = descriptor;
-        this.files      = files;
+        this.files      = (files.length != 0) ? files : null;
         this.nx         = nx;
         this.accuracy   = Double.NaN;
     }
@@ -261,12 +262,13 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     }
 
     /**
-     * Sets all parameters for a value of type {@link Path} to the values given to th constructor.
+     * Sets all parameters for a value of type {@link Path} to the values given to the constructor.
+     * Subclasses may override for defining other kinds of parameters too.
      *
      * @param  parameters  the parameter group where to set the values.
      */
-    public final void setFileParameters(final Parameters parameters) {
-        if (files.length != 0) {
+    public void setGridParameters(final Parameters parameters) {
+        if (files != null) {
             int i = 0;
             for (final GeneralParameterDescriptor gd : descriptor.descriptors()) {
                 if (gd instanceof ParameterDescriptor<?>) {
@@ -316,7 +318,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "file", (files.length != 0) ? files[0] : null);
+        return Strings.toString(getClass(), "file", (files != null) ? files[0] : null);
     }
 
 

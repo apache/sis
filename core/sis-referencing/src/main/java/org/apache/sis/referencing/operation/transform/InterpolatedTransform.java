@@ -149,9 +149,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalUnitFor_2, "translation", unit));
         }
         dimension = grid.getTranslationDimensions();
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
-        }
         /*
          * Set the normalization matrix to the conversion from source coordinates (e.g. seconds of angle)
          * to grid indices. This will allow us to invoke DatumShiftGrid.interpolateAtCell(x, y, vector)
@@ -197,6 +194,13 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(denormalize);
         inverse = createInverse();
+        /*
+         * Parameters completed last because some DatumShiftGridFile subclasses (e.g. ResidualGrid) needs the
+         * (de)normalization matrices.
+         */
+        if (grid instanceof DatumShiftGridFile<?,?>) {
+            ((DatumShiftGridFile<?,?>) grid).setGridParameters(context);
+        }
     }
 
     /**
