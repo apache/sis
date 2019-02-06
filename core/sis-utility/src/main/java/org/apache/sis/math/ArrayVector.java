@@ -454,7 +454,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Applies hash code contract specified {@link Vector#hashCode()}. */
         @Override public int hashCode() {
-            int hash = 0;
+            int hash = 1;
             final int size = size();
             for (int i=0; i<size; i++) {
                 hash = PRIME * hash + Double.hashCode(doubleValue(i));

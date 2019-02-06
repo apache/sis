@@ -1459,6 +1459,7 @@ search:     for (;;) {
     /**
      * Returns a hash code for the values in this vector. The hash code is computed as if this vector was converted
      * to an array of {@link Number}s, then the {@link Arrays#hashCode(Object[])} method invoked for that array.
+     * This contract is defined for compatibility with {@link java.util.List#hashCode()} contract.
      *
      * @return a hash code value for the values in this vector.
      *
@@ -1466,7 +1467,7 @@ search:     for (;;) {
      */
     @Override
     public int hashCode() {
-        int hash = 0;
+        int hash = 1;
         final int size = size();
         for (int i=0; i<size; i++) {
             hash = PRIME * hash + get(i).hashCode();
