@@ -328,10 +328,10 @@ public final class DoubleDouble extends Number {
         return new DoubleDouble(0.000004848136811095359935899141023579480, 9.320078015422868E-23);
     }
 
-    /** @return {@link #value}. */
-    @Override public double doubleValue() {return value;}
-    @Override public float  floatValue()  {return (float) value;}
-    @Override public long   longValue()   {return Math.round(value);}
+    /** @return {@link #value} + {@link #error}. */
+    @Override public double doubleValue() {return value + error;}
+    @Override public float  floatValue()  {return (float) doubleValue();}
+    @Override public long   longValue()   {return Math.round(doubleValue());}
     @Override public int    intValue()    {return Math.toIntExact(longValue());}
 
     /**

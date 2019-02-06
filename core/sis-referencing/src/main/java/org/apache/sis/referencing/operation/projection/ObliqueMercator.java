@@ -167,8 +167,8 @@ public class ObliqueMercator extends ConformalProjection {
          *      λ₀ =  λc – [asin(G⋅tan(γ₀))] / B
          */
         B = sqrt(1 + eccentricitySquared*(cos2φ*cos2φ) / (1 - eccentricitySquared));
-        final double Br  = B * initializer.axisLengthRatio().value;                     // Br = B⋅√(1 - ℯ²)
-        final double rν2 = initializer.rν2(sinφ).value;                                 // rν² = (1 - ℯ²⋅sin²φc)
+        final double Br  = B * initializer.axisLengthRatio().doubleValue();             // Br = B⋅√(1 - ℯ²)
+        final double rν2 = initializer.rν2(sinφ).doubleValue();                         // rν² = (1 - ℯ²⋅sin²φc)
         final double A   = Br / rν2;                                                    // a and kc handled later.
         final double D   = Br / (cosφ * sqrt(rν2));
         final double sD1 = sqrt(Math.max(D*D - 1, 0));

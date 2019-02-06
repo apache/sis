@@ -414,7 +414,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double getEccentricity() {
         final DoubleDouble e = eccentricitySquared();
         e.sqrt();
-        return e.value;
+        return e.doubleValue();
     }
 
     /**
@@ -430,7 +430,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @since 0.7
      */
     public double getEccentricitySquared() {
-        return eccentricitySquared().value;
+        return eccentricitySquared().doubleValue();
     }
 
     /**
@@ -638,7 +638,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
         final DoubleDouble a = new DoubleDouble(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
         a.subtract(getSemiMajorAxis());                         // Presumed accurate in base 10 (not 2) by definition.
-        return a.value;
+        return a.doubleValue();
     }
 
     /**
@@ -657,7 +657,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double flatteningDifference(final Ellipsoid other) {
         final DoubleDouble f = flattening(other);
         f.subtract(flattening(this));
-        return f.value;
+        return f.doubleValue();
     }
 
     /**

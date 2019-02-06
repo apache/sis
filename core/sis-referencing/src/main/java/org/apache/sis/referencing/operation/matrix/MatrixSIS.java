@@ -160,7 +160,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
     void set(final int row, final int column, final DoubleDouble dd) {
-        setElement(row, column, dd.value);
+        setElement(row, column, dd.doubleValue());
     }
 
     /**
@@ -590,7 +590,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 ele.multiply(vector[i]);
                 sum.add(ele);
             }
-            target[j] = sum.value;
+            target[j] = sum.doubleValue();
             sum.clear();
         }
         return target;

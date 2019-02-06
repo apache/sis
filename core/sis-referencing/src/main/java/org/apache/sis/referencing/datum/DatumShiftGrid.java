@@ -584,7 +584,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
                 sum.add(getCellValue(dim, gridX, gridY));
             }
         }
-        return sum.value / (nx * ny);
+        return sum.doubleValue() / (nx * ny);
     }
 
     /**

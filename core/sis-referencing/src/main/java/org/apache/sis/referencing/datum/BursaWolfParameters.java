@@ -561,7 +561,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         RS.multiply(S);
         S.add(-1, 0);
         S.multiply(PPM, 0);
-        dS = S.value;
+        dS = S.doubleValue();
         /*
          * Rotation terms. Each rotation terms appear twice, with one value being the negative of the other value.
          * We verify this skew symmetric aspect in the loop. We also opportunistically verify that the scale terms
@@ -583,7 +583,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
                 }
                 S.subtract(value, error);
                 S.multiply(0.5, 0);
-                value = S.value;                                // Average of the two rotation terms.
+                value = S.doubleValue();                        // Average of the two rotation terms.
                 switch (j*SIZE + i) {
                     case 1: rZ =  value; break;
                     case 2: rY = -value; break;

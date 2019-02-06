@@ -373,7 +373,7 @@ public class Line implements Cloneable, Serializable {
         a.multiply(mean_x2);
         a.sqrt();
         a.inverseDivide(mean_xy);
-        return a.value;
+        return a.doubleValue();
     }
 
     /**

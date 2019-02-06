@@ -316,7 +316,7 @@ final class Initializer {
      */
     final DoubleDouble rν2(final double sinφ) {
         if (DoubleDouble.DISABLED) {
-            return verbatim(1 - eccentricitySquared.value * (sinφ*sinφ));
+            return verbatim(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ));
         }
         final DoubleDouble t = verbatim(sinφ);
         t.square();
@@ -349,7 +349,7 @@ final class Initializer {
         Rc.subtract(eccentricitySquared);       //  1 - ℯ²
         Rc.sqrt();                              //  √(1 - ℯ²)
         Rc.divide(rν2(sinφ));                   //  √(1 - ℯ²) / (1 - ℯ²sin²φ)
-        return Rc.value;
+        return Rc.doubleValue();
     }
 
     /**
@@ -368,6 +368,6 @@ final class Initializer {
         final DoubleDouble s = rν2(sinφ);
         s.sqrt();
         s.inverseDivide(cosφ, 0);
-        return s.value;
+        return s.doubleValue();
     }
 }

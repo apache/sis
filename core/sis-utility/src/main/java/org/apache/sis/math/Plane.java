@@ -498,12 +498,12 @@ public class Plane implements Cloneable, Serializable {
             boolean detectZeroSx = true;
             boolean detectZeroSy = true;
             boolean detectZeroZ0 = true;
-            final double sx     = this.sx.value;
-            final double sy     = this.sy.value;
-            final double z0     = this.z0.value;
-            final double mean_x = sum_x.value / n;
-            final double mean_y = sum_y.value / n;
-            final double mean_z = sum_z.value / n;
+            final double sx     = this.sx.doubleValue();
+            final double sy     = this.sy.doubleValue();
+            final double z0     = this.z0.doubleValue();
+            final double mean_x = sum_x.doubleValue() / n;
+            final double mean_y = sum_y.doubleValue() / n;
+            final double mean_z = sum_z.doubleValue() / n;
             final double offset = abs((sx * mean_x + sy * mean_y) + z0);    // Offsetted z₀ - see comment before usage.
             int index = 0;
             double sum_ds2 = 0, sum_dz2 = 0, sum_dsz = 0;
