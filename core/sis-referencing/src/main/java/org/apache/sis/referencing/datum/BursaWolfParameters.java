@@ -430,7 +430,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             case 6: p = dS; break;
             default: throw new AssertionError(index);
         }
-        return new DoubleDouble(p);
+        return DoubleDouble.createAndGuessError(p);
     }
 
     /**

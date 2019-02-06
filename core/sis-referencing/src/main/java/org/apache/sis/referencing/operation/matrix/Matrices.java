@@ -280,7 +280,7 @@ public final class Matrices extends Static {
                          * See the comment in transform(Envelope, Envelope) for an explanation about why
                          * we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
                          */
-                        final DoubleDouble scale = new DoubleDouble(same ? +1 : -1, 0);
+                        final DoubleDouble scale = new DoubleDouble(same ? +1d : -1d);
                         scale.multiply(dstEnvelope.getSpan(dstIndex));
                         scale.divide  (srcEnvelope.getSpan(srcIndex));
 

@@ -47,7 +47,7 @@ import org.apache.sis.math.DecimalFunctions;
  * }
  *
  * <div class="section">Impact of availability of FMA instructions</div>
- * If <cite>fused multiply-add</cite> (FMA) instruction are available in a future Java version
+ * When allowed to use <cite>fused multiply-add</cite> (FMA) instruction added in JDK9
  * (see <a href="https://issues.apache.org/jira/browse/SIS-136">SIS-136</a> on Apache SIS JIRA),
  * then the following methods should be revisited:
  *
@@ -56,7 +56,7 @@ import org.apache.sis.math.DecimalFunctions;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
@@ -244,17 +244,27 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Creates a new value initialized to the given value and an error term inferred by
-     * {@link #errorForWellKnownValue(double)}.
+     * Creates a new instance initialized to the given long integer.
      *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #DoubleDouble(double, double) DoubleDouble}(otherValue, 0)</code> is more efficient.
+     * @param  value  the long integer value to wrap.
+     */
+    public DoubleDouble(final long value) {
+        this.value = value;
+        this.error = (value - (long) this.value);
+    }
+
+    /**
+     * Creates a new instance initialized to the given value verbatim, without inferring an error term for double-double arithmetic.
+     * We use this constructor when the value has been computed using transcendental functions (cosine, logarithm, <i>etc.</i>)
+     * in which case there is no way we can infer a meaningful error term. It should also be used when the value is known to have
+     * an exact representation as a {@code double} primitive type.
      *
-     * @param  value  the initial value.
+     * @param  value  the value to wrap in a {@code DoubleDouble} instance.
+     *
+     * @see #createAndGuessError(double)
      */
     public DoubleDouble(final double value) {
         this.value = value;
-        this.error = errorForWellKnownValue(value);
     }
 
     /**
@@ -285,17 +295,17 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Uses the given value verbatim, without inferring an error term for double-double arithmetic.
-     * We use this method when the value has been computed using transcendental functions (cosine,
-     * logarithm, <i>etc.</i>) in which case there is no way we can infer a meaningful error term.
+     * Creates a new value initialized to the given value and an error term inferred by
+     * {@link #errorForWellKnownValue(double)}.
      *
-     * <p>We use this method both for readability and for making easier to search where such thing occur.</p>
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #DoubleDouble(double) DoubleDouble}(value)</code> is more efficient.
      *
-     * @param  value  the value to wrap in a {@code DoubleDouble} instance.
-     * @return a {@code DoubleDouble} containing exactly the given value, without error term.
+     * @param  value  the initial value.
+     * @return an instance initialized to the given value and a default error term.
      */
-    public static DoubleDouble verbatim(final double value) {
-        return new DoubleDouble(value, 0);
+    public static DoubleDouble createAndGuessError(final double value) {
+        return new DoubleDouble(value, errorForWellKnownValue(value));
     }
 
     /**
@@ -331,7 +341,7 @@ public final class DoubleDouble extends Number {
     /** @return {@link #value} + {@link #error}. */
     @Override public double doubleValue() {return value + error;}
     @Override public float  floatValue()  {return (float) doubleValue();}
-    @Override public long   longValue()   {return Math.round(doubleValue());}
+    @Override public long   longValue()   {return Math.round(value) + (long) error;}
     @Override public int    intValue()    {return Math.toIntExact(longValue());}
 
     /**
@@ -425,7 +435,7 @@ public final class DoubleDouble extends Number {
      * @param  a  the first number to add.
      * @param  b  the second number to add, which must be smaller than {@code a}.
      */
-    public void setToQuickSum(final double a, final double b) {
+    final void setToQuickSum(final double a, final double b) {
         value = a + b;
         error = b - (value - a);
         if (DISABLED) error = 0;
@@ -997,7 +1007,7 @@ public final class DoubleDouble extends Number {
      * This pattern occurs in map projections.
      */
     public void ratio_1m_1p() {
-        final DoubleDouble numerator = new DoubleDouble(1, 0);
+        final DoubleDouble numerator = new DoubleDouble(1d);
         numerator.subtract(this);
         add(1, 0);
         inverseDivide(numerator);

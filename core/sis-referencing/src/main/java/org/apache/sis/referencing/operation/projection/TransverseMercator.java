@@ -215,7 +215,7 @@ public class TransverseMercator extends ConformalProjection {
          * in the 3 last digits. Note that we still have sometime a 1 ULP difference compared to the
          * 'n' value at serialization time.
          */
-        final DoubleDouble t = new DoubleDouble(1, 0);
+        final DoubleDouble t = new DoubleDouble(1d);
         t.subtract(eccentricitySquared, 0);
         t.sqrt();
         t.ratio_1m_1p();

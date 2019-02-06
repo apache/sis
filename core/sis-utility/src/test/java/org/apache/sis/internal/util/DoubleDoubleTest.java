@@ -37,7 +37,7 @@ import static java.lang.StrictMath.*;
  * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -255,7 +255,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @Test
     @DependsOnMethod("testDivide")
     public void testRatio_1m_1p() {
-        final DoubleDouble t = new DoubleDouble(0.25, 0);
+        final DoubleDouble t = new DoubleDouble(0.25);
         t.ratio_1m_1p();
         assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue(), STRICT);
     }
@@ -273,7 +273,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @DependsOnMethod({"testMultiply", "testDivide"})
     public void testSqrt() {
         final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
-        final DoubleDouble dd = new DoubleDouble(2, 0);
+        final DoubleDouble dd = new DoubleDouble(2d);
         dd.sqrt();
         assertNormalizedAndEquals(sqrt(2), dd);
         assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
@@ -305,8 +305,8 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @Test
     @DependsOnMethod({"testMultiply", "testAdd"})
     public void testSeries() {
-        final DoubleDouble t = new DoubleDouble(2);
-        t.series(1, 1./3, 1./9, 1./7, 1./13);  // Random coefficient.
+        final DoubleDouble t = new DoubleDouble(2d);
+        t.series(1, 1./3, 1./9, 1./7, 1./13);                                       // Random coefficients.
         assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue(), STRICT);
     }
 
@@ -436,5 +436,21 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
         }
+    }
+
+    /**
+     * Tests initialization with a long value.
+     */
+    @Test
+    public void testLong() {
+        long value = Long.MAX_VALUE - 10;
+        DoubleDouble t = new DoubleDouble(value);
+        assertEquals(-10, t.error, STRICT);
+        assertEquals(value, t.longValue());
+
+        value = Long.MIN_VALUE + 10;
+        t = new DoubleDouble(value);
+        assertEquals(10, t.error, STRICT);
+        assertEquals(value, t.longValue());
     }
 }

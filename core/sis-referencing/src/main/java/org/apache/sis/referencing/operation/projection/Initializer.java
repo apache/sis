@@ -31,7 +31,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection.Para
 
 import static java.lang.Math.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -145,7 +144,7 @@ final class Initializer {
                         - getAndStore(roles.get(ParameterRole.FALSE_SOUTHING));
 
         eccentricitySquared = new DoubleDouble();
-        DoubleDouble k = new DoubleDouble(a);  // The value by which to multiply all results of normalized projection.
+        DoubleDouble k = DoubleDouble.createAndGuessError(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
             if (variant == AUTHALIC_RADIUS) {
                 k.value = Formulas.getAuthalicRadius(a, b);
@@ -177,14 +176,14 @@ final class Initializer {
                  * constructor applies corrections for making those values more accurate in base 10 rather than 2.
                  */
                 if (isIvfDefinitive) {
-                    final DoubleDouble f = new DoubleDouble(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
+                    final DoubleDouble f = DoubleDouble.createAndGuessError(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
                     f.inverseDivide(1,0);
                     eccentricitySquared.setFrom(f);
                     eccentricitySquared.multiply(2,0);
                     f.square();
                     eccentricitySquared.subtract(f);
                 } else {
-                    final DoubleDouble rs = new DoubleDouble(b);
+                    final DoubleDouble rs = DoubleDouble.createAndGuessError(b);
                     rs.divide(k);                                       // rs = b/a
                     rs.square();
                     eccentricitySquared.value = 1;
@@ -228,8 +227,8 @@ final class Initializer {
          */
         context.normalizeGeographicInputs(λ0);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        denormalize.convertAfter(0, k, new DoubleDouble(fe));
-        denormalize.convertAfter(1, k, new DoubleDouble(fn));
+        denormalize.convertAfter(0, k, DoubleDouble.createAndGuessError(fe));
+        denormalize.convertAfter(1, k, DoubleDouble.createAndGuessError(fn));
     }
 
     /**
@@ -283,7 +282,7 @@ final class Initializer {
      * We retrieve this value from the eccentricity with {@code b/a = sqrt(1-ℯ²)}.
      */
     final DoubleDouble axisLengthRatio() {
-        final DoubleDouble b = new DoubleDouble(1,0);
+        final DoubleDouble b = new DoubleDouble(1d);
         b.subtract(eccentricitySquared);
         b.sqrt();
         return b;
@@ -316,9 +315,9 @@ final class Initializer {
      */
     final DoubleDouble rν2(final double sinφ) {
         if (DoubleDouble.DISABLED) {
-            return verbatim(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ));
+            return new DoubleDouble(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ));
         }
-        final DoubleDouble t = verbatim(sinφ);
+        final DoubleDouble t = new DoubleDouble(sinφ);
         t.square();
         t.multiply(eccentricitySquared);
         /*
@@ -345,7 +344,7 @@ final class Initializer {
      * @return radius of the conformal sphere at latitude φ.
      */
     final double radiusOfConformalSphere(final double sinφ) {
-        final DoubleDouble Rc = verbatim(1);
+        final DoubleDouble Rc = new DoubleDouble(1d);
         Rc.subtract(eccentricitySquared);       //  1 - ℯ²
         Rc.sqrt();                              //  √(1 - ℯ²)
         Rc.divide(rν2(sinφ));                   //  √(1 - ℯ²) / (1 - ℯ²sin²φ)

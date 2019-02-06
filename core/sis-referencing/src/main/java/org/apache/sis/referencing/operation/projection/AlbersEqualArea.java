@@ -141,7 +141,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
          * we do not really have that accuracy because of the limited precision of 'nm'. The intent is rather to
          * increase the chances term cancellations happen during concatenation of coordinate operations.
          */
-        final DoubleDouble rn = DoubleDouble.verbatim(1);
+        final DoubleDouble rn = new DoubleDouble(1d);
         rn.subtract(initializer.eccentricitySquared);
         rn.divide(nm, 0);
         /*
@@ -149,7 +149,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
          * by the denormalization matrix. Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in qm(…).
          * See above note about double-double arithmetic usage.
          */
-        final DoubleDouble ρ0 = DoubleDouble.verbatim(C - nm*qm(sinφ0));
+        final DoubleDouble ρ0 = new DoubleDouble(C - nm*qm(sinφ0));
         ρ0.sqrt();
         ρ0.multiply(rn);
         /*

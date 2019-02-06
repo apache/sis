@@ -465,13 +465,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private static DoubleDouble flattening(final Ellipsoid e) {
         final DoubleDouble f;
         if (e.isIvfDefinitive()) {
-            f = new DoubleDouble(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
+            f = DoubleDouble.createAndGuessError(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
             f.inverseDivide(1, 0);
         } else {
-            f = new DoubleDouble(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
+            f = DoubleDouble.createAndGuessError(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
             final double value = f.value;
             final double error = f.error;
-            f.subtract(e.getSemiMinorAxis());                 // Presumed accurate in base 10 (not 2) by definition.
+            f.subtract(e.getSemiMinorAxis());                                 // Presumed accurate in base 10 (not 2) by definition.
             f.divide(value, error);
         }
         return f;
@@ -636,8 +636,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
-        final DoubleDouble a = new DoubleDouble(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
-        a.subtract(getSemiMajorAxis());                         // Presumed accurate in base 10 (not 2) by definition.
+        final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
+        a.subtract(getSemiMajorAxis());                                         // Presumed accurate in base 10 (not 2) by definition.
         return a.doubleValue();
     }
 

@@ -299,10 +299,10 @@ public final class Equirectangular extends AbstractProvider {
             final double sinφ1 = sin(φ1);
             a = b / (1 - (1 - rs*rs) * (sinφ1*sinφ1));
         }
-        final DoubleDouble k = new DoubleDouble(a);
+        final DoubleDouble k = DoubleDouble.createAndGuessError(a);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        denormalize.convertAfter(0, k, new DoubleDouble(fe));
-        denormalize.convertAfter(1, k, new DoubleDouble(fn));
+        denormalize.convertAfter(0, k, DoubleDouble.createAndGuessError(fe));
+        denormalize.convertAfter(1, k, DoubleDouble.createAndGuessError(fn));
         /*
          * Creates the ConcatenatedTransform, letting the factory returns the cached instance
          * if the caller already invoked this method previously (which usually do not happen).

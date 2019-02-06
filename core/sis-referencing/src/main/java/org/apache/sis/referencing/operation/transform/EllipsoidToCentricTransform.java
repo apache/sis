@@ -289,7 +289,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          *   - A "denormalization" transform for scaling (X,Y,Z) to the semi-major axis length.
          */
         context.normalizeGeographicInputs(0);
-        final DoubleDouble a = new DoubleDouble(semiMajor);
+        final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         for (int i=0; i<3; i++) {
             denormalize.convertAfter(i, a, null);
