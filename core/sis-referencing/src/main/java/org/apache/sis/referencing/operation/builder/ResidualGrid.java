@@ -49,13 +49,17 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6661539177698674636L;
+    private static final long serialVersionUID = 1445697681304159019L;
+
+    /**
+     * Number of source dimensions of the residual grid.
+     */
+    static final int SOURCE_DIMENSION = 2;
 
     /**
      * The parameter descriptors for the "Localization grid" operation.
-     * Current implementation accepts a maximum of 3 dimensions; if the residual grid contains more dimensions,
-     * the extra dimensions will not be shown in the parameters. This is not a committed set of parameters and
-     * they may change in any future SIS version. We define them mostly for {@code toString()} implementation.
+     * Current implementation is fixed to 2 dimensions. This is not a committed set of parameters and they
+     * may change in any future SIS version. We define them mostly for {@code toString()} implementation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
@@ -64,10 +68,8 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
         final ParameterDescriptor<?>[] grids = new ParameterDescriptor[] {
             builder.addName(Constants.NUM_ROW).createBounded(Integer.class, 2, null, null),
             builder.addName(Constants.NUM_COL).createBounded(Integer.class, 2, null, null),
-            builder.addName("num_dim").createBounded(Integer.class, 1, null, 2),
             builder.addName("grid_x").create(Matrix.class, null),
-            builder.addName("grid_y").setRequired(false).create(Matrix.class, null),
-            builder.addName("grid_z").create(Matrix.class, null)
+            builder.addName("grid_y").create(Matrix.class, null)
         };
         PARAMETERS = builder.addName("Localization grid").createGroup(grids);
     }
@@ -89,17 +91,8 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
         final int[] size = getGridSize();
         parameters.parameter(Constants.NUM_ROW).setValue(size[1]);
         parameters.parameter(Constants.NUM_COL).setValue(size[0]);
-        parameters.parameter("num_dim").setValue(numDim);
-        String name = "grid_x";
-        for (int dim = 0; dim < numDim; dim++) {
-            final Matrix m = new Data(dim, denormalization);
-            parameters.parameter(name).setValue(m);
-            switch (dim) {
-                case 0: name = "grid_y"; break;         // Next parameter to set after "grid_x".
-                case 1: name = "grid_z"; break;         // Next parameter to set after "grid_y".
-                default: return;                        // Current implementation does not show more than 3 dimensions.
-            }
-        }
+        parameters.parameter("grid_x").setValue(new Data(0, denormalization));
+        parameters.parameter("grid_y").setValue(new Data(1, denormalization));
     }
 
     /**
@@ -107,11 +100,6 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      * In this flat array, index of target dimension varies fastest, then column index, then row index.
      */
     private final double[] offsets;
-
-    /**
-     * Number of dimension of target coordinates.
-     */
-    private final int numDim;
 
     /**
      * Conversion from grid coordinates to the final "real world" coordinates.
@@ -125,16 +113,14 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      *
      * @param sourceToGrid  conversion from the "real world" source coordinates to grid indices including fractional parts.
      * @param gridToTarget  conversion from grid coordinates to the final "real world" coordinates.
-     * @param numDim        number of dimension of target coordinates.
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
      * @param precision     desired precision of inverse transformations in unit of grid cells.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
-            final int nx, final int ny, final int numDim, final double[] residuals, final double precision)
+            final int nx, final int ny, final double[] residuals, final double precision)
     {
         super(Units.UNITY, Units.UNITY, true, sourceToGrid, nx, ny, PARAMETERS);
         this.gridToTarget = gridToTarget;
-        this.numDim       = numDim;
         this.offsets      = residuals;
         this.accuracy     = precision;
     }
@@ -146,7 +132,6 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     private ResidualGrid(final ResidualGrid other, final double[] data) {
         super(other);
         gridToTarget = other.gridToTarget;
-        numDim       = other.numDim;
         accuracy     = other.accuracy;
         offsets      = data;
     }
@@ -181,7 +166,7 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      */
     @Override
     public int getTranslationDimensions() {
-        return numDim;
+        return SOURCE_DIMENSION;
     }
 
     /**
@@ -196,10 +181,11 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
 
     /**
      * Returns the cell value at the given dimension and grid index.
+     * Those values are components of <em>translation</em> vectors.
      */
     @Override
     public double getCellValue(int dim, int gridX, int gridY) {
-        return offsets[(gridX + gridY*nx) * numDim + dim];
+        return offsets[(gridX + gridY*nx) * SOURCE_DIMENSION + dim];
     }
 
     /**
@@ -228,12 +214,9 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
 
         /** Computes the matrix element in the given row and column. */
         @Override public double  getElement(final int y, final int x) {
-            int i = affine.length;
-            double sum = affine[--i];
-            while (--i >= 0) {
-                sum += affine[i] * getCellValue(i, x, y);       // TODO: use Math.fma with JDK9.
-            }
-            return sum;
+            return affine[0] * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
+                   affine[1] * (y + getCellValue(1, x, y)) +
+                   affine[2];
         }
 
         /**
@@ -291,17 +274,5 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
             formatter.setInvalidWKT(Matrix.class, null);
             return "Matrix";
         }
-    }
-
-    /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (super.equals(other)) {
-            // Offset array has been compared by the parent class.
-            return numDim == ((ResidualGrid) other).numDim;
-        }
-        return false;
     }
 }
