@@ -308,8 +308,8 @@ public class Line implements Cloneable, Serializable {
                 n++;
             }
         }
-        mean_x.divide(n, 0);
-        mean_y.divide(n, 0);
+        mean_x.divide(n);
+        mean_y.divide(n);
         /*
          * We have to solve two equations with two unknowns:
          *
@@ -330,7 +330,7 @@ public class Line implements Cloneable, Serializable {
         final DoubleDouble mean_xy = new DoubleDouble();
         for (final DirectPosition p : points) {
             final double y;
-            if (!isNaN(y       = p.getOrdinate(1)) &&  // Test first the dimension which is most likely to contain NaN.
+            if (!isNaN(y       = p.getOrdinate(1)) &&       // Test first the dimension which is most likely to contain NaN.
                 !isNaN(a.value = p.getOrdinate(0)))
             {
                 a.error = 0;
@@ -346,9 +346,9 @@ public class Line implements Cloneable, Serializable {
                 mean_y2.add(a);         // mean_y² += y²
             }
         }
-        mean_x2.divide(n, 0);
-        mean_y2.divide(n, 0);
-        mean_xy.divide(n, 0);
+        mean_x2.divide(n);
+        mean_y2.divide(n);
+        mean_xy.divide(n);
         /*
          * Assuming that 'mean(x) == 0', then the correlation
          * coefficient can be approximate by:

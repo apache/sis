@@ -281,13 +281,13 @@ public final class Matrices extends Static {
                          * we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
                          */
                         final DoubleDouble scale = new DoubleDouble(same ? +1d : -1d);
-                        scale.multiply(dstEnvelope.getSpan(dstIndex));
-                        scale.divide  (srcEnvelope.getSpan(srcIndex));
+                        scale.multiplyGuessError(dstEnvelope.getSpan(dstIndex));
+                        scale.divideGuessError  (srcEnvelope.getSpan(srcIndex));
 
                         final DoubleDouble translate = new DoubleDouble(scale);
-                        translate.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
+                        translate.multiplyGuessError((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
                         translate.negate();
-                        translate.add(dstCorner.getOrdinate(dstIndex));
+                        translate.addGuessError(dstCorner.getOrdinate(dstIndex));
 
                         matrix.setNumber(dstIndex, srcIndex,       scale);
                         matrix.setNumber(dstIndex, srcAxes.length, translate);

@@ -143,7 +143,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
          */
         final DoubleDouble rn = new DoubleDouble(1d);
         rn.subtract(initializer.eccentricitySquared);
-        rn.divide(nm, 0);
+        rn.divide(nm);
         /*
          * Compute  ρ₀ = √(C - n⋅q(sinφ₀))/n  with multiplication by a omitted because already taken in account
          * by the denormalization matrix. Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in qm(…).
@@ -159,7 +159,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, rn, null); rn.negate();
-        denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1, 0);
+        denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
         normalize.convertAfter(0, rn, null);
         super.computeCoefficients();
     }

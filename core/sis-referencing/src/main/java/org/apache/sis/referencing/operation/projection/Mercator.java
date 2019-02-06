@@ -255,7 +255,7 @@ public class Mercator extends ConformalProjection {
              * there is no such goal for other parameters computed from sine or consine functions.
              */
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-            offset.multiply(-λ0);
+            offset.multiplyGuessError(-λ0);
             denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {

@@ -161,7 +161,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
             final long millis = time.getTime() - timeReference;
             if (millis != 0) {                                          // Returns null for 0 as an optimization.
                 final DoubleDouble period = new DoubleDouble(millis);
-                period.divide(1000 * JULIAN_YEAR_LENGTH, 0);
+                period.divide(1000 * JULIAN_YEAR_LENGTH);
                 return period;
             }
         }
@@ -189,10 +189,10 @@ public class TimeDependentBWP extends BursaWolfParameters {
                 case 3: d = drX; break;
                 case 4: d = drY; break;
                 case 5: d = drZ; break;
-                case 6: d = ddS; period.multiply(1000, 0); break;
+                case 6: d = ddS; period.multiply(1000); break;
                 default: throw new AssertionError(index);
             }
-            period.multiply(d);
+            period.multiplyGuessError(d);
             p.add(period);
             period.value = value;
             period.error = error;

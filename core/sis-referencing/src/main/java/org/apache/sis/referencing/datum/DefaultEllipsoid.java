@@ -444,7 +444,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private DoubleDouble eccentricitySquared() {
         final DoubleDouble f = flattening(this);
         final DoubleDouble eccentricitySquared = new DoubleDouble(f);
-        eccentricitySquared.multiply(2, 0);
+        eccentricitySquared.multiply(2);
         f.square();
         eccentricitySquared.subtract(f);
         return eccentricitySquared;
@@ -466,12 +466,12 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         final DoubleDouble f;
         if (e.isIvfDefinitive()) {
             f = DoubleDouble.createAndGuessError(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
-            f.inverseDivide(1, 0);
+            f.inverseDivide(1);
         } else {
             f = DoubleDouble.createAndGuessError(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
             final double value = f.value;
             final double error = f.error;
-            f.subtract(e.getSemiMinorAxis());                                 // Presumed accurate in base 10 (not 2) by definition.
+            f.subtractGuessError(e.getSemiMinorAxis());                       // Presumed accurate in base 10 (not 2) by definition.
             f.divide(value, error);
         }
         return f;
@@ -637,7 +637,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         double semiMajor = other.getSemiMajorAxis();
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
         final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
-        a.subtract(getSemiMajorAxis());                                         // Presumed accurate in base 10 (not 2) by definition.
+        a.subtractGuessError(getSemiMajorAxis());                               // Presumed accurate in base 10 (not 2) by definition.
         return a.doubleValue();
     }
 

@@ -140,7 +140,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         final double λ0 = initializer.getAndStore(LONGITUDE_OF_ORIGIN);
         if (λ0 != 0) {
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-            offset.multiply(-λ0);
+            offset.multiplyGuessError(-λ0);
             denormalize.convertBefore(0, null, offset);
         }
         /*
@@ -150,7 +150,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          */
         final double φ1 = toRadians(initializer.getAndStore(STANDARD_PARALLEL));
         final DoubleDouble k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
-        k0.multiply(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
+        k0.multiplyGuessError(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
         /*
          * In most Apache SIS map projection implementations, the scale factor is handled by the super-class by
          * specifying a ParameterRole.SCALE_FACTOR. However in the case of this CylindricalEqualArea we rather
@@ -164,7 +164,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          */
         final DoubleDouble ik = new DoubleDouble(1d);
         ik.subtract(initializer.eccentricitySquared);
-        ik.multiply(0.5, 0);                 // This line need to be cancelled when using spherical formulas.
+        ik.multiply(0.5);                   // This line need to be cancelled when using spherical formulas.
         ik.divide(k0);
         denormalize.convertAfter(0, k0, null);
         denormalize.convertAfter(1, ik, null);

@@ -295,7 +295,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             denormalize.convertAfter(i, a, null);
         }
         if (withHeight) {
-            a.inverseDivide(1, 0);
+            a.inverseDivide(1);
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
             normalize.convertBefore(2, a, null);    // Divide ellipsoidal height by a.
         }

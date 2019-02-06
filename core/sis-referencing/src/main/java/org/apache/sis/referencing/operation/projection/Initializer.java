@@ -177,9 +177,9 @@ final class Initializer {
                  */
                 if (isIvfDefinitive) {
                     final DoubleDouble f = DoubleDouble.createAndGuessError(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
-                    f.inverseDivide(1,0);
+                    f.inverseDivide(1);
                     eccentricitySquared.setFrom(f);
-                    eccentricitySquared.multiply(2,0);
+                    eccentricitySquared.multiply(2);
                     f.square();
                     eccentricitySquared.subtract(f);
                 } else {
@@ -208,7 +208,7 @@ final class Initializer {
                      *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
                      */
                     k = rν2(sin(toRadians(parameters.doubleValue(radius))));
-                    k.inverseDivide(b, 0);
+                    k.inverseDivide(b);
                 }
             }
         }
@@ -219,7 +219,7 @@ final class Initializer {
          */
         final ParameterDescriptor<? extends Number> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
         if (scaleFactor != null) {
-            k.multiply(getAndStore(scaleFactor));
+            k.multiplyGuessError(getAndStore(scaleFactor));
         }
         /*
          * Set meridian rotation, scale factor, false easting and false northing parameter values
@@ -325,7 +325,7 @@ final class Initializer {
          * this is where double-double arithmetic has more value.
          */
         t.negate();
-        t.add(1,0);
+        t.add(1);
         return t;
     }
 
@@ -366,7 +366,7 @@ final class Initializer {
     final double scaleAtφ(final double sinφ, final double cosφ) {
         final DoubleDouble s = rν2(sinφ);
         s.sqrt();
-        s.inverseDivide(cosφ, 0);
+        s.inverseDivide(cosφ);
         return s.doubleValue();
     }
 }

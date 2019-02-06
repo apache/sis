@@ -289,8 +289,8 @@ public class LambertConicConformal extends ConformalProjection {
          * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
         final DoubleDouble F = new DoubleDouble(n);
-        F.multiply(pow(t1, n), 0);
-        F.inverseDivide(m1);
+        F.multiply(pow(t1, n));
+        F.inverseDivideGuessError(m1);
         if (!isNorth) {
             F.negate();
         }
@@ -305,7 +305,7 @@ public class LambertConicConformal extends ConformalProjection {
         DoubleDouble rF = null;
         if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
             rF = new DoubleDouble(F);
-            rF.multiply(pow(expOfNorthing(φ0, eccentricity*sin(φ0)), n), 0);
+            rF.multiply(pow(expOfNorthing(φ0, eccentricity*sin(φ0)), n));
         }
         /*
          * At this point, all parameters have been processed. Now store

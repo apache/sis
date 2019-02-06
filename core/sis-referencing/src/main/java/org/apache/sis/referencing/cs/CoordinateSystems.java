@@ -328,11 +328,11 @@ public final class CoordinateSystems extends Static {
                 }
                 final DoubleDouble element = DoubleDouble.castOrCopy(matrix.getNumber(j,i));
                 final DoubleDouble r = new DoubleDouble(element);
-                r.multiply(scale);
+                r.multiplyGuessError(scale);
                 matrix.setNumber(j, i, r);
                 r.setFrom(element);
-                r.multiply(offset);
-                r.add(matrix.getNumber(j, sourceDim));
+                r.multiplyGuessError(offset);
+                r.addGuessError(matrix.getNumber(j, sourceDim));
                 matrix.setNumber(j, sourceDim, r);
             }
         }

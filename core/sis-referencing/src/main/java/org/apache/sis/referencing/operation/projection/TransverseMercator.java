@@ -151,7 +151,7 @@ public class TransverseMercator extends ConformalProjection {
             B = new DoubleDouble(t);        // B  =  n
             B.square();
             B.series(1, 0.25, 1./64);       // B  =  (1 + n²/4 + n⁴/64)
-            t.add(1, 0);
+            t.add(1);
             B.divide(t);                    // B  =  (1 + n²/4 + n⁴/64) / (1 + n)
         }
         /*
@@ -216,7 +216,7 @@ public class TransverseMercator extends ConformalProjection {
          * 'n' value at serialization time.
          */
         final DoubleDouble t = new DoubleDouble(1d);
-        t.subtract(eccentricitySquared, 0);
+        t.subtract(eccentricitySquared);
         t.sqrt();
         t.ratio_1m_1p();
         computeCoefficients(t.doubleValue());
