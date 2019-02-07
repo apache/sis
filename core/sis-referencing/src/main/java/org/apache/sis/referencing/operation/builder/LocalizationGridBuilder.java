@@ -346,6 +346,20 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Sets all control points. The length of given vectors must be equal to the total number of cells in the grid.
+     * The first vector provides the <var>x</var> coordinates; the second vector provides the <var>y</var> coordinates,
+     * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
+     *
+     * @param  coordinates coordinates in each target dimensions, stored in row-major order.
+     *
+     * @since 1.0
+     */
+    public void setControlPoints(final Vector... coordinates) {
+        ArgumentChecks.ensureNonNull("coordinates", coordinates);
+        linear.setControlPoints(coordinates);
+    }
+
+    /**
      * Sets a single matching control point pair. Source position is assumed precise and target position is assumed uncertain.
      * If the given source position was already associated with another target position, then the old target position is discarded.
      *

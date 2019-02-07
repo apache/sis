@@ -607,16 +607,7 @@ main:   switch (getDimension()) {
                     final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
                     final Vector vx =  this.read();
                     final Vector vy = other.read();
-                    final double[] target = new double[2];
-                    int index = 0;
-                    for (int y=0; y<height; y++) {
-                        for (int x=0; x<width; x++) {
-                            target[0] = vx.doubleValue(index);
-                            target[1] = vy.doubleValue(index);
-                            grid.setControlPoint(x, y, target);
-                            index++;
-                        }
-                    }
+                    grid.setControlPoints(vx, vy);
                     return grid;
                 }
             }

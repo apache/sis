@@ -107,7 +107,7 @@ public class LinearTransformBuilder extends TransformBuilder {
     private double[][] targets;
 
     /**
-     * The product of all {@link #gridSize} values, or 0 if none if {@link #gridSize} is null.
+     * The product of all {@link #gridSize} values, or 0 if none or if {@link #gridSize} is null.
      * If non-zero, then this is the length of {@link #targets} arrays to create.
      */
     final int gridLength;
@@ -891,6 +891,32 @@ search:         for (int j=domain(); --j >= 0;) {
             }
         }
         return target;
+    }
+
+    /**
+     * Sets all control points. This method can be invoked only for points on a grid.
+     * The length of given vectors must be equal to the total number of cells in the grid.
+     * The first vector provides the <var>x</var> coordinates; the second vector provides the <var>y</var> coordinates,
+     * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
+     *
+     * @param  coordinates coordinates in each target dimensions, stored in row-major order.
+     */
+    final void setControlPoints(final Vector... coordinates) {
+        assert gridSize != null;
+        final int tgtDim = coordinates.length;
+        final double[][] result = new double[tgtDim][];
+        for (int i=0; i<tgtDim; i++) {
+            final Vector c = coordinates[i];
+            ArgumentChecks.ensureNonNullElement("coordinates", i, c);
+            final int size = c.size();
+            if (size != gridLength) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, gridLength, size));
+            }
+            result[i] = c.doubleValues();
+        }
+        targets     = result;
+        transform   = null;
+        correlation = null;
     }
 
     /**
