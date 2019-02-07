@@ -104,7 +104,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * Asserts that the result of some operation is equals to the expected value,
+     * Asserts that the result of some operation is equal to the expected value,
      * up to a tolerance value determined by the extended arithmetic precision.
      *
      * @param expected  the expected value, computed using {@code BigInteger} arithmetic.
@@ -115,7 +115,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         final BigDecimal value = toBigDecimal(actual);
         final double delta = abs(expected.subtract(value).doubleValue());
         final double threshold = max(ulp(actual.error), ulp(actual.value) * ef);
-        if (!(delta <= threshold)) { // Use ! for catching NaN values.
+        if (!(delta <= threshold)) {                                                // Use ! for catching NaN values.
             fail("Arithmetic error:\n" +
                  "  Expected:   " + expected  + '\n' +
                  "  Actual:     " + value     + '\n' +
@@ -199,6 +199,21 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
+     * Tests {@link DoubleDouble#addKahan(double)}.
+     */
+    @Test
+    public void testAddKahan() {
+        final DoubleDouble dd = new DoubleDouble(1, 0);
+        BigDecimal expected = BigDecimal.ONE;
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
+            final double b = random.nextDouble();
+            dd.addKahan(b);
+            expected = expected.add(new BigDecimal(b));
+            assertExtendedEquals(expected, dd, ADD_TOLERANCE_FACTOR * NUMBER_OF_REPETITIONS);
+        }
+    }
+
+    /**
      * Tests {@link DoubleDouble#add(DoubleDouble)}.
      */
     @Test
@@ -210,7 +225,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).add(toBigDecimal(op));
-            dd.add(op); // Must be after 'expected' computation.
+            dd.add(op);     // Must be after 'expected' computation.
             assertExtendedEquals(expected, dd, ADD_TOLERANCE_FACTOR);
         }
     }
@@ -227,7 +242,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).multiply(toBigDecimal(op), MathContext.DECIMAL128);
-            dd.multiply(op); // Must be after 'expected' computation.
+            dd.multiply(op);    // Must be after 'expected' computation.
             assertExtendedEquals(expected, dd, PRODUCT_TOLERANCE_FACTOR);
         }
     }
@@ -244,7 +259,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).divide(toBigDecimal(op), MathContext.DECIMAL128);
-            dd.divide(op); // Must be after 'expected' computation.
+            dd.divide(op);      // Must be after 'expected' computation.
             assertExtendedEquals(expected, dd, PRODUCT_TOLERANCE_FACTOR);
         }
     }

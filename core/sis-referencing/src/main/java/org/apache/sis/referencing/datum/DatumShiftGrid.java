@@ -581,7 +581,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int ny = gridSize[1];
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
-                sum.add(getCellValue(dim, gridX, gridY));
+                sum.addKahan(getCellValue(dim, gridX, gridY));
             }
         }
         return sum.doubleValue() / (nx * ny);

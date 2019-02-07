@@ -194,14 +194,13 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      */
     private final class Data extends FormattableObject implements Matrix, Function<int[],Number> {
         /** Coefficients from the denormalization matrix for the row corresponding to this dimension. */
-        private final double[] affine;
+        private final double c0, c1, c2;
 
         /** Creates a new matrix for the specified dimension. */
         Data(final int dim, final Matrix denormalization) {
-            affine = new double[denormalization.getNumCol()];
-            for (int i=0; i<affine.length; i++) {
-                affine[i] = denormalization.getElement(dim, i);
-            }
+            c0 = denormalization.getElement(dim, 0);
+            c1 = denormalization.getElement(dim, 1);
+            c2 = denormalization.getElement(dim, 2);
         }
 
         @SuppressWarnings("CloneInNonCloneableClass")
@@ -214,9 +213,9 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
 
         /** Computes the matrix element in the given row and column. */
         @Override public double  getElement(final int y, final int x) {
-            return affine[0] * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
-                   affine[1] * (y + getCellValue(1, x, y)) +
-                   affine[2];
+            return c0 * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
+                   c1 * (y + getCellValue(1, x, y)) +
+                   c2;
         }
 
         /**

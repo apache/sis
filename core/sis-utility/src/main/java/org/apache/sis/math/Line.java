@@ -303,8 +303,8 @@ public class Line implements Cloneable, Serializable {
             if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
                 !isNaN(x = p.getOrdinate(0)))
             {
-                mean_x.add(x);
-                mean_y.add(y);
+                mean_x.addKahan(x);
+                mean_y.addKahan(y);
                 n++;
             }
         }

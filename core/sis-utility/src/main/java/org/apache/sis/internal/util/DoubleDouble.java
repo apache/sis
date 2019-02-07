@@ -570,6 +570,18 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Adds the given {@code double} value using
+     * <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>.
+     * This can be used when {@code otherValue} is known to be smaller than {@link #value}.
+     *
+     * @param  y  the other value to add to this {@code DoubleDouble}.
+     */
+    public void addKahan(double y) {
+        y += error;
+        error = y + (value - (value += y));
+    }
+
+    /**
      * Adds a {@code double} value to this {@code DoubleDouble} without error term.
      * This is a convenience method for:
      *
