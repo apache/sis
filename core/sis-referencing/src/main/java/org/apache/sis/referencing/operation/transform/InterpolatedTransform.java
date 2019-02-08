@@ -501,7 +501,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                          * we write outputs, which is the reason for System.arraycopy(…) call.
                          */
                         int i = dimension;
-                        do dstPts[dstOff + --i] += vector[i];
+                        do dstPts[dstOff + --i] -= vector[i];
                         while (i > GRID_DIMENSION);
                     }
                     dstPts[dstOff  ] = xi;      // Shall not be done before above loop.
@@ -571,7 +571,7 @@ nextPoint:  while (--numPts >= 0) {
                              * we write outputs, which is the reason for System.arraycopy(…) call.
                              */
                             int i = dimension;
-                            do dstPts[dstOff + --i] += vector[i];
+                            do dstPts[dstOff + --i] -= vector[i];
                             while (i > GRID_DIMENSION);
                         }
                         dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
