@@ -908,11 +908,14 @@ search:         for (int j=domain(); --j >= 0;) {
         for (int i=0; i<tgtDim; i++) {
             final Vector c = coordinates[i];
             ArgumentChecks.ensureNonNullElement("coordinates", i, c);
-            final int size = c.size();
-            if (size != gridLength) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, gridLength, size));
+            int size = c.size();
+            if (size == gridLength) {
+                size = (result[i] = c.doubleValues()).length;
+                if (size == gridLength) {                       // Paranoiac check in case user overwrite Vector.size().
+                    continue;
+                }
             }
-            result[i] = c.doubleValues();
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, gridLength, size));
         }
         targets     = result;
         transform   = null;
@@ -938,6 +941,59 @@ search:         for (int j=domain(); --j >= 0;) {
             for (int i=start; i<stop; i++) {
                 target[index] = row[i];
                 index += tgtDim;
+            }
+        }
+    }
+
+    /**
+     * Tries to remove discontinuities in coordinates values caused by anti-meridian crossing. This is the implementation of
+     * {@link LocalizationGridBuilder#resolveWraparoundAxis(int, int, double)} public method. See that method for javadoc.
+     *
+     * @param  dimension  the dimension to process, from 0 inclusive to {@link #getTargetDimensions()} exclusive.
+     *                    This is 0 for longitude dimension in a (<var>longitudes</var>, <var>latitudes</var>) grid.
+     * @param  direction  the direction to walk through: 0 for columns or 1 for rows (higher dimensions are also possible).
+     *                    Value can be from 0 inclusive to {@link #getSourceDimensions()} exclusive.
+     *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
+     * @param  period     that wraparound range (typically 360° for longitudes).
+     */
+    final void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+        final double[] coordinates = targets[dimension];
+        int stride = 1;
+        for (int i=0; i<direction; i++) {
+            stride *= gridSize[i];                              // Index offset for moving to next value in the specified direction.
+        }
+        final int page = stride * gridSize[direction];          // Index offset for moving to next row or whatever is the next dimension.
+        final double threshold = period / 2;
+        double previous = coordinates[0];
+        for (int x=0; x<stride; x++) {                          // For iterating over dimensions lower than 'dimension'.
+            for (int y=0; y<gridLength; y += page) {            // For iterating over dimensions greater than 'dimension'.
+                final int stop = y + page;
+                for (int i = x+y; i<stop; i += stride) {
+                    double value = coordinates[i];
+                    double delta = value - previous;
+                    if (Math.abs(delta) > threshold) {
+                        delta = Math.rint(delta / period) * period;
+                        value -= delta;
+                        coordinates[i] = value;
+                    }
+                    previous = value;
+                }
+                /*
+                 * For the next scan, use as a reference the first value of this scan. If our scan direction is 0
+                 * (each value compared with the value in previous column), then the first value of next row will
+                 * be compared with the first value of this row. This is illustrated by index -1 below:
+                 *
+                 *    ┌───┬───┬───┬───┬───┬───┐
+                 *    │-1 │   │   │   │   │   │      coordinates[x]
+                 *    ├───┼───┼───┼───┼───┼───┤
+                 *    │ 0 │ 1 │ 2 │ 3 │ 4 │ 5 │      next row to be scanned
+                 *    └───┴───┴───┴───┴───┴───┘
+                 *
+                 * Since the direction given in argument is the direction of most stable values, the perpendicular
+                 * direction used for coordinates[x] may have more variation. We assume that those variations are
+                 * still small enough for taking that nearby value as a reference.
+                 */
+                previous = coordinates[x];
             }
         }
     }

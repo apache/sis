@@ -368,6 +368,25 @@ public final class Axis extends NamedElement {
     }
 
     /**
+     * Returns the range of this wraparound axis, or {@link Double#NaN} if this axis is not a wraparound axis.
+     */
+    @SuppressWarnings("fallthrough")
+    private double wraparoundRange() {
+        if (isWraparound()) {
+            double period = 360;
+            final Unit<?> unit = getUnit();
+            if (unit != null) try {
+                period = unit.getConverterToAny(Units.DEGREE).convert(period);
+            } catch (IncommensurableException e) {
+                warning(e, Errors.Keys.InconsistentUnitsForCS_1, unit);
+                return Double.NaN;
+            }
+            return period;
+        }
+        return Double.NaN;
+    }
+
+    /**
      * Returns {@code true} if coordinates in this axis seem to map cell corner instead than cell center.
      * A {@code false} value does not necessarily means that the axis maps cell center; it can be unknown.
      * This method assumes a geographic CRS.
@@ -399,7 +418,7 @@ public final class Axis extends NamedElement {
                 }
                 return uc.convert(data.doubleValue(0)) == min;
             } catch (IncommensurableException e) {
-                coordinates.error(Grid.class, "getGridGeometry", e, Errors.Keys.InconsistentUnitsForCS_1, unit);
+                warning(e, Errors.Keys.InconsistentUnitsForCS_1, unit);
             }
         }
         return false;
@@ -598,21 +617,49 @@ main:   switch (getDimension()) {
                 final int ro = (xo <= yo) ? 0 : 1;
                 final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension.
                 final int height = getSize(ri    );     // Slowest varying if left-most dimension.
-                if (other.sourceSizes[ro ^ 1] != width ||
-                    other.sourceSizes[ro    ] != height)
+                if (other.sourceSizes[ro ^ 1] == width &&
+                    other.sourceSizes[ro    ] == height)
                 {
-                    coordinates.error(Grid.class, "getGridGeometry", null,
-                            Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
-                } else {
                     final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
                     final Vector vx =  this.read();
                     final Vector vy = other.read();
                     grid.setControlPoints(vx, vy);
+                    /*
+                     * At this point we finished to set values in the localization grid, but did not computed the transform yet.
+                     * Before to use the grid for calculation, we need to repair discontinuities sometime found with longitudes.
+                     * If the grid crosses the anti-meridian, some values may suddenly jump from +180° to -180° or conversely.
+                     * Even when not crossing the anti-meridian, we still observe apparently random 360° jumps in some files,
+                     * especially close to poles. The methods invoked below try to make the longitude grid more continuous.
+                     * The "ri" or "ro" argument specifies which dimension varies slowest, i.e. which dimension have values
+                     * that do not change much when increasing longitudes. This is usually 1 (the rows).
+                     */
+                    double period;
+                    if (!Double.isNaN(period = wraparoundRange())) {
+                        grid.resolveWraparoundAxis(0, ri, period);
+                    }
+                    if (!Double.isNaN(period = other.wraparoundRange())) {
+                        grid.resolveWraparoundAxis(1, ro, period);
+                    }
                     return grid;
+                } else {
+                    warning(null, Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Reports a non-fatal error that occurred while constructing the grid geometry.
+     * This method pretends that the error come from {@link Grid#getGridGeometry(Decoder)},
+     * which is the caller and is a bit closer to a public API.
+     *
+     * @param  exception  the exception that occurred, or {@code null} if none.
+     * @param  key        one or {@link Errors.Keys} constants.
+     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     */
+    private void warning(final Exception exception, final short key, final Object... arguments) {
+        coordinates.error(Grid.class, "getGridGeometry", exception, key, arguments);
     }
 
     /**

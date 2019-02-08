@@ -433,6 +433,53 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Tries to remove discontinuities in coordinates values caused by anti-meridian crossing.
+     * This method can be invoked when the localization grid may cross the anti-meridian,
+     * where longitude values may suddenly jump from +180° to -180° or conversely.
+     * This method walks through the coordinate values of the given dimension (typically the longitudes dimension)
+     * in the given direction (grid rows or grid columns).
+     * If a difference greater than {@code period/2} (typically 180°) is found between two consecutive values,
+     * then a multiple of {@code period} (typically 360°) is added or subtracted in order to make a value as close
+     * as possible from its previous value.
+     *
+     * <p>This method needs a direction to be specified:</p>
+     * <ul>
+     *   <li>Direction 0 means that each value is compared with the value in the previous column,
+     *       except the value in the first column which is compared to the value in previous row.</li>
+     *   <li>Direction 1 means that each value is compared with the value in the previous row,
+     *       except the value in the first row which is compared to the value in previous column.</li>
+     * </ul>
+     * The recommended value is the direction of most stable values. Typically, longitude values increase with column indices
+     * and are almost constant when increasing row indices. In such case, the recommended direction is 1 for comparing each
+     * value with the value in previous row, since that value should be closer than the value in previous column.
+     *
+     * <div class="note"><b>Example:</b>
+     * for a grid of (<var>longitude</var>, <var>latitude</var>) values in decimal degrees where longitude values
+     * vary (increase or decrease) with increasing column indices and latitude values vary (increase or decrease)
+     * with increasing row indices, the the following method should be invoked for protecting the grid against
+     * discontinuities on anti-meridian:
+     *
+     * {@preformat java
+     *     grid.resolveWraparoundAxis(0, 1, 360);
+     * }
+     * </div>
+     *
+     * @param  dimension  the dimension to process.
+     *                    This is 0 for longitude dimension in a (<var>longitudes</var>, <var>latitudes</var>) grid.
+     * @param  direction  the direction to walk through: 0 for columns or 1 for rows.
+     *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
+     * @param  period     that wraparound range (typically 360° for longitudes).
+     *
+     * @since 1.0
+     */
+    public void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+        ArgumentChecks.ensureBetween("dimension", 0, linear.getTargetDimensions() - 1, dimension);
+        ArgumentChecks.ensureBetween("direction", 0, linear.getSourceDimensions() - 1, direction);
+        ArgumentChecks.ensureStrictlyPositive("period", period);
+        linear.resolveWraparoundAxis(dimension, direction, period);
+    }
+
+    /**
      * Creates a transform from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
      * If this transform is close enough to an affine transform, then an instance of {@link LinearTransform} is returned.
