@@ -28,7 +28,7 @@ import org.apache.sis.math.DecimalFunctions;
  * 5 digits in base 10 in ASCII files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -184,21 +184,17 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      */
     @Override
     public void interpolateInCell(double gridX, double gridY, double[] vector) {
+        if (gridX < 0) gridX = 0;
+        if (gridY < 0) gridY = 0;
         int ix = (int) gridX;  gridX -= ix;
         int iy = (int) gridY;  gridY -= iy;
-        if (ix < 0) {
-            ix = 0;
-            gridX = -1;
-        } else if (ix >= nx - 1) {
+        if (ix > nx - 2) {
             ix = nx - 2;
-            gridX = +1;
+            gridX = 1;
         }
-        if (iy < 0) {
-            iy = 0;
-            gridY = -1;
-        } else if (iy > ymax) {             // Subtraction of 2 already done by the constructor.
+        if (iy > ymax) {             // Subtraction of 2 already done by the constructor.
             iy = ymax;
-            gridY = +1;
+            gridY = 1;
         }
         final int p0 = nx*iy + ix;
         final int p1 = nx + p0;
