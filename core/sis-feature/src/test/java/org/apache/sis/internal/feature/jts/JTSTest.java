@@ -53,52 +53,64 @@ public final strictfp class JTSTest extends TestCase {
 
         CoordinateReferenceSystem crs = JTS.getCoordinateReferenceSystem(geometry);
         assertNull(crs);
-
-        // Test CRS as user data.
+        /*
+         * Test CRS as user data.
+         */
         geometry.setUserData(CommonCRS.ED50.geographic());
         assertEquals(CommonCRS.ED50.geographic(), JTS.getCoordinateReferenceSystem(geometry));
-
-        // Test CRS as map value.
+        /*
+         * Test CRS as map value.
+         */
         geometry.setUserData(Collections.singletonMap(JTS.CRS_KEY, CommonCRS.NAD83.geographic()));
         assertEquals(CommonCRS.NAD83.geographic(), JTS.getCoordinateReferenceSystem(geometry));
-
-        // Test CRS as srid.
+        /*
+         * Test CRS as srid.
+         */
         geometry.setUserData(null);
         geometry.setSRID(4326);
         assertEquals(CommonCRS.WGS84.geographic(), JTS.getCoordinateReferenceSystem(geometry));
     }
 
     /**
-     * Tests {@link JTS#transform(org.locationtech.jts.geom.Geometry, org.opengis.referencing.crs.CoordinateReferenceSystem) }.
-     * Tests {@link JTS#transform(org.locationtech.jts.geom.Geometry, org.opengis.referencing.operation.CoordinateOperation) }.
-     * Tests {@link JTS#transform(org.locationtech.jts.geom.Geometry, org.opengis.referencing.operation.MathTransform) }.
+     * Tests various {@code transform} methods. This include (sometime indirectly):
+     * <ul>
+     *   <li>{@link JTS#transform(Geometry, CoordinateReferenceSystem)}</li>
+     *   <li>{@link JTS#transform(Geometry, CoordinateOperation)}</li>
+     *   <li>{@link JTS#transform(Geometry, MathTransform)}</li>
+     * </ul>
+     *
+     * @throws FactoryException if an EPSG code can not be resolved.
+     * @throws TransformException if a coordinate can not be transformed.
      */
     @Test
     public void testTransform() throws FactoryException, TransformException {
         final GeometryFactory gf = new GeometryFactory();
         final Geometry in = gf.createPoint(new Coordinate(5, 6));
-
-        // test exception when transforming geometry without CRS.
+        /*
+         * Test exception when transforming geometry without CRS.
+         */
         try {
             JTS.transform(in, CommonCRS.WGS84.geographic());
-            fail("Geometry has no CRS, transform should have failed");
+            fail("Geometry has no CRS, transform should have failed.");
         } catch (TransformException ex) {
-            //ok
+            assertNotNull(ex.getMessage());
         }
-
-        // test axes inversion transform
+        /*
+         * Test axes inversion transform.
+         */
         in.setUserData(CommonCRS.WGS84.normalizedGeographic());
         Geometry out = JTS.transform(in, CommonCRS.WGS84.geographic());
         assertTrue(out instanceof Point);
-        assertEquals(6.0, ((Point) out).getX(), 0.0);
-        assertEquals(5.0, ((Point) out).getY(), 0.0);
+        assertEquals(6, ((Point) out).getX(), STRICT);
+        assertEquals(5, ((Point) out).getY(), STRICT);
         assertEquals(CommonCRS.WGS84.geographic(), out.getUserData());
-
-        // test affine transform, user data must be preserved
-        final AffineTransform2D trs = new AffineTransform2D(1,0,0,1,10,20);
+        /*
+         * Test affine transform. User data must be preserved.
+         */
+        final AffineTransform2D trs = new AffineTransform2D(1, 0, 0, 1, 10, 20);
         out = JTS.transform(in, trs);
         assertTrue(out instanceof Point);
-        assertEquals(15.0, ((Point) out).getX(), 0.0);
-        assertEquals(26.0, ((Point) out).getY(), 0.0);
+        assertEquals(15, ((Point) out).getX(), STRICT);
+        assertEquals(26, ((Point) out).getY(), STRICT);
     }
 }
