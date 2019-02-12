@@ -32,7 +32,7 @@ import static java.lang.Math.*;
  * Static methods operating on shapes from the {@link java.awt.geom} package.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -336,7 +336,7 @@ public final class ShapeUtilities extends Static {
             y2 = (px*rx2 + py*ry2) / x2;                    // use 'y2' as a temporary variable for 'x1'
             py = (py*rx2 - px*ry2) / x2;
             px = y2;
-            y2 = 0;                                         // set as a matter of principle (but not used).
+//          y2 = 0;                                         // Could be set to that value, but not used.
             /*
              * Now compute the control point coordinates in our new coordinate system axis.
              */
@@ -405,15 +405,35 @@ public final class ShapeUtilities extends Static {
                     final int code = it.currentSegment(buffer);
                     it.next();
                     if (it.isDone()) {
-                        switch (code) {
-                            case PathIterator.SEG_LINETO:  return new       Line2D.Double(x1,y1, buffer[0], buffer[1]);
-                            case PathIterator.SEG_QUADTO:  return new  QuadCurve2D.Double(x1,y1, buffer[0], buffer[1], buffer[2], buffer[3]);
-                            case PathIterator.SEG_CUBICTO: return new CubicCurve2D.Double(x1,y1, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+                        if (isFloat(path)) {
+                            switch (code) {
+                                case PathIterator.SEG_LINETO:  return new       Line2D.Float((float) x1, (float) y1, (float) buffer[0], (float) buffer[1]);
+                                case PathIterator.SEG_QUADTO:  return new  QuadCurve2D.Float((float) x1, (float) y1, (float) buffer[0], (float) buffer[1], (float) buffer[2], (float) buffer[3]);
+                                case PathIterator.SEG_CUBICTO: return new CubicCurve2D.Float((float) x1, (float) y1, (float) buffer[0], (float) buffer[1], (float) buffer[2], (float) buffer[3], (float) buffer[4], (float) buffer[5]);
+                            }
+                        } else {
+                            switch (code) {
+                                case PathIterator.SEG_LINETO:  return new       Line2D.Double(x1,y1, buffer[0], buffer[1]);
+                                case PathIterator.SEG_QUADTO:  return new  QuadCurve2D.Double(x1,y1, buffer[0], buffer[1], buffer[2], buffer[3]);
+                                case PathIterator.SEG_CUBICTO: return new CubicCurve2D.Double(x1,y1, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+                            }
                         }
                     }
                 }
             }
         }
         return path;
+    }
+
+    /**
+     * Returns {@code true} if the given shape is presumed backed by primitive {@code float} values.
+     * The given object should be an instance of {@link Shape} or {@link Point2D}.
+     * This method use heuristic rules based on class name used in Java2D library.
+     *
+     * @param  path  the shape for which to determine the backing primitive type.
+     * @return {@code true} if the given shape is presumed backed by {@code float} type.
+     */
+    public static boolean isFloat(final Object path) {
+        return path.getClass().getSimpleName().equals("Float");
     }
 }

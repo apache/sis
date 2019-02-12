@@ -124,8 +124,7 @@ final class ESRI extends Geometries<Geometry> {
 
     /**
      * Creates a polyline from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value start a new path.
-     * The implementation returned by this method must be an instance of {@link #rootClass}.
+     * Each {@link Double#NaN} ordinate value starts a new path.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... ordinates) {
@@ -166,30 +165,31 @@ final class ESRI extends Geometries<Geometry> {
         }
         final Polyline path = new Polyline();
         boolean lineTo = false;
-        for (;; next = polylines.next()) {
-            if (next != null) {
-                if (next instanceof Point) {
-                    final Point pt = (Point) next;
-                    if (pt.isEmpty()) {
-                        lineTo = false;
-                    } else {
-                        final double x = ((Point) next).getX();
-                        final double y = ((Point) next).getY();
-                        if (lineTo) {
-                            path.lineTo(x, y);
-                        } else {
-                            path.startPath(x, y);
-                            lineTo = true;
-                        }
-                    }
-                } else {
-                    path.add((MultiPath) next, false);
+add:    for (;;) {
+            if (next instanceof Point) {
+                final Point pt = (Point) next;
+                if (pt.isEmpty()) {
                     lineTo = false;
+                } else {
+                    final double x = ((Point) next).getX();
+                    final double y = ((Point) next).getY();
+                    if (lineTo) {
+                        path.lineTo(x, y);
+                    } else {
+                        path.startPath(x, y);
+                        lineTo = true;
+                    }
                 }
+            } else {
+                path.add((MultiPath) next, false);
+                lineTo = false;
             }
-            if (!polylines.hasNext()) {         // Should be part of the 'for' instruction, but we need
-                break;                          // to skip this condition during the first iteration.
-            }
+            /*
+             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * except that we need to skip this condition during the first iteration.
+             */
+            do if (!polylines.hasNext()) break add;
+            while ((next = polylines.next()) == null);
         }
         return path;
     }

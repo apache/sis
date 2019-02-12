@@ -19,9 +19,11 @@ package org.apache.sis.internal.feature.j2d;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.reflect.Array;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
+import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.util.StringBuilders;
 
 
@@ -72,20 +74,50 @@ public final class ShapeProperties {
     }
 
     /**
-     * Returns coordinates of the given geometry as a list of (<var>x</var>,<var>y</var>) tuples in {@code double[]} arrays.
-     * This method guarantees that all arrays have at least 2 points (4 coordinates). It should be invoked only for small or
-     * medium shapes. For large shapes, the path iterator should be used directly without copy to arrays.
+     * Same as {@link #addPoint(double[], double[], int)} but for single-precision numbers.
+     */
+    private static float[] addPoint(final float[] source, float[] target, final int index) {
+        if (index >= target.length) {
+            target = Arrays.copyOf(target, index*2);
+        }
+        System.arraycopy(source, 0, target, index, 2);
+        return target;
+    }
+
+    /**
+     * Returns coordinates of the given geometry as a list of (<var>x</var>,<var>y</var>) tuples in {@code float[]}
+     * or {@code double[]} arrays. This method guarantees that all arrays have at least 2 points (4 coordinates).
+     * It should be invoked only for small or medium shapes. For large shapes, the path iterator should be used
+     * directly without copy to arrays.
      *
      * @param  flatness   maximal distance between the approximated segments and any point on the curve.
      * @return coordinate tuples. They are presumed polygons if {@link #isPolygon} is {@code true}.
      */
-    private List<double[]> coordinates(final double flatness) {
-        final List<double[]> polylines = new ArrayList<>();
+    private List<?> coordinates(final double flatness) {
+        final PathIterator it = geometry.getPathIterator(null, flatness);
         isPolygon = true;
+        if (ShapeUtilities.isFloat(geometry)) {
+            return coordinatesAsFloats(it);
+        } else {
+            return coordinatesAsDoubles(it);
+        }
+    }
+
+    /**
+     * {@link #coordinates(double)} implementation for the double-precision case.
+     * The {@link #isPolygon} field needs to be set before to invoke this method.
+     */
+    private List<double[]> coordinatesAsDoubles(final PathIterator it) {
+        final List<double[]> polylines = new ArrayList<>();
         double[] polyline = new double[10];
         final double[] coords = new double[6];
+        /*
+         * Double-precision variant of this method. Source code below is identical to the single-precision variant,
+         * but the methods invoked are different because of method overloading. Trying to have a common code is too
+         * complex (too many code are different despite looking the same).
+         */
         int i = 0;
-        for (final PathIterator it = geometry.getPathIterator(null, flatness); !it.isDone(); it.next()) {
+        while (!it.isDone()) {
             switch (it.currentSegment(coords)) {
                 case PathIterator.SEG_MOVETO: {
                     if (i > 2) {
@@ -114,6 +146,59 @@ public final class ShapeProperties {
                 }
                 default: throw new IllegalPathStateException();
             }
+            it.next();
+        }
+        if (i > 2) {
+            isPolygon = false;          // LINETO without CLOSE: this is a linestring instead than a polygon.
+            polylines.add(Arrays.copyOf(polyline, i));
+        }
+        return polylines;
+    }
+
+    /**
+     * {@link #coordinates(double)} implementation for the single-precision case.
+     * The {@link #isPolygon} field needs to be set before to invoke this method.
+     */
+    private List<float[]> coordinatesAsFloats(final PathIterator it) {
+        final List<float[]> polylines = new ArrayList<>();
+        float[] polyline = new float[10];
+        final float[] coords = new float[6];
+        /*
+         * Single-precision variant of this method. Source code below is identical to the double-precision variant,
+         * but the methods invoked are different because of method overloading. Trying to have a common code is too
+         * complex (too many code are different despite looking the same).
+         */
+        int i = 0;
+        while (!it.isDone()) {
+            switch (it.currentSegment(coords)) {
+                case PathIterator.SEG_MOVETO: {
+                    if (i > 2) {
+                        isPolygon = false;          // MOVETO without CLOSE: this is a linestring instead than a polygon.
+                        polylines.add(Arrays.copyOf(polyline, i));
+                    }
+                    System.arraycopy(coords, 0, polyline, 0, 2);
+                    i = 2;
+                    break;
+                }
+                case PathIterator.SEG_LINETO: {
+                    polyline = addPoint(coords, polyline, i);
+                    i += 2;
+                    break;
+                }
+                case PathIterator.SEG_CLOSE: {
+                    if (i > 2) {
+                        if (polyline[0] != polyline[i-2] || polyline[1] != polyline[i-1]) {
+                            polyline = addPoint(polyline, polyline, i);
+                            i += 2;
+                        }
+                        polylines.add(Arrays.copyOf(polyline, i));
+                    }
+                    i = 0;
+                    break;
+                }
+                default: throw new IllegalPathStateException();
+            }
+            it.next();
         }
         if (i > 2) {
             isPolygon = false;          // LINETO without CLOSE: this is a linestring instead than a polygon.
@@ -133,7 +218,7 @@ public final class ShapeProperties {
      * @see <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">Well-known text on Wikipedia</a>
      */
     public String toWKT(final double flatness) {
-        final List<double[]> polylines = coordinates(flatness);
+        final List<?> polylines = coordinates(flatness);
         final boolean isMulti;
         switch (polylines.size()) {
             case 0:  return "POLYGON EMPTY";
@@ -147,16 +232,22 @@ public final class ShapeProperties {
         buffer.append(isPolygon ? "POLYGON" : "LINESTRING").append(' ');
         if (isMulti) buffer.append('(');
         for (int j=0; j<polylines.size(); j++) {
-            final double[] polyline = polylines.get(j);
+            final Object polyline = polylines.get(j);
             if (j != 0) buffer.append(", ");
             buffer.append('(');
             if (isPolygon) buffer.append('(');
-            for (int i=0; i<polyline.length; i++) {
+            final int length = Array.getLength(polyline);
+            for (int i=0; i<length; i++) {
                 if (i != 0) {
                     if ((i & 1) == 0) buffer.append(',');
                     buffer.append(' ');
                 }
-                StringBuilders.trimFractionalPart(buffer.append(polyline[i]));
+                if (polyline instanceof double[]) {
+                    buffer.append(((double[]) polyline)[i]);
+                } else {
+                    buffer.append(((float[]) polyline)[i]);
+                }
+                StringBuilders.trimFractionalPart(buffer);
             }
             if (isPolygon) buffer.append(')');
             buffer.append(')');
