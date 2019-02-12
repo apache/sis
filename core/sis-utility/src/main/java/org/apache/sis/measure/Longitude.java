@@ -148,7 +148,19 @@ public final class Longitude extends Angle {
      *
      * @since 0.4
      */
-    public static double normalize(final double λ) {
-        return λ - Math.floor((λ - MIN_VALUE) / (MAX_VALUE - MIN_VALUE)) * (MAX_VALUE - MIN_VALUE);
+    public static double normalize(double λ) {
+        /*
+         * Following should be simplified as only one branch by javac since
+         * the values used in the 'if' statement are compile-time constants.
+         * For verifying: javap -c org.apache.sis.measure.Longitude
+         */
+        if (MIN_VALUE == -MAX_VALUE) {
+            λ = Math.IEEEremainder(λ, MAX_VALUE - MIN_VALUE);
+            if (λ == MAX_VALUE) λ = MIN_VALUE;
+            return λ;
+        } else {
+            // Normally excluded from compiled file, but defined in case someone modifies MIN/MAX_VALUE.
+            return λ - Math.floor((λ - MIN_VALUE) / (MAX_VALUE - MIN_VALUE)) * (MAX_VALUE - MIN_VALUE);
+        }
     }
 }
