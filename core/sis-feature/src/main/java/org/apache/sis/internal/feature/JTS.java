@@ -74,6 +74,14 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
+     * If the given object is a JTS geometry, returns its WKT representation.
+     */
+    @Override
+    final String tryFormatWKT(final Object geometry, final double flatness) {
+        return (geometry instanceof Geometry) ? ((Geometry) geometry).toText() : null;
+    }
+
+    /**
      * If the given object is a JTS geometry, returns a short string representation of the class name.
      */
     @Override

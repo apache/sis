@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import org.apache.sis.math.Vector;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -118,5 +119,26 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         assertEquals("ymin", -6, env.getLower(1), STRICT);
         assertEquals("xmax", 15, env.getUpper(0), STRICT);
         assertEquals("ymax", 12, env.getUpper(1), STRICT);
+    }
+
+    /**
+     * Tests {@link Geometries#tryFormatWKT(Object, double)}.
+     */
+    @Test
+    @DependsOnMethod("testCreatePolyline")
+    public void testTryFormatWKT() {
+        geometry = factory.createPolyline(2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
+        final String text = factory.tryFormatWKT(geometry, 0);
+        assertNotNull(text);
+        assertWktEquals("LINESTRING (4 5, 7 9, 9 3, -1 -6)", text);
+    }
+
+    /**
+     * Verifies that a WKT is equal to the expected one. If the actual WKT is a multi-lines or multi-polygons,
+     * then this method may modify the expected WKT accordingly. This adjustment is done for the ESRI case by
+     * overriding this method.
+     */
+    void assertWktEquals(String expected, final String actual) {
+        assertEquals(expected, actual);
     }
 }

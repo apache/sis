@@ -223,6 +223,30 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * If the given object is one of the recognized types, formats that object in Well Known Text (WKT).
+     * Otherwise returns {@code null}. If the geometry contains curves, then the {@code flatness} parameter
+     * specifies the maximum distance that the line segments used in the Well Known Text are allowed to deviate
+     * from any point on the original curve. This parameter is ignored if the geometry does not contain curves.
+     *
+     * @param  geometry  the geometry to format in Well Known Text.
+     * @param  flatness  maximal distance between the approximated WKT and any point on the curve.
+     * @return the Well Known Text for the given geometry, or {@code null} if the given object is unrecognized.
+     */
+    public static String formatWKT(Object geometry, double flatness) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            String wkt = g.tryFormatWKT(geometry, flatness);
+            if (wkt != null) return wkt;
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is the type supported by this {@code Geometries} instance,
+     * returns its WKT representation. Otherwise returns {@code null}.
+     */
+    abstract String tryFormatWKT(Object geometry, double flatness);
+
+    /**
      * Parses the given WKT.
      *
      * @param  wkt  the WKT to parse.

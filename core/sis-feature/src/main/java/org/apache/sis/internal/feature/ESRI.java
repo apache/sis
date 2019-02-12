@@ -26,7 +26,9 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.Point3D;
 import com.esri.core.geometry.WktImportFlags;
+import com.esri.core.geometry.WktExportFlags;
 import com.esri.core.geometry.OperatorImportFromWkt;
+import com.esri.core.geometry.OperatorExportToWkt;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
@@ -198,5 +200,16 @@ final class ESRI extends Geometries<Geometry> {
     @Override
     public Object parseWKT(final String wkt) {
         return OperatorImportFromWkt.local().execute(WktImportFlags.wktImportDefaults, Geometry.Type.Unknown, wkt, null);
+    }
+
+    /**
+     * If the given object is an ESRI geometry, returns its WKT representation.
+     */
+    @Override
+    final String tryFormatWKT(final Object geometry, final double flatness) {
+        if (geometry instanceof Geometry) {
+            return OperatorExportToWkt.local().execute(WktExportFlags.wktExportDefaults, (Geometry) geometry, null);
+        }
+        return null;
     }
 }

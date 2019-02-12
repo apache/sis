@@ -24,6 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.feature.j2d.ShapeProperties;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
@@ -211,6 +212,18 @@ final class Java2D extends Geometries<Shape> {
             }
         }
         return ShapeUtilities.toPrimitive(path);
+    }
+
+    /**
+     * If the given object is a Java2D shape, builds its WKT representation.
+     * Current implementation assumes that all closed shapes are polygons and that polygons have no hole
+     * (i.e. if a polygon is followed by more data, this method assumes that the additional data is a disjoint polygon).
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">Well-known text on Wikipedia</a>
+     */
+    @Override
+    final String tryFormatWKT(final Object geometry, final double flatness) {
+        return (geometry instanceof Shape) ? new ShapeProperties((Shape) geometry).toWKT(flatness) : null;
     }
 
     /**

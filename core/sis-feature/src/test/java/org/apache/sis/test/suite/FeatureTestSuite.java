@@ -61,6 +61,7 @@ import org.junit.BeforeClass;
     org.apache.sis.filter.DefaultMultiplyTest.class,
     org.apache.sis.filter.DefaultSubtractTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
+    org.apache.sis.internal.feature.j2d.ShapePropertiesTest.class,
     org.apache.sis.internal.feature.Java2DTest.class,
     org.apache.sis.internal.feature.ESRITest.class,
     org.apache.sis.internal.feature.JTSTest.class,

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.feature;
 
 import com.esri.core.geometry.Polyline;
+import org.apache.sis.util.StringBuilders;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -58,5 +59,20 @@ public final strictfp class ESRITest extends GeometriesTestCase {
         super.testTryMergePolylines();
         final Polyline poly = (Polyline) geometry;
         assertEquals("pathCount", 3, poly.getPathCount());
+    }
+
+    /**
+     * Verifies that a WKT is equal to the expected one. This method modifies the expected WKT
+     * by transforming single geometries into multi-geometries, since the ESRI library formats
+     * geometries that way (at least with the objects that we use).
+     */
+    @Override
+    void assertWktEquals(String expected, final String actual) {
+        assertTrue(actual.startsWith("MULTI"));
+        final StringBuilder b = new StringBuilder(expected.length() + 7).append("MULTI").append(expected);
+        StringBuilders.replace(b, "(", "((");
+        StringBuilders.replace(b, ")", "))");
+        expected = b.toString();
+        super.assertWktEquals(expected, actual);
     }
 }

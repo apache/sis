@@ -16,21 +16,19 @@
  */
 
 /**
- * A set of helper classes having a dependency to Java2D.
- * We keep those classes in a separated package for making easier to identify
- * which parts may need to be replaced in a JavaFX applications.
+ * Methods specific to the Java2D.
  *
- * <strong>Do not use!</strong>
+ * <STRONG>Do not use!</STRONG>
  *
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
- * @see org.apache.sis.internal.feature.j2d
+ * @see org.apache.sis.internal.referencing.j2d
  *
- * @since 0.3
+ * @since 1.0
  * @module
  */
-package org.apache.sis.internal.referencing.j2d;
+package org.apache.sis.internal.feature.j2d;
