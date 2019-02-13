@@ -16,13 +16,23 @@
  */
 package org.apache.sis.coverage.grid;
 
-import org.apache.sis.internal.raster.Resources;
-
 
 /**
  * Thrown by {@link GridGeometry} when a grid geometry can not provide the requested information.
  * For example this exception is thrown when {@link GridGeometry#getEnvelope()} is invoked while
  * the grid geometry has been built with a null envelope.
+ *
+ * <p>The {@link GridGeometry#isDefined(int)} can be used for avoiding this exception.
+ * For example if a process is going to need both the grid extent and the "grid to CRS" transform,
+ * than it can verify if those two conditions are met in a single method call:</p>
+ *
+ * {@preformat java
+ *     if (gg.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS) {
+ *         GridExtent    extent    = gg.getGridExtent();
+ *         MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
+ *         // Do the process.
+ *     }
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
@@ -39,14 +49,6 @@ public class IncompleteGridGeometryException extends IllegalStateException {
      * Constructs an exception with no detail message.
      */
     public IncompleteGridGeometryException() {
-    }
-
-    /**
-     * Constructs an exception with a detail message from the specified error code.
-     * Should not be public because the SIS I18N framework is not a committed one.
-     */
-    IncompleteGridGeometryException(final short code) {
-        super(Resources.format(code));
     }
 
     /**

@@ -26,17 +26,18 @@ import org.apache.sis.util.CharSequences;
 
 /**
  * Miscellaneous utilities which should not be put in public API.
+ * Most of those methods are for {@link Object#toString()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
-public final class Utilities extends Static {
+public final class Strings extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private Utilities() {
+    private Strings() {
     }
 
     /**
@@ -92,6 +93,55 @@ public final class Utilities extends Static {
     }
 
     /**
+     * Appends {@code "[index]"} to the given name. This is used for formatting error messages.
+     *
+     * @param  name   the variable name to which to append "[index]".
+     * @param  index  value to write between brackets.
+     * @return {@code "name[index]"}.
+     */
+    public static String toIndexed(final String name, final int index) {
+        return name + '[' + index + ']';
+    }
+
+    /**
+     * Formats {@code "name[index]"}.
+     *
+     * @param  name   the variable name to which to append "[index]".
+     * @param  index  value to write between brackets.
+     * @return {@code "name[index]"}.
+     */
+    public static String bracket(final String name, final Object index) {
+        if (index instanceof CharSequence) {
+            return name + "[“" + index + "”]";
+        } else {
+            return name + '[' + index + ']';
+        }
+    }
+
+    /**
+     * Formats {@code "classname[index]"}.
+     *
+     * @param  type   the type to which to append "[index]".
+     * @param  index  value to write between brackets.
+     * @return {@code "classname[index]"}.
+     */
+    public static String bracket(final Class<?> type, final Object index) {
+        return bracket(Classes.getShortName(type), index);
+    }
+
+    /**
+     * Formats {@code "classname[lower … upper]"}.
+     *
+     * @param  type   the type to which to append "[lower … upper]".
+     * @param  lower  first value to write between brackets.
+     * @param  upper  second value to write between brackets.
+     * @return {@code "classname[lower … upper]"}.
+     */
+    public static String range(final Class<?> type, final Object lower, final Object upper) {
+        return Classes.getShortName(type) + '[' + lower + " … " + upper + ']';
+    }
+
+    /**
      * Returns a string with the same content than the given string, but in upper case and containing only the
      * filtered characters. If the given string already matches the criterion, then it is returned unchanged
      * without creation of any temporary object.
@@ -104,8 +154,6 @@ public final class Utilities extends Static {
      * @param  text     the text to filter.
      * @param  filter   the filter to apply.
      * @return the filtered text.
-     *
-     * @since 0.8
      */
     public static String toUpperCase(final String text, final Characters.Filter filter) {
         final int length = text.length();
@@ -143,8 +191,6 @@ public final class Utilities extends Static {
      * @param  classe      the class to format.
      * @param  properties  the (<var>key</var>=<var>value</var>) pairs.
      * @return a string representation of an instance of the given class having the given properties.
-     *
-     * @since 0.4
      */
     public static String toString(final Class<?> classe, final Object... properties) {
         final StringBuffer buffer = new StringBuffer(32).append(Classes.getShortName(classe)).append('[');
@@ -176,9 +222,7 @@ public final class Utilities extends Static {
      * @param precision  number of characters to keep before truncation, or -1 if no limit.
      * @param value      the text to format.
      */
-    public static void formatTo(final Formatter formatter, final int flags,
-            int width, int precision, String value)
-    {
+    public static void formatTo(final Formatter formatter, final int flags, int width, int precision, String value) {
         final String format;
         final Object[] args;
         boolean isUpperCase = (flags & FormattableFlags.UPPERCASE) != 0;

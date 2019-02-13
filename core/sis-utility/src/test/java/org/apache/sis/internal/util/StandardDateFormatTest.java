@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -57,7 +58,8 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertSame  ("2009-01-01T06:00:00+01:00", toISO("2009-01-01T06:00:00+01:00"));
         assertEquals("2005-09-22T04:30:15",       toISO("2005-09-22 04:30:15"));
         assertSame  ("2005-09-22",                toISO("2005-09-22"));
-        assertEquals("2005-09-22T04 : 30 : 15",   toISO("  2005-09-22   04 : 30 : 15 "));
+        assertEquals("2005-09-22T04:30:15",       toISO("  2005-09-22   04 : 30 : 15 "));
+        assertEquals("1992-10-8T15:15:42.5-6:00", toISO("1992-10-8 15:15:42.5 -6:00"));
     }
 
     /**
@@ -73,6 +75,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
      * @throws ParseException if an error occurred while parsing the date.
      */
     @Test
+    @DependsOnMethod("testToISO")
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
         final StandardDateFormat f = new StandardDateFormat();
@@ -98,6 +101,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
      * @since 0.8
      */
     @Test
+    @DependsOnMethod("testParse")
     public void testParseBest() {
         final long day = 1466985600000L;
         assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseBest("2016-06-27T16:48Z"));
@@ -115,6 +119,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
      * @since 1.0
      */
     @Test
+    @DependsOnMethod("testParse")
     public void testParseInstant() {
         final long day = 1466985600000L;
         assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48Z"));

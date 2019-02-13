@@ -60,6 +60,7 @@ import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -659,10 +660,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         /*
          * Add spatial representation type only if it was not explicitly given in the metadata.
-         * The call to getGridGeometries() may be relatively costly, so we don't want to invoke
-         * it without necessity.
+         * The call to getGrids() may be relatively costly, so we don't want to invoke it without necessity.
          */
-        if (!hasDataType && decoder.getGridGeometries().length != 0) {
+        if (!hasDataType && decoder.getGrids().length != 0) {
             addSpatialRepresentation(SpatialRepresentationType.GRID);
         }
         /*
@@ -688,12 +688,22 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             addBoundingPolygon(new StoreFormat(decoder.geomlib, decoder.listeners).parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
-        try {
+        final String[] format = decoder.getFormatDescription();
+        String id = format[0];
+        if (NetcdfStoreProvider.NAME.equalsIgnoreCase(id)) try {
             setFormat(NetcdfStoreProvider.NAME);
+            id = null;
         } catch (MetadataStoreException e) {
-            addFormatName(NetcdfStoreProvider.NAME);
+            // Will add 'id' at the end of this method.
             warning(e);
         }
+        if (format.length >= 2) {
+            addFormatName(format[1]);
+            if (format.length >= 3) {
+                setFormatEdition(format[2]);
+            }
+        }
+        addFormatName(id);          // Do nothing is 'id' is null.
     }
 
     /**
@@ -704,18 +714,17 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     private void addSpatialRepresentationInfo(final Grid cs) throws IOException, DataStoreException {
-        final Axis[] axes = cs.getAxes();
-        for (int i=axes.length; i>0;) {
-            final int dim = axes.length - i;
-            final Axis axis = axes[--i];
+        final Axis[] axes = cs.getAxes(decoder);
+        for (int i=0; i<axes.length; i++) {
+            final Axis axis = axes[i];
             /*
              * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
              * the 'sourceDimensions' and 'sourceSizes' arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
              */
-            if (axis.sourceSizes.length >= 1) {
-                setAxisLength(dim, axis.sourceSizes[0]);
+            if (axis.getDimension() >= 1) {
+                setAxisSize(i, axis.getSize());
             }
             final AttributeNames.Dimension attributeNames;
             switch (axis.abbreviation) {
@@ -726,7 +735,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 default : continue;
             }
             final DimensionNameType name = attributeNames.DEFAULT_NAME_TYPE;
-            setAxisName(dim, name);
+            setAxisName(i, name);
             final String res = stringValue(attributeNames.RESOLUTION);
             if (res != null) try {
                 /*
@@ -747,7 +756,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                         warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
                     }
                 }
-                setAxisResolution(dim, value, units);
+                setAxisResolution(i, value, units);
             } catch (NumberFormatException e) {
                 warning(e);
             }
@@ -894,7 +903,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (variable.isCoverage()) {
+            if (decoder.roleOf(variable) == VariableRole.COVERAGE) {
                 final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
                 CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
             }
@@ -1018,7 +1027,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     public Metadata read() throws IOException, DataStoreException {
-        for (final Grid cs : decoder.getGridGeometries()) {
+        for (final Grid cs : decoder.getGrids()) {
             final CoordinateReferenceSystem crs = cs.getCoordinateReferenceSystem(decoder);
             addReferenceSystem(crs);
             if (verticalCRS == null) {
@@ -1039,7 +1048,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
-        for (final Grid cs : decoder.getGridGeometries()) {
+        for (final Grid cs : decoder.getGrids()) {
             if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
                 cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {

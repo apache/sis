@@ -23,6 +23,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -30,7 +31,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
  * it will be translated into ANSI SQL later by {@link SQLTranslator#apply(String)} if needed.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -162,6 +163,8 @@ final class TableInfo {
 
     /**
      * The table name for SQL queries. May contains a {@code "JOIN"} clause.
+     *
+     * @see #tableName()
      */
     final String table;
 
@@ -185,7 +188,7 @@ final class TableInfo {
     /**
      * The SQL type to use as a replacement for enumerated values on databases that do not support enumerations.
      */
-    static final String ENUM_REPLACEMENT = "VARCHAR(24)";
+    static final String ENUM_REPLACEMENT = "VARCHAR(80)";
 
     /**
      * Sub-interfaces of {@link #type} to handle, or {@code null} if none.
@@ -218,6 +221,35 @@ final class TableInfo {
         this.subTypes   = subTypes;
         this.typeNames  = typeNames;
         this.showColumn = showColumn;
+    }
+
+    /**
+     * Returns the table name without brackets.
+     */
+    final String tableName() {
+        return table.substring(1, table.length() - 1);
+    }
+
+    /**
+     * Returns {@code true} if the given table {@code name} matches the {@code expected} name.
+     * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
+     * For example {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
+     *
+     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
+     * {@code EPSG_Prepare.sql} file.</p>
+     *
+     * @param  expected  the expected table name (e.g. {@code "Coordinate_Operation"}).
+     * @param  name      the actual table name.
+     * @return whether the given {@code name} is considered to match the expected name.
+     */
+    static boolean tableMatches(final String expected, String name) {
+        if (name == null) {
+            return false;
+        }
+        if (name.startsWith(SQLTranslator.TABLE_PREFIX)) {
+            name = name.substring(SQLTranslator.TABLE_PREFIX.length());
+        }
+        return CharSequences.isAcronymForWords(name, expected);
     }
 
     /**

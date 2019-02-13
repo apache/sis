@@ -23,14 +23,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Axis;
-import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Grid;
+import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArraysExt;
 import ucar.nc2.constants.CF;
 
 
@@ -78,32 +78,30 @@ final class GridInfo extends Grid {
     /**
      * Describes the input values expected by the function converting grid indices to geodetic coordinates.
      * They are the dimensions of the grid (<strong>not</strong> the dimensions of the CRS).
+     * Dimensions are listed in the order they appear in netCDF file (reverse of "natural" order).
+     *
+     * @see #getShape()
+     * @see VariableInfo#dimensions
      */
     private final Dimension[] domain;
 
     /**
      * Describes the output values calculated by the function converting grid indices to geodetic coordinates.
-     * They are the coordinate values expressed in the CRS.
+     * They are the coordinate values expressed in the CRS. Order should be the order to be declared in the CRS.
+     * This is often, but not necessarily, the reverse order than the {@link #domain} dimension.
      */
     private final VariableInfo[] range;
-
-    /**
-     * Whether axes should be sorted instead than relying on the order found in netCDF file.
-     */
-    private final boolean sortAxes;
 
     /**
      * Constructs a new grid geometry information.
      * The {@code domain} and {@code range} arrays often have the same length, but not necessarily.
      *
-     * @param  domain    describes the input values of the "grid to CRS" conversion.
-     * @param  range     the output values of the "grid to CRS" conversion.
-     * @param  sortAxes  whether axes should be sorted instead than relying on the order found in netCDF file.
+     * @param  domain  describes the input values of the "grid to CRS" conversion, in netCDF order.
+     * @param  range   the output values of the "grid to CRS" conversion, in CRS order as much as possible.
      */
-    GridInfo(final Dimension[] domain, final VariableInfo[] range, final boolean sortAxes) {
+    GridInfo(final Dimension[] domain, final VariableInfo[] range) {
         this.domain   = domain;
         this.range    = range;
-        this.sortAxes = sortAxes;
     }
 
     /**
@@ -152,7 +150,7 @@ final class GridInfo extends Grid {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      */
     @Override
@@ -170,15 +168,15 @@ final class GridInfo extends Grid {
         final int    dim  = domain.length;
         final long[] size = new long[dim];
         for (int i=0; i<dim; i++) {
-            size[(dim-1) - i] = Integer.toUnsignedLong(domain[i].length);
+            size[(dim-1) - i] = domain[i].length();
         }
         return size;
     }
 
     /**
      * Returns all axes of the netCDF coordinate system, together with the grid dimension to which the axis
-     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridWrapper#getAxes()} for a closer look
-     * on the relationship between this algorithm and the UCAR library.
+     * is associated. See {@link org.apache.sis.internal.netcdf.ucar.GridWrapper#getAxes(Decoder)} for a
+     * closer look on the relationship between this algorithm and the UCAR library.
      *
      * <p>In this method, the words "domain" and "range" are used in the netCDF sense: they are the input
      * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
@@ -187,16 +185,17 @@ final class GridInfo extends Grid {
      * In particular, the relationship is not straightforward when the coordinate system contains
      * "two-dimensional axes" (in {@link ucar.nc2.dataset.CoordinateAxis2D} sense).</p>
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @param  decoder  the decoder of the netCDF file from which to create axes.
+     * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    protected Axis[] createAxes() throws IOException, DataStoreException {
+    protected Axis[] createAxes(final Decoder decoder) throws IOException, DataStoreException {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
-         * This is often the same order than the indices, but not necessarily. The intent is to reduce the
+         * This is often the reverse order of range indices, but not necessarily. The intent is to reduce the
          * amount of disk seek operations. Data loading may happen in this method through Axis constructor.
          */
         final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();
@@ -233,7 +232,7 @@ final class GridInfo extends Grid {
             final int[] indices = new int[axisDomain.length];
             final int[] sizes   = new int[axisDomain.length];
             for (final Dimension dimension : axisDomain) {
-                for (int sourceDim = domain.length; --sourceDim >= 0;) {
+                for (int sourceDim = 0; sourceDim < domain.length; sourceDim++) {
                     if (domain[sourceDim] == dimension) {
                         indices[i] = sourceDim;
                         sizes[i++] = dimension.length;
@@ -241,31 +240,15 @@ final class GridInfo extends Grid {
                     }
                 }
             }
-            axes[targetDim] = new Axis(this, axis, abbreviation, axis.getAttributeAsString(CF.POSITIVE),
-                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
-        }
-        if (sortAxes) {
-            Arrays.sort(axes);
+            axes[targetDim] = new Axis(abbreviation, axis.getAttributeAsString(CF.POSITIVE),
+                                       ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), axis);
         }
         return axes;
     }
 
     /**
-     * Returns a coordinate for the given two-dimensional grid coordinate axis.
-     * This is (indirectly) a callback method for {@link #getAxes()}.
-     *
-     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
-     */
-    @Override
-    protected double coordinateForAxis(final Variable axis, final int j, final int i) throws IOException, DataStoreException {
-        final VariableInfo v = (VariableInfo) axis;
-        final int n = v.dimensions[0].length;
-        return v.read().doubleValue(j + n*i);
-    }
-
-    /**
      * Returns a hash code for this grid. A map of {@code GridInfo} is used by
-     * {@link ChannelDecoder#getGridGeometries()} for sharing existing instances.
+     * {@link ChannelDecoder#getGrids()} for sharing existing instances.
      */
     @Override
     public int hashCode() {

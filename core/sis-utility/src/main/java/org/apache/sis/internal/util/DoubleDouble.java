@@ -47,7 +47,7 @@ import org.apache.sis.math.DecimalFunctions;
  * }
  *
  * <div class="section">Impact of availability of FMA instructions</div>
- * If <cite>fused multiply-add</cite> (FMA) instruction are available in a future Java version
+ * When allowed to use <cite>fused multiply-add</cite> (FMA) instruction added in JDK9
  * (see <a href="https://issues.apache.org/jira/browse/SIS-136">SIS-136</a> on Apache SIS JIRA),
  * then the following methods should be revisited:
  *
@@ -56,7 +56,7 @@ import org.apache.sis.math.DecimalFunctions;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
@@ -212,7 +212,7 @@ public final class DoubleDouble extends Number {
     public DoubleDouble(Number otherValue) {
         if (otherValue instanceof Fraction) {
             value = ((Fraction) otherValue).denominator;
-            inverseDivide(((Fraction) otherValue).numerator, 0);
+            inverseDivide(((Fraction) otherValue).numerator);
         } else {
             if (otherValue instanceof BigInteger) {
                 otherValue = new BigDecimal((BigInteger) otherValue, MathContext.DECIMAL128);
@@ -244,17 +244,27 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Creates a new value initialized to the given value and an error term inferred by
-     * {@link #errorForWellKnownValue(double)}.
+     * Creates a new instance initialized to the given long integer.
      *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #DoubleDouble(double, double) DoubleDouble}(otherValue, 0)</code> is more efficient.
+     * @param  value  the long integer value to wrap.
+     */
+    public DoubleDouble(final long value) {
+        this.value = value;
+        this.error = (value - (long) this.value);
+    }
+
+    /**
+     * Creates a new instance initialized to the given value verbatim, without inferring an error term for double-double arithmetic.
+     * We use this constructor when the value has been computed using transcendental functions (cosine, logarithm, <i>etc.</i>)
+     * in which case there is no way we can infer a meaningful error term. It should also be used when the value is known to have
+     * an exact representation as a {@code double} primitive type.
      *
-     * @param  value  the initial value.
+     * @param  value  the value to wrap in a {@code DoubleDouble} instance.
+     *
+     * @see #createAndGuessError(double)
      */
     public DoubleDouble(final double value) {
         this.value = value;
-        this.error = errorForWellKnownValue(value);
     }
 
     /**
@@ -285,17 +295,17 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Uses the given value verbatim, without inferring an error term for double-double arithmetic.
-     * We use this method when the value has been computed using transcendental functions (cosine,
-     * logarithm, <i>etc.</i>) in which case there is no way we can infer a meaningful error term.
+     * Creates a new value initialized to the given value and an error term inferred by
+     * {@link #errorForWellKnownValue(double)}.
      *
-     * <p>We use this method both for readability and for making easier to search where such thing occur.</p>
+     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
+     * <code>{@linkplain #DoubleDouble(double) DoubleDouble}(value)</code> is more efficient.
      *
-     * @param  value  the value to wrap in a {@code DoubleDouble} instance.
-     * @return a {@code DoubleDouble} containing exactly the given value, without error term.
+     * @param  value  the initial value.
+     * @return an instance initialized to the given value and a default error term.
      */
-    public static DoubleDouble verbatim(final double value) {
-        return new DoubleDouble(value, 0);
+    public static DoubleDouble createAndGuessError(final double value) {
+        return new DoubleDouble(value, errorForWellKnownValue(value));
     }
 
     /**
@@ -328,10 +338,10 @@ public final class DoubleDouble extends Number {
         return new DoubleDouble(0.000004848136811095359935899141023579480, 9.320078015422868E-23);
     }
 
-    /** @return {@link #value}. */
-    @Override public double doubleValue() {return value;}
-    @Override public float  floatValue()  {return (float) value;}
-    @Override public long   longValue()   {return Math.round(value);}
+    /** @return {@link #value} + {@link #error}. */
+    @Override public double doubleValue() {return value + error;}
+    @Override public float  floatValue()  {return (float) doubleValue();}
+    @Override public long   longValue()   {return Math.round(value) + (long) error;}
     @Override public int    intValue()    {return Math.toIntExact(longValue());}
 
     /**
@@ -425,7 +435,7 @@ public final class DoubleDouble extends Number {
      * @param  a  the first number to add.
      * @param  b  the second number to add, which must be smaller than {@code a}.
      */
-    public void setToQuickSum(final double a, final double b) {
+    final void setToQuickSum(final double a, final double b) {
         value = a + b;
         error = b - (value - a);
         if (DISABLED) error = 0;
@@ -532,13 +542,13 @@ public final class DoubleDouble extends Number {
      *
      * @param  other  the other value to add to this {@code DoubleDouble}.
      */
-    public void add(final Number other) {
+    public void addGuessError(final Number other) {
         if (other instanceof DoubleDouble) {
             add((DoubleDouble) other);
         } else if (shouldConvert(other)) {
             add(new DoubleDouble(other));
         } else {
-            add(other.doubleValue());
+            addGuessError(other.doubleValue());
         }
     }
 
@@ -551,12 +561,38 @@ public final class DoubleDouble extends Number {
      * }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #add(double, double) add}(otherValue, 0)</code> is more efficient.
+     * <code>{@linkplain #add(double) add}(otherValue)</code> is more efficient.
+     *
+     * @param  otherValue  the other value to add to this {@code DoubleDouble}.
+     */
+    public void addGuessError(final double otherValue) {
+        add(otherValue, errorForWellKnownValue(otherValue));
+    }
+
+    /**
+     * Adds the given {@code double} value using
+     * <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>.
+     * This can be used when {@code otherValue} is known to be smaller than {@link #value}.
+     *
+     * @param  y  the other value to add to this {@code DoubleDouble}.
+     */
+    public void addKahan(double y) {
+        y += error;
+        error = y + (value - (value += y));
+    }
+
+    /**
+     * Adds a {@code double} value to this {@code DoubleDouble} without error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    add(otherValue, 0);
+     * }
      *
      * @param  otherValue  the other value to add to this {@code DoubleDouble}.
      */
     public void add(final double otherValue) {
-        add(otherValue, errorForWellKnownValue(otherValue));
+        add(otherValue, 0);
     }
 
     /**
@@ -646,13 +682,13 @@ public final class DoubleDouble extends Number {
      *
      * @param  other  the other value to subtract from this {@code DoubleDouble}.
      */
-    public void subtract(final Number other) {
+    public void subtractGuessError(final Number other) {
         if (other instanceof DoubleDouble) {
             subtract((DoubleDouble) other);
         } else if (shouldConvert(other)) {
             subtract(new DoubleDouble(other));
         } else {
-            subtract(other.doubleValue());
+            subtractGuessError(other.doubleValue());
         }
     }
 
@@ -665,12 +701,26 @@ public final class DoubleDouble extends Number {
      * }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #subtract(double, double) subtract}(otherValue, 0)</code> is more efficient.
+     * <code>{@linkplain #subtract(double) subtract}(otherValue)</code> is more efficient.
+     *
+     * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
+     */
+    public void subtractGuessError(final double otherValue) {
+        subtract(otherValue, errorForWellKnownValue(otherValue));
+    }
+
+    /**
+     * Subtracts a {@code double} from this {@code DoubleDouble} without error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    subtract(otherValue, 0);
+     * }
      *
      * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
      */
     public void subtract(final double otherValue) {
-        subtract(otherValue, errorForWellKnownValue(otherValue));
+        subtract(otherValue, 0);
     }
 
     /**
@@ -720,13 +770,13 @@ public final class DoubleDouble extends Number {
      *
      * @param  other  the other value to multiply by this {@code DoubleDouble}.
      */
-    public void multiply(final Number other) {
+    public void multiplyGuessError(final Number other) {
         if (other instanceof DoubleDouble) {
             multiply((DoubleDouble) other);
         } else if (shouldConvert(other)) {
             multiply(new DoubleDouble(other));
         } else {
-            multiply(other.doubleValue());
+            multiplyGuessError(other.doubleValue());
         }
     }
 
@@ -739,12 +789,26 @@ public final class DoubleDouble extends Number {
      * }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #multiply(double, double) multiply}(otherValue, 0)</code> is more efficient.
+     * <code>{@linkplain #multiply(double) multiply}(otherValue)</code> is more efficient.
+     *
+     * @param  otherValue  the other value to multiply by this {@code DoubleDouble}.
+     */
+    public void multiplyGuessError(final double otherValue) {
+        multiply(otherValue, errorForWellKnownValue(otherValue));
+    }
+
+    /**
+     * Multiplies this {@code DoubleDouble} by a {@code double} without error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    multiply(otherValue, 0);
+     * }
      *
      * @param  otherValue  the other value to multiply by this {@code DoubleDouble}.
      */
     public void multiply(final double otherValue) {
-        multiply(otherValue, errorForWellKnownValue(otherValue));
+        multiply(otherValue, 0);
     }
 
     /**
@@ -823,13 +887,13 @@ public final class DoubleDouble extends Number {
      *
      * @param  other  the other value by which to divide this {@code DoubleDouble}.
      */
-    public void divide(final Number other) {
+    public void divideGuessError(final Number other) {
         if (other instanceof DoubleDouble) {
             divide((DoubleDouble) other);
         } else if (shouldConvert(other)) {
             divide(new DoubleDouble(other));
         } else {
-            divide(other.doubleValue());
+            divideGuessError(other.doubleValue());
         }
     }
 
@@ -842,12 +906,26 @@ public final class DoubleDouble extends Number {
      * }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #divide(double, double) divide}(otherValue, 0)</code> is more efficient.
+     * <code>{@linkplain #divide(double) divide}(otherValue)</code> is more efficient.
+     *
+     * @param  otherValue  the other value by which to divide this {@code DoubleDouble}.
+     */
+    public void divideGuessError(final double otherValue) {
+        divide(otherValue, errorForWellKnownValue(otherValue));
+    }
+
+    /**
+     * Divides this {@code DoubleDouble} by a {@code double} without error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    divide(otherValue, 0);
+     * }
      *
      * @param  otherValue  the other value by which to divide this {@code DoubleDouble}.
      */
     public void divide(final double otherValue) {
-        divide(otherValue, errorForWellKnownValue(otherValue));
+        divide(otherValue, 0);
     }
 
     /**
@@ -906,13 +984,13 @@ public final class DoubleDouble extends Number {
      *
      * @param  other  the other value to divide by this {@code DoubleDouble}.
      */
-    public void inverseDivide(final Number other) {
+    public void inverseDivideGuessError(final Number other) {
         if (other instanceof DoubleDouble) {
             inverseDivide((DoubleDouble) other);
         } else if (shouldConvert(other)) {
             inverseDivide(new DoubleDouble(other));
         } else {
-            inverseDivide(other.doubleValue());
+            inverseDivideGuessError(other.doubleValue());
         }
     }
 
@@ -925,12 +1003,26 @@ public final class DoubleDouble extends Number {
      * }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #inverseDivide(double, double) inverseDivide}(otherValue, 0)</code> is more efficient.
+     * <code>{@linkplain #inverseDivide(double) inverseDivide}(otherValue)</code> is more efficient.
+     *
+     * @param  numeratorValue  the other value to divide by this {@code DoubleDouble}.
+     */
+    public void inverseDivideGuessError(final double numeratorValue) {
+        inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
+    }
+
+    /**
+     * Divides the given {@code double} value by this {@code DoubleDouble} without error term.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    inverseDivide(numeratorValue, 0);
+     * }
      *
      * @param  numeratorValue  the other value to divide by this {@code DoubleDouble}.
      */
     public void inverseDivide(final double numeratorValue) {
-        inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
+        inverseDivide(numeratorValue, 0);
     }
 
     /**
@@ -960,7 +1052,7 @@ public final class DoubleDouble extends Number {
          * The 'b * (a.value / b.value)' part in the method javadoc.
          */
         final double quotient = numeratorValue / denominatorValue;
-        multiply(quotient, 0);
+        multiply(quotient);
         /*
          * Compute 'remainder' as 'a - above_product'.
          */
@@ -997,9 +1089,9 @@ public final class DoubleDouble extends Number {
      * This pattern occurs in map projections.
      */
     public void ratio_1m_1p() {
-        final DoubleDouble numerator = new DoubleDouble(1, 0);
+        final DoubleDouble numerator = new DoubleDouble(1d);
         numerator.subtract(this);
-        add(1, 0);
+        add(1);
         inverseDivide(numerator);
     }
 
@@ -1039,7 +1131,7 @@ public final class DoubleDouble extends Number {
             double r = Math.sqrt(thisValue);
             setToProduct(r, r);
             subtract(thisValue, thisError);
-            divide(-2*r, 0);                    // Multiplication by 2 does not cause any precision lost.
+            divide(-2*r);                           // Multiplication by 2 does not cause any precision lost.
             setToQuickSum(r, value);
         }
     }
@@ -1060,12 +1152,12 @@ public final class DoubleDouble extends Number {
             final DoubleDouble xn = new DoubleDouble(x);
             final DoubleDouble t = new DoubleDouble(xn);
             for (int i=1; i<last; i++) {
-                t.multiply(coefficients[i], 0);
+                t.multiply(coefficients[i]);
                 add(t);
                 xn.multiply(x);
                 t.setFrom(xn);
             }
-            t.multiply(coefficients[last], 0);
+            t.multiply(coefficients[last]);
             add(t);
         }
     }

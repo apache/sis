@@ -23,7 +23,6 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
 
 
@@ -160,9 +159,9 @@ public class TimeDependentBWP extends BursaWolfParameters {
     final DoubleDouble period(final Date time) {
         if (time != null) {
             final long millis = time.getTime() - timeReference;
-            if (millis != 0) { // Returns null for 0 as an optimization.
-                final DoubleDouble period = verbatim(millis);
-                period.divide(1000 * JULIAN_YEAR_LENGTH, 0);
+            if (millis != 0) {                                          // Returns null for 0 as an optimization.
+                final DoubleDouble period = new DoubleDouble(millis);
+                period.divide(1000 * JULIAN_YEAR_LENGTH);
                 return period;
             }
         }
@@ -190,10 +189,10 @@ public class TimeDependentBWP extends BursaWolfParameters {
                 case 3: d = drX; break;
                 case 4: d = drY; break;
                 case 5: d = drZ; break;
-                case 6: d = ddS; period.multiply(1000, 0); break;
+                case 6: d = ddS; period.multiply(1000); break;
                 default: throw new AssertionError(index);
             }
-            period.multiply(d);
+            period.multiplyGuessError(d);
             p.add(period);
             period.value = value;
             period.error = error;

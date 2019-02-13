@@ -31,13 +31,13 @@ import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.PolarStereographicC;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -207,7 +207,7 @@ public class PolarStereographic extends ConformalProjection {
              *
              * In the spherical case, should give ρ == 2.
              */
-            ρ = verbatim(2 / sqrt(pow(1+eccentricity, 1+eccentricity) * pow(1-eccentricity, 1-eccentricity)));
+            ρ = new DoubleDouble(2 / sqrt(pow(1+eccentricity, 1+eccentricity) * pow(1-eccentricity, 1-eccentricity)));
             ρF = null;
         } else {
             /*
@@ -229,8 +229,8 @@ public class PolarStereographic extends ConformalProjection {
              */
             final double sinφ1 = sin(φ1);
             final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
-            ρ = verbatim(mF / expOfNorthing(φ1, eccentricity*sinφ1));
-            ρF = (variant == C) ? verbatim(-mF) : null;
+            ρ = new DoubleDouble(mF / expOfNorthing(φ1, eccentricity*sinφ1));
+            ρF = (variant == C) ? new DoubleDouble(-mF) : null;
         }
         /*
          * At this point, all parameters have been processed. Now process to their
@@ -240,7 +240,7 @@ public class PolarStereographic extends ConformalProjection {
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
         if (isNorth) {
-            final Number reverseSign = verbatim(-1);
+            final Number reverseSign = new DoubleDouble(-1d);
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
             normalize  .convertAfter (1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);

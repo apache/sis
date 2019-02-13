@@ -156,7 +156,7 @@ public final strictfp class PlaneTest extends TestCase {
          * generic code path.
          */
         final Plane gf = new Plane();
-        gf.fit(nx, ny, Vector.create(z, false));
+        gf.fit(nx, ny, Vector.create(z));
         assertEquals("sx", fitted.slopeX(), gf.slopeX(), STRICT);
         assertEquals("sy", fitted.slopeY(), gf.slopeY(), STRICT);
         assertEquals("z₀", fitted.z0(),     gf.z0(),     STRICT);

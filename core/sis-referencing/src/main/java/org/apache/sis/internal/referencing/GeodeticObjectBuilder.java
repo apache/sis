@@ -358,8 +358,8 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
-     * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tupples.
-     * If any such tupple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
+     * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tuples.
+     * If any such tuple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
      *
      * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.
      * @return the coordinate reference system for the given properties.

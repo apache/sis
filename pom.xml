@@ -426,13 +426,13 @@
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>2.2.0</version>
+        <version>2.2.2</version>
         <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
-        <version>1.15.1</version>
+        <version>1.16.0</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -469,7 +469,7 @@
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.2.4</version>
+        <version>42.2.5</version>
         <scope>test</scope>
       </dependency>
 

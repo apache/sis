@@ -17,9 +17,13 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Locale;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
@@ -55,12 +59,12 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GridExtent#GridExtent(GridExtent, int[])} constructor.
+     * Tests the {@link GridExtent#subsample(int...)}.
      */
     @Test
-    public void testCreateFromStrides() {
+    public void testSubsample() {
         GridExtent extent = create3D();
-        extent = new GridExtent(extent, new int[] {4, 3, 9});
+        extent = extent.subsample(4, 3, 9);
         assertExtentEquals(extent, 0, 25, 124);                 // 100 cells
         assertExtentEquals(extent, 1, 66, 265);                 // 200 cells
         assertExtentEquals(extent, 2,  4,   5);                 //   2 cells
@@ -119,17 +123,67 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#subExtent(int, int)}.
+     * Tests {@link GridExtent#reduce(int...)}.
      */
     @Test
-    public void testSubExtent() {
-        GridExtent extent = create3D();
-        extent = extent.subExtent(0, 2);
-        assertEquals("dimension", 2, extent.getDimension());
-        assertExtentEquals(extent, 0, 100, 499);
-        assertExtentEquals(extent, 1, 200, 799);
-        assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
-        assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
+    public void testReduce() {
+        final GridExtent extent = create3D();
+        GridExtent reduced = extent.reduce(0, 1);
+        assertEquals("dimension", 2, reduced.getDimension());
+        assertExtentEquals(reduced, 0, 100, 499);
+        assertExtentEquals(reduced, 1, 200, 799);
+        assertEquals(DimensionNameType.COLUMN, reduced.getAxisType(0).get());
+        assertEquals(DimensionNameType.ROW,    reduced.getAxisType(1).get());
+
+        reduced = extent.reduce(2);
+        assertEquals("dimension", 1, reduced.getDimension());
+        assertExtentEquals(reduced, 0, 40, 49);
+        assertEquals(DimensionNameType.TIME, reduced.getAxisType(0).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#slice(DirectPosition, int[])}.
+     */
+    @Test
+    public void testSlice() {
+        final GeneralDirectPosition slicePoint = new GeneralDirectPosition(226.7, 47.2);
+        final GridExtent extent = create3D();
+        final GridExtent slice  = extent.slice(slicePoint, new int[] {1, 2});
+        assertEquals("dimension", 3, slice.getDimension());
+        assertExtentEquals(slice, 0, 100, 499);
+        assertExtentEquals(slice, 1, 227, 227);
+        assertExtentEquals(slice, 2,  47,  47);
+        /*
+         * Verify that point outside the GridExtent causes an exception to be thrown.
+         * The message is localized but the grid coordinates "(900, 47)" are currently
+         * unlocalized, so the check below should work in any locale (note that it may
+         * change in future SIS version).
+         */
+        slicePoint.setOrdinate(0, 900);
+        try {
+            extent.slice(slicePoint, new int[] {1, 2});
+            fail("Expected PointOutsideCoverageException");
+        } catch (PointOutsideCoverageException e) {
+            final String message = e.getLocalizedMessage();
+            assertTrue(message, message.contains("(900, 47)"));     // See above comment.
+        }
+    }
+
+    /**
+     * Tests {@link GridExtent#getSubspaceDimensions(int)}.
+     */
+    @Test
+    public void testGetSubspaceDimensions() {
+        final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
+        assertArrayEquals(new int[] {0,  2  }, extent.getSubspaceDimensions(2));
+        assertArrayEquals(new int[] {0,1,2  }, extent.getSubspaceDimensions(3));
+        assertArrayEquals(new int[] {0,1,2,3}, extent.getSubspaceDimensions(4));
+        try {
+            extent.getSubspaceDimensions(1);
+            fail("Should not reduce to 1 dimension.");
+        } catch (SubspaceNotSpecifiedException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**

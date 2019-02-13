@@ -639,6 +639,20 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests {@link GeneralEnvelope#toWKT()} on a {@link GeneralEnvelope}.
+     */
+    @Test
+    public void testWktFormatting() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(3);
+        envelope.setRange(0,  6, 10);
+        envelope.setRange(1, 16, 20);
+        envelope.setRange(2, 23, 50);
+        assertWktEquals(
+                "BOX3D[ 6 16 23,\n" +
+                "      10 20 50]", envelope);
+    }
+
+    /**
      * Tests the {@link GeneralEnvelope#equals(Object)} and
      * {@link GeneralEnvelope#equals(Envelope, double, boolean)} methods.
      */

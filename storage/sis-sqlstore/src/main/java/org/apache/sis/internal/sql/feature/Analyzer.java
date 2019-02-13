@@ -35,6 +35,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
@@ -191,22 +192,7 @@ final class Analyzer {
      * then the value should not be escaped.</div>
      */
     final String escape(final String pattern) {
-        if (pattern != null) {
-            StringBuilder buffer = null;
-            for (int i = pattern.length(); --i >= 0;) {
-                final char c = pattern.charAt(i);
-                if (c == '_' || c == '%') {
-                    if (buffer == null) {
-                        buffer = new StringBuilder(pattern);
-                    }
-                    buffer.insert(i, escape);
-                }
-            }
-            if (buffer != null) {
-                return buffer.toString();
-            }
-        }
-        return pattern;
+        return SQLUtilities.escape(pattern, escape);
     }
 
     /**

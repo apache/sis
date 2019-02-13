@@ -36,7 +36,7 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 /**
  * Skeleton for {@link MathTransformFactory} custom implementations.
- * Implementors need to override at least one method.
+ * Subclasses need to override at least one method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
@@ -105,7 +105,7 @@ strictfp class MathTransformFactoryBase implements MathTransformFactory {
 
     /** Default implementation throws an exception. */
     @Override
-    public MathTransform createPassThroughTransform(int firstAffectedOrdinate, MathTransform subTransform, int numTrailingOrdinates) throws FactoryException {
+    public MathTransform createPassThroughTransform(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates) throws FactoryException {
         throw new FactoryException(MESSAGE);
     }
 

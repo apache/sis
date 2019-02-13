@@ -26,7 +26,9 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.Point3D;
 import com.esri.core.geometry.WktImportFlags;
+import com.esri.core.geometry.WktExportFlags;
 import com.esri.core.geometry.OperatorImportFromWkt;
+import com.esri.core.geometry.OperatorExportToWkt;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
@@ -122,8 +124,7 @@ final class ESRI extends Geometries<Geometry> {
 
     /**
      * Creates a polyline from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value start a new path.
-     * The implementation returned by this method must be an instance of {@link #rootClass}.
+     * Each {@link Double#NaN} ordinate value starts a new path.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... ordinates) {
@@ -164,30 +165,31 @@ final class ESRI extends Geometries<Geometry> {
         }
         final Polyline path = new Polyline();
         boolean lineTo = false;
-        for (;; next = polylines.next()) {
-            if (next != null) {
-                if (next instanceof Point) {
-                    final Point pt = (Point) next;
-                    if (pt.isEmpty()) {
-                        lineTo = false;
-                    } else {
-                        final double x = ((Point) next).getX();
-                        final double y = ((Point) next).getY();
-                        if (lineTo) {
-                            path.lineTo(x, y);
-                        } else {
-                            path.startPath(x, y);
-                            lineTo = true;
-                        }
-                    }
-                } else {
-                    path.add((MultiPath) next, false);
+add:    for (;;) {
+            if (next instanceof Point) {
+                final Point pt = (Point) next;
+                if (pt.isEmpty()) {
                     lineTo = false;
+                } else {
+                    final double x = ((Point) next).getX();
+                    final double y = ((Point) next).getY();
+                    if (lineTo) {
+                        path.lineTo(x, y);
+                    } else {
+                        path.startPath(x, y);
+                        lineTo = true;
+                    }
                 }
+            } else {
+                path.add((MultiPath) next, false);
+                lineTo = false;
             }
-            if (!polylines.hasNext()) {         // Should be part of the 'for' instruction, but we need
-                break;                          // to skip this condition during the first iteration.
-            }
+            /*
+             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * except that we need to skip this condition during the first iteration.
+             */
+            do if (!polylines.hasNext()) break add;
+            while ((next = polylines.next()) == null);
         }
         return path;
     }
@@ -198,5 +200,16 @@ final class ESRI extends Geometries<Geometry> {
     @Override
     public Object parseWKT(final String wkt) {
         return OperatorImportFromWkt.local().execute(WktImportFlags.wktImportDefaults, Geometry.Type.Unknown, wkt, null);
+    }
+
+    /**
+     * If the given object is an ESRI geometry, returns its WKT representation.
+     */
+    @Override
+    final String tryFormatWKT(final Object geometry, final double flatness) {
+        if (geometry instanceof Geometry) {
+            return OperatorExportToWkt.local().execute(WktExportFlags.wktExportDefaults, (Geometry) geometry, null);
+        }
+        return null;
     }
 }

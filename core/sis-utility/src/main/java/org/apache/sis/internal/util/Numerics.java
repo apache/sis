@@ -18,14 +18,22 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.text.Format;
+import java.text.DecimalFormat;
+import java.util.function.BiFunction;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.Statistics;
+import org.apache.sis.math.Vector;
 import org.opengis.referencing.operation.Matrix;    // For javadoc
 
+import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
+import static java.lang.Math.ulp;
 
 
 /**
@@ -54,7 +62,7 @@ public final class Numerics extends Static {
         cache( 360);
         cache(1000);
         cache(Double.POSITIVE_INFINITY);
-        cache(Double.NaN);
+        // Do not cache NaN values because Double.equals(Object) consider all NaN as equal.
     }
 
     /**
@@ -77,7 +85,7 @@ public final class Numerics extends Static {
      * classes have their number of dimensions limited mostly by the capacity of the {@code int} primitive type, but
      * we nevertheless set the maximum number of dimensions to a lower value for catching probable errors. Note that
      * this is not a "universal" limit through Apache SIS, as some algorithms impose a smaller number of dimensions.
-     * Some limits found in specific Apache SIS code are 20, {@value Integer#SIZE} or {@value Long#SIZE}.</p>
+     * Some other limits found in specific Apache SIS code are 20 or {@value Long#SIZE}.</p>
      */
     public static final int MAXIMUM_MATRIX_SIZE = Short.MAX_VALUE;
 
@@ -144,6 +152,23 @@ public final class Numerics extends Static {
      * Do not allow instantiation of this class.
      */
     private Numerics() {
+    }
+
+    /**
+     * Returns a mask with the given bit set. The bit should be a number from 0 inclusive to {@value Long#SIZE} exclusive.
+     * If the given bit is outside that range, then this method returns 0. The later condition is the main difference with
+     * the {@code 1L << bit} operation since {@code 1L << 64} computes 1. By contrast, {@code bitmask(64)} returns 0.
+     *
+     * <p>This method is invoked in contexts where we really need value 0 for a {@code bit} value of {@value Long#SIZE}.
+     * For example if we want to compute the maximal value of an unsigned integer of the given number of bits, we can use
+     * {@code bitmask(n) - 1}. If <var>n</var> = 64, then {@code bitmask(64) - 1} = -1 which is the desired value (the
+     * signed value -1 has the same bits pattern than the maximal possible value in unsigned integer representation).</p>
+     *
+     * @param  bit  the bit to set.
+     * @return a mask with the given bit set, or 0 if the given argument is negative or ≧ {@value Long#SIZE}.
+     */
+    public static long bitmask(final int bit) {
+        return (bit >= 0 && bit < Long.SIZE) ? (1L << bit) : 0;
     }
 
     /**
@@ -459,6 +484,39 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Suggests an amount of fraction digits for data having the given statistics.
+     * This method uses heuristic rules that may be modified in any future SIS version.
+     *
+     * @param  stats  statistics on the data to format.
+     * @return number of fraction digits suggested. May be negative.
+     *
+     * @since 1.0
+     */
+    public static int suggestFractionDigits(final Statistics stats) {
+        final double minimum = stats.minimum();
+        final double maximum = stats.maximum();
+        double delta = stats.standardDeviation(true);                       // 'true' is for avoiding NaN when count = 1.
+        if (delta == 0) {
+            delta = stats.span();                                           // May happen that the span is very narrow.
+            if (delta == 0) {
+                delta = abs(maximum) / 1E+6;                                // The 1E+6 factor is arbitrary.
+            }
+        } else {
+            /*
+             * Computes a representative range of values. We take 2 standard deviations away
+             * from the mean. Assuming that data have a gaussian distribution, this is 97.7%
+             * of data. If the data have a uniform distribution, then this is 100% of data.
+             */
+            final double mean = stats.mean();
+            delta *= 2;
+            delta  = min(maximum, mean+delta) - max(minimum, mean-delta);   // Range of 97.7% of values.
+            delta /= min(stats.count() * 1E+2, 1E+6);                       // Mean delta for uniform distribution + 2 decimal digits.
+            delta  = max(delta, max(ulp(minimum), ulp(maximum)));           // Not finer than 'double' accuracy.
+        }
+        return DecimalFunctions.fractionDigitsForDelta(delta, false);
+    }
+
+    /**
      * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
      * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
      *
@@ -466,42 +524,62 @@ public final class Numerics extends Static {
      * @return suggested amount of fraction digits as an array as long as the longest row.
      *
      * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
+     *
+     * @todo Move into {@link org.apache.sis.internal.referencing.WKTUtilities}
+     *       if we move WKT parser/formatter to referencing module.
      */
-    public static int[] suggestFractionDigits(final double[][] rows) {
+    public static int[] suggestFractionDigits(final Vector[] rows) {
         int length = 0;
         final int n = rows.length - 1;
         for (int j=0; j <= n; j++) {
-            final int rl = rows[j].length;
+            final int rl = rows[j].size();
             if (rl > length) length = rl;
         }
         final int[] fractionDigits = new int[length];
+        final Statistics stats = new Statistics(null);
         for (int i=0; i<length; i++) {
-            double min = Double.POSITIVE_INFINITY;
-            double max = Double.NEGATIVE_INFINITY;
             boolean isInteger = true;
-            for (final double[] row : rows) {
-                if (row.length > i) {
-                    final double value = row[i];
-                    if (value < min) min = value;
-                    if (value > max) max = value;
+            for (final Vector row : rows) {
+                if (row.size() > i) {
+                    final double value = row.doubleValue(i);
+                    stats.accept(value);
                     if (isInteger && Math.floor(value) != value && !Double.isNaN(value)) {
                         isInteger = false;
                     }
                 }
             }
             if (!isInteger) {
-                final double  delta;
-                final boolean strict;
-                if (min < max) {
-                    delta  = (max - min) / n;
-                    strict = (n == 1);
-                } else {
-                    delta  = Math.max(Math.abs(min), Math.abs(max)) * 1E-6;     // The 1E-6 factor is arbitrary.
-                    strict = false;
-                }
-                fractionDigits[i] = DecimalFunctions.fractionDigitsForDelta(delta, strict);
+                fractionDigits[i] = suggestFractionDigits(stats);
             }
+            stats.reset();
         }
         return fractionDigits;
+    }
+
+    /**
+     * Formats the given value with the given format, using scientific notation if needed.
+     * This is a workaround for {@link DecimalFormat} not switching automatically to scientific notation for large numbers.
+     *
+     * @param  format  the format to use for formatting the given value.
+     * @param  value   the value to format.
+     * @param  action  the method to invoke. Typically {@code Format::format}.
+     * @return the result of {@code action}.
+     */
+    @Workaround(library="JDK", version="10")
+    public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format,Object,String> action) {
+        if (value instanceof Number) {
+            final double m = abs(((Number) value).doubleValue());
+            if (m > 0 && (m >= 1E+9 || m < 1E-4) && format instanceof DecimalFormat) {
+                final DecimalFormat df = (DecimalFormat) format;
+                final String pattern = df.toPattern();
+                df.applyPattern("0.######E00");
+                try {
+                    return action.apply(format, value);
+                } finally {
+                    df.applyPattern(pattern);
+                }
+            }
+        }
+        return action.apply(format, value);
     }
 }

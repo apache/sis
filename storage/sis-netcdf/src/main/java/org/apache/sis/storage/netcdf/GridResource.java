@@ -33,17 +33,20 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridChange;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -66,7 +69,11 @@ import ucar.nc2.constants.CDM;                      // We use only String consta
 final class GridResource extends AbstractGridResource implements ResourceOnFileSystem {
     /**
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
-     * that the variable is a component of a vector. Example of standard variable names:
+     * that the variable is a component of a vector. Those words are used in heuristic rules
+     * for deciding if two variables should be stored in a single {@code Coverage} instance.
+     * For example the eastward (u) and northward (v) components of oceanic current vectors
+     * should be stored as two sample dimensions of a single "Current" coverage.
+     * Example of standard variable names:
      *
      * <ul>
      *   <li>{@code baroclinic_eastward_sea_water_velocity}</li>
@@ -121,7 +128,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     private final Path location;
 
     /**
-     * Creates a new resource.
+     * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
      * @param  name     the name for the resource.
@@ -150,8 +157,11 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         final List<Resource> resources = new ArrayList<>();
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
-            final Grid grid;
-            if (variable == null || !variable.isCoverage() || (grid = variable.getGridGeometry(decoder)) == null) {
+            if (decoder.roleOf(variable) != VariableRole.COVERAGE) {
+                continue;                                                   // Skip variables that are not grid coverages.
+            }
+            final Grid grid = variable.getGrid(decoder);
+            if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
             siblings.add(variable);
@@ -175,14 +185,14 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     int suffixLength = name.length() - suffixStart;
                     for (int j=i; ++j < variables.length;) {
                         final Variable candidate = variables[j];
-                        if (candidate == null || !candidate.isCoverage()) {
+                        if (decoder.roleOf(candidate) != VariableRole.COVERAGE) {
                             variables[j] = null;                                // For avoiding to revisit that variable again.
                             continue;
                         }
                         final String cn = candidate.getStandardName();
                         if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
                             cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
-                            candidate.getGridGeometry(decoder) == grid)
+                            candidate.getGrid(decoder) == grid)
                         {
                             /*
                              * Found another variable with the same name except for the keyword. Verify that the
@@ -272,35 +282,31 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (!Double.isNaN(scale))  tr.setScale (scale);
             if (!Double.isNaN(offset)) tr.setOffset(offset);
             final MathTransform1D mt = tr.getTransform();
-            if (!mt.isIdentity()) {
+            if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
-                 * if the type of the range is equals to the type of the scale, and the type of the
+                 * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
+                 * This is identified in Apache SIS by the range given as a MeasurementRange.
                  */
-                final int dataType  = data.getDataType().number;
-                final int rangeType = Numbers.getEnumConstant(range.getElementType());
-                if (rangeType >= dataType &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(data.getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(data.getAttributeType(CDM.ADD_OFFSET))))
-                {
-                    final boolean isMinIncluded = range.isMinIncluded();
-                    final boolean isMaxIncluded = range.isMaxIncluded();
-                    double minimum = (range.getMinDouble() - offset) / scale;
-                    double maximum = (range.getMaxDouble() - offset) / scale;
-                    if (maximum > minimum) {
-                        final double swap = maximum;
-                        maximum = minimum;
-                        minimum = swap;
-                    }
-                    if (dataType < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
-                        range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
-                    } else {
-                        range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
-                    }
+                final boolean isMinIncluded = range.isMinIncluded();
+                final boolean isMaxIncluded = range.isMaxIncluded();
+                double minimum = (range.getMinDouble() - offset) / scale;
+                double maximum = (range.getMaxDouble() - offset) / scale;
+                if (maximum < minimum) {
+                    final double swap = maximum;
+                    maximum = minimum;
+                    minimum = swap;
+                }
+                if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                    range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
+                } else {
+                    range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
                 }
             }
-            builder.addQuantitative(data.getName(), range, mt, data.getUnit());
+            String name = data.getDescription();
+            if (name == null) name = data.getName();
+            builder.addQuantitative(name, range, mt, data.getUnit());
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -316,11 +322,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (ordinal >= 0) {
                 n = MathFunctions.toNanFloat(ordinal++);        // Must be consistent with Variable.replaceNaN(Object).
             } else {
-                n = entry.getKey();
-                final double fp = n.doubleValue();
-                if (builder.rangeCollides(fp, fp)) {
-                    continue;
-                }
+                n = entry.getKey();                             // Should be real number, made unique by the HashMap.
             }
             final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
             final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.
@@ -336,7 +338,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                 builder.addQualitative(name, n, n);
             }
         }
-        return builder.build();
+        return builder.setName(data.getName()).build();
     }
 
     /**
@@ -353,13 +355,21 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         if (domain == null) {
             domain = gridGeometry;
         }
-        final DataType          dataType;
-        final DataBuffer        imageBuffer;
+        final Variable first = data[range[0]];
+        final DataType dataType = first.getDataType();
+        for (int i=1; i<data.length; i++) {
+            final Variable variable = data[range[i]];
+            if (!dataType.equals(variable.getDataType())) {
+                throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
+                        Resources.Keys.MismatchedVariableType_3, getFilename(), first.getName(), variable.getName()));
+            }
+        }
+        final DataBuffer imageBuffer;
         final SampleDimension[] selected = new SampleDimension[range.length];
         try {
-            final Buffer[]   samples = new Buffer[range.length];
-            final GridChange change  = new GridChange(domain, gridGeometry);
-            final int[]      strides = change.getTargetStrides();
+            final Buffer[] samples = new Buffer[range.length];
+            final GridDerivation change = gridGeometry.derive().subgrid(domain);
+            final int[] subsamplings = change.getSubsamplings();
             SampleDimension.Builder builder = null;
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
@@ -380,30 +390,43 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         if (def == null) {
                             if (builder == null) builder = new SampleDimension.Builder();
                             ranges[i] = def = createSampleDimension(builder, variable);
+                            builder.clear();
                         }
                         if (values == null) {
                             // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                            values = variable.read(change.getTargetExtent(), strides).buffer().get();
+                            values = variable.read(change.getIntersection(), subsamplings).buffer().get();
                         }
                         selected[j] = def;
                         samples[j] = values;
                     }
                 }
             }
-            dataType = data[range[0]].getDataType();
+            domain = change.subsample(subsamplings).build();
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
-            domain = change.getTargetGeometry(strides);
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (RuntimeException e) {                  // Many exceptions thrown by RasterFactory.wrap(…).
+            final Throwable cause = e.getCause();
+            if (cause instanceof TransformException) {
+                throw new DataStoreReferencingException(cause);
+            }
             throw new DataStoreContentException(e);
         }
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer);
+        return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getName());
+    }
+
+    /**
+     * Returns the name of the netCDF file. This is used for error messages.
+     */
+    private String getFilename() {
+        if (location != null) {
+            return location.getFileName().toString();
+        } else {
+            return Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
+        }
     }
 
     /**

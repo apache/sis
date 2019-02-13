@@ -301,41 +301,41 @@ public final class MathTransforms extends Static {
      * This method returns a transform having the following dimensions:
      *
      * {@preformat java
-     *     Source: firstAffectedOrdinate + subTransform.getSourceDimensions() + numTrailingOrdinates
-     *     Target: firstAffectedOrdinate + subTransform.getTargetDimensions() + numTrailingOrdinates
+     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
+     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
      * }
      *
-     * Affected ordinates will range from {@code firstAffectedOrdinate} inclusive to
-     * {@code dimTarget - numTrailingOrdinates} exclusive.
+     * Affected coordinates will range from {@code firstAffectedCoordinate} inclusive to
+     * {@code dimTarget - numTrailingCoordinates} exclusive.
      *
-     * @param  firstAffectedOrdinate  index of the first affected ordinate.
-     * @param  subTransform           the sub-transform to apply on modified coordinates.
-     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param  firstAffectedCoordinate  index of the first affected coordinate.
+     * @param  subTransform             the sub-transform to apply on modified coordinates.
+     * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, potentially as a {@link PassThroughTransform} instance but not necessarily.
      *
      * @since 1.0
      */
-    public static MathTransform passThrough(final int firstAffectedOrdinate,
+    public static MathTransform passThrough(final int firstAffectedCoordinate,
                                             final MathTransform subTransform,
-                                            final int numTrailingOrdinates)
+                                            final int numTrailingCoordinates)
     {
-        ArgumentChecks.ensureNonNull ("subTransform",          subTransform);
-        ArgumentChecks.ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
-        ArgumentChecks.ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
-        if (firstAffectedOrdinate == 0 && numTrailingOrdinates == 0) {
+        ArgumentChecks.ensureNonNull ("subTransform",            subTransform);
+        ArgumentChecks.ensurePositive("firstAffectedCoordinate", firstAffectedCoordinate);
+        ArgumentChecks.ensurePositive("numTrailingCoordinates",  numTrailingCoordinates);
+        if (firstAffectedCoordinate == 0 && numTrailingCoordinates == 0) {
             return subTransform;
         }
         if (subTransform.isIdentity()) {
             final int dimension = subTransform.getSourceDimensions();
             if (dimension == subTransform.getTargetDimensions()) {
-                return IdentityTransform.create(firstAffectedOrdinate + dimension + numTrailingOrdinates);
+                return IdentityTransform.create(firstAffectedCoordinate + dimension + numTrailingCoordinates);
             }
         }
         final Matrix matrix = getMatrix(subTransform);
         if (matrix != null) {
-            return linear(PassThroughTransform.asMatrix(firstAffectedOrdinate, matrix, numTrailingOrdinates));
+            return linear(PassThroughTransform.asMatrix(firstAffectedCoordinate, matrix, numTrailingCoordinates));
         } else {
-            return PassThroughTransform.newInstance(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+            return PassThroughTransform.newInstance(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
         }
     }
 
@@ -372,10 +372,10 @@ public final class MathTransforms extends Static {
             sum += (dimensions[i] = tr.getSourceDimensions());
         }
         MathTransform compound = null;
-        int firstAffectedOrdinate = 0;
+        int firstAffectedCoordinate = 0;
         for (int i=0; i<components.length; i++) {
             MathTransform tr = components[i];
-            tr = passThrough(firstAffectedOrdinate, tr, sum - (firstAffectedOrdinate += dimensions[i]));
+            tr = passThrough(firstAffectedCoordinate, tr, sum - (firstAffectedCoordinate += dimensions[i]));
             if (compound == null) {
                 compound = tr;
             } else {

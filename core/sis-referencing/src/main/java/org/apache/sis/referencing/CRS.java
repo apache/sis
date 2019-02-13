@@ -43,6 +43,8 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
@@ -62,9 +64,11 @@ import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -928,6 +932,101 @@ public final class CRS extends Static {
     }
 
     /**
+     * Gets or creates a coordinate reference system with a subset of the dimensions of the given CRS.
+     * This method can be used for dimensionality reduction, but not for changing axis order.
+     * The specified dimensions are used as if they were in strictly increasing order without duplicated values.
+     *
+     * <div class="section">Ellipsoidal height</div>
+     * This method can transform a three-dimensional geographic CRS into a two-dimensional geographic CRS.
+     * In this aspect, this method is the converse of {@link #compound(CoordinateReferenceSystem...)}.
+     * This method can also extract the {@linkplain CommonCRS.Vertical#ELLIPSOIDAL ellipsoidal height}
+     * from a three-dimensional geographic CRS, but this is generally not recommended since ellipsoidal
+     * heights make little sense without their (<var>latitude</var>, <var>longitude</var>) locations.
+     *
+     * @param  crs         the CRS to reduce the dimensionality, or {@code null} if none.
+     * @param  dimensions  the dimensions to retain. The dimensions will be taken in increasing order, ignoring duplicated values.
+     * @return a coordinate reference system for the given dimensions. May be the given {@code crs}, which may be {@code null}.
+     * @throws IllegalArgumentException if the given array is empty or if the array contains invalid indices.
+     * @throws FactoryException if the geodetic factory failed to create a compound CRS.
+     *
+     * @see #getComponentAt(CoordinateReferenceSystem, int, int)
+     * @see #compound(CoordinateReferenceSystem...)
+     *
+     * @since 1.0
+     */
+    public static CoordinateReferenceSystem reduce(final CoordinateReferenceSystem crs, final int... dimensions) throws FactoryException {
+        ArgumentChecks.ensureNonNull("dimensions", dimensions);
+        if (crs == null) {
+            return null;
+        }
+        final int dimension = ReferencingUtilities.getDimension(crs);
+        long selected = 0;
+        for (final int d : dimensions) {
+            if (d < 0 || d >= dimension) {
+                throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
+            }
+            if (d >= Long.SIZE) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d));
+            }
+            selected |= (1L << d);
+        }
+        if (selected == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
+        }
+        final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
+        reduce(0, crs, dimension, selected, components);
+        return compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
+    }
+
+    /**
+     * Adds the components of reduced CRS into the given list.
+     * This method may invoke itself recursively for walking through compound CRS.
+     *
+     * @param  previous    number of dimensions of previous CRS.
+     * @param  crs         the CRS for which to select components.
+     * @param  dimension   number of dimensions of {@code crs}.
+     * @param  selected    bitmask of dimensions to select.
+     * @param  addTo       where to add CRS components.
+     * @return new bitmask after removal of dimensions of the components added to {@code addTo}.
+     */
+    private static long reduce(int previous, final CoordinateReferenceSystem crs, int dimension, long selected,
+            final List<CoordinateReferenceSystem> addTo) throws FactoryException
+    {
+        final long current = (Numerics.bitmask(dimension) - 1) << previous;
+        final long intersect = selected & current;
+        if (intersect != 0) {
+            if (intersect == current) {
+                addTo.add(crs);
+                selected &= ~current;
+            } else if (crs instanceof CompoundCRS) {
+                for (final CoordinateReferenceSystem component : ((CompoundCRS) crs).getComponents()) {
+                    dimension = ReferencingUtilities.getDimension(component);
+                    selected = reduce(previous, component, dimension, selected, addTo);
+                    if ((selected & current) == 0) break;           // Stop if it would be useless to continue.
+                    previous += dimension;
+                }
+            } else if (dimension == 3 && crs instanceof SingleCRS) {
+                final Datum datum = ((SingleCRS) crs).getDatum();
+                if (datum instanceof GeodeticDatum) {
+                    final boolean isVertical = Long.bitCount(intersect) == 1;               // Presumed for now, verified later.
+                    final int verticalDimension = Long.numberOfTrailingZeros((isVertical ? intersect : ~intersect) >>> previous);
+                    final CoordinateSystemAxis verticalAxis = crs.getCoordinateSystem().getAxis(verticalDimension);
+                    if (AxisDirections.isVertical(verticalAxis.getDirection())) try {
+                        addTo.add(new EllipsoidalHeightSeparator((GeodeticDatum) datum).separate((SingleCRS) crs, isVertical));
+                        selected &= ~current;
+                    } catch (IllegalArgumentException | ClassCastException e) {
+                        throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateCRS_1, crs.getName()));
+                    }
+                }
+            }
+        }
+        if ((selected & current) != 0) {
+            throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateCRS_1, crs.getName()));
+        }
+        return selected;
+    }
+
+    /**
      * Returns {@code true} if the given CRS is horizontal. The current implementation considers a
      * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
      *
@@ -1250,6 +1349,7 @@ public final class CRS extends Static {
      *         or can not be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
      * @throws IndexOutOfBoundsException if the given index are out of bounds.
      *
+     * @see #reduce(CoordinateReferenceSystem, int...)
      * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
      *
      * @since 0.5
@@ -1259,6 +1359,7 @@ public final class CRS extends Static {
         ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
 check:  while (lower != 0 || upper != dimension) {
             if (crs instanceof CompoundCRS) {
+                // We need nested CompoundCRS (if any) below, not a flattened list of SingleCRS.
                 final List<CoordinateReferenceSystem> components = ((CompoundCRS) crs).getComponents();
                 final int size = components.size();
                 for (int i=0; i<size; i++) {

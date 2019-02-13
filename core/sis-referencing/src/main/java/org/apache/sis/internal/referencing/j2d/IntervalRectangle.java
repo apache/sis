@@ -20,7 +20,7 @@ import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.util.Classes;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -512,10 +512,6 @@ public class IntervalRectangle extends Rectangle2D {
      */
     @Override
     public String toString() {
-        return Classes.getShortClassName(this) +
-                "[xmin=" + xmin +
-                " ymin=" + ymin +
-                " xmax=" + xmax +
-                " ymax=" + ymax + ']';
+        return Strings.toString(getClass(), "xmin", xmin, "ymin", ymin, "xmax", xmax, "ymax", ymax);
     }
 }

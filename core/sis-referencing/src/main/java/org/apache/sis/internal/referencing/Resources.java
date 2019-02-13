@@ -113,6 +113,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotParseCombinedReference_2 = 78;
 
         /**
+         * Can not separate the “{0}” coordinate reference system into sub-components.
+         */
+        public static final short CanNotSeparateCRS_1 = 84;
+
+        /**
          * Target dimension {0} depends on excluded source dimensions.
          */
         public static final short CanNotSeparateTargetDimension_1 = 7;
@@ -549,8 +554,8 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}"
-     * with values of {@code arg0}.
+     * Gets a string for the given key and replaces all occurrence of "{0}"
+     * with value of {@code arg0}.
      *
      * @param  key   the key for the desired string.
      * @param  arg0  value to substitute to "{0}".
@@ -564,7 +569,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replaces all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}.
      *
      * @param  key   the key for the desired string.
@@ -581,7 +586,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replaces all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
      * @param  key   the key for the desired string.
@@ -600,7 +605,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replaces all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
      * @param  key   the key for the desired string.

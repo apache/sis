@@ -33,6 +33,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.referencing.NamedIdentifier;
 
 
@@ -465,6 +466,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '[' + getDisplayName() + ']';
+        return Strings.bracket(getClass(), getDisplayName());
     }
 }

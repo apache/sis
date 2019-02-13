@@ -82,7 +82,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private static final long serialVersionUID = -1730166945430878916L;
 
     /**
-     * Set to {@code true} if parsing and formatting of number in scientific notation is allowed.
+     * Set to {@code true} if parsing and formatting of numbers in scientific notation is allowed.
      * The way to achieve that is currently a hack, because {@link NumberFormat} has no API for
      * managing that as of JDK 1.8.
      *
@@ -568,6 +568,21 @@ public class Symbols implements Localized, Cloneable, Serializable {
         final NumberFormat format = NumberFormat.getNumberInstance(locale);
         format.setGroupingUsed(false);
         return format;
+    }
+
+    /**
+     * Returns {@code true} if the formatter should use scientific notation for the given value.
+     * We use scientific notation if the number magnitude is too high or too low. The threshold values used here
+     * may be different than the threshold values used in the standard {@link StringBuilder#append(double)} method.
+     * In particular, we use a higher threshold for large numbers because ellipsoid axis lengths are above the JDK
+     * threshold when the axis length is given in feet (about 2.1E+7) while we still want to format them as usual numbers.
+     *
+     * Note that we perform this special formatting only if the 'NumberFormat' is not localized (which is the usual case).
+     *
+     * @param  abs  the absolute value of the number to format.
+     */
+    final boolean useScientificNotation(final double abs) {
+        return SCIENTIFIC_NOTATION && (abs < 1E-3 || abs >= 1E+9) && locale == Locale.ROOT;
     }
 
     /**

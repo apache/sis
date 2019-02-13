@@ -17,20 +17,22 @@
 package org.apache.sis.coverage;
 
 import java.util.List;
-import java.util.ArrayList;
+import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Optional;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -77,7 +79,7 @@ public class SampleDimension implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6026936545776852758L;
+    private static final long serialVersionUID = -4966135180995819364L;
 
     /**
      * Identification for this sample dimension. Typically used as a way to perform a band select by
@@ -133,22 +135,15 @@ public class SampleDimension implements Serializable {
      * @param  original  the original sample dimension for packed values.
      * @param  bc        category of the background value in original sample dimension, or {@code null}.
      */
-    private SampleDimension(final SampleDimension original, Category bc) {
+    private SampleDimension(final SampleDimension original, final Category bc) {
         converse         = original;
         name             = original.name;
         categories       = original.categories.converse;
         transferFunction = Category.identity();
-        assert hasQuantitative();
         if (bc == null) {
             background = null;
         } else {
-            bc = bc.converse;
-            final NumberRange<?> range = bc.range;
-            if (range != null) {
-                background = range.getMinValue();
-            } else {
-                background = (float) bc.minimum;
-            }
+            background = bc.converse.range.getMinValue();
         }
     }
 
@@ -178,14 +173,14 @@ public class SampleDimension implements Serializable {
         this.name       = name;
         this.background = background;
         this.categories = list;
-        if (list.converse.range == null) {      // !hasQuantitative() inlined since we can not yet invoke that method.
+        if (list.converse.range == null) {                  // Case where there is no quantitative category.
             transferFunction = null;
             converse = null;
-        } else if (list == list.converse) {
+        } else if (list == list.converse) {                 // Case where values are already converted.
             transferFunction = Category.identity();
             converse = this;
         } else {
-            assert !list.isEmpty();             // Verified by inlined !hasQuantitative() above.
+            assert !list.isEmpty();                         // If empty, list.converse.range would have been null.
             transferFunction = list.getTransferFunction();
             converse = new SampleDimension(this, (background != null) ? list.search(background.doubleValue()) : null);
         }
@@ -239,31 +234,23 @@ public class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns {@code true} if this list contains at least one quantitative category.
-     * We use the converted range has a criterion, since it shall be null if the result
-     * of all conversions is NaN.
-     *
-     * @see Category#isQuantitative()
-     */
-    private boolean hasQuantitative() {
-        return converted().categories.range != null;
-    }
-
-    /**
      * Returns the values to indicate "no data" for this sample dimension.
+     * If the sample dimension describes {@linkplain #forConvertedValues(boolean) converted values},
+     * then the "no data values" are NaN values.
      *
      * @return the values to indicate no data values for this sample dimension, or an empty set if none.
      * @throws IllegalStateException if this method can not expand the range of no data values, for example
      *         because some ranges contain an infinite amount of values.
      */
     public Set<Number> getNoDataValues() {
-        if (hasQuantitative()) {
+        if (converse != null) {             // Null if SampleDimension does not contain at least one quantitative category.
             final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
             Class<? extends Number> widestClass = Byte.class;
             int count = 0;
             for (final Category category : categories) {
-                final NumberRange<?> range = category.range;
-                if (range != null && !category.isQuantitative()) {
+                final Category converted = category.converted();
+                if (category != converted && converted.isConvertedQualitative()) {
+                    final NumberRange<?> range = category.range;
                     if (!range.isBounded()) {
                         throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
                     }
@@ -317,6 +304,9 @@ public class SampleDimension implements Serializable {
      * @see #getUnits()
      */
     public Optional<MeasurementRange<?>> getMeasurementRange() {
+        if (converse == null) {
+            return Optional.empty();
+        }
         // A ClassCastException below would be a bug in our constructors.
         return Optional.ofNullable((MeasurementRange<?>) converted().categories.range);
     }
@@ -383,8 +373,7 @@ public class SampleDimension implements Serializable {
      */
     public Optional<Unit<?>> getUnits() {
         Unit<?> unit = null;
-        final SampleDimension converted = converted();
-        for (final Category category : converted.categories) {
+        for (final Category category : converted().categories) {
             final NumberRange<?> r = category.range;
             if (r instanceof MeasurementRange<?>) {
                 final Unit<?> c = ((MeasurementRange<?>) r).unit();
@@ -512,14 +501,25 @@ public class SampleDimension implements Serializable {
         private GenericName dimensionName;
 
         /**
-         * The background value, or {@code null} if unspecified.
+         * The categories for the sample dimension to create.
+         * This list is modified by the following methods:
+         *
+         * <ul>
+         *   <li>{@link #setBackground(CharSequence, Number)}</li>
+         *   <li>{@link #addQualitative(CharSequence, NumberRange)}</li>
+         *   <li>{@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}</li>
+         *   <li>{@code categories().remove(int)}</li>
+         *   <li>{@link #clear()}</li>
+         * </ul>
+         *
+         * @see #categories()
          */
-        private Number background;
+        private Category[] categories;
 
         /**
-         * The categories for this sample dimension.
+         * Number of valid elements in {@link #categories}.
          */
-        private final List<Category> categories;
+        private int count;
 
         /**
          * The ordinal NaN values used for this sample dimension.
@@ -532,7 +532,7 @@ public class SampleDimension implements Serializable {
          * Callers shall invoke at least one {@code addFoo(…)} method before {@link #build()}.
          */
         public Builder() {
-            categories = new ArrayList<>();
+            categories = new Category[10];
             toNaN      = new ToNaN();
         }
 
@@ -638,9 +638,9 @@ public class SampleDimension implements Serializable {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.FillValue);
             }
             final NumberRange<?> samples = range(sample.getClass(), sample, sample);
-            background = samples.getMinValue();
-            toNaN.background = background.doubleValue();
-            categories.add(new Category(name, samples, null, null, toNaN));
+            // Use of 'getMinValue()' below shall be consistent with ToNaN.remove(Category).
+            toNaN.background = samples.getMinValue();
+            add(new Category(name, samples, null, null, toNaN));
             return this;
         }
 
@@ -771,7 +771,7 @@ public class SampleDimension implements Serializable {
             if (name == null) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Nodata);
             }
-            categories.add(new Category(name, samples, null, null, toNaN));
+            add(new Category(name, samples, null, null, toNaN));
             return this;
         }
 
@@ -915,25 +915,50 @@ public class SampleDimension implements Serializable {
          */
         public Builder addQuantitative(CharSequence name, NumberRange<?> samples, MathTransform1D toUnits, Unit<?> units) {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
-            categories.add(new Category(name, samples, toUnits, units, toNaN));
+            add(new Category(name, samples, toUnits, units, toNaN));
             return this;
         }
 
         /**
-         * Returns {@code true} if the given range intersects the range of a previously added category.
-         * This method can be invoked before to add a new category for checking if it would cause a range collision.
-         *
-         * @param  minimum  minimal value of the range to test, inclusive.
-         * @param  maximum  maximal value of the range to test, inclusive.
-         * @return whether the given range intersects at least one previously added range.
+         * Adds the given category to the list. This method is not public because the category
+         * should have been created with {@link #toNaN} passed in argument to its constructor.
          */
-        public boolean rangeCollides(final double minimum, final double maximum) {
-            for (final Category category : categories) {
-                if (maximum >= category.minimum && minimum <= category.maximum) {
-                    return true;
-                }
+        private void add(final Category category) {
+            if (count == categories.length) {
+                categories = Arrays.copyOf(categories, count * 2);
             }
-            return false;
+            categories[count++] = category;
+        }
+
+        /**
+         * Returns the list of categories added so far. The returned list does not support the
+         * {@link List#add(Object) add} operation, but supports the {@link List#remove(int) remove} operation.
+         *
+         * @return the current category list, read-only except for the {@code remove} operation.
+         */
+        public List<Category> categories() {
+            return new AbstractList<Category>() {
+                /** Returns the number of categories in this list. */
+                @Override public int size() {
+                    return count;
+                }
+
+                /** Returns the category at the given index. */
+                @Override public Category get(int i) {
+                    ArgumentChecks.ensureValidIndex(count, i);
+                    return categories[i];
+                }
+
+                /** Removes the category at the given index. */
+                @Override public Category remove(int i) {
+                    ArgumentChecks.ensureValidIndex(count, i);
+                    final Category c = categories[i];
+                    System.arraycopy(categories, i+1, categories, i, --count - i);
+                    categories[count] = null;
+                    toNaN.remove(c);
+                    return c;
+                }
+            };
         }
 
         /**
@@ -952,7 +977,7 @@ defName:    if (name == null) {
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
             }
-            return new SampleDimension(name, background, categories);
+            return new SampleDimension(name, toNaN.background, UnmodifiableArrayList.wrap(categories, 0, count));
         }
 
         /**
@@ -962,8 +987,8 @@ defName:    if (name == null) {
          */
         public void clear() {
             dimensionName = null;
-            background    = null;
-            categories.clear();
+            count = 0;
+            Arrays.fill(categories, null);
             toNaN.clear();
         }
     }

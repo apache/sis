@@ -147,6 +147,13 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
     }
 
     /**
+     * Returns the decoder being tested.
+     */
+    final Decoder decoder() {
+        return decoder;
+    }
+
+    /**
      * Invoked after all tests in a class have been executed.
      * This method closes all netCDF files.
      *

@@ -21,7 +21,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -71,11 +71,11 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
     @Test
     public void testFormatWKT() {
         ArrayEnvelope envelope = new ArrayEnvelope(new double[] {4, -10, 50, 2});
-        assertMultilinesEquals("BOX[ 4 -10,\n" +
-                               "    50   2]", envelope.toWKT());
+        assertWktEquals("BOX[ 4 -10,\n" +
+                        "    50   2]", envelope);
         envelope.crs = AbstractEnvelopeTest.WGS84;
-        assertMultilinesEquals("BOX[ 4.00000000 -10.00000000,\n" +
-                               "    50.00000000   2.00000000]", envelope.toWKT());
+        assertWktEquals("BOX[ 4.00000000 -10.00000000,\n" +
+                        "    50.00000000   2.00000000]", envelope);
 
     }
 

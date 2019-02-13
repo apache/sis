@@ -27,18 +27,19 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Vector;
+
+import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_DIMENSION;
 
 
 /**
@@ -86,7 +87,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * A temporary array for two-dimensional source coordinates.
      * Used for reducing object allocations.
      */
-    private final int[] tmp = new int[2];
+    private final int[] tmp = new int[SOURCE_DIMENSION];
 
     /**
      * Conversions from source real-world coordinates to grid indices before interpolation.
@@ -118,7 +119,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public LocalizationGridBuilder(final int width, final int height) {
         linear = new LinearTransformBuilder(width, height);
-        sourceToGrid = MathTransforms.identity(2);
+        sourceToGrid = MathTransforms.identity(SOURCE_DIMENSION);
     }
 
     /**
@@ -175,14 +176,14 @@ public class LocalizationGridBuilder extends TransformBuilder {
     public LocalizationGridBuilder(final LinearTransformBuilder localizations) {
         ArgumentChecks.ensureNonNull("localizations", localizations);
         int n = localizations.getGridDimensions();
-        if (n == 2) {
+        if (n == SOURCE_DIMENSION) {
             linear = localizations;
-            sourceToGrid = MathTransforms.identity(2);
+            sourceToGrid = MathTransforms.identity(SOURCE_DIMENSION);
         } else {
             if (n < 0) {
                 final Vector[] sources = localizations.sources();
                 n = sources.length;
-                if (n == 2) {
+                if (n == SOURCE_DIMENSION) {
                     final Matrix fromGrid = new Matrix3();
                     final int width  = infer(sources[0], fromGrid, 0);
                     final int height = infer(sources[1], fromGrid, 1);
@@ -196,7 +197,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
                     return;
                 }
             }
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTransformDimension_3, 0, 2, n));
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.MismatchedTransformDimension_3, 0, SOURCE_DIMENSION, n));
         }
     }
 
@@ -240,7 +242,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
          * for preventing useless allocation of large arrays - https://issues.apache.org/jira/browse/SIS-407
          */
         fromGrid.setElement(dim, dim, inc);
-        fromGrid.setElement(dim,   2, min);
+        fromGrid.setElement(dim, SOURCE_DIMENSION, min);
         final double n = span / inc;
         if (n >= 0.5 && n < source.size() - 0.5) {          // Compare as 'double' in case the value is large.
             return ((int) Math.round(n)) + 1;
@@ -318,16 +320,16 @@ public class LocalizationGridBuilder extends TransformBuilder {
         ArgumentChecks.ensureNonNull("sourceToGrid", sourceToGrid);
         int isTarget = 0;
         int dim = sourceToGrid.getSourceDimensions();
-        if (dim >= 2) {
+        if (dim >= SOURCE_DIMENSION) {
             isTarget = 1;
             dim = sourceToGrid.getTargetDimensions();
-            if (dim == 2) {
+            if (dim == SOURCE_DIMENSION) {
                 this.sourceToGrid = sourceToGrid;
                 return;
             }
         }
         throw new MismatchedDimensionException(Resources.format(
-                Resources.Keys.MismatchedTransformDimension_3, isTarget, 2, dim));
+                Resources.Keys.MismatchedTransformDimension_3, isTarget, SOURCE_DIMENSION, dim));
     }
 
     /**
@@ -344,6 +346,20 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Sets all control points. The length of given vectors must be equal to the total number of cells in the grid.
+     * The first vector provides the <var>x</var> coordinates; the second vector provides the <var>y</var> coordinates,
+     * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
+     *
+     * @param  coordinates coordinates in each target dimensions, stored in row-major order.
+     *
+     * @since 1.0
+     */
+    public void setControlPoints(final Vector... coordinates) {
+        ArgumentChecks.ensureNonNull("coordinates", coordinates);
+        linear.setControlPoints(coordinates);
+    }
+
+    /**
      * Sets a single matching control point pair. Source position is assumed precise and target position is assumed uncertain.
      * If the given source position was already associated with another target position, then the old target position is discarded.
      *
@@ -353,7 +369,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  gridX   the column index in the grid where to store the given target position.
      * @param  gridY   the row index in the grid where to store the given target position.
      * @param  target  the target coordinates, assumed uncertain.
-     * @throws IllegalArgumentException if the {@code x} or {@code y} ordinate value is out of grid range.
+     * @throws IllegalArgumentException if the {@code x} or {@code y} coordinate value is out of grid range.
      * @throws MismatchedDimensionException if the target position does not have the expected number of dimensions.
      */
     public void setControlPoint(final int gridX, final int gridY, final double... target) {
@@ -368,7 +384,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  gridX  the column index in the grid where to read the target position.
      * @param  gridY  the row index in the grid where to read the target position.
      * @return the target coordinates associated to the given source, or {@code null} if none.
-     * @throws IllegalArgumentException if the {@code x} or {@code y} ordinate value is out of grid range.
+     * @throws IllegalArgumentException if the {@code x} or {@code y} coordinate value is out of grid range.
      */
     public double[] getControlPoint(final int gridX, final int gridY) {
         tmp[0] = gridX;
@@ -417,6 +433,53 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Tries to remove discontinuities in coordinates values caused by anti-meridian crossing.
+     * This method can be invoked when the localization grid may cross the anti-meridian,
+     * where longitude values may suddenly jump from +180° to -180° or conversely.
+     * This method walks through the coordinate values of the given dimension (typically the longitudes dimension)
+     * in the given direction (grid rows or grid columns).
+     * If a difference greater than {@code period/2} (typically 180°) is found between two consecutive values,
+     * then a multiple of {@code period} (typically 360°) is added or subtracted in order to make a value as close
+     * as possible from its previous value.
+     *
+     * <p>This method needs a direction to be specified:</p>
+     * <ul>
+     *   <li>Direction 0 means that each value is compared with the value in the previous column,
+     *       except the value in the first column which is compared to the value in previous row.</li>
+     *   <li>Direction 1 means that each value is compared with the value in the previous row,
+     *       except the value in the first row which is compared to the value in previous column.</li>
+     * </ul>
+     * The recommended value is the direction of most stable values. Typically, longitude values increase with column indices
+     * and are almost constant when increasing row indices. In such case, the recommended direction is 1 for comparing each
+     * value with the value in previous row, since that value should be closer than the value in previous column.
+     *
+     * <div class="note"><b>Example:</b>
+     * for a grid of (<var>longitude</var>, <var>latitude</var>) values in decimal degrees where longitude values
+     * vary (increase or decrease) with increasing column indices and latitude values vary (increase or decrease)
+     * with increasing row indices, the the following method should be invoked for protecting the grid against
+     * discontinuities on anti-meridian:
+     *
+     * {@preformat java
+     *     grid.resolveWraparoundAxis(0, 1, 360);
+     * }
+     * </div>
+     *
+     * @param  dimension  the dimension to process.
+     *                    This is 0 for longitude dimension in a (<var>longitudes</var>, <var>latitudes</var>) grid.
+     * @param  direction  the direction to walk through: 0 for columns or 1 for rows.
+     *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
+     * @param  period     that wraparound range (typically 360° for longitudes).
+     *
+     * @since 1.0
+     */
+    public void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+        ArgumentChecks.ensureBetween("dimension", 0, linear.getTargetDimensions() - 1, dimension);
+        ArgumentChecks.ensureBetween("direction", 0, linear.getSourceDimensions() - 1, direction);
+        ArgumentChecks.ensureStrictlyPositive("period", period);
+        linear.resolveWraparoundAxis(dimension, direction, period);
+    }
+
+    /**
      * Creates a transform from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
      * If this transform is close enough to an affine transform, then an instance of {@link LinearTransform} is returned.
@@ -449,9 +512,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
         }
         final int      width    = linear.gridSize(0);
         final int      height   = linear.gridSize(1);
-        final int      tgtDim   = gridToCoord.getTargetDimensions();
-        final double[] residual = new double[tgtDim * linear.gridLength];
-        final double[] point    = new double[tgtDim + 1];
+        final double[] residual = new double[SOURCE_DIMENSION * linear.gridLength];
+        final double[] grid     = new double[SOURCE_DIMENSION * width];
         double gridPrecision    = precision;
         try {
             /*
@@ -477,19 +539,15 @@ public class LocalizationGridBuilder extends TransformBuilder {
              * than the desired precision,  then the returned MathTransform will need to apply corrections
              * after linear transforms. Those corrections will be done by InterpolatedTransform.
              */
-            final MatrixSIS coordToGrid = MatrixSIS.castOrCopy(gridToCoord.inverse().getMatrix());
-            final DirectPosition2D src = new DirectPosition2D();
-            point[tgtDim] = 1;
+            final MathTransform coordToGrid = gridToCoord.inverse();
             for (int k=0,y=0; y<height; y++) {
-                src.y  = y;
+                tmp[0] = 0;
                 tmp[1] = y;
+                linear.getControlRow(tmp, grid);                                    // Expected positions.
+                coordToGrid.transform(grid, 0, residual, k, width);                 // As grid coordinate.
                 for (int x=0; x<width; x++) {
-                    src.x  = x;
-                    tmp[0] = x;
-                    linear.getControlPoint2D(tmp, point);                           // Expected position.
-                    double[] grid = coordToGrid.multiply(point);                    // As grid coordinate.
-                    isLinear &= (residual[k++] = grid[0] - x) <= gridPrecision;
-                    isLinear &= (residual[k++] = grid[1] - y) <= gridPrecision;
+                    isLinear &= (residual[k++] -= x) <= gridPrecision;
+                    isLinear &= (residual[k++] -= y) <= gridPrecision;
                 }
             }
         } catch (TransformException e) {
@@ -499,7 +557,38 @@ public class LocalizationGridBuilder extends TransformBuilder {
             return MathTransforms.concatenate(sourceToGrid, gridToCoord);
         }
         return InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
-                new ResidualGrid(sourceToGrid, gridToCoord, width, height, tgtDim, residual,
+                new ResidualGrid(sourceToGrid, gridToCoord, width, height, residual,
                 (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION));
+    }
+
+    /**
+     * Returns statistics of differences between values calculated by the given transform and actual values.
+     * The given math transform is typically the transform computed by {@link #create(MathTransformFactory)},
+     * but not necessarily.
+     *
+     * @param  mt  the transform to test.
+     * @return statistics of difference between computed values and expected value.
+     * @throws TransformException if an error occurred while transforming a coordinate.
+     *
+     * @since 1.0
+     */
+    public Statistics error(final MathTransform mt) throws TransformException {
+        final Statistics s = new Statistics(null);
+        final int width  = linear.gridSize(0);
+        final int height = linear.gridSize(1);
+        final int tgtDim = Math.max(mt.getTargetDimensions(), SOURCE_DIMENSION);
+        final double[] t = new double[tgtDim];
+        for (int y=0; y<height; y++) {
+            for (int x=0; x<width; x++) {
+                t[0] = tmp[0] = x;
+                t[1] = tmp[1] = y;
+                mt.transform(t, 0, t, 0, 1);
+                final double[] expected = linear.getControlPoint(tmp);
+                for (int i=0; i<tgtDim; i++) {
+                    s.accept(t[i] - expected[i]);
+                }
+            }
+        }
+        return s;
     }
 }

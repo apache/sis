@@ -448,7 +448,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         final DoubleDouble toRadians = DoubleDouble.createDegreesToRadians();
         DoubleDouble offset = null;
         if (λ0 != 0) {
-            offset = new DoubleDouble(-λ0);
+            offset = DoubleDouble.createAndGuessError(-λ0);
             offset.multiply(toRadians);
         }
         final MatrixSIS normalize = (MatrixSIS) this.normalize;         // Must be the same instance, not a copy.

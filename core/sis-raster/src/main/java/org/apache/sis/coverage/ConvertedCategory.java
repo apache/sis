@@ -36,7 +36,7 @@ final class ConvertedCategory extends Category {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7164422654831370784L;
+    private static final long serialVersionUID = 336103757882427857L;
 
     /**
      * Creates a category storing the inverse of the "sample to real values" transfer function. The {@link #toConverse}
@@ -69,6 +69,6 @@ final class ConvertedCategory extends Category {
      */
     @Override
     public Optional<MathTransform1D> getTransferFunction() {
-        return (range != null) ? Optional.of(identity()) : Optional.empty();
+        return isConvertedQualitative() ? Optional.empty() : Optional.of(identity());
     }
 }

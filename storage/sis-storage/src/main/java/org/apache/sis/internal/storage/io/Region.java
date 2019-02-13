@@ -21,7 +21,7 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * A sub-area in a <var>n</var>-dimensional hyper-rectangle, optionally with sub-sampling.
+ * A sub-area in a <var>n</var>-dimensional hyper-rectangle, optionally with subsampling.
  * The size of the hyper-rectangle is given by the {@code size} argument at construction time,
  * where {@code size.length} is the number of dimensions and {@code size[i]} is the number of
  * values along dimension <var>i</var>. For each dimension, the index ranges from 0 inclusive
@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.Numerics;
  */
 public final class Region {
     /**
-     * The size after reading only the sub-region at the given sub-sampling.
+     * The size after reading only the sub-region at the given subsampling.
      * The length of this array is the hyper-rectangle dimension.
      *
      * @see #targetLength(int)
@@ -80,7 +80,7 @@ public final class Region {
      * @param size          the number of elements along each dimension.
      * @param regionLower   index of the first value to read or write along each dimension.
      * @param regionUpper   index after the last value to read or write along each dimension.
-     * @param subsamplings  sub-sampling along each dimension. Shall be greater than zero.
+     * @param subsamplings  subsampling along each dimension. Shall be greater than zero.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
      *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
@@ -149,7 +149,7 @@ public final class Region {
     }
 
     /**
-     * Returns the total number of values to be read from the sub-region while applying the sub-sampling.
+     * Returns the total number of values to be read from the sub-region while applying the subsampling.
      * This method takes in account only the given number of dimensions.
      */
     final int targetLength(final int dimension) {

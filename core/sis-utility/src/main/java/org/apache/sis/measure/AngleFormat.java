@@ -30,6 +30,7 @@ import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static java.lang.Double.NaN;
@@ -1868,6 +1869,6 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '[' + toPattern() + ']';
+        return Strings.bracket(getClass(), toPattern());
     }
 }

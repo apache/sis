@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Iterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -61,5 +62,41 @@ abstract class AbstractExpression implements Expression, FeatureExpression {
             // TODO: should report the exception somewhere.
             return null;
         }
+    }
+
+
+    /**
+     * Returns a graphical representation of the specified objects. This representation can be
+     * printed to the {@linkplain System#out standard output stream} (for example) if it uses
+     * a monospaced font and supports unicode.
+     *
+     * @param  root  The root name of the tree to format.
+     * @param  objects The objects to format as root children.
+     * @return A string representation of the tree.
+     */
+    static String toStringTree(String root, final Iterable<?> objects) {
+        final StringBuilder sb = new StringBuilder();
+        if (root != null) {
+            sb.append(root);
+        }
+        if (objects != null) {
+            final Iterator<?> ite = objects.iterator();
+            while (ite.hasNext()) {
+                sb.append('\n');
+                final Object next = ite.next();
+                final boolean last = !ite.hasNext();
+                sb.append(last ? "└─ " : "├─ ");
+
+                final String[] parts = String.valueOf(next).split("\n");
+                sb.append(parts[0]);
+                for (int k=1;k<parts.length;k++) {
+                    sb.append('\n');
+                    sb.append(last ? ' ' : '│');
+                    sb.append("  ");
+                    sb.append(parts[k]);
+                }
+            }
+        }
+        return sb.toString();
     }
 }

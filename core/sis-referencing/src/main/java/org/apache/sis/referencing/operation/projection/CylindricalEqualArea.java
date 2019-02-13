@@ -34,7 +34,6 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea.*;
 
 
@@ -141,7 +140,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         final double λ0 = initializer.getAndStore(LONGITUDE_OF_ORIGIN);
         if (λ0 != 0) {
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-            offset.multiply(-λ0);
+            offset.multiplyGuessError(-λ0);
             denormalize.convertBefore(0, null, offset);
         }
         /*
@@ -150,8 +149,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          * but we nevertheless support it.
          */
         final double φ1 = toRadians(initializer.getAndStore(STANDARD_PARALLEL));
-        final DoubleDouble k0 = verbatim(initializer.scaleAtφ(sin(φ1), cos(φ1)));
-        k0.multiply(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
+        final DoubleDouble k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
+        k0.multiplyGuessError(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
         /*
          * In most Apache SIS map projection implementations, the scale factor is handled by the super-class by
          * specifying a ParameterRole.SCALE_FACTOR. However in the case of this CylindricalEqualArea we rather
@@ -163,9 +162,9 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          * Furthermore we also multiply y by (1-ℯ²)/2 for avoiding the need to recompute this constant during
          * the projection of every point.
          */
-        final DoubleDouble ik = new DoubleDouble(1, 0);
+        final DoubleDouble ik = new DoubleDouble(1d);
         ik.subtract(initializer.eccentricitySquared);
-        ik.multiply(0.5, 0);                 // This line need to be cancelled when using spherical formulas.
+        ik.multiply(0.5);                   // This line need to be cancelled when using spherical formulas.
         ik.divide(k0);
         denormalize.convertAfter(0, k0, null);
         denormalize.convertAfter(1, ik, null);

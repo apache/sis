@@ -24,7 +24,6 @@ import java.io.ObjectInputStream;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -32,6 +31,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
@@ -123,7 +123,7 @@ import org.apache.sis.measure.Units;
  * NTv2 should be preferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -214,10 +214,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         ArgumentChecks.ensureNonNull("gridSize",         gridSize);
         ArgumentChecks.ensureNonNull("translationUnit",  translationUnit);
         int n = coordinateToGrid.getTargetDimensions();
-        if (n != gridSize.length) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "gridSize", n, gridSize.length));
-        }
+        ArgumentChecks.ensureDimensionMatches("gridSize", n, gridSize);
         this.coordinateUnit   = coordinateUnit;
         this.coordinateToGrid = coordinateToGrid;
         this.isCellValueRatio = isCellValueRatio;
@@ -227,7 +224,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
             if ((n = gridSize[i]) < 2) {
                 throw new IllegalArgumentException(Errors.format(n <= 0
                         ? Errors.Keys.ValueNotGreaterThanZero_2
-                        : Errors.Keys.IllegalArgumentValue_2, "gridSize[" + i + ']', n));
+                        : Errors.Keys.IllegalArgumentValue_2, Strings.toIndexed("gridSize", i), n));
             }
         }
         computeConversionFactors();
@@ -372,24 +369,24 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Converts the given normalized <var>x</var> ordinate to grid index.
+     * Converts the given normalized <var>x</var> coordinate to grid index.
      * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
      * For angular coordinates, this is radians. For linear coordinates, this is metres.
      *
-     * @param  x  the "real world" ordinate (often longitude in radians) of the point for which to get the translation.
-     * @return the grid index for the given ordinate. May be out of bounds.
+     * @param  x  the "real world" coordinate (often longitude in radians) of the point for which to get the translation.
+     * @return the grid index for the given coordinate. May be out of bounds.
      */
     public final double normalizedToGridX(final double x) {
         return x * scaleX + x0;
     }
 
     /**
-     * Converts the given normalized <var>x</var> ordinate to grid index.
+     * Converts the given normalized <var>x</var> coordinate to grid index.
      * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
      * For angular coordinates, this is radians. For linear coordinates, this is metres.
      *
-     * @param  y  the "real world" ordinate (often latitude in radians) of the point for which to get the translation.
-     * @return the grid index for the given ordinate. May be out of bounds.
+     * @param  y  the "real world" coordinate (often latitude in radians) of the point for which to get the translation.
+     * @return the grid index for the given coordinate. May be out of bounds.
      */
     public final double normalizedToGridY(final double y) {
         return y * scaleY + y0;
@@ -426,7 +423,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Interpolates the translation to apply for the given coordinate.
+     * Interpolates the translation to apply for the given coordinates.
      * The input values are in the unit given by {@link #getCoordinateUnit()}.
      * The output values are in the unit given by {@link #getTranslationUnit()}.
      * The length of the returned array is given by {@link #getTranslationDimensions()}.
@@ -440,17 +437,20 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *       the translation vector by the inverse of the conversion given at step 1.</li>
      * </ol>
      *
-     * @param ordinates  the "real world" ordinate (often longitude and latitude, but not necessarily)
-     *                   of the point for which to get the translation.
+     * If the give point is outside this grid, then this method returns the vector at the closest position in the grid
+     * as documented in {@link #interpolateInCell(double, double, double[])}.
+     *
+     * @param  coordinates  the "real world" coordinate (often longitude and latitude, but not necessarily)
+     *                      of the point for which to get the translation.
      * @return the translation vector at the given position.
      * @throws TransformException if an error occurred while computing the translation vector.
      */
-    public double[] interpolateAt(final double... ordinates) throws TransformException {
+    public double[] interpolateAt(final double... coordinates) throws TransformException {
         final LinearTransform c = getCoordinateToGrid();
-        ArgumentChecks.ensureDimensionMatches("ordinates", c.getSourceDimensions(), ordinates);
+        ArgumentChecks.ensureDimensionMatches("coordinates", c.getSourceDimensions(), coordinates);
         final int dim = getTranslationDimensions();
         double[] vector = new double[Math.max(dim, c.getTargetDimensions())];
-        c.transform(ordinates, 0, vector, 0, 1);
+        c.transform(coordinates, 0, vector, 0, 1);
         interpolateInCell(vector[0], vector[1], vector);
         if (isCellValueRatio()) {
             c.inverse().deltaTransform(vector, 0, vector, 0, 1);
@@ -466,43 +466,41 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * the given {@code vector} array, which shall have a length of at least {@link #getTranslationDimensions()}.
      * The output unit of measurement is the same than the one documented in {@link #getCellValue(int, int, int)}.
      *
+     * <p>If the given coordinates are outside this grid, then this method computes the translation vector at the
+     * closest position in the grid. Applying translations on points outside the grid is a kind of extrapolation,
+     * but some amount of extrapolations are necessary for operations like transforming an envelope before to compute
+     * its intersection with another envelope.</p>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation performs the following steps for each dimension <var>dim</var>,
      * where the number of dimension is determined by {@link #getTranslationDimensions()}.
      *
      * <ol>
-     *   <li>Clamp the {@code gridX} index into the [0 … {@code gridSize[0]} - 2] range, inclusive.</li>
-     *   <li>Clamp the {@code gridY} index into the [0 … {@code gridSize[1]} - 2] range, inclusive.</li>
+     *   <li>Clamp the {@code gridX} index into the [0 … {@code gridSize[0]} - 1] range, inclusive.</li>
+     *   <li>Clamp the {@code gridY} index into the [0 … {@code gridSize[1]} - 1] range, inclusive.</li>
      *   <li>Using {@link #getCellValue}, get the cell values around the given indices.</li>
      *   <li>Apply a bilinear interpolation and store the result in {@code vector[dim]}.</li>
      * </ol>
      *
-     * @param  gridX   first grid ordinate of the point for which to get the translation.
-     * @param  gridY   second grid ordinate of the point for which to get the translation.
+     * @param  gridX   first grid coordinate of the point for which to get the translation.
+     * @param  gridY   second grid coordinate of the point for which to get the translation.
      * @param  vector  a pre-allocated array where to write the translation vector.
+     *
+     * @see #isCellInGrid(double, double)
      */
     public void interpolateInCell(double gridX, double gridY, final double[] vector) {
+        if (gridX < 0) gridX = 0;
+        if (gridY < 0) gridY = 0;
         int ix = (int) gridX;  gridX -= ix;
         int iy = (int) gridY;  gridY -= iy;
         int n;
-        /*
-         * Because ((int) gridX) rounds toward 0, we know that (ix < 0) means that (gridX <= -1).
-         * With ix=0 we get (gridX-ix <= -1). So we set gridX = -1 for avoiding too far extrapolations.
-         * A similar reasoning apply to the gridX = +1 statement.
-         */
-        if (ix < 0) {
-            ix = 0;
-            gridX = -1;
-        } else if (ix > (n = gridSize[0] - 2)) {
+        if (ix > (n = gridSize[0] - 2)) {
             ix = n;
-            gridX = +1;
+            gridX = 1;
         }
-        if (iy < 0) {
-            iy = 0;
-            gridY = -1;
-        } else if (iy > (n = gridSize[1] - 2)) {
+        if (iy > (n = gridSize[1] - 2)) {
             iy = n;
-            gridY = +1;
+            gridY = 1;
         }
         n = getTranslationDimensions();
         for (int dim = 0; dim < n; dim++) {
@@ -516,6 +514,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Returns the derivative at the given grid indices.
+     * If the given coordinates is outside the grid, then this method returns the derivative at the closest cell.
      *
      * <div class="section">Default implementation</div>
      * The current implementation assumes that the derivative is constant everywhere in the cell
@@ -523,9 +522,12 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * and {@code gridY}, because empirical tests suggest that the accuracy of such interpolation
      * is uncertain.
      *
-     * @param  gridX  first grid ordinate of the point for which to get the translation.
-     * @param  gridY  second grid ordinate of the point for which to get the translation.
+     * @param  gridX  first grid coordinate of the point for which to get the translation.
+     * @param  gridY  second grid coordinate of the point for which to get the translation.
      * @return the derivative at the given location.
+     *
+     * @see #isCellInGrid(double, double)
+     * @see #interpolateInCell(double, double, double[])
      */
     public Matrix derivativeInCell(final double gridX, final double gridY) {
         final int ix = Math.max(0, Math.min(gridSize[0] - 2, (int) gridX));
@@ -584,10 +586,10 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int ny = gridSize[1];
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
-                sum.add(getCellValue(dim, gridX, gridY));
+                sum.addKahan(getCellValue(dim, gridX, gridY));
             }
         }
-        return sum.value / (nx * ny);
+        return sum.doubleValue() / (nx * ny);
     }
 
     /**
@@ -624,6 +626,21 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      */
     public boolean isCellValueRatio() {
         return isCellValueRatio;
+    }
+
+    /**
+     * Returns {@code true} if the given grid coordinates is inside this grid.
+     *
+     * @param  gridX   first grid coordinate of the point to test.
+     * @param  gridY   second grid coordinate of the point to test.
+     * @return whether the given point is inside this grid.
+     *
+     * @see #interpolateInCell(double, double, double[])
+     *
+     * @since 1.0
+     */
+    public boolean isCellInGrid(final double gridX, final double gridY) {
+        return gridX >= 0 && gridY >= 0 && gridX <= gridSize[0] - 1 && gridY <= gridSize[1] - 1;
     }
 
     /**

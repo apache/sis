@@ -59,6 +59,11 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public Path location;
 
     /**
+     * Customized conventions to apply in addition of netCDF conventions, or {@code null} if none.
+     */
+    private Convention convention;
+
+    /**
      * The data store identifier created from the global attributes, or {@code null} if none.
      * Defined as a namespace for use as the scope of children resources (the variables).
      * This is set by netCDF store constructor and shall not be modified afterward.
@@ -109,6 +114,14 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     }
 
     /**
+     * Shall be invoked by subclass constructors after the finished their construction, for completing initialization.
+     * This method checks if an extension to CF-convention applies to the current file.
+     */
+    protected final void initialize() {
+        convention = Convention.find(this);
+    }
+
+    /**
      * Returns a filename for formatting error message and for information purpose.
      * The filename should not contain path, but may contain file extension.
      *
@@ -117,12 +130,27 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public abstract String getFilename();
 
     /**
+     * Returns an identification of the file format. This method should returns an array of length 1, 2 or 3 as below:
+     *
+     * <ul>
+     *   <li>One of the following identifier in the first element: {@code "NetCDF"}, {@code "NetCDF-4"} or other values
+     *       defined by the UCAR library. If known, it will be used as an identifier for a more complete description to
+     *       be provided by {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.</li>
+     *   <li>Optionally a human-readable description in the second array element.</li>
+     *   <li>Optionally a version in the third array element.</li>
+     * </ul>
+     *
+     * @return identification of the file format, human-readable description and version number.
+     */
+    public abstract String[] getFormatDescription();
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
      * @param  groupNames  the name of the group where to search, in preference order.
      */
-    public abstract void setSearchPath(final String... groupNames);
+    public abstract void setSearchPath(String... groupNames);
 
     /**
      * Returns the path which is currently set. The array returned by this method may be only
@@ -148,7 +176,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or empty or if the given name was null.
      */
-    public abstract String stringValue(final String name);
+    public abstract String stringValue(String name);
 
     /**
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
@@ -156,7 +184,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
-    public abstract Number numericValue(final String name);
+    public abstract Number numericValue(String name);
 
     /**
      * Convenience method for {@link #numericValue(String)} implementation.
@@ -187,7 +215,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
-    public abstract Date dateValue(final String name);
+    public abstract Date dateValue(String name);
 
     /**
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
@@ -197,7 +225,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  values  the values to convert. May contains {@code null} elements.
      * @return the converted values. May contains {@code null} elements.
      */
-    public abstract Date[] numberToDate(final String symbol, final Number... values);
+    public abstract Date[] numberToDate(String symbol, Number... values);
 
     /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
@@ -254,5 +282,35 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid[] getGridGeometries() throws IOException, DataStoreException;
+    public abstract Grid[] getGrids() throws IOException, DataStoreException;
+
+    /**
+     * Returns the role of the given variable. In particular, this method shall return
+     * {@link VariableRole#AXIS} if the given variable seems to be a coordinate system axis.
+     *
+     * @param  variable  the variable for which to get the role, or {@code null}.
+     * @return role of the given variable, or {@code null} if the given variable was null.
+     */
+    public final VariableRole roleOf(final Variable variable) {
+        if (variable == null) {
+            return null;
+        }
+        if (convention != null) {
+            return convention.roleOf(variable);
+        }
+        return variable.getRole();
+    }
+
+    /**
+     * If there is some specialized convention for current file that mandate a different set of
+     * axes for the given variable, returns the name of the variables for those axes. Otherwise
+     * (i.e. if the file can be parsed as a standard CF-compliant file), returns {@code null}.
+     *
+     * @param  variable  the variable for which the list of axis variables are desired.
+     * @return names of the variables containing axis values, or {@code null} if this
+     *         method performs applies no special convention for the given variable.
+     */
+    protected final String[] namesOfAxisVariables(final Variable variable) {
+        return (convention != null) ? convention.namesOfAxisVariables(variable) : null;
+    }
 }

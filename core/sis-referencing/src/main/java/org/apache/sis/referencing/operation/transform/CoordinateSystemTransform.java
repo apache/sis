@@ -69,7 +69,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     private transient volatile MathTransform complete;
 
     /**
-     * The {@link #complete} transform in a {@link PassThroughTransform} with a 1 trailing ordinate.
+     * The {@link #complete} transform in a {@link PassThroughTransform} with a 1 trailing coordinate.
      * This is used for supporting the cylindrical case on top the polar case.
      *
      * @see #passthrough(MathTransformFactory)

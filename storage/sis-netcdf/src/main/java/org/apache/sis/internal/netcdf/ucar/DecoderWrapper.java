@@ -92,7 +92,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The grid geometries, computed when first needed.
      *
-     * @see #getGridGeometries()
+     * @see #getGrids()
      */
     private transient Grid[] geometries;
 
@@ -108,6 +108,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     public DecoderWrapper(final NetcdfFile file, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         super(geomlib, listeners);
         this.file = file;
+        groups = new Group[1];
+        initialize();
     }
 
     /**
@@ -124,6 +126,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     {
         super(geomlib, listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
+        groups = new Group[1];
+        initialize();
     }
 
     /**
@@ -145,6 +149,25 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
         }
         return filename;
+    }
+
+    /**
+     * Returns the file format information provided by the UCAR library.
+     *
+     * @return identification of the file format, human-readable description and version number.
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public String[] getFormatDescription() {
+        final String version = file.getFileTypeVersion();
+        final String[] format = new String["N/A".equalsIgnoreCase(version) ? 2 : 3];
+        switch (format.length) {
+            default: format[2] = version;                           // Fallthrough everywhere.
+            case 2:  format[1] = file.getFileTypeDescription();
+            case 1:  format[0] = file.getFileTypeId();
+            case 0:  break;                                         // As a matter of principle.
+        }
+        return format;
     }
 
     /**
@@ -410,7 +433,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
-    public Grid[] getGridGeometries() throws IOException {
+    public Grid[] getGrids() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = null;
             if (file instanceof NetcdfDataset) {
@@ -423,7 +446,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
             geometries = new Grid[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridWrapper(this, systems.get(i));
+                geometries[i] = new GridWrapper(systems.get(i));
             }
         }
         return geometries;

@@ -32,7 +32,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.SetOfUnknownSize;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -526,7 +526,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
          */
         @Override
         public String toString() {
-            return Utilities.toString(Iter.class, "next", next);
+            return Strings.toString(Iter.class, "next", next);
         }
     }
 

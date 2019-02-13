@@ -68,6 +68,7 @@ CREATE INDEX ix_name_coord_op       ON epsg_coordoperation            (coord_op_
 CREATE INDEX ix_name_method         ON epsg_coordoperationmethod      (coord_op_method_name);
 CREATE INDEX ix_name_parameter      ON epsg_coordoperationparam       (parameter_name);
 CREATE INDEX ix_name_unit           ON epsg_unitofmeasure             (unit_of_meas_name);
+CREATE INDEX ix_alias               ON epsg_alias                     (object_table_name, alias);
 
 
 -----------------------------------------------------------------------------

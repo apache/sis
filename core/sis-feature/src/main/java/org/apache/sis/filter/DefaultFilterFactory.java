@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.opengis.filter.*;
@@ -296,7 +297,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public FeatureId featureId(final String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultFeatureId(id);
     }
 
     /**
@@ -304,7 +305,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public GmlObjectId gmlObjectId(final String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultFeatureId(id);
     }
 
     // FILTERS /////////////////////////////////////////////////////////////////
@@ -314,7 +315,9 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public And and(final Filter filter1, final Filter filter2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ArgumentChecks.ensureNonNull("filter1", filter1);
+        ArgumentChecks.ensureNonNull("filter2", filter2);
+        return and(Arrays.asList(filter1, filter2));
     }
 
     /**
@@ -322,7 +325,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public And and(final List<Filter> filters) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultAnd(filters);
     }
 
     /**
@@ -330,7 +333,9 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Or or(final Filter filter1, final Filter filter2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ArgumentChecks.ensureNonNull("filter1", filter1);
+        ArgumentChecks.ensureNonNull("filter2", filter2);
+        return or(Arrays.asList(filter1, filter2));
     }
 
     /**
@@ -338,7 +343,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Or or(final List<Filter> filters) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultOr(filters);
     }
 
     /**
@@ -346,7 +351,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Not not(final Filter filter) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultNot(filter);
     }
 
     /**
@@ -354,7 +359,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Id id(final Set<? extends Identifier> ids) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultId(ids);
     }
 
     /**
@@ -436,7 +441,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsGreaterThan greater(final Expression expr1,
             final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsGreaterThan(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -454,7 +459,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(
             final Expression expr1, final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsGreaterThanOrEqualTo(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -471,7 +476,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsLessThan less(final Expression expr1,
             final Expression expr2, final boolean matchCase, MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsLessThan(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -489,7 +494,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expr1,
             final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsLessThanOrEqualTo(expr1, expr2, matchCase, matchAction);
     }
 
     /**
@@ -516,7 +521,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public PropertyIsLike like(final Expression expr, final String pattern,
             final String wildcard, final String singleChar,
             final String escape, final boolean matchCase) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultPropertyIsLike(expr, pattern, wildcard, singleChar, escape, matchCase);
     }
 
     /**
@@ -657,7 +662,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Add add(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultAdd(expr1, expr2);
     }
 
     /**
@@ -665,7 +670,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Divide divide(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultDivide(expr1, expr2);
     }
 
     /**
@@ -673,7 +678,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Multiply multiply(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultMultiply(expr1, expr2);
     }
 
     /**
@@ -681,7 +686,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Subtract subtract(final Expression expr1, final Expression expr2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultSubtract(expr1, expr2);
     }
 
     /**

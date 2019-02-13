@@ -25,7 +25,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -38,9 +37,9 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
-import org.apache.sis.math.Vector;
 
 
 /**
@@ -50,7 +49,7 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see Decoder#getGridGeometries()
+ * @see Decoder#getGrids()
  *
  * @since 0.3
  * @module
@@ -71,7 +70,7 @@ public abstract class Grid extends NamedElement {
      * The ordering of axes is based on the order in which dimensions are declared for variables using this grid.
      * This is not necessarily the same order than the order in which variables are listed in the netCDF file.
      *
-     * @see #getAxes()
+     * @see #getAxes(Decoder)
      */
     private Axis[] axes;
 
@@ -116,7 +115,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes()},
+     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      *
      * @return number of CRS dimensions.
@@ -136,48 +135,65 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
      * value returned by {@link #getTargetDimensions()}, but the caller should be robust to inconsistencies.
-     * The axis order is as declared in the netCDF file (reverse of "natural" order).
+     * The axis order is CRS order (reverse of netCDF order) for consistency with the common practice in the
+     * {@code "coordinates"} attribute.
      *
      * <p>This method returns a direct reference to the cached array; do not modify.</p>
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @param  decoder  the decoder, given in case this method needs to create axes.
+     * @return the CRS axes, in "natural" order (reverse of netCDF order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final Axis[] getAxes() throws IOException, DataStoreException {
+    public final Axis[] getAxes(final Decoder decoder) throws IOException, DataStoreException {
         if (axes == null) {
-            axes = createAxes();
+            axes = createAxes(decoder);
+            /*
+             * The grid dimension which varies fastest should be first.  The code below will swap axes if needed in order to
+             * achieve that goal, except if a previous axis was already using the same order. We avoid collision only in the
+             * first dimension because it is the one used by metadata and by trySetTransform(…).
+             */
+            final Axis[] workspace = new Axis[axes.length];
+            int i = 0, deferred = workspace.length;
+            for (final Axis axis : axes) {
+                // Put one-dimensional axes first, all other axes last.
+                workspace[axis.getDimension() <= 1 ? i++ : --deferred] = axis;
+            }
+            deferred = workspace.length;        // Will become index of the first axis whose examination has been deferred.
+            while (i < workspace.length) {      // Start the loop at the first n-dimensional axis (n > 1).
+                final Axis axis = workspace[i];
+                /*
+                 * If an axis has a "wraparound" range (for example a longitude axis where the next value after +180°
+                 * may be -180°), we will examine it last. The reason is that if a wraparound occurs in the middle of
+                 * the localization grid, it will confuse the computation based on 'coordinateForAxis(…)' calls below.
+                 * We are better to resolve the latitude axis first, and then resolve the longitude axis with the code
+                 * path checking for dimension collisions, without using coordinateForAxis(…) on longitude axis.
+                 */
+                if (i < deferred && axis.isWraparound()) {
+                    System.arraycopy(workspace, i+1, workspace, i, --deferred - i);
+                    workspace[deferred] = axis;
+                } else {
+                    axis.mainDimensionFirst(workspace, i);
+                    i++;
+                }
+            }
         }
         return axes;
     }
 
     /**
-     * Creates the axes to be returned by {@link #getAxes()}. This method is invoked only once when first needed.
+     * Creates the axes to be returned by {@link #getAxes(Decoder)}. This method is invoked only once when first needed.
+     * Axes shall be returned in the order they will appear in the Coordinate Reference System.
      *
-     * @return the CRS axes, in netCDF order (reverse of "natural" order).
+     * @param  decoder  the decoder of the netCDF file from which to create axes.
+     * @return the CRS axes, in "natural" order (reverse of CRS order).
      * @throws IOException if an I/O operation was necessary but failed.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    protected abstract Axis[] createAxes() throws IOException, DataStoreException;
-
-    /**
-     * Returns a coordinate for the given two-dimensional grid coordinate axis. This is (indirectly) a callback
-     * method for {@link #getAxes()}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
-     * they get reordered by the {@link Axis} constructor. In the netCDF UCAR API, this method maps directly to
-     * {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
-     *
-     * @param  axis  an implementation-dependent object representing the two-dimensional axis.
-     * @param  j     the fastest varying (right-most) index.
-     * @param  i     the slowest varying (left-most) index.
-     * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
-     * @throws IOException if an I/O operation was necessary but failed.
-     * @throws DataStoreException if a logical error occurred.
-     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
-     */
-    protected abstract double coordinateForAxis(Variable axis, int j, int i) throws IOException, DataStoreException;
+    protected abstract Axis[] createAxes(Decoder decoder) throws IOException, DataStoreException;
 
     /**
      * Returns the coordinate reference system, or {@code null} if none.
@@ -192,9 +208,8 @@ public abstract class Grid extends NamedElement {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
-            final Axis[] axes = getAxes();
-            for (int i=axes.length; --i >= 0;) {                // NetCDF order is reverse of "natural" order.
-                CRSBuilder.dispatch(builders, axes[i]);
+            for (final Axis axis : getAxes(decoder)) {
+                CRSBuilder.dispatch(builders, axis);
             }
             final SingleCRS[] components = new SingleCRS[builders.size()];
             for (int i=0; i < components.length; i++) {
@@ -216,7 +231,7 @@ public abstract class Grid extends NamedElement {
      * Builds the grid extent if the shape is available. The shape may not be available
      * if a dimension has unlimited length. The dimension names are informative only.
      *
-     * @param  axes  value of {@link #getAxes()}. Should be the same as {@link #axes}.
+     * @param  axes  value of {@link #getAxes(Decoder)}. Element order does not matter for this method.
      */
     @SuppressWarnings("fallthrough")
     private GridExtent getExtent(final Axis[] axes) {
@@ -231,7 +246,7 @@ public abstract class Grid extends NamedElement {
             case 0:  break;
         }
         for (final Axis axis : axes) {
-            if (axis.sourceDimensions.length == 1) {
+            if (axis.getDimension() == 1) {
                 final DimensionNameType name;
                 if (AxisDirections.isVertical(axis.direction)) {
                     name = DimensionNameType.VERTICAL;
@@ -240,9 +255,10 @@ public abstract class Grid extends NamedElement {
                 } else {
                     continue;
                 }
-                final int dim = axis.sourceDimensions[0];
-                if (dim >= 0 && dim < names.length) {
-                    names[names.length - 1 - dim] = name;
+                int dim = axis.sourceDimensions[0];
+                if (dim >= 0) {
+                    dim = names.length - 1 - dim;               // Convert netCDF order to "natural" order.
+                    if (dim >= 0) names[dim] = name;
                 }
             }
         }
@@ -260,22 +276,22 @@ public abstract class Grid extends NamedElement {
      */
     public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
-            isGeometryDetermined = true;        // Set now for avoiding new attempts if creation fail.
-            final Axis[] axes = getAxes();      // In netCDF order (reverse of "natural" order).
+            isGeometryDetermined = true;                    // Set now for avoiding new attempts if creation fail.
+            final Axis[] axes = getAxes(decoder);           // In CRS order (reverse of netCDF order).
             /*
              * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
              * The order of dimensions in the transform is the reverse of the netCDF axis order.
              */
-            int srcEnd = getSourceDimensions();
-            int tgtEnd = getTargetDimensions();
+            int lastSrcDim = getSourceDimensions();                         // Will be decremented later, then kept final.
+            int lastTgtDim = getTargetDimensions();
             final int[] deferred = new int[axes.length];                    // Indices of axes that have been deferred.
-            final List<MathTransform> nonLinears = new ArrayList<>();
-            final Matrix affine = Matrices.createZero(tgtEnd + 1, srcEnd + 1);
-            affine.setElement(tgtEnd--, srcEnd--, 1);
-            for (int i=axes.length; --i >= 0;) {
-                if (!axes[i].trySetTransform(affine, srcEnd, tgtEnd - i, nonLinears)) {
-                    deferred[nonLinears.size() - 1] = i;
+            final List<MathTransform> nonLinears = new ArrayList<>(axes.length);
+            final Matrix affine = Matrices.createZero(lastTgtDim + 1, lastSrcDim + 1);
+            affine.setElement(lastTgtDim--, lastSrcDim--, 1);
+            for (int tgtDim=0; tgtDim < axes.length; tgtDim++) {
+                if (!axes[tgtDim].trySetTransform(affine, lastSrcDim, tgtDim, nonLinears)) {
+                    deferred[nonLinears.size() - 1] = tgtDim;
                 }
             }
             /*
@@ -286,17 +302,16 @@ public abstract class Grid extends NamedElement {
             final int[] sourceDimensions = new int[nonLinears.size()];
             Arrays.fill(sourceDimensions, -1);
             for (int i=0; i<sourceDimensions.length; i++) {
-                final int d = deferred[i];
-                final Axis axis = axes[d];
+                final int tgtDim = deferred[i];
+                final Axis axis = axes[tgtDim];
 findFree:       for (int srcDim : axis.sourceDimensions) {
-                    srcDim = srcEnd - srcDim;
+                    srcDim = lastSrcDim - srcDim;
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
                         }
                     }
                     sourceDimensions[i] = srcDim;
-                    final int tgtDim = tgtEnd - d;
                     affine.setElement(tgtDim, srcDim, 1);
                     break;
                 }
@@ -310,51 +325,25 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
                     final Axis axis = axes[deferred[i]];
-                    if (axis.sourceDimensions.length == 2) {
-                        final int d1 = axis.sourceDimensions[0];
-                        final int d2 = axis.sourceDimensions[1];
+                    if (axis.getDimension() == 2) {
                         for (int j=i; ++j < nonLinears.size();) {
                             if (nonLinears.get(j) == null) {
-                                final Axis other = axes[deferred[j]];
-                                if (other.sourceDimensions.length == 2) {
-                                    final int o1 = other.sourceDimensions[0];
-                                    final int o2 = other.sourceDimensions[1];
-                                    if ((o1 == d1 && o2 == d2) || (o1 == d2 && o2 == d1)) {
+                                final int srcDim   = sourceDimensions[i];
+                                final int otherDim = sourceDimensions[j];
+                                if (Math.abs(srcDim - otherDim) == 1) {     // Need axes at consecutive source dimensions.
+                                    final LocalizationGridBuilder grid = axis.createLocalizationGrid(axes[deferred[j]]);
+                                    if (grid != null) {
                                         /*
-                                         * Found two axes for the same set of dimensions, which implies that they have
-                                         * the same shape (width and height).  In current implementation, we also need
-                                         * those axes to be at consecutive source dimensions.
+                                         * Replace the first transform by the two-dimensional localization grid and
+                                         * remove the other transform. Removals need to be done in arrays too.
                                          */
-                                        final int srcDim   = sourceDimensions[i];
-                                        final int otherDim = sourceDimensions[j];
-                                        if (Math.abs(srcDim - otherDim) == 1) {
-                                            final int width  = axis.sourceSizes[0];
-                                            final int height = axis.sourceSizes[1];
-                                            final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
-                                            final Vector v1 =  axis.coordinates.read();
-                                            final Vector v2 = other.coordinates.read();
-                                            final double[] target = new double[2];
-                                            int index = 0;
-                                            for (int y=0; y<height; y++) {
-                                                for (int x=0; x<width; x++) {
-                                                    target[0] = v1.doubleValue(index);
-                                                    target[1] = v2.doubleValue(index);
-                                                    grid.setControlPoint(x, y, target);
-                                                    index++;
-                                                }
-                                            }
-                                            /*
-                                             * Replace the first transform by the two-dimensional localization grid and
-                                             * remove the other transform. Removals need to be done in arrays too.
-                                             */
-                                            nonLinears.set(i, grid.create(factory));
-                                            nonLinears.remove(j);
-                                            final int n = nonLinears.size() - j;
-                                            System.arraycopy(deferred,         j+1, deferred,         j, n);
-                                            System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
-                                            if (otherDim < srcDim) {
-                                                sourceDimensions[i] = otherDim;
-                                            }
+                                        nonLinears.set(i, grid.create(factory));
+                                        nonLinears.remove(j);
+                                        final int n = nonLinears.size() - j;
+                                        System.arraycopy(deferred,         j+1, deferred,         j, n);
+                                        System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
+                                        if (otherDim < srcDim) {
+                                            sourceDimensions[i] = otherDim;
                                         }
                                     }
                                 }
@@ -376,7 +365,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                     if (i < nonLinearCount) {
                         final int srcDim = sourceDimensions[i];
                         tr = factory.createPassThroughTransform(srcDim, tr,
-                                        (srcEnd + 1) - (srcDim + tr.getSourceDimensions()));
+                                        (lastSrcDim + 1) - (srcDim + tr.getSourceDimensions()));
                     }
                     gridToCRS = (gridToCRS == null) ? tr : factory.createConcatenatedTransform(gridToCRS, tr);
                 }
@@ -397,7 +386,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                 }
             }
             geometry = new GridGeometry(getExtent(axes), anchor, gridToCRS, crs);
-        } catch (FactoryException | TransformException ex) {
+        } catch (FactoryException | IllegalGridGeometryException ex) {
             canNotCreate(decoder, "getGridGeometry", Resources.Keys.CanNotCreateGridGeometry_3, ex);
         }
         return geometry;

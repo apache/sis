@@ -17,6 +17,7 @@
 package org.apache.sis.coverage;
 
 import java.util.Set;
+import java.util.List;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
@@ -38,6 +39,26 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class SampleDimensionTest extends TestCase {
     /**
+     * Tests a sample dimension having only qualitative categories.
+     */
+    @Test
+    public void testQualitative() {
+        final SampleDimension dimension = new SampleDimension.Builder()
+                .addQualitative("Clouds",    1)
+                .addQualitative("Lands",     2)
+                .addQualitative("Missing", 255)
+                .setName("Some data").build();
+
+        assertEquals("name", "Some data",  String.valueOf(dimension.getName()));
+        assertTrue  ("nodataValues",       dimension.getNoDataValues().isEmpty());
+        assertFalse ("background",         dimension.getBackground().isPresent());
+        assertFalse ("transferFunction",   dimension.getTransferFunction().isPresent());
+        assertFalse ("units",              dimension.getUnits().isPresent());
+        assertSame  ("forConvertedValues", dimension, dimension.forConvertedValues(false));
+        assertSame  ("forConvertedValues", dimension, dimension.forConvertedValues(true));
+    }
+
+    /**
      * Tests a sample dimension having one quantitative category and a few "no data" values.
      */
     @Test
@@ -57,7 +78,8 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertEquals("background", 0, dimension.getBackground().get());
 
         final Set<Number> nodataValues = dimension.getNoDataValues();
-        assertArrayEquals(new Integer[] {0, 1, 255}, nodataValues.toArray());
+        assertArrayEquals("nodataValues", new Integer[] {0, 1, 255}, nodataValues.toArray());
+        assertEquals("nodataValues.size", 0, dimension.forConvertedValues(true).getNoDataValues().size());
 
         NumberRange<?> range = dimension.getSampleRange().get();
         assertEquals("minimum",   0, range.getMinDouble(), STRICT);
@@ -112,5 +134,20 @@ public final strictfp class SampleDimensionTest extends TestCase {
 
         assertSame("forConvertedValues", dimension, dimension.forConvertedValues(true));
         assertSame("forConvertedValues", dimension, dimension.forConvertedValues(false));
+    }
+
+    /**
+     * Tests a few builder methods not tested by other methods in this class.
+     */
+    @Test
+    public void testBuilder() {
+        final SampleDimension.Builder builder = new SampleDimension.Builder()
+                .setBackground (null,      0)
+                .addQualitative("Clouds",  1)
+                .addQualitative("Lands", 255);
+        final List<Category> categories = builder.categories();
+        assertEquals(3, categories.size());
+        assertEquals("Clouds", categories.remove(1).getName().toString());
+        assertEquals(2, categories.size());
     }
 }

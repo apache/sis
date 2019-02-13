@@ -236,7 +236,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
         setContextParameters(semiMajor, semiMinor, unit, target);
         context.getOrCreate(Molodensky.DIMENSION).setValue(isSource3D ? 3 : 2);
         if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
+            ((DatumShiftGridFile<?,?>) grid).setGridParameters(context);
         }
         /*
          * The above setContextParameters(…) method converted the axis lengths of target ellipsoid in the same units

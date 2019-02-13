@@ -27,6 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import static java.lang.Math.*;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
+import static java.lang.Double.isFinite;
 import static java.lang.Double.doubleToLongBits;
 
 
@@ -254,15 +255,22 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      */
     @Override
     public void accept(final double sample) {
-        if (isNaN(sample)) {
+        if (isFinite(sample)) {
+            real(sample);
+        } else if (isNaN(sample)) {
             countNaN++;
         } else {
             real(sample);
+            sum = sample;                           // Replace NaN by the infinite value.
+            squareSum = Double.POSITIVE_INFINITY;
+            squareLowBits = lowBits = 0;
         }
     }
 
     /**
      * Implementation of {@link #accept(double)} for real (non-NaN) numbers.
+     *
+     * @see org.apache.sis.internal.util.DoubleDouble#addKahan(double)
      */
     private void real(double sample) {
         /*
@@ -296,8 +304,14 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * @see #combine(Statistics)
      */
     @Override
-    public void accept(final long sample) {
-        real(sample);
+    public void accept(long sample) {
+        double y = sample;
+        real(y);
+        sample -= (long) y;
+        if (sample != 0) {
+            y = sample + lowBits;
+            lowBits = y + (sum - (sum += y));
+        }
     }
 
     /**
@@ -393,7 +407,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     }
 
     /**
-     * Equivalents to <code>{@link #maximum() maximum} - {@link #minimum() minimum}</code>.
+     * Equivalents to {@linkplain #maximum() maximum} - {@linkplain #minimum() minimum}.
      * If no samples were added, then returns {@link Double#NaN NaN}.
      *
      * @return the span of sample values, or NaN if none.

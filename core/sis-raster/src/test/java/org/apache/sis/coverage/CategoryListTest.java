@@ -52,9 +52,10 @@ public final strictfp class CategoryListTest extends TestCase {
         for (int i=1; i<size; i++) {
             final Category current  = categories.get(i  );
             final Category previous = categories.get(i-1);
-            assertFalse( current.minimum >  current.maximum);
-            assertFalse(previous.minimum > previous.maximum);
-            assertFalse(Category.compare(previous.maximum, current.minimum) > 0);
+            assertFalse( current.range.getMinDouble(true) >  current.range.getMaxDouble(true));
+            assertFalse(previous.range.getMinDouble(true) > previous.range.getMaxDouble(true));
+            assertFalse(Category.compare(previous.range.getMaxDouble(true),
+                                          current.range.getMinDouble(true)) > 0);
         }
     }
 
@@ -63,7 +64,7 @@ public final strictfp class CategoryListTest extends TestCase {
      */
     private static void assertNotConverted(final CategoryList categories) {
         for (final Category c : categories) {
-            assertNotNull(c.range);
+            assertFalse("isNaN", Double.isNaN(c.range.getMinDouble()));
             assertFalse(c.range instanceof ConvertedRange);
         }
     }
@@ -111,12 +112,14 @@ public final strictfp class CategoryListTest extends TestCase {
             realNumberLimit += random.nextInt(10);
             for (int i=0; i<100; i++) {
                 final double searchFor = random.nextInt(realNumberLimit);
-                assertEquals("binarySearch", Arrays.binarySearch(array, searchFor),
-                                       CategoryList.binarySearch(array, searchFor));
+                int expected = Arrays.binarySearch(array, searchFor);
+                if (expected < 0) expected = ~expected - 1;
+                assertEquals("binarySearch", expected, CategoryList.binarySearch(array, searchFor));
             }
             /*
-             * Previous test didn't tested NaN values (which is the main difference
-             * between binarySearch method in Arrays and CategoryList). Now test it.
+             * Previous test didn't tested NaN values, which is the main difference between Arrays.binarySearch(…) and
+             * CategoryList.binarySearch(…). Now test those NaNs. We fill the last half of the array with NaN values;
+             * the first half keep original real values. Then we search sometime real values, sometime NaN values.
              */
             int nanOrdinalLimit = 0;
             realNumberLimit /= 2;
@@ -132,24 +135,27 @@ public final strictfp class CategoryListTest extends TestCase {
                 } else {
                     search = MathFunctions.toNanFloat(random.nextInt(nanOrdinalLimit));
                 }
-                int foundAt = CategoryList.binarySearch(array, search);
-                if (foundAt >= 0) {
-                    assertEquals(Double.doubleToRawLongBits(search),
-                                 Double.doubleToRawLongBits(array[foundAt]), STRICT);
-                } else {
-                    foundAt = ~foundAt;
-                    if (foundAt < array.length) {
-                        final double after = array[foundAt];
+                /*
+                 * At this point, 'search' is a real value or a NaN value to search.
+                 */
+                final int foundAt = CategoryList.binarySearch(array, search);
+                if (foundAt < 0) {
+                    // Expected only if the value to search is NaN or less than all values in the array.
+                    assertFalse(search >= array[0]);
+                } else if (foundAt >= array.length) {
+                    // Expected only if the value to search is NaN or greater than all values in the array.
+                    assertFalse(search <= array[array.length - 1]);
+                } else if (Double.doubleToRawLongBits(array[foundAt]) != Double.doubleToRawLongBits(search)) {
+                    final double before = array[foundAt];
+                    assertFalse(search <= before);
+                    if (!Double.isNaN(search)) {
+                        assertFalse("isNaN", Double.isNaN(before));
+                    }
+                    if (foundAt + 1 < array.length) {
+                        final double after = array[foundAt + 1];
                         assertFalse(search >= after);
                         if (Double.isNaN(search)) {
                             assertTrue("isNaN", Double.isNaN(after));
-                        }
-                    }
-                    if (foundAt > 0) {
-                        final double before = array[foundAt - 1];
-                        assertFalse(search <= before);
-                        if (!Double.isNaN(search)) {
-                            assertFalse("isNaN", Double.isNaN(before));
                         }
                     }
                 }
@@ -172,7 +178,7 @@ public final strictfp class CategoryListTest extends TestCase {
     }
 
     /**
-     * Tests the sample values range and converged values range after construction of a list of categories.
+     * Tests the sample values range and converted values range after construction of a list of categories.
      */
     @Test
     public void testRanges() {
@@ -219,20 +225,21 @@ public final strictfp class CategoryListTest extends TestCase {
         assertSame("100", categories[4].converse, list.converse.search(  /* transform(100) */   -97 ));
         assertSame("110", categories[4].converse, list.converse.search(  /* transform(110) */  -107 ));
         /*
-         * Checks values outside the range of any category. For direct conversion, no category shall be returned.
-         * For inverse conversion, the nearest category shall be returned.
+         * Checks values outside the range of any category.  The category below requested value has its
+         * domain expanded up to the next category, except if one category is qualitative and the other
+         * one is quantitative, in which case the quantitative category has precedence.
          */
-        assertNull( "-1",                         list.search( -1));
-        assertNull(  "2",                         list.search(  2));
-        assertNull(  "4",                         list.search(  4));
-        assertNull(  "9",                         list.search(  9));
-        assertNull("120",                         list.search(120));
-        assertNull("200",                         list.search(200));
+        assertSame( "-1", categories[0],          list.search( -1));
+        assertSame(  "2", categories[0],          list.search(  2));
+        assertSame(  "4", categories[2],          list.search(  4));
+        assertSame(  "9", categories[3],          list.search(  9));
+        assertSame("120", categories[4],          list.search(120));
+        assertSame("200", categories[4],          list.search(200));
         assertNull( "-1",                         list.converse.search(MathFunctions.toNanFloat(-1)));    // Nearest sample is 0
         assertNull(  "2",                         list.converse.search(MathFunctions.toNanFloat( 2)));    // Nearest sample is 3
         assertNull(  "4",                         list.converse.search(MathFunctions.toNanFloat( 4)));    // Nearest sample is 3
         assertNull(  "9",                         list.converse.search(MathFunctions.toNanFloat( 9)));    // Nearest sample is 10
-        assertSame(  "9", categories[3].converse, list.converse.search( /* transform(  9) */   5.9 ));    // Nearest sample is 10
+        assertSame(  "9", categories[4].converse, list.converse.search( /* transform(  9) */   5.9 ));    // Nearest sample is 10
         assertSame("120", categories[4].converse, list.converse.search( /* transform(120) */  -117 ));    // Nearest sample is 119
         assertSame("200", categories[4].converse, list.converse.search( /* transform(200) */  -197 ));    // Nearest sample is 119
     }

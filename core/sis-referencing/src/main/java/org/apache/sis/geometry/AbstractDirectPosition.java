@@ -39,6 +39,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.math.Vector;
 
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
@@ -221,7 +222,9 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final double[][] points = new double[][] {getCoordinate()};
+        final Vector[] points = {
+            Vector.create(getCoordinate())
+        };
         formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
         return WKTKeywords.Point;
     }

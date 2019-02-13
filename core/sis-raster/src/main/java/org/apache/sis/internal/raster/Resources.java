@@ -69,6 +69,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotMapToGridDimensions = 12;
 
         /**
+         * Can not set this derived grid property after a call to “{0}” method.
+         */
+        public static final short CanNotSetDerivedGridProperty_1 = 32;
+
+        /**
          * Can not simplify transfer function of sample dimension “{0}”.
          */
         public static final short CanNotSimplifyTransferFunction_1 = 19;
@@ -79,9 +84,15 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CategoryRangeOverlap_4 = 13;
 
         /**
-         * The ({0}, {1}) pixel coordinate is outside iterator domain.
+         * Indices ({3}) are outside grid coverage. The value at dimension {0} shall be between
+         * {1,number} and {2,number} inclusive.
          */
-        public static final short CoordinateOutsideDomain_2 = 1;
+        public static final short GridCoordinateOutsideCoverage_4 = 21;
+
+        /**
+         * The grid envelope must have at least {0} dimensions.
+         */
+        public static final short GridEnvelopeMustBeNDimensional_1 = 25;
 
         /**
          * Sample value range {1} for “{0}” category is illegal.
@@ -89,9 +100,14 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalCategoryRange_2 = 15;
 
         /**
-         * Illegal grid envelope [{1} … {2}] for dimension {0}.
+         * Illegal grid envelope [{1,number} … {2,number}] for dimension {0}.
          */
         public static final short IllegalGridEnvelope_3 = 8;
+
+        /**
+         * Can not create a grid geometry with the given “{0}” component.
+         */
+        public static final short IllegalGridGeometryComponent_1 = 23;
 
         /**
          * Illegal transfer function for “{0}” category.
@@ -114,6 +130,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IterationNotStarted = 4;
 
         /**
+         * The bands have different number of sample values.
+         */
+        public static final short MismatchedBandSize = 28;
+
+        /**
+         * The bands store sample values using different data types.
+         */
+        public static final short MismatchedDataType = 30;
+
+        /**
          * The two images have different size or pixel coordinates.
          */
         public static final short MismatchedImageLocation = 5;
@@ -134,14 +160,45 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoCategoryForValue_1 = 14;
 
         /**
+         * Can not infer a {0}-dimensional slice from the grid envelope. Dimension {1} has {2,number}
+         * cells.
+         */
+        public static final short NoNDimensionalSlice_3 = 26;
+
+        /**
          * non-linear in {0} dimension{0,choice,1#|2#s}:
          */
         public static final short NonLinearInDimensions_1 = 20;
 
         /**
+         * The specified dimensions are not in strictly ascending order.
+         */
+        public static final short NotStrictlyOrderedDimensions = 24;
+
+        /**
+         * The ({0,number}, {1,number}) pixel coordinate is outside iterator domain.
+         */
+        public static final short OutOfIteratorDomain_2 = 1;
+
+        /**
+         * Point ({0}) is outside the coverage domain.
+         */
+        public static final short PointOutsideCoverageDomain_1 = 22;
+
+        /**
          * Too many qualitative categories.
          */
         public static final short TooManyQualitatives = 17;
+
+        /**
+         * Expected {0} bands but got {1}.
+         */
+        public static final short UnexpectedNumberOfBands_2 = 27;
+
+        /**
+         * Raster data type ‘{0}’ is unknown or unsupported.
+         */
+        public static final short UnknownDataType_1 = 29;
 
         /**
          * Coordinate reference system is unspecified.
@@ -152,6 +209,11 @@ public final class Resources extends IndexedResourceBundle {
          * Grid extent is unspecified.
          */
         public static final short UnspecifiedGridExtent = 10;
+
+        /**
+         * Raster data are unspecified.
+         */
+        public static final short UnspecifiedRasterData = 31;
 
         /**
          * Coordinates transform is unspecified.
@@ -202,8 +264,8 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}"
-     * with values of {@code arg0}.
+     * Gets a string for the given key and replace all occurrence of "{0}"
+     * with value of {@code arg0}.
      *
      * @param  key   the key for the desired string.
      * @param  arg0  value to substitute to "{0}".
@@ -217,7 +279,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}.
      *
      * @param  key   the key for the desired string.
@@ -234,7 +296,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
      * @param  key   the key for the desired string.
@@ -250,5 +312,26 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg2) throws MissingResourceException
     {
         return forLocale(null).getString(key, arg0, arg1, arg2);
+    }
+
+    /**
+     * Gets a string for the given key and replace all occurrence of "{0}",
+     * "{1}", with values of {@code arg0}, {@code arg1}, etc.
+     *
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @param  arg2  value to substitute to "{2}".
+     * @param  arg3  value to substitute to "{3}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
+     */
+    public static String format(final short  key,
+                                final Object arg0,
+                                final Object arg1,
+                                final Object arg2,
+                                final Object arg3) throws MissingResourceException
+    {
+        return forLocale(null).getString(key, arg0, arg1, arg2, arg3);
     }
 }

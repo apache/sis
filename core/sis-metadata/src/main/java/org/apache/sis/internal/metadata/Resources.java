@@ -124,8 +124,8 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}"
-     * with values of {@code arg0}.
+     * Gets a string for the given key and replaces all occurrence of "{0}"
+     * with value of {@code arg0}.
      *
      * @param  key   the key for the desired string.
      * @param  arg0  value to substitute to "{0}".

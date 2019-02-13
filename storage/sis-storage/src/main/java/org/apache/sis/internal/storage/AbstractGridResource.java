@@ -95,15 +95,16 @@ public abstract class AbstractGridResource extends AbstractResource implements G
      * but does not verify if there is duplicated indices since such duplication is allowed.
      *
      * @param  numSampleDimensions  number of sample dimensions.
-     * @param  range                the {@code range} argument given by the user.
-     * @return the 0-based indices of ranges to use. May be the given {@code range} argument, or a sequence
+     * @param  range  the {@code range} argument given by the user. May be null or empty.
+     * @return the 0-based indices of ranges to use. May be a copy of the given {@code range} argument or a sequence
      *         from 0 to {@code numSampleDimensions} exclusive if {@code range} was {@code null} or empty.
      */
-    protected final int[] validateRangeArgument(final int numSampleDimensions, final int[] range) {
+    protected final int[] validateRangeArgument(final int numSampleDimensions, int[] range) {
         ArgumentChecks.ensureStrictlyPositive("numSampleDimensions", numSampleDimensions);
         if (range == null || range.length == 0) {
             return ArraysExt.sequence(0, numSampleDimensions);
         }
+        range = range.clone();
         for (int i=0; i<range.length; i++) {
             final int r = range[i];
             if (r < 0 || r >= numSampleDimensions) {

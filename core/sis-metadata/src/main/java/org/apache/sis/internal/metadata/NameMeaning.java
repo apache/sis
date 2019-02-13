@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.*;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -199,7 +199,7 @@ loop:   for (int p=0; ; p++) {
                 case 3:  part = code;               break;
                 default: break loop;
             }
-            if (!Utilities.appendUnicodeIdentifier(buffer.append(DefinitionURI.SEPARATOR), '\u0000', part, ".-", false)) {
+            if (!Strings.appendUnicodeIdentifier(buffer.append(DefinitionURI.SEPARATOR), '\u0000', part, ".-", false)) {
                 /*
                  * Only the version (p = 2) is optional. All other fields are mandatory.
                  * If no character has been added for a mandatory field, we can not build a URN.

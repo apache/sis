@@ -236,6 +236,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     @Override
     final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
+            case 1: return new DefaultVerticalCS(properties, axes);
             case 2: // Fall through
             case 3: return new DefaultCartesianCS(properties, axes);
             default: throw unexpectedDimension(properties, axes, 2);

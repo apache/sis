@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.temporal.Period;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.Strings;
 
 import static org.apache.sis.internal.xml.LegacyNamespaces.VERSION_3_0;
 
@@ -95,6 +96,6 @@ public final class TimePeriod extends GMLAdapter {
      */
     @Override
     public String toString() {
-        return "TimePeriod[" + begin + " … " + end + ']';
+        return Strings.range(getClass(), begin, end);
     }
 }

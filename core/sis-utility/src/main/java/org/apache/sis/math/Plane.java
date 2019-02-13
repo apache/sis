@@ -22,6 +22,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -386,8 +387,8 @@ public class Plane implements Cloneable, Serializable {
             for (final DirectPosition p : points) {
                 final int dimension = p.getDimension();
                 if (dimension != DIMENSION) {
-                    throw new MismatchedDimensionException(Errors.format(
-                            Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
+                    throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                                Strings.toIndexed("points", i), DIMENSION, dimension));
                 }
                 i++;
                 final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
@@ -431,7 +432,7 @@ public class Plane implements Cloneable, Serializable {
                 for (int x=0; x<nx; x++) {
                     final double z = vz.doubleValue(n);
                     if (Double.isNaN(z)) {
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, "z[" + n + ']'));
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, Strings.toIndexed("z", n)));
                     }
                     zx.setToProduct(z, x);
                     zy.setToProduct(z, y);
@@ -441,11 +442,11 @@ public class Plane implements Cloneable, Serializable {
                     n++;
                 }
             }
-            sum_x .value = n/2d;  sum_x .multiply(nx-1,   0);                     // Division by 2 is exact.
-            sum_y .value = n/2d;  sum_y .multiply(ny-1,   0);
-            sum_xx.value = n;     sum_xx.multiply(nx-0.5, 0); sum_xx.multiply(nx-1, 0); sum_xx.divide(3, 0);
-            sum_yy.value = n;     sum_yy.multiply(ny-0.5, 0); sum_yy.multiply(ny-1, 0); sum_yy.divide(3, 0);
-            sum_xy.value = n/4d;  sum_xy.multiply(ny-1,   0); sum_xy.multiply(nx-1, 0);
+            sum_x .value = n/2d;  sum_x .multiply(nx-1);                     // Division by 2 is exact.
+            sum_y .value = n/2d;  sum_y .multiply(ny-1);
+            sum_xx.value = n;     sum_xx.multiply(nx-0.5);  sum_xx.multiply(nx-1);  sum_xx.divide(3);
+            sum_yy.value = n;     sum_yy.multiply(ny-0.5);  sum_yy.multiply(ny-1);  sum_yy.divide(3);
+            sum_xy.value = n/4d;  sum_xy.multiply(ny-1);    sum_xy.multiply(nx-1);
             this.n = n;
         }
 
@@ -457,11 +458,11 @@ public class Plane implements Cloneable, Serializable {
              *    ( sum_zx - sum_z⋅sum_x )  =  sx⋅(sum_xx - sum_x⋅sum_x) + sy⋅(sum_xy - sum_x⋅sum_y)
              *    ( sum_zy - sum_z⋅sum_y )  =  sx⋅(sum_xy - sum_x⋅sum_y) + sy⋅(sum_yy - sum_y⋅sum_y)
              */
-            zx.setFrom(sum_x); zx.divide(-n, 0); zx.multiply(sum_z); zx.add(sum_zx);    // zx = sum_zx - sum_z⋅sum_x/n
-            zy.setFrom(sum_y); zy.divide(-n, 0); zy.multiply(sum_z); zy.add(sum_zy);    // zy = sum_zy - sum_z⋅sum_y/n
-            xx.setFrom(sum_x); xx.divide(-n, 0); xx.multiply(sum_x); xx.add(sum_xx);    // xx = sum_xx - sum_x⋅sum_x/n
-            xy.setFrom(sum_y); xy.divide(-n, 0); xy.multiply(sum_x); xy.add(sum_xy);    // xy = sum_xy - sum_x⋅sum_y/n
-            yy.setFrom(sum_y); yy.divide(-n, 0); yy.multiply(sum_y); yy.add(sum_yy);    // yy = sum_yy - sum_y⋅sum_y/n
+            zx.setFrom(sum_x); zx.divide(-n); zx.multiply(sum_z); zx.add(sum_zx);    // zx = sum_zx - sum_z⋅sum_x/n
+            zy.setFrom(sum_y); zy.divide(-n); zy.multiply(sum_z); zy.add(sum_zy);    // zy = sum_zy - sum_z⋅sum_y/n
+            xx.setFrom(sum_x); xx.divide(-n); xx.multiply(sum_x); xx.add(sum_xx);    // xx = sum_xx - sum_x⋅sum_x/n
+            xy.setFrom(sum_y); xy.divide(-n); xy.multiply(sum_x); xy.add(sum_xy);    // xy = sum_xy - sum_x⋅sum_y/n
+            yy.setFrom(sum_y); yy.divide(-n); yy.multiply(sum_y); yy.add(sum_yy);    // yy = sum_yy - sum_y⋅sum_y/n
             /*
              * den = (xy⋅xy - xx⋅yy)
              */
@@ -482,7 +483,7 @@ public class Plane implements Cloneable, Serializable {
             tmp.add(z0);
             z0.setFrom(sum_z);
             z0.subtract(tmp);
-            z0.divide(n, 0);
+            z0.divide(n);
         }
 
         /**
@@ -497,12 +498,12 @@ public class Plane implements Cloneable, Serializable {
             boolean detectZeroSx = true;
             boolean detectZeroSy = true;
             boolean detectZeroZ0 = true;
-            final double sx     = this.sx.value;
-            final double sy     = this.sy.value;
-            final double z0     = this.z0.value;
-            final double mean_x = sum_x.value / n;
-            final double mean_y = sum_y.value / n;
-            final double mean_z = sum_z.value / n;
+            final double sx     = this.sx.doubleValue();
+            final double sy     = this.sy.doubleValue();
+            final double z0     = this.z0.doubleValue();
+            final double mean_x = sum_x.doubleValue() / n;
+            final double mean_y = sum_y.doubleValue() / n;
+            final double mean_z = sum_z.doubleValue() / n;
             final double offset = abs((sx * mean_x + sy * mean_y) + z0);    // Offsetted z₀ - see comment before usage.
             int index = 0;
             double sum_ds2 = 0, sum_dz2 = 0, sum_dsz = 0;

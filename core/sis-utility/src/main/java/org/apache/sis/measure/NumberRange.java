@@ -112,7 +112,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * </div>
      *
      * We use this method only for caching range of wrapper of primitive types ({@link Byte},
-     * {@link Short}, <i>etc.</i>) because those type are known to be immutable.
+     * {@link Short}, <i>etc.</i>) because those types are known to be immutable.
      */
     static <E extends Number & Comparable<? super E>, T extends NumberRange<E>> T unique(T range) {
         if (!range.isEmpty()) {
@@ -122,7 +122,49 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
+     * Returns {@code true} if the given value is valid for a range to be cached by {@link #union(Range)}.
+     * A range can be cached if the {@link Number} values are null or instances of a standard Java class
+     * known to be immutable, and the wrapped values are not NaN except the canonical {@link Double#NaN}
+     * or {@link Float#NaN} values. This check is necessary because {@link #equals(Object)} considers all
+     * {@code NaN} values as equal.
+     */
+    static boolean isCacheable(final Number n) {
+        if (n == null) {
+            return true;
+        } else if (n instanceof Double) {
+            final double value = (Double) n;
+            return !Double.isNaN(value) || Double.doubleToRawLongBits(value) == 0x7FF8000000000000L;
+        } else if (n instanceof Float) {
+            final float value = (Float) n;
+            return !Float.isNaN(value) || Float.floatToRawIntBits(value) == 0x7FC00000;
+        } else {
+            return Numbers.getEnumConstant(n.getClass()) != Numbers.OTHER;
+        }
+    }
+
+    /**
+     * Constructs a range containing a single value of the given type.
+     * The given value is used as the minimum and maximum values, inclusive.
+     *
+     * @param  <N>     compile-time value of {@code type}.
+     * @param  type    the element type, usually one of {@link Byte}, {@link Short},
+     *                 {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param  value   the value, or {@code null} for creating an unbounded range.
+     * @return a range containing the given value as its inclusive minimum and maximum.
+     *
+     * @since 1.0
+     */
+    public static <N extends Number & Comparable<? super N>> NumberRange<N> create(final Class<N> type, final N value) {
+        NumberRange<N> range = new NumberRange<>(type, value, true, value, true);
+        if (isCacheable(value)) {
+            range = unique(range);
+        }
+        return range;
+    }
+
+    /**
      * Constructs a range of {@code byte} values.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value.
@@ -142,6 +184,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code short} values.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value.
@@ -160,6 +203,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code int} values.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value.
@@ -180,6 +224,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code long} values.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value.
@@ -198,7 +243,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code float} values.
-     * The values can not be {@link Float#NaN}.
+     * The minimum and maximum values can not be NaN but can be infinite.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value, or {@link Float#NEGATIVE_INFINITY} if none.
@@ -206,13 +252,15 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  maxValue       the maximal value, or {@link Float#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @return the new range of numeric values for the given endpoints.
+     * @throws IllegalArgumentException if {@link Float#isNaN(float)} is {@code true} for a given value.
      */
     public static NumberRange<Float> create(final float minValue, final boolean isMinIncluded,
                                             final float maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<>(Float.class,
-                valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded));
+        final Float min = valueOf("minValue", minValue, Float.NEGATIVE_INFINITY);
+        final Float max = valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY);
+        // No need to test isCacheable(Number) because the type is known and valueOf(…) disallows NaN values.
+        return unique(new NumberRange<>(Float.class, min, isMinIncluded, Objects.equals(min, max) ? min : max, isMaxIncluded));
     }
 
     /**
@@ -228,7 +276,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range of {@code double} values.
-     * The values can not be {@link Double#NaN}.
+     * The minimum and maximum values can not be NaN but can be infinite.
+     * If the minimum is greater than the maximum, then the range {@linkplain #isEmpty() is empty}.
      * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       the minimal value, or {@link Double#NEGATIVE_INFINITY} if none.
@@ -236,13 +285,15 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  maxValue       the maximal value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @return the new range of numeric values for the given endpoints.
+     * @throws IllegalArgumentException if {@link Double#isNaN(double)} is {@code true} for a given value.
      */
     public static NumberRange<Double> create(final double minValue, final boolean isMinIncluded,
                                              final double maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<>(Double.class,
-                valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded));
+        final Double min = valueOf("minValue", minValue, Double.NEGATIVE_INFINITY);
+        final Double max = valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY);
+        // No need to test isCacheable(Number) because the type is known and valueOf(…) disallows NaN values.
+        return unique(new NumberRange<>(Double.class, min, isMinIncluded, Objects.equals(min, max) ? min : max, isMaxIncluded));
     }
 
     /**
@@ -287,14 +338,23 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
                                                final Number maxValue, final boolean isMaxIncluded)
     {
-        final Class<? extends Number> type = Numbers.widestClass(
-                Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
+        final Class<? extends Number> type;
+        type = Numbers.widestClass(Numbers.narrowestClass(minValue),
+                                   Numbers.narrowestClass(maxValue));
         if (type == null) {
             return null;
         }
-        final Number min = Numbers.cast(minValue, type);
-        final Number max = Objects.equals(minValue, maxValue) ? min : Numbers.cast(maxValue, type);
-        return unique(new NumberRange(type, min, isMinIncluded, max, isMaxIncluded));
+        Number min = Numbers.cast(minValue, type);
+        Number max = Numbers.cast(maxValue, type);
+        final boolean isCacheable = isCacheable(min) && isCacheable(max);
+        if (isCacheable && Objects.equals(min, max)) {
+            max = min;      // Share the same instance.
+        }
+        NumberRange range = new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
+        if (isCacheable) {
+            range = unique(range);
+        }
+        return range;
     }
 
     /**
@@ -315,7 +375,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @since 0.5
      */
     public static NumberRange<Integer> createLeftBounded(final int minValue, final boolean isMinIncluded) {
-        return unique(new NumberRange<>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
+        // Use POOL.unique(…) directly because we do not need the check for Range.isEmpty() here.
+        return POOL.unique(new NumberRange<>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
     }
 
     /**
@@ -418,9 +479,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      */
     @SuppressWarnings("unchecked")
     <N extends Number & Comparable<? super N>>
-    NumberRange<N> convertAndCast(final NumberRange<?> range, final Class<N> type)
-            throws IllegalArgumentException
-    {
+    NumberRange<N> convertAndCast(final NumberRange<?> range, final Class<N> type) throws IllegalArgumentException {
         if (range.elementType == type) {
             return (NumberRange<N>) range;
         }
@@ -439,9 +498,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
      */
     @SuppressWarnings("unchecked")
-    public <N extends Number & Comparable<? super N>> NumberRange<N> castTo(final Class<N> type)
-            throws IllegalArgumentException
-    {
+    public <N extends Number & Comparable<? super N>> NumberRange<N> castTo(final Class<N> type) throws IllegalArgumentException {
         if (elementType == type) {
             return (NumberRange<N>) this;
         }
@@ -592,12 +649,12 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Returns {@code true} if the supplied range is fully contained within this range.
+     * Returns {@code true} if the supplied range intersects this range.
      * This method converts {@code this} or the given argument to the widest numeric type,
      * then delegates to {@link #intersects(Range)}.
      *
-     * @param  range  the range to check for inclusion in this range.
-     * @return {@code true} if the given range is included in this range.
+     * @param  range  the range to check for intersection with this range.
+     * @return {@code true} if the given range intersects this range.
      * @throws IllegalArgumentException if the given range can not be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */

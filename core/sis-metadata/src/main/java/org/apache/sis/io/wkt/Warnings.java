@@ -84,7 +84,7 @@ public final class Warnings implements Localized, Serializable {
 
     /**
      * The locale in which warning messages are reported.
-     * Not necessarily the same than the locale for number and date parsing or formating.
+     * Not necessarily the same than the locale for number and date parsing or formatting.
      *
      * @see #getLocale()
      */
@@ -107,14 +107,14 @@ public final class Warnings implements Localized, Serializable {
      * Warning messages or exceptions emitted during parsing or formatting.
      * Initially {@code null} and created when first needed.
      *
-     * <p>Objects in this list must be a sequence of the following tupple:</p>
+     * <p>Objects in this list must be a sequence of the following tuple:</p>
      *
      * <ul>
      *   <li>An optional message as an {@link InternationalString}.</li>
      *   <li>An optional warning cause as an {@link Exception}.</li>
      * </ul>
      *
-     * Any element of the above tupple can be null, but at least one element must be non-null.
+     * Any element of the above tuple can be null, but at least one element must be non-null.
      *
      * @see #add(InternationalString, Exception, String[])
      */

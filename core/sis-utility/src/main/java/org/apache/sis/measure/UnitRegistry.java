@@ -50,7 +50,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     /**
      * A bitmask specifying that the unit symbol can be combined with a SI prefix.
      * This is usually combined only with {@link #SI}, not {@link #ACCEPTED} except
-     * the litre unit (cL, mL, etc).
+     * the litre unit (cL, mL, etc) and bel (for creating the decibel unit).
      */
     static final byte PREFIXABLE = 1;
 

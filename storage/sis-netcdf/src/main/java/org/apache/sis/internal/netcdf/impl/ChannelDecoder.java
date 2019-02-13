@@ -199,7 +199,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * The grid geometries, created when first needed.
      *
-     * @see #getGridGeometries()
+     * @see #getGrids()
      */
     private transient Grid[] gridGeometries;
 
@@ -277,6 +277,7 @@ public final class ChannelDecoder extends Decoder {
         this.attributeMap = attributes;
         this.variables    = variables;
         this.variableMap  = toCaseInsensitiveNameMap(variables);
+        initialize();
     }
 
     /**
@@ -649,6 +650,17 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Returns an identification of the file format. The returned value is a reference to a database entry
+     * known to {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)}.
+     *
+     * @return an identification of the file format in an array of length 1.
+     */
+    @Override
+    public String[] getFormatDescription() {
+        return new String[] {"NetCDF"};
+    }
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
@@ -843,6 +855,33 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Adds to the given set all variables of the given names. This operation is performed when the set of axes is
+     * specified by a {@code "coordinates"} attribute associated to a data variable, or by customized conventions
+     * specified by {@link org.apache.sis.internal.netcdf.Convention#namesOfAxisVariables(Variable)}.
+     *
+     * @param  names       names of variables containing axis data, or {@code null} if none.
+     * @param  axes        where to add named variables.
+     * @param  dimensions  where to report all dimensions used by added axes.
+     * @return whether {@code names} was non-null.
+     */
+    private boolean listAxes(final CharSequence[] names, final Set<VariableInfo> axes, final Set<Dimension> dimensions) {
+        if (names == null) {
+            return false;
+        }
+        for (final CharSequence name : names) {
+            final VariableInfo axis = findVariable(name.toString());
+            if (axis == null) {
+                dimensions.clear();
+                axes.clear();
+                break;
+            }
+            axes.add(axis);
+            dimensions.addAll(Arrays.asList(axis.dimensions));
+        }
+        return true;
+    }
+
+    /**
      * Returns all grid geometries found in the netCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
@@ -850,7 +889,7 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Grid[] getGridGeometries() {
+    public Grid[] getGrids() {
         if (gridGeometries == null) {
             /*
              * First, find all variables which are used as coordinate system axis. The keys in the map are
@@ -860,9 +899,18 @@ public final class ChannelDecoder extends Decoder {
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
-                if (variable.isCoordinateSystemAxis()) {
-                    for (final Dimension dimension : variable.dimensions) {
-                        CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                switch (roleOf(variable)) {
+                    case COVERAGE: {
+                        // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
+                        // remember the new value for avoiding to ask again in next loops.
+                        variable.isCoordinateSystemAxis = false;
+                        break;
+                    }
+                    case AXIS: {
+                        variable.isCoordinateSystemAxis = true;
+                        for (final Dimension dimension : variable.dimensions) {
+                            CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                        }
                     }
                 }
             }
@@ -874,7 +922,7 @@ public final class ChannelDecoder extends Decoder {
             final Set<Dimension> usedDimensions = new HashSet<>(8);
             final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
-                if (variable.isCoordinateSystemAxis() || variable.dimensions.length == 0) {
+                if (variable.isCoordinateSystemAxis || variable.dimensions.length == 0) {
                     continue;
                 }
                 /*
@@ -886,48 +934,36 @@ nextVar:    for (final VariableInfo variable : variables) {
                  */
                 axes.clear();
                 usedDimensions.clear();
-                final CharSequence[] coordinates = variable.getCoordinateVariables();
-                if (coordinates.length != 0) {
-                    for (int i=coordinates.length; --i >= 0;) {
-                        final VariableInfo axis = findVariable(coordinates[i].toString());
-                        if (axis == null) {
-                            usedDimensions.clear();
-                            axes.clear();
-                            break;
-                        }
-                        axes.add(axis);
-                        usedDimensions.addAll(Arrays.asList(axis.dimensions));
-                    }
+                if (!listAxes(variable.getCoordinateVariables(), axes, usedDimensions)) {
+                    listAxes(namesOfAxisVariables(variable), axes, usedDimensions);
                 }
                 /*
-                 * In theory the "coordinates" attribute would enumerate all axis needed for covering all dimensions,
+                 * In theory the "coordinates" attribute would enumerate all axes needed for covering all dimensions,
                  * and we would not need to check for variables having dimension names. However in practice there is
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
-                int mixedFlag = axes.isEmpty() ? 0 : 1;
-                for (final Dimension dimension : variable.dimensions) {
+                for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
+                    final Dimension dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
                         final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
                             continue nextVar;
                         }
                         axes.addAll(axis);
-                        mixedFlag |= 2;
                     }
                 }
                 /*
                  * Creates the grid geometry using the given domain and range, reusing existing instance if one exists.
                  * We usually try to preserve axis order as declared in the netCDF file. But if we mixed axes inferred
                  * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
-                 * are better to sort them.
+                 * use axes from "coordinates" attribute first followed by other axes.
                  */
-                GridInfo gridGeometry = new GridInfo(variable.dimensions,
-                        axes.toArray(new VariableInfo[axes.size()]), mixedFlag == 3);
-                GridInfo existing = shared.putIfAbsent(gridGeometry, gridGeometry);
+                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                GridInfo existing = shared.putIfAbsent(grid, grid);
                 if (existing != null) {
-                    gridGeometry = existing;
+                    grid = existing;
                 }
-                variable.gridGeometry = gridGeometry;
+                variable.grid = grid;
             }
             gridGeometries = shared.values().toArray(new Grid[shared.size()]);
         }

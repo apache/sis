@@ -18,11 +18,13 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
@@ -54,11 +56,30 @@ import static org.opengis.test.Assert.*;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
 public final strictfp class TestFactorySource {
+    /**
+     * Whether to use PostgreSQL instead than Derby for the tests. This field should be {@code false};
+     * the {@code true} value is used only for temporarily debugging of PostgreSQL-specific features.
+     * It is developer responsibility to setup a {@code "SpatialMetadata"} database on the local host.
+     * This method differs from {@link org.apache.sis.test.sql.TestDatabase} by querying a permanent
+     * database instead than a temporary database to be deleted after the tests.
+     *
+     * @see org.apache.sis.test.sql.TestDatabase#createOnPostgreSQL(String, boolean)
+     */
+    private static final boolean TEST_ON_POSTGRESQL = false;
+    static {
+        if (TEST_ON_POSTGRESQL) {
+            final PGSimpleDataSource ds = new PGSimpleDataSource();
+            ds.setServerName("localhost");
+            ds.setDatabaseName(Initializer.DATABASE);
+            Initializer.setDefault(() -> ds);
+        }
+    }
+
     /**
      * The factory instance to use for the tests, or {@code null} if not available.
      * This field is set by {@link #createFactory()} and cleared by {@link #close()}.

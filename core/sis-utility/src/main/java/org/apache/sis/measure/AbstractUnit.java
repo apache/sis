@@ -73,6 +73,14 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     static final char MULTIPLY = '⋅', DIVIDE = '∕';
 
     /**
+     * Maximum number of multiplications or divisions in the symbol of the first unit
+     * for allowing the use of that symbol for inferring a new symbol.
+     *
+     * @see #isValidSymbol(String, boolean, boolean)
+     */
+    private static final int MAX_OPERATIONS_IN_SYMBOL = 1;
+
+    /**
      * The unit symbol, or {@code null} if this unit has no specific symbol. If {@code null},
      * then the {@link #toString()} method is responsible for creating a representation on the fly.
      * If non-null, this symbol should complies with the {@link UnitFormat.Style#SYMBOL} formatting
@@ -142,6 +150,120 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     final boolean isPrefixable() {
         return (scope & UnitRegistry.PREFIXABLE) != 0;
+    }
+
+    /**
+     * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
+     * Current implementation accepts letters, subscripts and the degree sign, but the set of legal
+     * characters may be expanded in any future SIS version (however it should never allow spaces).
+     * The goal is to avoid confusion with exponents and to detect where a unit symbol ends.
+     *
+     * <p>Space characters must be excluded from the set of legal characters because allowing them
+     * would make harder for {@link UnitFormat} to detect correctly where a unit symbol ends.</p>
+     *
+     * <p>Note that some units defined in the {@link Units} class break this rule. In particular,
+     * some of those units contains superscripts or division sign. But the hard-coded symbols in
+     * that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
+     */
+    static boolean isSymbolChar(final int c) {
+        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰‱-_".indexOf(c) >= 0;
+    }
+
+    /**
+     * Returns {@code true} if the given unit symbol is valid.
+     *
+     * @param  symbol          the symbol to verify for validity.
+     * @param  allowExponents  whether to accept also exponent characters.
+     * @param  allowMultiply   whether to accept a few multiplications.
+     * @return {@code true} if the given symbol is valid.
+     */
+    private static boolean isValidSymbol(final String symbol, final boolean allowExponents, final boolean allowMultiply) {
+        return invalidCharForSymbol(symbol, allowMultiply ? MAX_OPERATIONS_IN_SYMBOL : 0, allowExponents) == -1;
+    }
+
+    /**
+     * If the given symbol contains an invalid character for a unit symbol, returns the character code point.
+     * Otherwise if the given symbol is null or empty, returns -2. Otherwise (the symbol is valid) returns -1.
+     *
+     * <p>The check for valid symbols can be relaxed, for example when building a new symbol from existing units.
+     * For example we may want to accept "W" and "m²" as valid symbols for deriving "W∕m²" without being rejected
+     * because of the "²" in "m²". We do not want to relax too much however, because a long sequence of arithmetic
+     * operations would result in a long and maybe meaningless unit symbol, while declaring "no symbol" would allow
+     * {@link UnitFormat} to create a new one from the base units. The criterion for accepting a symbol or not (for
+     * example how many multiplications) is arbitrary.</p>
+     *
+     * @param  symbol          the symbol to verify for invalid characters.
+     * @param  maxMultiply     maximal number of multiplication symbol to accept.
+     * @param  allowExponents  whether to accept also exponent characters.
+     * @return Unicode code point of the invalid character, or a negative value.
+     */
+    static int invalidCharForSymbol(final String symbol, int maxMultiply, final boolean allowExponents) {
+        if (symbol == null || symbol.isEmpty()) {
+            return -2;
+        }
+        for (int i=0; i < symbol.length();) {
+            final int c = symbol.codePointAt(i);
+            if (!isSymbolChar(c)) {
+                if (c == MULTIPLY) {
+                    if (--maxMultiply < 0) return c;
+                } else if (!allowExponents || !Characters.isSuperScript(c)) {
+                    return c;
+                }
+            }
+            i += Character.charCount(c);
+        }
+        return -1;
+    }
+
+    /**
+     * Infers a symbol for a unit resulting from an arithmetic operation between two units.
+     * The left operand is {@code this} unit and the right operand is the {@code other} unit.
+     *
+     * @param  operation  {@link #MULTIPLY}, {@link #DIVIDE} or an exponent.
+     * @param  other      the left operand used in the operation, or {@code null} if {@code operation} is an exponent.
+     * @return the symbol for the operation result, or {@code null} if no suggestion.
+     */
+    @SuppressWarnings("fallthrough")
+    final String inferSymbol(final char operation, final Unit<?> other) {
+        String  ts             = symbol;
+        boolean inverse        = false;
+        boolean allowExponents = false;
+        switch (operation) {
+            case DIVIDE:   inverse = (ts != null && ts.isEmpty());      // Fall through
+            case MULTIPLY: allowExponents = true; break;
+        }
+        if (inverse || isValidSymbol(ts, allowExponents, allowExponents)) {
+            if (other != null) {
+                final String os = other.getSymbol();
+                if (isValidSymbol(os, allowExponents, false)) {
+                    if (inverse) ts = SystemUnit.ONE;
+                    return (ts + operation + os).intern();
+                }
+            } else if (!allowExponents) {
+                assert Characters.isSuperScript(operation) : operation;
+                return (ts + operation).intern();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * If the {@code result} unit is a {@link ConventionalUnit} with no symbol, tries to infer a symbol for it.
+     * Otherwise returns {@code result} unchanged.
+     *
+     * @param  result     the result of an arithmetic operation.
+     * @param  operation  {@link #MULTIPLY}, {@link #DIVIDE} or an exponent.
+     * @param  other      the left operand used in the operation, or {@code null} if {@code operation} is an exponent.
+     * @return {@code result} or an equivalent unit augmented with a symbol.
+     */
+    final <R extends Quantity<R>> Unit<R> inferSymbol(Unit<R> result, final char operation, final Unit<?> other) {
+        if (result instanceof ConventionalUnit<?> && result.getSymbol() == null) {
+            final String symbol = inferSymbol(operation, other);
+            if (symbol != null) {
+                result = ((ConventionalUnit<R>) result).forSymbol(symbol);
+            }
+        }
+        return result;
     }
 
     /**
@@ -393,23 +515,6 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         } else {
             return UnitFormat.INSTANCE.format(this);
         }
-    }
-
-    /**
-     * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
-     * Current implementation accepts letters, subscripts and the degree sign, but the set of legal
-     * characters may be expanded in any future SIS version (however it should never allow spaces).
-     * The goal is to avoid confusion with exponents and to detect where a unit symbol ends.
-     *
-     * <p>Space characters must be excluded from the set of legal characters because allowing them
-     * would make harder for {@link UnitFormat} to detect correctly where a unit symbol ends.</p>
-     *
-     * <p>Note that some units defined in the {@link Units} class break this rule. In particular,
-     * some of those units contains superscripts or division sign. But the hard-coded symbols in
-     * that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
-     */
-    static boolean isSymbolChar(final int c) {
-        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰‱-_".indexOf(c) >= 0;
     }
 
     /**

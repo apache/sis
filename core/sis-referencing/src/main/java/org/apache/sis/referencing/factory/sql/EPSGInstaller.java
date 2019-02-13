@@ -162,7 +162,7 @@ final class EPSGInstaller extends ScriptRunner {
             addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind", TableInfo.ENUM_REPLACEMENT);
             addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",   TableInfo.ENUM_REPLACEMENT);
             addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",    TableInfo.ENUM_REPLACEMENT);
-            addReplacement(SQLTranslator.TABLE_PREFIX + "table_name", "VARCHAR(80)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "table_name", TableInfo.ENUM_REPLACEMENT);
         }
     }
 

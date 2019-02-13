@@ -17,10 +17,12 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
+import java.time.Instant;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.opengis.test.dataset.TestData;
 import org.junit.Test;
@@ -45,7 +47,7 @@ public strictfp class VariableTest extends TestCase {
      * Expected number of columns per variables for the {@code expected} argument
      * given to the {@link #assertBasicPropertiesEqual(Object[], Variable[])} method.
      */
-    private static final int NUM_BASIC_PROPERTY_COLUMNS = 6;
+    private static final int NUM_BASIC_PROPERTY_COLUMNS = 5;
 
     /**
      * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is considered an axis or not.
@@ -66,7 +68,7 @@ public strictfp class VariableTest extends TestCase {
      * Gets the variable from the given decoder, reordering them if the decoder is a wrapper for UCAR library.
      * We perform this reordering because UCAR library does not always return the variables in the order they
      * are declared. In the case of the {@link TestData#NETCDF_4D_PROJECTED} file, the CIP variable is expected
-     * last but UCAR library put it second.
+     * last but UCAR library puts it second.
      */
     @Workaround(library = "UCAR", version = "4.6.11")
     private Variable[] getVariablesCIP(final Decoder decoder) {
@@ -90,8 +92,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
      *   <li>{@link Variable#getShape()} length</li>
-     *   <li>{@link Variable#isCoordinateSystemAxis()}</li>
-     *   <li>{@link Variable#isCoverage()}</li>
+     *   <li>{@link Variable#getRole()}</li>
      * </ul>
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -100,14 +101,14 @@ public strictfp class VariableTest extends TestCase {
     @Test
     public void testBasicProperties() throws IOException, DataStoreException {
         assertBasicPropertiesEqual(new Object[] {
-        // __name______________description_____________________datatype_______dim__axis?__raster?
-            "grid_mapping_0", null,                            DataType.INT,    0, false, false,
-            "x0",             "projection_x_coordinate",       DataType.FLOAT,  1, true,  false,
-            "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, true,  false,
-            "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, true,  false,
-            "time",           "Data time",                     DataType.DOUBLE, 1, true,  false,
-            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis, false,
-            "CIP",            "Current Icing Product",         DataType.FLOAT,  4, false, true
+        // __name______________description_____________________datatype_______dim__role
+            "grid_mapping_0", null,                            DataType.INT,    0, VariableRole.OTHER,
+            "x0",             "projection_x_coordinate",       DataType.FLOAT,  1, VariableRole.AXIS,
+            "y0",             "projection_y_coordinate",       DataType.FLOAT,  1, VariableRole.AXIS,
+            "z0",             "Flight levels in 100s of feet", DataType.FLOAT,  1, VariableRole.AXIS,
+            "time",           "Data time",                     DataType.DOUBLE, 1, VariableRole.AXIS,
+            "runtime",        "Data generation time",          DataType.DOUBLE, 1, isRuntimeAnAxis ? VariableRole.AXIS : VariableRole.OTHER,
+            "CIP",            "Current Icing Product",         DataType.FLOAT,  4, VariableRole.COVERAGE
         }, getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED)));
     }
 
@@ -127,13 +128,45 @@ public strictfp class VariableTest extends TestCase {
             assertEquals(name, expected[propertyIndex++], variable.getDescription());
             assertEquals(name, expected[propertyIndex++], dataType);
             assertEquals(name, expected[propertyIndex++], variable.getShape().length);
-            assertEquals(name, expected[propertyIndex++], variable.isCoordinateSystemAxis());
-            assertEquals(name, expected[propertyIndex++], variable.isCoverage());
+            assertEquals(name, expected[propertyIndex++], variable.getRole());
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
         }
         assertEquals("Expected more variables.",
                 expected.length / NUM_BASIC_PROPERTY_COLUMNS,
                 propertyIndex   / NUM_BASIC_PROPERTY_COLUMNS);
+    }
+
+    /**
+     * Tests {@link Variable#parseUnit(String)} method.
+     *
+     * @throws Exception if an I/O or logical error occurred while opening the file.
+     */
+    @Test
+    public void testParseUnit() throws Exception {
+        final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[0];
+        assertSame(Units.SECOND, variable.parseUnit("s"));
+        assertSame(Units.SECOND, variable.parseUnit("second"));
+        assertSame(Units.SECOND, variable.parseUnit("seconds"));
+        assertSame(Units.MINUTE, variable.parseUnit("min"));
+        assertSame(Units.MINUTE, variable.parseUnit("minute"));
+        assertSame(Units.MINUTE, variable.parseUnit("minutes"));
+        assertSame(Units.HOUR,   variable.parseUnit("h"));
+        assertSame(Units.HOUR,   variable.parseUnit("hr"));
+        assertSame(Units.HOUR,   variable.parseUnit("hour"));
+        assertSame(Units.HOUR,   variable.parseUnit("hours"));
+        assertSame(Units.DAY,    variable.parseUnit("d"));
+        assertSame(Units.DAY,    variable.parseUnit("day"));
+        assertSame(Units.DAY,    variable.parseUnit("days"));
+        /*
+         * Parsing date set the epoch as a side effect.
+         */
+        final Instant save = variable.epoch;
+        try {
+            assertSame(Units.DAY, variable.parseUnit("days since 1992-10-8 15:15:42.5 -06:00"));
+            assertEquals("epoch", variable.epoch, Instant.parse("1992-10-08T21:15:42.500Z"));
+        } finally {
+            variable.epoch = save;
+        }
     }
 
     /**

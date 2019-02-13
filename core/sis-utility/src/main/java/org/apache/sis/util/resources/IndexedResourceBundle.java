@@ -37,12 +37,14 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
@@ -406,6 +408,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
         }
         for (int i=0; i<array.length; i++) {
             final Object element = array[i];
+            if (element == null) continue;
             Object replacement = element;
             if (element instanceof CharSequence) {
                 CharSequence text = (CharSequence) element;
@@ -430,6 +433,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 String s = element.toString();
                 if (s.isEmpty()) s = "1";
                 replacement = s;
+            } else if (element.getClass().isArray()) {
+                replacement = Utilities.deepToString(element);
             }
             /*
              * No need to check for Numbers or Dates instances, since they are
@@ -751,6 +756,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      */
     @Override
     public synchronized String toString() {
-        return getClass().getSimpleName() + '[' + getLocale() + ']';
+        return Strings.bracket(getClass(), getLocale());
     }
 }

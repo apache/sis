@@ -85,11 +85,12 @@ public final class StandardDateFormat extends DateFormat {
 
     /**
      * The thread-safe instance to use for reading and formatting dates.
-     * Only the year is mandatory, all other fields are optional.
+     * Only the year is mandatory, all other fields are optional at parsing time.
+     * However all fields are written, including milliseconds at formatting time.
      */
     public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
-            // parseLenient() is for allowing fields with one digit instead of two.
-            .parseLenient()                    .appendValue(ChronoField.YEAR, 4, 5, SignStyle.NORMAL)    // Proleptic year (use negative number if needed).
+            .parseLenient()                    // For allowing fields with one digit instead of two.
+            .parseCaseInsensitive()            .appendValue(ChronoField.YEAR, 4, 5, SignStyle.NORMAL)    // Proleptic year (use negative number if needed).
             .optionalStart().appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR,    2)
             .optionalStart().appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH,     2)
             .optionalStart().appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY,      2)
@@ -97,7 +98,8 @@ public final class StandardDateFormat extends DateFormat {
             .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                                                .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
-            .optionalStart().appendOffsetId()
+//          .optionalStart().appendOffset("+H:MM:ss", "Z")
+            .optionalStart().appendOffsetId()               // TODO: replace by above line after we migrated to JDK10.
             .toFormatter(Locale.ROOT);
 
     /**
@@ -165,7 +167,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Modifies the given date and time string for making it more compliant to ISO syntax.
      * If date and time are separated by spaces, then this method replaces those spaces by
-     * the 'T' letter.
+     * the 'T' letter. All other spaces that are not between two digits are removed.
      *
      * @param  text   the text to make more compliant with ISO syntax.
      * @param  lower  index of the first character to examine.
@@ -173,27 +175,53 @@ public final class StandardDateFormat extends DateFormat {
      * @return sub-sequence of {@code text} from {@code lower} to {@code upper}, potentially modified.
      */
     static CharSequence toISO(CharSequence text, int lower, int upper) {
-        int sep = CharSequences.indexOf(text, ':', lower, upper);
-        if (sep >= lower) {
-            sep = CharSequences.skipTrailingWhitespaces(text, lower, sep);
-            while (sep > lower) {
-                final int c = Character.codePointBefore(text, sep);
-                final int timeStart = sep;
-                sep -= Character.charCount(c);
-                if (!Character.isDigit(c)) {
-                    if (Character.isWhitespace(c)) {
-                        sep = CharSequences.skipTrailingWhitespaces(text, lower, sep);
-                        if (sep > lower && Character.isDigit(Character.codePointBefore(text, sep))) {
-                            text = new StringBuilder(upper - lower).append(text, lower, upper).replace(sep, timeStart, "T");
-                            upper = text.length();
-                            lower = 0;
-                        }
-                    }
-                    break;
+        boolean isCopied = false;
+        lower = CharSequences.skipLeadingWhitespaces (text, lower, upper);
+        upper = CharSequences.skipTrailingWhitespaces(text, lower, upper);
+        int cp = 0;   // Non-whitespace character from previous iteration.
+        for (int i = upper; i > lower;) {
+            int c = Character.codePointBefore(text, i);
+            int n = Character.charCount(c);
+replace:    if (Character.isWhitespace(c)) {
+                /*
+                 * Found whitespaces from 'i' inclusive (after computation below) to 'end' exclusive.
+                 * If no concurrent change, i > lower because text.charAt(lower) is not a whitespace.
+                 * Set 'c' to the character before whitespaces. 'cp' is the character after spaces.
+                 */
+                int end = i;
+                i = CharSequences.skipTrailingWhitespaces(text, lower, i - n);
+                c = Character.codePointBefore(text, i);
+                n = Character.charCount(c);
+                boolean isDateTimeSeparator = false;
+                if (Character.isDigit(cp) && Character.isDigit(c)) {
+                    /*
+                     * If the character before and after whitespaces are digits, maybe we have
+                     * the separation between date and timezone. Use ':' position as a check.
+                     */
+                    isDateTimeSeparator = CharSequences.indexOf(text, ':', lower, upper) > end;
+                    if (!isDateTimeSeparator) break replace;               // Skip replacement.
                 }
+                final StringBuilder b;
+                if (isCopied) {
+                    b = (StringBuilder) text;
+                } else {
+                    text = b = new StringBuilder(upper - lower).append(text, lower, upper);
+                    i       -= lower;
+                    end     -= lower;
+                    lower    = 0;
+                    isCopied = true;
+                }
+                if (isDateTimeSeparator) {
+                    b.replace(i, end, "T");
+                } else {
+                    b.delete(i, end);
+                }
+                upper = b.length();
             }
+            i -= n;
+            cp = c;
         }
-        return CharSequences.trimWhitespaces(text, lower, upper);
+        return text.subSequence(lower, upper);
     }
 
     /**

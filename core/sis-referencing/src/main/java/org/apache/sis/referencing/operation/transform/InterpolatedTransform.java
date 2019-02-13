@@ -58,7 +58,7 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  *
  * <p>Translation vectors are stored in the datum shift grid at the specified grid indices.
  * If the grid indices are non-integer values, then the translations are interpolated using a bilinear interpolation.
- * If the grid indices are outside the grid domain ([0 … <var>width</var>-2] × [0 … <var>height</var>-2]
+ * If the grid indices are outside the grid domain ([0 … <var>width</var>-1] × [0 … <var>height</var>-1]
  * where <var>width</var> and <var>height</var> are the number of columns and rows in the grid),
  * then the translations are extrapolated. The translation is finally added to the input coordinates.</p>
  *
@@ -105,8 +105,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
 
     /**
      * Creates a transform for the given interpolation grid.
-     * This {@code InterpolatedTransform} class works with ordinate values in <em>units of grid cell</em>
-     * For example input coordinate (4,5) is the position of the center of the cell at grid index (4,5).
+     * This {@code InterpolatedTransform} class works with coordinate values in <em>units of grid cell</em>
+     * For example input coordinates (4,5) is the position of the center of the cell at grid index (4,5).
      * The output units are the same than the input units.
      *
      * <p>For converting geodetic coordinates, {@code InterpolatedTransform} instances need to be concatenated
@@ -124,7 +124,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param  <T>   dimension of the coordinate and the translation unit.
+     * @param  <T>   dimension of the coordinate tuples and the translation unit.
      * @param  grid  the grid of datum shifts from source to target datum.
      * @throws NoninvertibleMatrixException if the conversion from geodetic coordinates
      *         to grid indices can not be inverted.
@@ -149,9 +149,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalUnitFor_2, "translation", unit));
         }
         dimension = grid.getTranslationDimensions();
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
-        }
         /*
          * Set the normalization matrix to the conversion from source coordinates (e.g. seconds of angle)
          * to grid indices. This will allow us to invoke DatumShiftGrid.interpolateAtCell(x, y, vector)
@@ -163,7 +160,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * NADCON and NTv2 datum shift grids expect geographic coordinates in seconds of angle, while
          * MathTransform instances created by DefaultMathTransformFactory.createParameterized(…) must
          * expect coordinates in standardized units (degrees of angle, metres, seconds, etc.).
-         * We concatenate the unit conversion with above "coordinate to grid" conversion.
+         * We concatenate the unit conversion with above "coordinates to grid indices" conversion.
          */
         @SuppressWarnings("unchecked")
         final Unit<T> normalized = Units.isAngular(unit) ? (Unit<T>) Units.DEGREE : unit.getSystemUnit();
@@ -197,6 +194,13 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(denormalize);
         inverse = createInverse();
+        /*
+         * Parameters completed last because some DatumShiftGridFile subclasses (e.g. ResidualGrid) needs the
+         * (de)normalization matrices.
+         */
+        if (grid instanceof DatumShiftGridFile<?,?>) {
+            ((DatumShiftGridFile<?,?>) grid).setGridParameters(context);
+        }
     }
 
     /**
@@ -217,7 +221,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *       coordinates in the unit given by {@link Unit#getSystemUnit()}.</li>
      * </ul>
      *
-     * @param  <T>      dimension of the coordinate and the translation unit.
+     * @param  <T>      dimension of the coordinate tuples and the translation unit.
      * @param  factory  the factory to use for creating the transform.
      * @param  grid     the grid of datum shifts from source to target datum.
      *                  The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)}
@@ -266,7 +270,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     }
 
     /**
-     * Applies the datum shift on a coordinate and optionally returns the derivative at that location.
+     * Applies the datum shift on a coordinate tuple and optionally returns the derivative at that location.
      *
      * @return {@inheritDoc}
      * @throws TransformException if the point can not be transformed or
@@ -289,7 +293,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                 /*
                  * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                  * because the arrays may overlap. The contract said that this method
-                 * must behave as if all input ordinate values have been read before
+                 * must behave as if all input coordinate values have been read before
                  * we write outputs, which is the reason for System.arraycopy(…) call.
                  */
                 int i = dimension;
@@ -306,7 +310,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     }
 
     /**
-     * Transforms an arbitrary amount of coordinates.
+     * Transforms an arbitrary amount of coordinate tuples.
      *
      * @throws TransformException if a point can not be transformed.
      */
@@ -345,7 +349,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                 /*
                  * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                  * because the arrays may overlap. The contract said that this method
-                 * must behave as if all input ordinate values have been read before
+                 * must behave as if all input coordinate values have been read before
                  * we write outputs, which is the reason for System.arraycopy(…) call.
                  */
                 int i = dimension;
@@ -412,8 +416,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
     }
 
     /**
-     * Transforms target coordinates to source coordinates. This is done by iteratively finding a target coordinate
-     * that shifts to the input coordinate. The input coordinate is used as the first approximation.
+     * Transforms target coordinates to source coordinates. This is done by iteratively finding target coordinates
+     * that shift to the input coordinates. The input coordinates is used as the first approximation.
      *
      * @author  Rueben Schulz (UBC)
      * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -426,6 +430,20 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * Serial number for inter-operability with different versions.
          */
         private static final long serialVersionUID = 4335801994727826360L;
+
+        /**
+         * Maximum number of iterations. This is set to a higher value than {@link Formulas#MAXIMUM_ITERATIONS} because
+         * the data used in {@link InterpolatedTransform} grid may come from anywhere, in particular localization grids
+         * in netCDF files. Deformations in those grids may be much higher than e.g. {@link DatumShiftTransform} grids.
+         * We observed that inverse transformations may converge slowly if the grid is far from a linear approximation.
+         * It happens when the grids have very high {@link DatumShiftGrid#interpolateInCell(double, double, double[])}
+         * values, for example close to 1000 while we usually expect values smaller than 1. Behavior with such grids may
+         * be unpredictable, sometime with the {@code abs(xi - ox)} or {@code abs(yi - oy)} errors staying high for a
+         * long time before to suddenly fall to zero.
+         *
+         * @see #tryAgain(int, double, double)
+         */
+        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 2;
 
         /**
          * The enclosing transform.
@@ -458,7 +476,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
 
         /**
-         * Transforms a single coordinate in a list of ordinal values,
+         * Transforms a single coordinate tuple in a list of ordinal values,
          * and optionally returns the derivative at that location.
          *
          * @throws TransformException if there is no convergence.
@@ -476,15 +494,22 @@ public class InterpolatedTransform extends DatumShiftTransform {
             final double x = xi = srcPts[srcOff  ];
             final double y = yi = srcPts[srcOff+1];
             final double[] vector = new double[dimension];
-            int it = Formulas.MAXIMUM_ITERATIONS;
+            int it = MAXIMUM_ITERATIONS;
+            double tol = tolerance;
             do {
+                /*
+                 * We want (xi, yi) such as the following conditions hold:
+                 *
+                 *     xi + vector[0] ≈ x      ⟶      xi ≈ x - vector[0]
+                 *     yi + vector[1] ≈ y      ⟶      yi ≈ y - vector[1]
+                 */
                 forward.grid.interpolateInCell(xi, yi, vector);
                 final double ox = xi;
                 final double oy = yi;
                 xi = x - vector[0];
                 yi = y - vector[1];
-                if (!(Math.abs(xi - ox) > tolerance ||          // Use '!' for catching NaN.
-                      Math.abs(yi - oy) > tolerance))
+                if (!(Math.abs(xi - ox) > tol ||                // Use '!' for catching NaN.
+                      Math.abs(yi - oy) > tol))
                 {
                     if (dimension > GRID_DIMENSION) {
                         System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
@@ -493,11 +518,11 @@ public class InterpolatedTransform extends DatumShiftTransform {
                         /*
                          * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                          * because the arrays may overlap. The contract said that this method
-                         * must behave as if all input ordinate values have been read before
+                         * must behave as if all input coordinate values have been read before
                          * we write outputs, which is the reason for System.arraycopy(…) call.
                          */
                         int i = dimension;
-                        do dstPts[dstOff + --i] += vector[i];
+                        do dstPts[dstOff + --i] -= vector[i];
                         while (i > GRID_DIMENSION);
                     }
                     dstPts[dstOff  ] = xi;      // Shall not be done before above loop.
@@ -508,12 +533,12 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     }
                     return null;
                 }
-            } while (--it >= 0);
+            } while (--it >= 0 || (tol = tryAgain(it, xi, yi)) > 0);
             throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
         }
 
         /**
-         * Transforms an arbitrary amount of coordinates.
+         * Transforms an arbitrary amount of coordinate tuples.
          *
          * @throws TransformException if a point can not be transformed.
          */
@@ -546,15 +571,16 @@ nextPoint:  while (--numPts >= 0) {
                 double xi, yi;
                 final double x = xi = srcPts[srcOff  ];
                 final double y = yi = srcPts[srcOff+1];
-                int it = Formulas.MAXIMUM_ITERATIONS;
+                int it = MAXIMUM_ITERATIONS;
+                double tol = tolerance;
                 do {
                     forward.grid.interpolateInCell(xi, yi, vector);
                     final double ox = xi;
                     final double oy = yi;
                     xi = x - vector[0];
                     yi = y - vector[1];
-                    if (!(Math.abs(xi - ox) > tolerance ||          // Use '!' for catching NaN.
-                          Math.abs(yi - oy) > tolerance))
+                    if (!(Math.abs(xi - ox) > tol ||                // Use '!' for catching NaN.
+                          Math.abs(yi - oy) > tol))
                     {
                         if (dimension > GRID_DIMENSION) {
                             System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
@@ -563,11 +589,11 @@ nextPoint:  while (--numPts >= 0) {
                             /*
                              * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                              * because the arrays may overlap. The contract said that this method
-                             * must behave as if all input ordinate values have been read before
+                             * must behave as if all input coordinate values have been read before
                              * we write outputs, which is the reason for System.arraycopy(…) call.
                              */
                             int i = dimension;
-                            do dstPts[dstOff + --i] += vector[i];
+                            do dstPts[dstOff + --i] -= vector[i];
                             while (i > GRID_DIMENSION);
                         }
                         dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
@@ -576,9 +602,33 @@ nextPoint:  while (--numPts >= 0) {
                         srcOff += inc;
                         continue nextPoint;
                     }
-                } while (--it >= 0);
+                } while (--it >= 0 || (tol = tryAgain(it, xi, yi)) > 0);
                 throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
             }
+        }
+
+        /**
+         * If iteration did not converge, tells whether we should perform another try with a more permissive threshold.
+         * We allow relaxed tolerance threshold only for extrapolations; if the point was inside the grid and the grid
+         * is well-formed, we assume that iteration should have converged. But during extrapolations since there is no
+         * authoritative results, we consider that a more approximate result is okay. In particular it does not make
+         * sense to require a 1E-7 accuracy (relative to cell size) if we don't really know what the answer should be.
+         * We nevertheless aim for an accuracy of 0.5 of cell size in order to keep some consistency with forward transform.
+         *
+         * @param  it  the iteration counter. Should be negative since we exhausted the normal number of iterations.
+         * @param  xi  best <var>x</var> estimation so far.
+         * @param  yi  best <var>y</var> estimation so far.
+         * @return the new tolerance threshold, or 0 if no more try should be allowed.
+         *
+         * @see #MAXIMUM_ITERATIONS
+         */
+        private double tryAgain(final int it, final double xi, final double yi) {
+            if (!forward.grid.isCellInGrid(xi, yi)) {
+                if (it >= -3) {                         // Arbitrary limit.
+                    return Math.scalb(0.5, ~it);        // Progressive relax from 0.5 to 2 for each additional iteration.
+                }
+            }
+            return 0;                                   // No more iteration - caller will throw an exception.
         }
     }
 }

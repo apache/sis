@@ -31,6 +31,7 @@ import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.metadata.Dependencies;
+import org.apache.sis.internal.util.Numerics;
 
 // Branch-dependent imports
 import org.opengis.metadata.citation.Responsibility;
@@ -211,7 +212,7 @@ final class Dispatcher implements InvocationHandler {
             throws ReflectiveOperationException, SQLException, MetadataStoreException
     {
         Object value = null;
-        final long nullBit = 1L << info.asIndexMap(source.standard).get(method.getName());     // Okay even if overflow.
+        final long nullBit = Numerics.bitmask(info.asIndexMap(source.standard).get(method.getName()));     // Okay even if overflow.
         /*
          * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
          * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects

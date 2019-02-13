@@ -63,6 +63,25 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
+     * Parses the given WKT.
+     *
+     * @return the geometry object for the given WKT.
+     * @throws ParseException if the WKT can not be parsed.
+     */
+    @Override
+    public Object parseWKT(final String wkt) throws ParseException {
+        return new WKTReader(factory).read(wkt);
+    }
+
+    /**
+     * If the given object is a JTS geometry, returns its WKT representation.
+     */
+    @Override
+    final String tryFormatWKT(final Object geometry, final double flatness) {
+        return (geometry instanceof Geometry) ? ((Geometry) geometry).toText() : null;
+    }
+
+    /**
      * If the given object is a JTS geometry, returns a short string representation of the class name.
      */
     @Override
@@ -121,6 +140,8 @@ final class JTS extends Geometries<Geometry> {
 
     /**
      * Creates a two-dimensional point from the given coordinate.
+     *
+     * @return the point for the given ordinate values.
      */
     @Override
     public Object createPoint(final double x, final double y) {
@@ -129,8 +150,9 @@ final class JTS extends Geometries<Geometry> {
 
     /**
      * Creates a polyline from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value start a new path.
-     * The implementation returned by this method must be an instance of {@link #rootClass}.
+     * Each {@link Double#NaN} ordinate value starts a new path.
+     *
+     * @return the geometric object for the given points.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... ordinates) {
@@ -209,44 +231,37 @@ final class JTS extends Geometries<Geometry> {
         }
         final List<Coordinate> coordinates = new ArrayList<>();
         final List<LineString> lines = new ArrayList<>();
-        for (;; next = polylines.next()) {
-            if (next != null) {
-                if (next instanceof Point) {
-                    final Coordinate pt = ((Point) next).getCoordinate();
-                    if (!Double.isNaN(pt.x) && !Double.isNaN(pt.y)) {
-                        coordinates.add(pt);
+add:    for (;;) {
+            if (next instanceof Point) {
+                final Coordinate pt = ((Point) next).getCoordinate();
+                if (!Double.isNaN(pt.x) && !Double.isNaN(pt.y)) {
+                    coordinates.add(pt);
+                } else {
+                    toLineString(coordinates, lines);
+                    coordinates.clear();
+                }
+            } else {
+                final Geometry g = (Geometry) next;
+                final int n = g.getNumGeometries();
+                for (int i=0; i<n; i++) {
+                    final LineString ls = (LineString) g.getGeometryN(i);
+                    if (coordinates.isEmpty()) {
+                        lines.add(ls);
                     } else {
+                        coordinates.addAll(Arrays.asList(ls.getCoordinates()));
                         toLineString(coordinates, lines);
                         coordinates.clear();
                     }
-                } else {
-                    final Geometry g = (Geometry) next;
-                    final int n = g.getNumGeometries();
-                    for (int i=0; i<n; i++) {
-                        final LineString ls = (LineString) g.getGeometryN(i);
-                        if (coordinates.isEmpty()) {
-                            lines.add(ls);
-                        } else {
-                            coordinates.addAll(Arrays.asList(ls.getCoordinates()));
-                            toLineString(coordinates, lines);
-                            coordinates.clear();
-                        }
-                    }
                 }
             }
-            if (!polylines.hasNext()) {         // Should be part of the 'for' instruction, but we need
-                break;                          // to skip this condition during the first iteration.
-            }
+            /*
+             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * except that we need to skip this condition during the first iteration.
+             */
+            do if (!polylines.hasNext()) break add;
+            while ((next = polylines.next()) == null);
         }
         toLineString(coordinates, lines);
         return toGeometry(lines);
-    }
-
-    /**
-     * Parses the given WKT.
-     */
-    @Override
-    public Object parseWKT(final String wkt) throws ParseException {
-        return new WKTReader(factory).read(wkt);
     }
 }

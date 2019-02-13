@@ -200,7 +200,7 @@ final class PackedVector extends ArrayVector<Long> {
      */
     @Override
     public Number set(final int index, final Number value) {
-        verifyType(value.getClass(), Numbers.LONG);
+        verifyType(value, Numbers.LONG);
         long v = value.longValue();
         if (v >= offset) {
             v -= offset;
