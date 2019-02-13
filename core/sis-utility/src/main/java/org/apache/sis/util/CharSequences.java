@@ -187,17 +187,7 @@ public final class CharSequences extends Static {
      * @see #codePointCount(CharSequence, int, int)
      */
     public static int codePointCount(final CharSequence text) {
-        if (text == null)                  return 0;
-        if (text instanceof String)        return ((String)        text).codePointCount(0, text.length());
-        if (text instanceof StringBuilder) return ((StringBuilder) text).codePointCount(0, text.length());
-        if (text instanceof StringBuffer)  return ((StringBuffer)  text).codePointCount(0, text.length());
-        if (text instanceof CharBuffer) {
-            final CharBuffer buffer = (CharBuffer) text;
-            if (buffer.hasArray() && !buffer.isReadOnly()) {
-                return Character.codePointCount(buffer.array(), buffer.position(), buffer.limit());
-            }
-        }
-        return Character.codePointCount(text, 0, text.length());
+        return (text != null) ? codePointCount(text, 0, text.length()) : 0;
     }
 
     /**

@@ -31,6 +31,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 
@@ -136,7 +137,7 @@ final class NilObjectHandler implements InvocationHandler {
                             ((IdentifierMapAdapter) attribute).identifiers : null;
                 }
                 case "toString": {
-                    return getInterface(proxy).getSimpleName() + '[' + attribute + ']';
+                    return Strings.bracket(getInterface(proxy), attribute);
                 }
                 case "hashCode": {
                     return ~attribute.hashCode();

@@ -67,13 +67,13 @@ class MathTransformsOrFactory {
     /**
      * Creates a transform which passes through a subset of coordinates to another transform.
      *
-     * @param  firstAffectedOrdinate  index of the first affected ordinate.
-     * @param  subTransform           the sub-transform to apply on modified coordinates.
-     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param  firstAffectedCoordinate  index of the first affected coordinate.
+     * @param  subTransform             the sub-transform to apply on modified coordinates.
+     * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, potentially as a {@link PassThroughTransform} instance but not necessarily.
      */
-    MathTransform passThrough(int firstAffectedOrdinate, MathTransform subTransform, int numTrailingOrdinates) throws FactoryException {
-        return MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+    MathTransform passThrough(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates) throws FactoryException {
+        return MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
     /**
@@ -117,8 +117,8 @@ class MathTransformsOrFactory {
         }
 
         /** Delegate to {@link MathTransformFactory#createPassThroughTransform(int, MathTransform, int)}. */
-        @Override MathTransform passThrough(int firstAffectedOrdinate, MathTransform subTransform, int numTrailingOrdinates) throws FactoryException {
-            return factory.createPassThroughTransform(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+        @Override MathTransform passThrough(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates) throws FactoryException {
+            return factory.createPassThroughTransform(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
         }
 
         /** Delegate to {@link MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)}. */

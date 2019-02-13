@@ -46,7 +46,7 @@ public interface WritableAggregate extends Aggregate {
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.
-     * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate} for another reason.
+     * @throws DataStoreException if the given resource can not be stored in this {@code Aggregate}.
      */
     Resource add(Resource resource) throws DataStoreException;
 
@@ -55,7 +55,7 @@ public interface WritableAggregate extends Aggregate {
      * This operation is destructive: the {@link Resource} and it's related data will be removed.
      *
      * @param  resource  child resource to remove, should not be null.
-     * @throws DataStoreException if the given resource could not be removed for another reason.
+     * @throws DataStoreException if the given resource could not be removed.
      */
     void remove(Resource resource) throws DataStoreException;
 }

@@ -33,6 +33,7 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -107,7 +108,7 @@ public class CitationConstant extends SimpleCitation {
          */
         @Override
         public final String toString() {
-            return "IdentifierSpace[" + title + ']';
+            return Strings.bracket(IdentifierSpace.class, title);
         }
     }
 

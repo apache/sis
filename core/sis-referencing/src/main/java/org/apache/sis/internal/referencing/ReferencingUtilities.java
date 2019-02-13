@@ -84,6 +84,7 @@ public final class ReferencingUtilities extends Static {
      * @return the prime meridian in the given units, or {@code 0} if the given prime meridian was null.
      *
      * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     * @see org.apache.sis.referencing.CRS#getGreenwichLongitude(GeodeticCRS)
      */
     public static double getGreenwichLongitude(final PrimeMeridian primeMeridian, final Unit<Angle> unit) {
         if (primeMeridian == null) {

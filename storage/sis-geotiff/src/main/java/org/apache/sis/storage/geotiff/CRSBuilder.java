@@ -63,7 +63,7 @@ import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
@@ -996,7 +996,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
                 final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
                 final GeodeticDatum datum     = getDatumFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
-                name = Utilities.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
+                name = Strings.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
                 lastName = datum.getName();
                 try {
                     final GeodeticDatum predefined = CommonCRS.valueOf(name).datum();

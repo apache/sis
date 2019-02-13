@@ -26,7 +26,6 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CartesianCS;
-import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -50,7 +49,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -323,8 +322,40 @@ public final strictfp class CRSTest extends TestCase {
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,
                 HardCodedCRS.GEOID_3D,
-                new DefaultCompoundCRS(IdentifiedObjects.getProperties(HardCodedCRS.GEOID_4D),
-                        HardCodedCRS.GEOID_3D, HardCodedCRS.TIME));
+                HardCodedCRS.NESTED);
+    }
+
+    /**
+     * Tests {@link CRS#reduce(CoordinateReferenceSystem, int...)} in the simpler case where
+     * there is no three-dimensional geographic CRS to separate.
+     *
+     * @throws FactoryException if an error occurred while creating a compound CRS.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testReduce() throws FactoryException {
+        assertSame(HardCodedCRS.TIME,                     CRS.reduce(HardCodedCRS.GEOID_4D, 3));
+        assertSame(HardCodedCRS.GRAVITY_RELATED_HEIGHT,   CRS.reduce(HardCodedCRS.GEOID_4D, 2));
+        assertSame(HardCodedCRS.WGS84,                    CRS.reduce(HardCodedCRS.GEOID_4D, 0, 1));
+        assertSame(HardCodedCRS.GEOID_4D,                 CRS.reduce(HardCodedCRS.GEOID_4D, 0, 1, 2, 3));
+        assertSame(HardCodedCRS.NESTED,                   CRS.reduce(HardCodedCRS.NESTED,   0, 1, 2, 3));
+        assertSame(HardCodedCRS.GEOID_3D,                 CRS.reduce(HardCodedCRS.NESTED,   0, 1, 2));
+        assertEqualsIgnoreMetadata(HardCodedCRS.GEOID_3D, CRS.reduce(HardCodedCRS.GEOID_4D, 0, 1, 2));
+    }
+
+    /**
+     * Tests {@link CRS#reduce(CoordinateReferenceSystem, int...)} with a three-dimensional geographic CRS
+     * to be reduced to a two-dimensional CRS.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testReduceGeographic3D() throws FactoryException {
+        assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.reduce(HardCodedCRS.WGS84_3D, 2));
+        assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.reduce(HardCodedCRS.WGS84_3D, 0, 1));
     }
 
     /**

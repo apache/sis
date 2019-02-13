@@ -33,7 +33,7 @@ import static org.opengis.test.Assert.*;
  * Values in this test were determined empirically by running {@link ShapeUtilitiesViewer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -165,5 +165,16 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
         assertEquals("CtrlP1", new Point2D.Double(6, 7), ((CubicCurve2D) p).getCtrlP1());
         assertEquals("CtrlP2", new Point2D.Double(8, 6), ((CubicCurve2D) p).getCtrlP2());
         assertEquals("P2",     new Point2D.Double(9, 4), ((CubicCurve2D) p).getP2());
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#isFloat(Object)}.
+     */
+    @Test
+    public void test() {
+        assertTrue (ShapeUtilities.isFloat(new Point2D.Float()));
+        assertFalse(ShapeUtilities.isFloat(new Point2D.Double()));
+        assertTrue (ShapeUtilities.isFloat(new Line2D.Float()));
+        assertFalse(ShapeUtilities.isFloat(new Line2D.Double()));
     }
 }

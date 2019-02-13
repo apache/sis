@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
  * This class is for Apache SIS internal usage and may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -96,34 +96,89 @@ public final class SQLUtilities extends Static {
     }
 
     /**
-     * Returns a string like the given string but with all characters that are not letter or digit
-     * replaced by the wildcard % character.
+     * Returns the given pattern with {@code '_'} and {@code '%'} characters escaped by the database-specific
+     * escape characters. This method should be invoked for escaping the values of all {@link DatabaseMetaData}
+     * method arguments with a name ending by {@code "Pattern"}. Note that not all arguments are pattern; please
+     * checks carefully {@link DatabaseMetaData} javadoc for each method.
      *
-     * <p>This method avoid to put a % symbol as the first character, since it prevent some databases
-     * to use their index.</p>
+     * <div class="note"><b>Example:</b> if a method expects an argument named {@code tableNamePattern},
+     * then that argument value should be escaped. But if the argument name is only {@code tableName},
+     * then the value should not be escaped.</div>
      *
-     * @param  identifier the identifier to get as a SQL LIKE pattern.
-     * @return the given identifier as a SQL LIKE pattern.
+     * @param  pattern  the pattern to escape, or {@code null} if none.
+     * @param  escape   value of {@link DatabaseMetaData#getSearchStringEscape()}.
+     * @return escaped strings, or the same instance than {@code pattern} if there is no character to escape.
      */
-    public static String toLikePattern(final String identifier) {
-        boolean isLetterOrDigit = false;
-        final StringBuilder buffer = new StringBuilder(identifier.length());
-        for (int c, i = 0; i < identifier.length(); i += Character.charCount(c)) {
-            c = identifier.codePointAt(i);
-            if (Character.isLetterOrDigit(c)) {
-                buffer.appendCodePoint(c);
-                isLetterOrDigit = true;
-            } else if (isLetterOrDigit) {
-                isLetterOrDigit = false;
-                buffer.append('%');
-            } else {
-                final int p = buffer.length();
-                if (p == 0 || buffer.charAt(p-1) != '%') {
-                    buffer.appendCodePoint(c != '%' ? c : '_');
+    public static String escape(final String pattern, final String escape) {
+        if (pattern != null) {
+            StringBuilder buffer = null;
+            for (int i = pattern.length(); --i >= 0;) {
+                final char c = pattern.charAt(i);
+                if (c == '_' || c == '%') {
+                    if (buffer == null) {
+                        buffer = new StringBuilder(pattern);
+                    }
+                    buffer.insert(i, escape);
                 }
             }
+            if (buffer != null) {
+                return buffer.toString();
+            }
         }
-        return buffer.toString();
+        return pattern;
+    }
+
+    /**
+     * Returns a SQL LIKE pattern for the given identifier. The identifier is optionally returned in all lower cases
+     * for allowing case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'})
+     * and non-ASCII letters or digits are replaced by any single character ({@code '_'}). This method avoid to put
+     * a {@code '%'} symbol as the first character since it prevents some databases to use their index.
+     *
+     * @param  identifier   the identifier to get as a SQL LIKE pattern.
+     * @param  i            index of the first character to use in the given {@code identifier}.
+     * @param  end          index after the last character to use in the given {@code identifier}.
+     * @param  allowSuffix  whether to append a final {@code '%'} wildcard at the end of the pattern.
+     * @param  toLower      whether to convert characters to lower case.
+     * @param  buffer       buffer where to append the SQL LIKE pattern.
+     */
+    public static void toLikePattern(final String identifier, int i, final int end,
+            final boolean allowSuffix, final boolean toLower, final StringBuilder buffer)
+    {
+        final int bs = buffer.length();
+        while (i < end) {
+            final int c = identifier.codePointAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                if (c < 128) {                      // Use only ASCII characters in the search.
+                    buffer.appendCodePoint(toLower ? Character.toLowerCase(c) : c);
+                } else {
+                    appendIfNotRedundant(buffer, '_');
+                }
+            } else {
+                final int length = buffer.length();
+                if (length == bs) {
+                    buffer.appendCodePoint(c != '%' ? c : '_');
+                } else if (buffer.charAt(length - 1) != '%') {
+                    buffer.append('%');
+                }
+            }
+            i += Character.charCount(c);
+        }
+        if (allowSuffix) {
+            appendIfNotRedundant(buffer, '%');
+        }
+        for (i=bs; (i = buffer.indexOf("_%", i)) >= 0;) {
+            buffer.deleteCharAt(i);
+        }
+    }
+
+    /**
+     * Appends the given wildcard character to the given buffer if the buffer does not ends with {@code '%'}.
+     */
+    private static void appendIfNotRedundant(final StringBuilder buffer, final char wildcard) {
+        final int length = buffer.length();
+        if (length == 0 || buffer.charAt(length - 1) != '%') {
+            buffer.append(wildcard);
+        }
     }
 
     /**

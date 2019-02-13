@@ -30,6 +30,7 @@ import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
 import ucar.nc2.dataset.CoordinateAxis1D;
+import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.EnhanceScaleMissing;
 import ucar.nc2.units.SimpleUnit;
@@ -41,9 +42,11 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
@@ -61,7 +64,7 @@ final class VariableWrapper extends Variable {
     /**
      * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
-    final VariableIF variable;
+    private final VariableIF variable;
 
     /**
      * The variable without enhancements. May be the same instance than {@link #variable}
@@ -109,7 +112,7 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the name of this variable, or {@code null} if none.
+     * Returns the name of this variable.
      */
     @Override
     public String getName() {
@@ -206,28 +209,29 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis.
+     * Returns {@code AXIS} if this variable seems to be a coordinate system axis.
      */
     @Override
-    public boolean isCoordinateSystemAxis() {
-        return variable.isCoordinateVariable();
+    protected VariableRole getRole() {
+        return variable.isCoordinateVariable() ? VariableRole.AXIS : super.getRole();
     }
 
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
-     * This method searches for a grid previously computed by {@link DecoderWrapper#getGridGeometries()}.
+     * This method searches for a grid previously computed by {@link DecoderWrapper#getGrids()}.
      * The same grid geometry may be shared by many variables.
      *
-     * @see DecoderWrapper#getGridGeometries()
+     * @see DecoderWrapper#getGrids()
      */
     @Override
-    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
         if (variable instanceof Enhancements) {
             final List<CoordinateSystem> cs = ((Enhancements) variable).getCoordinateSystems();
             if (cs != null && !cs.isEmpty()) {
-                for (final Grid grid : decoder.getGridGeometries()) {
-                    if (cs.contains(((GridWrapper) grid).netcdfCS)) {
-                        return grid;
+                for (final Grid grid : decoder.getGrids()) {
+                    final GridWrapper g = ((GridWrapper) grid).forVariable(variable, cs);
+                    if (g != null) {
+                        return g;
                     }
                 }
             }
@@ -253,7 +257,6 @@ final class VariableWrapper extends Variable {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     * This method is used mostly for building string representations of this variable.
      */
     @Override
     public int[] getShape() {
@@ -338,18 +341,22 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the minimum and maximum values as determined by the UCAR library.
-     * If that library has not seen valid range, then fallbacks on Apache SIS.
+     * Returns the minimum and maximum values as determined by Apache SIS, using the UCAR library as a fallback.
+     * This method gives precedence to the range computed by Apache SIS instead than the range provided by UCAR
+     * because we need the range of packed values instead than the range of converted values. Only if Apache SIS
+     * can not determine that range, we use the UCAR library and returns the value in a {@link MeasurementRange}
+     * instance of signaling the caller that this is converted values.
      */
     @Override
     public NumberRange<?> getValidValues() {
-        if (variable instanceof EnhanceScaleMissing) {
+        NumberRange<?> range = super.getValidValues();
+        if (range == null && variable instanceof EnhanceScaleMissing) {
             final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
             if (ev.hasInvalidData()) {
-                return NumberRange.create(ev.getValidMin(), true, ev.getValidMax(), true);
+                range = MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
             }
         }
-        return super.getValidValues();
+        return range;
 
     }
 
@@ -380,11 +387,11 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Reads a sub-sampled sub-area of the variable.
+     * Reads a subsampled sub-area of the variable.
      * Array elements are in inverse of netCDF order.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
      * @return the data as an array of a Java primitive type.
      */
     @Override
@@ -420,6 +427,15 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Returns a coordinate for this two-dimensional grid coordinate axis.
+     * This is (indirectly) a callback method for {@link Grid#getAxes(Decoder)}.
+     */
+    @Override
+    protected double coordinateForAxis(final int j, final int i) {
+        return (variable instanceof CoordinateAxis2D) ? ((CoordinateAxis2D) variable).getCoordValue(j, i) : Double.NaN;
+    }
+
+    /**
      * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
      * This method is invoked only for variables that represent a coordinate system axis.
      */
@@ -430,9 +446,17 @@ final class VariableWrapper extends Variable {
         if (variable instanceof CoordinateAxis1D) {
             final CoordinateAxis1D axis = (CoordinateAxis1D) variable;
             if (axis.isRegular()) {
-                gridToCRS.setElement(tgtDim, srcDim, axis.getIncrement());
-                gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, axis.getStart());
-                return true;
+                final double start     = axis.getStart();
+                final double increment = axis.getIncrement();
+                if (start != 0 || increment != 0) {
+                    gridToCRS.setElement(tgtDim, srcDim, increment);
+                    gridToCRS.setElement(tgtDim, gridToCRS.getNumCol() - 1, start);
+                    return true;
+                }
+                /*
+                 * The UCAR library sometime left those information uninitialized.
+                 * If it seems to be the case, fallback on our own code.
+                 */
             }
         }
         return super.trySetTransform(gridToCRS, srcDim, tgtDim, values);

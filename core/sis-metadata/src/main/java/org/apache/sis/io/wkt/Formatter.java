@@ -83,6 +83,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -1191,7 +1192,6 @@ public class Formatter implements Localized {
     public void append(final double number) {
         appendSeparator();
         setColor(ElementKind.NUMBER);
-        final double abs = Math.abs(number);
         /*
          * Use scientific notation if the number magnitude is too high or too low. The threshold values used here
          * may be different than the threshold values used in the standard 'StringBuilder.append(double)' method.
@@ -1202,7 +1202,7 @@ public class Formatter implements Localized {
          * Note that we perform this special formatting only if the 'NumberFormat' is not localized
          * (which is the usual case).
          */
-        if (Symbols.SCIENTIFIC_NOTATION && (abs < 1E-3 || abs >= 1E+9) && symbols.getLocale() == Locale.ROOT) {
+        if (symbols.useScientificNotation(Math.abs(number))) {
             buffer.append(number);
         } else {
             /*
@@ -1222,17 +1222,19 @@ public class Formatter implements Localized {
 
     /**
      * Appends rows of numbers. Each number is separated by a space, and each row is separated by a comma.
-     * This method is mostly for formatting geometries, but it could be used for other objects like matrix
-     * as well. Each row usually have the same length, but this is not mandatory.
+     * Rows usually have all the same length, but this is not mandatory.
+     * This method can be used for formatting geometries or matrix.
      *
-     * @param  rows            rows to append, or {@code null} if none.
-     * @param  fractionDigits  the number of fraction digits for each number in a row, or {@code null} for default.
-     *         If a row contains more numbers than {@code fractionDigits.length}, then the last value in this array
-     *         is repeated for all remaining row numbers.
+     * @param  rows            the rows to append, or {@code null} if none.
+     * @param  fractionDigits  the number of fraction digits for each column in a row, or {@code null} for default.
+     *         A precision can be specified for each column because those columns are often different dimensions of
+     *         a Coordinate Reference System (CRS), each with their own units of measurement.
+     *         If a row contains more numbers than {@code fractionDigits.length},
+     *         then the last value in this array is repeated for all remaining row numbers.
      *
      * @since 1.0
      */
-    public void append(final double[][] rows, int... fractionDigits) {
+    public void append(final Vector[] rows, int... fractionDigits) {
         if (rows == null || rows.length == 0) {
             return;
         }
@@ -1246,7 +1248,8 @@ public class Formatter implements Localized {
          * row starts on the same line than previous elements (or the keyword of this element, e.g. "BOX["), then we
          * will need a different amount of spaces if we want to have the numbers properly aligned.
          */
-        final boolean isMultiLines = (indentation > WKTFormat.SINGLE_LINE) && (rows.length > 1);
+        final int numRows = rows.length;
+        final boolean isMultiLines = (indentation > WKTFormat.SINGLE_LINE) && (numRows > 1);
         final boolean needsAlignment = !requestNewLine;
         final CharSequence marginBeforeRow;
         if (isMultiLines) {
@@ -1271,19 +1274,20 @@ public class Formatter implements Localized {
          * We compute those marks unconditionally for simplicity, but will ignore them if formatting on
          * a single line.
          */
-        final int[][] formattedNumberMarks = new int[rows.length][];
+        final int[][] formattedNumberMarks = new int[numRows][];
         int numColumns = 0;
-        for (int j=0; j<rows.length; j++) {
+        for (int j=0; j<numRows; j++) {
             if (j == 0) {
                 appendSeparator();      // It is up to the caller to decide if we begin with a new line.
             } else {
                 buffer.append(separatorNewLine).append(marginBeforeRow);
             }
-            final double[] numbers = rows[j];
-            numColumns = Math.max(numColumns, numbers.length);      // Store the length of longest row.
-            final int[] marks = new int[numbers.length << 1];       // Positions where numbers are formatted.
+            final Vector numbers = rows[j];
+            final int numCols = numbers.size();
+            numColumns = Math.max(numColumns, numCols);      // Store the length of longest row.
+            final int[] marks = new int[numCols << 1];       // Positions where numbers are formatted.
             formattedNumberMarks[j] = marks;
-            for (int i=0; i<numbers.length; i++) {
+            for (int i=0; i<numCols; i++) {
                 if (i != 0) buffer.append(Symbols.NUMBER_SEPARATOR);
                 if (i < fractionDigits.length) {                    // Otherwise, same than previous number.
                     final int f = fractionDigits[i];
@@ -1292,7 +1296,12 @@ public class Formatter implements Localized {
                 }
                 marks[i << 1] = buffer.length();                    // Store the start position where number is formatted.
                 setColor(ElementKind.NUMBER);
-                numberFormat.format(numbers[i], buffer, dummy);
+                final Number n = numbers.get(i);
+                if (n != null) {
+                    numberFormat.format(n, buffer, dummy);
+                } else {
+                    buffer.append('…');
+                }
                 resetColor();
                 marks[(i << 1) | 1] = buffer.length();              // Store the end position where number is formatted.
             }
@@ -1612,7 +1621,7 @@ public class Formatter implements Localized {
      */
     public boolean hasContextualUnit(final int depth) {
         ArgumentChecks.ensurePositive("depth", depth);
-        return (depth < Long.SIZE) && (hasContextualUnit & (1L << depth)) != 0;
+        return (hasContextualUnit & Numerics.bitmask(depth)) != 0;
     }
 
     /**

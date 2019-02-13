@@ -312,8 +312,8 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         assertArrayEquals("targetDimensions", new int[] {1, 2, 3, 4, 5, 6}, s.getTargetDimensions());
         assertInstanceOf ("separate()", PassThroughTransform.class, result);
         assertSame  ("subTransform",  nonLinear, ((PassThroughTransform) result).subTransform);
-        assertEquals("firstAffectedOrdinate", 1, ((PassThroughTransform) result).firstAffectedOrdinate);
-        assertEquals("numTrailingOrdinates",  2, ((PassThroughTransform) result).numTrailingOrdinates);
+        assertEquals("firstAffectedCoordinate", 1, ((PassThroughTransform) result).firstAffectedCoordinate);
+        assertEquals("numTrailingCoordinates",  2, ((PassThroughTransform) result).numTrailingCoordinates);
     }
 
     /**
@@ -343,6 +343,73 @@ public final strictfp class TransformSeparatorTest extends TestCase {
             actual   = test.transform(source, actual);
             assertEquals(expected, actual);
         }
+    }
+
+    /**
+     * Tests separation of a concatenated transform containing a pass through transform.
+     *
+     * @throws FactoryException if an error occurred while creating a new transform.
+     * @throws TransformException if an error occurred while transforming coordinates for comparison purpose.
+     */
+    @Test
+    @DependsOnMethod({"testConcatenatedTransform", "testPassThroughTransform"})
+    public void testConcatenatedPassThroughTransform() throws FactoryException, TransformException {
+        final MathTransform linear       = MathTransforms.scale(4, 1, 1, 1, 1, 6);
+        final MathTransform nonLinear    = new PseudoTransform(3, 2);
+        final MathTransform passthrough  = MathTransforms.passThrough(2, nonLinear, 1);
+        final MathTransform concatenated = new ConcatenatedTransform(linear, passthrough);      // Bypass 'tryOptimized' method.
+        final TransformSeparator sep = new TransformSeparator(concatenated);
+        sep.addSourceDimensionRange(0, 2);
+        assertMatrixEquals("Leading passthrough dimensions", new Matrix3(4, 0, 0, 0, 1, 0, 0,  0, 1),
+                           MathTransforms.getMatrix(sep.separate()), STRICT);
+        sep.clear();
+        sep.addSourceDimensionRange(5, 6);
+        assertMatrixEquals("Trailing passthrough dimensions", new Matrix2(6, 0, 0, 1),
+                           MathTransforms.getMatrix(sep.separate()), STRICT);
+        sep.clear();
+        sep.addSourceDimensionRange(2, 5);
+        assertSame("subTransform", nonLinear, sep.separate());
+
+        sep.clear();
+        sep.addSourceDimensionRange(1, 5);
+        MathTransform mt = sep.separate();
+        assertInstanceOf("separate()", PassThroughTransform.class, mt);
+        final PassThroughTransform ps = ((PassThroughTransform) mt);
+        assertEquals("firstAffectedCoordinate", 1, ps.firstAffectedCoordinate);
+        assertEquals("numTrailingCoordinates",  0, ps.numTrailingCoordinates);
+        assertSame  ("subTransform",    nonLinear, ps.subTransform);
+    }
+
+    /**
+     * Tests separation of a pass through transform containing another pass through transform.
+     *
+     * @throws FactoryException if an error occurred while creating a new transform.
+     * @throws TransformException if an error occurred while transforming coordinates for comparison purpose.
+     */
+    @Test
+    @DependsOnMethod("testConcatenatedPassThroughTransform")
+    public void testNestedPassThroughTransform() throws FactoryException, TransformException {
+        final MathTransform nonLinear    = new PseudoTransform(3, 2);
+        final MathTransform passthrough1 = MathTransforms.passThrough(2, nonLinear, 1);
+        final MathTransform concatenated = new ConcatenatedTransform(MathTransforms.scale(4, 3, 2, 1, 1, 6), passthrough1);
+        final MathTransform passthrough2 = new PassThroughTransform(2, concatenated, 3);
+        final TransformSeparator sep = new TransformSeparator(passthrough2);
+        sep.addSourceDimensionRange(3, 7);
+        MathTransform mt = sep.separate();
+        assertInstanceOf("separate()", ConcatenatedTransform.class, mt);
+        assertMatrixEquals("Leading passthrough dimensions", Matrices.create(5, 5, new double[] {
+            3, 0, 0, 0, 0,
+            0, 2, 0, 0, 0,
+            0, 0, 1, 0, 0,
+            0, 0, 0, 1, 0,
+            0, 0, 0, 0, 1}), MathTransforms.getMatrix(((ConcatenatedTransform) mt).transform1), STRICT);
+
+        mt = ((ConcatenatedTransform) mt).transform2;
+        assertInstanceOf("subTransform", PassThroughTransform.class, mt);
+        final PassThroughTransform ps = ((PassThroughTransform) mt);
+        assertEquals("firstAffectedCoordinate", 1, ps.firstAffectedCoordinate);
+        assertEquals("numTrailingCoordinates",  0, ps.numTrailingCoordinates);
+        assertSame  ("subTransform",    nonLinear, ps.subTransform);
     }
 
     /**

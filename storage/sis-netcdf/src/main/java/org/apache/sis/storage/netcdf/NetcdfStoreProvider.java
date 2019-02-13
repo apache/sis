@@ -284,8 +284,10 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                 keepOpen = path;
             } catch (IOException | DataStoreException s) {
                 e.addSuppressed(s);
+                throw e;
+            } else {
+                throw e;
             }
-            throw e;
         } else {
             keepOpen = connector.getStorage();
             decoder = createByReflection(keepOpen, true, geomlib, listeners);

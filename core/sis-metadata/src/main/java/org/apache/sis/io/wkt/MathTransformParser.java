@@ -481,11 +481,11 @@ class MathTransformParser extends AbstractParser {
         if (element == null) {
             return null;
         }
-        final int firstAffectedOrdinate = parent.pullInteger("firstAffectedOrdinate");
+        final int firstAffectedCoordinate = parent.pullInteger("firstAffectedCoordinate");
         final MathTransform transform   = parseMathTransform(element, true);
         element.close(ignoredElements);
         try {
-            return mtFactory.createPassThroughTransform(firstAffectedOrdinate, transform, 0);
+            return mtFactory.createPassThroughTransform(firstAffectedCoordinate, transform, 0);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }

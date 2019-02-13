@@ -62,7 +62,7 @@ import org.junit.BeforeClass;
     org.apache.sis.math.DecimalFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
-    org.apache.sis.internal.util.UtilitiesTest.class,
+    org.apache.sis.internal.util.StringsTest.class,
     org.apache.sis.internal.util.DoubleDoubleTest.class,
     org.apache.sis.math.LineTest.class,
     org.apache.sis.math.PlaneTest.class,

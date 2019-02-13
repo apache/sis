@@ -105,7 +105,7 @@ public abstract class Geometries<G> {
         String classname = Geometries.class.getName();
         classname = classname.substring(0, classname.lastIndexOf('.')+1).concat(name);
         try {
-            implementation = (Geometries) Class.forName(classname).newInstance();
+            implementation = (Geometries) Class.forName(classname).getDeclaredConstructor().newInstance();
         } catch (ReflectiveOperationException | LinkageError e) {
             LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG,
                     Resources.Keys.OptionalLibraryNotFound_2, name, e.toString());
@@ -223,6 +223,39 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * If the given object is one of the recognized types, formats that object in Well Known Text (WKT).
+     * Otherwise returns {@code null}. If the geometry contains curves, then the {@code flatness} parameter
+     * specifies the maximum distance that the line segments used in the Well Known Text are allowed to deviate
+     * from any point on the original curve. This parameter is ignored if the geometry does not contain curves.
+     *
+     * @param  geometry  the geometry to format in Well Known Text.
+     * @param  flatness  maximal distance between the approximated WKT and any point on the curve.
+     * @return the Well Known Text for the given geometry, or {@code null} if the given object is unrecognized.
+     */
+    public static String formatWKT(Object geometry, double flatness) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            String wkt = g.tryFormatWKT(geometry, flatness);
+            if (wkt != null) return wkt;
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is the type supported by this {@code Geometries} instance,
+     * returns its WKT representation. Otherwise returns {@code null}.
+     */
+    abstract String tryFormatWKT(Object geometry, double flatness);
+
+    /**
+     * Parses the given WKT.
+     *
+     * @param  wkt  the WKT to parse.
+     * @return the geometry object for the given WKT.
+     * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
+     */
+    public abstract Object parseWKT(String wkt) throws Exception;
+
+    /**
      * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
      * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
      *
@@ -282,15 +315,6 @@ public abstract class Geometries<G> {
         }
         return null;
     }
-
-    /**
-     * Parses the given WKT.
-     *
-     * @param  wkt  the WKT to parse.
-     * @return the geometry object for the given WKT.
-     * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
-     */
-    public abstract Object parseWKT(String wkt) throws Exception;
 
     /**
      * Returns an error message for an unsupported geometry object.

@@ -16,20 +16,16 @@
  */
 package org.apache.sis.storage.netcdf;
 
-import java.awt.Color;
 import java.util.List;
 import java.awt.image.DataBuffer;
-import java.awt.image.ColorModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-import org.opengis.geometry.DirectPosition;
+import java.awt.image.RasterFormatException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.raster.RasterFactory;
-import org.apache.sis.internal.raster.ColorModelFactory;
+import org.apache.sis.coverage.grid.ImageRenderer;
+import org.apache.sis.internal.netcdf.Resources;
 
 
 /**
@@ -42,21 +38,22 @@ import org.apache.sis.internal.raster.ColorModelFactory;
  */
 final class Image extends GridCoverage {
     /**
-     * Index of the band to show in rendered image.
-     */
-    private static final int VISIBLE_BAND = 0;
-
-    /**
      * The sample values.
      */
     private final DataBuffer data;
 
     /**
+     * Name to display in error messages. Not to be used for processing.
+     */
+    private final String label;
+
+    /**
      * Creates a new raster from the given resource.
      */
-    Image(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data) {
+    Image(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final String label) {
         super(domain, range);
-        this.data = data;
+        this.data  = data;
+        this.label = label;
     }
 
     /**
@@ -64,14 +61,13 @@ final class Image extends GridCoverage {
      * This returns a view as much as possible; sample values are not copied.
      */
     @Override
-    public RenderedImage render(final DirectPosition slicePoint) {
-        // TODO: use slicePoint.
-        final GridExtent extent = getGridGeometry().getExtent();
-        final int width  = Math.toIntExact(extent.getSize(0));
-        final int height = Math.toIntExact(extent.getSize(1));
-        final WritableRaster raster = RasterFactory.createBandedRaster(data, width, height, width, null, null, null);
-        final ColorModel colors = ColorModelFactory.createColorModel(getSampleDimensions(), VISIBLE_BAND, data.getDataType(),
-                (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null);
-        return new BufferedImage(colors, raster, false, null);
+    public RenderedImage render(final GridExtent target) {
+        try {
+            final ImageRenderer renderer = new ImageRenderer(this, target);
+            renderer.setData(data);
+            return renderer.image();
+        } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
+            throw new RuntimeException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
+        }
     }
 }

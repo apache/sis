@@ -154,7 +154,7 @@ class MTFactory extends Proj4Factory implements CoordinateOperationFactory, Math
      * Unsupported by the {@literal Proj.4} wrapper.
      */
     @Override
-    public MathTransform createPassThroughTransform(int firstAffectedOrdinate, MathTransform subTransform, int numTrailingOrdinates)
+    public MathTransform createPassThroughTransform(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates)
             throws FactoryException
     {
         throw new UnsupportedOperationException();

@@ -34,6 +34,7 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.ChangeEvent;
@@ -256,6 +257,6 @@ public class NetcdfStore extends DataStore implements Aggregate {
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '[' + decoder + ']';
+        return Strings.bracket(getClass(), decoder);
     }
 }

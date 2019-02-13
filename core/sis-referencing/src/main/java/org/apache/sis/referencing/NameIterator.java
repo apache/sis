@@ -25,7 +25,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 
-import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
+import static org.apache.sis.internal.util.Strings.appendUnicodeIdentifier;
 
 
 /**

@@ -34,8 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
-
-import static java.lang.Math.*;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -73,12 +72,6 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6914760410359494163L;
-
-    /**
-     * Number of additional digits, to be added to the number of digits computed from the
-     * range and the number of sample values. This is an arbitrary parameter.
-     */
-    private static final int ADDITIONAL_DIGITS = 2;
 
     /**
      * The locale for row and column headers.
@@ -410,9 +403,6 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * @return the formatter to use. May be a clone of the given formatter.
      */
     private static Format configure(final Format format, final Statistics stats, final boolean clone) {
-        final double minimum  = stats.minimum();
-        final double maximum  = stats.maximum();
-        final double extremum = max(abs(minimum), abs(maximum));
         int multiplier = 1;
         if (format instanceof DecimalFormat) {
             DecimalFormat df = (DecimalFormat) format;
@@ -423,6 +413,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
              * enough). If the numbers seem to require scientific notation, switch to that notation only
              * if the user has not already set a different number pattern.
              */
+            final double extremum = Math.max(Math.abs(stats.minimum()), Math.abs(stats.maximum()));
             if (multiplier == 1 && (extremum >= 1E+10 || extremum <= 1E-4)) {
                 final String pattern = df.toPattern();
                 for (int i = pattern.length(); --i >= 0;) {
@@ -443,19 +434,15 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             }
         }
         /*
-         * Computes a representative range of values. We take 2 standard deviations away
-         * from the mean. Assuming that data have a gaussian distribution, this is 97.7%
-         * of data. If the data have a uniform distribution, then this is 100% of data.
+         * Numerics.suggestFractionDigits(stats) computes a representative range of values
+         * based on 2 standard deviations away from the mean. For a gaussian distribution,
+         * this covers 97.7% of data. If the data have a uniform distribution, then this is
+         * 100% of data.
          */
-        double delta;
-        final double mean = stats.mean();
-        delta = 2 * stats.standardDeviation(true);                      // 'true' is for avoiding NaN when count == 1.
-        delta = min(maximum, mean+delta) - max(minimum, mean-delta);    // Range of 97.7% of values.
-        delta = max(delta/stats.count(), ulp(extremum));                // Mean delta for uniform distribution, not finer than 'double' accuracy.
         if (format instanceof NumberFormat) {
-            int digits = DecimalFunctions.fractionDigitsForDelta(delta, false);
+            int digits = Numerics.suggestFractionDigits(stats);
             digits -= DecimalFunctions.floorLog10(multiplier);
-            digits = max(0, digits + ADDITIONAL_DIGITS);
+            digits = Math.max(0, digits);
             NumberFormat nf = (NumberFormat) format;
             if (digits != nf.getMinimumFractionDigits() ||
                 digits != nf.getMaximumFractionDigits())

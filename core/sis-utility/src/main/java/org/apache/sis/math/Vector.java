@@ -32,7 +32,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
@@ -149,6 +148,29 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
+     * Wraps the given array of floating point values. This method does not clone the array:
+     * changes in the given array will be reflected in the returned vector and vice-versa.
+     * This method is equivalent to
+     * <code>{@link #create(Object, boolean) create}(array, false)</code> but potentially faster.
+     *
+     * @param  array  the array of floating point values to wrap in a vector, or {@code null}.
+     * @return the given array wrapped in a vector, or {@code null} if the argument was {@code null}.
+     *
+     * @since 1.0
+     */
+    public static Vector create(final double[] array) {
+        /*
+         * NOTE: we do not use variable-length argument (double...) because doing so may force us to
+         * declare 'create' methods for all other primitive types,  otherwise some developers may be
+         * surprised that 'create(0, 1, 2, 3)' converts the integer values to doubles. We do not yet
+         * provide explicit 'create(...)' methods for other primitive types because it is not needed
+         * by Apache SIS and it would lost a feature of current API, which is to force developers to
+         * think whether their integers are signed or unsigned.
+         */
+        return (array != null) ? new ArrayVector.Doubles(array) : null;
+    }
+
+    /**
      * Wraps the given {@code float[]} array in a vector that preserve the string representations in base 10.
      * For example the 0.1 {@code float} value casted to {@code double} normally produces 0.10000000149011612
      * because of the way IEEE 754 arithmetic represents numbers (in base 2 instead than base 10). But the
@@ -161,7 +183,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * from decimal representations, for example an ASCII file. There is usually no reason to use this method
      * if the values are the result of some numerical computations.
      *
-     * @param  array  the object to wrap in a vector, or {@code null}.
+     * @param  array  the array of floating point values to wrap in a vector, or {@code null}.
      * @return the given array wrapped in a vector, or {@code null} if the argument was {@code null}.
      *
      * @see DecimalFunctions#floatToDouble(float)
@@ -562,7 +584,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         if (size >= 2) {
             /*
              * For the first level of repetitions, we rely on a method to be overridden by subclasses
-             * for detecting the length of consecutive identical numbers. We could have use the more
+             * for detecting the length of consecutive identical numbers. We could have used the more
              * generic algorithm based on 'equals(int, int, Vector, int)' instead, but this approach
              * is faster.
              */
@@ -590,8 +612,13 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 search:     for (;;) {
                 if (candidates != null) {
                     do {
-                        if (candidateIndex >= candidates.length) break search;
-                        r = r0 * candidates[candidateIndex++];
+                        if (candidateIndex >= candidates.length) {
+                            r = size;                                       // Sentinel value for repetition not found.
+                            break search;
+                        }
+                        final int n = candidates[candidateIndex++];
+                        ArgumentChecks.ensureStrictlyPositive("candidates", n);
+                        r = Math.multiplyExact(r0, n);
                     } while (r <= 0 || r >= size);
                 } else {
                     r += r0;
@@ -1236,7 +1263,7 @@ search:     for (;;) {
          */
         int i = 0;
         do if (i >= length) {
-            final Double NaN = Numerics.valueOf(Double.NaN);
+            final Double NaN = Double.NaN;
             return createSequence(getElementType(), NaN, NaN, length);
         } while (isNaN(i++));
         /*
@@ -1432,6 +1459,7 @@ search:     for (;;) {
     /**
      * Returns a hash code for the values in this vector. The hash code is computed as if this vector was converted
      * to an array of {@link Number}s, then the {@link Arrays#hashCode(Object[])} method invoked for that array.
+     * This contract is defined for compatibility with {@link java.util.List#hashCode()} contract.
      *
      * @return a hash code value for the values in this vector.
      *
@@ -1439,7 +1467,7 @@ search:     for (;;) {
      */
     @Override
     public int hashCode() {
-        int hash = 0;
+        int hash = 1;
         final int size = size();
         for (int i=0; i<size; i++) {
             hash = PRIME * hash + get(i).hashCode();

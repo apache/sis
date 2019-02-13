@@ -99,22 +99,22 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *   </tr>
      * </table>
      *
-     * @param  properties             the properties to be given to the identified object.
-     * @param  sourceCRS              the source CRS.
-     * @param  targetCRS              the target CRS.
-     * @param  operation              the operation to apply on the subset of a coordinate tuple.
-     * @param  firstAffectedOrdinate  index of the first affected ordinate.
-     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param  properties               the properties to be given to the identified object.
+     * @param  sourceCRS                the source CRS.
+     * @param  targetCRS                the target CRS.
+     * @param  operation                the operation to apply on the subset of a coordinate tuple.
+     * @param  firstAffectedCoordinate  index of the first affected coordinate.
+     * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      */
     public DefaultPassThroughOperation(final Map<String,?>            properties,
                                        final CoordinateReferenceSystem sourceCRS,
                                        final CoordinateReferenceSystem targetCRS,
                                        final SingleOperation           operation,
-                                       final int firstAffectedOrdinate,
-                                       final int numTrailingOrdinates)
+                                       final int firstAffectedCoordinate,
+                                       final int numTrailingCoordinates)
     {
         super(properties, sourceCRS, targetCRS, null, MathTransforms.passThrough(
-                firstAffectedOrdinate, operation.getMathTransform(), numTrailingOrdinates));
+                firstAffectedCoordinate, operation.getMathTransform(), numTrailingCoordinates));
         ArgumentChecks.ensureNonNull("operation", operation);
         this.operation = operation;
     }
@@ -230,18 +230,18 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
              */
             final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
             if (sourceCRS instanceof CompoundCRS) {
-                int firstAffectedOrdinate = 0;
+                int firstAffectedCoordinate = 0;
                 final CoordinateReferenceSystem search = operation.getSourceCRS();
                 for (final CoordinateReferenceSystem c : ((CompoundCRS) sourceCRS).getComponents()) {
                     final int dim = ReferencingUtilities.getDimension(c);
                     if (c == search) {
                         final int[] indices = new int[dim];
                         for (int i=0; i<dim; i++) {
-                            indices[i] = firstAffectedOrdinate + i;
+                            indices[i] = firstAffectedCoordinate + i;
                         }
                         return indices;
                     }
-                    firstAffectedOrdinate += dim;
+                    firstAffectedCoordinate += dim;
                 }
             }
             throw new UnsupportedImplementationException(transform.getClass());

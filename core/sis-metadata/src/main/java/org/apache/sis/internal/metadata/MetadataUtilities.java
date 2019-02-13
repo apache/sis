@@ -25,7 +25,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -213,7 +213,7 @@ public final class MetadataUtilities extends Static {
             id = object.getIdentifierMap().getSpecialized(IdentifierSpace.ID);
             if (id != null) {
                 final StringBuilder buffer = new StringBuilder();
-                if (!Utilities.appendUnicodeIdentifier(buffer, (char) 0, id, ":-", false)) {
+                if (!Strings.appendUnicodeIdentifier(buffer, (char) 0, id, ":-", false)) {
                     return null;
                 }
                 id = buffer.toString();

@@ -384,7 +384,7 @@ search: for (final VariableInfo counts : decoder.variables) {
             for (int i=0; i<tmp.length; i++) {
                 tmp[i] = coords[i % dimension].doubleValue(i / dimension);
             }
-            feature.setPropertyValue("trajectory", factory.createPolyline(dimension, Vector.create(tmp, false)));
+            feature.setPropertyValue("trajectory", factory.createPolyline(dimension, Vector.create(tmp)));
             action.accept(feature);
             position = Math.addExact(position, length);
             return ++index < counts.size();

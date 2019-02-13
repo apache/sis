@@ -241,7 +241,7 @@ public final class MathFunctions extends Static {
             sum.add(dot);
         }
         sum.sqrt();
-        return sum.value;
+        return sum.doubleValue();
     }
 
     /**

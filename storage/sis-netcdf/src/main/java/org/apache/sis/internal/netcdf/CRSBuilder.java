@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.SingleCRS;
@@ -334,7 +335,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         for (int i=cs.getDimension(); --i >= 0;) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
             if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
-                final Vector coordinates = axes[i].coordinates.read();
+                final Vector coordinates = axes[i].read();                          // Typically a cached vector.
                 final int length = coordinates.size();
                 if (length != 0) {
                     final double first = coordinates.doubleValue(0);
@@ -368,7 +369,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * @param  name  name of the geodetic object (datum, coordinate system, …) to create.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(GeodeticDatum.NAME_KEY, name);
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

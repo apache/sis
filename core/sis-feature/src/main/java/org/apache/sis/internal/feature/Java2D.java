@@ -24,9 +24,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.feature.j2d.ShapeProperties;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -35,7 +37,7 @@ import org.apache.sis.util.Classes;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -110,8 +112,9 @@ final class Java2D extends Geometries<Shape> {
 
     /**
      * Creates a path from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value start a new path.
-     * The implementation returned by this method must be an instance of {@link #rootClass}.
+     * Each {@link Double#NaN} ordinate value starts a new path.
+     * The geometry may be backed by {@code float} or {@code double} primitive type,
+     * depending on the type used by the given vectors.
      */
     @Override
     public Shape createPolyline(final int dimension, final Vector... ordinates) {
@@ -119,8 +122,8 @@ final class Java2D extends Geometries<Shape> {
             throw unsupported(dimension);
         }
         /*
-         * Computes the total length of all vectors and verifies if all values
-         * can be casted to float without precision lost.
+         * Computes the total length of all vectors and verifies if any vector
+         * requires double-precision numbers instead of single-precision.
          */
         int length = 0;
         boolean isFloat = true;
@@ -128,13 +131,7 @@ final class Java2D extends Geometries<Shape> {
             if (v != null) {
                 length = Math.addExact(length, v.size());
                 if (isFloat) {
-                    for (int i=v.size(); --i >= 0;) {
-                        final double value = v.doubleValue(i);
-                        if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits((float) value)) {
-                            isFloat = false;
-                            break;
-                        }
-                    }
+                    isFloat = Numbers.getEnumConstant(v.getElementType()) <= Numbers.FLOAT;
                 }
             }
         }
@@ -186,31 +183,52 @@ final class Java2D extends Geometries<Shape> {
         if (!(next instanceof Shape || next instanceof Point2D)) {
             return null;
         }
-        final Path2D path = new Path2D.Double();
+        boolean isFloat = ShapeUtilities.isFloat(next);
+        Path2D path = isFloat ? new Path2D.Float() : new Path2D.Double();
         boolean lineTo = false;
-        for (;; next = polylines.next()) {
-            if (next != null) {
-                if (next instanceof Point2D) {
-                    final double x = ((Point2D) next).getX();
-                    final double y = ((Point2D) next).getY();
-                    if (Double.isNaN(x) || Double.isNaN(y)) {
-                        lineTo = false;
-                    } else if (lineTo) {
-                        path.lineTo(x, y);
-                    } else {
-                        path.moveTo(x, y);
-                        lineTo = true;
-                    }
-                } else {
-                    path.append((Shape) next, false);
+add:    for (;;) {
+            if (next instanceof Point2D) {
+                final double x = ((Point2D) next).getX();
+                final double y = ((Point2D) next).getY();
+                if (Double.isNaN(x) || Double.isNaN(y)) {
                     lineTo = false;
+                } else if (lineTo) {
+                    path.lineTo(x, y);
+                } else {
+                    path.moveTo(x, y);
+                    lineTo = true;
                 }
+            } else {
+                path.append((Shape) next, false);
+                lineTo = false;
             }
-            if (!polylines.hasNext()) {         // Should be part of the 'for' instruction, but we need
-                break;                          // to skip this condition during the first iteration.
+            /*
+             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * except that we need to skip this condition during the first iteration.
+             */
+            do if (!polylines.hasNext()) break add;
+            while ((next = polylines.next()) == null);
+            /*
+             * Convert the path from single-precision to double-precision if needed.
+             */
+            if (isFloat && !ShapeUtilities.isFloat(next)) {
+                path = new Path2D.Double(path);
+                isFloat = false;
             }
         }
         return ShapeUtilities.toPrimitive(path);
+    }
+
+    /**
+     * If the given object is a Java2D shape, builds its WKT representation.
+     * Current implementation assumes that all closed shapes are polygons and that polygons have no hole
+     * (i.e. if a polygon is followed by more data, this method assumes that the additional data is a disjoint polygon).
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">Well-known text on Wikipedia</a>
+     */
+    @Override
+    final String tryFormatWKT(final Object geometry, final double flatness) {
+        return (geometry instanceof Shape) ? new ShapeProperties((Shape) geometry).toWKT(flatness) : null;
     }
 
     /**

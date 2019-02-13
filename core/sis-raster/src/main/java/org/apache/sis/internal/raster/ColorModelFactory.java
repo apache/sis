@@ -17,7 +17,6 @@
 package org.apache.sis.internal.raster;
 
 import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -48,6 +47,13 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * @module
  */
 public final class ColorModelFactory {
+    /**
+     * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
+     * This is a possible argument for {@link #createColorModel(SampleDimension[], int, int, Function)}.
+     */
+    public static final Function<Category,Color[]> GRAYSCALE =
+            (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
+
     /**
      * Shared instances of {@link ColorModel}s. Maintaining shared instance is not that much interesting
      * for most kind of color models, except {@link IndexColorModel} which can potentially be quite big.
@@ -178,8 +184,8 @@ public final class ColorModelFactory {
         }
         this.minimum     = (float) minimum;
         this.maximum     = (float) maximum;
-        this.pieceStarts = starts;
-        this.ARGB        = codes;
+        this.pieceStarts = ArraysExt.resize(starts, count + 1);
+        this.ARGB        = ArraysExt.resize(codes,  count);
     }
 
     /**
@@ -276,14 +282,16 @@ public final class ColorModelFactory {
      * @param  colors       the colors to use for each category. The function may return {@code null}, which means transparent.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModel createColorModel(final List<? extends SampleDimension> bands,
-            final int visibleBand, final int type, final Function<Category,Color[]> colors)
+    public static ColorModel createColorModel(final SampleDimension[] bands,
+            final int visibleBand, final int type, Function<Category,Color[]> colors)
     {
+        ArgumentChecks.ensureNonNull("bands",  bands);
+        ArgumentChecks.ensureNonNull("colors", colors);
         final Map<NumberRange<?>, Color[]> ranges = new LinkedHashMap<>();
-        for (final Category category : bands.get(visibleBand).getCategories()) {
+        for (final Category category : bands[visibleBand].getCategories()) {
             ranges.put(category.getSampleRange(), colors.apply(category));
         }
-        return createColorModel(ranges, visibleBand, bands.size(), type);
+        return createColorModel(ranges, visibleBand, bands.length, type);
     }
 
     /**
@@ -386,10 +394,10 @@ public final class ColorModelFactory {
      * @return the number of bits to use.
      */
     public static int getBitCount(final int mapSize) {
-        final int count = Math.max(1, Integer.SIZE - Integer.numberOfLeadingZeros(mapSize - 1));
+        final int count = Integer.SIZE - Integer.numberOfLeadingZeros(mapSize - 1);
         assert (1 << count) >= mapSize : mapSize;
         assert (1 << (count-1)) < mapSize : mapSize;
-        return count;
+        return Math.max(1, count);
     }
 
     /**
@@ -426,9 +434,12 @@ public final class ColorModelFactory {
             int combined = 0;
             final int[] ARGB = new int[colors.length];
             for (int i=0; i<ARGB.length; i++) {
-                int color = colors[i].getRGB();                     // Note: getRGB() is really getARGB().
-                combined |= color;
-                ARGB[i]   = color;
+                final Color color = colors[i];
+                if (color != null) {
+                    int c = color.getRGB();                         // Note: getRGB() is really getARGB().
+                    combined |= c;
+                    ARGB[i]   = c;
+                }
             }
             if ((combined & 0xFF000000) != 0) {
                 return ARGB;

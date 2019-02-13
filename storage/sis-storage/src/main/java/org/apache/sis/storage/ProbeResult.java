@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.apache.sis.util.Version;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -251,7 +251,7 @@ public class ProbeResult implements Serializable {
      */
     @Override
     public String toString() {
-        return Utilities.toString(getClass(), "isSupported", isSupported, "mimeType", mimeType, "version", version);
+        return Strings.toString(getClass(), "isSupported", isSupported, "mimeType", mimeType, "version", version);
     }
 
     /**
@@ -289,7 +289,7 @@ public class ProbeResult implements Serializable {
             try {
                 return ProbeResult.class.getField(name).get(null);
             } catch (ReflectiveOperationException e) {
-                return this; // See javadoc
+                return this;                                            // See javadoc
             }
         }
 
@@ -314,7 +314,7 @@ public class ProbeResult implements Serializable {
          */
         @Override
         public String toString() {
-            return "ProbeResult[" + name + ']';
+            return Strings.bracket(ProbeResult.class, name);
         }
     }
 }

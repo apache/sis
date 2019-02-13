@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.xml.XmlUtilities;
 
 // Branch-dependent imports
@@ -104,6 +105,6 @@ public final class TimeInstant extends GMLAdapter {
      */
     @Override
     public String toString() {
-        return "TimeInstant[" + timePosition + ']';
+        return Strings.bracket(getClass(), timePosition);
     }
 }

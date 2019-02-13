@@ -414,7 +414,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double getEccentricity() {
         final DoubleDouble e = eccentricitySquared();
         e.sqrt();
-        return e.value;
+        return e.doubleValue();
     }
 
     /**
@@ -430,7 +430,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @since 0.7
      */
     public double getEccentricitySquared() {
-        return eccentricitySquared().value;
+        return eccentricitySquared().doubleValue();
     }
 
     /**
@@ -444,7 +444,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private DoubleDouble eccentricitySquared() {
         final DoubleDouble f = flattening(this);
         final DoubleDouble eccentricitySquared = new DoubleDouble(f);
-        eccentricitySquared.multiply(2, 0);
+        eccentricitySquared.multiply(2);
         f.square();
         eccentricitySquared.subtract(f);
         return eccentricitySquared;
@@ -465,13 +465,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private static DoubleDouble flattening(final Ellipsoid e) {
         final DoubleDouble f;
         if (e.isIvfDefinitive()) {
-            f = new DoubleDouble(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
-            f.inverseDivide(1, 0);
+            f = DoubleDouble.createAndGuessError(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
+            f.inverseDivide(1);
         } else {
-            f = new DoubleDouble(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
+            f = DoubleDouble.createAndGuessError(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
             final double value = f.value;
             final double error = f.error;
-            f.subtract(e.getSemiMinorAxis());                 // Presumed accurate in base 10 (not 2) by definition.
+            f.subtractGuessError(e.getSemiMinorAxis());                       // Presumed accurate in base 10 (not 2) by definition.
             f.divide(value, error);
         }
         return f;
@@ -636,9 +636,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
-        final DoubleDouble a = new DoubleDouble(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
-        a.subtract(getSemiMajorAxis());                         // Presumed accurate in base 10 (not 2) by definition.
-        return a.value;
+        final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
+        a.subtractGuessError(getSemiMajorAxis());                               // Presumed accurate in base 10 (not 2) by definition.
+        return a.doubleValue();
     }
 
     /**
@@ -657,7 +657,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double flatteningDifference(final Ellipsoid other) {
         final DoubleDouble f = flattening(other);
         f.subtract(flattening(this));
-        return f.value;
+        return f.doubleValue();
     }
 
     /**

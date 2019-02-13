@@ -16,8 +16,11 @@
  */
 package org.apache.sis.measure;
 
+import java.util.List;
+import java.util.Collections;
 import java.io.Serializable;
 import javax.measure.UnitConverter;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.DecimalFunctions;
 
 
@@ -42,11 +45,41 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
+     * Returns {@code true} if {@link #convert(double)} returns given values unchanged.
+     * The default implementation returns {@code false} for convenience of non-linear conversions.
+     * Subclasses should override if their conversions may be identity.
+     */
+    @Override
+    public boolean isIdentity() {
+        return false;
+    }
+
+    /**
+     * Indicates if this converter is linear in JSR-363 sense (not the usual mathematical sense).
+     * The default implementation returns {@code false} for convenience of non-linear conversions.
+     * Subclasses should override if their conversions may be identity.
+     */
+    @Override
+    public boolean isLinear() {
+        return false;
+    }
+
+    /**
      * If the conversion can be represented by a polynomial equation, returns the coefficients of that equation.
      * Otherwise returns {@code null}.
      */
     Number[] coefficients() {
         return isIdentity() ? new Number[0] : null;
+    }
+
+    /**
+     * Performs a unit conversion on the given number. The default implementation delegates to the version working
+     * on {@code double} primitive type, so it may not provide the accuracy normally required by this method contract.
+     * Linear conversions should override this method.
+     */
+    @Override
+    public Number convert(final Number value) {
+        return convert(value.doubleValue());
     }
 
     /**
@@ -95,5 +128,30 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      */
     static boolean epsilonEquals(final double expected, final double actual) {
         return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
+    }
+
+    /**
+     * Concatenates this converter with another converter. The resulting converter is equivalent to first converting
+     * by the specified converter (right converter), and then converting by this converter (left converter).
+     *
+     * <p>The default implementation is okay, but subclasses should override if they can detect optimizations.</p>
+     */
+    @Override
+    public UnitConverter concatenate(final UnitConverter converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        if (equals(converter.inverse())) {
+            return LinearConverter.IDENTITY;
+        }
+        return new ConcatenatedConverter(converter, this);
+    }
+
+    /**
+     * Returns the steps of fundamental converters making up this converter. The default implementation returns
+     * only {@code this} on the assumption that this conversion is not a concatenation of other converters.
+     * Subclasses should override if this assumption does not hold.
+     */
+    @Override
+    public List<UnitConverter> getConversionSteps() {
+        return Collections.singletonList(this);
     }
 }

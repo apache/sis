@@ -160,7 +160,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
     void set(final int row, final int column, final DoubleDouble dd) {
-        setElement(row, column, dd.value);
+        setElement(row, column, dd.doubleValue());
     }
 
     /**
@@ -487,15 +487,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final DoubleDouble t = new DoubleDouble();
         for (int j = getNumRow(); --j >= 0;) {
             if (offset != null) {
-                get(j, srcDim,  s);     // Scale factor
-                get(j, lastCol, t);     // Translation factor
-                s.multiply(offset);
+                get(j, srcDim,  s);             // Scale factor
+                get(j, lastCol, t);             // Translation factor
+                s.multiplyGuessError(offset);
                 t.add(s);
                 set(j, lastCol, t);
             }
             if (scale != null) {
-                get(j, srcDim, s);      // Scale factor
-                s.multiply(scale);
+                get(j, srcDim, s);              // Scale factor
+                s.multiplyGuessError(scale);
                 set(j, srcDim, s);
             }
         }
@@ -523,13 +523,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         if (scale != null) {
             for (int i=lastCol; i>=0; i--) {
                 get(tgtDim, i, s);
-                s.multiply(scale);
+                s.multiplyGuessError(scale);
                 set(tgtDim, i, s);
             }
         }
         if (offset != null) {
             get(tgtDim, lastCol, s);
-            s.add(offset);
+            s.addGuessError(offset);
             set(tgtDim, lastCol, s);
         }
     }
@@ -587,10 +587,10 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         for (int j=0; j<target.length; j++) {
             for (int i=0; i<numCol; i++) {
                 get(j, i, ele);
-                ele.multiply(vector[i]);
+                ele.multiplyGuessError(vector[i]);
                 sum.add(ele);
             }
-            target[j] = sum.value;
+            target[j] = sum.doubleValue();
             sum.clear();
         }
         return target;
@@ -636,7 +636,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             s.clear();
             for (int i=0; i<numCol; i++) {
                 get(j, i, t);
-                t.multiply(vector[i]);
+                t.multiplyGuessError(vector[i]);
                 s.add(t);
             }
             set(j, numCol-1, s);

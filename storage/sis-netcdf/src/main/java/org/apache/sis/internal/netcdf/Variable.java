@@ -31,10 +31,12 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
@@ -143,9 +145,9 @@ public abstract class Variable extends NamedElement {
     public abstract String getFilename();
 
     /**
-     * Returns the name of this variable, or {@code null} if none.
+     * Returns the name of this variable.
      *
-     * @return the name of this variable, or {@code null}.
+     * @return the name of this variable.
      */
     @Override
     public abstract String getName();
@@ -212,12 +214,13 @@ public abstract class Variable extends NamedElement {
         if (overwrite != null) {
             unit = overwrite;
         }
+        unitParsed = true;
         return epoch;
     }
 
     /**
      * Returns the unit of measurement for this variable, or {@code null} if unknown.
-     * This method parse the units from {@link #getUnitsString()} when first needed
+     * This method parses the units from {@link #getUnitsString()} when first needed
      * and sets {@link #epoch} as a side-effect if the unit is temporal.
      *
      * @return the unit of measurement, or {@code null}.
@@ -293,8 +296,13 @@ public abstract class Variable extends NamedElement {
     public abstract boolean isUnlimited();
 
     /**
-     * Returns {@code true} if the given variable can be used for generating an image.
-     * This method checks for the following conditions:
+     * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
+     * In particular this method shall return {@link VariableRole#AXIS} if this variable seems to be a
+     * coordinate system axis instead than the actual data. By netCDF convention, coordinate system axes
+     * have the name of one of the dimensions defined in the netCDF header.
+     *
+     * <p>The default implementation returns {@link VariableRole#COVERAGE} if the given variable can be used
+     * for generating an image, by checking the following conditions:</p>
      *
      * <ul>
      *   <li>Images require at least {@value Grid#MIN_DIMENSION} dimensions of size equals or greater than {@value Grid#MIN_SPAN}.
@@ -306,9 +314,16 @@ public abstract class Variable extends NamedElement {
      *       to confuse them with images.</li>
      * </ul>
      *
-     * @return {@code true} if the variable can be considered a coverage.
+     * Subclasses shall override this method for checking the {@link VariableRole#AXIS} case before to delegate
+     * to this method.
+     *
+     * <p>This method has protected access because it should not be invoked directly except in overridden methods.
+     * Code using variable role should invoke {@link Decoder#roleOf(Variable)} instead, for allowing specialization
+     * by {@link Convention}.</p>
+     *
+     * @return the role of this variable.
      */
-    public final boolean isCoverage() {
+    protected VariableRole getRole() {
         int numVectors = 0;                                     // Number of dimension having more than 1 value.
         for (final int length : getShape()) {
             if (Integer.toUnsignedLong(length) >= Grid.MIN_SPAN) {
@@ -318,19 +333,11 @@ public abstract class Variable extends NamedElement {
         if (numVectors >= Grid.MIN_DIMENSION) {
             final DataType dataType = getDataType();
             if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
-                return !isCoordinateSystemAxis();
+                return VariableRole.COVERAGE;
             }
         }
-        return false;
+        return VariableRole.OTHER;
     }
-
-    /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis instead than the actual data.
-     * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
-     *
-     * @return {@code true} if this variable seems to be a coordinate system axis.
-     */
-    public abstract boolean isCoordinateSystemAxis();
 
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
@@ -342,7 +349,7 @@ public abstract class Variable extends NamedElement {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid getGridGeometry(Decoder decoder) throws IOException, DataStoreException;
+    public abstract Grid getGrid(Decoder decoder) throws IOException, DataStoreException;
 
     /**
      * Returns the names of the dimensions of this variable, in the order they are declared in the netCDF file.
@@ -359,7 +366,7 @@ public abstract class Variable extends NamedElement {
      * Values shall be handled as unsigned 32 bits integers.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0, 0, …, 0). This method is used by {@link #isCoverage()} method,
+     * The lower corner is always (0, 0, …, 0). This method is used by {@link #getRole()} method,
      * or for building string representations of this variable.</p>
      *
      * @return the number of grid cells for each dimension, as unsigned integer in netCDF order (reverse of "natural" order).
@@ -463,6 +470,12 @@ public abstract class Variable extends NamedElement {
      *   <li>{@code "valid_max"}    — idem.</li>
      * </ol>
      *
+     * Whether the returned range is a range of packed values or a range of real values is ambiguous.
+     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
+     * If both type of ranges are available, this method should return the range of packed value.
+     * Otherwise if this method return the range of real values, then that range shall be an instance
+     * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
+     *
      * @return the range of valid values, or {@code null} if unknown.
      */
     public NumberRange<?> getValidValues() {
@@ -491,9 +504,24 @@ public abstract class Variable extends NamedElement {
                 }
             }
             if (minimum != null && maximum != null) {
-                @SuppressWarnings({"unchecked", "rawtypes"})
-                final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
-                return range;
+                /*
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * if the type of the range is equal to the type of the scale, and the type of the
+                 * data is not wider, then assume that the minimum and maximum are real values.
+                 */
+                final int rangeType = Numbers.getEnumConstant(type);
+                if (rangeType >= getDataType().number &&
+                    rangeType >= Math.max(Numbers.getEnumConstant(getAttributeType(CDM.SCALE_FACTOR)),
+                                          Numbers.getEnumConstant(getAttributeType(CDM.ADD_OFFSET))))
+                {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, getUnit());
+                    return range;
+                } else {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
+                    return range;
+                }
             }
         }
         /*
@@ -505,7 +533,7 @@ public abstract class Variable extends NamedElement {
             final int size = dataType.size() * Byte.SIZE;
             if (size > 0 && size <= Long.SIZE) {
                 long min = 0;
-                long max = (1L << size) - 1;
+                long max = Numerics.bitmask(size) - 1;
                 if (!dataType.isUnsigned) {
                     max >>>= 1;
                     min = ~max;
@@ -617,7 +645,7 @@ public abstract class Variable extends NamedElement {
     public abstract Vector read() throws IOException, DataStoreException;
 
     /**
-     * Reads a sub-sampled sub-area of the variable.
+     * Reads a subsampled sub-area of the variable.
      * Constraints on the argument values are:
      *
      * <ul>
@@ -632,7 +660,7 @@ public abstract class Variable extends NamedElement {
      * method shall {@linkplain #replaceNaN(Object) replace fill/missing values by NaN values}.
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
@@ -657,7 +685,7 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Maybe replace fill values and missing values by {@code NaN} values in the given array.
+     * Maybe replaces fill values and missing values by {@code NaN} values in the given array.
      * This method does nothing if {@link #hasRealValues()} returns {@code false}.
      * The NaN values used by this method must be consistent with the NaN values declared in
      * the sample dimensions created by {@link org.apache.sis.storage.netcdf.GridResource}.
@@ -679,6 +707,21 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
+     * Returns a coordinate for this two-dimensional grid coordinate axis. This is (indirectly) a callback method
+     * for {@link Grid#getAxes(Decoder)}. The (<var>i</var>, <var>j</var>) indices are grid indices <em>before</em>
+     * they get reordered by the {@link Grid#getAxes(Decoder)} method. In the netCDF UCAR API, this method maps directly
+     * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
+     *
+     * @param  j  the slowest varying (left-most) index.
+     * @param  i  the fastest varying (right-most) index.
+     * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    protected abstract double coordinateForAxis(int j, int i) throws IOException, DataStoreException;
+
+    /**
      * Sets the scale and offset coefficients in the given "grid to CRS" transform if possible.
      * Source and target dimensions given to this method are in "natural" order (reverse of netCDF order).
      * This method is invoked only for variables that represent a coordinate system axis.
@@ -688,17 +731,14 @@ public abstract class Variable extends NamedElement {
      * @param  gridToCRS  the matrix in which to set scale and offset coefficient.
      * @param  srcDim     the source dimension, which is a dimension of the grid. Identifies the matrix column of scale factor.
      * @param  tgtDim     the target dimension, which is a dimension of the CRS.  Identifies the matrix row of scale factor.
-     * @param  values     the vector to use for computing scale and offset, or {@code null} if it has not been read yet.
-     * @return whether this method successfully set the scale and offset coefficients.
+     * @param  values     the vector to use for computing scale and offset.
+     * @return whether this method has successfully set the scale and offset coefficients.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, Vector values)
+    protected boolean trySetTransform(final Matrix gridToCRS, final int srcDim, final int tgtDim, final Vector values)
             throws IOException, DataStoreException
     {
-        if (values == null) {
-            values = read();
-        }
         final int n = values.size() - 1;
         if (n >= 0) {
             final double first = values.doubleValue(0);
@@ -712,7 +752,7 @@ public abstract class Variable extends NamedElement {
                     error = Math.max(Math.ulp(first), Math.ulp(last));
                 }
                 error = Math.max(Math.ulp(last - first), error) / n;
-                increment = values.increment(error);
+                increment = values.increment(error);                        // May return null.
             } else {
                 increment = Double.NaN;
             }

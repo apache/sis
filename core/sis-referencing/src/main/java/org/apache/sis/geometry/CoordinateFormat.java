@@ -41,6 +41,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
@@ -169,7 +170,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @see #negate(int)
      */
-    private transient int negate;
+    private transient long negate;
 
     /**
      * The time epochs. Non-null only if the at least on ordinate is to be formatted as a date.
@@ -355,17 +356,17 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * Remembers that ordinate values at the given dimension will need to have their sign reverted.
      */
     private void negate(final int dimension) {
-        if (dimension >= Integer.SIZE) {
+        if (dimension >= Long.SIZE) {
             throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
         }
-        negate |= (1 << dimension);
+        negate |= (1L << dimension);
     }
 
     /**
      * Returns {@code true} if the value at the given dimension needs to have its sign reversed.
      */
     private boolean isNegative(final int dimension) {
-        return (dimension < Integer.SIZE) && (negate & (1 << dimension)) != 0;
+        return (negate & Numerics.bitmask(dimension)) != 0;
     }
 
     /**

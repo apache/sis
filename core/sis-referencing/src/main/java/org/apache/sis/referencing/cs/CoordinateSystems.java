@@ -328,11 +328,11 @@ public final class CoordinateSystems extends Static {
                 }
                 final DoubleDouble element = DoubleDouble.castOrCopy(matrix.getNumber(j,i));
                 final DoubleDouble r = new DoubleDouble(element);
-                r.multiply(scale);
+                r.multiplyGuessError(scale);
                 matrix.setNumber(j, i, r);
                 r.setFrom(element);
-                r.multiply(offset);
-                r.add(matrix.getNumber(j, sourceDim));
+                r.multiplyGuessError(offset);
+                r.addGuessError(matrix.getNumber(j, sourceDim));
                 matrix.setNumber(j, sourceDim, r);
             }
         }
@@ -381,7 +381,9 @@ public final class CoordinateSystems extends Static {
      * @param  filter  the modifications to apply on coordinate system axes.
      * @return the modified coordinate system as a new instance,
      *         or {@code cs} if the given coordinate system was null or does not need any change.
-     * @throws IllegalArgumentException if the specified coordinate system can not be normalized.
+     * @throws IllegalArgumentException if the specified coordinate system can not be filtered.
+     *         It may be because the coordinate system would contain an illegal number of axes,
+     *         or because an axis would have an unexpected direction or unexpected unit of measurement.
      *
      * @see AxesConvention#NORMALIZED
      *

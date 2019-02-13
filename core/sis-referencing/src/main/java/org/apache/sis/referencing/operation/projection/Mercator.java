@@ -40,7 +40,6 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -233,7 +232,7 @@ public class Mercator extends ConformalProjection {
          * if they really want, since we sometime see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
-        final Number k0 = verbatim(initializer.scaleAtφ(sin(φ1), cos(φ1)));
+        final Number k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
@@ -256,11 +255,11 @@ public class Mercator extends ConformalProjection {
              * there is no such goal for other parameters computed from sine or consine functions.
              */
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-            offset.multiply(-λ0);
+            offset.multiplyGuessError(-λ0);
             denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, verbatim(-log(expOfNorthing(φ0, eccentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, eccentricity * sin(φ0)))));
         }
         if (variant == MILLER) {
             normalize  .convertBefore(1, 0.80, null);
@@ -290,7 +289,7 @@ public class Mercator extends ConformalProjection {
          * those remaning lines of code.
          */
         if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
-            final Number reverseSign = verbatim(-1);
+            final Number reverseSign = new DoubleDouble(-1d);
             normalize  .convertBefore(1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);        // Must be before false easting/northing.
         }

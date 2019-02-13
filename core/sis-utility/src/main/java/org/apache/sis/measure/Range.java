@@ -22,7 +22,7 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
@@ -129,6 +129,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Creates a new range bounded by the given endpoint values.
+     * If the given minimum value is greater than the maximum value, then the range {@linkplain #isEmpty() is empty}.
      *
      * <div class="note"><b>Assertion:</b>
      * This constructor verifies the {@code minValue} and {@code maxValue} arguments type if Java assertions
@@ -262,7 +263,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns {@code true} if this range is empty. A range is empty if the
-     * {@linkplain #getMinValue() minimum value} is smaller than the
+     * {@linkplain #getMinValue() minimum value} is greater than the
      * {@linkplain #getMaxValue() maximum value}, or if they are equal while
      * at least one of them is exclusive.
      *
@@ -581,15 +582,27 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Compares this range with the given object for equality.
-     * Two ranges are considered equal if they have the same {@link #getElementType() element type} and:
+     * Two ranges are considered equal if they met the following conditions:
      *
      * <ul>
-     *   <li>are both {@linkplain #isEmpty() empty}, or</li>
-     *   <li>have equal {@linkplain #getMinValue() minimum} and {@linkplain #getMaxValue() maximum} values
-     *       with equal inclusive/exclusive flags.</li>
+     *   <li>They are of the same {@linkplain #getClass() class}.</li>
+     *   <li>They have the same {@linkplain #getElementType() element type}.</li>
+     *   <li>Both ranges {@linkplain #isEmpty() are empty}, <strong>or</strong> (if at least one range is non-empty):
+     *     <ul>
+     *       <li>They have equal {@linkplain #getMinValue() minimum} value in the sense of {@link Object#equals(Object)}.</li>
+     *       <li>They have equal {@linkplain #getMaxValue() maximum} value in the sense of {@link Object#equals(Object)}.</li>
+     *       <li>They have equal {@linkplain #isMinIncluded() inclusive minimum} flag.</li>
+     *       <li>They have equal {@linkplain #isMaxIncluded() inclusive maximum} flag.</li>
+     *     </ul>
+     *   <li>Any other requirement added by subclasses.
+     *       In particular {@link MeasurementRange} compares also the units of measurement.</li>
      * </ul>
      *
-     * Note that subclasses may add other requirements, for example on units of measurement.
+     * Note that this method may return {@code true} even if the bounds are not strictly identical.
+     * In particular this method returns {@code true} if the ranges are empty regardless their minimum and maximum values,
+     * and also returns {@code true} if the bounds are wrappers for some {@link Float#NaN} or {@link Double#NaN} values
+     * even if their {@linkplain Double#doubleToRawLongBits(double) raw bits pattern} are not the same.
+     * The later is because {@link Float#equals(Object)} and {@link Double#equals(Object)} consider all NaN values as equal.
      *
      * @param  object  the object to compare with this range for equality.
      * @return {@code true} if the given object is equal to this range.
@@ -730,6 +743,6 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             format.setAlternateForm((flags & FormattableFlags.ALTERNATE) != 0);
             value = format.format(this, new StringBuffer(), null).toString();
         }
-        Utilities.formatTo(formatter, flags, width, precision, value);
+        Strings.formatTo(formatter, flags, width, precision, value);
     }
 }

@@ -70,7 +70,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.Strings;
 
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
 
@@ -245,9 +245,8 @@ final class LandsatReader {
     private final double[] corners;
 
     /**
-     * Image width and hight, in pixels. Values are (<var>width</var>,<var>height</var>) tuples.
-     * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL}
-     * bands, in that order.
+     * Image width and hight in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
+     * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} bands, in that order.
      */
     private final int[] gridSizes;
 
@@ -408,7 +407,7 @@ final class LandsatReader {
      * @param  value  the value to parse.
      */
     private void parseGridSize(final int index, final String value) throws NumberFormatException {
-        gridSizes[index] = Integer.parseInt(value);
+        gridSizes[index] = Integer.parseUnsignedInt(value);
     }
 
     /**
@@ -754,7 +753,7 @@ final class LandsatReader {
              * We ignore the "ELLIPSOID" attribute because it is implied by the datum.
              */
             case "DATUM": {
-                datum = CommonCRS.valueOf(Utilities.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
+                datum = CommonCRS.valueOf(Strings.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
                 break;
             }
             /*
@@ -942,12 +941,12 @@ final class LandsatReader {
         for (int i = 0; i < gridSizes.length; i += DIM) {
             final int width  = gridSizes[i  ];
             final int height = gridSizes[i+1];
-            if (width != 0 || height != 0) {
+            if ((width | height) != 0) {
                 metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
                 metadata.setAxisName(0, DimensionNameType.SAMPLE);
                 metadata.setAxisName(1, DimensionNameType.LINE);
-                metadata.setAxisLength(0, width);
-                metadata.setAxisLength(1, height);
+                metadata.setAxisSize(0, Integer.toUnsignedLong(width));
+                metadata.setAxisSize(1, Integer.toUnsignedLong(height));
             }
         }
         /*

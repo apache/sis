@@ -430,7 +430,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             case 6: p = dS; break;
             default: throw new AssertionError(index);
         }
-        return new DoubleDouble(p);
+        return DoubleDouble.createAndGuessError(p);
     }
 
     /**
@@ -491,8 +491,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          */
         final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
         final DoubleDouble S = param(6, period);
-        S.divide(PPM, 0);
-        S.add(1, 0);                                                // S = 1 + dS / PPM;
+        S.divide(PPM);
+        S.add(1);                                                   // S = 1 + dS / PPM;
         RS.multiply(S);                                             // RS = toRadians(1″) * S;
         final DoubleDouble  X = param(3, period); X.multiply(RS);
         final DoubleDouble  Y = param(4, period); Y.multiply(RS);
@@ -550,18 +550,18 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          * (this will be verified later).
          */
         final DoubleDouble S = DoubleDouble.castOrCopy(getNumber(matrix, 0,0));
-        S.add(getNumber(matrix, 1,1));
-        S.add(getNumber(matrix, 2,2));
-        S.divide(3, 0);
+        S.addGuessError(getNumber(matrix, 1,1));
+        S.addGuessError(getNumber(matrix, 2,2));
+        S.divide(3);
         /*
          * Computes: RS = S * toRadians(1″)
          *           dS = (S-1) * PPM
          */
         final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
         RS.multiply(S);
-        S.add(-1, 0);
-        S.multiply(PPM, 0);
-        dS = S.value;
+        S.add(-1);
+        S.multiply(PPM);
+        dS = S.doubleValue();
         /*
          * Rotation terms. Each rotation terms appear twice, with one value being the negative of the other value.
          * We verify this skew symmetric aspect in the loop. We also opportunistically verify that the scale terms
@@ -573,17 +573,17 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             }
             for (int i = j+1; i < SIZE-1; i++) {
                 S.setFrom(RS);
-                S.inverseDivide(getNumber(matrix, j,i));        // Negative rotation term.
+                S.inverseDivideGuessError(getNumber(matrix, j,i));          // Negative rotation term.
                 double value = S.value;
                 double error = S.error;
                 S.setFrom(RS);
-                S.inverseDivide(getNumber(matrix, i,j));        // Positive rotation term.
-                if (!(abs(value + S.value) <= tolerance)) {     // We expect r1 ≈ -r2
+                S.inverseDivideGuessError(getNumber(matrix, i,j));          // Positive rotation term.
+                if (!(abs(value + S.value) <= tolerance)) {                 // We expect r1 ≈ -r2
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.NotASkewSymmetricMatrix));
                 }
                 S.subtract(value, error);
-                S.multiply(0.5, 0);
-                value = S.value;                                // Average of the two rotation terms.
+                S.multiply(0.5);
+                value = S.doubleValue();                                    // Average of the two rotation terms.
                 switch (j*SIZE + i) {
                     case 1: rZ =  value; break;
                     case 2: rY = -value; break;

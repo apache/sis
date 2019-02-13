@@ -60,7 +60,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     private final long[] upper = new long[size.length];
 
     /**
-     * Sub-sampling values to use for the test.
+     * Subsampling values to use for the test.
      */
     private final int[] subsampling = new int[size.length];
 
@@ -79,7 +79,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
-     * Creates an hyper-rectangle of random size and initializes the sub-region and sub-sampling to random values.
+     * Creates an hyper-rectangle of random size and initializes the sub-region and subsampling to random values.
      * Sample values are index values encoded in base 10. For example the value at index (4,1,2,3) will be 4123.
      *
      * @param random      the random number generator to use for initializing the test.
@@ -88,7 +88,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
      */
     private void initialize(final Random random, final boolean useChannel) throws IOException, DataStoreException {
         /*
-         * Compute a random hyper-rectangle size, sub-region and sub-sampling. Each dimension will have a
+         * Compute a random hyper-rectangle size, sub-region and subsampling. Each dimension will have a
          * size between 1 to 10, so we will be able to use decimal digits from 0 to 9 in the sample values.
          */
         int length = 1;
@@ -166,7 +166,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
-     * Tests reading a random part of the hyper-cube without sub-sampling.
+     * Tests reading a random part of the hyper-cube without subsampling.
      *
      * @throws IOException should never happen.
      * @throws DataStoreException should never happen.
@@ -179,7 +179,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
-     * Tests reading the full hyper-cube with a random sub-sampling.
+     * Tests reading the full hyper-cube with a random subsampling.
      *
      * @throws IOException should never happen.
      * @throws DataStoreException should never happen.
@@ -193,7 +193,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
-     * Tests reading a random part of the hyper-cube with a random sub-sampling.
+     * Tests reading a random part of the hyper-cube with a random subsampling.
      *
      * @throws IOException should never happen.
      * @throws DataStoreException should never happen.

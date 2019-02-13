@@ -400,7 +400,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     public Unit<?> multiply(final Unit<?> multiplier) {
         if (multiplier == this) return pow(2);                      // For formating e.g. "mi²".
         ensureRatioScale();
-        return target.multiply(multiplier).transform(toTarget);
+        return inferSymbol(target.multiply(multiplier).transform(toTarget), MULTIPLY, multiplier);
     }
 
     /**
@@ -412,7 +412,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public Unit<?> divide(final Unit<?> divisor) {
         ensureRatioScale();
-        return target.divide(divisor).transform(toTarget);
+        return inferSymbol(target.divide(divisor).transform(toTarget), DIVIDE, divisor);
     }
 
     /**
@@ -424,7 +424,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public Unit<?> pow(final int n) {
         ensureRatioScale();
-        return applyConversion(target.pow(n), n, false);
+        return inferSymbol(applyConversion(target.pow(n), n, false), 'ⁿ', null);
     }
 
     /**

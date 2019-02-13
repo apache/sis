@@ -41,7 +41,6 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -289,9 +288,9 @@ public class LambertConicConformal extends ConformalProjection {
          * Opportunistically use double-double arithmetic since the matrix coefficients will
          * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
-        final DoubleDouble F = verbatim(n);
-        F.multiply(pow(t1, n), 0);
-        F.inverseDivide(m1);
+        final DoubleDouble F = new DoubleDouble(n);
+        F.multiply(pow(t1, n));
+        F.inverseDivideGuessError(m1);
         if (!isNorth) {
             F.negate();
         }
@@ -306,7 +305,7 @@ public class LambertConicConformal extends ConformalProjection {
         DoubleDouble rF = null;
         if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
             rF = new DoubleDouble(F);
-            rF.multiply(pow(expOfNorthing(φ0, eccentricity*sin(φ0)), n), 0);
+            rF.multiply(pow(expOfNorthing(φ0, eccentricity*sin(φ0)), n));
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -325,11 +324,11 @@ public class LambertConicConformal extends ConformalProjection {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        DoubleDouble sλ = verbatim(n);
+        DoubleDouble sλ = new DoubleDouble(n);
         DoubleDouble sφ = null;
         if (isNorth) {
             // Reverse the sign of either longitude or latitude values before map projection.
-            sφ = verbatim(-1);
+            sφ = new DoubleDouble(-1d);
         } else {
             sλ.negate();
         }

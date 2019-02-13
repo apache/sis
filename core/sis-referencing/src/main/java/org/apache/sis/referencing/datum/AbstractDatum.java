@@ -95,11 +95,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private static final long serialVersionUID = -4894180465652474930L;
 
     /**
-     * The prefix used by ESRI at the beginning of datum names.
-     */
-    private static final String ESRI_PREFIX = "D_";
-
-    /**
      * Description, possibly including coordinates, of the point or points used to anchor the datum
      * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
      *
@@ -364,6 +359,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * A function for simplifying a {@link Datum} name before comparison.
      *
+     * <p>Note: if heuristic rules are modified, consider updating {@code EPSGDataAccess} accordingly.</p>
+     *
+     * @see org.apache.sis.referencing.factory.sql.EPSGDataAccess#toDatumPattern(String, StringBuilder)
+     *
      * @since 0.7
      */
     static class Simplifier extends NameToIdentifier.Simplifier {
@@ -376,8 +375,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         /** Simplify the given datum name. */
         @Override protected CharSequence apply(CharSequence name) {
             name = super.apply(name);
-            if (CharSequences.startsWith(name, ESRI_PREFIX, false)) {
-                name = name.subSequence(ESRI_PREFIX.length(), name.length());
+            if (CharSequences.startsWith(name, ESRI_DATUM_PREFIX, false)) {
+                name = name.subSequence(ESRI_DATUM_PREFIX.length(), name.length());
             }
             return name;
         }
@@ -463,11 +462,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         String name = IdentifiedObjects.getName(this, authority);
         if (name == null) {
             name = IdentifiedObjects.getName(this, null);
-            if (name == null) { // Should never happen, but be safe.
+            if (name == null) {                                 // Should never happen, but be safe.
                 return super.formatTo(formatter);
             }
-            if ("ESRI".equalsIgnoreCase(Citations.toCodeSpace(authority)) && !name.startsWith(ESRI_PREFIX)) {
-                name = ESRI_PREFIX + name;
+            if ("ESRI".equalsIgnoreCase(Citations.toCodeSpace(authority)) && !name.startsWith(Simplifier.ESRI_DATUM_PREFIX)) {
+                name = Simplifier.ESRI_DATUM_PREFIX + name;
             }
         }
         formatter.append(name, ElementKind.DATUM);

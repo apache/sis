@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -68,7 +69,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.parameter.TensorParameters
  *
@@ -279,14 +280,14 @@ public final class Matrices extends Static {
                          * See the comment in transform(Envelope, Envelope) for an explanation about why
                          * we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
                          */
-                        final DoubleDouble scale = new DoubleDouble(same ? +1 : -1, 0);
-                        scale.multiply(dstEnvelope.getSpan(dstIndex));
-                        scale.divide  (srcEnvelope.getSpan(srcIndex));
+                        final DoubleDouble scale = new DoubleDouble(same ? +1d : -1d);
+                        scale.multiplyGuessError(dstEnvelope.getSpan(dstIndex));
+                        scale.divideGuessError  (srcEnvelope.getSpan(srcIndex));
 
                         final DoubleDouble translate = new DoubleDouble(scale);
-                        translate.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
+                        translate.multiplyGuessError((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
                         translate.negate();
-                        translate.add(dstCorner.getOrdinate(dstIndex));
+                        translate.addGuessError(dstCorner.getOrdinate(dstIndex));
 
                         matrix.setNumber(dstIndex, srcIndex,       scale);
                         matrix.setNumber(dstIndex, srcAxes.length, translate);
@@ -314,7 +315,7 @@ public final class Matrices extends Static {
      *   <li>If the destination envelope has less dimensions than the source envelope,
      *       then trailing dimensions are silently dropped.</li>
      *   <li>If the target envelope has more dimensions than the source envelope,
-     *       then the transform will append trailing ordinates with the 0 value.</li>
+     *       then the transform will append trailing coordinates with the 0 value.</li>
      * </ul>
      *
      * This method ignores the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}, which may be null.
@@ -438,6 +439,13 @@ public final class Matrices extends Static {
     public static MatrixSIS createTransform(final AxisDirection[] srcAxes, final AxisDirection[] dstAxes) {
         ArgumentChecks.ensureNonNull("srcAxes", srcAxes);
         ArgumentChecks.ensureNonNull("dstAxes", dstAxes);
+        if (Arrays.equals(srcAxes, dstAxes)) {
+            /*
+             * createTransform(…) may fail if the arrays contain two axes with the same direction, for example
+             * AxisDirection.OTHER. This check prevents that failure for the common case of an identity transform.
+             */
+            return Matrices.createIdentity(srcAxes.length + 1);
+        }
         return createTransform(null, srcAxes, null, dstAxes, false);
     }
 
@@ -587,12 +595,12 @@ public final class Matrices extends Static {
      *
      * <p>This method builds a new matrix with the following content:</p>
      * <ul>
-     *   <li>An amount of {@code firstAffectedOrdinate} rows and columns are inserted before the first
+     *   <li>An amount of {@code firstAffectedCoordinate} rows and columns are inserted before the first
      *       row and columns of the sub-matrix. The elements for the new rows and columns are set to 1
      *       on the diagonal, and 0 elsewhere.</li>
      *   <li>The sub-matrix - except for its last row and column - is copied in the new matrix starting
-     *       at index ({@code firstAffectedOrdinate}, {@code firstAffectedOrdinate}).</li>
-     *   <li>An amount of {@code numTrailingOrdinates} rows and columns are appended after the above sub-matrix.
+     *       at index ({@code firstAffectedCoordinate}, {@code firstAffectedCoordinate}).</li>
+     *   <li>An amount of {@code numTrailingCoordinates} rows and columns are appended after the above sub-matrix.
      *       Their elements are set to 1 on the pseudo-diagonal ending in the lower-right corner, and 0 elsewhere.</li>
      *   <li>The last sub-matrix row is copied in the last row of the new matrix, and the last sub-matrix column
      *       is copied in the last column of the sub-matrix.</li>
@@ -623,21 +631,21 @@ public final class Matrices extends Static {
      * }
      * </div>
      *
-     * @param  firstAffectedOrdinate  the lowest index of the affected ordinates.
-     * @param  subMatrix              the matrix to use for affected ordinates.
-     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
+     * @param  subMatrix                the matrix to use for affected coordinates.
+     * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a matrix for the same transform than the given matrix,
      *         augmented with leading and trailing pass-through coordinates.
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
      */
-    public static MatrixSIS createPassThrough(final int firstAffectedOrdinate,
-            final Matrix subMatrix, final int numTrailingOrdinates)
+    public static MatrixSIS createPassThrough(final int firstAffectedCoordinate,
+            final Matrix subMatrix, final int numTrailingCoordinates)
     {
-        ArgumentChecks.ensureNonNull ("subMatrix",             subMatrix);
-        ArgumentChecks.ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
-        ArgumentChecks.ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
-        final int  expansion = firstAffectedOrdinate + numTrailingOrdinates;
+        ArgumentChecks.ensureNonNull ("subMatrix",               subMatrix);
+        ArgumentChecks.ensurePositive("firstAffectedCoordinate", firstAffectedCoordinate);
+        ArgumentChecks.ensurePositive("numTrailingCoordinates",  numTrailingCoordinates);
+        final int  expansion = firstAffectedCoordinate + numTrailingCoordinates;
         int sourceDimensions = subMatrix.getNumCol();           // Will become the number of dimensions later.
         int targetDimensions = subMatrix.getNumRow();
         /*
@@ -656,7 +664,7 @@ public final class Matrices extends Static {
          * Following code processes from upper row to lower row.
          * First, set the diagonal elements on leading new dimensions.
          */
-        for (int j=0; j<firstAffectedOrdinate; j++) {
+        for (int j=0; j<firstAffectedCoordinate; j++) {
             matrix.setElement(j, j, 1);
         }
         /*
@@ -665,19 +673,19 @@ public final class Matrices extends Static {
          */
         final int lastColumn = sourceDimensions + expansion;
         matrix.setElements(sources, length, stride, transfer,
-                0,                     0,                           // Source (row, colum)
-                firstAffectedOrdinate, firstAffectedOrdinate,       // Target (row, column)
-                targetDimensions,      sourceDimensions);           // Number of rows and columns to copy.
+                0,                     0,                               // Source (row, colum)
+                firstAffectedCoordinate, firstAffectedCoordinate,       // Target (row, column)
+                targetDimensions,        sourceDimensions);             // Number of rows and columns to copy.
         matrix.setElements(sources, length, stride, transfer,
-                0,                     sourceDimensions,            // Source (row, colum):  last column
-                firstAffectedOrdinate, lastColumn,                  // Target (row, column): part of last column
-                targetDimensions,      1);                          // Copy some rows of only 1 column.
+                0,                       sourceDimensions,              // Source (row, colum):  last column
+                firstAffectedCoordinate, lastColumn,                    // Target (row, column): part of last column
+                targetDimensions,        1);                            // Copy some rows of only 1 column.
         /*
          * Set the pseudo-diagonal elements on the trailing new dimensions.
          * 'diff' is zero for a square matrix and non-zero for rectangular matrix.
          */
         final int diff = targetDimensions - sourceDimensions;
-        for (int i=lastColumn - numTrailingOrdinates; i<lastColumn; i++) {
+        for (int i=lastColumn - numTrailingCoordinates; i<lastColumn; i++) {
             matrix.setElement(diff + i, i, 1);
         }
         /*
@@ -687,7 +695,7 @@ public final class Matrices extends Static {
         final int lastRow = targetDimensions + expansion;
         matrix.setElements(sources, length, stride, transfer,
                 targetDimensions, 0,                                // Source (row, colum):  last row
-                lastRow,          firstAffectedOrdinate,            // Target (row, column): part of last row
+                lastRow,          firstAffectedCoordinate,          // Target (row, column): part of last row
                 1,                sourceDimensions);                // Copy some columns of only 1 row.
         matrix.setElements(sources, length, stride, transfer,
                 targetDimensions, sourceDimensions,

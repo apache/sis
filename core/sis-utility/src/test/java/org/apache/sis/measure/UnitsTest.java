@@ -210,6 +210,27 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
+     * Tests the conversion factor of {@link Units#DECIBEL}.
+     *
+     * @throws IncommensurableException if the conversion can not be applied.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Decibel#Conversions">Decibel on Wikipedia</a>
+     */
+    @Test
+    public void testDecibelConversionFactor() throws IncommensurableException {
+        final Unit<?> bel = Units.valueOf("B");
+        assertEquals(10,      bel.getConverterToAny(DECIBEL).convert(1), STRICT);
+        assertEquals(0.1,     DECIBEL.getConverterToAny(bel).convert(1), STRICT);
+        assertEquals(3.16228,     bel.getConverterToAny(UNITY).convert(1), 5E-6);
+        assertEquals(1.12202, DECIBEL.getConverterToAny(UNITY).convert(1), 5E-6);
+        /*
+         * Reverse of last two lines above.
+         */
+        assertEquals(1, UNITY.getConverterToAny(bel)    .convert(3.16228), 2E-5);
+        assertEquals(1, UNITY.getConverterToAny(DECIBEL).convert(1.12202), 2E-5);
+    }
+
+    /**
      * Tests getting a unit for a given quantity type.
      */
     @Test
@@ -268,6 +289,18 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(RADIAN,       valueOf("radian"));
         assertSame(RADIAN,       valueOf("radians"));
         assertSame(SECOND,       valueOf("s"));
+        assertSame(SECOND,       valueOf("second"));
+        assertSame(SECOND,       valueOf("seconds"));
+        assertSame(MINUTE,       valueOf("min"));
+        assertSame(MINUTE,       valueOf("minute"));
+        assertSame(MINUTE,       valueOf("minutes"));
+        assertSame(HOUR,         valueOf("h"));
+        assertSame(HOUR,         valueOf("hr"));
+        assertSame(HOUR,         valueOf("hour"));
+        assertSame(HOUR,         valueOf("hours"));
+        assertSame(DAY,          valueOf("d"));
+        assertSame(DAY,          valueOf("day"));
+        assertSame(DAY,          valueOf("days"));
         assertSame(METRE,        valueOf("m"));
         assertSame(METRE,        valueOf("metre"));
         assertSame(METRE,        valueOf("meter"));
@@ -286,6 +319,7 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(CELSIUS,      valueOf("degree Celsius"));
         assertSame(CELSIUS,      valueOf("degree_Celcius"));
         assertSame(PASCAL,       valueOf("Pa"));
+        assertSame(DECIBEL,      valueOf("dB"));
     }
 
     /**

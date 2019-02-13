@@ -16,12 +16,9 @@
  */
 package org.apache.sis.measure;
 
-import java.util.List;
-import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Numerics;
@@ -158,31 +155,6 @@ class SexagesimalConverter extends AbstractConverter {
     }
 
     /**
-     * Returns {@code false} since this converter is not an identity function.
-     */
-    @Override
-    public boolean isIdentity() {
-        return false;
-    }
-
-    /**
-     * Returns {@code false} since the conversion is non-linear.
-     */
-    @Override
-    public boolean isLinear() {
-        return false;
-    }
-
-    /**
-     * Returns a collection containing only {@code this} since this conversion is not
-     * a concatenation of other converters.
-     */
-    @Override
-    public List<? extends UnitConverter> getConversionSteps() {
-        return Collections.singletonList(this);
-    }
-
-    /**
      * Returns the inverse of this converter.
      */
     @Override
@@ -208,16 +180,6 @@ class SexagesimalConverter extends AbstractConverter {
     }
 
     /**
-     * Performs a conversion from fractional degrees to sexagesimal degrees.
-     * This method delegates to the version working on {@code double} primitive type,
-     * so it may not provide the accuracy normally required by this method contract.
-     */
-    @Override
-    public final Number convert(final Number value) {
-        return convert(value.doubleValue());
-    }
-
-    /**
      * Considers this converter as non-derivable. Actually it would be possible to provide a derivative value
      * for input values other than the discontinuities points, but for now we presume that it is less dangerous
      * to return NaN every time, so the user can not miss that this function is not derivable everywhere.
@@ -225,19 +187,6 @@ class SexagesimalConverter extends AbstractConverter {
     @Override
     public final double derivative(double value) {
         return Double.NaN;
-    }
-
-    /**
-     * Concatenates this converter with another converter. The resulting converter is equivalent to first converting
-     * by the specified converter (right converter), and then converting by this converter (left converter).
-     */
-    @Override
-    public UnitConverter concatenate(final UnitConverter converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
-        if (equals(converter.inverse())) {
-            return LinearConverter.IDENTITY;
-        }
-        return new ConcatenatedConverter(converter, this);
     }
 
     /**

@@ -40,6 +40,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
@@ -1001,7 +1002,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Compares to the specified envelope for equality up to the specified tolerance value.
      * The tolerance value {@code eps} can be either relative to the {@linkplain #getSpan(int)
      * envelope span} along each dimension or can be an absolute value (as for example some
-     * ground resolution of a grid coverage).
+     * ground resolution of a {@linkplain org.apache.sis.coverage.grid.GridCoverage grid coverage}).
      *
      * <ul>
      *   <li>If {@code epsIsRelative} is set to {@code true}, the actual tolerance value for a
@@ -1208,9 +1209,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final double[][] points = new double[][] {
-            getLowerCorner().getCoordinate(),
-            getUpperCorner().getCoordinate()
+        final Vector[] points = {
+            Vector.create(getLowerCorner().getCoordinate()),
+            Vector.create(getUpperCorner().getCoordinate())
         };
         formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
         final int dimension = getDimension();
@@ -1218,6 +1219,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         if (dimension != 2) {
             keyword = new StringBuilder(keyword).append(dimension).append('D').toString();
         }
+        formatter.setInvalidWKT(Envelope.class, null);
         return keyword;
     }
 

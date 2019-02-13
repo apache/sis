@@ -40,12 +40,15 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * A class in charges of combining two-dimensional geographic or projected CRS with an ellipsoidal height
- * into a three-dimensional CRS.
+ * A class in charges of combining two-dimensional geographic or projected CRS with an ellipsoidal height into a
+ * three-dimensional CRS. This is the converse of {@link org.apache.sis.referencing.EllipsoidalHeightSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @see org.apache.sis.referencing.EllipsoidalHeightSeparator
+ *
+ * @since 0.8
  * @module
  */
 public class EllipsoidalHeightCombiner {

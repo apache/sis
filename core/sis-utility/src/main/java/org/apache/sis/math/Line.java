@@ -21,6 +21,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -294,21 +295,21 @@ public class Line implements Cloneable, Serializable {
         for (final DirectPosition p : points) {
             final int dimension = p.getDimension();
             if (dimension != DIMENSION) {
-                throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                            Strings.toIndexed("points", i), DIMENSION, dimension));
             }
             i++;
             final double x,y;
             if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
                 !isNaN(x = p.getOrdinate(0)))
             {
-                mean_x.add(x);
-                mean_y.add(y);
+                mean_x.addKahan(x);
+                mean_y.addKahan(y);
                 n++;
             }
         }
-        mean_x.divide(n, 0);
-        mean_y.divide(n, 0);
+        mean_x.divide(n);
+        mean_y.divide(n);
         /*
          * We have to solve two equations with two unknowns:
          *
@@ -329,7 +330,7 @@ public class Line implements Cloneable, Serializable {
         final DoubleDouble mean_xy = new DoubleDouble();
         for (final DirectPosition p : points) {
             final double y;
-            if (!isNaN(y       = p.getOrdinate(1)) &&  // Test first the dimension which is most likely to contain NaN.
+            if (!isNaN(y       = p.getOrdinate(1)) &&       // Test first the dimension which is most likely to contain NaN.
                 !isNaN(a.value = p.getOrdinate(0)))
             {
                 a.error = 0;
@@ -345,9 +346,9 @@ public class Line implements Cloneable, Serializable {
                 mean_y2.add(a);         // mean_y² += y²
             }
         }
-        mean_x2.divide(n, 0);
-        mean_y2.divide(n, 0);
-        mean_xy.divide(n, 0);
+        mean_x2.divide(n);
+        mean_y2.divide(n);
+        mean_xy.divide(n);
         /*
          * Assuming that 'mean(x) == 0', then the correlation
          * coefficient can be approximate by:
@@ -372,7 +373,7 @@ public class Line implements Cloneable, Serializable {
         a.multiply(mean_x2);
         a.sqrt();
         a.inverseDivide(mean_xy);
-        return a.value;
+        return a.doubleValue();
     }
 
     /**

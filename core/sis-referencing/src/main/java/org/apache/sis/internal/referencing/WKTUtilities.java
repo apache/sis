@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.lang.reflect.Array;
+import java.util.function.Function;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
@@ -51,6 +53,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -317,7 +320,7 @@ public final class WKTUtilities extends Static {
      * @param  points  the sequence of points. It is not required that each point has the same dimension.
      * @return suggested amount of fraction digits as an array as long as the longest row.
      */
-    public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final double[]... points) {
+    public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final Vector[] points) {
         final int[] fractionDigits = Numerics.suggestFractionDigits(points);
         final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
         if (ellipsoid != null) {
@@ -349,5 +352,103 @@ public final class WKTUtilities extends Static {
             }
         }
         return fractionDigits;
+    }
+
+    /**
+     * Returns the values in the corners and in the center of the given tensor. The values are returned in a
+     * <var>n</var>-dimensional array of {@link Number} where <var>n</var> is the length of {@code size}.
+     * If some values have been skipped, {@code null} values are inserted in the rows or columns where the
+     * skipping occurs.
+     *
+     * @param  tensor      function providing values of the tensor. Inputs are indices of the desired value with
+     *                     index in each dimension ranging from 0 inclusive to {@code size[dimension]} exclusive.
+     * @param  size        size of the tensor. The length of this array is the tensor dimension.
+     * @param  cornerSize  number of values to keep in each corner.
+     * @return <var>n</var>-dimensional array of {@link Number} containing corners and center of the given tensor.
+     *
+     * @since 1.0
+     */
+    public static Object[] cornersAndCenter(final Function<int[],Number> tensor, final int[] size, final int cornerSize) {
+        /*
+         * The 'source' array will contain indices of values to fetch in the tensor, and the 'target' array will contain
+         * indices where to store those values in the returned data structure. Other arrays contain threshold indices of
+         * points of interest in the target data structure.
+         */
+        final int sizeLimit = cornerSize*2 + 1;
+        final int[] shown = size.clone();
+        final int[] empty = size.clone();           // Target index of row/column to leave empty, or an unreachable value if none.
+        for (int d=0; d<shown.length; d++) {
+            if (shown[d] > sizeLimit) {
+                shown[d] = sizeLimit;
+                empty[d] = cornerSize;
+            }
+        }
+        final int[] source = new int[shown.length];
+        final int[] target = new int[shown.length];
+        final Object[] numbers = (Object[]) Array.newInstance(Number.class, shown);
+        /*
+         * The loops below are used for simulating GOTO statements. This is usually a deprecated practice,
+         * but in this case we can hardly use normal loops because the number of nested loops is dynamic.
+         * We want something equivalent to the code below where 'n' - the number of nested loops - is not
+         * known at compile-time:
+         *
+         * for (int i0=0; i0<size[0]; i0++) {
+         *     for (int i1=0; i1<size[1]; i1++) {
+         *         for (int i2=0; i2<size[2]; i2++) {
+         *             // ... etc ...
+         *             for (int in=0; in<size[n]; in++) {
+         *             }
+         *         }
+         *     }
+         * }
+         *
+         * Since we can not have a varying number of nested loops in the code, we achieve the same effect with
+         * GOTO-like statements. It would be possible to achieve the same effect with recursive method calls,
+         * but the GOTO-like approach is a little bit more compact.
+         */
+        Number[] row = null;
+fill:   for (;;) {
+            if (row == null) {
+                Object[] walk = numbers;
+                for (int d=shown.length; --d >= 1;) {
+                    walk = (Object[]) walk[target[d]];
+                }
+                row = (Number[]) walk;
+            }
+            row[target[0]] = tensor.apply(source);
+            for (int d=0;;) {
+                source[d]++;
+                final int p = ++target[d];
+                if (p == shown[d]) {            // End of row (or higher dimension). This check must be first.
+                    row = null;
+                    source[d] = 0;
+                    target[d] = 0;
+                    if (++d >= shown.length) {
+                        break fill;
+                    }
+                    // Continue loop for incrementing the higher dimension.
+                } else {
+                    switch (p - empty[d]) {
+                        case 0:  continue;          // Column/row to leave null. Continue the loop for moving to next column/row.
+                        case 1:  source[d] = size[d] - cornerSize;            // Skip source columns/rows (or higher dimensions).
+                    }
+                    continue fill;                  // Stop incrementing indices and fetch the value at current location.
+                }
+            }
+        }
+        /*
+         * Add the center value in the empty location (in the middle).
+         */
+        Object walk = numbers;
+        Object[] previous = null;
+        for (int d=size.length; --d >= 0;) {
+            previous = (Object[]) walk;
+            walk = previous[empty[d]];
+            source[d] = size[d] / 2;
+        }
+        if (walk == null) {
+            previous[empty[0]] = tensor.apply(source);
+        }
+        return numbers;
     }
 }

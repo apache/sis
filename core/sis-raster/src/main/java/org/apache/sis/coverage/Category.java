@@ -34,6 +34,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Types;
 
+import static java.lang.Double.doubleToRawLongBits;
+
 
 /**
  * Describes a sub-range of sample values in a sample dimension.
@@ -75,12 +77,13 @@ public class Category implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6215962897884256696L;
+    private static final long serialVersionUID = 2630516005075467646L;
 
     /**
-     * Compares {@code Category} objects according their {@link #minimum} value.
+     * Compares {@code Category} objects according their {@link NumberRange#getMinDouble(boolean)} value.
      */
-    static final Comparator<Category> COMPARATOR = (Category c1, Category c2) -> Category.compare(c1.minimum, c2.minimum);
+    static final Comparator<Category> COMPARATOR = (Category c1, Category c2) ->
+            Category.compare(c1.range.getMinDouble(true), c2.range.getMinDouble(true));
 
     /**
      * Compares two {@code double} values. This method is similar to {@link Double#compare(double,double)}
@@ -88,8 +91,8 @@ public class Category implements Serializable {
      */
     static int compare(final double v1, final double v2) {
         if (Double.isNaN(v1) && Double.isNaN(v2)) {
-            final long bits1 = Double.doubleToRawLongBits(v1);
-            final long bits2 = Double.doubleToRawLongBits(v2);
+            final long bits1 = doubleToRawLongBits(v1);
+            final long bits2 = doubleToRawLongBits(v2);
             if (bits1 < bits2) return -1;
             if (bits1 > bits2) return +1;
         }
@@ -104,33 +107,17 @@ public class Category implements Serializable {
     final InternationalString name;
 
     /**
-     * The minimal and maximal sample value (inclusive). If {@link #range} is non-null, then
-     * those fields are equal to the following values, extracted for performance reasons:
+     * The [minimum … maximum] range of values in this category (never {@code null}). Notes:
      *
      * <ul>
-     *   <li>{@code minimum == range.getMinDouble(true)}</li>
-     *   <li>{@code maximum == range.getMaxDouble(true)}</li>
-     * </ul>
-     *
-     * If {@link #range} is null, then those values shall be one of the multiple possible {@code NaN} values.
-     * This means that this category stands for "no data" after all sample values have been converted to real values.
-     */
-    final double minimum, maximum;
-
-    /**
-     * The [{@linkplain #minimum} … {@linkplain #maximum}] range of values, or {@code null} if that range would
-     * contain {@link Float#NaN} bounds. This is partially redundant with the minimum and maximum fields, except
-     * for the following differences:
-     *
-     * <ul>
-     *   <li>This field is {@code null} if the minimum and maximum values are NaN (converted qualitative category).</li>
+     *   <li>The minimum and maximum values may be one of the {@linkplain Float#isNaN() NaN} values (see below).</li>
      *   <li>The value type may be different than {@link Double} (typically {@link Integer}).</li>
      *   <li>The bounds may be exclusive instead than inclusive.</li>
      *   <li>The range may be an instance of {@link MeasurementRange} if the {@link #toConverse} is identity
      *       and the units of measurement are known.</li>
      * </ul>
      *
-     * The range is null if this category is a qualitative category converted to real values.
+     * The range may be {@code NaN} if this category is a qualitative category converted to real values.
      * Those categories are characterized by two apparently contradictory properties,
      * and are implemented using {@link Float#NaN} values:
      *
@@ -171,20 +158,47 @@ public class Category implements Serializable {
     final Category converse;
 
     /**
-     * Creates a copy of the given category except for the {@link #toConverse} function which is set to identity.
-     * This is used only if a user specify a {@code ConvertedCategory} to {@link SampleDimension} constructor.
-     * Such converted category can only come from another {@code SampleDimension} and may have inconsistent
-     * information for the new sample dimension that the user is creating.
+     * Creates a copy of the given category. This constructor is provided for subclasses
+     * wanting to extent an existing category with custom information.
      *
      * @param copy  the category to copy.
      */
-    Category(final Category copy) {
+    protected Category(final Category copy) {
         name       = copy.name;
         range      = copy.range;
-        minimum    = copy.minimum;
-        maximum    = copy.maximum;
-        toConverse = identity();
-        converse   = this;
+        toConverse = copy.toConverse;
+        if (copy.converse == copy) {
+            converse = this;
+        } else {
+            converse = new Category(copy.converse, this);
+        }
+    }
+
+    /**
+     * Creates a copy of the given category except for the {@link #converse} and {@link #toConverse} fields.
+     * This constructor serves two purposes:
+     * <ul>
+     *   <li>If {@code caller} is null, then {@link #toConverse} is is set to identity.
+     *       This is used only if a user specify a {@code ConvertedCategory} to {@link SampleDimension} constructor.
+     *       Such converted category can only come from another {@code SampleDimension} and may have inconsistent
+     *       information for the new sample dimension that the user is creating.</li>
+     *   <li>If {@code caller} is non-null, then {@link #toConverse} is set to the same transform than {@code copy} and
+     *       {@link #converse} is set to {@code caller}. This is used only as a complement for the copy constructor.</li>
+     * </ul>
+     *
+     * @param copy    the category to copy.
+     * @param caller  the converse, or {@code null} for {@code this}.
+     */
+    Category(final Category copy, final Category caller) {
+        name  = copy.name;
+        range = copy.range;
+        if (caller != null) {
+            toConverse = copy.toConverse;
+            converse   = caller;
+        } else {
+            toConverse = identity();
+            converse   = this;
+        }
     }
 
     /**
@@ -213,21 +227,21 @@ public class Category implements Serializable {
             ArgumentChecks.ensureNonNull("toUnits", toUnits);
             // The converse is not true: we allow 'units' to be null even if 'toUnits' is non-null.
         }
-        this.name    = Types.toInternationalString(name);
-        this.minimum = samples.getMinDouble(true);
-        this.maximum = samples.getMaxDouble(true);
-        final boolean isNaN = Double.isNaN(minimum);
+        this.name = Types.toInternationalString(name);
+        final double  minimum = samples.getMinDouble(true);
+        final double  maximum = samples.getMaxDouble(true);
+        final boolean isNaN   = Double.isNaN(minimum);
         /*
          * Following arguments check uses '!' in comparison in order to reject NaN values in quantitative category.
          * For qualitative category, NaN is accepted provided that it is the same NaN for both ends of the range.
          */
         if (!(minimum <= maximum)) {
-            if (toUnits != null || !isNaN || Double.doubleToRawLongBits(minimum) != Double.doubleToRawLongBits(maximum)) {
+            if (toUnits != null || !isNaN || doubleToRawLongBits(minimum) != doubleToRawLongBits(maximum)) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalCategoryRange_2, name, samples));
             }
         }
         if (isNaN) {
-            range      = null;
+            range      = samples;
             converse   = this;
             toConverse = identity();
         } else try {
@@ -309,12 +323,16 @@ public class Category implements Serializable {
             minIncluded = maxIncluded;
             maxIncluded = tmp;
         }
-        minimum = extremums[minIncluded ? 0 : 2];                                           // Store inclusive values.
-        maximum = extremums[maxIncluded ? 1 : 3];
         if (isQuantitative) {
             range = new ConvertedRange(extremums, minIncluded, maxIncluded, units);
         } else {
-            range = null;
+            final double minimum = extremums[minIncluded ? 0 : 2];                          // Take inclusive value.
+            final float min = (float) minimum;
+            if (doubleToRawLongBits(minimum) == doubleToRawLongBits(min)) {
+                range = NumberRange.create(Float.class, min);
+            } else {
+                range = NumberRange.create(Double.class, minimum);
+            }
         }
     }
 
@@ -337,6 +355,15 @@ public class Category implements Serializable {
     }
 
     /**
+     * Returns {@code true} if this category is a qualitative category that has been converted to "real values".
+     * In such case, the real values are {@link Float#isNaN()} numbers. If {@code false}, then this category is
+     * either a quantitative category or a qualitative category that has not been converted to "real values".
+     */
+    final boolean isConvertedQualitative() {
+        return Double.isNaN(range.getMinDouble());
+    }
+
+    /**
      * Returns {@code true} if this category is quantitative. A quantitative category has a
      * {@linkplain #getTransferFunction() transfer function} mapping sample values to values
      * in some units of measurement. By contrast, a qualitative category maps sample values
@@ -347,7 +374,7 @@ public class Category implements Serializable {
      *         {@code false} if this category is qualitative.
      */
     public boolean isQuantitative() {
-        return converted().range != null;
+        return !converted().isConvertedQualitative();
     }
 
     /**
@@ -357,39 +384,16 @@ public class Category implements Serializable {
      * are already real values and the range may be an instance of {@link MeasurementRange}
      * (i.e. a number range with units of measurement).
      *
+     * <p>This method never returns {@code null}, but may return an {@linkplain NumberRange#isBounded() unbounded range}
+     * or a range containing a singleton {@link Double#NaN} value. The {@code NaN} values happen if this range is derived
+     * from a "no data" value converted to "real value" by the {@linkplain #getTransferFunction() transfer function}.</p>
+     *
      * @return the range of sample values in this category.
      *
      * @see SampleDimension#getSampleRange()
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public NumberRange<?> getSampleRange() {
-        if (range != null) {
-            return range;
-        }
-        /*
-         * The range can be null only if the minimum and maximum are NaN. This may be the case if NaN were
-         * given explicitly to the constructor or if this category is an instance of ConvertedCategory for
-         * qualitative category. In the later case, the NaN are the result of converting the sample values.
-         * We favor the Float type because values should be NaN produced by MathFunctions.toNanFloat(int).
-         * The minimum and maximum are usually the same value, but not necessarily.
-         */
-        final float min = (float) minimum;
-        final float max = (float) maximum;
-        final Number v1, v2;
-        final Class<?> type;
-        if (Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(min) &&
-            Double.doubleToRawLongBits(maximum) == Double.doubleToRawLongBits(max))
-        {
-            v1 = min;
-            v2 = (Float.floatToRawIntBits(min) == Float.floatToRawIntBits(max)) ? v1 : max;
-            type = Float.class;
-        } else {
-            v1 = minimum;
-            v2 = (Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(maximum)) ? v1 : maximum;
-            type = Double.class;
-        }
-        return new NumberRange(type, v1, true, v2, true);
-        // Do not use NumberRange.create(float, …) because it rejects NaN values.
+        return range;
     }
 
     /**
@@ -401,8 +405,13 @@ public class Category implements Serializable {
      * @see SampleDimension#getMeasurementRange()
      */
     public Optional<MeasurementRange<?>> getMeasurementRange() {
-        // A ClassCastException below would be a bug in our constructor.
-        return Optional.ofNullable((MeasurementRange<?>) converted().range);
+        final NumberRange<?> mr = converted().range;
+        if (Double.isNaN(mr.getMinDouble())) {
+            return Optional.empty();
+        } else {
+            // A ClassCastException below would be a bug in our constructor.
+            return Optional.of((MeasurementRange<?>) mr);
+        }
     }
 
     /**
@@ -411,13 +420,18 @@ public class Category implements Serializable {
      * a text like "NaN #0".
      */
     final Object getRangeLabel() {
-        if (Double.isNaN(minimum)) {
-            return "NaN #" + MathFunctions.toNanOrdinal((float) minimum);
-        } else if (minimum == maximum) {
-            return range.getMinValue();
-        } else {
-            return range;
+        if (range != null) {                                // Temporarily null during object construction.
+            final Number minimum = range.getMinValue();
+            if (minimum != null && minimum.equals(range.getMaxValue())) {
+                final float f = minimum.floatValue();
+                if (Float.isNaN(f)) {
+                    return "NaN #" + MathFunctions.toNanOrdinal(f);
+                } else {
+                    return minimum;
+                }
+            }
         }
+        return range;
     }
 
     /**
@@ -433,7 +447,11 @@ public class Category implements Serializable {
          * Note: if this method is invoked on "real values category", then we need to return
          * the identity transform instead than 'toConverse'. This is done by ConvertedCategory.
          */
-        return (converse.range != null) ? Optional.of(toConverse) : Optional.empty();
+        if (converse.isConvertedQualitative()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(toConverse);
+        }
     }
 
     /**
@@ -466,10 +484,19 @@ public class Category implements Serializable {
         }
         if (object != null && getClass().equals(object.getClass())) {
             final Category that = (Category) object;
-            return name.equals(that.name) && Objects.equals(range, that.range) &&
-                   Double.doubleToRawLongBits(minimum) == Double.doubleToRawLongBits(that.minimum) &&
-                   Double.doubleToRawLongBits(maximum) == Double.doubleToRawLongBits(that.maximum) &&
-                   toConverse.equals(that.toConverse);
+            if (name.equals(that.name)) {
+                final NumberRange<?> other = that.range;
+                /*
+                 * The NumberRange.equals(Object) comparison is not sufficient because it considers all NaN values as equal.
+                 * For the purpose of Category, we need to distinguish the different NaN values.
+                 */
+                if (range == other || (range.equals(other)
+                        && doubleToRawLongBits(range.getMinDouble()) == doubleToRawLongBits(other.getMinDouble())
+                        && doubleToRawLongBits(range.getMaxDouble()) == doubleToRawLongBits(other.getMaxDouble())))
+                {
+                    return toConverse.equals(that.toConverse);
+                }
+            }
         }
         return false;
     }

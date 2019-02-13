@@ -34,6 +34,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
@@ -79,7 +80,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     };
 
     /**
-     * Helper class for reading a sub-area with a sub-sampling,
+     * Helper class for reading a sub-area with a subsampling,
      * or {@code null} if {@code dataType} is not a supported type.
      */
     private final HyperRectangleReader reader;
@@ -95,6 +96,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * The dimensions of this variable, in the order they appear in netCDF file. When iterating over the values stored in
      * this variable (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[length-1]}
      * varies faster, followed by index in the domain of {@code dimensions[length-2]}, <i>etc.</i>
+     *
+     * @see #getShape()
+     * @see GridInfo#domain
      */
     final Dimension[] dimensions;
 
@@ -143,21 +147,19 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
 
     /**
      * The grid geometry associated to this variable,
-     * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
+     * computed by {@link ChannelDecoder#getGrids()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
      *
-     * @see #getGridGeometry(Decoder)
+     * @see #getGrid(Decoder)
      */
-    GridInfo gridGeometry;
+    GridInfo grid;
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
      * with the name of all dimensions in the netCDF file. This information is computed at construction time
      * because requested more than once.
-     *
-     * @see #isCoordinateSystemAxis()
      */
-    private boolean isCoordinateSystemAxis;
+    boolean isCoordinateSystemAxis;
 
     /**
      * The values of the whole variable, or {@code null} if not yet read. This vector should be assigned only
@@ -437,13 +439,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis,
+     * Returns {@code AXIS} if this variable seems to be a coordinate system axis,
      * determined by comparing its name with the name of all dimensions in the netCDF file.
      * Also determined by inspection of {@code "coordinates"} attribute on other variables.
      */
     @Override
-    public boolean isCoordinateSystemAxis() {
-        return isCoordinateSystemAxis;
+    protected VariableRole getRole() {
+        return isCoordinateSystemAxis ? VariableRole.AXIS : super.getRole();
     }
 
     /**
@@ -464,17 +466,17 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
      * The grid geometries are opportunistically cached in {@code VariableInfo} instances after they have
-     * been computed by {@link ChannelDecoder#getGridGeometries()}.
+     * been computed by {@link ChannelDecoder#getGrids()}.
      * The same grid geometry may be shared by many variables.
      *
-     * @see ChannelDecoder#getGridGeometries()
+     * @see ChannelDecoder#getGrids()
      */
     @Override
-    public Grid getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
-        if (gridGeometry == null) {
-            decoder.getGridGeometries();            // Force calculation of grid geometries if not already done.
+    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+        if (grid == null) {
+            decoder.getGrids();            // Force calculation of grid geometries if not already done.
         }
-        return gridGeometry;
+        return grid;
     }
 
     /**
@@ -494,7 +496,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     * This method is used mostly for building string representations of this variable.
      *
      * @return the number of grid cells for each dimension, as unsigned integers.
      */
@@ -556,6 +557,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the value of the given attribute, or {@code null} if none.
      * This method does not search the lower-case variant of the given name because the argument given to this method
      * is usually a hard-coded value from {@link CF} or {@link CDM} conventions, which are already in lower-cases.
+     *
+     * <p>All {@code getAttributeValue(…)} methods in this class ultimately invokes this method.
+     * This provide a single point to override if the functionality needs to be extended.</p>
      *
      * @param  attributeName  name of attribute to search, in the expected case.
      * @return variable attribute value of the given name, or {@code null} if none.
@@ -758,12 +762,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Reads a sub-sampled sub-area of the variable.
+     * Reads a subsampled sub-area of the variable.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Array elements are in "natural" order (inverse of netCDF order).
      *
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
-     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @param  subsampling  subsampling along each dimension. 1 means no subsampling.
      * @return the data as an array of a Java primitive type.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
@@ -808,6 +812,20 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final Object array = reader.read(region);
         replaceNaN(array);
         return Vector.create(array, dataType.isUnsigned);
+    }
+
+    /**
+     * Returns a coordinate for this two-dimensional grid coordinate axis.
+     * This is (indirectly) a callback method for {@link Grid#getAxes(Decoder)}.
+     *
+     * @throws ArithmeticException if the axis size exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     */
+    @Override
+    protected double coordinateForAxis(final int j, final int i) throws IOException, DataStoreException {
+        assert j >= 0 && j < dimensions[0].length : j;
+        assert i >= 0 && i < dimensions[1].length : i;
+        final long n = dimensions[1].length();
+        return read().doubleValue(Math.toIntExact(i + n*j));
     }
 
     /**

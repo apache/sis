@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.text.NumberFormat;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.text.DecimalFormat;
+import java.text.Format;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Range;
@@ -98,16 +98,21 @@ final class SampleRangeFormat extends RangeFormat {
         for (int i=0; i<count; i++) {
             int ndigits = 0;
             for (final Category category : dimensions[i].getCategories()) {
-                final Category converted = category.converted();
-                final boolean  isPacked  = (Double.doubleToRawLongBits(category.minimum) != Double.doubleToRawLongBits(converted.minimum))
-                                         | (Double.doubleToRawLongBits(category.maximum) != Double.doubleToRawLongBits(converted.maximum));
+                final NumberRange<?> sr = category.getSampleRange();
+                final NumberRange<?> cr = category.converted().range;
+                final double  smin = sr.getMinDouble(true);
+                final double  smax = sr.getMaxDouble(false);
+                final double  cmin = cr.getMinDouble(true);
+                final double  cmax = cr.getMaxDouble(false);
+                final boolean isPacked = (Double.doubleToRawLongBits(smin) != Double.doubleToRawLongBits(cmin))
+                                       | (Double.doubleToRawLongBits(smax) != Double.doubleToRawLongBits(cmax));
                 hasPackedValues |= isPacked;
                 /*
                  * If the sample values are already real values, pretend that they are packed in bytes.
                  * The intent is only to compute an arbitrary number of fraction digits.
                  */
-                final double range = isPacked ? ( category.maximum -  category.minimum) : 255;
-                final double increment =        (converted.maximum - converted.minimum) / range;
+                final double range = isPacked ? (smax - smin) : 256;
+                final double increment =        (cmax - cmin) / range;
                 if (!Double.isNaN(increment)) {
                     hasQuantitative = true;
                     final int n = -Numerics.toExp10(Math.getExponent(increment));
@@ -134,20 +139,9 @@ final class SampleRangeFormat extends RangeFormat {
      *       We do that because the range may be repeated in the "Measure" column with units.</li>
      * </ul>
      */
-    private String formatSample(Object value) {
+    private String formatSample(final Object value) {
         if (value instanceof Number) {
-            final double m = Math.abs(((Number) value).doubleValue());
-            final String text;
-            if (m > 0 && (m >= 1E+9 || m < 1E-4) && elementFormat instanceof DecimalFormat) {
-                final DecimalFormat df = (DecimalFormat) elementFormat;
-                final String pattern = df.toPattern();
-                df.applyPattern("0.######E00");
-                text = df.format(value);
-                df.applyPattern(pattern);
-            } else {
-                text = elementFormat.format(value);
-            }
-            return text.concat(" ");
+            return Numerics.useScientificNotationIfNeeded(elementFormat, value, Format::format).concat(" ");
         } else if (value instanceof Range<?>) {
             if (value instanceof MeasurementRange<?>) {
                 /*
@@ -171,9 +165,6 @@ final class SampleRangeFormat extends RangeFormat {
      * @return the range to write, or {@code null} if the given {@code range} argument was null.
      */
     private String formatMeasure(final Range<?> range) {
-        if (range == null) {
-            return null;
-        }
         final NumberFormat nf = (NumberFormat) elementFormat;
         final int min = nf.getMinimumFractionDigits();
         final int max = nf.getMaximumFractionDigits();
@@ -237,14 +228,16 @@ final class SampleRangeFormat extends RangeFormat {
                  */
                 if (hasQuantitative) {
                     final Category converted = category.converted();
-                    String text = formatMeasure(converted.range);               // Example: [6.0 … 25.0)°C
-                    if (text == null) {
+                    final String text;
+                    if (converted.isConvertedQualitative()) {
                         text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
+                    } else {
+                        text = formatMeasure(converted.getSampleRange());       // Example: [6.0 … 25.0)°C
                     }
                     table.append(text);
                     table.nextColumn();
                 }
-                table.append(category.name.toString(getLocale()));
+                table.append(category.getName().toString(getLocale()));
                 table.nextLine();
             }
         }

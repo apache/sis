@@ -28,10 +28,15 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Workaround;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -51,41 +56,112 @@ public final class RasterFactory extends Static {
 
     /**
      * Wraps the given data buffer in a raster.
+     * The sample model type is selected according the number of bands and the pixel stride.
      *
      * @param  buffer          buffer that contains the sample values.
      * @param  width           raster width in pixels.
      * @param  height          raster height in pixels.
-     * @param  scanlineStride  line stride of raster data.
+     * @param  pixelStride     number of data elements between two samples for the same band on the same line.
+     * @param  scanlineStride  number of data elements between a given sample and the corresponding sample in the same column of the next line.
      * @param  bankIndices     bank indices for each band, or {@code null} for 0, 1, 2, 3….
-     * @param  bandOffsets     offsets of all bands, or {@code null} for all 0.
+     * @param  bandOffsets     number of data elements from the first element of the bank to the first sample of the band, or {@code null} for all 0.
      * @param  location        the upper-left corner of the raster, or {@code null} for (0,0).
      * @return a raster built from given properties.
+     * @throws NullPointerException if {@code buffer} is {@code null}.
+     * @throws RasterFormatException if the width or height is less than or equal to zero, or if there is an integer overflow.
      *
+     * @see WritableRaster#createInterleavedRaster(DataBuffer, int, int, int, int, int[], Point)
      * @see WritableRaster#createBandedRaster(DataBuffer, int, int, int, int[], int[], Point)
      */
-    public static WritableRaster createBandedRaster​(final DataBuffer buffer,
-            final int width, final int height, final int scanlineStride,
+    @SuppressWarnings("fallthrough")
+    public static WritableRaster createRaster(final DataBuffer buffer,
+            final int width, final int height, final int pixelStride, final int scanlineStride,
             int[] bankIndices, int[] bandOffsets, final Point location)
     {
-        if (bankIndices == null) {
-            bankIndices = ArraysExt.sequence(0, buffer.getNumBanks());
-        }
+        /*
+         * We do not verify the argument validity. Since this class is internal, caller should have done verification
+         * itself. Furthermore those arguments are verified by WritableRaster constructors anyway.
+         */
         if (bandOffsets == null) {
-            bandOffsets = new int[bankIndices.length];
+            bandOffsets = new int[buffer.getNumBanks()];
         }
         final int dataType = buffer.getDataType();
-        switch (dataType) {
-            case DataBuffer.TYPE_BYTE:
-            case DataBuffer.TYPE_USHORT:
-            case DataBuffer.TYPE_INT: {
-                // This constructor supports only above-cited types.
-                return WritableRaster.createBandedRaster(buffer, width, width, scanlineStride, bankIndices, bandOffsets, location);
+        /*
+         * This SampleModel variable is a workaround for WritableRaster static methods not supporting all data types.
+         * If 'dataType' is unsupported, then we create a SampleModel ourselves in the 'switch' statements below and
+         * use it for creating a WritableRaster at the end of this method. This variable, together with the 'switch'
+         * statements, may be removed in a future SIS version if all types become supported by the JDK.
+         */
+        @Workaround(library = "JDK", version = "10")
+        final SampleModel model;
+        if (buffer.getNumBanks() == 1 && (bankIndices == null || bankIndices[0] == 0)) {
+            /*
+             * Sample data are stored for all bands in a single bank of the DataBuffer.
+             * Each sample of a pixel occupies one data element of the DataBuffer.
+             * The number of bands is inferred from bandOffsets.length.
+             */
+            switch (dataType) {
+                case DataBuffer.TYPE_BYTE:
+                case DataBuffer.TYPE_USHORT: {
+                    // 'scanlineStride' and 'pixelStride' really interchanged in that method signature.
+                    return WritableRaster.createInterleavedRaster(buffer, width, height, scanlineStride, pixelStride, bandOffsets, location);
+                }
+                case DataBuffer.TYPE_INT: {
+                    if (bandOffsets.length == 1) {
+                        // From JDK javadoc: "To create a 1-band Raster of type TYPE_INT, use createPackedRaster()".
+                        return WritableRaster.createPackedRaster(buffer, width, height, Integer.SIZE, location);
+                    }
+                    // else fallthrough.
+                }
+                default: {
+                    model = new PixelInterleavedSampleModel(dataType, width, height, pixelStride, scanlineStride, bandOffsets);
+                    break;
+                }
             }
-            default: {
-                SampleModel model = new BandedSampleModel(dataType, width, height, scanlineStride, bankIndices, bandOffsets);
-                return WritableRaster.createWritableRaster(model, buffer, location);
+        } else {
+            if (bankIndices == null) {
+                bankIndices = ArraysExt.sequence(0, bandOffsets.length);
+            }
+            if (pixelStride == 1) {
+                /*
+                 * All pixels are consecutive (pixelStride = 1) but may be on many bands.
+                 */
+                switch (dataType) {
+                    case DataBuffer.TYPE_BYTE:
+                    case DataBuffer.TYPE_USHORT:
+                    case DataBuffer.TYPE_INT: {
+                        // This constructor supports only above-cited types.
+                        return WritableRaster.createBandedRaster(buffer, width, width, scanlineStride, bankIndices, bandOffsets, location);
+                    }
+                    default: {
+                        model = new BandedSampleModel(dataType, width, height, scanlineStride, bankIndices, bandOffsets);
+                        break;
+                    }
+                }
+            } else {
+                model = new ComponentSampleModel(dataType, width, height, pixelStride, scanlineStride, bankIndices, bandOffsets);
             }
         }
+        return WritableRaster.createWritableRaster(model, buffer, location);
+    }
+
+    /**
+     * Returns the {@link DataBuffer} constant for the given type. The given {@code sample} class
+     * should be a primitive type such as {@link Float#TYPE}. Wrappers class are also accepted.
+     *
+     * @param  sample    the primitive type or its wrapper class. May be {@code null}.
+     * @param  unsigned  whether the type should be considered unsigned.
+     * @return the {@link DataBuffer} type, or {@link DataBuffer#TYPE_UNDEFINED}.
+     */
+    public static int getType(final Class<?> sample, final boolean unsigned) {
+        switch (Numbers.getEnumConstant(sample)) {
+            case Numbers.BYTE:    if (unsigned) return DataBuffer.TYPE_BYTE; else break;
+            case Numbers.SHORT:   return unsigned ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_SHORT;
+            case Numbers.INTEGER: if (!unsigned) return DataBuffer.TYPE_INT; else break;
+            case Numbers.FLOAT:   return DataBuffer.TYPE_FLOAT;
+            case Numbers.DOUBLE:  return DataBuffer.TYPE_DOUBLE;
+        }
+        return DataBuffer.TYPE_UNDEFINED;
     }
 
     /**
@@ -100,8 +176,8 @@ public final class RasterFactory extends Static {
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array.
      * @throws ReadOnlyBufferException if a buffer is backed by an array but is read-only.
      * @throws ArrayStoreException if the type of a backing array is not {@code dataType}.
-     * @throws ArithmeticException if the position of a buffer is too high.
-     * @throws IllegalArgumentException if buffers do not have the same amount of remaining values.
+     * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
+     * @throws RasterFormatException if buffers do not have the same amount of remaining values.
      */
     public static DataBuffer wrap(final int dataType, final Buffer... data) {
         final int numBands = data.length;
@@ -119,12 +195,13 @@ public final class RasterFactory extends Static {
         int length = 0;
         for (int i=0; i<numBands; i++) {
             final Buffer buffer = data[i];
+            ArgumentChecks.ensureNonNullElement("data", i, buffer);
             arrays [i] = buffer.array();
             offsets[i] = Math.addExact(buffer.arrayOffset(), buffer.position());
             final int r = buffer.remaining();
             if (i == 0) length = r;
             else if (length != r) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+                throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedBandSize));
             }
         }
         switch (dataType) {

@@ -80,7 +80,7 @@ import org.apache.sis.util.resources.Errors;
  * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -491,7 +491,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureBetween(final String name, final float min, final float max, final float value)
             throws IllegalArgumentException
     {
-        if (!(value >= min && value <= max)) { // Use '!' for catching NaN.
+        if (!(value >= min && value <= max)) {                              // Use '!' for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
@@ -510,7 +510,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureBetween(final String name, final double min, final double max, final double value)
             throws IllegalArgumentException
     {
-        if (!(value >= min && value <= max)) { // Use '!' for catching NaN.
+        if (!(value >= min && value <= max)) {                              // Use '!' for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
@@ -581,7 +581,7 @@ public final class ArgumentChecks extends Static {
     {
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) { // Should never be null, but let be safe.
+            if (cs != null) {                                       // Should never be null, but let be safe.
                 final int dimension = cs.getDimension();
                 if (dimension != expected) {
                     throw new MismatchedDimensionException(Errors.format(
@@ -608,6 +608,30 @@ public final class ArgumentChecks extends Static {
     {
         if (cs != null) {
             final int dimension = cs.getDimension();
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given array of indices, if non-null, has the expected number of dimensions
+     * (taken as its length). This method does nothing if the given array is null.
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  indices   the array of indices to check for its number of dimensions, or {@code null}.
+     * @throws MismatchedDimensionException if the given array of indices is non-null and does not have
+     *         the expected number of dimensions (taken as its length).
+     *
+     * @since 1.0
+     */
+    public static void ensureDimensionMatches(final String name, final int expected, final int[] indices)
+            throws MismatchedDimensionException
+    {
+        if (indices != null) {
+            final int dimension = indices.length;
             if (dimension != expected) {
                 throw new MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));

@@ -258,8 +258,8 @@ final class GridGeometryBuilder {
                 for (int j=0; j<numDim; j++) {
                     t.value = -modelTiePoints.doubleValue(nearest + j);
                     t.error = DoubleDouble.errorForWellKnownValue(t.value);
-                    t.multiply(affine.getNumber(j, j));
-                    t.add(modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / 2));
+                    t.multiplyGuessError(affine.getNumber(j, j));
+                    t.addGuessError(modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / 2));
                     affine.setNumber(j, trCol, t);
                 }
                 return true;

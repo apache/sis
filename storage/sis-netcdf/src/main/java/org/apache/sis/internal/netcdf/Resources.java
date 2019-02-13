@@ -81,6 +81,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateGridGeometry_3 = 12;
 
         /**
+         * Can not render an image for “{0}”. The reason is: {1}
+         */
+        public static final short CanNotRender_2 = 14;
+
+        /**
          * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;
@@ -99,6 +104,11 @@ public final class Resources extends IndexedResourceBundle {
          * The declared size of variable “{1}” in netCDF file “{0}” is {2} bytes greater than expected.
          */
         public static final short MismatchedVariableSize_3 = 8;
+
+        /**
+         * Variables “{1}” and “{2}” in netCDF file “{0}” does not have the same type.
+         */
+        public static final short MismatchedVariableType_3 = 13;
 
         /**
          * Reference system of type ‘{1}’ can not have {2} axes. The axes found in the “{0}” netCDF
@@ -165,8 +175,8 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}"
-     * with values of {@code arg0}.
+     * Gets a string for the given key and replaces all occurrence of "{0}"
+     * with value of {@code arg0}.
      *
      * @param  key   the key for the desired string.
      * @param  arg0  value to substitute to "{0}".
@@ -180,7 +190,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replaces all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}.
      *
      * @param  key   the key for the desired string.
@@ -197,7 +207,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replaces all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
      * @param  key   the key for the desired string.
@@ -216,7 +226,7 @@ public final class Resources extends IndexedResourceBundle {
     }
 
     /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
+     * Gets a string for the given key and replaces all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
      * @param  key   the key for the desired string.

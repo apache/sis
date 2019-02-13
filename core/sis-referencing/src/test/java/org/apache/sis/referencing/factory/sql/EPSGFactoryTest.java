@@ -79,7 +79,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -121,15 +121,6 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     @After
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
-    }
-
-    /**
-     * Tests {@link EPSGDataAccess#tableMatches(String, String)}.
-     */
-    @Test
-    public void testTableMatches() {
-        assertTrue(EPSGDataAccess.tableMatches("Coordinate_Operation",          "epsg_coordoperation"));
-        assertTrue(EPSGDataAccess.tableMatches("[Coordinate Reference System]", "epsg_coordinatereferencesystem"));
     }
 
     /**
@@ -562,6 +553,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assumeNotNull(factory);
         assertSame   (factory.createUnit("9002"), factory.createUnit("foot"));
         assertNotSame(factory.createUnit("9001"), factory.createUnit("foot"));
+        assertSame   (factory.createUnit("9202"), factory.createUnit("ppm"));       // Search in alias table.
         /*
          * Test a name with colons.
          */

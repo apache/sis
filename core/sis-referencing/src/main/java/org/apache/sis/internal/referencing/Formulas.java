@@ -84,7 +84,9 @@ public final class Formulas extends Static {
     public static final long JULIAN_YEAR_LENGTH = 31557600000L;
 
     /**
-     * Maximum number of iterations for iterative computations.
+     * Maximum number of iterations for iterative computations. Defined in this {@code Formulas} class as a default value,
+     * but some classes may use a derived value (for example twice this amount). This constant is mostly useful for identifying
+     * places where iterations occur.
      */
     public static final int MAXIMUM_ITERATIONS = 15;
 

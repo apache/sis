@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -209,7 +210,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 final int dim1 = previous.getCoordinateSystem().getDimension();
                 final int dim2 = next.getCoordinateSystem().getDimension();
                 if (dim1 != dim2) {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    throw new MismatchedDimensionException(Errors.getResources(properties).getString(
                             Errors.Keys.MismatchedDimension_3, "operations[" + i + "].sourceCRS", dim1, dim2));
                 }
             }

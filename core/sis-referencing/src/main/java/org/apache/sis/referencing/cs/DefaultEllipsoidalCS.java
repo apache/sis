@@ -203,7 +203,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      */
     private void validateAxes(final Map<String,?> properties) {
         int i = super.getDimension();
-        int n = i - 2; // Number of vertical axes allowed.
+        int n = i - 2;                      // Number of vertical axes allowed.
         while (--i >= 0) {
             final AxisDirection direction = super.getAxis(i).getDirection();
             if (AxisDirections.isVertical(direction) && --n < 0) {

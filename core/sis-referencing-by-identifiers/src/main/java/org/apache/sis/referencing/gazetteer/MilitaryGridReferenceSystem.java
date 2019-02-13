@@ -62,6 +62,7 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
@@ -1275,7 +1276,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public String toString() {
-            return org.apache.sis.internal.util.Utilities.toString(getClass(), "zone", encoder.crsZone,
+            return Strings.toString(getClass(), "zone", encoder.crsZone,
                     "downward", downward, "yStart", yStart, "yEnd", yEnd, "gridX", gridX, "xEnd", xEnd);
         }
     }

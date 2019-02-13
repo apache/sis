@@ -32,6 +32,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.internal.util.Strings;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
@@ -378,7 +379,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
                 name = toGenericName(value);
                 if (name == null) {
                     throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                            "value[" + i + ']', value.getClass()));
+                            Strings.toIndexed("value", i), value.getClass()));
                 }
                 names[i] = name;
             }

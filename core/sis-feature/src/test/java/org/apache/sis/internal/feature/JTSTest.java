@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link JTS} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
