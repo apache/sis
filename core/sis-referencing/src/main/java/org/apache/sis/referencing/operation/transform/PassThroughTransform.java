@@ -41,7 +41,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
- * Transform which passes through a subset of ordinates to another transform.
+ * Transform which passes through a subset of coordinates to another transform.
  * This allows transforms to operate on a subset of coordinate values.
  *
  * <div class="note"><b>Example:</b> giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
@@ -75,21 +75,21 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1673997634240223449L;
+    private static final long serialVersionUID = -910726602881388979L;
 
     /**
-     * Index of the first affected ordinate.
+     * Index of the first affected coordinate.
      *
      * @see #getModifiedCoordinates()
      */
-    final int firstAffectedOrdinate;
+    final int firstAffectedCoordinate;
 
     /**
-     * Number of unaffected ordinates after the affected ones.
+     * Number of unaffected coordinates after the affected ones.
      *
      * @see #getModifiedCoordinates()
      */
-    final int numTrailingOrdinates;
+    final int numTrailingCoordinates;
 
     /**
      * The sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
@@ -109,55 +109,55 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * since the most optimal pass-through transform for the given {@code subTransform} is not necessarily
      * a {@code PassThroughTransform} instance.
      *
-     * @param firstAffectedOrdinate  index of the first affected ordinate.
-     * @param subTransform           the sub-transform to apply on modified coordinates.
-     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param firstAffectedCoordinate  index of the first affected coordinate.
+     * @param subTransform             the sub-transform to apply on modified coordinates.
+     * @param numTrailingCoordinates   number of trailing coordinates to pass through.
      *
      * @see MathTransforms#passThrough(int, MathTransform, int)
      */
-    protected PassThroughTransform(final int firstAffectedOrdinate,
+    protected PassThroughTransform(final int firstAffectedCoordinate,
                                    final MathTransform subTransform,
-                                   final int numTrailingOrdinates)
+                                   final int numTrailingCoordinates)
     {
-        ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
-        ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
+        ensurePositive("firstAffectedCoordinate", firstAffectedCoordinate);
+        ensurePositive("numTrailingCoordinates",  numTrailingCoordinates);
         if (subTransform instanceof PassThroughTransform) {
             final PassThroughTransform passThrough = (PassThroughTransform) subTransform;
-            this.firstAffectedOrdinate = passThrough.firstAffectedOrdinate + firstAffectedOrdinate;
-            this.numTrailingOrdinates  = passThrough.numTrailingOrdinates  + numTrailingOrdinates;
-            this.subTransform          = passThrough.subTransform;
+            this.firstAffectedCoordinate = passThrough.firstAffectedCoordinate + firstAffectedCoordinate;
+            this.numTrailingCoordinates  = passThrough.numTrailingCoordinates  + numTrailingCoordinates;
+            this.subTransform            = passThrough.subTransform;
         }  else {
-            this.firstAffectedOrdinate = firstAffectedOrdinate;
-            this.numTrailingOrdinates  = numTrailingOrdinates;
-            this.subTransform          = subTransform;
+            this.firstAffectedCoordinate = firstAffectedCoordinate;
+            this.numTrailingCoordinates  = numTrailingCoordinates;
+            this.subTransform            = subTransform;
         }
     }
 
     /**
-     * Creates a transform which passes through a subset of ordinates to another transform.
+     * Creates a transform which passes through a subset of coordinates to another transform.
      * This method returns a transform having the following dimensions:
      *
      * {@preformat java
-     *     Source: firstAffectedOrdinate + subTransform.getSourceDimensions() + numTrailingOrdinates
-     *     Target: firstAffectedOrdinate + subTransform.getTargetDimensions() + numTrailingOrdinates
+     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
+     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
      * }
      *
-     * Affected ordinates will range from {@code firstAffectedOrdinate} inclusive to
-     * {@code dimTarget - numTrailingOrdinates} exclusive.
+     * Affected coordinates will range from {@code firstAffectedCoordinate} inclusive to
+     * {@code dimTarget - numTrailingCoordinates} exclusive.
      *
-     * @param  firstAffectedOrdinate  index of the first affected ordinate.
+     * @param  firstAffectedCoordinate  index of the first affected coordinate.
      * @param  subTransform           the sub-transform to apply on modified coordinates.
-     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, not necessarily a {@code PassThroughTransform} instance.
      *
      * @deprecated Moved to {@link MathTransforms#passThrough(int, MathTransform, int)}.
      */
     @Deprecated
-    public static MathTransform create(final int firstAffectedOrdinate,
+    public static MathTransform create(final int firstAffectedCoordinate,
                                        final MathTransform subTransform,
-                                       final int numTrailingOrdinates)
+                                       final int numTrailingCoordinates)
     {
-        return MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+        return MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
     /**
@@ -165,8 +165,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * instead of wrapping the sub-transform into a {@code PassThroughTransform} object. It is faster and easier
      * to concatenate.
      */
-    static Matrix asMatrix(final int firstAffectedOrdinate, final Matrix subTransform, final int numTrailingOrdinates) {
-        return expand(MatrixSIS.castOrCopy(subTransform), firstAffectedOrdinate, numTrailingOrdinates, 1);
+    static Matrix asMatrix(final int firstAffectedCoordinate, final Matrix subTransform, final int numTrailingCoordinates) {
+        return expand(MatrixSIS.castOrCopy(subTransform), firstAffectedCoordinate, numTrailingCoordinates, 1);
     }
 
     /**
@@ -174,18 +174,18 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * the constructor for the case where the sub-transform is already a {@code PassThroughTransform}.
      * It is caller's responsibility to ensure that the argument values are valid.
      */
-    static PassThroughTransform newInstance(final int firstAffectedOrdinate,
+    static PassThroughTransform newInstance(final int firstAffectedCoordinate,
                                             final MathTransform subTransform,
-                                            final int numTrailingOrdinates)
+                                            final int numTrailingCoordinates)
     {
         int dim = subTransform.getSourceDimensions();
         if (subTransform.getTargetDimensions() == dim) {
-            dim += firstAffectedOrdinate + numTrailingOrdinates;
+            dim += firstAffectedCoordinate + numTrailingCoordinates;
             if (dim == 2) {
-                return new PassThroughTransform2D(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+                return new PassThroughTransform2D(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
             }
         }
-        return new PassThroughTransform(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+        return new PassThroughTransform(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
     /**
@@ -196,7 +196,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     public final int getSourceDimensions() {
-        return firstAffectedOrdinate + subTransform.getSourceDimensions() + numTrailingOrdinates;
+        return firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
     }
 
     /**
@@ -207,7 +207,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     public final int getTargetDimensions() {
-        return firstAffectedOrdinate + subTransform.getTargetDimensions() + numTrailingOrdinates;
+        return firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
     }
 
     /**
@@ -215,8 +215,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * coordinate tuple of the coordinates affected by this pass-through operation.
      *
      * <div class="note"><b>API note:</b> this method is final for now because most of Apache SIS code do
-     * not use the {@code modifiedCoordinates} array. Instead, SIS uses the {@code firstAffectedOrdinate}
-     * and {@code numTrailingOrdinates} information provided to the constructor. Consequently overriding
+     * not use the {@code modifiedCoordinates} array. Instead, SIS uses the {@code firstAffectedCoordinate}
+     * and {@code numTrailingCoordinates} information provided to the constructor. Consequently overriding
      * this method may be misleading since it would be ignored by SIS. We do not want to make the "really
      * used" fields public in order to keep the flexibility to replace them by a {@code modifiedCoordinates}
      * array in a future SIS version.</div>
@@ -226,7 +226,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */
     public final int[] getModifiedCoordinates() {
-        return ArraysExt.sequence(firstAffectedOrdinate, subTransform.getSourceDimensions());
+        return ArraysExt.sequence(firstAffectedCoordinate, subTransform.getSourceDimensions());
     }
 
     /**
@@ -298,7 +298,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         if (numPts <= 0) return;
         final int subDimSource   = subTransform.getSourceDimensions();
         final int subDimTarget   = subTransform.getTargetDimensions();
-        final int numPassThrough = firstAffectedOrdinate + numTrailingOrdinates;
+        final int numPassThrough = firstAffectedCoordinate + numTrailingCoordinates;
         final int dimSource      = subDimSource + numPassThrough;
         final int dimTarget      = subDimTarget + numPassThrough;
         /*
@@ -311,8 +311,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final Object pasPts;
         {
             pasPts = newArray(srcPts, numPassThrough * numPts);
-            System.arraycopy(srcPts, srcOff, pasPts, 0, firstAffectedOrdinate);
-            int pasOff = firstAffectedOrdinate;
+            System.arraycopy(srcPts, srcOff, pasPts, 0, firstAffectedCoordinate);
+            int pasOff = firstAffectedCoordinate;
             int srcCpk = srcOff + pasOff + subDimSource;            // "Cpk" stands for "cherry-pick".
             int n = numPts - 1;
             while (--n >= 0) {
@@ -320,7 +320,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                 pasOff += numPassThrough;
                 srcCpk += dimSource;
             }
-            System.arraycopy(srcPts, srcCpk, pasPts, pasOff, numTrailingOrdinates);
+            System.arraycopy(srcPts, srcCpk, pasPts, pasOff, numTrailingCoordinates);
         }
         /*
          * Copy in a compact array the coordinates to be given to the sub-transform.
@@ -332,7 +332,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         Object subPts = dstPts;
         {
             int subOff = dstOff;
-            int srcCpk = srcOff + firstAffectedOrdinate;    // "Cpk" stands for "cherry-pick".
+            int srcCpk = srcOff + firstAffectedCoordinate;    // "Cpk" stands for "cherry-pick".
             int srcInc = dimSource;
             int dstInc = subDimSource;
             final IterationStrategy strategy;
@@ -386,8 +386,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         subOff    += numPts * subDimTarget;
         dstOff    += numPts * dimTarget;
         if (--numPts >= 0) {
-            System.arraycopy(pasPts, pasOff -= numTrailingOrdinates,
-                             dstPts, dstOff -= numTrailingOrdinates, numTrailingOrdinates);
+            System.arraycopy(pasPts, pasOff -= numTrailingCoordinates,
+                             dstPts, dstOff -= numTrailingCoordinates, numTrailingCoordinates);
             System.arraycopy(subPts, subOff -= subDimTarget,
                              dstPts, dstOff -= subDimTarget, subDimTarget);
             while (--numPts >= 0) {
@@ -396,8 +396,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                 System.arraycopy(subPts, subOff -= subDimTarget,
                                  dstPts, dstOff -= subDimTarget, subDimTarget);
             }
-            System.arraycopy(pasPts, pasOff - firstAffectedOrdinate,
-                             dstPts, dstOff - firstAffectedOrdinate, firstAffectedOrdinate);
+            System.arraycopy(pasPts, pasOff - firstAffectedCoordinate,
+                             dstPts, dstOff - firstAffectedCoordinate, firstAffectedCoordinate);
         }
     }
 
@@ -433,13 +433,13 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int subDimSource = subTransform.getSourceDimensions();
         final int subDimTarget = subTransform.getTargetDimensions();
         while (--numPts >= 0) {
-            for (int i=0; i < firstAffectedOrdinate; i++) {
+            for (int i=0; i < firstAffectedCoordinate; i++) {
                 dstPts[dstOff++] = (float) srcPts[srcOff++];
             }
             subTransform.transform(srcPts, srcOff, dstPts, dstOff, 1);
             srcOff += subDimSource;
             dstOff += subDimTarget;
-            for (int i=0; i < numTrailingOrdinates; i++) {
+            for (int i=0; i < numTrailingCoordinates; i++) {
                 dstPts[dstOff++] = (float) srcPts[srcOff++];
             }
         }
@@ -457,13 +457,13 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int subDimSource = subTransform.getSourceDimensions();
         final int subDimTarget = subTransform.getTargetDimensions();
         while (--numPts >= 0) {
-            for (int i=0; i < firstAffectedOrdinate; i++) {
+            for (int i=0; i < firstAffectedCoordinate; i++) {
                 dstPts[dstOff++] = srcPts[srcOff++];
             }
             subTransform.transform(srcPts, srcOff, dstPts, dstOff, 1);
             srcOff += subDimSource;
             dstOff += subDimTarget;
-            for (int i=0; i < numTrailingOrdinates; i++) {
+            for (int i=0; i < numTrailingCoordinates; i++) {
                 dstPts[dstOff++] = srcPts[srcOff++];
             }
         }
@@ -477,15 +477,15 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
-        final int nSkipped = firstAffectedOrdinate + numTrailingOrdinates;
+        final int nSkipped = firstAffectedCoordinate + numTrailingCoordinates;
         final int transDim = subTransform.getSourceDimensions();
         ensureDimensionMatches("point", transDim + nSkipped, point);
         final GeneralDirectPosition subPoint = new GeneralDirectPosition(transDim);
         for (int i=0; i<transDim; i++) {
-            subPoint.ordinates[i] = point.getOrdinate(i + firstAffectedOrdinate);
+            subPoint.ordinates[i] = point.getOrdinate(i + firstAffectedCoordinate);
         }
         return expand(MatrixSIS.castOrCopy(subTransform.derivative(subPoint)),
-                firstAffectedOrdinate, numTrailingOrdinates, 0);
+                firstAffectedCoordinate, numTrailingCoordinates, 0);
     }
 
     /**
@@ -494,17 +494,17 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * matrix returned by {@link #derivative}.
      *
      * @param subMatrix              the sub-transform as a matrix.
-     * @param firstAffectedOrdinate  index of the first affected ordinate.
-     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param firstAffectedCoordinate  index of the first affected coordinate.
+     * @param numTrailingCoordinates   number of trailing coordinates to pass through.
      * @param affine                 0 if the matrix do not contains translation terms, or 1 if
      *                               the matrix is an affine transform with translation terms.
      */
     private static Matrix expand(final MatrixSIS subMatrix,
-                                 final int firstAffectedOrdinate,
-                                 final int numTrailingOrdinates,
+                                 final int firstAffectedCoordinate,
+                                 final int numTrailingCoordinates,
                                  final int affine)
     {
-        final int nSkipped  = firstAffectedOrdinate + numTrailingOrdinates;
+        final int nSkipped  = firstAffectedCoordinate + numTrailingCoordinates;
         final int numSubRow = subMatrix.getNumRow() - affine;
         final int numSubCol = subMatrix.getNumCol() - affine;
         final int numRow    = numSubRow + (nSkipped + affine);
@@ -520,7 +520,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
          *                      └                  ┘
          */
         final Integer ONE = 1;
-        for (int j=0; j<firstAffectedOrdinate; j++) {
+        for (int j=0; j<firstAffectedCoordinate; j++) {
             elements[j*numCol + j] = ONE;
         }
         /*                      ┌                  ┐
@@ -537,8 +537,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                  * We need to store the elements as Number, not as double, for giving to the matrix
                  * a chance to preserve the extra precision provided by DoubleDouble numbers.
                  */
-                elements[(j + firstAffectedOrdinate) * numCol    // Contribution of row index
-                       + (i + firstAffectedOrdinate)]            // Contribution of column index
+                elements[(j + firstAffectedCoordinate) * numCol    // Contribution of row index
+                       + (i + firstAffectedCoordinate)]            // Contribution of column index
                        = subMatrix.getNumber(j, i);
             }
         }
@@ -553,17 +553,17 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int offset    = numSubCol - numSubRow;
         final int numRowOut = numSubRow + nSkipped;
         final int numColOut = numSubCol + nSkipped;
-        for (int j=numRowOut - numTrailingOrdinates; j<numRowOut; j++) {
+        for (int j=numRowOut - numTrailingCoordinates; j<numRowOut; j++) {
             elements[j * numCol + (j + offset)] = ONE;
         }
         if (affine != 0) {
             // Copy the translation terms in the last column.
             for (int j=0; j<numSubRow; j++) {
-                elements[(j + firstAffectedOrdinate) * numCol + numColOut] = subMatrix.getNumber(j, numSubCol);
+                elements[(j + firstAffectedCoordinate) * numCol + numColOut] = subMatrix.getNumber(j, numSubCol);
             }
             // Copy the last row as a safety, but it should contains only 0.
             for (int i=0; i<numSubCol; i++) {
-                elements[numRowOut * numCol + (i + firstAffectedOrdinate)] = subMatrix.getNumber(numSubRow, i);
+                elements[numRowOut * numCol + (i + firstAffectedCoordinate)] = subMatrix.getNumber(numSubRow, i);
             }
             // Copy the lower right corner, which should contains only 1.
             elements[numRowOut * numCol + numColOut] = subMatrix.getNumber(numSubRow, numSubCol);
@@ -580,7 +580,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     @Override
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            inverse = new PassThroughTransform(firstAffectedOrdinate, subTransform.inverse(), numTrailingOrdinates);
+            inverse = new PassThroughTransform(firstAffectedCoordinate, subTransform.inverse(), numTrailingCoordinates);
             inverse.inverse = this;
         }
         return inverse;
@@ -611,7 +611,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
          * of the dimensions modified by the sub-transform, and not any other dimension.
          */
         for (int j=numRow; --j>=0;) {
-            final int sj = j - firstAffectedOrdinate;
+            final int sj = j - firstAffectedCoordinate;
             for (int i=numCol; --i>=0;) {
                 final double element = matrix.getElement(j, i);
                 if (sj >= 0 && sj < subDim) {
@@ -621,7 +621,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                         si = subDim;
                         copy = true;
                     } else {                                // Any term other than translation.
-                        si = i - firstAffectedOrdinate;
+                        si = i - firstAffectedCoordinate;
                         copy = (si >= 0 && si < subDim);
                     }
                     if (copy) {
@@ -660,9 +660,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final MathTransformsOrFactory proxy = MathTransformsOrFactory.wrap(factory);
         if (other instanceof PassThroughTransform) {
             final PassThroughTransform opt = (PassThroughTransform) other;
-            if (opt.firstAffectedOrdinate == firstAffectedOrdinate && opt.numTrailingOrdinates == numTrailingOrdinates) {
+            if (opt.firstAffectedCoordinate == firstAffectedCoordinate && opt.numTrailingCoordinates == numTrailingCoordinates) {
                 final MathTransform sub = proxy.concatenate(applyOtherFirst, subTransform, opt.subTransform);
-                return proxy.passThrough(firstAffectedOrdinate, sub, numTrailingOrdinates);
+                return proxy.passThrough(firstAffectedCoordinate, sub, numTrailingCoordinates);
             }
         }
         final Matrix m = MathTransforms.getMatrix(other);
@@ -677,7 +677,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             if (sub != null) {
                 MathTransform tr = proxy.linear(sub);
                 tr = proxy.concatenate(applyOtherFirst, subTransform, tr);
-                return proxy.passThrough(firstAffectedOrdinate, tr, numTrailingOrdinates);
+                return proxy.passThrough(firstAffectedCoordinate, tr, numTrailingCoordinates);
             }
             /*
              * If this PassThroughTransform is followed by a matrix discarding some dimensions, identify which dimensions
@@ -703,7 +703,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                      * can be keep or discarded on a case-by-case basis.
                      */
                     final long    fullTransformMask = maskLowBits(dimension);
-                    final long    subTransformMask  = maskLowBits(subTransform.getTargetDimensions()) << firstAffectedOrdinate;
+                    final long    subTransformMask  = maskLowBits(subTransform.getTargetDimensions()) << firstAffectedCoordinate;
                     final boolean keepSubTransform  = (retainedDimensions & subTransformMask) != 0;
                     if (keepSubTransform) {
                         retainedDimensions |= subTransformMask;           // Ensure that we keep all sub-transform dimensions.
@@ -735,20 +735,20 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                          * in number of dimensions. This change is represented by the 'change' integer computed above.
                          * We apply two strategies:
                          *
-                         *    1) If we keep the sub-transform, then the loop while surely sees the 'firstAffectedOrdinate'
+                         *    1) If we keep the sub-transform, then the loop while surely sees the 'firstAffectedCoordinate'
                          *       dimension since we ensured that we keep all sub-transform dimensions. When it happens, we
                          *       add or remove bits at that point for the dimensionality changes.
                          *
-                         *    2) If we do not keep the sub-transform, then code inside 'if (dim == firstAffectedOrdinate)'
+                         *    2) If we do not keep the sub-transform, then code inside 'if (dim == firstAffectedCoordinate)'
                          *       should not have been executed. Instead we will adjust the indices after the loop.
                          */
-                        final long leadPassThroughMask = maskLowBits(firstAffectedOrdinate);
+                        final long leadPassThroughMask = maskLowBits(firstAffectedCoordinate);
                         final int numKeepAfter  = Long.bitCount(retainedDimensions & ~(leadPassThroughMask | subTransformMask));
                         final int numKeepBefore = Long.bitCount(retainedDimensions & leadPassThroughMask);
                         final int[] indices = new int[Long.bitCount(retainedDimensions) + change];
                         for (int i=0; i<indices.length; i++) {
                             int dim = Long.numberOfTrailingZeros(retainedDimensions);
-                            if (dim == firstAffectedOrdinate) {
+                            if (dim == firstAffectedCoordinate) {
                                 if (change < 0) {
                                     retainedDimensions >>>= -change;                        // Discard dimensions to skip.
                                     retainedDimensions &= ~leadPassThroughMask;             // Clear previous dimension flags.
@@ -763,7 +763,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                         if (!keepSubTransform) {
                             for (int i=indices.length; --i >= 0;) {
                                 final int dim = indices[i];
-                                if (dim <= firstAffectedOrdinate) break;
+                                if (dim <= firstAffectedCoordinate) break;
                                 indices[i] = dim - change;
                             }
                         }
@@ -807,9 +807,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     protected int computeHashCode() {
-        // Note that numTrailingOrdinates is related to source and
+        // Note that numTrailingCoordinates is related to source and
         // target dimensions, which are computed by the super-class.
-        return super.computeHashCode() ^ (subTransform.hashCode() + firstAffectedOrdinate);
+        return super.computeHashCode() ^ (subTransform.hashCode() + firstAffectedCoordinate);
     }
 
     /**
@@ -824,8 +824,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         }
         if (super.equals(object, mode)) {
             final PassThroughTransform that = (PassThroughTransform) object;
-            return this.firstAffectedOrdinate == that.firstAffectedOrdinate &&
-                   this.numTrailingOrdinates  == that.numTrailingOrdinates  &&
+            return this.firstAffectedCoordinate == that.firstAffectedCoordinate &&
+                   this.numTrailingCoordinates  == that.numTrailingCoordinates  &&
                    Utilities.deepEquals(this.subTransform, that.subTransform, mode);
         }
         return false;
@@ -845,12 +845,12 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(firstAffectedOrdinate);
-        if (numTrailingOrdinates != 0) {
-            formatter.append(numTrailingOrdinates);
+        formatter.append(firstAffectedCoordinate);
+        if (numTrailingCoordinates != 0) {
+            formatter.append(numTrailingCoordinates);
         }
         formatter.append(subTransform);
-        if (numTrailingOrdinates != 0) {
+        if (numTrailingCoordinates != 0) {
             /*
              * setInvalidWKT(…) shall be invoked only after we finished to format
              * sub-transform, otherwise the wrong WKT element will be highlighted.

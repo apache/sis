@@ -312,8 +312,8 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         assertArrayEquals("targetDimensions", new int[] {1, 2, 3, 4, 5, 6}, s.getTargetDimensions());
         assertInstanceOf ("separate()", PassThroughTransform.class, result);
         assertSame  ("subTransform",  nonLinear, ((PassThroughTransform) result).subTransform);
-        assertEquals("firstAffectedOrdinate", 1, ((PassThroughTransform) result).firstAffectedOrdinate);
-        assertEquals("numTrailingOrdinates",  2, ((PassThroughTransform) result).numTrailingOrdinates);
+        assertEquals("firstAffectedCoordinate", 1, ((PassThroughTransform) result).firstAffectedCoordinate);
+        assertEquals("numTrailingCoordinates",  2, ((PassThroughTransform) result).numTrailingCoordinates);
     }
 
     /**

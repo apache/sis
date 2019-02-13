@@ -44,15 +44,15 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
     /**
      * Creates a pass through transform.
      *
-     * @param firstAffectedOrdinate  index of the first affected ordinate.
-     * @param subTransform           the sub transform.
-     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @param firstAffectedCoordinate  index of the first affected coordinate.
+     * @param subTransform             the sub transform.
+     * @param numTrailingCoordinates   number of trailing coordinates to pass through.
      */
-    PassThroughTransform2D(final int firstAffectedOrdinate,
+    PassThroughTransform2D(final int firstAffectedCoordinate,
                            final MathTransform subTransform,
-                           final int numTrailingOrdinates)
+                           final int numTrailingCoordinates)
     {
-        super(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+        super(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
     /**
@@ -98,8 +98,7 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
     @Override
     public synchronized MathTransform2D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
-            inverse = new PassThroughTransform2D(
-                    firstAffectedOrdinate, subTransform.inverse(), numTrailingOrdinates);
+            inverse = new PassThroughTransform2D(firstAffectedCoordinate, subTransform.inverse(), numTrailingCoordinates);
             inverse.inverse = this;
         }
         return (MathTransform2D) inverse;

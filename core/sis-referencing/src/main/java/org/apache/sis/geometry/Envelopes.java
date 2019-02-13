@@ -132,11 +132,11 @@ public final class Envelopes extends Static {
         }
         final GeneralEnvelope compound = new GeneralEnvelope(sum);
         CoordinateReferenceSystem[] crsComponents = null;
-        int firstAffectedOrdinate = 0;
+        int firstAffectedCoordinate = 0;
         for (int i=0; i<components.length; i++) {
             final Envelope env = components[i];
             final int dim = env.getDimension();
-            compound.subEnvelope(firstAffectedOrdinate, firstAffectedOrdinate += dim).setEnvelope(env);
+            compound.subEnvelope(firstAffectedCoordinate, firstAffectedCoordinate += dim).setEnvelope(env);
             if (i == 0) {
                 final CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
                 if (crs != null) {
@@ -149,7 +149,7 @@ public final class Envelopes extends Static {
                 }
             }
         }
-        if (firstAffectedOrdinate != sum) {
+        if (firstAffectedCoordinate != sum) {
             // Should never happen unless the number of dimensions of an envelope changed during iteration.
             throw new ConcurrentModificationException();
         }

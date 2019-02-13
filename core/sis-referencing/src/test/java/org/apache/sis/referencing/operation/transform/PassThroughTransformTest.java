@@ -69,14 +69,14 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
             fail("An illegal argument should have been detected");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("firstAffectedOrdinate"));
+            assertTrue(message, message.contains("firstAffectedCoordinate"));
         }
         try {
             MathTransforms.passThrough(0, subTransform, -1);
             fail("An illegal argument should have been detected");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("numTrailingOrdinates"));
+            assertTrue(message, message.contains("numTrailingCoordinates"));
         }
     }
 
@@ -152,13 +152,13 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
     {
         random = TestUtilities.createRandomNumberGenerator();
         /*
-         * Test many combinations of "first affected ordinate" and "number of trailing ordinates" parameters.
+         * Test many combinations of "first affected coordinate" and "number of trailing coordinates" parameters.
          * For each combination we create a passthrough transform, test it with the 'verifyTransform' method.
          */
-        for (int firstAffectedOrdinate=0; firstAffectedOrdinate<=3; firstAffectedOrdinate++) {
-            for (int numTrailingOrdinates=0; numTrailingOrdinates<=3; numTrailingOrdinates++) {
-                final int numAdditionalOrdinates = firstAffectedOrdinate + numTrailingOrdinates;
-                transform = MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+        for (int firstAffectedCoordinate=0; firstAffectedCoordinate<=3; firstAffectedCoordinate++) {
+            for (int numTrailingCoordinates=0; numTrailingCoordinates<=3; numTrailingCoordinates++) {
+                final int numAdditionalOrdinates = firstAffectedCoordinate + numTrailingCoordinates;
+                transform = MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
                 if (numAdditionalOrdinates == 0) {
                     assertSame("Failed to recognize that no passthrough was needed.", subTransform, transform);
                     continue;
@@ -169,7 +169,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
                         subTransform.getSourceDimensions() + numAdditionalOrdinates, transform.getSourceDimensions());
                 assertEquals ("Wrong number of target dimensions.",
                         subTransform.getTargetDimensions() + numAdditionalOrdinates, transform.getTargetDimensions());
-                verifyTransform(subTransform, firstAffectedOrdinate);
+                verifyTransform(subTransform, firstAffectedCoordinate);
             }
         }
     }
@@ -288,8 +288,8 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
          * The number of pass-through dimensions have decreased from 2 to 1 on both sides of the sub-transform.
          */
         final PassThroughTransform reduced = (PassThroughTransform) steps.get(1);
-        assertEquals("firstAffectedOrdinate", 1, reduced.firstAffectedOrdinate);
-        assertEquals("numTrailingOrdinates",  1, reduced.numTrailingOrdinates);
+        assertEquals("firstAffectedCoordinate", 1, reduced.firstAffectedCoordinate);
+        assertEquals("numTrailingCoordinates",  1, reduced.numTrailingCoordinates);
         assertSame  ("subTransform", ps.subTransform, reduced.subTransform);
         /*
          * We still have to remove source dimensions 2 and 3. Since we removed dimension 0 in previous step,

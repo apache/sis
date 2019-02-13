@@ -131,13 +131,13 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @param  firstAffectedOrdinate  ignored.
-     * @param  subTransform           ignored.
-     * @param  numTrailingOrdinates   ignored.
+     * @param  firstAffectedCoordinate  ignored.
+     * @param  subTransform             ignored.
+     * @param  numTrailingCoordinates   ignored.
      * @return never returned.
      */
     @Override
-    public MathTransform createPassThroughTransform(int firstAffectedOrdinate, MathTransform subTransform, int numTrailingOrdinates) {
+    public MathTransform createPassThroughTransform(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates) {
         throw new UnsupportedOperationException();
     }
 

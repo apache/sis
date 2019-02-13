@@ -525,7 +525,7 @@ public class TransformSeparator {
             final PassThroughTransform passThrough = (PassThroughTransform) step;
             final int numSubSrc = passThrough.subTransform.getSourceDimensions();
             final int numNewDim = passThrough.subTransform.getTargetDimensions() - numSubSrc;
-            final int subLower  = passThrough.firstAffectedOrdinate;
+            final int subLower  = passThrough.firstAffectedCoordinate;
             final int subUpper  = subLower + numSubSrc;
             int[] subDimensions = new int[dimensions.length];
             targetDimensions    = null;
@@ -569,7 +569,7 @@ public class TransformSeparator {
              * If all source dimensions not in the sub-transform are consecutive numbers, we can use our passthrough
              * transform implementation. The "consecutive numbers" requirement (expressed in the 'if' statement below)
              * is a consequence of a limitation in our current implementation: our current passthrough transform does
-             * not accept arbitrary index for modified ordinates.
+             * not accept arbitrary indices for modified coordinates.
              */
             if (containsAll(dimensions, lower, subLower) && containsAll(dimensions, subUpper, upper)) {
                 return factory.passThrough(subLower - lower, subTransform, Math.max(0, upper - subUpper));
@@ -682,7 +682,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
         int numRemoved = 0;
         if (step instanceof PassThroughTransform) {
             final PassThroughTransform passThrough = (PassThroughTransform) step;
-            final int subLower  = passThrough.firstAffectedOrdinate;
+            final int subLower  = passThrough.firstAffectedCoordinate;
             final int numSubTgt = passThrough.subTransform.getTargetDimensions();
             if (!containsAny(dimensions, subLower, subLower + numSubTgt)) {
                 step = IdentityTransform.create(numTgt = numSrc);
@@ -778,7 +778,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
     }
 
     /**
-     * Returns {@code true} if the given sequence contains all index in the range {@code lower} inclusive
+     * Returns {@code true} if the given sequence contains all indices in the range {@code lower} inclusive
      * to {@code upper} exclusive.
      *
      * @param  sequence  the {@link #sourceDimensions} or {@link #targetDimensions} sequence to test.

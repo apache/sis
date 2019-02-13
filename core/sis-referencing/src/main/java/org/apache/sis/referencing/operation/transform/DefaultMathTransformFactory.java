@@ -1139,9 +1139,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * the height unchanged from the base CRS to the target CRS. After this block, the
          * dimensions of 'step2' and 'step3' should match.
          */
-        final int numTrailingOrdinates = step3.getSourceDimensions() - step2.getTargetDimensions();
-        if (numTrailingOrdinates > 0) {
-            step2 = createPassThroughTransform(0, step2, numTrailingOrdinates);
+        final int numTrailingCoordinates = step3.getSourceDimensions() - step2.getTargetDimensions();
+        if (numTrailingCoordinates > 0) {
+            step2 = createPassThroughTransform(0, step2, numTrailingCoordinates);
         }
         /*
          * If the source CS has a height but the target CS doesn't, drops the extra coordinates.
@@ -1327,27 +1327,27 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * The resulting transform will have the following dimensions:
      *
      * {@preformat java
-     *     Source: firstAffectedOrdinate + subTransform.getSourceDimensions() + numTrailingOrdinates
-     *     Target: firstAffectedOrdinate + subTransform.getTargetDimensions() + numTrailingOrdinates
+     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
+     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
      * }
      *
-     * @param  firstAffectedOrdinate  the lowest index of the affected ordinates.
-     * @param  subTransform           transform to use for affected ordinates.
-     * @param  numTrailingOrdinates   number of trailing ordinates to pass through. Affected ordinates will range
-     *         from {@code firstAffectedOrdinate} inclusive to {@code dimTarget-numTrailingOrdinates} exclusive.
+     * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
+     * @param  subTransform             transform to use for affected coordinates.
+     * @param  numTrailingCoordinates   number of trailing coordinates to pass through. Affected coordinates will range
+     *         from {@code firstAffectedCoordinate} inclusive to {@code dimTarget-numTrailingCoordinates} exclusive.
      * @return a pass through transform.
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    public MathTransform createPassThroughTransform(final int firstAffectedOrdinate,
+    public MathTransform createPassThroughTransform(final int firstAffectedCoordinate,
                                                     final MathTransform subTransform,
-                                                    final int numTrailingOrdinates)
+                                                    final int numTrailingCoordinates)
             throws FactoryException
     {
         lastMethod.remove();
         final MathTransform tr;
         try {
-            tr = MathTransforms.passThrough(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
+            tr = MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
