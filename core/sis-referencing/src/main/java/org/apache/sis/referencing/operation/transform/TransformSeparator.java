@@ -572,7 +572,9 @@ public class TransformSeparator {
              * not accept arbitrary indices for modified coordinates.
              */
             if (containsAll(dimensions, lower, subLower) && containsAll(dimensions, subUpper, upper)) {
-                return factory.passThrough(subLower - lower, subTransform, Math.max(0, upper - subUpper));
+                final int offset = subDimensions[0];
+                assert containsAll(subDimensions, offset, offset + subDimensions.length) : offset;
+                return factory.passThrough(offset + subLower - lower, subTransform, Math.max(0, upper - subUpper));
             }
         }
         /*
