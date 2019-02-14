@@ -40,6 +40,7 @@ import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridDerivation;
+import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -52,7 +53,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import ucar.nc2.constants.CDM;                      // We use only String constants.
 
 
 /**
@@ -128,6 +128,12 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     private final Path location;
 
     /**
+     * Allow to fetch referencing information from source variables. It's mostly useful to handle multiple
+     * NetCDF structures (CF, GCOM, etc.)
+     */
+    private final Convention convention;
+
+    /**
      * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
@@ -144,6 +150,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         gridGeometry = grid.getGridGeometry(decoder);
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
+        convention   = decoder.convention();
     }
 
     /**
@@ -263,51 +270,46 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         return UnmodifiableArrayList.wrap(ranges);
     }
 
+    private void addQuantitativeInfo(final SampleDimension.Builder target, NumberRange<?> range, final Variable data) {
+        final TransferFunction tr = convention.getTransferFunction(data);
+        final MathTransform1D mt = tr.getTransform();
+        if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
+            /*
+             * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+             * if the type of the range is equal to the type of the scale, and the type of the
+             * data is not wider, then assume that the minimum and maximum are real values.
+             * This is identified in Apache SIS by the range given as a MeasurementRange.
+             */
+            final boolean isMinIncluded = range.isMinIncluded();
+            final boolean isMaxIncluded = range.isMaxIncluded();
+            double minimum = (range.getMinDouble() - tr.getOffset()) / tr.getScale();
+            double maximum = (range.getMaxDouble() - tr.getOffset()) / tr.getScale();
+            if (maximum < minimum) {
+                final double swap = maximum;
+                maximum = minimum;
+                minimum = swap;
+            }
+            if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
+            } else {
+                range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
+            }
+        }
+        String name = data.getDescription();
+        if (name == null) name = data.getName();
+        target.addQuantitative(name, range, mt, data.getUnit());
+    }
+
     /**
      * Creates a single sample dimension for the given variable.
      *
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  data     the data for which to create a sample dimension.
      */
-    private static SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) {
-        NumberRange<?> range = data.getValidValues();
-        if (range != null) {
-            /*
-             * If scale_factor and/or add_offset variable attributes are present, then this is
-             * a "packed" variable. Otherwise the transfer function is the identity transform.
-             */
-            final TransferFunction tr = new TransferFunction();
-            final double scale  = data.getAttributeAsNumber(CDM.SCALE_FACTOR);
-            final double offset = data.getAttributeAsNumber(CDM.ADD_OFFSET);
-            if (!Double.isNaN(scale))  tr.setScale (scale);
-            if (!Double.isNaN(offset)) tr.setOffset(offset);
-            final MathTransform1D mt = tr.getTransform();
-            if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
-                /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
-                 * if the type of the range is equal to the type of the scale, and the type of the
-                 * data is not wider, then assume that the minimum and maximum are real values.
-                 * This is identified in Apache SIS by the range given as a MeasurementRange.
-                 */
-                final boolean isMinIncluded = range.isMinIncluded();
-                final boolean isMaxIncluded = range.isMaxIncluded();
-                double minimum = (range.getMinDouble() - offset) / scale;
-                double maximum = (range.getMaxDouble() - offset) / scale;
-                if (maximum < minimum) {
-                    final double swap = maximum;
-                    maximum = minimum;
-                    minimum = swap;
-                }
-                if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
-                    range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
-                } else {
-                    range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
-                }
-            }
-            String name = data.getDescription();
-            if (name == null) name = data.getName();
-            builder.addQuantitative(name, range, mt, data.getUnit());
-        }
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) {
+        convention.getValidValues(data)
+                .ifPresent(range -> addQuantitativeInfo(builder, range, data));
+
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
          * as category name. If the sample values are already real values, then the "no data" values have been replaced by NaN

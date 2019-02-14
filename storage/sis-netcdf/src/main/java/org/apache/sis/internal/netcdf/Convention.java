@@ -17,7 +17,11 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Iterator;
+import java.util.Optional;
 import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.referencing.operation.transform.TransferFunction;
+import ucar.nc2.constants.CDM;
 
 
 /**
@@ -118,5 +122,41 @@ public class Convention {
      */
     public String[] namesOfAxisVariables(Variable variable) {
         return null;
+    }
+
+    /**
+     * Build a function aiming to convert values packed in given variable into geophysical measures.
+     *
+     * @param source The variable specifying the transfer function.
+     *
+     * @return A transfer function matching given variable. Note that if we cannot find any information in input
+     * variable, we return an identity transform. Never null.
+     */
+    public TransferFunction getTransferFunction(final Variable source) {
+        /*
+         * If scale_factor and/or add_offset variable attributes are present, then this is
+         * a "packed" variable. Otherwise the transfer function is the identity transform.
+         */
+        final TransferFunction tr = new TransferFunction();
+        final double scale = source.getAttributeAsNumber(CDM.SCALE_FACTOR);
+        final double offset = source.getAttributeAsNumber(CDM.ADD_OFFSET);
+        if (!Double.isNaN(scale)) {
+            tr.setScale(scale);
+        }
+        if (!Double.isNaN(offset)) {
+            tr.setOffset(offset);
+        }
+
+        return tr;
+    }
+
+    /**
+     * Search in given variable for information about its range of valid values.
+     *
+     * @param source The variable to get valid range of values for.
+     * @return The range of expected measures, or nothing if we didn't find any related information.
+     */
+    public Optional<NumberRange<?>> getValidValues(final Variable source) {
+        return Optional.ofNullable(source.getValidValues());
     }
 }
