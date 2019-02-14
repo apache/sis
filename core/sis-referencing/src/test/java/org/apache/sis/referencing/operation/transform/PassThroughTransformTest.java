@@ -264,7 +264,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      */
     @Test
     public void testTryConcatenate() throws FactoryException {
-        PassThroughTransform ps = PassThroughTransform.newInstance(2, new PseudoTransform(2, 3), 2);
+        PassThroughTransform ps = new PassThroughTransform(2, new PseudoTransform(2, 3), 2);
         MathTransform c = ps.tryConcatenate(false, MathTransforms.linear(Matrices.create(4, 8, new double[] {
                 0, 1, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 1, 0, 0, 0,
