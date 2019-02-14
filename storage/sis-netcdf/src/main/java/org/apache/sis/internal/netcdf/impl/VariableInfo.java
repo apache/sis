@@ -376,9 +376,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     public String getDescription() {
         for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
-            final Object value = getAttributeValue(attributeName);
-            if (value instanceof String) {
-                return (String) value;
+            final String value = getAttributeAsString(attributeName);
+            if (value != null) {
+                return value;
             }
         }
         return null;
@@ -580,12 +580,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the value of the given attribute as a string, or {@code null} if none.
+     * Returns the value of the given attribute as a non-blank string, or {@code null} if none.
      */
     @Override
     public String getAttributeAsString(final String attributeName) {
         final Object value = getAttributeValue(attributeName);
-        return (value instanceof String) ? (String) value : null;
+        if (value instanceof String) {
+            final String text = ((String) value).trim();
+            if (!text.isEmpty()) return text;
+        }
+        return null;
     }
 
     /**

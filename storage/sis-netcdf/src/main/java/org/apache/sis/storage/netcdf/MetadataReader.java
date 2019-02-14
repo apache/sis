@@ -947,7 +947,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             final NameFactory f = decoder.nameFactory;
             setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
         }
-        final String id = trim(variable.getAttributeAsString(CF.STANDARD_NAME));
+        final String id = variable.getAttributeAsString(CF.STANDARD_NAME);
         if (id != null && !id.equals(name)) {
             addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }

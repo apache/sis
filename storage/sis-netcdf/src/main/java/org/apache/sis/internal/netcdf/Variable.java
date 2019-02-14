@@ -427,15 +427,20 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the value of the given attribute as a string. This is a convenience method
-     * for {@link #getAttributeValues(String, boolean)} when a singleton value is expected.
+     * Returns the value of the given attribute as a non-blank string and leading/trailing spaces removed.
+     * This is a convenience method for {@link #getAttributeValues(String, boolean)} when a singleton value
+     * is expected and blank strings ignored.
      *
      * @param  attributeName  the name of the attribute for which to get the value.
-     * @return the singleton attribute value, or {@code null} if none or ambiguous.
+     * @return the singleton attribute value, or {@code null} if none, empty, blank or ambiguous.
      */
     public String getAttributeAsString(final String attributeName) {
         final Object value = getAttributeValue(attributeName, false);
-        return (value != null) ? value.toString() : null;
+        if (value != null) {
+            final String text = value.toString().trim();
+            if (!text.isEmpty()) return text;
+        }
+        return null;
     }
 
     /**
