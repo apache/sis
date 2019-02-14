@@ -100,8 +100,8 @@ final class GridInfo extends Grid {
      * @param  range   the output values of the "grid to CRS" conversion, in CRS order as much as possible.
      */
     GridInfo(final Dimension[] domain, final VariableInfo[] range) {
-        this.domain   = domain;
-        this.range    = range;
+        this.domain = domain;
+        this.range  = range;
     }
 
     /**

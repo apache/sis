@@ -44,11 +44,16 @@ import org.apache.sis.internal.referencing.LazySet;
  * @since 1.0
  * @module
  */
-public abstract class Convention {
+public class Convention {
     /**
      * All conventions found on the classpath.
      */
     private static final LazySet<Convention> AVAILABLES = new LazySet<>(Convention.class);
+
+    /**
+     * The convention to use when no specific conventions were found.
+     */
+    private static final Convention DEFAULT = new Convention();
 
     /**
      * For subclass constructors.
@@ -64,12 +69,12 @@ public abstract class Convention {
         Convention c;
         synchronized (AVAILABLES) {
             it = AVAILABLES.iterator();
-            if (!it.hasNext()) return null;
+            if (!it.hasNext()) return DEFAULT;
             c = it.next();
         }
         while (!c.isApplicableTo(decoder)) {
             synchronized (AVAILABLES) {
-                if (!it.hasNext()) return null;
+                if (!it.hasNext()) return DEFAULT;
                 c = it.next();
             }
         }
@@ -82,17 +87,19 @@ public abstract class Convention {
      * @param  decoder  the netCDF file to test.
      * @return {@code true} if this set of conventions can apply.
      */
-    protected abstract boolean isApplicableTo(Decoder decoder);
+    protected boolean isApplicableTo(final Decoder decoder) {
+        return false;
+    }
 
     /**
      * Returns the role of the given variable. In particular, this method shall return
      * {@link VariableRole#AXIS} if the given variable seems to be a coordinate system axis.
      *
-     * @param  variable  the variable for which to get the role.
-     * @return role of the given variable.
+     * @param  variable  the variable for which to get the role, or {@code null}.
+     * @return role of the given variable, or {@code null} if the given variable was null.
      */
-    protected VariableRole roleOf(final Variable variable) {
-        return variable.getRole();
+    public VariableRole roleOf(final Variable variable) {
+        return (variable != null) ? variable.getRole() : null;
     }
 
     /**
@@ -101,14 +108,15 @@ public abstract class Convention {
      * The data for a dimension are usually stored in a variable of the same name, but not always.
      * This method gives an opportunity for subclasses to select the axis variables using other criterion.
      * This happen for example if a netCDF file defines two grids for the same dimensions.
+     * The order in returned array will be the axis order in the Coordinate Reference System.
      *
      * <p>The default implementation returns {@code null}.</p>
      *
-     * @param  variable  the variable for which the list of axis variables are desired.
+     * @param  variable  the variable for which the list of axis variables are desired, in CRS order.
      * @return names of the variables containing axis values, or {@code null} if this
      *         method performs applies no special convention for the given variable.
      */
-    protected String[] namesOfAxisVariables(Variable variable) {
+    public String[] namesOfAxisVariables(Variable variable) {
         return null;
     }
 }

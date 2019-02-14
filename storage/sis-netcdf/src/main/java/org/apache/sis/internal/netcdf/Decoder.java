@@ -59,7 +59,10 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public Path location;
 
     /**
-     * Customized conventions to apply in addition of netCDF conventions, or {@code null} if none.
+     * Conventions to apply in addition of netCDF conventions.
+     * Shall never be {@code null} after {@link #initialize()}.
+     *
+     * @see #convention()
      */
     private Convention convention;
 
@@ -119,6 +122,16 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      */
     protected final void initialize() {
         convention = Convention.find(this);
+    }
+
+    /**
+     * Returns information about modifications to apply to netCDF conventions in order to handle this netCDF file.
+     * Customized conventions are necessary when the variables and attributes in a netCDF file do not follow CF-conventions.
+     *
+     * @return conventions to apply.
+     */
+    public final Convention convention() {
+        return convention;
     }
 
     /**
@@ -283,34 +296,4 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws DataStoreException if a logical error occurred.
      */
     public abstract Grid[] getGrids() throws IOException, DataStoreException;
-
-    /**
-     * Returns the role of the given variable. In particular, this method shall return
-     * {@link VariableRole#AXIS} if the given variable seems to be a coordinate system axis.
-     *
-     * @param  variable  the variable for which to get the role, or {@code null}.
-     * @return role of the given variable, or {@code null} if the given variable was null.
-     */
-    public final VariableRole roleOf(final Variable variable) {
-        if (variable == null) {
-            return null;
-        }
-        if (convention != null) {
-            return convention.roleOf(variable);
-        }
-        return variable.getRole();
-    }
-
-    /**
-     * If there is some specialized convention for current file that mandate a different set of
-     * axes for the given variable, returns the name of the variables for those axes. Otherwise
-     * (i.e. if the file can be parsed as a standard CF-compliant file), returns {@code null}.
-     *
-     * @param  variable  the variable for which the list of axis variables are desired.
-     * @return names of the variables containing axis values, or {@code null} if this
-     *         method performs applies no special convention for the given variable.
-     */
-    protected final String[] namesOfAxisVariables(final Variable variable) {
-        return (convention != null) ? convention.namesOfAxisVariables(variable) : null;
-    }
 }

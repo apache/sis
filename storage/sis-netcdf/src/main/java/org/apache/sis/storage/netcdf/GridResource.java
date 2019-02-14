@@ -157,7 +157,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         final List<Resource> resources = new ArrayList<>();
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
-            if (decoder.roleOf(variable) != VariableRole.COVERAGE) {
+            if (decoder.convention().roleOf(variable) != VariableRole.COVERAGE) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
             final Grid grid = variable.getGrid(decoder);
@@ -185,7 +185,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     int suffixLength = name.length() - suffixStart;
                     for (int j=i; ++j < variables.length;) {
                         final Variable candidate = variables[j];
-                        if (decoder.roleOf(candidate) != VariableRole.COVERAGE) {
+                        if (decoder.convention().roleOf(candidate) != VariableRole.COVERAGE) {
                             variables[j] = null;                                // For avoiding to revisit that variable again.
                             continue;
                         }

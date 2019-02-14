@@ -899,7 +899,7 @@ public final class ChannelDecoder extends Decoder {
              */
             final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
-                switch (roleOf(variable)) {
+                switch (convention().roleOf(variable)) {
                     case COVERAGE: {
                         // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
                         // remember the new value for avoiding to ask again in next loops.
@@ -935,7 +935,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                 axes.clear();
                 usedDimensions.clear();
                 if (!listAxes(variable.getCoordinateVariables(), axes, usedDimensions)) {
-                    listAxes(namesOfAxisVariables(variable), axes, usedDimensions);
+                    listAxes(convention().namesOfAxisVariables(variable), axes, usedDimensions);
                 }
                 /*
                  * In theory the "coordinates" attribute would enumerate all axes needed for covering all dimensions,
