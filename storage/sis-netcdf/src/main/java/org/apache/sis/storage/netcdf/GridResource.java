@@ -270,6 +270,13 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         return UnmodifiableArrayList.wrap(ranges);
     }
 
+    /**
+     * Try to add information about valid values in a given sample dimension builder.
+     * 
+     * @param target The builder to add information into.
+     * @param range Base range for valid values.
+     * @param data Variable to use in order to improve quantitative information.
+     */
     private void addQuantitativeInfo(final SampleDimension.Builder target, NumberRange<?> range, final Variable data) {
         final TransferFunction tr = convention.getTransferFunction(data);
         final MathTransform1D mt = tr.getTransform();
