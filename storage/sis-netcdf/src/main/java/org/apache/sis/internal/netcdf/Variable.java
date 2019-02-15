@@ -31,7 +31,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -62,18 +61,6 @@ public abstract class Variable extends NamedElement {
      * <p>All shared vectors shall be considered read-only.</p>
      */
     protected static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
-
-    /**
-     * Names of attributes where to fetch minimum and maximum sample values, in preference order.
-     *
-     * @see #getValidValues()
-     */
-    private static final String[] RANGE_ATTRIBUTES = {
-        "valid_range",      // Expected "reasonable" range for variable.
-        "actual_range",     // Actual data range for variable.
-        "valid_min",        // Fallback if "valid_range" is not specified.
-        "valid_max"
-    };
 
     /**
      * Names of attributes where to fetch missing or pad values. Order matter since it determines the bits to be set
@@ -318,7 +305,7 @@ public abstract class Variable extends NamedElement {
      * to this method.
      *
      * <p>This method has protected access because it should not be invoked directly except in overridden methods.
-     * Code using variable role should invoke {@link Decoder#roleOf(Variable)} instead, for allowing specialization
+     * Code using variable role should invoke {@link Convention#roleOf(Variable)} instead, for allowing specialization
      * by {@link Convention}.</p>
      *
      * @return the role of this variable.
@@ -465,74 +452,21 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the range of valid values, or {@code null} if unknown.
-     * The range of values is taken from the following properties, in precedence order:
+     * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
+     * This method is invoked only as a fallback if {@link Convention#getValidValues(Variable)} did not found
+     * a range of values by application of CF conventions. The returned range may be a range of packed values
+     * or a range of real values. In the later case, the range shall be an instance of
+     * {@link org.apache.sis.measure.MeasurementRange}.
      *
-     * <ol>
-     *   <li>{@code "valid_range"}  — expected "reasonable" range for variable.</li>
-     *   <li>{@code "actual_range"} — actual data range for variable.</li>
-     *   <li>{@code "valid_min"}    — ignored if {@code "valid_range"} is present, as specified in UCAR documentation.</li>
-     *   <li>{@code "valid_max"}    — idem.</li>
-     * </ol>
-     *
-     * Whether the returned range is a range of packed values or a range of real values is ambiguous.
-     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
-     * If both type of ranges are available, this method should return the range of packed value.
-     * Otherwise if this method return the range of real values, then that range shall be an instance
-     * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
+     * <p>The default implementation returns the range of values that can be stored with the {@linkplain #getDataType()
+     * data type} of this variable, if that type is an integer type. The range of {@linkplain #getNodataValues() no data
+     * values} are subtracted.</p>
      *
      * @return the range of valid values, or {@code null} if unknown.
+     *
+     * @see Convention#getValidValues(Variable)
      */
-    public NumberRange<?> getValidValues() {
-        Number minimum = null;
-        Number maximum = null;
-        Class<? extends Number> type = null;
-        for (final String attribute : RANGE_ATTRIBUTES) {
-            for (final Object element : getAttributeValues(attribute, true)) {
-                if (element instanceof Number) {
-                    Number value = (Number) element;
-                    if (element instanceof Float) {
-                        final float fp = (Float) element;
-                        if      (fp == +Float.MAX_VALUE) value = Float.POSITIVE_INFINITY;
-                        else if (fp == -Float.MAX_VALUE) value = Float.NEGATIVE_INFINITY;
-                    } else if (element instanceof Double) {
-                        final double fp = (Double) element;
-                        if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
-                        else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
-                    }
-                    type = Numbers.widestClass(type, value.getClass());
-                    minimum = Numbers.cast(minimum, type);
-                    maximum = Numbers.cast(maximum, type);
-                    value   = Numbers.cast(value,   type);
-                    if (!attribute.endsWith("max") && (minimum == null || compare(value, minimum) < 0)) minimum = value;
-                    if (!attribute.endsWith("min") && (maximum == null || compare(value, maximum) > 0)) maximum = value;
-                }
-            }
-            if (minimum != null && maximum != null) {
-                /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
-                 * if the type of the range is equal to the type of the scale, and the type of the
-                 * data is not wider, then assume that the minimum and maximum are real values.
-                 */
-                final int rangeType = Numbers.getEnumConstant(type);
-                if (rangeType >= getDataType().number &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(getAttributeType(CDM.ADD_OFFSET))))
-                {
-                    @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, getUnit());
-                    return range;
-                } else {
-                    @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
-                    return range;
-                }
-            }
-        }
-        /*
-         * If we found no explicit range attribute and if the variable type is an integer type,
-         * then infer the range from the variable type and exclude the ranges of nodata values.
-         */
+    public NumberRange<?> getRangeFallback() {
         final DataType dataType = getDataType();
         if (dataType.isInteger) {
             final int size = dataType.size() * Byte.SIZE;

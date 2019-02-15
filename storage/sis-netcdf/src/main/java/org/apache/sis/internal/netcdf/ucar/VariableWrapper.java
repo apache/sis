@@ -128,7 +128,6 @@ final class VariableWrapper extends Variable {
         if (d != null && (d = d.trim()).isEmpty()) {
             d = null;
         }
-
         return d;
     }
 
@@ -346,23 +345,21 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the minimum and maximum values as determined by Apache SIS, using the UCAR library as a fallback.
-     * This method gives precedence to the range computed by Apache SIS instead than the range provided by UCAR
-     * because we need the range of packed values instead than the range of converted values. Only if Apache SIS
-     * can not determine that range, we use the UCAR library and returns the value in a {@link MeasurementRange}
-     * instance of signaling the caller that this is converted values.
+     * Returns the minimum and maximum values as determined by UCAR library, or inferred from the integer type otherwise.
+     * This method is invoked only as a fallback; we give precedence to the range computed by Apache SIS instead than the
+     * range provided by UCAR because we need the range of packed values instead than the range of converted values. Only
+     * if Apache SIS can not determine that range, that method is invoked.
      */
     @Override
-    public NumberRange<?> getValidValues() {
-        NumberRange<?> range = super.getValidValues();
-        if (range == null && variable instanceof EnhanceScaleMissing) {
+    public NumberRange<?> getRangeFallback() {
+        if (variable instanceof EnhanceScaleMissing) {
             final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
             if (ev.hasInvalidData()) {
-                range = MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
+                // Returns a MeasurementRange instance for signaling the caller that this is converted values.
+                return MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
             }
         }
-        return range;
-
+        return super.getRangeFallback();
     }
 
     /**

@@ -27,7 +27,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
@@ -62,6 +61,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -128,8 +128,8 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     private final Path location;
 
     /**
-     * Allow to fetch referencing information from source variables. It's mostly useful to handle multiple
-     * NetCDF structures (CF, GCOM, etc.)
+     * Allows to fetch referencing information from source variables. It's mostly useful for handling netCDF files
+     * structured in ways different than CF-convention (for example GCOM, <i>etc.</i>).
      */
     private final Convention convention;
 
@@ -258,53 +258,20 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<SampleDimension> getSampleDimensions() {
+    public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         SampleDimension.Builder builder = null;
-        for (int i=0; i<ranges.length; i++) {
-            if (ranges[i] == null) {
-                if (builder == null) builder = new SampleDimension.Builder();
-                ranges[i] = createSampleDimension(builder, data[i]);
-                builder.clear();
+        try {
+            for (int i=0; i<ranges.length; i++) {
+                if (ranges[i] == null) {
+                    if (builder == null) builder = new SampleDimension.Builder();
+                    ranges[i] = createSampleDimension(builder, data[i]);
+                    builder.clear();
+                }
             }
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
         }
         return UnmodifiableArrayList.wrap(ranges);
-    }
-
-    /**
-     * Try to add information about valid values in a given sample dimension builder.
-     * 
-     * @param target The builder to add information into.
-     * @param range Base range for valid values.
-     * @param data Variable to use in order to improve quantitative information.
-     */
-    private void addQuantitativeInfo(final SampleDimension.Builder target, NumberRange<?> range, final Variable data) {
-        final TransferFunction tr = convention.getTransferFunction(data);
-        final MathTransform1D mt = tr.getTransform();
-        if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
-            /*
-             * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
-             * if the type of the range is equal to the type of the scale, and the type of the
-             * data is not wider, then assume that the minimum and maximum are real values.
-             * This is identified in Apache SIS by the range given as a MeasurementRange.
-             */
-            final boolean isMinIncluded = range.isMinIncluded();
-            final boolean isMaxIncluded = range.isMaxIncluded();
-            double minimum = (range.getMinDouble() - tr.getOffset()) / tr.getScale();
-            double maximum = (range.getMaxDouble() - tr.getOffset()) / tr.getScale();
-            if (maximum < minimum) {
-                final double swap = maximum;
-                maximum = minimum;
-                minimum = swap;
-            }
-            if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
-                range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
-            } else {
-                range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
-            }
-        }
-        String name = data.getDescription();
-        if (name == null) name = data.getName();
-        target.addQuantitative(name, range, mt, data.getUnit());
     }
 
     /**
@@ -312,11 +279,50 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      *
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  data     the data for which to create a sample dimension.
+     * @throws TransformException if an error occurred while using the transfer function.
      */
-    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) {
-        convention.getValidValues(data)
-                .ifPresent(range -> addQuantitativeInfo(builder, range, data));
-
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) throws TransformException {
+        /*
+         * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
+         * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
+         * by UCAR because we need the range of packed values instead than the range of converted values.
+         */
+        NumberRange<?> range = convention.getValidValues(data);
+        if (range == null) {
+            range = data.getRangeFallback();                                // Fallback to UCAR library may happen here.
+        }
+        if (range != null) {
+            final MathTransform1D mt = convention.getTransferFunction(data).getTransform();
+            if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
+                /*
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * if the type of the range is equal to the type of the scale, and the type of the
+                 * data is not wider, then assume that the minimum and maximum are real values.
+                 * This is identified in Apache SIS by the range given as a MeasurementRange.
+                 */
+                final MathTransform1D inverse = mt.inverse();
+                boolean isMinIncluded = range.isMinIncluded();
+                boolean isMaxIncluded = range.isMaxIncluded();
+                double minimum = inverse.transform(range.getMinDouble());
+                double maximum = inverse.transform(range.getMaxDouble());
+                if (maximum < minimum) {
+                    final double swap = maximum;
+                    maximum = minimum;
+                    minimum = swap;
+                    final boolean sb = isMaxIncluded;
+                    isMaxIncluded = isMinIncluded;
+                    isMinIncluded = sb;
+                }
+                if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                    range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
+                } else {
+                    range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
+                }
+            }
+            String name = data.getDescription();
+            if (name == null) name = data.getName();
+            builder.addQuantitative(name, range, mt, data.getUnit());
+        }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
          * as category name. If the sample values are already real values, then the "no data" values have been replaced by NaN
@@ -414,6 +420,8 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
         } catch (RuntimeException e) {                  // Many exceptions thrown by RasterFactory.wrap(…).
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {

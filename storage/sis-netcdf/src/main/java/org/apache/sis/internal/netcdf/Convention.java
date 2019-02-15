@@ -17,10 +17,11 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Iterator;
-import java.util.Optional;
 import org.apache.sis.internal.referencing.LazySet;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.Numbers;
 import ucar.nc2.constants.CDM;
 
 
@@ -41,6 +42,7 @@ import ucar.nc2.constants.CDM;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
@@ -58,6 +60,18 @@ public class Convention {
      * The convention to use when no specific conventions were found.
      */
     private static final Convention DEFAULT = new Convention();
+
+    /**
+     * Names of attributes where to fetch minimum and maximum sample values, in preference order.
+     *
+     * @see #getValidValues(Variable)
+     */
+    private static final String[] RANGE_ATTRIBUTES = {
+        "valid_range",      // Expected "reasonable" range for variable.
+        "actual_range",     // Actual data range for variable.
+        "valid_min",        // Fallback if "valid_range" is not specified.
+        "valid_max"
+    };
 
     /**
      * For subclass constructors.
@@ -125,12 +139,97 @@ public class Convention {
     }
 
     /**
-     * Build a function aiming to convert values packed in given variable into geophysical measures.
+     * Returns the range of valid values, or {@code null} if unknown.
+     * The default implementation takes the range of values from the following properties, in precedence order:
      *
-     * @param source The variable specifying the transfer function.
+     * <ol>
+     *   <li>{@code "valid_range"}  — expected "reasonable" range for variable.</li>
+     *   <li>{@code "actual_range"} — actual data range for variable.</li>
+     *   <li>{@code "valid_min"}    — ignored if {@code "valid_range"} is present, as specified in UCAR documentation.</li>
+     *   <li>{@code "valid_max"}    — idem.</li>
+     * </ol>
      *
-     * @return A transfer function matching given variable. Note that if we cannot find any information in input
-     * variable, we return an identity transform. Never null.
+     * Whether the returned range is a range of packed values or a range of real values is ambiguous.
+     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
+     * If both type of ranges are available, then this method should return the range of packed value.
+     * Otherwise if this method returns the range of real values, then that range shall be an instance
+     * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
+     *
+     * @param  source  the variable to get valid range of values for.
+     * @return the range of valid values, or {@code null} if unknown.
+     *
+     * @see Variable#getRangeFallback()
+     */
+    public NumberRange<?> getValidValues(final Variable source) {
+        Number minimum = null;
+        Number maximum = null;
+        Class<? extends Number> type = null;
+        for (final String attribute : RANGE_ATTRIBUTES) {
+            for (final Object element : source.getAttributeValues(attribute, true)) {
+                if (element instanceof Number) {
+                    Number value = (Number) element;
+                    if (element instanceof Float) {
+                        final float fp = (Float) element;
+                        if      (fp == +Float.MAX_VALUE) value = Float.POSITIVE_INFINITY;
+                        else if (fp == -Float.MAX_VALUE) value = Float.NEGATIVE_INFINITY;
+                    } else if (element instanceof Double) {
+                        final double fp = (Double) element;
+                        if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
+                        else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
+                    }
+                    type = Numbers.widestClass(type, value.getClass());
+                    minimum = Numbers.cast(minimum, type);
+                    maximum = Numbers.cast(maximum, type);
+                    value   = Numbers.cast(value,   type);
+                    if (!attribute.endsWith("max") && (minimum == null || compare(value, minimum) < 0)) minimum = value;
+                    if (!attribute.endsWith("min") && (maximum == null || compare(value, maximum) > 0)) maximum = value;
+                }
+            }
+            if (minimum != null && maximum != null) {
+                /*
+                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
+                 * if the type of the range is equal to the type of the scale, and the type of the
+                 * data is not wider, then assume that the minimum and maximum are real values.
+                 */
+                final int rangeType = Numbers.getEnumConstant(type);
+                if (rangeType >= source.getDataType().number &&
+                    rangeType >= Math.max(Numbers.getEnumConstant(source.getAttributeType(CDM.SCALE_FACTOR)),
+                                          Numbers.getEnumConstant(source.getAttributeType(CDM.ADD_OFFSET))))
+                {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, source.getUnit());
+                    return range;
+                } else {
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
+                    return range;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Compares two numbers which shall be of the same class.
+     * This is a helper method for {@link #getValidValues(Variable)}.
+     */
+    @SuppressWarnings("unchecked")
+    private static int compare(final Number n1, final Number n2) {
+        return ((Comparable) n1).compareTo((Comparable) n2);
+    }
+
+    /**
+     * Builds the function converting values from their packed formats in the variable to "real" values.
+     * The transfer function is typically built from the {@code "scale_factor"} and {@code "add_offset"}
+     * attributes associated to the given variable, but other conventions could use different attributes.
+     * The returned function will be a component of the {@link org.apache.sis.coverage.SampleDimension}
+     * to be created for each variable.
+     *
+     * @param  source  the variable from which to determine the transfer function.
+     *
+     * @return a transfer function built from the attributes defined in the given variable. Never null;
+     *         if no information is found in the given {@code source} variable, then the return value
+     *         shall be an identity function.
      */
     public TransferFunction getTransferFunction(final Variable source) {
         /*
@@ -138,25 +237,10 @@ public class Convention {
          * a "packed" variable. Otherwise the transfer function is the identity transform.
          */
         final TransferFunction tr = new TransferFunction();
-        final double scale = source.getAttributeAsNumber(CDM.SCALE_FACTOR);
+        final double scale  = source.getAttributeAsNumber(CDM.SCALE_FACTOR);
         final double offset = source.getAttributeAsNumber(CDM.ADD_OFFSET);
-        if (!Double.isNaN(scale)) {
-            tr.setScale(scale);
-        }
-        if (!Double.isNaN(offset)) {
-            tr.setOffset(offset);
-        }
-
+        if (!Double.isNaN(scale))  tr.setScale (scale);
+        if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
-    }
-
-    /**
-     * Search in given variable for information about its range of valid values.
-     *
-     * @param source The variable to get valid range of values for.
-     * @return The range of expected measures, or nothing if we didn't find any related information.
-     */
-    public Optional<NumberRange<?>> getValidValues(final Variable source) {
-        return Optional.ofNullable(source.getValidValues());
     }
 }
