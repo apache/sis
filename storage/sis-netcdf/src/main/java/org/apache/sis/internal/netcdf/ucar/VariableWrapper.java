@@ -124,7 +124,12 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public String getDescription() {
-        return variable.getDescription();
+        String d = variable.getDescription();
+        if (d != null && (d = d.trim()).isEmpty()) {
+            d = null;
+        }
+
+        return d;
     }
 
     /**
