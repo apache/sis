@@ -52,6 +52,8 @@ public interface GridCoverageResource extends DataSet {
      *
      * @return extent of grid coordinates together with their mapping to "real world" coordinates.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     *
+     * @see GridCoverage#getGridGeometry()
      */
     GridGeometry getGridGeometry() throws DataStoreException;
 
@@ -68,8 +70,16 @@ public interface GridCoverageResource extends DataSet {
      *   <li>The sample values reserved for missing values.</li>
      * </ul>
      *
+     * The returned list should never be empty. If the coverage is an image to be used only for visualization purposes
+     * (i.e. the image does not contain any classification data or any measurement of physical phenomenon), then list
+     * size should be equal to the {@linkplain java.awt.image.SampleModel#getNumBands() number of bands} in the image
+     * and sample dimension names may be "Red", "Green" and "Blue" for instance. Those sample dimensions do not need
+     * to contain any {@linkplain SampleDimension#getCategories() category}.
+     *
      * @return ranges of sample values together with their mapping to "real values".
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     *
+     * @see GridCoverage#getSampleDimensions()
      */
     List<SampleDimension> getSampleDimensions() throws DataStoreException;
 

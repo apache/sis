@@ -52,6 +52,8 @@ import org.opengis.coverage.PointOutsideCoverageException;
 public abstract class GridCoverage {
     /**
      * The grid extent, coordinate reference system (CRS) and conversion from cell indices to CRS.
+     *
+     * @see #getGridGeometry()
      */
     private final GridGeometry gridGeometry;
 
@@ -59,6 +61,8 @@ public abstract class GridCoverage {
      * List of sample dimension (band) information for the grid coverage. Information include such things
      * as description, the no data values, minimum and maximum values, <i>etc</i>. A coverage must have
      * at least one sample dimension. The content of this array shall never be modified.
+     *
+     * @see #getSampleDimensions()
      */
     private final SampleDimension[] sampleDimensions;
 
@@ -100,6 +104,8 @@ public abstract class GridCoverage {
      * {@code GridGeometry} can also provide derived information like bounding box and resolution.
      *
      * @return grid extent, CRS and conversion from cell indices to CRS.
+     *
+     * @see org.apache.sis.storage.GridCoverageResource#getGridGeometry()
      */
     public GridGeometry getGridGeometry() {
         return gridGeometry;
@@ -108,8 +114,12 @@ public abstract class GridCoverage {
     /**
      * Returns information about the <cite>range</cite> of this grid coverage.
      * Information include names, sample value ranges, fill values and transfer functions for all bands in this grid coverage.
+     * The length of the returned list should be equal to the {@linkplain java.awt.image.SampleModel#getNumBands() number of
+     * bands} in the rendered image.
      *
      * @return names, value ranges, fill values and transfer functions for all bands in this grid coverage.
+     *
+     * @see org.apache.sis.storage.GridCoverageResource#getSampleDimensions()
      */
     public List<SampleDimension> getSampleDimensions() {
         return UnmodifiableArrayList.wrap(sampleDimensions);
