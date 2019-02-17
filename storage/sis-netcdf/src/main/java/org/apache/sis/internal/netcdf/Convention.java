@@ -130,12 +130,63 @@ public class Convention {
      *
      * <p>The default implementation returns {@code null}.</p>
      *
-     * @param  variable  the variable for which the list of axis variables are desired, in CRS order.
+     * @param  data  the variable for which the list of axis variables are desired, in CRS order.
      * @return names of the variables containing axis values, or {@code null} if this
      *         method performs applies no special convention for the given variable.
      */
-    public String[] namesOfAxisVariables(Variable variable) {
+    public String[] namesOfAxisVariables(Variable data) {
         return null;
+    }
+
+    /**
+     * Returns the attribute-specified name of the dimension at the given index, or {@code null} if unspecified.
+     * This is not the name of the dimension encoded in netCDF binary file format, but rather a name specified
+     * by a customized attribute. This customized name can be used when the dimensions of the raster data are
+     * not the same than the dimensions of the localization grid. In such case, the names returned by this method
+     * are used for mapping the raster dimensions to the localization grid dimensions.
+     *
+     * <div class="note"><b>Example:</b>
+     * consider the following netCDF file (simplified):
+     *
+     * {@preformat netcdf
+     *   dimensions:
+     *     grid_y =  161 ;
+     *     grid_x =  126 ;
+     *     data_y = 1599 ;
+     *     data_x = 1250 ;
+     *   variables:
+     *     float Latitude(grid_y, grid_x) ;
+     *       long_name = "Latitude (degree)" ;
+     *       dim0 = "Line grids" ;
+     *       dim1 = "Pixel grids" ;
+     *       resampling_interval = 10 ;
+     *     float Longitude(grid_y, grid_x) ;
+     *       long_name = "Longitude (degree)" ;
+     *       dim0 = "Line grids" ;
+     *       dim1 = "Pixel grids" ;
+     *       resampling_interval = 10 ;
+     *     ushort SST(data_y, data_x) ;
+     *       long_name = "Sea Surface Temperature" ;
+     *       dim0 = "Line grids" ;
+     *       dim1 = "Pixel grids" ;
+     * }
+     *
+     * In this case, even if {@link #namesOfAxisVariables(Variable)} explicitly returns {@code {"Latitude", "Longitude"}}
+     * we are still unable to associate the {@code SST} variable to those axes because they have no dimension in common.
+     * However if we interpret {@code dim0} and {@code dim1} attributes as <cite>"Name of dimension 0"</cite> and
+     * <cite>"Name of dimension 1"</cite> respectively, then we can associate the same dimension <strong>names</strong>
+     * to all those variables: namely {@code "Line grids"} and {@code "Pixel grids"}. Using those names, we deduce that
+     * the {@code (data_y, data_x)} dimensions in the {@code SST} variable are mapped to the {@code (grid_y, grid_x)}
+     * dimensions in the localization grid.</div>
+     *
+     * This feature is an extension to CF-conventions.
+     *
+     * @param  dataOrAxis  the variable for which to get the attribute-specified name of the dimension.
+     * @param  index       zero-based index of the dimension for which to get the name.
+     * @return dimension name as specified by attributes, or {@code null} if none.
+     */
+    public String nameOfDimension(final Variable dataOrAxis, final int index) {
+        return dataOrAxis.getAttributeAsString("dim" + index);
     }
 
     /**
@@ -155,17 +206,18 @@ public class Convention {
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
      *
-     * @param  source  the variable to get valid range of values for.
+     * @param  data  the variable to get valid range of values for.
+     *               This is usually a variable containing raster data.
      * @return the range of valid values, or {@code null} if unknown.
      *
      * @see Variable#getRangeFallback()
      */
-    public NumberRange<?> getValidValues(final Variable source) {
+    public NumberRange<?> getValidValues(final Variable data) {
         Number minimum = null;
         Number maximum = null;
         Class<? extends Number> type = null;
         for (final String attribute : RANGE_ATTRIBUTES) {
-            for (final Object element : source.getAttributeValues(attribute, true)) {
+            for (final Object element : data.getAttributeValues(attribute, true)) {
                 if (element instanceof Number) {
                     Number value = (Number) element;
                     if (element instanceof Float) {
@@ -192,12 +244,12 @@ public class Convention {
                  * data is not wider, then assume that the minimum and maximum are real values.
                  */
                 final int rangeType = Numbers.getEnumConstant(type);
-                if (rangeType >= source.getDataType().number &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(source.getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(source.getAttributeType(CDM.ADD_OFFSET))))
+                if (rangeType >= data.getDataType().number &&
+                    rangeType >= Math.max(Numbers.getEnumConstant(data.getAttributeType(CDM.SCALE_FACTOR)),
+                                          Numbers.getEnumConstant(data.getAttributeType(CDM.ADD_OFFSET))))
                 {
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, source.getUnit());
+                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, data.getUnit());
                     return range;
                 } else {
                     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -225,20 +277,21 @@ public class Convention {
      * The returned function will be a component of the {@link org.apache.sis.coverage.SampleDimension}
      * to be created for each variable.
      *
-     * @param  source  the variable from which to determine the transfer function.
+     * @param  data  the variable from which to determine the transfer function.
+     *               This is usually a variable containing raster data.
      *
      * @return a transfer function built from the attributes defined in the given variable. Never null;
-     *         if no information is found in the given {@code source} variable, then the return value
+     *         if no information is found in the given {@code data} variable, then the return value
      *         shall be an identity function.
      */
-    public TransferFunction getTransferFunction(final Variable source) {
+    public TransferFunction getTransferFunction(final Variable data) {
         /*
          * If scale_factor and/or add_offset variable attributes are present, then this is
          * a "packed" variable. Otherwise the transfer function is the identity transform.
          */
         final TransferFunction tr = new TransferFunction();
-        final double scale  = source.getAttributeAsNumber(CDM.SCALE_FACTOR);
-        final double offset = source.getAttributeAsNumber(CDM.ADD_OFFSET);
+        final double scale  = data.getAttributeAsNumber(CDM.SCALE_FACTOR);
+        final double offset = data.getAttributeAsNumber(CDM.ADD_OFFSET);
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
