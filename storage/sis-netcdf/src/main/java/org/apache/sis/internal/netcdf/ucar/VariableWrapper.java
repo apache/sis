@@ -17,15 +17,14 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.util.Collection;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import javax.measure.Unit;
 import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
-import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
@@ -81,6 +80,23 @@ final class VariableWrapper extends Variable {
      * (for example the values in coordinate system axes).
      */
     private transient Vector values;
+
+    /**
+     * The grid associated to this variable, or {@code null} if none or not yet computed.
+     * The grid needs to be computed if {@link #gridDetermined} is {@code false}.
+     *
+     * @see #gridDetermined
+     * @see #getGrid(Decoder)
+     */
+    private transient GridWrapper grid;
+
+    /**
+     * Whether {@link #grid} has been computed. Note that the result may still null.
+     *
+     * @see #grid
+     * @see #getGrid(Decoder)
+     */
+    private transient boolean gridDetermined;
 
     /**
      * Creates a new variable wrapping the given netCDF interface.
@@ -208,7 +224,7 @@ final class VariableWrapper extends Variable {
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
      */
     @Override
-    public boolean isUnlimited() {
+    protected boolean isUnlimited() {
         return variable.isUnlimited();
     }
 
@@ -229,42 +245,32 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
-        if (variable instanceof Enhancements) {
-            final List<CoordinateSystem> cs = ((Enhancements) variable).getCoordinateSystems();
-            if (cs != null && !cs.isEmpty()) {
-                for (final Grid grid : decoder.getGrids()) {
-                    final GridWrapper g = ((GridWrapper) grid).forVariable(variable, cs);
-                    if (g != null) {
-                        return g;
+        if (!gridDetermined) {
+            gridDetermined = true;                      // Set first so we don't try twice in case of failure.
+            if (variable instanceof Enhancements) {
+                final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
+                if (!systems.isEmpty()) {
+                    for (final Grid candidate : decoder.getGrids()) {
+                        grid = ((GridWrapper) candidate).forVariable(variable, systems);
+                        if (grid != null) {
+                            break;
+                        }
                     }
                 }
             }
         }
-        return null;
+        return grid;
     }
 
     /**
-     * Returns the names of the dimensions of this variable.
-     * The dimensions are those of the grid, not the dimensions of the coordinate system.
-     * This information is used for completing ISO 19115 metadata.
+     * Returns the dimensions of this variable in the order they are declared in the netCDF file.
+     * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
+     * In ISO 19123 terminology, the dimension lengths give the upper corner of the grid envelope plus one.
+     * The lower corner is always (0, 0, …, 0).
      */
     @Override
-    public String[] getGridDimensionNames() {
-        final List<Dimension> dimensions = variable.getDimensions();
-        final String[] names = new String[dimensions.size()];
-        for (int i=0; i<names.length; i++) {
-            names[i] = dimensions.get(i).getShortName();
-        }
-        return names;
-    }
-
-    /**
-     * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
-     * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     */
-    @Override
-    public int[] getShape() {
-        return variable.getShape();
+    public List<org.apache.sis.internal.netcdf.Dimension> getGridDimensions() {
+        return DimensionWrapper.wrap(variable.getDimensions());
     }
 
     /**
@@ -363,23 +369,13 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
-     *
-     * @return {@code false}.
-     */
-    @Override
-    protected boolean readTriesToCompress() {
-        return false;
-    }
-
-    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * This method may replace fill/missing values by NaN values and caches the returned vector.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector read() throws IOException {
+    protected Vector read() throws IOException {
         if (values == null) {
             final Array array = variable.read();                // May be already cached by the UCAR library.
             values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());

@@ -122,7 +122,7 @@ public final class Axis extends NamedElement {
      * <p>Note that while we defined those values as unsigned for consistency with {@link Variable} dimensions,
      * not all operations in this {@code Axis} class support values greater than the signed integer range.</p>
      *
-     * @see Variable#getShape()
+     * @see Variable#getGridDimensions()
      */
     private final int[] sourceSizes;
 

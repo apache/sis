@@ -123,14 +123,15 @@ public abstract class Grid extends NamedElement {
     public abstract int getTargetDimensions();
 
     /**
-     * Returns the number of cells along each source dimension, in "natural" order.
-     * This method may return {@code null} if the grid shape can not be determined.
+     * Returns the dimensions of this grid, in netCDF (reverse of "natural") order. Each element in the list
+     * contains the number of cells in the dimension, together with implementation-specific information.
+     * The list length should be equal to {@link #getSourceDimensions()}.
      *
-     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order, or {@code null}.
+     * @return the source dimensions of this grid, in netCDF order.
      *
-     * @see Variable#getShape()
+     * @see Variable#getGridDimensions()
      */
-    protected abstract long[] getShape();
+    protected abstract List<Dimension> getDimensions();
 
     /**
      * Returns the axes of the coordinate reference system. The size of this array is expected equals to the
@@ -232,15 +233,20 @@ public abstract class Grid extends NamedElement {
      * if a dimension has unlimited length. The dimension names are informative only.
      *
      * @param  axes  value of {@link #getAxes(Decoder)}. Element order does not matter for this method.
+     * @return the extent, or {@code null} if not available.
      */
     @SuppressWarnings("fallthrough")
     private GridExtent getExtent(final Axis[] axes) {
-        final long[] high = getShape();
-        if (high == null) {
-            return null;
+        final List<Dimension> dimensions = getDimensions();
+        final int n = dimensions.size();
+        final long[] high = new long[n];
+        for (int i=0; i<n; i++) {
+            final long length = dimensions.get(i).length();
+            if (length <= 0) return null;
+            high[(n-1) - i] = length;
         }
-        final DimensionNameType[] names = new DimensionNameType[high.length];
-        switch (names.length) {
+        final DimensionNameType[] names = new DimensionNameType[n];
+        switch (n) {
             default: names[1] = DimensionNameType.ROW;      // Fall through
             case 1:  names[0] = DimensionNameType.COLUMN;   // Fall through
             case 0:  break;

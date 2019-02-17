@@ -61,6 +61,8 @@ final class GridWrapper extends Grid {
      *   <li>{@link ucar.nc2.Variable#getDimensions()}</li>
      *   <li>{@link ucar.nc2.dataset.CoordinateSystem#getDomain()}</li>
      * </ul>
+     *
+     * @see #getDimensions()
      */
     private final List<Dimension> domain;
 
@@ -140,23 +142,11 @@ final class GridWrapper extends Grid {
     }
 
     /**
-     * Returns the number of cells along each source dimension, in "natural" order.
-     * This method may return {@code null} if the grid shape can not be determined.
-     *
-     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order, or {@code null}.
+     * Returns the dimensions of this grid, in netCDF (reverse of "natural") order.
      */
     @Override
-    protected long[] getShape() {
-        int dim = domain.size();
-        final long[] size = new long[dim--];
-        for (int i=0; i<=dim; i++) {
-            final int length = domain.get(i).getLength();
-            if (length <= 0) {
-                return null;
-            }
-            size[dim - i] = length;
-        }
-        return size;
+    protected List<org.apache.sis.internal.netcdf.Dimension> getDimensions() {
+        return DimensionWrapper.wrap(domain);
     }
 
     /**

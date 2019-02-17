@@ -194,7 +194,7 @@ public final class ChannelDecoder extends Decoder {
      * @see #readDimensions(int)
      * @see #findDimension(String)
      */
-    private Map<String,Dimension> dimensionMap;
+    private Map<String,DimensionInfo> dimensionMap;
 
     /**
      * The grid geometries, created when first needed.
@@ -213,7 +213,7 @@ public final class ChannelDecoder extends Decoder {
      *   <li>Number of records | {@value #STREAMING}</li>
      *   <li>List of netCDF dimensions  (see {@link #readDimensions(int)})</li>
      *   <li>List of global attributes  (see {@link #readAttributes(int)})</li>
-     *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
+     *   <li>List of variables          (see {@link #readVariables(int, DimensionInfo[])})</li>
      * </ul>
      *
      * @param  input      the channel and the buffer from where data are read.
@@ -253,7 +253,7 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        Dimension[]        dimensions = null;
+        DimensionInfo[]    dimensions = null;
         VariableInfo[]     variables  = null;
         Map<String,Object> attributes = null;
         for (int i=0; i<3; i++) {
@@ -497,8 +497,8 @@ public final class ChannelDecoder extends Decoder {
      * @param  nelems  the number of dimensions to read.
      * @return the dimensions in the order they are declared in the netCDF file.
      */
-    private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreContentException {
-        final Dimension[] dimensions = new Dimension[nelems];
+    private DimensionInfo[] readDimensions(final int nelems) throws IOException, DataStoreContentException {
+        final DimensionInfo[] dimensions = new DimensionInfo[nelems];
         for (int i=0; i<nelems; i++) {
             final String name = readName();
             int length = input.readInt();
@@ -509,7 +509,7 @@ public final class ChannelDecoder extends Decoder {
                     throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, tagPath("numrecs")));
                 }
             }
-            dimensions[i] = new Dimension(name, length, isUnlimited);
+            dimensions[i] = new DimensionInfo(name, length, isUnlimited);
         }
         dimensionMap = toCaseInsensitiveNameMap(dimensions);
         return dimensions;
@@ -570,7 +570,9 @@ public final class ChannelDecoder extends Decoder {
      * @throws DataStoreContentException if a logical error is detected.
      * @throws ArithmeticException if a variable is too large.
      */
-    private VariableInfo[] readVariables(final int nelems, final Dimension[] allDimensions) throws IOException, DataStoreException {
+    private VariableInfo[] readVariables(final int nelems, final DimensionInfo[] allDimensions)
+            throws IOException, DataStoreException
+    {
         if (allDimensions == null) {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
@@ -578,7 +580,7 @@ public final class ChannelDecoder extends Decoder {
         for (int j=0; j<nelems; j++) {
             final String name = readName();
             final int n = input.readInt();
-            final Dimension[] varDims = new Dimension[n];
+            final DimensionInfo[] varDims = new DimensionInfo[n];
             try {
                 for (int i=0; i<n; i++) {
                     varDims[i] = allDimensions[input.readInt()];
@@ -692,11 +694,11 @@ public final class ChannelDecoder extends Decoder {
      * @param  dimName  the name of the dimension to search.
      * @return dimension of the given name, or {@code null} if none.
      */
-    final Dimension findDimension(final String dimName) {
-        Dimension dim = dimensionMap.get(dimName);         // Give precedence to exact match before to ignore case.
+    final DimensionInfo findDimension(final String dimName) {
+        DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
             final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
-            if (lower != dimName) {                         // Identity comparison is okay here.
+            if (lower != dimName) {                             // Identity comparison is okay here.
                 dim = dimensionMap.get(lower);
             }
         }
@@ -864,7 +866,7 @@ public final class ChannelDecoder extends Decoder {
      * @param  dimensions  where to report all dimensions used by added axes.
      * @return whether {@code names} was non-null.
      */
-    private boolean listAxes(final CharSequence[] names, final Set<VariableInfo> axes, final Set<Dimension> dimensions) {
+    private boolean listAxes(final CharSequence[] names, final Set<VariableInfo> axes, final Set<DimensionInfo> dimensions) {
         if (names == null) {
             return false;
         }
@@ -897,7 +899,7 @@ public final class ChannelDecoder extends Decoder {
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
              * more complicated netCDF files (e.g. using two-dimensional localisation grids) also exist.
              */
-            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
+            final Map<DimensionInfo, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
                 switch (convention().roleOf(variable)) {
                     case COVERAGE: {
@@ -908,7 +910,7 @@ public final class ChannelDecoder extends Decoder {
                     }
                     case AXIS: {
                         variable.isCoordinateSystemAxis = true;
-                        for (final Dimension dimension : variable.dimensions) {
+                        for (final DimensionInfo dimension : variable.dimensions) {
                             CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
                         }
                     }
@@ -919,7 +921,7 @@ public final class ChannelDecoder extends Decoder {
              * so we remember the previously created instances in order to share the grid geometry instances.
              */
             final Set<VariableInfo> axes = new LinkedHashSet<>(8);
-            final Set<Dimension> usedDimensions = new HashSet<>(8);
+            final Set<DimensionInfo> usedDimensions = new HashSet<>(8);
             final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis || variable.dimensions.length == 0) {
@@ -943,7 +945,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
                 for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
-                    final Dimension dimension = variable.dimensions[i];
+                    final DimensionInfo dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
                         final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {

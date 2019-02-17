@@ -903,8 +903,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
             if (decoder.convention().roleOf(variable) == VariableRole.COVERAGE) {
-                final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
-                CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
+                final List<org.apache.sis.internal.netcdf.Dimension> dimensions = variable.getGridDimensions();
+                final String[] names = new String[dimensions.size()];
+                for (int i=0; i<names.length; i++) {
+                    names[i] = dimensions.get(i).getName();
+                }
+                CollectionsExt.addToMultiValuesMap(contents, Arrays.asList(names), variable);
             }
         }
         final String processingLevel = stringValue(PROCESSING_LEVEL);
@@ -945,7 +949,9 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String name = trim(variable.getName());
         if (name != null) {
             final NameFactory f = decoder.nameFactory;
-            setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
+            final StringBuilder buffer = new StringBuilder(20);
+            variable.writeDataTypeName(buffer);
+            setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, buffer.toString())));
         }
         final String id = variable.getAttributeAsString(CF.STANDARD_NAME);
         if (id != null && !id.equals(name)) {

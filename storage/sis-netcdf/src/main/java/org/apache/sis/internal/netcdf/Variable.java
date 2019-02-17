@@ -19,6 +19,7 @@ package org.apache.sis.internal.netcdf;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
@@ -157,6 +158,9 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the description of this variable, or {@code null} if none.
+     * This information may be encoded in different attributes like {@code "description"}, {@code "title"},
+     * {@code "long_name"} or {@code "standard_name"}. If the return value is non-null, then it should also
+     * be non-empty.
      *
      * @return the description of this variable, or {@code null}.
      */
@@ -172,15 +176,20 @@ public abstract class Variable extends NamedElement {
      * for parsing also its {@linkplain Axis#direction direction}.</p>
      *
      * @return the unit of measurement, or {@code null}.
+     *
+     * @see #getUnit()
      */
     protected abstract String getUnitsString();
 
     /**
      * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
+     * This method is invoked by {@link #getUnit()} when first needed.
      *
      * @param  symbols  the unit symbol to parse.
      * @return the parsed unit.
      * @throws Exception if the unit can not be parsed. This wide exception type is used by the UCAR library.
+     *
+     * @see #getUnit()
      */
     protected abstract Unit<?> parseUnit(String symbols) throws Exception;
 
@@ -192,6 +201,8 @@ public abstract class Variable extends NamedElement {
      * @param  other      the variable from which to copy unit and epoch, or {@code null} if none.
      * @param  overwrite  if non-null, set to the given unit instead than the unit of {@code other}.
      * @return the epoch (may be {@code null}).
+     *
+     * @see #getUnit()
      */
     public final Instant setUnit(final Variable other, Unit<?> overwrite) {
         if (other != null) {
@@ -254,33 +265,19 @@ public abstract class Variable extends NamedElement {
      * @return the variable data type, or {@link DataType#UNKNOWN} if unknown.
      *
      * @see #getAttributeType(String)
+     * @see #writeDataTypeName(StringBuilder)
      */
     public abstract DataType getDataType();
-
-    /**
-     * Returns the name of the variable data type as the name of the primitive type
-     * followed by the span of each dimension (in unit of grid cells) between brackets.
-     * Example: {@code "SHORT[180][360]"}.
-     *
-     * @return the name of the variable data type.
-     */
-    public final String getDataTypeName() {
-        final StringBuilder buffer = new StringBuilder(20);
-        buffer.append(getDataType().name().toLowerCase());
-        final int[] shape = getShape();
-        for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
-        }
-        return buffer.toString();
-    }
 
     /**
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
      * In netCDF 3 classic format, only the first dimension can be unlimited.
      *
      * @return whether this variable can grow.
+     *
+     * @see Dimension#isUnlimited()
      */
-    public abstract boolean isUnlimited();
+    protected abstract boolean isUnlimited();
 
     /**
      * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
@@ -312,8 +309,8 @@ public abstract class Variable extends NamedElement {
      */
     protected VariableRole getRole() {
         int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final int length : getShape()) {
-            if (Integer.toUnsignedLong(length) >= Grid.MIN_SPAN) {
+        for (final Dimension dimension : getGridDimensions()) {
+            if (dimension.length() >= Grid.MIN_SPAN) {
                 numVectors++;
             }
         }
@@ -339,28 +336,19 @@ public abstract class Variable extends NamedElement {
     public abstract Grid getGrid(Decoder decoder) throws IOException, DataStoreException;
 
     /**
-     * Returns the names of the dimensions of this variable, in the order they are declared in the netCDF file.
+     * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
-     * This information is used for completing ISO 19115 metadata.
+     * In ISO 19123 terminology, {@link Dimension#length()} on each dimension give the upper corner
+     * of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      *
-     * @return the names of all dimension of the grid, in netCDF order (reverse of "natural" order).
+     * <p>This information is used for completing ISO 19115 metadata, providing a default implementation of
+     * {@link #getRole()} method, or for building string representation of this variable among others.</p>
+     *
+     * @return all dimension of the grid, in netCDF order (reverse of "natural" order).
+     *
+     * @see Grid#getDimensions()
      */
-    public abstract String[] getGridDimensionNames();
-
-    /**
-     * Returns the length (number of cells) of each grid dimension, in the order they are declared in the netCDF file.
-     * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
-     * Values shall be handled as unsigned 32 bits integers.
-     *
-     * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0, 0, …, 0). This method is used by {@link #getRole()} method,
-     * or for building string representations of this variable.</p>
-     *
-     * @return the number of grid cells for each dimension, as unsigned integer in netCDF order (reverse of "natural" order).
-     *
-     * @see Grid#getShape()
-     */
-    public abstract int[] getShape();
+    public abstract List<Dimension> getGridDimensions();
 
     /**
      * Returns the names of all attributes associated to this variable.
@@ -400,7 +388,7 @@ public abstract class Variable extends NamedElement {
      * @param  numeric        {@code true} if the value is expected to be numeric, or {@code false} for string.
      * @return the {@link String} or {@link Number} value for the named attribute.
      */
-    public final Object getAttributeValue(final String attributeName, final boolean numeric) {
+    private Object getAttributeValue(final String attributeName, final boolean numeric) {
         Object singleton = null;
         for (final Object value : getAttributeValues(attributeName, numeric)) {
             if (value != null) {
@@ -414,7 +402,7 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the value of the given attribute as a non-blank string and leading/trailing spaces removed.
+     * Returns the value of the given attribute as a non-blank string with leading/trailing spaces removed.
      * This is a convenience method for {@link #getAttributeValues(String, boolean)} when a singleton value
      * is expected and blank strings ignored.
      *
@@ -532,22 +520,6 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Compares two numbers which shall be of the same class.
-     */
-    @SuppressWarnings("unchecked")
-    private static int compare(final Number n1, final Number n2) {
-        return ((Comparable) n1).compareTo((Comparable) n2);
-    }
-
-    /**
-     * Whether {@link #read()} invoked {@link Vector#compress(double)} on the returned vector.
-     * This information is used for avoiding to do twice some potentially costly operations.
-     *
-     * @return whether {@link #read()} invokes {@link Vector#compress(double)}.
-     */
-    protected abstract boolean readTriesToCompress();
-
-    /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Example:
@@ -581,14 +553,14 @@ public abstract class Variable extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract Vector read() throws IOException, DataStoreException;
+    protected abstract Vector read() throws IOException, DataStoreException;
 
     /**
      * Reads a subsampled sub-area of the variable.
      * Constraints on the argument values are:
      *
      * <ul>
-     *   <li>Argument dimensions shall be equal to the length of the {@link #getShape()} array.</li>
+     *   <li>Argument dimensions shall be equal to the size of the {@link #getGridDimensions()} list.</li>
      *   <li>For each index <var>i</var>, value of {@code area[i]} shall be in the range from 0 inclusive
      *       to {@code Integer.toUnsignedLong(getShape()[length - 1 - i])} exclusive.</li>
      *   <li>Values are in "natural" order (inverse of netCDF order).</li>
@@ -741,22 +713,37 @@ public abstract class Variable extends NamedElement {
      * @param  key        one or {@link Errors.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    protected final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
+    final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
         warning(listeners, caller, method, exception, Errors.getResources(listeners.getLocale()), key, arguments);
+    }
+
+    /**
+     * Appends the name of the variable data type as the name of the primitive type
+     * followed by the span of each dimension (in unit of grid cells) between brackets.
+     * Dimensions are listed in "natural" order (reverse of netCDF order).
+     * Example: {@code "SHORT[360][180]"}.
+     *
+     * @param  buffer  the buffer when to append the name of the variable data type.
+     */
+    public final void writeDataTypeName(final StringBuilder buffer) {
+        buffer.append(getDataType().name().toLowerCase(Locale.US));
+        final List<Dimension> dimensions = getGridDimensions();
+        for (int i=dimensions.size(); --i>=0;) {
+            dimensions.get(i).writeLength(buffer);
+        }
     }
 
     /**
      * Returns a string representation of this variable for debugging purpose.
      *
      * @return a string representation of this variable.
+     *
+     * @see #writeDataTypeName(StringBuilder)
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(getName()).append(" : ").append(getDataType());
-        final int[] shape = getShape();
-        for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
-        }
+        final StringBuilder buffer = new StringBuilder(getName()).append(" : ");
+        writeDataTypeName(buffer);
         if (isUnlimited()) {
             buffer.append(" (unlimited)");
         }

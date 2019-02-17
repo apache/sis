@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import ucar.nc2.constants._Coordinate;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
@@ -40,6 +42,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
@@ -97,10 +100,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * this variable (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[length-1]}
      * varies faster, followed by index in the domain of {@code dimensions[length-2]}, <i>etc.</i>
      *
-     * @see #getShape()
+     * @see #getGridDimensions()
      * @see GridInfo#domain
      */
-    final Dimension[] dimensions;
+    final DimensionInfo[] dimensions;
 
     /**
      * The offset (in bytes) to apply for moving to the next record in variable data, or -1 if unknown.
@@ -193,7 +196,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
-                 final Dimension[]           dimensions,
+                 final DimensionInfo[]       dimensions,
                  final Map<String,Object>    attributes,
                        DataType              dataType,
                  final int                   size,
@@ -216,7 +219,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          */
         if (dataType != null && (offsetToNextRecord = dataType.size()) != 0) {
             for (int i=0; i<dimensions.length; i++) {
-                final Dimension dim = dimensions[i];
+                final DimensionInfo dim = dimensions[i];
                 if (!dim.isUnlimited) {
                     offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
                 } else if (i != 0) {
@@ -424,7 +427,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns {@code true} if this variable is an enumeration.
      */
-    public boolean isEnumeration() {
+    final boolean isEnumeration() {
         return meanings != null;
     }
 
@@ -433,7 +436,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * In netCDF 3 classic format, only the first dimension can be unlimited.
      */
     @Override
-    public boolean isUnlimited() {
+    protected boolean isUnlimited() {
         // The constructor verified that only the first dimension is unlimited.
         return (dimensions.length != 0) && dimensions[0].isUnlimited;
     }
@@ -480,32 +483,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the names of the dimensions of this variable.
-     * The dimensions are those of the grid, not the dimensions of the coordinate system.
-     * This information is used for completing ISO 19115 metadata.
+     * Returns the dimensions of this variable in the order they are declared in the netCDF file.
+     * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
+     * In ISO 19123 terminology, the {@linkplain Dimension#length() dimension lengths} give the upper
+     * corner of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      */
     @Override
-    public String[] getGridDimensionNames() {
-        final String[] names = new String[dimensions.length];
-        for (int i=0; i<names.length; i++) {
-            names[i] = dimensions[i].name;
-        }
-        return names;
-    }
-
-    /**
-     * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
-     * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     *
-     * @return the number of grid cells for each dimension, as unsigned integers.
-     */
-    @Override
-    public int[] getShape() {
-        final int[] shape = new int[dimensions.length];
-        for (int i=0; i<shape.length; i++) {
-            shape[i] = dimensions[i].length;
-        }
-        return shape;
+    public List<Dimension> getGridDimensions() {
+        return UnmodifiableArrayList.wrap(dimensions);
     }
 
     /**
@@ -663,16 +648,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
-     *
-     * @return {@code true}.
-     */
-    @Override
-    protected boolean readTriesToCompress() {
-        return true;
-    }
-
-    /**
      * Sets the values in this variable. The values are normally read from the netCDF file by the {@link #read()} method,
      * but this {@code setValues(Object)} method may also be invoked if we want to overwrite those values.
      *
@@ -713,7 +688,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector read() throws IOException, DataStoreContentException {
+    protected Vector read() throws IOException, DataStoreContentException {
         if (values == null) {
             if (reader == null) {
                 throw new DataStoreContentException(unknownType());
@@ -840,7 +815,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  ordinal  the ordinal of the enumeration for which to get the value.
      * @return the value associated to the given ordinal, or {@code null} if none.
      */
-    public String meaning(final int ordinal) {
+    final String meaning(final int ordinal) {
         return (ordinal >= 0 && ordinal < meanings.length) ? meanings[ordinal] : null;
     }
 
