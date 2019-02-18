@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Iterator;
+import java.awt.image.DataBuffer;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.measure.MeasurementRange;
@@ -34,6 +35,9 @@ import ucar.nc2.constants.CDM;
  * Conventions can be registered in a file having this exact path:
  *
  * <blockquote><pre>META-INF/services/org.apache.sis.internal.netcdf.Convention</pre></blockquote>
+ *
+ * This class does not encapsulate all conventions needed for understanding a netCDF file,
+ * but only conventions that are more likely to need to be overridden for some data producers.
  *
  * <p><b>This is an experimental class for internal usage only (for now).</b>
  * The API of this class is likely to change in any future Apache SIS version.
@@ -110,14 +114,47 @@ public class Convention {
     }
 
     /**
-     * Returns the role of the given variable. In particular, this method shall return
-     * {@link VariableRole#AXIS} if the given variable seems to be a coordinate system axis.
+     * Returns whether the given variable is used as a coordinate system axis, a coverage or something else.
+     * In particular this method shall return {@link VariableRole#AXIS} if the given variable seems to be a
+     * coordinate system axis instead than the actual data. By netCDF convention, coordinate system axes
+     * have the name of one of the dimensions defined in the netCDF header.
+     *
+     * <p>The default implementation returns {@link VariableRole#COVERAGE} if the given variable can be used
+     * for generating an image, by checking the following conditions:</p>
+     *
+     * <ul>
+     *   <li>Images require at least {@value Grid#MIN_DIMENSION} dimensions of size equals or greater than {@value Grid#MIN_SPAN}.
+     *       They may have more dimensions, in which case a slice will be taken later.</li>
+     *   <li>Exclude axes. Axes are often already excluded by the above condition because axis are usually 1-dimensional,
+     *       but some axes are 2-dimensional (e.g. a localization grid).</li>
+     *   <li>Excludes characters, strings and structures, which can not be easily mapped to an image type.
+     *       In addition, 2-dimensional character arrays are often used for annotations and we do not want
+     *       to confuse them with images.</li>
+     * </ul>
      *
      * @param  variable  the variable for which to get the role, or {@code null}.
      * @return role of the given variable, or {@code null} if the given variable was null.
      */
     public VariableRole roleOf(final Variable variable) {
-        return (variable != null) ? variable.getRole() : null;
+        if (variable == null) {
+            return null;
+        }
+        if (variable.isCoordinateSystemAxis()) {
+            return VariableRole.AXIS;
+        }
+        int numVectors = 0;                                     // Number of dimension having more than 1 value.
+        for (final Dimension dimension : variable.getGridDimensions()) {
+            if (dimension.length() >= Grid.MIN_SPAN) {
+                numVectors++;
+            }
+        }
+        if (numVectors >= Grid.MIN_DIMENSION) {
+            final DataType dataType = variable.getDataType();
+            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
+                return VariableRole.COVERAGE;
+            }
+        }
+        return VariableRole.OTHER;
     }
 
     /**

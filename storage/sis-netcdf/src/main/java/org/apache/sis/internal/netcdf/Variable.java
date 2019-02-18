@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
-import java.awt.image.DataBuffer;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
@@ -282,48 +281,17 @@ public abstract class Variable extends NamedElement {
     protected abstract boolean isUnlimited();
 
     /**
-     * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
-     * In particular this method shall return {@link VariableRole#AXIS} if this variable seems to be a
-     * coordinate system axis instead than the actual data. By netCDF convention, coordinate system axes
-     * have the name of one of the dimensions defined in the netCDF header.
+     * Returns whether this variable is used as a coordinate system axis.
+     * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
      *
-     * <p>The default implementation returns {@link VariableRole#COVERAGE} if the given variable can be used
-     * for generating an image, by checking the following conditions:</p>
+     * <p>This method has protected access because it should not be invoked directly. Code using variable role should
+     * invoke {@link Convention#roleOf(Variable)} instead, for allowing specialization by {@link Convention}.</p>
      *
-     * <ul>
-     *   <li>Images require at least {@value Grid#MIN_DIMENSION} dimensions of size equals or greater than {@value Grid#MIN_SPAN}.
-     *       They may have more dimensions, in which case a slice will be taken later.</li>
-     *   <li>Exclude axes. Axes are often already excluded by the above condition because axis are usually 1-dimensional,
-     *       but some axes are 2-dimensional (e.g. a localization grid).</li>
-     *   <li>Excludes characters, strings and structures, which can not be easily mapped to an image type.
-     *       In addition, 2-dimensional character arrays are often used for annotations and we do not want
-     *       to confuse them with images.</li>
-     * </ul>
+     * @return whether this variable is a coordinate system axis.
      *
-     * Subclasses shall override this method for checking the {@link VariableRole#AXIS} case before to delegate
-     * to this method.
-     *
-     * <p>This method has protected access because it should not be invoked directly except in overridden methods.
-     * Code using variable role should invoke {@link Convention#roleOf(Variable)} instead, for allowing specialization
-     * by {@link Convention}.</p>
-     *
-     * @return the role of this variable.
+     * @see Convention#roleOf(Variable)
      */
-    protected VariableRole getRole() {
-        int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final Dimension dimension : getGridDimensions()) {
-            if (dimension.length() >= Grid.MIN_SPAN) {
-                numVectors++;
-            }
-        }
-        if (numVectors >= Grid.MIN_DIMENSION) {
-            final DataType dataType = getDataType();
-            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
-                return VariableRole.COVERAGE;
-            }
-        }
-        return VariableRole.OTHER;
-    }
+    protected abstract boolean isCoordinateSystemAxis();
 
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
@@ -344,7 +312,8 @@ public abstract class Variable extends NamedElement {
      * of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      *
      * <p>This information is used for completing ISO 19115 metadata, providing a default implementation of
-     * {@link #getRole()} method, or for building string representation of this variable among others.</p>
+     * {@link Convention#roleOf(Variable)} method, or for building string representation of this variable
+     * among others.</p>
      *
      * @return all dimension of the grid, in netCDF order (reverse of "natural" order).
      *
