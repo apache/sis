@@ -16,12 +16,15 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Set;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
@@ -297,13 +300,146 @@ public abstract class Variable extends NamedElement {
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
+     * The default implementation searches for a grid in the following ways:
+     *
+     * <ol class="verbose">
+     *   <li><b>Grid of same dimension than this variable:</b>
+     *     iterate over {@linkplain Decoder#getGrids() all localization grids} and search for an element having the
+     *     same dimensions than this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
+     *     than {@link #getGridDimensions()} (not necessarily in the same order). The {@link Grid#derive(Dimension[])}
+     *     method will be invoked for reordering dimensions in the right order.</li>
+     *
+     *   <li><b>Grid of different dimension than this variable:</b>
+     *     if no localization grid has been found above, inspect {@linkplain Decoder#getVariables() all variables}
+     *     that may potentially be an axis for this variable even if they do not use the same netCDF dimensions.
+     *     Grids of different dimensions may exist if the netCDF files provides a decimated localization grid,
+     *     for example where the longitudes and latitudes variables specify the values of only 1/10 of cells.
+     *     This method tries to map the grid dimensions to variables dimensions through the mechanism documented in
+     *     {@link Convention#nameOfDimension(Variable, int)}. This method considers that we have a mapping when two
+     *     dimensions have the same "name" — not the usual {@linkplain Dimension#getName() name encoded in netCDF format},
+     *     but rather the value of some {@code "dim"} attribute. If this method can map all dimensions of this variable to
+     *     dimensions of a grid, then that grid is returned.</li>
+     *
+     *   <li>If a mapping can not be established for all dimensions, this method return {@code null}.</li>
+     * </ol>
+     *
+     * Subclasses should override this class with a more direct implementation and invoke this implementation only as a fallback.
+     * Typically, subclasses will handle case #1 in above list and this implementation is invoked for case #2.
      *
      * @param  decoder  the decoder to use for constructing the grid geometry if needed.
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid getGrid(Decoder decoder) throws IOException, DataStoreException;
+    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+        final Convention convention = decoder.convention();
+        /*
+         * Collect all axis dimensions, in no particular order. We use this map for determining
+         * if a dimension of this variable can be used as-is, without the need to search for an
+         * association through Convention.nameOfDimension(…). It may be the case for example if
+         * the variable has a vertical or temporal axis which has not been decimated contrarily
+         * to longitude and latitude axes. Note that this map is recycled later for other use.
+         */
+        final List<Variable> axes = new ArrayList<>();
+        final Map<Object,Dimension> domain = new HashMap<>();
+        for (final Variable candidate : decoder.getVariables()) {
+            if (convention.roleOf(candidate) == VariableRole.AXIS) {
+                axes.add(candidate);
+                for (final Dimension dim : candidate.getGridDimensions()) {
+                    domain.put(dim, dim);
+                }
+            }
+        }
+        /*
+         * Get all dimensions of this variable in netCDF order, then replace them by dimensions from an axis variable.
+         * If we are in the situation #1 documented in javadoc, 'isIncomplete' will be 'false' after execution of this
+         * loop and all dimensions should be the same than the values returned by 'Variable.getGridDimensions()'.
+         */
+        boolean isIncomplete = false;
+        final Dimension[] dimensions = CollectionsExt.toArray(getGridDimensions(), Dimension.class);
+        for (int i=0; i<dimensions.length; i++) {
+            isIncomplete |= ((dimensions[i] = domain.remove(dimensions[i])) == null);
+        }
+        /*
+         * If there is at least one variable dimension that we did not found directly among axis dimensions, check if
+         * we can relate dimensions indirectly by Convention.nameOfDimension(…). This is the situation #2 in javadoc.
+         * We do not merge this loop with above loop because we want all dimensions recognized by situation #1 to be
+         * removed before we attempt those indirect associations.
+         */
+        if (isIncomplete) {
+            for (int i=0; i<dimensions.length; i++) {
+                if (dimensions[i] != null) {
+                    continue;
+                }
+                final String label = convention.nameOfDimension(this, i);
+                if (label == null) {
+                    return null;        // No information allowing us to relate that variable dimension to a grid dimension.
+                }
+                /*
+                 * The first time that we find a label that may allow us to associate this variable dimension with a
+                 * grid dimension, build a map of all labels associated to dimensions. We reuse the existing 'domain'
+                 * map; there is no confusion since the keys are not of the same class.
+                 */
+                if (isIncomplete) {
+                    isIncomplete = false;
+                    final Set<Dimension> requestedByConvention = new HashSet<>();
+                    final String[] namesOfAxisVariables = convention.namesOfAxisVariables(this);
+                    for (final Variable axis : axes) {
+                        final boolean isRequested = ArraysExt.containsIgnoreCase(namesOfAxisVariables, axis.getName());
+                        final List<Dimension> candidates = axis.getGridDimensions();
+                        for (int j=candidates.size(); --j >= 0;) {
+                            final Dimension dim = candidates.get(j);
+                            if (domain.containsKey(dim)) {
+                                /*
+                                 * Found a dimension that has not already be taken by the 'dimensions' array.
+                                 * If this dimension has a name defined by attribute (not Dimension.getName()),
+                                 * make this dimension available for consideration by 'dimensions[i] = …' later.
+                                 */
+                                final String name = convention.nameOfDimension(axis, j);
+                                if (name != null) {
+                                    final boolean overwrite = isRequested && requestedByConvention.add(dim);
+                                    final Dimension previous = domain.put(name, dim);
+                                    if (previous != null && !previous.equals(dim)) {
+                                        /*
+                                         * The same name maps to two different dimensions. Given the ambiguity, we should give up.
+                                         * However we make an exception if only one dimension is part of a variable that has been
+                                         * explicitly requested. We identify this disambiguation in the following ways:
+                                         *
+                                         *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.
+                                         *   isRequested = false  →  if was previously in requestedByConvention, restore previous.
+                                         */
+                                        if (!overwrite) {
+                                            if (!isRequested && requestedByConvention.contains(dim)) {
+                                                domain.put(name, previous);
+                                            } else {
+                                                return null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if ((dimensions[i] = domain.remove(label)) == null) {
+                    return null;        // Can not to relate that variable dimension to a grid dimension.
+                }
+            }
+        }
+        /*
+         * At this point we finished collecting all dimensions to use in the grid. Search a grid containing
+         * all those dimensions, not necessarily in the same order. The 'Grid.derive(…)' method shall return
+         * a grid with the specified order.
+         */
+        final List<Dimension> list = Arrays.asList(dimensions);
+        for (final Grid grid : decoder.getGrids()) {
+            final List<Dimension> cd = grid.getDimensions();
+            if (cd.size() == dimensions.length && list.containsAll(cd)) {
+                return grid.derive(dimensions);
+            }
+        }
+        return null;
+    }
 
     /**
      * Returns the dimensions of this variable in the order they are declared in the netCDF file.
@@ -320,91 +456,6 @@ public abstract class Variable extends NamedElement {
      * @see Grid#getDimensions()
      */
     public abstract List<Dimension> getGridDimensions();
-
-    /**
-     * Returns the dimensions of the grid used with this variable, or {@code null} if it can not be determined.
-     * Usually this is the same as {@link #getGridDimensions()} and this method does not need to be invoked.
-     * This method is useful only if the localization grid does not use the same dimensions than this variable.
-     * It happens if the netCDF files provides a decimated localization grid, for example where the longitudes
-     * and latitudes variables specify the values of only 1/10 of cells.
-     *
-     * <p>This method is invoked if we failed to build a localization grid with the usual CF-conventions.
-     * In that case, {@code axes} should list all variables that may potentially an axis for this variable
-     * even if they do not use the same dimensions. If this method can map all dimensions of this variable
-     * to dimensions of the given {@code axes}, then the corresponding axis dimensions are returned in the
-     * order they would have if they were dimensions of this variable. If a mapping can not be established
-     * for all dimensions, this method return {@code null}.</p>
-     *
-     * <p>This method considers that we have a mapping when two dimensions have the same "name". That name
-     * is not the usual {@link Dimension#getName()} string encoded in netCDF format, but rather the value
-     * of one of the attributes. That name is defined by {@link Convention#nameOfDimension(Variable, int)};
-     * see its javadoc for examples.</p>
-     *
-     * @param  axes        the variables that may define axes of the grid, in no particular order.
-     *                     This collection may contain more axes than necessary.
-     * @param  convention  the convention to use for assigning names to dimensions.
-     * @return dimensions of the grid in netCDF order, or {@code null} if some dimensions could not be mapped.
-     *         If non-null, all dimensions come from {@code axes} variables.
-     *
-     * @see Convention#nameOfDimension(Variable, int)
-     */
-    final List<Dimension> getGridDimensions(final Collection<Variable> axes, final Convention convention) {
-        /*
-         * Collect all axis dimensions, in no particular order. We use this map for determining
-         * if a dimension of this variable can be used as-is, without the need to search for an
-         * association through Convention.nameOfDimension(…). It may be the case for example if
-         * the variable has a vertical or temporal axis which has not been decimated contrarily
-         * to longitude and latitude axes. Note that this map is recycled later for other use.
-         */
-        final Map<Object,Dimension> domain = new HashMap<>(axes.size() * 3);
-        for (final Variable axis : axes) {
-            for (final Dimension dim : axis.getGridDimensions()) {
-                domain.put(dim, dim);
-            }
-        }
-        /*
-         * Get all dimensions of this variable in netCDF order, then set to null the dimensions
-         * that are not a dimension of the given axes. The non-null dimensions are removed from
-         * 'domain', so we do not try to use them twice.
-         */
-        boolean isIncomplete = false;
-        final Dimension[] dimensions = CollectionsExt.toArray(getGridDimensions(), Dimension.class);
-        for (int i=0; i<dimensions.length; i++) {
-            isIncomplete |= (dimensions[i] = domain.remove(dimensions[i])) == null;
-        }
-        /*
-         * If there is at least one variable dimension that we did not found directly in the axes dimensions,
-         * check if we can relate two dimensions together by their name. Following code is actually the main
-         * purpose of this method, otherwise the result is identical to 'getGridDimensions()'.
-         */
-        if (isIncomplete) {
-            for (final Variable axis : axes) {
-                final List<Dimension> gd = axis.getGridDimensions();
-                for (int i=gd.size(); --i >= 0;) {
-                    final Dimension dim = gd.get(i);
-                    if (domain.containsKey(dim)) {
-                        final String name = convention.nameOfDimension(axis, i);
-                        if (name != null) {
-                            final Dimension existing = domain.put(name, dim);
-                            if (existing != null && !existing.equals(dim)) {
-                                return null;                                        // Name collision.
-                            }
-                        }
-                    }
-                }
-            }
-            for (int i=0; i<dimensions.length; i++) {
-                if (dimensions[i] == null) {
-                    final String label = convention.nameOfDimension(this, i);       // May be null.
-                    if ((dimensions[i] = domain.remove(label)) != null) {
-                        continue;
-                    }
-                    return null;        // Can not to relate that variable dimension to a grid dimension.
-                }
-            }
-        }
-        return Arrays.asList(dimensions);
-    }
 
     /**
      * Returns the names of all attributes associated to this variable.

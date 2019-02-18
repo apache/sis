@@ -246,16 +246,32 @@ final class VariableWrapper extends Variable {
     public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
+            /*
+             * In some netCDF files, more than one grid could be associated to a variable. If the names of the
+             * variables to use as coordinate system axes have been specified, use those names for filtering.
+             * Otherwise take the first grid.
+             */
+            final String[] axisNames = decoder.convention().namesOfAxisVariables(this);     // Null if no filtering.
             if (variable instanceof Enhancements) {
                 final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
-                if (!systems.isEmpty()) {
+                if (!systems.isEmpty()) {           // For avoiding useless call to decoder.getGrids().
                     for (final Grid candidate : decoder.getGrids()) {
-                        grid = ((GridWrapper) candidate).forVariable(variable, systems);
+                        grid = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
                         if (grid != null) {
-                            break;
+                            return grid;
                         }
                     }
                 }
+            }
+            /*
+             * If we reach this point, we did not found a grid using the dimensions of this variable.
+             * But maybe there is a grid using other dimensions (typically with a decimation) that we
+             * can map to the variable dimension using attribute values. This mechanism is described
+             * in Convention.nameOfDimension(…).
+             */
+            grid = (GridWrapper) super.getGrid(decoder);
+            if (grid != null && !grid.filterForNamedAxes(axisNames)) {
+                grid = null;
             }
         }
         return grid;

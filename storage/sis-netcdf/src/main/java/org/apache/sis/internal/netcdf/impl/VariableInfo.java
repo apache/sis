@@ -157,6 +157,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     GridInfo grid;
 
     /**
+     * For disambiguation of the case where {@link #grid} has been computed and the result still null.
+     * The that {@link #grid} may be determined and non-null even if this flag is {@code false}.
+     *
+     * @see #grid
+     * @see #getGrid(Decoder)
+     */
+    private transient boolean gridDetermined;
+
+    /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
      * with the name of all dimensions in the netCDF file. This information is computed at construction time
      * because requested more than once.
@@ -475,8 +484,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
-        if (grid == null) {
-            decoder.getGrids();            // Force calculation of grid geometries if not already done.
+        if (grid == null && !gridDetermined) {
+            gridDetermined = true;                            // Set first for avoiding other attempts in case of failure.
+            decoder.getGrids();                               // Force calculation of grid geometries if not already done.
+            if (grid == null) {                               // May have been computed as a side-effect of decoder.getGrids().
+                grid = (GridInfo) super.getGrid(decoder);     // Non-null if grid dimensions are different than this variable.
+            }
         }
         return grid;
     }

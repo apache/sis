@@ -41,6 +41,17 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     }
 
     /**
+     * Unwraps all given dimensions.
+     */
+    static Dimension[] unwrap(final org.apache.sis.internal.netcdf.Dimension[] dimensions) {
+        final Dimension[] ncd = new Dimension[dimensions.length];
+        for (int i=0; i<ncd.length; i++) {
+            ncd[i] = ((DimensionWrapper) dimensions[i]).netcdf;
+        }
+        return ncd;
+    }
+
+    /**
      * The netCDF dimension object.
      */
     private final Dimension netcdf;

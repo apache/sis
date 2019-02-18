@@ -105,6 +105,21 @@ public abstract class Grid extends NamedElement {
     }
 
     /**
+     * Returns a localization grid having the same dimensions than this grid but in a different order.
+     * This method is invoked by {@link Variable#getGrid(Decoder)} when the localization grids created
+     * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
+     *
+     * <p>The length of the given array shall be equal to {@link #getSourceDimensions()} and the array
+     * shall contain all elements contained in {@link #getDimensions()}. If those elements are in same
+     * order, then this method returns {@code this}. Otherwise if a grid can not be derived for the
+     * given dimensions, then this method returns {@code null}.</p>
+     *
+     * @param  dimensions  the dimensions of this grid but potentially in a different order.
+     * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
+     */
+    protected abstract Grid derive(Dimension[] dimensions);
+
+    /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      *

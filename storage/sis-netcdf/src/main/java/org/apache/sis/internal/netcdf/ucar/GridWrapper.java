@@ -29,6 +29,7 @@ import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 
@@ -91,26 +92,73 @@ final class GridWrapper extends Grid {
         netcdfCS  = parent.netcdfCS;
         domain    = dimensions;
         reordered = parent.reordered;
+        assert netcdfCS.getDomain().containsAll(dimensions);
+    }
+
+    /**
+     * Returns a localization grid having the same dimensions than this grid but in a different order.
+     * This method is invoked by {@link VariableWrapper#getGrid(Decoder)} when the localization grids created
+     * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
+     * Returns {@code null} if a grid can not be inferred for the given dimensions.
+     */
+    @Override
+    protected Grid derive(final org.apache.sis.internal.netcdf.Dimension[] dimensions) {
+        return derive(UnmodifiableArrayList.wrap(DimensionWrapper.unwrap(dimensions)));
+    }
+
+    /**
+     * Returns a localization grid wrapping the same coordinate system than this grid but with dimensions in different order.
+     * This is the implementation of {@link #derive(org.apache.sis.internal.netcdf.Dimension[])} after the Apache SIS objects
+     * have been unwrapped into UCAR objects.
+     *
+     * @param  dimensions  the dimensions of this grid but potentially in a different order.
+     * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
+     */
+    private GridWrapper derive(final List<Dimension> dimensions) {
+        if (domain.equals(dimensions)) {
+            return this;
+        }
+        return reordered.computeIfAbsent(dimensions, k -> {
+            // Want same set of dimensions in different order.
+            if (domain.size() == k.size() && domain.containsAll(k)) {
+                return new GridWrapper(this, k);
+            }
+            return null;
+        });
     }
 
     /**
      * Returns the grid to use for the given variable. This method is needed because the order of dimensions declared
      * in the {@link CoordinateSystem} may not be the same order than the dimensions of the given variable.
+     *
+     * @param  variable  the variable for which to get its grid.
+     * @param  systems   the coordinate systems of the given variable.
+     * @return grid for the given variable, or {@code null} if none.
      */
-    GridWrapper forVariable(final VariableIF variable, final List<CoordinateSystem> cs) {
-        if (cs.contains(netcdfCS)) {
-            final List<Dimension> source = variable.getDimensions();
-            if (domain.equals(source)) {
-                return this;
-            }
-            return reordered.computeIfAbsent(source, k -> {
-                if (domain.size() == k.size() && domain.containsAll(k)) {
-                    return new GridWrapper(this, k);
-                }
-                return null;
-            });
+    final GridWrapper forVariable(final VariableIF variable, final List<CoordinateSystem> systems, final String[] axisNames) {
+        if (systems.contains(netcdfCS) && filterForNamedAxes(axisNames)) {
+            return derive(variable.getDimensions());
         }
         return null;
+    }
+
+    /**
+     * Returns {@code true} if this grid contains all axes having the specified names. This is used for filtering
+     * coordinate systems according the names specified by {@code Convention.namesOfAxisVariables(Variable)}.
+     * If the given array is null, then no filtering is applied and this method returns {@code true}.
+     */
+    final boolean filterForNamedAxes(final String[] axisNames) {
+        if (axisNames != null) {
+next:       for (final String name : axisNames) {
+                for (final CoordinateAxis axis : netcdfCS.getCoordinateAxes()) {
+                    if (name.equalsIgnoreCase(axis.getShortName())) {
+                        continue next;
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
