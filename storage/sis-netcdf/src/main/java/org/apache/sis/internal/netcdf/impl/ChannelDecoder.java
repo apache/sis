@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Objects;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import javax.measure.format.ParserException;
@@ -742,6 +743,15 @@ public final class ChannelDecoder extends Decoder {
                 value = attributeMap.get(lower);
             }
         }
+
+        // Check if a custom convention could be applied.
+        if (value == null && convention() != null) {
+            final String mappedName = convention().mapAttributeName(name);
+            if (!Objects.equals(name, mappedName)) {
+                value = findAttribute(mappedName);
+            }
+        }
+
         return value;
     }
 

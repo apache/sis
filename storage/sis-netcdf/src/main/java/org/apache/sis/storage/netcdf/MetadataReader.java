@@ -122,14 +122,6 @@ final class MetadataReader extends MetadataBuilder {
     private static final boolean EXPERIMENTAL = true;
 
     /**
-     * Names of groups where to search for metadata, in precedence order.
-     * The {@code null} value stands for global attributes.
-     *
-     * <p>REMINDER: if modified, update class javadoc too.</p>
-     */
-    private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
-
-    /**
      * Names of global attributes identifying services.
      */
     private static final String[] SERVICES = {"wms_service", "wcs_service"};
@@ -194,7 +186,6 @@ final class MetadataReader extends MetadataBuilder {
      */
     MetadataReader(final Decoder decoder) {
         this.decoder = decoder;
-        decoder.setSearchPath(SEARCH_PATH);
         searchPath = decoder.getSearchPath();
     }
 

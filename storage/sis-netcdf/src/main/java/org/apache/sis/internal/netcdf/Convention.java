@@ -16,12 +16,15 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.Numbers;
+import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 
 
@@ -74,6 +77,14 @@ public class Convention {
     };
 
     /**
+     * Names of groups where to search for metadata, in precedence order.
+     * The {@code null} value stands for global attributes.
+     *
+     * <p>REMINDER: if modified, update class javadoc too.</p>
+     */
+    private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
+
+    /**
      * For subclass constructors.
      */
     protected Convention() {
@@ -82,21 +93,52 @@ public class Convention {
     /**
      * Finds the convention to apply to the file opened by the given decoder, or {@code null} if none.
      */
-    static synchronized Convention find(final Decoder decoder) {
+    static Convention find(final Decoder decoder) {
         final Iterator<Convention> it;
         Convention c;
         synchronized (AVAILABLES) {
             it = AVAILABLES.iterator();
-            if (!it.hasNext()) return DEFAULT;
-            c = it.next();
         }
-        while (!c.isApplicableTo(decoder)) {
+
+        do {
             synchronized (AVAILABLES) {
-                if (!it.hasNext()) return DEFAULT;
-                c = it.next();
+                if (it.hasNext()) {
+                    c = it.next();
+                } else {
+                    decoder.setSearchPath(DEFAULT.getSearchPath());
+                    return DEFAULT;
+                }
             }
-        }
+
+            decoder.setSearchPath(c.getSearchPath());
+
+        } while (!c.isApplicableTo(decoder));
+
         return c;
+    }
+
+    /**
+     * Specify a list of groups to focus on when searching for attribute values.
+     *
+     * @return Groups we should search in for global data attributes. Never null, never empty, but can contain null
+     * values to specify root as search path.
+     */
+    public final String[] getSearchPath() {
+        String[] paths = getSearchPathImpl();
+        if (paths == null || paths.length < 1) {
+            return new String[1];
+        }
+
+        return Arrays.copyOf(paths, paths.length);
+    }
+
+    /**
+     * An abstraction over {@link #getSearchPath() }, allowing subclasses to specify their own groups. The abstraction
+     * is needed as a control mechanism to avoid invalid paths (null or empty).
+     * @return Groups to look at for attribute values.
+     */
+    protected String[] getSearchPathImpl() {
+        return SEARCH_PATH;
     }
 
     /**
@@ -295,5 +337,18 @@ public class Convention {
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
+    }
+
+    /**
+     * Try to find an equivalent of a given attribute name adapted to this convention. Names given as parameter will be
+     * CF based, meaning they mostly originate from {@link AttributeNames SIS attribute naming} or
+     * {@link ACDD UCAR naming} conventions.
+     *
+     * @param name An attribute name to get an equivalent for in the current convention.     *
+     * @return If no mapping can be found, or if given is null or empty, input text should be sent back. Otherwise,
+     * the attribute corresponding to queried information for the current convention is returned.
+     */
+    public String mapAttributeName(final String name) {
+        return name;
     }
 }

@@ -23,6 +23,7 @@ import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.Collection;
 import java.io.IOException;
+import java.util.Objects;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
@@ -58,6 +59,7 @@ import org.apache.sis.storage.DataStoreException;
  * @module
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
+
     /**
      * The netCDF file to read.
      * This file is set at construction time.
@@ -234,7 +236,17 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
-        return (group != null) ? group.findAttributeIgnoreCase(name) : file.findGlobalAttributeIgnoreCase(name);
+        Attribute value = (group != null) ?
+                group.findAttributeIgnoreCase(name) : file.findGlobalAttributeIgnoreCase(name);
+
+        if (value == null && convention() != null) {
+            String mappedName = convention().mapAttributeName(name);
+            if (!Objects.equals(name, mappedName)) {
+                value = findAttribute(group, mappedName);
+            }
+        }
+
+        return value;
     }
 
     /**
