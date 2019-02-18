@@ -36,7 +36,6 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
@@ -442,13 +441,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns {@code AXIS} if this variable seems to be a coordinate system axis,
+     * Returns {@code true} if this variable seems to be a coordinate system axis,
      * determined by comparing its name with the name of all dimensions in the netCDF file.
      * Also determined by inspection of {@code "coordinates"} attribute on other variables.
      */
     @Override
-    protected VariableRole getRole() {
-        return isCoordinateSystemAxis ? VariableRole.AXIS : super.getRole();
+    protected boolean isCoordinateSystemAxis() {
+        return isCoordinateSystemAxis;
     }
 
     /**
