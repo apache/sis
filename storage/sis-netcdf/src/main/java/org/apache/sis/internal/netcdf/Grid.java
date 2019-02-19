@@ -108,11 +108,16 @@ public abstract class Grid extends NamedElement {
      * Returns a localization grid having the same dimensions than this grid but in a different order.
      * This method is invoked by {@link Variable#getGrid(Decoder)} when the localization grids created
      * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
+     * Subclasses should verify that the given {@code dimensions} array meets the following conditions:
      *
-     * <p>The length of the given array shall be equal to {@link #getSourceDimensions()} and the array
-     * shall contain all elements contained in {@link #getDimensions()}. If those elements are in same
-     * order, then this method returns {@code this}. Otherwise if a grid can not be derived for the
-     * given dimensions, then this method returns {@code null}.</p>
+     * <ul>
+     *   <li>The length of the given array should be equal to {@link #getSourceDimensions()}.</li>
+     *   <li>The array should contain all elements contained in {@link #getDimensions()}.</li>
+     * </ul>
+     *
+     * If elements in the given array are in same order than elements in {@link #getDimensions()} list,
+     * then this method returns {@code this}. If the given dimensions are unknown to this grid,
+     * then this method returns {@code null}. Otherwise a grid with the given dimensions is returned.
      *
      * @param  dimensions  the dimensions of this grid but potentially in a different order.
      * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
@@ -210,6 +215,17 @@ public abstract class Grid extends NamedElement {
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     protected abstract Axis[] createAxes(Decoder decoder) throws IOException, DataStoreException;
+
+    /**
+     * Returns {@code true} if this grid contains all axes of the specified names. This is used for filtering
+     * coordinate systems according the axes specified by {@link Convention#namesOfAxisVariables(Variable)}.
+     * If the given array is null, then no filtering is applied and this method returns {@code true}.
+     * If the grid contains more axes than the named ones, then the additional axes are ignored.
+     *
+     * @param  axisNames  name of axes to test for inclusion, or {@code null} for no filtering.
+     * @return whether this grid contains at least all the names axes.
+     */
+    protected abstract boolean containsAllNamedAxes(String[] axisNames);
 
     /**
      * Returns the coordinate reference system, or {@code null} if none.

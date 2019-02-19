@@ -251,10 +251,10 @@ final class VariableWrapper extends Variable {
              * variables to use as coordinate system axes have been specified, use those names for filtering.
              * Otherwise take the first grid.
              */
-            final String[] axisNames = decoder.convention().namesOfAxisVariables(this);     // Null if no filtering.
             if (variable instanceof Enhancements) {
                 final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
                 if (!systems.isEmpty()) {           // For avoiding useless call to decoder.getGrids().
+                    final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
                     for (final Grid candidate : decoder.getGrids()) {
                         grid = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
                         if (grid != null) {
@@ -270,9 +270,6 @@ final class VariableWrapper extends Variable {
              * in Convention.nameOfDimension(…).
              */
             grid = (GridWrapper) super.getGrid(decoder);
-            if (grid != null && !grid.filterForNamedAxes(axisNames)) {
-                grid = null;
-            }
         }
         return grid;
     }

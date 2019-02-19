@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -431,14 +430,18 @@ public abstract class Variable extends NamedElement {
          * all those dimensions, not necessarily in the same order. The 'Grid.derive(…)' method shall return
          * a grid with the specified order.
          */
-        final List<Dimension> list = Arrays.asList(dimensions);
-        for (final Grid grid : decoder.getGrids()) {
-            final List<Dimension> cd = grid.getDimensions();
-            if (cd.size() == dimensions.length && list.containsAll(cd)) {
-                return grid.derive(dimensions);
+        Grid fallback = null;
+        for (final Grid candidate : decoder.getGrids()) {
+            final Grid grid = candidate.derive(dimensions);
+            if (grid != null) {
+                if (grid.containsAllNamedAxes(convention.namesOfAxisVariables(this))) {
+                    return grid;
+                } else if (fallback == null) {
+                    fallback = grid;
+                }
             }
         }
-        return null;
+        return fallback;
     }
 
     /**

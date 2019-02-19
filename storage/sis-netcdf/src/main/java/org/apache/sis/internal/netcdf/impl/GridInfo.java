@@ -111,7 +111,7 @@ final class GridInfo extends Grid {
      * Returns a localization grid having the same dimensions than this grid but in a different order.
      * This method is invoked by {@link VariableInfo#getGrid(Decoder)} when the localization grids created
      * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
-     * Returns {@code null} if a grid can not be inferred for the given dimensions.
+     * Returns {@code null} the the given dimensions are not members of this grid.
      */
     @Override
     protected Grid derive(final Dimension[] dimensions) {
@@ -181,6 +181,26 @@ final class GridInfo extends Grid {
     @Override
     protected List<Dimension> getDimensions() {
         return UnmodifiableArrayList.wrap(domain);
+    }
+
+    /**
+     * Returns {@code true} if this grid contains all axes of the specified names, ignoring case.
+     * If the given array is null, then no filtering is applied and this method returns {@code true}.
+     * If the grid contains more axes than the named ones, then the additional axes are ignored.
+     */
+    @Override
+    protected boolean containsAllNamedAxes(final String[] axisNames) {
+        if (axisNames != null) {
+next:       for (final String name : axisNames) {
+                for (final VariableInfo axis : range) {
+                    if (name.equalsIgnoreCase(axis.getName())) {
+                        continue next;
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

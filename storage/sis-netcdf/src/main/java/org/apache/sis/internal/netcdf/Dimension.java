@@ -16,11 +16,19 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import org.apache.sis.util.resources.Vocabulary;
+
 
 /**
  * A dimension in a netCDF file. A dimension can been seen as an axis in the grid space
  * (not the geodetic space). Dimension are referenced by their index in other parts of
  * the netCDF file header.
+ *
+ * <p>{@code Dimension} instances shall be suitable for use in {@link java.util.HashSet}
+ * and {@code Dimension.equals(object)} must return {@code true} if two {@code Dimension}
+ * instances represent the same netCDF dimensions. This may require subclasses to override
+ * {@link #hashCode()} and {@link #equals(Object)} if uniqueness is not guaranteed.
+ * This is needed by {@link Variable#getGrid(Decoder)} default implementation.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -83,7 +91,13 @@ public abstract class Dimension extends NamedElement {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder().append(getName());     // Name may be null.
+        final StringBuilder buffer = new StringBuilder(30);
+        String name = getName();
+        if (name != null) {
+            buffer.append(name);
+        } else {
+            buffer.append('(').append(Vocabulary.format(Vocabulary.Keys.Unnamed)).append(')');
+        }
         writeLength(buffer);
         if (isUnlimited()) {
             buffer.append(" (unlimited)");

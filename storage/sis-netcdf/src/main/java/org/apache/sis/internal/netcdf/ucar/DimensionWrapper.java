@@ -87,4 +87,25 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     protected boolean isUnlimited() {
         return netcdf.isUnlimited();
     }
+
+    /**
+     * Returns {@code true} if the given object represents the same dimension than this object.
+     *
+     * @param  other  the other object to compare with this dimension.
+     * @return whether the other object wraps the same netCDF dimension than this object.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        return (other instanceof DimensionWrapper) && netcdf.equals(((DimensionWrapper) other).netcdf);
+    }
+
+    /**
+     * Returns a hash code value for this dimension.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return ~netcdf.hashCode();
+    }
 }
