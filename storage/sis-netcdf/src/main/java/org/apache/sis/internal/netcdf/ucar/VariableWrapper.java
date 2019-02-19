@@ -135,25 +135,29 @@ final class VariableWrapper extends Variable {
     }
 
     /**
+     * Trims the leading and trailing spaces of the given string.
+     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
+     */
+    private static String trim(String text) {
+        return (text != null && (text = text.trim()).isEmpty()) ? null : text;
+    }
+
+    /**
      * Returns the description of this variable, or {@code null} if none.
      */
     @Override
     public String getDescription() {
-        String d = variable.getDescription();
-        if (d != null && (d = d.trim()).isEmpty()) {
-            d = null;
-        }
-        return d;
+        return trim(variable.getDescription());
     }
 
     /**
-     * Returns the unit of measurement as a string, or an empty strong if none.
+     * Returns the unit of measurement as a string, or {@code null} if none.
      * Note that the UCAR library represents missing unit by an empty string,
      * which is ambiguous with dimensionless unit.
      */
     @Override
     protected String getUnitsString() {
-        return variable.getUnitsString();
+        return trim(variable.getUnitsString());
     }
 
     /**

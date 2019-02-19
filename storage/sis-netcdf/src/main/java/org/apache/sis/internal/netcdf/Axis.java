@@ -352,7 +352,11 @@ public final class Axis extends NamedElement {
      * This is used for testing is a predefined axis can be used instead than invoking {@link #toISO(CSFactory)}.
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
-        return axis.getDirection().equals(direction) && axis.getUnit().equals(getUnit());
+        if (!axis.getDirection().equals(direction)) {
+            return false;
+        }
+        final Unit<?> unit = getUnit();                         // Null to be interpreted as system unit.
+        return (unit == null) || axis.getUnit().equals(unit);
     }
 
     /**
@@ -601,7 +605,7 @@ main:   switch (getDimension()) {
      * @throws DataStoreException if a logical error occurred.
      */
     final LocalizationGridBuilder createLocalizationGrid(final Axis other) throws IOException, DataStoreException {
-        if (other.getDimension() == 2) {
+        if (getDimension() == 2 && other.getDimension() == 2) {
             final int xd =  this.sourceDimensions[0];
             final int yd =  this.sourceDimensions[1];
             final int xo = other.sourceDimensions[0];

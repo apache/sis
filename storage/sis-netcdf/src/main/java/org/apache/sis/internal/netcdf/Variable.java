@@ -170,7 +170,7 @@ public abstract class Variable extends NamedElement {
     public abstract String getDescription();
 
     /**
-     * Returns the unit of measurement as a string, or {@code null} or an empty string if none.
+     * Returns the unit of measurement as a string, or {@code null} if none.
      * The empty string can not be used for meaning "dimensionless unit"; some text is required.
      *
      * <p>Note: the UCAR library has its own API for handling units (e.g. {@link ucar.nc2.units.SimpleUnit}).
@@ -230,7 +230,7 @@ public abstract class Variable extends NamedElement {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
             final String symbols = getUnitsString();
-            if (symbols != null && !symbols.isEmpty()) try {
+            if (symbols != null) try {
                 unit = parseUnit(symbols);
             } catch (Exception ex) {
                 error(Variable.class, "getUnit", ex, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);

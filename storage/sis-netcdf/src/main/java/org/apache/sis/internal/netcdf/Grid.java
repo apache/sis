@@ -293,10 +293,8 @@ public abstract class Grid extends NamedElement {
                     continue;
                 }
                 int dim = axis.sourceDimensions[0];
-                if (dim >= 0) {
-                    dim = names.length - 1 - dim;               // Convert netCDF order to "natural" order.
-                    if (dim >= 0) names[dim] = name;
-                }
+                dim = names.length - 1 - dim;               // Convert netCDF order to "natural" order.
+                if (dim >= 0) names[dim] = name;
             }
         }
         return new GridExtent(names, null, high, false);
@@ -318,7 +316,7 @@ public abstract class Grid extends NamedElement {
             /*
              * Creates the "grid to CRS" transform. The number of columns is the number of dimensions in the grid
              * (the source) +1, and the number of rows is the number of dimensions in the CRS (the target) +1.
-             * The order of dimensions in the transform is the reverse of the netCDF axis order.
+             * The order of dimensions in the transform is the reverse of the netCDF dimension order.
              */
             int lastSrcDim = getSourceDimensions();                         // Will be decremented later, then kept final.
             int lastTgtDim = getTargetDimensions();
@@ -334,7 +332,20 @@ public abstract class Grid extends NamedElement {
             /*
              * If we have not been able to set some coefficients in the matrix (because some transforms are non-linear),
              * set a single scale factor to 1 in the matrix row. The coefficient that we set to 1 is the one for the source
-             * dimension which is not already taken by another row.
+             * dimension which is not already taken by another row. If we have choice, we give preference to the dimension
+             * which seems most closely oriented toward axis direction (i.e. the first element in axis.sourceDimensions).
+             *
+             * Example: if the 'axes' array contains (longitude, latitude) in that order, and if the longitude axis said
+             * that its preferred dimension is 1 (after conversion to "natural" order) while the latitude axis said that
+             * its preferred dimension is 0, then we build the following matrix:
+             *
+             *    ┌         ┐
+             *    │ 0  1  0 │   axes[0] (longitude), preferred grid dimension = 1
+             *    │ 1  0  0 │   axes[1] (latitude),  preferred grid dimension = 0
+             *    │ 0  0  1 │
+             *    └         ┘
+             *
+             * The preferred grid dimensions are stored in the 'sourceDimensions' array. In above example this is {1, 0}.
              */
             final int[] sourceDimensions = new int[nonLinears.size()];
             Arrays.fill(sourceDimensions, -1);
@@ -342,7 +353,7 @@ public abstract class Grid extends NamedElement {
                 final int tgtDim = deferred[i];
                 final Axis axis = axes[tgtDim];
 findFree:       for (int srcDim : axis.sourceDimensions) {
-                    srcDim = lastSrcDim - srcDim;
+                    srcDim = lastSrcDim - srcDim;                               // Convert netCDF order to "natural" order.
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
@@ -362,28 +373,31 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
                     final Axis axis = axes[deferred[i]];
-                    if (axis.getDimension() == 2) {
-                        for (int j=i; ++j < nonLinears.size();) {
-                            if (nonLinears.get(j) == null) {
-                                final int srcDim   = sourceDimensions[i];
-                                final int otherDim = sourceDimensions[j];
-                                if (Math.abs(srcDim - otherDim) == 1) {     // Need axes at consecutive source dimensions.
-                                    final LocalizationGridBuilder grid = axis.createLocalizationGrid(axes[deferred[j]]);
-                                    if (grid != null) {
-                                        /*
-                                         * Replace the first transform by the two-dimensional localization grid and
-                                         * remove the other transform. Removals need to be done in arrays too.
-                                         */
-                                        nonLinears.set(i, grid.create(factory));
-                                        nonLinears.remove(j);
-                                        final int n = nonLinears.size() - j;
-                                        System.arraycopy(deferred,         j+1, deferred,         j, n);
-                                        System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
-                                        if (otherDim < srcDim) {
-                                            sourceDimensions[i] = otherDim;
-                                        }
-                                    }
+                    for (int j=i; ++j < nonLinears.size();) {
+                        if (nonLinears.get(j) == null) {
+                            final Axis other   = axes[deferred[j]];
+                            final int srcDim   = sourceDimensions[i];
+                            final int otherDim = sourceDimensions[j];
+                            final LocalizationGridBuilder grid;
+                            switch (srcDim - otherDim) {
+                                case -1: grid = axis.createLocalizationGrid(other); break;
+                                case +1: grid = other.createLocalizationGrid(axis); break;
+                                default: continue;  // Needs axes at consecutive source dimensions.
+                            }
+                            if (grid != null) {
+                                /*
+                                 * Replace the first transform by the two-dimensional localization grid and
+                                 * remove the other transform. Removals need to be done in arrays too.
+                                 */
+                                nonLinears.set(i, grid.create(factory));
+                                nonLinears.remove(j);
+                                final int n = nonLinears.size() - j;
+                                System.arraycopy(deferred,         j+1, deferred,         j, n);
+                                System.arraycopy(sourceDimensions, j+1, sourceDimensions, j, n);
+                                if (otherDim < srcDim) {
+                                    sourceDimensions[i] = otherDim;         // Index of the first dimension.
                                 }
+                                break;                                      // Continue the 'i' loop.
                             }
                         }
                     }
