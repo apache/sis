@@ -302,14 +302,16 @@ public abstract class Grid extends NamedElement {
 
     /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
-     * This is the public object exposed to users.
+     * {@code GridGeometry} is the public object exposed to users. It uses the dimensions given by axes, which are
+     * usually the same dimensions that the ones of the variable using this grid geometry but not always.
+     * Caller may need to call {@link GridExtent#resize(long...)} for adjusting.
      *
      * @param   decoder   the decoder for which grid geometries are constructed.
      * @return  the public grid geometry (may be {@code null}).
      * @throws  IOException if an I/O operation was necessary but failed.
      * @throws  DataStoreException if the CRS can not be constructed.
      */
-    public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+    final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
             isGeometryDetermined = true;                    // Set now for avoiding new attempts if creation fail.
             final Axis[] axes = getAxes(decoder);           // In CRS order (reverse of netCDF order).

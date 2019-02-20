@@ -247,7 +247,7 @@ final class VariableWrapper extends Variable {
      * @see DecoderWrapper#getGrids()
      */
     @Override
-    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+    protected Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
             /*

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.MathFunctions;
@@ -112,6 +114,14 @@ public abstract class Variable extends NamedElement {
      * This is computed by {@link #getNodataValues()} and cached for efficiency and stability.
      */
     private Map<Number,Integer> nodataValues;
+
+    /**
+     * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
+     * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
+     * be non-null if the localization grid has smaller dimensions than the dimensions of this variable, as documented
+     * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
+     */
+    private double[] gridToDataIndices;
 
     /**
      * Where to report warnings, if any.
@@ -296,7 +306,7 @@ public abstract class Variable extends NamedElement {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
+     * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
      * The default implementation searches for a grid in the following ways:
@@ -330,7 +340,7 @@ public abstract class Variable extends NamedElement {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+    protected Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
         final Convention convention = decoder.convention();
         /*
          * Collect all axis dimensions, in no particular order. We use this map for determining
@@ -396,6 +406,11 @@ public abstract class Variable extends NamedElement {
                                  */
                                 final String name = convention.nameOfDimension(axis, j);
                                 if (name != null) {
+                                    if (gridToDataIndices == null) {
+                                        gridToDataIndices = new double[axes.size()];
+                                        Arrays.fill(gridToDataIndices, 1);
+                                    }
+                                    gridToDataIndices[j] = convention.gridToDataIndices(axis);
                                     final boolean overwrite = isRequested && requestedByConvention.add(dim);
                                     final Dimension previous = domain.put(name, dim);
                                     if (previous != null && !previous.equals(dim)) {
@@ -442,6 +457,51 @@ public abstract class Variable extends NamedElement {
             }
         }
         return fallback;
+    }
+
+    /**
+     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
+     * Not all variables have a grid geometry. For example collections of features do not have such grid.
+     * The same grid geometry may be shared by many variables.
+     *
+     * @param  decoder  the decoder to use for constructing the grid geometry if needed.
+     * @return the grid geometry for this variable, or {@code null} if none.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
+        final Grid info = getGrid(decoder);
+        if (info == null) {
+            return null;
+        }
+        GridGeometry grid = info.getGridGeometry(decoder);
+        /*
+         * Compare the size of the variable with the size of the localization grid.
+         * If they do not match, then there is a scale factor between the two that
+         * needs to be applied.
+         */
+        if (grid.isDefined(GridGeometry.EXTENT)) {
+            GridExtent extent = grid.getExtent();
+            final List<Dimension> dimensions = getGridDimensions();
+            final long[] sizes = new long[dimensions.size()];
+            boolean needsResize = false;
+            for (int i=sizes.length; --i >= 0;) {
+                final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
+                sizes[i] = dimensions.get(d).length();
+                if (!needsResize) {
+                    needsResize = (sizes[i] != extent.getSize(i));
+                }
+            }
+            if (needsResize) {
+                extent = extent.resize(sizes);
+                grid = grid.derive().resize(extent, gridToDataIndices).build();
+                /*
+                 * Note: the 'gridToDataIndices' array was computed as a side-effect of the call to 'getGrid(decoder)'.
+                 * This is one reason why we keep the call to 'getGrid(…)' inside this 'getGridGeometry(…)' method.
+                 */
+            }
+        }
+        return grid;
     }
 
     /**

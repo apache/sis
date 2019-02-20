@@ -448,7 +448,7 @@ public class GridExtent implements Serializable {
 
     /**
      * Creates a copy of the given grid extent. The {@link #coordinates} array is cloned
-     * by the {@link #types} array is shared between the two instances. This constructor
+     * while the {@link #types} array is shared between the two instances. This constructor
      * is reserved to methods that modify the coordinates after construction. It must be
      * private since we do not allow coordinates modifications by public API.
      *
@@ -881,6 +881,50 @@ public class GridExtent implements Serializable {
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
+    }
+
+    /**
+     * Sets the size of this grid extent to the given values. This method modifies grid coordinates as if they were multiplied
+     * by (given size) / ({@linkplain #getSize(int) current size}), rounded toward zero and with the value farthest from zero
+     * adjusted by ±1 for having a size exactly equals to the specified value.
+     * In the common case where the {@linkplain #getLow(int) low value} is zero,
+     * this is equivalent to setting the {@linkplain #getHigh(int) high value} to {@code size} - 1.
+     *
+     * <p>The length of the given array should be equal to {@link #getDimension()}.
+     * If the array is shorter, missing dimensions have their size unchanged.
+     * If the array is longer, extra sizes are ignored.</p>
+     *
+     * @param  sizes  the new grid sizes for each dimension.
+     * @return a grid extent having the given sizes (may be {@code this}).
+     *
+     * @see GridDerivation#resize(GridExtent, double...)
+     */
+    public GridExtent resize(final long... sizes) {
+        ArgumentChecks.ensureNonNull("sizes", sizes);
+        final int m = getDimension();
+        final int length = Math.min(m, sizes.length);
+        final GridExtent resize = new GridExtent(this);
+        final long[] c = resize.coordinates;
+        for (int i=0; i<length; i++) {
+            final long size = sizes[i];
+            if (size <= 0) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ValueNotGreaterThanZero_2, Strings.toIndexed("sizes", i), size));
+            }
+            long lower = c[i];
+            long upper = c[i+m];
+            final long current = Math.incrementExact(Math.subtractExact(upper, lower));
+            if (Math.abs(lower) <= Math.abs(upper)) {
+                lower = Numerics.multiplyDivide(lower, size, current);
+                upper = Math.addExact(lower, size - 1);
+            } else {
+                upper = Numerics.multiplyDivide(upper, size, current);
+                lower = Math.subtractExact(upper, size - 1);
+            }
+            c[i  ] = lower;
+            c[i+m] = upper;
+        }
+        return Arrays.equals(c, coordinates) ? this : resize;
     }
 
     /**

@@ -227,6 +227,23 @@ public class Convention {
     }
 
     /**
+     * Returns the factor by which to multiply a grid index in order to get the corresponding data index.
+     * This is usually 1, meaning that there is an exact match between grid indices and data indices.
+     * This value may be different than 1 if the localization grid is smaller than the data grid,
+     * as documented in the {@link #nameOfDimension(Variable, int)}.
+     *
+     * <p>Default implementation returns the inverse of {@code "resampling_interval"} attribute value.
+     * This feature is an extension to CF-conventions.</p>
+     *
+     * @param  axis  the axis for which to get the "grid indices to data indices" scale factor.
+     * @return the "grid indices to data indices" scale factor, or 1 if none.
+     */
+    public double gridToDataIndices(final Variable axis) {
+        final double n = axis.getAttributeAsNumber("resampling_interval");
+        return (n > 0) ? 1/n : 1;
+    }
+
+    /**
      * Returns the range of valid values, or {@code null} if unknown.
      * The default implementation takes the range of values from the following properties, in precedence order:
      *

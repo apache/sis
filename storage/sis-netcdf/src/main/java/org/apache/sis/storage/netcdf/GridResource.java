@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
@@ -139,18 +138,18 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      * @param  decoder  the implementation used for decoding the netCDF file.
      * @param  name     the name for the resource.
      * @param  grid     the grid geometry (size, CRS…) of the {@linkplain #data} cube.
-     * @param  data     the variables providing actual data. Shall contain at least one variable.
+     * @param  bands    the variables providing actual data. Shall contain at least one variable.
      */
-    private GridResource(final Decoder decoder, final String name, final Grid grid, final List<Variable> data)
+    private GridResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands)
             throws IOException, DataStoreException
     {
         super(decoder.listeners);
-        this.data    = data.toArray(new Variable[data.size()]);
-        ranges       = new SampleDimension[this.data.length];
-        gridGeometry = grid.getGridGeometry(decoder);
+        data         = bands.toArray(new Variable[bands.size()]);
+        ranges       = new SampleDimension[data.length];
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
         convention   = decoder.convention();
+        gridGeometry = grid;
     }
 
     /**
@@ -167,7 +166,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (decoder.convention().roleOf(variable) != VariableRole.COVERAGE) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
-            final Grid grid = variable.getGrid(decoder);
+            final GridGeometry grid = variable.getGridGeometry(decoder);
             if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
@@ -199,7 +198,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         final String cn = candidate.getStandardName();
                         if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
                             cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
-                            candidate.getGrid(decoder) == grid)
+                            grid.equals(candidate.getGridGeometry(decoder)))
                         {
                             /*
                              * Found another variable with the same name except for the keyword. Verify that the

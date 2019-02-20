@@ -483,7 +483,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see ChannelDecoder#getGrids()
      */
     @Override
-    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+    protected Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
         if (grid == null && !gridDetermined) {
             gridDetermined = true;                            // Set first for avoiding other attempts in case of failure.
             decoder.getGrids();                               // Force calculation of grid geometries if not already done.

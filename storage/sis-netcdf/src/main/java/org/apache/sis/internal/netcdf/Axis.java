@@ -654,16 +654,17 @@ main:   switch (getDimension()) {
     }
 
     /**
-     * Reports a non-fatal error that occurred while constructing the grid geometry.
-     * This method pretends that the error come from {@link Grid#getGridGeometry(Decoder)},
-     * which is the caller and is a bit closer to a public API.
+     * Reports a non-fatal error that occurred while constructing the grid geometry. This method is invoked
+     * by methods that are themselves invoked (indirectly) by {@link Grid#getGridGeometry(Decoder)}, which
+     * is invoked by {@link Variable#getGridGeometry(Decoder)}. We pretend that the warning come from the
+     * later since it is a bit closer to a public API.
      *
      * @param  exception  the exception that occurred, or {@code null} if none.
      * @param  key        one or {@link Errors.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
     private void warning(final Exception exception, final short key, final Object... arguments) {
-        coordinates.error(Grid.class, "getGridGeometry", exception, key, arguments);
+        coordinates.error(Variable.class, "getGridGeometry", exception, key, arguments);
     }
 
     /**
