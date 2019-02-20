@@ -236,11 +236,10 @@ public class Convention {
      * This feature is an extension to CF-conventions.</p>
      *
      * @param  axis  the axis for which to get the "grid indices to data indices" scale factor.
-     * @return the "grid indices to data indices" scale factor, or 1 if none.
+     * @return the "grid indices to data indices" scale factor, or {@link Double#NaN} if none.
      */
     public double gridToDataIndices(final Variable axis) {
-        final double n = axis.getAttributeAsNumber("resampling_interval");
-        return (n > 0) ? 1/n : 1;
+        return axis.getAttributeAsNumber("resampling_interval");
     }
 
     /**

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
@@ -120,6 +119,9 @@ public abstract class Variable extends NamedElement {
      * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
      * be non-null if the localization grid has smaller dimensions than the dimensions of this variable, as documented
      * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
+     *
+     * <p>Some values in this array may be {@link Double#NaN} if the {@code "resampling_interval"} attribute
+     * was not found.</p>
      */
     private double[] gridToDataIndices;
 
@@ -408,7 +410,6 @@ public abstract class Variable extends NamedElement {
                                 if (name != null) {
                                     if (gridToDataIndices == null) {
                                         gridToDataIndices = new double[axes.size()];
-                                        Arrays.fill(gridToDataIndices, 1);
                                     }
                                     gridToDataIndices[j] = convention.gridToDataIndices(axis);
                                     final boolean overwrite = isRequested && requestedByConvention.add(dim);
@@ -493,6 +494,11 @@ public abstract class Variable extends NamedElement {
                 }
             }
             if (needsResize) {
+                if (gridToDataIndices != null) {
+                    for (final double s : gridToDataIndices) {
+                        if (!(s > 0)) return null;                  // "resampling_interval" attributes not found.
+                    }
+                }
                 extent = extent.resize(sizes);
                 grid = grid.derive().resize(extent, gridToDataIndices).build();
                 /*
