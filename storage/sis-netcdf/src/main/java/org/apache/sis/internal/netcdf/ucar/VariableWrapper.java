@@ -391,7 +391,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    protected Vector read() throws IOException {
+    public Vector read() throws IOException {
         if (values == null) {
             final Array array = variable.read();                // May be already cached by the UCAR library.
             values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());

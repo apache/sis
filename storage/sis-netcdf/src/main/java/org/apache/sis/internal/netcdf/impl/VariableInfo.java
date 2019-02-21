@@ -700,7 +700,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    protected Vector read() throws IOException, DataStoreContentException {
+    public Vector read() throws IOException, DataStoreContentException {
         if (values == null) {
             if (reader == null) {
                 throw new DataStoreContentException(unknownType());

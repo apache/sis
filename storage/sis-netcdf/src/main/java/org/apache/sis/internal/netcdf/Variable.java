@@ -729,7 +729,7 @@ public abstract class Variable extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    protected abstract Vector read() throws IOException, DataStoreException;
+    public abstract Vector read() throws IOException, DataStoreException;
 
     /**
      * Reads a subsampled sub-area of the variable.
