@@ -131,7 +131,8 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @return conventions to apply.
      */
     public final Convention convention() {
-        return convention;
+        // Convention are still null if this method is invoked from Convention.isApplicableTo(Decoder).
+        return (convention != null) ? convention : Convention.DEFAULT;
     }
 
     /**

@@ -63,7 +63,7 @@ public class Convention {
     /**
      * The convention to use when no specific conventions were found.
      */
-    private static final Convention DEFAULT = new Convention();
+    static final Convention DEFAULT = new Convention();
 
     /**
      * Names of groups where to search for metadata, in precedence order.
