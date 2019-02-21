@@ -192,6 +192,7 @@
     <module>sis-referencing</module>
     <module>sis-referencing-by-identifiers</module>
     <module>sis-feature</module>
+    <module>sis-cql</module>
     <module>sis-portrayal</module>
   </modules>
 
