@@ -42,6 +42,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * A factory for {@link ColorModel} objects built from a sequence of colors.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -155,9 +156,10 @@ public final class ColorModelFactory {
             final int lower = Math.round((float) min);
             final int upper = Math.round((float) max);
             if (lower < upper) {
-                if (lower < 0 || upper > 0xFFFF) {
+                if (lower < 0 || upper > 0x10000) {
                     starts = ArraysExt.EMPTY_SHORT;
                     codes  = null;
+                    count  = 0;
                 } else if (codes != null) {
                     if (count != 0) {
                         final int before = Short.toUnsignedInt(starts[count]);
@@ -182,9 +184,12 @@ public final class ColorModelFactory {
             minimum = 0;
             maximum = 1;
         }
+        if (starts.length != 0) {
+            starts = ArraysExt.resize(starts, count + 1);
+        }
         this.minimum     = (float) minimum;
         this.maximum     = (float) maximum;
-        this.pieceStarts = ArraysExt.resize(starts, count + 1);
+        this.pieceStarts = starts;
         this.ARGB        = ArraysExt.resize(codes,  count);
     }
 
