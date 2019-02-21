@@ -286,12 +286,12 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
-        NumberRange<?> range = convention.getValidValues(data);
+        NumberRange<?> range = convention.validRange(data);
         if (range == null) {
             range = data.getRangeFallback();                                // Fallback to UCAR library may happen here.
         }
         if (range != null) {
-            final MathTransform1D mt = convention.getTransferFunction(data).getTransform();
+            final MathTransform1D mt = convention.transferFunction(data).getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):

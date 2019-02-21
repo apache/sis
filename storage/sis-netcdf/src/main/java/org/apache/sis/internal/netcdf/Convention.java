@@ -76,7 +76,7 @@ public class Convention {
     /**
      * Names of attributes where to fetch minimum and maximum sample values, in preference order.
      *
-     * @see #getValidValues(Variable)
+     * @see #validRange(Variable)
      */
     private static final String[] RANGE_ATTRIBUTES = {
         "valid_range",      // Expected "reasonable" range for variable.
@@ -155,6 +155,9 @@ public class Convention {
      * Returns the name of an attribute in this convention which is equivalent to the attribute of given name in CF-convention.
      * The given parameter is a name from <cite>CF conventions</cite> or from <cite>Attribute Convention for Dataset Discovery
      * (ACDD)</cite>. Some of those attribute names are listed in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
+     *
+     * <p>In current version of netCDF reader, this method is invoked only for global attributes,
+     * not for the attributes on variables.</p>
      *
      * <p>The default implementation returns {@code name} unchanged.</p>
      *
@@ -318,7 +321,7 @@ public class Convention {
      *
      * @see Variable#getRangeFallback()
      */
-    public NumberRange<?> getValidValues(final Variable data) {
+    public NumberRange<?> validRange(final Variable data) {
         Number minimum = null;
         Number maximum = null;
         Class<? extends Number> type = null;
@@ -369,7 +372,7 @@ public class Convention {
 
     /**
      * Compares two numbers which shall be of the same class.
-     * This is a helper method for {@link #getValidValues(Variable)}.
+     * This is a helper method for {@link #validRange(Variable)}.
      */
     @SuppressWarnings("unchecked")
     private static int compare(final Number n1, final Number n2) {
@@ -390,7 +393,7 @@ public class Convention {
      *         if no information is found in the given {@code data} variable, then the return value
      *         shall be an identity function.
      */
-    public TransferFunction getTransferFunction(final Variable data) {
+    public TransferFunction transferFunction(final Variable data) {
         /*
          * If scale_factor and/or add_offset variable attributes are present, then this is
          * a "packed" variable. Otherwise the transfer function is the identity transform.

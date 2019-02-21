@@ -617,8 +617,8 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
-     * This method is invoked only as a fallback if {@link Convention#getValidValues(Variable)} did not found
-     * a range of values by application of CF conventions. The returned range may be a range of packed values
+     * This method is invoked only as a fallback if {@link Convention#validRange(Variable)} did not found a
+     * range of values by application of CF conventions. The returned range may be a range of packed values
      * or a range of real values. In the later case, the range shall be an instance of
      * {@link org.apache.sis.measure.MeasurementRange}.
      *
@@ -628,7 +628,7 @@ public abstract class Variable extends NamedElement {
      *
      * @return the range of valid values, or {@code null} if unknown.
      *
-     * @see Convention#getValidValues(Variable)
+     * @see Convention#validRange(Variable)
      */
     public NumberRange<?> getRangeFallback() {
         final DataType dataType = getDataType();
