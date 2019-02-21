@@ -159,9 +159,11 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * Defines the groups where to search for named attributes, in preference order.
-     * The {@code null} group name stands for the global attributes.
+     * The {@code null} group name stands for attributes in the root group.
      *
      * @param  groupNames  the name of the group where to search, in preference order.
+     *
+     * @see Convention#getSearchPath()
      */
     public abstract void setSearchPath(String... groupNames);
 

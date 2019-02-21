@@ -724,7 +724,9 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Returns the netCDF attribute of the given name, or {@code null} if none.
+     * Returns the netCDF attribute of the given name, or {@code null} if none. This method is invoked
+     * for every global attributes to be read by this class (but not {@linkplain VariableInfo variable}
+     * attributes), thus providing a single point where we can filter the attributes to be read.
      * The {@code name} argument is typically (but is not restricted to) one of the constants
      * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
      *
@@ -736,10 +738,28 @@ public final class ChannelDecoder extends Decoder {
     private Object findAttribute(final String name) {
         Object value = attributeMap.get(name);
         if (value == null && name != null) {
-            final String lower = name.toLowerCase(NAME_LOCALE);
-            // Identity comparison is ok since following check is only an optimization for a common case.
-            if (lower != name) {
-                value = attributeMap.get(lower);
+            /*
+             * If no value were found for the given name, tries the following alternatives:
+             *
+             *   - Same name but in lower cases.
+             *   - Alternative name specific to the non-standard convention used by current file.
+             *   - Same alternative name but in lower cases.
+             *
+             * Identity comparisons performed between String instances below are okay since they
+             * are only optimizations for skipping calls to Map.get(Object) in common cases.
+             */
+            String lower = name.toLowerCase(NAME_LOCALE);
+            if (lower == name || (value = attributeMap.get(lower)) == null) {
+                final String mappedName = convention().mapAttributeName(name);
+                if (mappedName != name) {
+                    value = attributeMap.get(mappedName);
+                    if (value == null) {
+                        lower = name.toLowerCase(NAME_LOCALE);
+                        if (lower != mappedName) {
+                            value = attributeMap.get(lower);
+                        }
+                    }
+                }
             }
         }
         return value;

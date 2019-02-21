@@ -224,7 +224,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the netCDF attribute of the given name in the given group, or {@code null} if none.
      * This method is invoked for every global and group attributes to be read by this class (but
      * not {@linkplain ucar.nc2.VariableSimpleIF variable} attributes), thus providing a single point
-     * where we can filter the attributes to be read - if we want to do that in a future version.
+     * where we can filter the attributes to be read.
      *
      * <p>The {@code name} argument is typically (but is not restricted too) one of the constants
      * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.</p>
@@ -234,7 +234,20 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
-        return (group != null) ? group.findAttributeIgnoreCase(name) : file.findGlobalAttributeIgnoreCase(name);
+        Attribute value = (group != null) ? group.findAttributeIgnoreCase(name)
+                                          : file.findGlobalAttributeIgnoreCase(name);
+        if (value == null) {
+            final String mappedName = convention().mapAttributeName(name);
+            /*
+             * Identity check between String instances below is okay
+             * since this is only an optimization for a common case.
+             */
+            if (mappedName != name) {
+                value = (group != null) ? group.findAttributeIgnoreCase(mappedName)
+                                        : file.findGlobalAttributeIgnoreCase(mappedName);
+            }
+        }
+        return value;
     }
 
     /**

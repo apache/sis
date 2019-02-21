@@ -110,6 +110,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
@@ -120,14 +121,6 @@ final class MetadataReader extends MetadataBuilder {
      * They are fields for which we are unsure of the proper ISO 19115 location.
      */
     private static final boolean EXPERIMENTAL = true;
-
-    /**
-     * Names of groups where to search for metadata, in precedence order.
-     * The {@code null} value stands for global attributes.
-     *
-     * <p>REMINDER: if modified, update class javadoc too.</p>
-     */
-    private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
 
     /**
      * Names of global attributes identifying services.
@@ -159,8 +152,8 @@ final class MetadataReader extends MetadataBuilder {
     private final Decoder decoder;
 
     /**
-     * The actual search path, as a subset of {@link #SEARCH_PATH} with only the name of the groups
-     * which have been found in the NeCDF file.
+     * The actual search path, as a subset of {@link org.apache.sis.internal.netcdf.Convention#SEARCH_PATH}
+     * with only the name of the groups which have been found in the NeCDF file.
      */
     private final String[] searchPath;
 
@@ -194,7 +187,7 @@ final class MetadataReader extends MetadataBuilder {
      */
     MetadataReader(final Decoder decoder) {
         this.decoder = decoder;
-        decoder.setSearchPath(SEARCH_PATH);
+        decoder.setSearchPath(decoder.convention().getSearchPath());
         searchPath = decoder.getSearchPath();
     }
 

@@ -66,6 +66,14 @@ public class Convention {
     private static final Convention DEFAULT = new Convention();
 
     /**
+     * Names of groups where to search for metadata, in precedence order.
+     * The {@code null} value stands for global attributes.
+     *
+     * <p>REMINDER: if modified, update {@link org.apache.sis.storage.netcdf.MetadataReader} class javadoc too.</p>
+     */
+    private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
+
+    /**
      * Names of attributes where to fetch minimum and maximum sample values, in preference order.
      *
      * @see #getValidValues(Variable)
@@ -85,18 +93,34 @@ public class Convention {
 
     /**
      * Finds the convention to apply to the file opened by the given decoder, or {@code null} if none.
+     * This method does not change the state of the given {@link Decoder}.
+     *
+     * @todo this method is temporarily synchronized because of a {@link java.util.ServiceLoader} bug in JDK 8,
+     *       which does not support the use of a new {@link Iterator} while another iteration is in progress,
+     *       even if they are in the same thread. We will remove this synchronization in JDK9 if that bug is fixed.
+     *       Only the {@code synchronized (AVAILABLES)} statements should stay.
      */
     static synchronized Convention find(final Decoder decoder) {
         final Iterator<Convention> it;
         Convention c;
         synchronized (AVAILABLES) {
             it = AVAILABLES.iterator();
-            if (!it.hasNext()) return DEFAULT;
+            if (!it.hasNext()) {
+                return DEFAULT;
+            }
             c = it.next();
         }
+        /*
+         * We want the call to isApplicableTo(…) to be outside the synchronized block in order to avoid contentions.
+         * This is also a safety against dead locks if that method acquire other locks. Only Iterator methods should
+         * be invoked inside the synchronized block.
+         */
         while (!c.isApplicableTo(decoder)) {
             synchronized (AVAILABLES) {
-                if (!it.hasNext()) return DEFAULT;
+                if (it.hasNext()) {
+                    c = DEFAULT;
+                    break;
+                }
                 c = it.next();
             }
         }
@@ -105,12 +129,41 @@ public class Convention {
 
     /**
      * Detects if this set of conventions applies to the given netCDF file.
+     * This method shall not change the state of the given {@link Decoder}.
      *
      * @param  decoder  the netCDF file to test.
      * @return {@code true} if this set of conventions can apply.
      */
     protected boolean isApplicableTo(final Decoder decoder) {
         return false;
+    }
+
+    /**
+     * Specifies a list of groups where to search for named attributes, in preference order.
+     * The {@code null} name stands for the root group.
+     *
+     * @return  name of groups where to search in for global attributes, in preference order.
+     *          Never null, never empty, but can contain null values to specify root as search path.
+     *
+     * @see Decoder#setSearchPath(String...)
+     */
+    public String[] getSearchPath() {
+        return SEARCH_PATH.clone();
+    }
+
+    /**
+     * Returns the name of an attribute in this convention which is equivalent to the attribute of given name in CF-convention.
+     * The given parameter is a name from <cite>CF conventions</cite> or from <cite>Attribute Convention for Dataset Discovery
+     * (ACDD)</cite>. Some of those attribute names are listed in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
+     *
+     * <p>The default implementation returns {@code name} unchanged.</p>
+     *
+     * @param  name  an attribute name from CF or ACDD convention.
+     * @return the attribute name expected to be found in a netCDF file structured according this {@code Convention}.
+     *         If this convention does not know about attribute of the given name, then {@code name} is returned unchanged.
+     */
+    public String mapAttributeName(final String name) {
+        return name;
     }
 
     /**
