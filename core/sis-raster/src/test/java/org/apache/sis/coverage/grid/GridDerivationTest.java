@@ -58,10 +58,10 @@ public final strictfp class GridDerivationTest extends TestCase {
         envelope.setRange(1, -12,  21);
         envelope.setRange(2,  10,  25);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix4(
-            0,   0.5, 0,  -90,
-            0.5, 0,   0, -180,
-            0,   0,   2,    3,
-            0,   0,   0,    1));
+                0,   0.5, 0,  -90,
+                0.5, 0,   0, -180,
+                0,   0,   2,    3,
+                0,   0,   0,    1));
         final GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(
                 new long[] {336,  20,  4},
@@ -178,9 +178,9 @@ public final strictfp class GridDerivationTest extends TestCase {
         envelope.setRange(0, -70, +80);
         envelope.setRange(1,   5,  15);
         final MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
-            0,   0.5, -90,
-            0.5, 0,  -180,
-            0,   0,     1));
+                0,   0.5, -90,
+                0.5, 0,  -180,
+                0,   0,     1));
         GridGeometry grid = new GridGeometry(PixelInCell.CELL_CORNER, gridToCRS, envelope, GridRoundingMode.NEAREST);
         assertExtentEquals(new long[] {370, 40}, new long[] {389, 339}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
@@ -194,9 +194,9 @@ public final strictfp class GridDerivationTest extends TestCase {
         assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         assertMatrixEquals("gridToCRS", new Matrix3(
-                  0, 1,  -90,
-                  2, 0, -180,
-                  0, 0,    1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+                0, 1,  -90,
+                2, 0, -180,
+                0, 0,    1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
         /*
          * A sub-region again but with a requested resolution which is not a divisor of the actual resolution.
          * It will force GridGeometry to adjust the translation term to compensate. We verify that the adustment
@@ -207,9 +207,9 @@ public final strictfp class GridDerivationTest extends TestCase {
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         MathTransform cornerToCRS = grid.getGridToCRS(PixelInCell.CELL_CORNER);
         assertMatrixEquals("gridToCRS", new Matrix3(
-                  0, 3,  -89,
-                  2, 0, -180,
-                  0, 0,    1), MathTransforms.getMatrix(cornerToCRS), STRICT);
+                0, 3,  -89,
+                2, 0, -180,
+                0, 0,    1), MathTransforms.getMatrix(cornerToCRS), STRICT);
 
         DirectPosition2D src = new DirectPosition2D();
         DirectPosition2D tgt = new DirectPosition2D();
@@ -260,9 +260,9 @@ public final strictfp class GridDerivationTest extends TestCase {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix3(
-                1,  0, 80,
-                0, -1, 90,
-                0,  0,  1)), HardCodedCRS.WGS84);
+                        1,  0, 80,
+                        0, -1, 90,
+                        0,  0,  1)), HardCodedCRS.WGS84);
 
         final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
         aoi.setRange(0, 140, -179);
