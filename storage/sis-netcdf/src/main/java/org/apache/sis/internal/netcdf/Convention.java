@@ -94,13 +94,8 @@ public class Convention {
     /**
      * Finds the convention to apply to the file opened by the given decoder, or {@code null} if none.
      * This method does not change the state of the given {@link Decoder}.
-     *
-     * @todo this method is temporarily synchronized because of a {@link java.util.ServiceLoader} bug in JDK 8,
-     *       which does not support the use of a new {@link Iterator} while another iteration is in progress,
-     *       even if they are in the same thread. We will remove this synchronization in JDK9 if that bug is fixed.
-     *       Only the {@code synchronized (AVAILABLES)} statements should stay.
      */
-    static synchronized Convention find(final Decoder decoder) {
+    static Convention find(final Decoder decoder) {
         final Iterator<Convention> it;
         Convention c;
         synchronized (AVAILABLES) {
@@ -117,7 +112,7 @@ public class Convention {
          */
         while (!c.isApplicableTo(decoder)) {
             synchronized (AVAILABLES) {
-                if (it.hasNext()) {
+                if (!it.hasNext()) {
                     c = DEFAULT;
                     break;
                 }
