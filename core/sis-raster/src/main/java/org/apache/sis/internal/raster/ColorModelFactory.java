@@ -16,26 +16,26 @@
  */
 package org.apache.sis.internal.raster;
 
-import java.util.Map;
+import java.awt.Color;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.IndexColorModel;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Function;
-import java.awt.Transparency;
-import java.awt.Color;
-import java.awt.color.ColorSpace;
-import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -99,9 +99,11 @@ public final class ColorModelFactory {
     /**
      * In a color map defined by a piecewise function, indices where to store the first interpolated value in the color map.
      * The number of pieces (segments) is {@code pieceStarts.length}. The last element of this array is the index after the
-     * end of the last piece. The indices are unsigned short integers. Never {@code null} but may be empty.
+     * end of the last piece. The indices are integers. Never {@code null} but may be empty.
+     * Note : indices as unsigned short won't work, in the worse case the last next index will be 65536 which would be
+     * converted to 0 as a short causing several exception afterward.
      */
-    private final short[] pieceStarts;
+    private final int[] pieceStarts;
 
     /**
      * The Alpha-Red-Green-Blue codes for all segments of the piecewise function.
@@ -143,7 +145,7 @@ public final class ColorModelFactory {
         final Map.Entry<NumberRange<?>, Color[]>[] entries = categories.entrySet().toArray(new Map.Entry[categories.size()]);
         Arrays.sort(entries, RANGE_COMPARATOR);
         int     count   = 0;
-        short[] starts  = new short[entries.length + 1];
+        int[]   starts  = new int[entries.length + 1];
         int[][] codes   = new int[entries.length][];
         double  minimum = Double.POSITIVE_INFINITY;
         double  maximum = Double.NEGATIVE_INFINITY;
@@ -157,12 +159,12 @@ public final class ColorModelFactory {
             final int upper = Math.round((float) max);
             if (lower < upper) {
                 if (lower < 0 || upper > 0x10000) {
-                    starts = ArraysExt.EMPTY_SHORT;
+                    starts = ArraysExt.EMPTY_INT;
                     codes  = null;
                     count  = 0;
                 } else if (codes != null) {
                     if (count != 0) {
-                        final int before = Short.toUnsignedInt(starts[count]);
+                        final int before = starts[count];
                         if (before != lower) {
                             if (before > lower) {
                                 // TODO: remove the overlapped colors in previous range.
@@ -175,8 +177,8 @@ public final class ColorModelFactory {
                         }
                     }
                     codes [  count] = toARGB(entry.getValue());
-                    starts[  count] = (short) lower;
-                    starts[++count] = (short) upper;
+                    starts[  count] = lower;
+                    starts[++count] = upper;
                 }
             }
         }
@@ -184,13 +186,10 @@ public final class ColorModelFactory {
             minimum = 0;
             maximum = 1;
         }
-        if (starts.length != 0) {
-            starts = ArraysExt.resize(starts, count + 1);
-        }
         this.minimum     = (float) minimum;
         this.maximum     = (float) maximum;
         this.pieceStarts = starts;
-        this.ARGB        = ArraysExt.resize(codes,  count);
+        this.ARGB        = codes;
     }
 
     /**
@@ -222,12 +221,12 @@ public final class ColorModelFactory {
          * Interpolates the colors in the color palette. Colors that do not fall
          * in the range of a category will be set to a transparent color.
          */
-        final int[] colorMap = new int[Short.toUnsignedInt(pieceStarts[categoryCount])];
+        final int[] colorMap = new int[pieceStarts[categoryCount]];
         int transparent = -1;
         for (int i=0; i<categoryCount; i++) {
             final int[] colors = ARGB[i];
-            final int   lower  = Short.toUnsignedInt(pieceStarts[i  ]);
-            final int   upper  = Short.toUnsignedInt(pieceStarts[i+1]);
+            final int   lower  = pieceStarts[i  ];
+            final int   upper  = pieceStarts[i+1];
             if (transparent < 0 && colors.length == 0) {
                 transparent = lower;
             }
