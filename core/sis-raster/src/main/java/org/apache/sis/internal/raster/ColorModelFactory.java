@@ -16,26 +16,26 @@
  */
 package org.apache.sis.internal.raster;
 
-import java.awt.Color;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.IndexColorModel;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.Function;
+import java.awt.Transparency;
+import java.awt.Color;
+import java.awt.color.ColorSpace;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -100,8 +100,10 @@ public final class ColorModelFactory {
      * In a color map defined by a piecewise function, indices where to store the first interpolated value in the color map.
      * The number of pieces (segments) is {@code pieceStarts.length}. The last element of this array is the index after the
      * end of the last piece. The indices are integers. Never {@code null} but may be empty.
-     * Note : indices as unsigned short won't work, in the worse case the last next index will be 65536 which would be
-     * converted to 0 as a short causing several exception afterward.
+     *
+     * <div class="note"><b>Note:</b>
+     * indices as unsigned short are not sufficient since in the worst case the last next index will
+     * be 65536, which would be converted to 0 as a short, causing several exception afterward.</div>
      */
     private final int[] pieceStarts;
 
@@ -185,6 +187,14 @@ public final class ColorModelFactory {
         if (minimum >= maximum) {
             minimum = 0;
             maximum = 1;
+        }
+        /*
+         * The length of 'pieceStarts' may differ from the expected length if there is holes between categories.
+         * We need to adjust the array length since it will determine the number of categories. Note that there
+         * is one more element than the number of categories.
+         */
+        if (starts.length != 0) {
+            starts = ArraysExt.resize(starts, count + 1);
         }
         this.minimum     = (float) minimum;
         this.maximum     = (float) maximum;
